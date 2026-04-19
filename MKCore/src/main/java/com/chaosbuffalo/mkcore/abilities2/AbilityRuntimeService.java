@@ -3,7 +3,10 @@ package com.chaosbuffalo.mkcore.abilities2;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityEventFilter.ParticipantRelation;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityActivationDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityReactionDefinition;
+import com.chaosbuffalo.mkcore.abilities2.definition.ActivationBehavior;
+import com.chaosbuffalo.mkcore.abilities2.definition.ActivationKind;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValue;
 import com.chaosbuffalo.mkcore.abilities2.runtime.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
@@ -38,6 +41,9 @@ public class AbilityRuntimeService {
     private final SimpleAbilityEngine engine;
     private final Map<AbilityReactionOwner, ReactionOwnerRuntime> reactionOwnerRuntime = new HashMap<>();
     private final Map<AbilityReactionOwner, Map<String, AbilityReactionHandle>> installedReactionHandles = new HashMap<>();
+    private final Map<ToggleKey, ToggleRuntime> activeToggles = new LinkedHashMap<>();
+    private final Map<UUID, ToggleRuntime> pendingToggleEnables = new HashMap<>();
+    private final Map<UUID, ToggleRuntime> pendingToggleDisables = new HashMap<>();
     private long lastStateStoreTick = Long.MIN_VALUE;
 
     public AbilityRuntimeService(AbilityDefinitionResolver definitionResolver) {
@@ -57,7 +63,8 @@ public class AbilityRuntimeService {
                 powerResolver,
                 stateStore,
                 reactionBus::emit,
-                new EngineReactionController()
+                new EngineReactionController(),
+                new EngineLifecycleListener()
         );
     }
 
@@ -75,6 +82,84 @@ public class AbilityRuntimeService {
 
     public AbilityEngine getEngine() {
         return engine;
+    }
+
+    public InvocationResult requestToggle(IMKEntityData ownerData,
+                                          IMKEntityData casterData,
+                                          AbilityReference ability,
+                                          @Nullable UUID sourceId) {
+        Objects.requireNonNull(ownerData, "ownerData");
+        Objects.requireNonNull(casterData, "casterData");
+        Objects.requireNonNull(ability, "ability");
+
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(ability.abilityId());
+        if (definition == null) {
+            return InvocationResult.failed(FailureReason.UNKNOWN_ABILITY);
+        }
+
+        UUID stableSourceId = sourceId != null ? sourceId : casterData.getEntity().getUUID();
+        ToggleKey key = new ToggleKey(ownerData.getEntity().getUUID(), ability.abilityId(), ability.grantId(), stableSourceId);
+        ToggleRuntime activeToggle = activeToggles.get(key);
+        if (activeToggle != null) {
+            return requestToggleDisable(activeToggle);
+        }
+
+        String enableActivationId;
+        String disableActivationId;
+        try {
+            enableActivationId = resolveSingleActivationId(definition, ActivationKind.TOGGLE_ENABLE);
+            disableActivationId = resolveSingleActivationId(definition, ActivationKind.TOGGLE_DISABLE);
+        } catch (IllegalStateException e) {
+            MKCore.LOGGER.debug("abilities2 toggle request for {} is ambiguous: {}", ability.abilityId(), e.getMessage());
+            return InvocationResult.failed(FailureReason.UNSUPPORTED_FEATURE);
+        }
+        if (enableActivationId == null) {
+            return InvocationResult.failed(FailureReason.UNKNOWN_ACTIVATION);
+        }
+
+        AbilityActivationDefinition enableActivation = definition.definition().getActivation(enableActivationId);
+        if (enableActivation == null) {
+            return InvocationResult.failed(FailureReason.UNKNOWN_ACTIVATION);
+        }
+
+        ActivationBehavior.AuraBehavior auraBehavior = enableActivation.behavior() instanceof ActivationBehavior.AuraBehavior aura
+                ? aura
+                : null;
+        ToggleRuntime runtime = new ToggleRuntime(
+                key,
+                new AbilityReactionOwner(ReactionOwnerType.TOGGLE_STATE, UUID.randomUUID(), stableSourceId, ability.abilityId()),
+                ability,
+                ownerData.getEntity().getUUID(),
+                casterData.getEntity().getUUID(),
+                enableActivationId,
+                disableActivationId,
+                auraBehavior
+        );
+
+        InvocationResult result = engine.activateInternal(new InternalActivationRequest(
+                ownerData,
+                casterData,
+                ability,
+                enableActivationId,
+                stableSourceId,
+                null,
+                null,
+                false,
+                false,
+                ActivationReason.TOGGLE_LIFECYCLE,
+                0,
+                null,
+                null,
+                null,
+                null,
+                runtime.owner(),
+                false,
+                true
+        ));
+        if (result.started() && result.invocationId() != null) {
+            pendingToggleEnables.put(result.invocationId(), runtime);
+        }
+        return result;
     }
 
     @SubscribeEvent
@@ -95,6 +180,7 @@ public class AbilityRuntimeService {
         }
         lastStateStoreTick = gameTick;
         stateStore.tick(gameTick, this::emitCooldownFinished);
+        tickActiveToggles(gameTick);
     }
 
     @SubscribeEvent
@@ -131,6 +217,128 @@ public class AbilityRuntimeService {
         return server != null ? server.overworld().getGameTime() : 0L;
     }
 
+    private InvocationResult requestToggleDisable(ToggleRuntime runtime) {
+        IMKEntityData ownerData = resolveEntityData(runtime.ownerEntityId());
+        IMKEntityData casterData = resolveEntityData(runtime.casterEntityId());
+        if (ownerData == null || casterData == null) {
+            teardownToggle(runtime);
+            return InvocationResult.failed(FailureReason.INVALID_TARGETS);
+        }
+        if (runtime.disableActivationId() == null) {
+            return InvocationResult.failed(FailureReason.UNKNOWN_ACTIVATION);
+        }
+
+        InvocationResult result = engine.activateInternal(new InternalActivationRequest(
+                ownerData,
+                casterData,
+                runtime.ability(),
+                runtime.disableActivationId(),
+                runtime.owner().stableSourceId(),
+                null,
+                null,
+                false,
+                false,
+                ActivationReason.TOGGLE_LIFECYCLE,
+                0,
+                null,
+                null,
+                null,
+                null,
+                runtime.owner(),
+                true,
+                true
+        ));
+        if (result.started() && result.invocationId() != null) {
+            activeToggles.remove(runtime.key());
+            pendingToggleDisables.put(result.invocationId(), runtime);
+        }
+        return result;
+    }
+
+    private void tickActiveToggles(long gameTick) {
+        Iterator<ToggleRuntime> iterator = activeToggles.values().iterator();
+        while (iterator.hasNext()) {
+            ToggleRuntime runtime = iterator.next();
+            IMKEntityData ownerData = resolveEntityData(runtime.ownerEntityId());
+            IMKEntityData casterData = resolveEntityData(runtime.casterEntityId());
+            if (ownerData == null || casterData == null
+                    || !ownerData.getEntity().isAlive() || ownerData.getEntity().isRemoved()
+                    || !casterData.getEntity().isAlive() || casterData.getEntity().isRemoved()) {
+                iterator.remove();
+                clearReactionOwner(runtime.owner());
+                continue;
+            }
+
+            if (!runtime.hasAuraBehavior() || gameTick < runtime.nextPulseTick()) {
+                continue;
+            }
+
+            startAuraPulse(runtime, ownerData, casterData);
+            runtime.scheduleNextPulse(gameTick);
+        }
+    }
+
+    private void startAuraPulse(ToggleRuntime runtime, IMKEntityData ownerData, IMKEntityData casterData) {
+        ActivationBehavior.AuraBehavior auraBehavior = runtime.auraBehavior();
+        if (auraBehavior == null) {
+            return;
+        }
+        InvocationResult result = engine.activateInternal(new InternalActivationRequest(
+                ownerData,
+                casterData,
+                runtime.ability(),
+                runtime.enableActivationId(),
+                runtime.owner().stableSourceId(),
+                null,
+                null,
+                true,
+                true,
+                ActivationReason.AURA_PULSE,
+                0,
+                null,
+                null,
+                auraBehavior.pulseEntryPoint(),
+                auraBehavior.pulseTargeting(),
+                runtime.owner(),
+                false,
+                false
+        ));
+        if (!result.started()) {
+            MKCore.LOGGER.debug("abilities2 aura pulse for {} did not start: {}",
+                    runtime.ability().abilityId(), result.failureReason());
+        }
+    }
+
+    private @Nullable String resolveSingleActivationId(PatchedAbilityDefinition definition, ActivationKind kind) {
+        String match = null;
+        for (Map.Entry<String, AbilityActivationDefinition> entry : definition.definition().activations().entrySet()) {
+            if (entry.getValue().kind() != kind) {
+                continue;
+            }
+            if (match != null) {
+                throw new IllegalStateException("multiple activations with kind " + kind);
+            }
+            match = entry.getKey();
+        }
+        return match;
+    }
+
+    private void clearReactionOwner(AbilityReactionOwner owner) {
+        reactionBus.unregisterOwner(owner);
+        installedReactionHandles.remove(owner);
+        reactionOwnerRuntime.remove(owner);
+    }
+
+    private @Nullable IMKEntityData resolveEntityData(UUID entityId) {
+        LivingEntity entity = findEntity(entityId);
+        return entity != null ? MKCore.getEntityDataOrThrow(entity) : null;
+    }
+
+    private void teardownToggle(ToggleRuntime runtime) {
+        activeToggles.remove(runtime.key());
+        clearReactionOwner(runtime.owner());
+    }
+
     private void triggerReaction(RegisteredReaction reaction, AbilityEventSnapshot event) {
         IMKEntityData ownerData = resolveOwnerData(reaction.owner());
         IMKEntityData casterData = resolveCasterData(reaction.owner());
@@ -147,6 +355,34 @@ public class AbilityRuntimeService {
         if (!result.started()) {
             MKCore.LOGGER.debug("abilities2 reaction {} did not start: {}", reaction.handle(), result.failureReason());
         }
+    }
+
+    private void handleInvocationCompleted(AbilityInvocation invocation) {
+        ToggleRuntime enabledRuntime = pendingToggleEnables.remove(invocation.invocationId());
+        if (enabledRuntime != null) {
+            activeToggles.put(enabledRuntime.key(), enabledRuntime);
+            enabledRuntime.scheduleNextPulse(currentGameTick());
+            if (enabledRuntime.hasAuraBehavior() && enabledRuntime.auraBehavior().pulseOnEnable()) {
+                IMKEntityData ownerData = resolveEntityData(enabledRuntime.ownerEntityId());
+                IMKEntityData casterData = resolveEntityData(enabledRuntime.casterEntityId());
+                if (ownerData == null || casterData == null) {
+                    teardownToggle(enabledRuntime);
+                } else {
+                    startAuraPulse(enabledRuntime, ownerData, casterData);
+                }
+            }
+            return;
+        }
+
+        ToggleRuntime disabledRuntime = pendingToggleDisables.remove(invocation.invocationId());
+        if (disabledRuntime != null) {
+            clearReactionOwner(disabledRuntime.owner());
+        }
+    }
+
+    private void handleInvocationInterrupted(AbilityInvocation invocation) {
+        pendingToggleEnables.remove(invocation.invocationId());
+        pendingToggleDisables.remove(invocation.invocationId());
     }
 
     private boolean evaluateRelation(UUID ownerEntityId, UUID participantEntityId, ParticipantRelation relation) {
@@ -422,9 +658,21 @@ public class AbilityRuntimeService {
 
         @Override
         public void clearOwner(AbilityReactionOwner owner) {
-            reactionBus.unregisterOwner(owner);
-            installedReactionHandles.remove(owner);
-            reactionOwnerRuntime.remove(owner);
+            clearReactionOwner(owner);
+        }
+    }
+
+    private final class EngineLifecycleListener implements SimpleAbilityEngine.LifecycleListener {
+        @Override
+        public void onInvocationCompleted(AbilityInvocation invocation, int castTicksSpent) {
+            handleInvocationCompleted(invocation);
+        }
+
+        @Override
+        public void onInvocationInterrupted(AbilityInvocation invocation,
+                                            FailureReason failureReason,
+                                            int castTicksSpent) {
+            handleInvocationInterrupted(invocation);
         }
     }
 
@@ -443,6 +691,87 @@ public class AbilityRuntimeService {
     }
 
     private record ReactionOwnerRuntime(UUID ownerEntityId, UUID casterEntityId) {
+    }
+
+    private record ToggleKey(UUID ownerEntityId,
+                             ResourceLocation abilityId,
+                             @Nullable UUID grantId,
+                             UUID stableSourceId) {
+    }
+
+    private static final class ToggleRuntime {
+        private final ToggleKey key;
+        private final AbilityReactionOwner owner;
+        private final AbilityReference ability;
+        private final UUID ownerEntityId;
+        private final UUID casterEntityId;
+        private final String enableActivationId;
+        private final @Nullable String disableActivationId;
+        private final @Nullable ActivationBehavior.AuraBehavior auraBehavior;
+        private long nextPulseTick;
+
+        private ToggleRuntime(ToggleKey key,
+                              AbilityReactionOwner owner,
+                              AbilityReference ability,
+                              UUID ownerEntityId,
+                              UUID casterEntityId,
+                              String enableActivationId,
+                              @Nullable String disableActivationId,
+                              @Nullable ActivationBehavior.AuraBehavior auraBehavior) {
+            this.key = key;
+            this.owner = owner;
+            this.ability = ability;
+            this.ownerEntityId = ownerEntityId;
+            this.casterEntityId = casterEntityId;
+            this.enableActivationId = enableActivationId;
+            this.disableActivationId = disableActivationId;
+            this.auraBehavior = auraBehavior;
+            this.nextPulseTick = Long.MAX_VALUE;
+        }
+
+        private ToggleKey key() {
+            return key;
+        }
+
+        private AbilityReactionOwner owner() {
+            return owner;
+        }
+
+        private AbilityReference ability() {
+            return ability;
+        }
+
+        private UUID ownerEntityId() {
+            return ownerEntityId;
+        }
+
+        private UUID casterEntityId() {
+            return casterEntityId;
+        }
+
+        private String enableActivationId() {
+            return enableActivationId;
+        }
+
+        private @Nullable String disableActivationId() {
+            return disableActivationId;
+        }
+
+        private @Nullable ActivationBehavior.AuraBehavior auraBehavior() {
+            return auraBehavior;
+        }
+
+        private boolean hasAuraBehavior() {
+            return auraBehavior != null;
+        }
+
+        private long nextPulseTick() {
+            return nextPulseTick;
+        }
+
+        private void scheduleNextPulse(long currentGameTick) {
+            nextPulseTick = auraBehavior != null ? currentGameTick + auraBehavior.pulseIntervalTicks() : Long.MAX_VALUE;
+        }
     }
 
     private record ResolvedCombatSource(@Nullable AbilityEventProvenance provenance,

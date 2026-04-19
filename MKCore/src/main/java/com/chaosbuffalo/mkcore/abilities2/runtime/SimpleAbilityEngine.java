@@ -49,11 +49,28 @@ public class SimpleAbilityEngine implements AbilityEngine {
         }
     }
 
+    public interface LifecycleListener {
+        LifecycleListener NOOP = new LifecycleListener() {
+        };
+
+        default void onInvocationStarted(AbilityInvocation invocation) {
+        }
+
+        default void onInvocationCompleted(AbilityInvocation invocation, int castTicksSpent) {
+        }
+
+        default void onInvocationInterrupted(AbilityInvocation invocation,
+                                             FailureReason failureReason,
+                                             int castTicksSpent) {
+        }
+    }
+
     private final AbilityDefinitionResolver definitionResolver;
     private final AbilityPowerResolver powerResolver;
     private final AbilityStateStore stateStore;
     private final AbilityEventEmitter eventEmitter;
     private final ReactionController reactionController;
+    private final LifecycleListener lifecycleListener;
     private final Map<UUID, List<PendingCast>> pendingCastsByCaster = new HashMap<>();
     private final Map<UUID, List<PendingChannel>> pendingChannelsByCaster = new HashMap<>();
     private final Map<UUID, Float> pendingDamageInterrupts = new HashMap<>();
@@ -77,11 +94,21 @@ public class SimpleAbilityEngine implements AbilityEngine {
                                AbilityStateStore stateStore,
                                AbilityEventEmitter eventEmitter,
                                ReactionController reactionController) {
+        this(definitionResolver, powerResolver, stateStore, eventEmitter, reactionController, LifecycleListener.NOOP);
+    }
+
+    public SimpleAbilityEngine(AbilityDefinitionResolver definitionResolver,
+                               AbilityPowerResolver powerResolver,
+                               AbilityStateStore stateStore,
+                               AbilityEventEmitter eventEmitter,
+                               ReactionController reactionController,
+                               LifecycleListener lifecycleListener) {
         this.definitionResolver = Objects.requireNonNull(definitionResolver, "definitionResolver");
         this.powerResolver = Objects.requireNonNull(powerResolver, "powerResolver");
         this.stateStore = Objects.requireNonNull(stateStore, "stateStore");
         this.eventEmitter = Objects.requireNonNull(eventEmitter, "eventEmitter");
         this.reactionController = Objects.requireNonNull(reactionController, "reactionController");
+        this.lifecycleListener = Objects.requireNonNull(lifecycleListener, "lifecycleListener");
     }
 
     @Override
@@ -103,7 +130,42 @@ public class SimpleAbilityEngine implements AbilityEngine {
                     true,
                     0,
                     null,
-                    null
+                    null,
+                    null,
+                    null,
+                    null,
+                    true,
+                    true
+            );
+        } catch (ActivationStartFailure failure) {
+            return InvocationResult.failed(failure.failureReason());
+        }
+    }
+
+    public InvocationResult activateInternal(InternalActivationRequest request) {
+        Objects.requireNonNull(request, "request");
+        try {
+            return startActivation(
+                    request.ownerData(),
+                    request.casterData(),
+                    request.ability().abilityId(),
+                    request.ability().grantId(),
+                    request.activationId(),
+                    request.sourceId(),
+                    request.forcedTargets(),
+                    request.eventSnapshot(),
+                    request.ignoreCosts(),
+                    request.ignoreCooldowns(),
+                    request.reason(),
+                    false,
+                    request.chainDepth(),
+                    request.parentInvocationId(),
+                    request.inheritedRootInvocationId(),
+                    request.entryPointOverride(),
+                    request.targetingOverride(),
+                    request.reactionOwner(),
+                    request.clearReactionOwnerOnCompletion(),
+                    request.clearReactionOwnerOnInterruption()
             );
         } catch (ActivationStartFailure failure) {
             return InvocationResult.failed(failure.failureReason());
@@ -138,7 +200,12 @@ public class SimpleAbilityEngine implements AbilityEngine {
                     false,
                     event.chainDepth() + 1,
                     event.invocationId(),
-                    event.rootInvocationId()
+                    event.rootInvocationId(),
+                    null,
+                    null,
+                    null,
+                    true,
+                    true
             );
         } catch (ActivationStartFailure failure) {
             return InvocationResult.failed(failure.failureReason());
@@ -234,7 +301,12 @@ public class SimpleAbilityEngine implements AbilityEngine {
                                              boolean externalOnly,
                                              int chainDepth,
                                              @Nullable UUID parentInvocationId,
-                                             @Nullable UUID inheritedRootInvocationId) {
+                                             @Nullable UUID inheritedRootInvocationId,
+                                             @Nullable String entryPointOverride,
+                                             @Nullable AbilityTargetResolverDefinition targetingOverride,
+                                             @Nullable AbilityReactionOwner reactionOwnerOverride,
+                                             boolean clearReactionOwnerOnCompletion,
+                                             boolean clearReactionOwnerOnInterruption) {
         PatchedAbilityDefinition definition = definitionResolver.resolvePatched(abilityId);
         if (definition == null) {
             return InvocationResult.failed(FailureReason.UNKNOWN_ABILITY);
@@ -245,19 +317,15 @@ public class SimpleAbilityEngine implements AbilityEngine {
             return InvocationResult.failed(FailureReason.UNKNOWN_ACTIVATION);
         }
 
-        if (externalOnly) {
-            if (!(activation.kind() == ActivationKind.MANUAL || activation.kind() == ActivationKind.AI)) {
-                return InvocationResult.failed(FailureReason.ACTIVATION_NOT_EXTERNALLY_CALLABLE);
-            }
-        } else if (reason == ActivationReason.REACTION && activation.kind() != ActivationKind.PROC) {
+        if (!isActivationAllowed(activation, reason, externalOnly)) {
             return InvocationResult.failed(FailureReason.ACTIVATION_NOT_EXTERNALLY_CALLABLE);
         }
-        if (!(activation.behavior() instanceof ActivationBehavior.InstantBehavior)
-                && !(activation.behavior() instanceof ActivationBehavior.ChannelBehavior)) {
+        if (!isBehaviorSupported(activation.behavior())) {
             return InvocationResult.failed(FailureReason.UNSUPPORTED_FEATURE);
         }
 
-        AbilityResolvedTargets targets = resolveActivationTargets(casterData, forcedTargets, eventSnapshot, activation.targeting());
+        AbilityResolvedTargets targets = resolveActivationTargets(casterData, forcedTargets, eventSnapshot,
+                targetingOverride != null ? targetingOverride : activation.targeting());
         UUID resolvedSourceId = sourceId != null ? sourceId : casterData.getEntity().getUUID();
         AbilityStatSnapshot invocationStats = powerResolver.captureInvocationStats(casterData);
 
@@ -270,13 +338,16 @@ public class SimpleAbilityEngine implements AbilityEngine {
                 abilityId,
                 abilityInstanceId,
                 activationId,
-                activation.entryPoint(),
+                entryPointOverride != null ? entryPointOverride : activation.entryPoint(),
                 reason,
                 ownerData,
                 casterData,
                 resolvedSourceId,
                 targets,
                 eventSnapshot,
+                reactionOwnerOverride,
+                clearReactionOwnerOnCompletion,
+                clearReactionOwnerOnInterruption,
                 definition,
                 Map.of(),
                 invocationStats,
@@ -307,6 +378,30 @@ public class SimpleAbilityEngine implements AbilityEngine {
             completeInvocation(invocation, ignoreCosts, 0);
         }
         return InvocationResult.started(invocation.invocationId());
+    }
+
+    private boolean isActivationAllowed(AbilityActivationDefinition activation,
+                                        ActivationReason reason,
+                                        boolean externalOnly) {
+        if (externalOnly) {
+            return activation.kind() == ActivationKind.MANUAL || activation.kind() == ActivationKind.AI;
+        }
+        return switch (reason) {
+            case REACTION -> activation.kind() == ActivationKind.PROC;
+            case TOGGLE_LIFECYCLE -> activation.kind() == ActivationKind.TOGGLE_ENABLE
+                    || activation.kind() == ActivationKind.TOGGLE_DISABLE;
+            case AURA_PULSE -> activation.kind() == ActivationKind.TOGGLE_ENABLE
+                    && activation.behavior() instanceof ActivationBehavior.AuraBehavior;
+            case PASSIVE_LIFECYCLE -> activation.kind() == ActivationKind.PASSIVE_SETUP
+                    || activation.kind() == ActivationKind.PASSIVE_TEARDOWN;
+            case DIRECT_REQUEST, DELIVERY_CALLBACK, CHANNEL_TICK -> true;
+        };
+    }
+
+    private boolean isBehaviorSupported(ActivationBehavior behavior) {
+        return behavior instanceof ActivationBehavior.InstantBehavior
+                || behavior instanceof ActivationBehavior.ChannelBehavior
+                || behavior instanceof ActivationBehavior.AuraBehavior;
     }
 
     private void applyDamageInterrupt(IMKEntityData entityData, float damageAmount) {
@@ -580,7 +675,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
                         .add(new PendingChannel(invocation, channelBehavior, ignoreCosts, castTicksSpent));
             } else {
                 emitInvocationCompleted(invocation, castTicksSpent);
-                reactionController.clearOwner(invocationReactionOwner(invocation));
+                clearReactionOwnerOnCompletion(invocation);
             }
         } catch (InvocationInterruptedException interrupted) {
             finishInterruptedInvocation(invocation, interrupted.failureReason(), castTicksSpent);
@@ -882,7 +977,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
                                                      Supplier<Optional<LivingEntity>> currentTargetSupplier,
                                                      AbilityResolvedTargets targets) {
         return new SimpleAbilityActionContext(invocation, powerResolver, stateStore, targets, currentTargetSupplier,
-                invocationReactionOwner(invocation));
+                effectiveReactionOwner(invocation));
     }
 
     private Optional<LivingEntity> resolveActionTarget(AbilityActionContext context, AbilityAction.ActionTarget target) {
@@ -1012,6 +1107,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
         Map<String, AbilityValue> payload = new LinkedHashMap<>();
         payload.put("activation_kind", eventKeywordValue(activationKind(invocation)));
         emitEvent(AbilityEventType.INVOCATION_STARTED, invocation, invocation.targets().primaryEntityId(), payload);
+        lifecycleListener.onInvocationStarted(invocation);
     }
 
     private void emitInvocationCompleted(AbilityInvocation invocation, int castTicksSpent) {
@@ -1020,6 +1116,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
         payload.put("completion_reason", eventKeywordValue("completed"));
         payload.put("cast_ticks_spent", new AbilityValue.IntValue(castTicksSpent));
         emitEvent(AbilityEventType.INVOCATION_COMPLETED, invocation, invocation.targets().primaryEntityId(), payload);
+        lifecycleListener.onInvocationCompleted(invocation, castTicksSpent);
     }
 
     private void emitInvocationInterrupted(AbilityInvocation invocation,
@@ -1030,6 +1127,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
         payload.put("completion_reason", eventKeywordValue(failureReason));
         payload.put("cast_ticks_spent", new AbilityValue.IntValue(castTicksSpent));
         emitEvent(AbilityEventType.INVOCATION_INTERRUPTED, invocation, invocation.targets().primaryEntityId(), payload);
+        lifecycleListener.onInvocationInterrupted(invocation, failureReason, castTicksSpent);
     }
 
     private void finishInterruptedInvocation(AbilityInvocation invocation,
@@ -1037,7 +1135,23 @@ public class SimpleAbilityEngine implements AbilityEngine {
                                              int castTicksSpent) {
         refundActivationCostsIfEligible(invocation);
         emitInvocationInterrupted(invocation, failureReason, castTicksSpent);
-        reactionController.clearOwner(invocationReactionOwner(invocation));
+        clearReactionOwnerOnInterruption(invocation);
+    }
+
+    private void clearReactionOwnerOnCompletion(AbilityInvocation invocation) {
+        if (invocation.clearReactionOwnerOnCompletion()) {
+            reactionController.clearOwner(effectiveReactionOwner(invocation));
+        }
+    }
+
+    private void clearReactionOwnerOnInterruption(AbilityInvocation invocation) {
+        if (invocation.clearReactionOwnerOnInterruption()) {
+            reactionController.clearOwner(effectiveReactionOwner(invocation));
+        }
+    }
+
+    private AbilityReactionOwner effectiveReactionOwner(AbilityInvocation invocation) {
+        return invocation.reactionOwner() != null ? invocation.reactionOwner() : invocationReactionOwner(invocation);
     }
 
     private AbilityReactionOwner invocationReactionOwner(AbilityInvocation invocation) {

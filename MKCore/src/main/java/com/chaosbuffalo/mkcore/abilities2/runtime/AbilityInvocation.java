@@ -28,6 +28,9 @@ public final class AbilityInvocation {
     private final UUID sourceId;
     private final AbilityResolvedTargets targets;
     private final @Nullable AbilityEventSnapshot eventSnapshot;
+    private final @Nullable AbilityReactionOwner reactionOwner;
+    private final boolean clearReactionOwnerOnCompletion;
+    private final boolean clearReactionOwnerOnInterruption;
     private final PatchedAbilityDefinition definition;
     private final Map<String, AbilityValue> grantParameterOverrides;
     private final AbilityStatSnapshot invocationStats;
@@ -49,6 +52,9 @@ public final class AbilityInvocation {
                              UUID sourceId,
                              AbilityResolvedTargets targets,
                              @Nullable AbilityEventSnapshot eventSnapshot,
+                             @Nullable AbilityReactionOwner reactionOwner,
+                             boolean clearReactionOwnerOnCompletion,
+                             boolean clearReactionOwnerOnInterruption,
                              PatchedAbilityDefinition definition,
                              Map<String, AbilityValue> grantParameterOverrides,
                              AbilityStatSnapshot invocationStats,
@@ -77,6 +83,9 @@ public final class AbilityInvocation {
         this.sourceId = Objects.requireNonNull(sourceId, "sourceId");
         this.targets = Objects.requireNonNull(targets, "targets");
         this.eventSnapshot = eventSnapshot;
+        this.reactionOwner = reactionOwner;
+        this.clearReactionOwnerOnCompletion = clearReactionOwnerOnCompletion;
+        this.clearReactionOwnerOnInterruption = clearReactionOwnerOnInterruption;
         this.definition = Objects.requireNonNull(definition, "definition");
         this.grantParameterOverrides = definition.validateGrantParameterOverrides(
                 new LinkedHashMap<>(Objects.requireNonNull(grantParameterOverrides, "grantParameterOverrides")));
@@ -140,6 +149,18 @@ public final class AbilityInvocation {
 
     public @Nullable AbilityEventSnapshot eventSnapshot() {
         return eventSnapshot;
+    }
+
+    public @Nullable AbilityReactionOwner reactionOwner() {
+        return reactionOwner;
+    }
+
+    public boolean clearReactionOwnerOnCompletion() {
+        return clearReactionOwnerOnCompletion;
+    }
+
+    public boolean clearReactionOwnerOnInterruption() {
+        return clearReactionOwnerOnInterruption;
     }
 
     public PatchedAbilityDefinition definition() {
