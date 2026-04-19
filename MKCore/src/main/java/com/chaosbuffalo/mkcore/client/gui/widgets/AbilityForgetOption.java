@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkcore.client.gui.widgets;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.client.gui.AbilityUiEntry;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -11,14 +11,14 @@ import net.minecraft.client.gui.GuiGraphics;
 public class AbilityForgetOption extends MKLayout {
 
     private final ForgetAbilityModal popup;
-    private final MKAbility ability;
+    private final AbilityUiEntry ability;
 
-    public AbilityForgetOption(MKAbility ability, ForgetAbilityModal popup,
+    public AbilityForgetOption(AbilityUiEntry ability, ForgetAbilityModal popup,
                                Font font) {
         super(0, 0, 200, 16);
         this.popup = popup;
         this.ability = ability;
-        IconText iconText = new IconText(0, 0, 16, ability.getAbilityName(), ability.getAbilityIcon(), font, 16, 1);
+        IconText iconText = new IconText(0, 0, 16, ability.getDisplayName(), ability.getIconOrFallback(), font, 16, 1);
         this.addWidget(iconText);
         addConstraintToWidget(MarginConstraint.TOP, iconText);
         addConstraintToWidget(MarginConstraint.LEFT, iconText);
@@ -34,7 +34,7 @@ public class AbilityForgetOption extends MKLayout {
         return true;
     }
 
-    public MKAbility getAbility() {
+    public AbilityUiEntry getAbility() {
         return ability;
     }
 

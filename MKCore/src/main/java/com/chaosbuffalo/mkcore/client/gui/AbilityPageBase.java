@@ -54,7 +54,7 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
         return panel;
     }
 
-    protected ForgetAbilityModal getChoosePoolSlotWidget(MKAbility tryingToLearn, int trainingId) {
+    protected ForgetAbilityModal getChoosePoolSlotWidget(AbilityUiEntry tryingToLearn, int trainingId) {
         int screenWidth = getWidth();
         int screenHeight = getHeight();
         int xPos = (screenWidth - POPUP_WIDTH) / 2;

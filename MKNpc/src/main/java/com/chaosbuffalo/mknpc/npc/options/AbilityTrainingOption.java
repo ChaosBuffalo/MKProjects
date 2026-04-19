@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingRequirement;
 import com.chaosbuffalo.mkcore.abilities.training.EntityAbilityTrainer;
@@ -28,9 +27,9 @@ public class AbilityTrainingOption extends NpcDefinitionOption {
             AbilityTrainingOptionEntry.CODEC.listOf().fieldOf("abilities").forGetter(i -> i.options)
     ).apply(builder, AbilityTrainingOption::new));
 
-    public record AbilityTrainingOptionEntry(Holder<MKAbility> ability, List<AbilityTrainingRequirement> requirements) {
+    public record AbilityTrainingOptionEntry(ResourceLocation abilityId, List<AbilityTrainingRequirement> requirements) {
         public static final Codec<AbilityTrainingOptionEntry> CODEC = RecordCodecBuilder.create(builder -> builder.group(
-                MKCoreRegistry.ABILITIES.holderByNameCodec().fieldOf("ability").forGetter(AbilityTrainingOptionEntry::ability),
+                ResourceLocation.CODEC.fieldOf("ability").forGetter(AbilityTrainingOptionEntry::abilityId),
                 AbilityTrainingRequirement.CODEC.listOf().fieldOf("requirements").forGetter(AbilityTrainingOptionEntry::requirements)
         ).apply(builder, AbilityTrainingOptionEntry::new));
     }
@@ -51,8 +50,20 @@ public class AbilityTrainingOption extends NpcDefinitionOption {
         return options;
     }
 
+    public AbilityTrainingOption withTrainingOption(ResourceLocation abilityId, AbilityTrainingRequirement... reqs) {
+        getValue().add(new AbilityTrainingOptionEntry(abilityId, Arrays.asList(reqs)));
+        return this;
+    }
+
     public AbilityTrainingOption withTrainingOption(Holder<MKAbility> ability, AbilityTrainingRequirement... reqs) {
-        getValue().add(new AbilityTrainingOptionEntry(ability, Arrays.asList(reqs)));
+        if (ability.isBound()) {
+            return withTrainingOption(ability.value(), reqs);
+        }
+        return this;
+    }
+
+    public AbilityTrainingOption withTrainingOption(MKAbility ability, AbilityTrainingRequirement... reqs) {
+        getValue().add(new AbilityTrainingOptionEntry(ability.getAbilityId(), Arrays.asList(reqs)));
         return this;
     }
 
@@ -60,9 +71,7 @@ public class AbilityTrainingOption extends NpcDefinitionOption {
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
         EntityAbilityTrainer trainer = entity.getData(CoreAttachments.ABILITY_TRAINER);
         for (AbilityTrainingOptionEntry entry : options) {
-            if (entry.ability.isBound()) {
-                trainer.addTrainedAbility(entry.ability.value(), entry.requirements);
-            }
+            trainer.addTrainedAbility(entry.abilityId, entry.requirements);
         }
     }
 

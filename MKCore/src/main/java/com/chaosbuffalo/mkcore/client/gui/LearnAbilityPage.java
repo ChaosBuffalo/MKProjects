@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkcore.client.gui;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEvaluation;
 import com.chaosbuffalo.mkcore.client.gui.widgets.IconText;
 import com.chaosbuffalo.mkcore.client.gui.widgets.LearnAbilityTray;
@@ -54,14 +53,15 @@ public class LearnAbilityPage extends AbilityPageBase {
     @Override
     protected List<AbilityUiEntry> getSortedAbilityList() {
         return offeredAbilities.stream()
-                .map(AbilityTrainingEvaluation::ability)
-                .map(AbilityUiEntry::fromAbility)
+                .map(AbilityTrainingEvaluation::abilityId)
+                .map(AbilityUiEntry::resolve)
+                .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
     private Optional<AbilityTrainingEvaluation> findEvaluation(AbilityUiEntry ability) {
         return offeredAbilities.stream()
-                .filter(evaluation -> evaluation.ability().getAbilityId().equals(ability.getAbilityId()))
+                .filter(evaluation -> evaluation.abilityId().equals(ability.getAbilityId()))
                 .findFirst();
     }
 
@@ -70,10 +70,7 @@ public class LearnAbilityPage extends AbilityPageBase {
         super.restoreSelectedAbility(ability);
         if (ability != null && requirementsTray != null) {
             findEvaluation(ability).ifPresent(eval -> {
-                MKAbility legacyAbility = ability.getLegacyAbility();
-                if (legacyAbility != null) {
-                    requirementsTray.setAbility(legacyAbility, eval);
-                }
+                requirementsTray.setAbility(ability, eval);
                 resetFooter();
             });
         }

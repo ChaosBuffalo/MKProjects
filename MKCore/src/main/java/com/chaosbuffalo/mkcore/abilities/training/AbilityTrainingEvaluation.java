@@ -1,18 +1,17 @@
 package com.chaosbuffalo.mkcore.abilities.training;
 
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
-public record AbilityTrainingEvaluation(MKAbility ability,
+public record AbilityTrainingEvaluation(ResourceLocation abilityId,
                                         List<AbilityRequirementEvaluation> requirements,
                                         boolean usesAbilityPool) {
     public static final StreamCodec<RegistryFriendlyByteBuf, AbilityTrainingEvaluation> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.registry(MKCoreRegistry.ABILITY_REGISTRY_KEY), AbilityTrainingEvaluation::ability,
+            ResourceLocation.STREAM_CODEC, AbilityTrainingEvaluation::abilityId,
             AbilityRequirementEvaluation.STREAM_CODEC.apply(ByteBufCodecs.list()), AbilityTrainingEvaluation::requirements,
             ByteBufCodecs.BOOL, AbilityTrainingEvaluation::usesAbilityPool,
             AbilityTrainingEvaluation::new);

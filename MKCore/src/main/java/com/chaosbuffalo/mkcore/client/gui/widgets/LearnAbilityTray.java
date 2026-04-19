@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkcore.client.gui.widgets;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEvaluation;
+import com.chaosbuffalo.mkcore.client.gui.AbilityUiEntry;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.LayoutRelativeWidthConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutHorizontal;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class LearnAbilityTray extends MKStackLayoutVertical {
-    private MKAbility ability;
+    private AbilityUiEntry ability;
     private AbilityTrainingEvaluation evaluation;
     private final MKPlayerData playerData;
     private final Font font;
@@ -50,8 +50,8 @@ public class LearnAbilityTray extends MKStackLayoutVertical {
             MKStackLayoutHorizontal nameTray = new MKStackLayoutHorizontal(0, 0, 20);
             nameTray.setPaddingRight(4);
             nameTray.setPaddingLeft(4);
-            IconText abilityName = new IconText(0, 0, 16, getAbility().getAbilityName(),
-                    getAbility().getAbilityIcon(), font, 16, 1);
+            IconText abilityName = new IconText(0, 0, 16, getAbility().getDisplayName(),
+                    getAbility().getIconOrFallback(), font, 16, 1);
             nameTray.addWidget(abilityName);
             addWidget(nameTray);
 
@@ -94,13 +94,13 @@ public class LearnAbilityTray extends MKStackLayoutVertical {
         }
     }
 
-    public void setAbility(MKAbility ability, AbilityTrainingEvaluation requirements) {
+    public void setAbility(AbilityUiEntry ability, AbilityTrainingEvaluation requirements) {
         this.ability = ability;
         this.evaluation = requirements;
         setup();
     }
 
-    public MKAbility getAbility() {
+    public AbilityUiEntry getAbility() {
         return ability;
     }
 

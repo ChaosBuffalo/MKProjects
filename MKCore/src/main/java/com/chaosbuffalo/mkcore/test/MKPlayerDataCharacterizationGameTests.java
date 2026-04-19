@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEntry;
 import com.chaosbuffalo.mkcore.core.MKServerPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.PersonaManager;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
@@ -22,6 +23,7 @@ import net.minecraft.server.network.CommonListenerCookie;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
+import java.util.List;
 import java.util.UUID;
 
 @GameTestHolder(MKCore.MOD_ID)
@@ -179,6 +181,25 @@ public class MKPlayerDataCharacterizationGameTests {
                 "abilities2 definition should no longer be known");
         helper.assertValueEqual(basicGroup.getSlot(0), MKCoreRegistry.INVALID_ABILITY,
                 "unlearning should clear the slotted abilities2 definition");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void trainedAbilities2DefinitionUsesTrainingBridge(GameTestHelper helper) {
+        ResourceLocation abilityId = MKCore.id("test_abilities2_self_heal");
+        MKServerPlayerData playerData = createPlayerData(helper);
+        AbilityGroup basicGroup = playerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic);
+        basicGroup.setSlots(1);
+
+        AbilityTrainingEntry entry = new AbilityTrainingEntry(abilityId, List.of(), AbilitySource.TRAINED.usesAbilityPool());
+        helper.assertTrue(entry.learn(playerData, AbilitySource.TRAINED),
+                "abilities2 definition should learn through the training bridge");
+        helper.assertTrue(playerData.getAbilities().knowsAbility(abilityId),
+                "trained abilities2 definition should become known");
+        helper.assertValueEqual(playerData.getAbilities().getCurrentPoolCount(), 1,
+                "trained abilities2 definition should consume one ability pool slot");
+        helper.assertValueEqual(basicGroup.getSlot(0), abilityId,
+                "trained abilities2 definition should auto-equip when a matching slot is available");
         helper.succeed();
     }
 

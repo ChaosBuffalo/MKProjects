@@ -31,7 +31,15 @@ public class EntityAbilityTrainer {
     }
 
     public void addTrainedAbility(MKAbility ability, List<AbilityTrainingRequirement> requirements) {
-        AbilityTrainingEntry entry = new AbilityTrainingEntry(ability, requirements, AbilitySource.TRAINED.usesAbilityPool());
+        addTrainedAbility(ability.getAbilityId(), requirements);
+    }
+
+    public void addTrainedAbility(ResourceLocation abilityId, List<AbilityTrainingRequirement> requirements) {
+        if (MKCore.getAbilityDefinitionService().getDefinition(abilityId) == null && com.chaosbuffalo.mkcore.MKCoreRegistry.getAbility(abilityId) == null) {
+            MKCore.LOGGER.warn("Skipping unknown trainer ability {}", abilityId);
+            return;
+        }
+        AbilityTrainingEntry entry = new AbilityTrainingEntry(abilityId, requirements, AbilitySource.TRAINED.usesAbilityPool());
         entries.add(entry);
     }
 

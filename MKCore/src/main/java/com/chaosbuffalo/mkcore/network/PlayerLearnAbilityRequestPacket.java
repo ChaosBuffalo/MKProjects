@@ -1,9 +1,7 @@
 package com.chaosbuffalo.mkcore.network;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEntry;
 import com.chaosbuffalo.mkcore.abilities.training.EntityAbilityTrainer;
 import com.chaosbuffalo.mkcore.init.CoreAttachments;
@@ -70,11 +68,11 @@ public class PlayerLearnAbilityRequestPacket implements CustomPacketPayload {
 
     private void handle(IPayloadContext ctx) {
         Player player = ctx.player();
+        var playerData = MKCore.getPlayerOrThrow(player);
 
         for (ResourceLocation loc : forgetting) {
-            MKAbility ability = MKCoreRegistry.getAbility(loc);
-            if (ability == null) {
-                MKCore.LOGGER.error("Forget ability failed because ability with id {} is null for player: {}.", loc.toString(), player);
+            if (!playerData.getAbilities().knowsAbility(loc)) {
+                MKCore.LOGGER.error("Forget ability failed because ability with id {} is unknown for player: {}.", loc, player);
                 return;
             }
         }
@@ -84,9 +82,6 @@ public class PlayerLearnAbilityRequestPacket implements CustomPacketPayload {
             MKCore.LOGGER.error("Player {} tried to learn ability {} from invalid entity (id {})", player, learning, entityId);
             return;
         }
-
-        var playerData = MKCore.getPlayerOrThrow(player);
-
         EntityAbilityTrainer abilityTrainer = teacher.getExistingDataOrNull(CoreAttachments.ABILITY_TRAINER);
         if (abilityTrainer == null) {
             MKCore.LOGGER.error("Entity {} is not an ability trainer. Requested by {}", teacher, player);
@@ -115,8 +110,6 @@ public class PlayerLearnAbilityRequestPacket implements CustomPacketPayload {
             }
         }
 
-        if (playerData.getAbilities().learnAbility(entry.getAbility(), AbilitySource.TRAINED)) {
-            entry.onAbilityLearned(playerData);
-        }
+        entry.learn(playerData, AbilitySource.TRAINED);
     }
 }

@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkcore.client.gui.widgets;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.client.gui.AbilityUiEntry;
 import com.chaosbuffalo.mkcore.client.gui.GuiTextures;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.network.ForgetAbilitiesRequestPacket;
@@ -18,14 +18,14 @@ import java.util.stream.Collectors;
 
 public class ForgetAbilityModal extends MKModal {
 
-    private final List<MKAbility> forgetting = new ArrayList<>();
+    private final List<AbilityUiEntry> forgetting = new ArrayList<>();
     private final int numberToForget;
     private final MKButton forgetButton;
-    private final MKAbility tryingToLearn;
+    private final AbilityUiEntry tryingToLearn;
     private final int trainerEntityId;
     private final boolean isLearning;
 
-    public ForgetAbilityModal(MKAbility tryingToLearn, MKPlayerData playerData, int xPos, int yPos, int width, int height, Font font, int trainerEntityId) {
+    public ForgetAbilityModal(AbilityUiEntry tryingToLearn, MKPlayerData playerData, int xPos, int yPos, int width, int height, Font font, int trainerEntityId) {
         MKImage background = GuiTextures.CORE_TEXTURES.getImageForRegion(
                 GuiTextures.BACKGROUND_180_200, xPos, yPos, width, height);
         addWidget(background);
@@ -37,7 +37,7 @@ public class ForgetAbilityModal extends MKModal {
 
         Component promptText;
         if (isLearning) {
-            promptText = Component.translatable("mkcore.gui.character.forget_ability", count, tryingToLearn.getAbilityName());
+            promptText = Component.translatable("mkcore.gui.character.forget_ability", count, tryingToLearn.getDisplayName());
         } else {
             promptText = Component.translatable("mkcore.gui.character.forget");
         }
@@ -62,8 +62,11 @@ public class ForgetAbilityModal extends MKModal {
         abilities.setPaddingTop(2);
         abilities.setMargins(2, 2, 0, 0);
         abilities.doSetChildWidth(true);
-        playerData.getAbilities().getPoolAbilities().forEach(abilityInfo -> {
-            AbilityForgetOption abilityIcon = new AbilityForgetOption(abilityInfo.getAbility(), this, font);
+        playerData.getAbilities().getPoolAbilityIds().stream()
+                .map(AbilityUiEntry::resolve)
+                .filter(java.util.Objects::nonNull)
+                .forEach(entry -> {
+            AbilityForgetOption abilityIcon = new AbilityForgetOption(entry, this, font);
             abilities.addWidget(abilityIcon);
         });
         scrollview.addWidget(abilities);
@@ -74,10 +77,10 @@ public class ForgetAbilityModal extends MKModal {
     private boolean forgetCallback(MKButton button, int click) {
         if (isLearning) {
             PacketHandler.sendMessageToServer(new PlayerLearnAbilityRequestPacket(
-                    forgetting.stream().map(MKAbility::getAbilityId).collect(Collectors.toList()),
+                    forgetting.stream().map(AbilityUiEntry::getAbilityId).collect(Collectors.toList()),
                     tryingToLearn.getAbilityId(), trainerEntityId));
         } else {
-            PacketHandler.sendMessageToServer(new ForgetAbilitiesRequestPacket(forgetting.stream().map(MKAbility::getAbilityId).collect(Collectors.toList())));
+            PacketHandler.sendMessageToServer(new ForgetAbilitiesRequestPacket(forgetting.stream().map(AbilityUiEntry::getAbilityId).collect(Collectors.toList())));
         }
 
         if (getScreen() != null) {
@@ -90,17 +93,17 @@ public class ForgetAbilityModal extends MKModal {
         forgetButton.setEnabled(ready());
     }
 
-    public void forget(MKAbility ability) {
+    public void forget(AbilityUiEntry ability) {
         forgetting.add(ability);
         checkStatus();
     }
 
-    public void cancelForget(MKAbility ability) {
+    public void cancelForget(AbilityUiEntry ability) {
         forgetting.remove(ability);
         checkStatus();
     }
 
-    public boolean isForgetting(MKAbility ability) {
+    public boolean isForgetting(AbilityUiEntry ability) {
         return forgetting.contains(ability);
     }
 

@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mkcore.abilities.training;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.mojang.serialization.Codec;
@@ -12,23 +14,23 @@ import java.util.stream.Collectors;
 
 public class AbilityTrainingEntry {
     public static final Codec<AbilityTrainingEntry> CODEC = RecordCodecBuilder.create(builder -> builder.group(
-            MKCoreRegistry.ABILITIES.byNameCodec().fieldOf("ability").forGetter(AbilityTrainingEntry::getAbility),
+            ResourceLocation.CODEC.fieldOf("ability").forGetter(AbilityTrainingEntry::getAbilityId),
             AbilityTrainingRequirement.CODEC.listOf().fieldOf("requirements").forGetter(AbilityTrainingEntry::getRequirements),
             Codec.BOOL.fieldOf("usesAbilityPool").forGetter(i -> i.usesAbilityPool)
     ).apply(builder, AbilityTrainingEntry::new));
 
-    private final MKAbility ability;
+    private final ResourceLocation abilityId;
     private final List<AbilityTrainingRequirement> requirementList;
     private final boolean usesAbilityPool;
 
-    public AbilityTrainingEntry(MKAbility ability, List<AbilityTrainingRequirement> requirements, boolean usesAbilityPool) {
-        this.ability = ability;
+    public AbilityTrainingEntry(ResourceLocation abilityId, List<AbilityTrainingRequirement> requirements, boolean usesAbilityPool) {
+        this.abilityId = abilityId;
         requirementList = List.copyOf(requirements);
         this.usesAbilityPool = usesAbilityPool;
     }
 
-    public MKAbility getAbility() {
-        return ability;
+    public ResourceLocation getAbilityId() {
+        return abilityId;
     }
 
     public List<AbilityTrainingRequirement> getRequirements() {
@@ -36,19 +38,19 @@ public class AbilityTrainingEntry {
     }
 
     public boolean is(ResourceLocation abilityId) {
-        return ability.getAbilityId().equals(abilityId);
+        return this.abilityId.equals(abilityId);
     }
 
     public boolean checkRequirements(MKPlayerData playerData) {
-        return getRequirements().stream().allMatch(req -> req.check(playerData, ability));
+        return getRequirements().stream().allMatch(req -> req.check(playerData, abilityId));
     }
 
     public void onAbilityLearned(MKPlayerData playerData) {
-        getRequirements().forEach(req -> req.onLearned(playerData, ability));
+        getRequirements().forEach(req -> req.onLearned(playerData, abilityId));
     }
 
     private AbilityRequirementEvaluation evaluateRequirement(AbilityTrainingRequirement req, MKPlayerData playerData) {
-        return new AbilityRequirementEvaluation(req.describe(playerData), req.check(playerData, getAbility()));
+        return new AbilityRequirementEvaluation(req.describe(playerData), req.check(playerData, abilityId));
     }
 
     public AbilityTrainingEvaluation evaluate(MKPlayerData playerData) {
@@ -56,6 +58,24 @@ public class AbilityTrainingEntry {
                 .stream()
                 .map(req -> evaluateRequirement(req, playerData))
                 .collect(Collectors.toList());
-        return new AbilityTrainingEvaluation(getAbility(), requirements, usesAbilityPool);
+        return new AbilityTrainingEvaluation(getAbilityId(), requirements, usesAbilityPool);
+    }
+
+    public boolean learn(MKPlayerData playerData, AbilitySource source) {
+        MKAbility ability = MKCoreRegistry.getAbility(abilityId);
+        boolean learned;
+        if (ability != null) {
+            learned = playerData.getAbilities().learnAbility(ability, source);
+        } else if (MKCore.getAbilityDefinitionService().getDefinition(abilityId) != null) {
+            learned = playerData.getAbilities().learnAbilityDefinition(abilityId, source);
+        } else {
+            MKCore.LOGGER.warn("Failed to learn unknown trained ability {}", abilityId);
+            return false;
+        }
+
+        if (learned) {
+            onAbilityLearned(playerData);
+        }
+        return learned;
     }
 }
