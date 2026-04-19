@@ -91,6 +91,16 @@ public final class AbilityActionCodecs {
             Codec.STRING.fieldOf("reaction").forGetter(AbilityAction.RemoveReactionAction::reaction)
     ).apply(builder, AbilityAction.RemoveReactionAction::new));
 
+    private static final MapCodec<AbilityAction.SpawnProjectileAction> SPAWN_PROJECTILE_ACTION_CODEC =
+            RecordCodecBuilder.mapCodec(builder -> builder.group(
+                    Codec.STRING.fieldOf("delivery").forGetter(AbilityAction.SpawnProjectileAction::delivery),
+                    ACTION_TARGET_CODEC.optionalFieldOf("target", AbilityAction.ActionTarget.PRIMARY_ENTITY)
+                            .forGetter(AbilityAction.SpawnProjectileAction::target),
+                    AbilityCodecs.ABILITY_SCALAR_CODEC.fieldOf("speed").forGetter(AbilityAction.SpawnProjectileAction::speed),
+                    AbilityCodecs.ABILITY_SCALAR_CODEC.optionalFieldOf("inaccuracy", new AbilityScalar.ConstantScalar(0.0))
+                            .forGetter(AbilityAction.SpawnProjectileAction::inaccuracy)
+            ).apply(builder, AbilityAction.SpawnProjectileAction::new));
+
     public static final Codec<AbilityAction> ACTION_CODEC = Codec.lazyInitialized(() ->
             Codec.STRING.dispatch(AbilityAction::type, type -> switch (type) {
                 case "damage" -> DAMAGE_ACTION_CODEC;
@@ -104,6 +114,7 @@ public final class AbilityActionCodecs {
                 case "start_entry_point" -> START_ENTRY_POINT_ACTION_CODEC;
                 case "install_reaction" -> INSTALL_REACTION_ACTION_CODEC;
                 case "remove_reaction" -> REMOVE_REACTION_ACTION_CODEC;
+                case "spawn_projectile" -> SPAWN_PROJECTILE_ACTION_CODEC;
                 default -> throw new IllegalStateException("Unknown ability action type " + type);
             }));
 }

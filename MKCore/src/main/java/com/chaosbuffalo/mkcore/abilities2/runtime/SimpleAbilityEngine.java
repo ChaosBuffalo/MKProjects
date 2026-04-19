@@ -12,6 +12,7 @@ import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import com.chaosbuffalo.mkcore.core.entity.EntityEffectHandler;
 import com.chaosbuffalo.mkcore.core.healing.MKHealSource;
 import com.chaosbuffalo.mkcore.core.healing.MKHealing;
+import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
@@ -19,7 +20,9 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -49,6 +52,19 @@ public class SimpleAbilityEngine implements AbilityEngine {
         }
     }
 
+    public interface DeliveryController {
+        DeliveryController NOOP = new DeliveryController() {
+        };
+
+        default AbilityReactionOwner registerProjectile(AbilityInvocation invocation,
+                                                       String deliveryId,
+                                                       AbilityDeliveryDefinition definition,
+                                                       AbilityProjectileEntity projectile) {
+            return new AbilityReactionOwner(ReactionOwnerType.DELIVERY, projectile.getUUID(), projectile.getUUID(),
+                    invocation.abilityId());
+        }
+    }
+
     public interface LifecycleListener {
         LifecycleListener NOOP = new LifecycleListener() {
         };
@@ -70,6 +86,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
     private final AbilityStateStore stateStore;
     private final AbilityEventEmitter eventEmitter;
     private final ReactionController reactionController;
+    private final DeliveryController deliveryController;
     private final LifecycleListener lifecycleListener;
     private final Map<UUID, List<PendingCast>> pendingCastsByCaster = new HashMap<>();
     private final Map<UUID, List<PendingChannel>> pendingChannelsByCaster = new HashMap<>();
@@ -94,7 +111,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
                                AbilityStateStore stateStore,
                                AbilityEventEmitter eventEmitter,
                                ReactionController reactionController) {
-        this(definitionResolver, powerResolver, stateStore, eventEmitter, reactionController, LifecycleListener.NOOP);
+        this(definitionResolver, powerResolver, stateStore, eventEmitter, reactionController, DeliveryController.NOOP);
     }
 
     public SimpleAbilityEngine(AbilityDefinitionResolver definitionResolver,
@@ -102,12 +119,24 @@ public class SimpleAbilityEngine implements AbilityEngine {
                                AbilityStateStore stateStore,
                                AbilityEventEmitter eventEmitter,
                                ReactionController reactionController,
+                               DeliveryController deliveryController) {
+        this(definitionResolver, powerResolver, stateStore, eventEmitter, reactionController, deliveryController,
+                LifecycleListener.NOOP);
+    }
+
+    public SimpleAbilityEngine(AbilityDefinitionResolver definitionResolver,
+                               AbilityPowerResolver powerResolver,
+                               AbilityStateStore stateStore,
+                               AbilityEventEmitter eventEmitter,
+                               ReactionController reactionController,
+                               DeliveryController deliveryController,
                                LifecycleListener lifecycleListener) {
         this.definitionResolver = Objects.requireNonNull(definitionResolver, "definitionResolver");
         this.powerResolver = Objects.requireNonNull(powerResolver, "powerResolver");
         this.stateStore = Objects.requireNonNull(stateStore, "stateStore");
         this.eventEmitter = Objects.requireNonNull(eventEmitter, "eventEmitter");
         this.reactionController = Objects.requireNonNull(reactionController, "reactionController");
+        this.deliveryController = Objects.requireNonNull(deliveryController, "deliveryController");
         this.lifecycleListener = Objects.requireNonNull(lifecycleListener, "lifecycleListener");
     }
 
@@ -474,6 +503,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
                 UUID targetId = eventSnapshot != null ? eventSnapshot.actorEntityId() : null;
                 yield resolveSingleTarget(casterData, targetId);
             }
+            case "resolved" -> throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
             default -> throw new ActivationStartFailure(FailureReason.UNSUPPORTED_FEATURE);
         };
     }
@@ -519,6 +549,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
                     throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
                 }
             }
+            case "resolved" -> validateTargetEntities(casterData, targets);
             default -> throw new ActivationStartFailure(FailureReason.UNSUPPORTED_FEATURE);
         }
     }
@@ -721,6 +752,8 @@ public class SimpleAbilityEngine implements AbilityEngine {
                         executeInstallReaction(invocation, context, installReactionAction);
                 case AbilityAction.RemoveReactionAction removeReactionAction ->
                         executeRemoveReaction(invocation, context, removeReactionAction);
+                case AbilityAction.SpawnProjectileAction spawnProjectileAction ->
+                        executeSpawnProjectile(invocation, context, spawnProjectileAction, ignoreCosts);
             }
         }
     }
@@ -904,6 +937,82 @@ public class SimpleAbilityEngine implements AbilityEngine {
         invocation.markProducedGameplayEffect();
     }
 
+    private void executeSpawnProjectile(AbilityInvocation invocation,
+                                        AbilityActionContext context,
+                                        AbilityAction.SpawnProjectileAction action,
+                                        boolean ignoreCosts) {
+        AbilityDeliveryDefinition delivery = invocation.definition().definition().getDelivery(action.delivery());
+        if (delivery == null) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Unknown delivery " + action.delivery());
+        }
+        if (delivery.kind() != DeliveryKind.PROJECTILE || delivery.entityType() == null) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Unsupported delivery kind " + delivery.kind());
+        }
+        if (!(invocation.casterData().getEntity().level() instanceof ServerLevel serverLevel)) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Projectile deliveries require a server level");
+        }
+
+        EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(delivery.entityType());
+        Entity entity = entityType != null ? entityType.create(serverLevel) : null;
+        if (!(entity instanceof AbilityProjectileEntity projectile)) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Delivery %s did not create an AbilityProjectileEntity".formatted(action.delivery()));
+        }
+
+        LivingEntity caster = invocation.casterData().getEntity();
+        LivingEntity target = resolveActionTarget(context, action.target()).orElse(null);
+        Vec3 spawnPos = caster.getEyePosition().add(caster.getViewVector(1.0f).scale(0.25));
+        Vec3 aimPoint = resolveProjectileAimPoint(context, target, spawnPos);
+        Vec3 aimVector = aimPoint.subtract(spawnPos);
+        if (aimVector.lengthSqr() <= 1.0e-6) {
+            aimVector = caster.getViewVector(1.0f);
+        }
+
+        projectile.setOwner(caster);
+        projectile.moveTo(spawnPos.x(), spawnPos.y(), spawnPos.z(), caster.getYRot(), caster.getXRot());
+        projectile.setAbilityId(invocation.abilityId());
+        projectile.setEventProvenance(AbilityEventProvenance.fromInvocation(invocation).asChildSource(projectile.getUUID()));
+        projectile.setDoAirProc(delivery.onAirTickActivationId() != null);
+        if (delivery.onAirTickActivationId() != null) {
+            projectile.setAirProcTime(1);
+        }
+        projectile.setDoGroundProc(delivery.onGroundTickActivationId() != null);
+        if (delivery.onGroundTickActivationId() != null) {
+            projectile.setGroundProcTime(1);
+        }
+        projectile.shoot(
+                aimVector.x(),
+                aimVector.y(),
+                aimVector.z(),
+                Math.max(0.0f, (float) powerResolver.resolve(action.speed(), context)),
+                Math.max(0.0f, (float) powerResolver.resolve(action.inaccuracy(), context))
+        );
+        serverLevel.addFreshEntity(projectile);
+
+        AbilityReactionOwner deliveryOwner = deliveryController.registerProjectile(invocation, action.delivery(), delivery,
+                projectile);
+        invocation.markProducedGameplayEffect();
+
+        if (!delivery.onSpawn().isEmpty()) {
+            AbilityResolvedTargets deliveryTargets = new AbilityResolvedTargets(
+                    target != null ? target.getUUID() : null,
+                    target != null ? List.of(target.getUUID()) : List.of(),
+                    aimPoint,
+                    null,
+                    projectile.getUUID()
+            );
+            executeActions(
+                    invocation,
+                    createContext(invocation, () -> Optional.ofNullable(target), deliveryTargets, deliveryOwner),
+                    delivery.onSpawn(),
+                    ignoreCosts
+            );
+        }
+    }
+
     private boolean evaluateCondition(AbilityConditionDefinition condition, AbilityActionContext context) {
         return switch (condition.type()) {
             case "always" -> true;
@@ -974,14 +1083,33 @@ public class SimpleAbilityEngine implements AbilityEngine {
 
     private SimpleAbilityActionContext createContext(AbilityInvocation invocation,
                                                      Supplier<Optional<LivingEntity>> currentTargetSupplier) {
-        return createContext(invocation, currentTargetSupplier, invocation.targets());
+        return createContext(invocation, currentTargetSupplier, invocation.targets(), null);
     }
 
     private SimpleAbilityActionContext createContext(AbilityInvocation invocation,
                                                      Supplier<Optional<LivingEntity>> currentTargetSupplier,
                                                      AbilityResolvedTargets targets) {
+        return createContext(invocation, currentTargetSupplier, targets, null);
+    }
+
+    private SimpleAbilityActionContext createContext(AbilityInvocation invocation,
+                                                     Supplier<Optional<LivingEntity>> currentTargetSupplier,
+                                                     AbilityResolvedTargets targets,
+                                                     @Nullable AbilityReactionOwner reactionOwnerOverride) {
         return new SimpleAbilityActionContext(invocation, powerResolver, stateStore, targets, currentTargetSupplier,
-                effectiveReactionOwner(invocation));
+                reactionOwnerOverride != null ? reactionOwnerOverride : effectiveReactionOwner(invocation));
+    }
+
+    private Vec3 resolveProjectileAimPoint(AbilityActionContext context,
+                                           @Nullable LivingEntity target,
+                                           Vec3 spawnPos) {
+        if (target != null) {
+            return new Vec3(target.getX(), target.getY(0.9D), target.getZ());
+        }
+        if (context.targets().point() != null) {
+            return context.targets().point();
+        }
+        return spawnPos.add(context.casterData().getEntity().getViewVector(1.0f));
     }
 
     private Optional<LivingEntity> resolveActionTarget(AbilityActionContext context, AbilityAction.ActionTarget target) {

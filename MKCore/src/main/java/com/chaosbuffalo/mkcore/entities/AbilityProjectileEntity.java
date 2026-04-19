@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.entities;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.ProjectileAbility;
 import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityEventProvenance;
 import com.chaosbuffalo.targeting_api.TargetingContext;
@@ -21,6 +22,8 @@ public class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
     protected Supplier<? extends ProjectileAbility> abilitySupplier;
     protected float gravityVelocity;
     protected int castTime;
+    @Nullable
+    protected ResourceLocation explicitAbilityId;
     @Nullable
     protected AbilityEventProvenance eventProvenance;
 
@@ -46,7 +49,11 @@ public class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
 
     public @Nullable ResourceLocation getAbilityId() {
         ProjectileAbility ability = abilitySupplier != null ? abilitySupplier.get() : null;
-        return ability != null ? ability.getAbilityId() : null;
+        return ability != null ? ability.getAbilityId() : explicitAbilityId;
+    }
+
+    public void setAbilityId(@Nullable ResourceLocation explicitAbilityId) {
+        this.explicitAbilityId = explicitAbilityId;
     }
 
     public void setEventProvenance(@Nullable AbilityEventProvenance eventProvenance) {
@@ -63,6 +70,10 @@ public class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
 
     @Override
     protected boolean onImpact(Entity caster, HitResult result, int amplifier) {
+        if (!this.level().isClientSide && caster instanceof LivingEntity casterLiving
+                && MKCore.getAbilityRuntimeService().handleProjectileImpact(this, casterLiving, result)) {
+            return true;
+        }
         if (abilitySupplier != null && !this.level().isClientSide && caster instanceof LivingEntity casterLiving) {
             ProjectileAbility ability = abilitySupplier.get();
             if (ability != null) {
@@ -74,6 +85,10 @@ public class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
 
     @Override
     protected boolean onAirProc(Entity caster, int amplifier) {
+        if (!this.level().isClientSide && caster instanceof LivingEntity casterLiving
+                && MKCore.getAbilityRuntimeService().handleProjectileAirTick(this, casterLiving)) {
+            return true;
+        }
         if (abilitySupplier != null && !this.level().isClientSide && caster instanceof LivingEntity casterLiving)
         {
             ProjectileAbility ability = abilitySupplier.get();
@@ -87,6 +102,10 @@ public class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
 
     @Override
     protected boolean onGroundProc(Entity caster, int amplifier) {
+        if (!this.level().isClientSide && caster instanceof LivingEntity casterLiving
+                && MKCore.getAbilityRuntimeService().handleProjectileGroundTick(this, casterLiving)) {
+            return true;
+        }
         if (abilitySupplier != null && !this.level().isClientSide && caster instanceof LivingEntity casterLiving)
         {
             ProjectileAbility ability = abilitySupplier.get();
