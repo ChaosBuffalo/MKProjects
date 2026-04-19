@@ -17,12 +17,12 @@ public class AttributeCommand {
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("attribute")
                 .then(Commands.literal("dump")
-                        .executes(AttributeCommand::learnAbility))
+                        .executes(AttributeCommand::dumpAllAttributes))
                 ;
     }
 
 
-    static int learnAbility(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+    static int dumpAllAttributes(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
 
         AtomicBoolean emptySent = new AtomicBoolean(false);
