@@ -17,14 +17,12 @@ public abstract class EntityStats implements IMKEntityStats, ISyncGroupProvider 
     protected final AbilityTracker abilityTracker;
     protected final SyncFloat mana = new SyncFloat(0f);
     protected final SyncFloat poise = new SyncFloat(0f);
-    private final SyncGroup syncGroup = new SyncGroup();
+    protected final SyncGroup syncGroup = new SyncGroup();
 
     public EntityStats(IMKEntityData data) {
         entityData = data;
         abilityTracker = AbilityTracker.getTracker(data.getEntity());
         syncGroup.addPublic("mana", mana);
-        syncGroup.addPrivate("poise", poise);
-        syncGroup.addPrivate("timers", abilityTracker);
     }
 
     @Override

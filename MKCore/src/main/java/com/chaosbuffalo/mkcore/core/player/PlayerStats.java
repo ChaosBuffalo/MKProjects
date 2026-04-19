@@ -19,6 +19,8 @@ public class PlayerStats extends EntityStats {
 
     public PlayerStats(MKPlayerData playerData) {
         super(playerData);
+        syncGroup.addPrivate("poise", poise);
+        syncGroup.addPrivate("timers", abilityTracker);
     }
 
     @Override
