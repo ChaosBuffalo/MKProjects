@@ -28,14 +28,19 @@ import java.util.function.Consumer;
 public abstract class MKEffect {
 
     public static class Modifier {
-        public final AttributeModifier attributeModifier;
+        private final ResourceLocation modifierBaseId;
+        public final AttributeModifier.Operation operation;
         public final double base;
+        public final double amount;
         @Nullable
         public final Holder<Attribute> skill;
 
         public Modifier(UUID uuid, double base, double amount,
                         AttributeModifier.Operation operation, @Nullable Holder<Attribute> skill) {
-            attributeModifier = new AttributeModifier(ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, uuid.toString()), amount, operation);
+            // Create a stack-friendly base id - <effectId>/<operation>
+            this.modifierBaseId = MKCore.id(uuid.toString() + "/" + operation.id());
+            this.operation = operation;
+            this.amount = amount;
             this.base = base;
             this.skill = skill;
         }
@@ -82,7 +87,7 @@ public abstract class MKEffect {
     // Return true to remove effect
     public boolean onInstanceUpdated(IMKEntityData targetData, MKActiveEffect activeEffect) {
         if (hasAttributes()) {
-            removeAttributesModifiers(targetData);
+            removeAttributesModifiers(targetData, activeEffect);
             applyAttributesModifiers(targetData, activeEffect);
         }
         return false;
@@ -91,7 +96,7 @@ public abstract class MKEffect {
     // Effect was removed while the entity was in the world
     public void onInstanceRemoved(IMKEntityData targetData, MKActiveEffect expiredEffect) {
         if (hasAttributes()) {
-            removeAttributesModifiers(targetData);
+            removeAttributesModifiers(targetData, expiredEffect);
         }
     }
 
@@ -138,15 +143,18 @@ public abstract class MKEffect {
         return this;
     }
 
-    protected void removeAttributesModifiers(IMKEntityData targetData) {
+    protected ResourceLocation createModifierId(Modifier modifier, MKActiveEffect activeEffect) {
+        // Create a composite id to allow stacking the same effect from different sources - <modifierId>/<operation>/<sourceId>
+        return modifier.modifierBaseId.withSuffix("/" + activeEffect.getSourceId());
+    }
+
+    protected void removeAttributesModifiers(IMKEntityData targetData, MKActiveEffect activeEffect) {
         AttributeMap manager = targetData.getEntity().getAttributes();
         for (Map.Entry<Holder<Attribute>, Modifier> entry : getAttributeModifierMap().entrySet()) {
             AttributeInstance attrInstance = manager.getInstance(entry.getKey());
             if (attrInstance != null) {
-                AttributeModifier modifier = entry.getValue().attributeModifier;
-                if (attrInstance.hasModifier(modifier.id())) {
-                    attrInstance.removeModifier(modifier);
-                }
+                ResourceLocation modifierId = createModifierId(entry.getValue(), activeEffect);
+                attrInstance.removeModifier(modifierId);
             }
         }
     }
@@ -156,23 +164,20 @@ public abstract class MKEffect {
         for (Map.Entry<Holder<Attribute>, Modifier> entry : getAttributeModifierMap().entrySet()) {
             AttributeInstance attrInstance = manager.getInstance(entry.getKey());
             if (attrInstance != null) {
-                Modifier template = entry.getValue();
-                AttributeModifier modifier = template.attributeModifier;
-                if (attrInstance.hasModifier(modifier.id())) {
-                    attrInstance.removeModifier(modifier);
-                }
-                attrInstance.addPermanentModifier(createModifier(template, activeEffect));
+                AttributeModifier newModifier = createModifier(entry.getValue(), activeEffect);
+                attrInstance.addOrReplacePermanentModifier(newModifier);
             }
         }
     }
 
     private AttributeModifier createModifier(Modifier template, MKActiveEffect activeEffect) {
+        ResourceLocation modifierId = createModifierId(template, activeEffect);
         double amount = calculateInstanceModifierValue(template, activeEffect);
-        return new AttributeModifier(template.attributeModifier.id(), amount, template.attributeModifier.operation());
+        return new AttributeModifier(modifierId, amount, template.operation);
     }
 
     public double calculateModifierValue(Modifier modifier, int stackCount, float skillLevel) {
-        return modifier.base + (modifier.attributeModifier.amount() * stackCount * skillLevel);
+        return modifier.base + (modifier.amount * stackCount * skillLevel);
     }
 
     protected double calculateInstanceModifierValue(Modifier modifier, MKActiveEffect activeEffect) {

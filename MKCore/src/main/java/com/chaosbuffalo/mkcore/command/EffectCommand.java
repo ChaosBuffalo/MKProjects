@@ -72,13 +72,13 @@ public class EffectCommand {
     static int testEffects(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
 
-//        UUID source = UUID.randomUUID();
-        UUID source = player.getUUID();
+        UUID source = UUID.randomUUID();
+//        UUID source = player.getUUID();
         MKCore.getPlayer(player).ifPresent(playerData -> {
             MKEffectBuilder<?> newInstance;
-            newInstance = MKTestEffects.NEW_HEAL.get().builder(source)
-                    .state(s -> s.setScalingParameters(3, 1, 1.f))
-                    .periodic(20);
+            newInstance = MKTestEffects.SKIN_LIKE_WOOD.get().builder(source);
+//                    .state(s -> s.setScalingParameters(3, 1, 1.f))
+//                    .periodic(20);
 //            newInstance = TestFallCountingEffect.INSTANCE.builder(UUID.randomUUID());
 //            newInstance = AbilityMagicDamageEffectNew.INSTANCE.builder(player.getUniqueID()).state(s -> {
 //                s.base = 1;

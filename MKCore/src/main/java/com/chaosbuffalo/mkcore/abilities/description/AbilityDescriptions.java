@@ -59,7 +59,7 @@ public class AbilityDescriptions {
             consumer.accept(Component.literal("    ")
                     .append(Component.translatable(entry.getKey().value().getDescriptionId()))
                     .append(String.format(": %s%s ", value > 0 ? "+" : "",
-                            modifier.attributeModifier.operation() == AttributeModifier.Operation.ADD_VALUE ?
+                            modifier.operation == AttributeModifier.Operation.ADD_VALUE ?
                                     MKAbility.NUMBER_FORMATTER.format(value) :
                                     MKAbility.PERCENT_FORMATTER.format(value)))
                     .withStyle(value > 0 ? ChatFormatting.GREEN : ChatFormatting.DARK_RED));
