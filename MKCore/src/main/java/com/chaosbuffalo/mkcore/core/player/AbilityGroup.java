@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
+import com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys;
 import com.chaosbuffalo.mkcore.abilities2.runtime.PatchedAbilityDefinition;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
@@ -182,7 +183,12 @@ public class AbilityGroup implements ISyncGroupProvider {
 
     @Nullable
     protected ResourceLocation getAbilityDefinitionSlotFamily() {
-        return null;
+        return switch (groupId) {
+            case Basic -> AbilityDatagenKeys.SLOT_FAMILY_BASIC;
+            case Passive -> AbilityDatagenKeys.SLOT_FAMILY_PASSIVE;
+            case Ultimate -> AbilityDatagenKeys.SLOT_FAMILY_ULTIMATE;
+            case Item -> null;
+        };
     }
 
     @Nullable
@@ -292,11 +298,11 @@ public class AbilityGroup implements ISyncGroupProvider {
     }
 
     public void executeSlot(int index) {
-        MKAbilityInfo info = getAbilityInfo(index);
-        if (info == null)
+        ResourceLocation abilityId = getSlot(index);
+        if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
             return;
-
-        playerData.getAbilityExecutor().executeAbilityInfoWithContext(info, null);
+        }
+        playerData.getAbilityExecutor().executeLoadoutAbility(groupId, abilityId);
     }
 
     public void clearSlot(int slot) {

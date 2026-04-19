@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.AbilityExecutor;
 import com.chaosbuffalo.mkcore.core.MKCombatFormulas;
@@ -21,10 +22,26 @@ public class PlayerAbilityExecutor extends AbilityExecutor {
         getPlayerData().getLoadout().getAbilityGroup(group).executeSlot(slot);
     }
 
+    public void executeLoadoutAbility(AbilityGroupId group, ResourceLocation abilityId) {
+        MKAbilityInfo info = getPlayerData().getAbilities().getAbilityInfo(abilityId);
+        if (info != null) {
+            executeAbilityInfoWithContext(info, null);
+            return;
+        }
+
+        MKCore.getAbilityRuntimeService().executeLoadoutAbility(getPlayerData(), getPlayerData(), group, abilityId);
+    }
+
     public boolean clientSimulateAbility(AbilityGroupId executingGroup, int slot) {
-        MKAbilityInfo info = getPlayerData().getLoadout().getAbilityGroup(executingGroup).getAbilityInfo(slot);
-        if (info == null) {
+        AbilityGroup loadoutGroup = getPlayerData().getLoadout().getAbilityGroup(executingGroup);
+        ResourceLocation abilityId = loadoutGroup.getSlot(slot);
+        if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
             return false;
+        }
+
+        MKAbilityInfo info = loadoutGroup.getAbilityInfo(slot);
+        if (info == null) {
+            return MKCore.getAbilityRuntimeService().canExecuteLoadoutAbility(executingGroup, abilityId);
         }
 
         MKAbility ability = info.getAbility();

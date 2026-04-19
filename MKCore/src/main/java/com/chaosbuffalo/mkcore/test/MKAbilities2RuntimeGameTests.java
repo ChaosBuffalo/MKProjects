@@ -21,6 +21,7 @@ import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityReference;
 import com.chaosbuffalo.mkcore.abilities2.runtime.ActivationRequest;
 import com.chaosbuffalo.mkcore.abilities2.runtime.InvocationResult;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
@@ -54,6 +55,10 @@ public class MKAbilities2RuntimeGameTests {
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_spell_crit_passive");
     private static final ResourceLocation SPELL_SOURCE_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_firebolt");
+    private static final ResourceLocation SELF_HEAL_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_self_heal");
+    private static final ResourceLocation RESTORING_AURA_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_restoring_aura");
     private static final InterruptPolicy NO_INTERRUPT = new InterruptPolicy(false, 0.0f, false, 0.0, true);
 
     @GameTest(template = "player_data_phase0")
@@ -150,6 +155,46 @@ public class MKAbilities2RuntimeGameTests {
         helper.assertTrue(target.getHealth() < startingHealth,
                 "slotted passive definition should install a reaction that damages the crit target");
         helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void slottedBasicDefinitionExecutesDefaultManualActivation(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlots(1);
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(0, SELF_HEAL_ABILITY);
+
+        owner.setHealth(owner.getMaxHealth() - 8.0f);
+        float startingHealth = owner.getHealth();
+
+        helper.startSequence()
+                .thenExecute(() -> ownerData.getAbilityExecutor().executeLoadoutAbility(AbilityGroupId.Basic, 0))
+                .thenExecuteAfter(25, () -> {
+                    helper.assertTrue(owner.getHealth() > startingHealth,
+                            "loadout execution should start the default abilities2 manual activation");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void slottedBasicToggleDefinitionUsesLoadoutTogglePath(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlots(1);
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(0, RESTORING_AURA_ABILITY);
+
+        owner.setHealth(owner.getMaxHealth() - 4.0f);
+        float startingHealth = owner.getHealth();
+
+        helper.startSequence()
+                .thenExecute(() -> ownerData.getAbilityExecutor().executeLoadoutAbility(AbilityGroupId.Basic, 0))
+                .thenExecuteAfter(2, () -> {
+                    helper.assertTrue(owner.getHealth() > startingHealth,
+                            "loadout execution should route toggle abilities through the abilities2 toggle runtime");
+                    helper.succeed();
+                });
     }
 
     private static AbilityRuntimeService createTestRuntimeService() {

@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.abilities2;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityEventFilter.ParticipantRelation;
+import com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityActivationDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDeliveryDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityReactionDefinition;
@@ -12,6 +13,7 @@ import com.chaosbuffalo.mkcore.abilities2.definition.ActivationKind;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValue;
 import com.chaosbuffalo.mkcore.abilities2.runtime.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
@@ -90,6 +92,45 @@ public class AbilityRuntimeService {
 
     public AbilityEngine getEngine() {
         return engine;
+    }
+
+    public boolean canExecuteLoadoutAbility(AbilityGroupId groupId, ResourceLocation abilityId) {
+        Objects.requireNonNull(groupId, "groupId");
+        Objects.requireNonNull(abilityId, "abilityId");
+        return resolveLoadoutExecution(groupId, abilityId) != null;
+    }
+
+    public InvocationResult executeLoadoutAbility(IMKEntityData ownerData,
+                                                  IMKEntityData casterData,
+                                                  AbilityGroupId groupId,
+                                                  ResourceLocation abilityId) {
+        Objects.requireNonNull(ownerData, "ownerData");
+        Objects.requireNonNull(casterData, "casterData");
+        Objects.requireNonNull(groupId, "groupId");
+        Objects.requireNonNull(abilityId, "abilityId");
+
+        LoadoutExecution execution = resolveLoadoutExecution(groupId, abilityId);
+        if (execution == null) {
+            return definitionResolver.resolvePatched(abilityId) != null
+                    ? InvocationResult.failed(FailureReason.ACTIVATION_NOT_EXTERNALLY_CALLABLE)
+                    : InvocationResult.failed(FailureReason.UNKNOWN_ABILITY);
+        }
+
+        AbilityReference ability = new AbilityReference(abilityId, null);
+        return switch (execution.kind()) {
+            case DIRECT -> engine.activate(new ActivationRequest(
+                    ownerData,
+                    casterData,
+                    ability,
+                    execution.activationId(),
+                    null,
+                    null,
+                    null,
+                    false,
+                    false
+            ));
+            case TOGGLE -> requestToggle(ownerData, casterData, ability, null);
+        };
     }
 
     public InvocationResult requestToggle(IMKEntityData ownerData,
@@ -478,6 +519,41 @@ public class AbilityRuntimeService {
             startAuraPulse(runtime, ownerData, casterData);
             runtime.scheduleNextPulse(gameTick);
         }
+    }
+
+    private @Nullable LoadoutExecution resolveLoadoutExecution(AbilityGroupId groupId, ResourceLocation abilityId) {
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(abilityId);
+        if (definition == null || !matchesLoadoutGroup(groupId, definition.definition().data().slotFamily())) {
+            return null;
+        }
+
+        try {
+            String toggleEnableActivationId = resolveSingleActivationId(definition, ActivationKind.TOGGLE_ENABLE);
+            if (toggleEnableActivationId != null) {
+                return new LoadoutExecution(LoadoutExecutionKind.TOGGLE, toggleEnableActivationId);
+            }
+
+            String manualActivationId = resolveSingleActivationId(definition, ActivationKind.MANUAL);
+            if (manualActivationId != null) {
+                return new LoadoutExecution(LoadoutExecutionKind.DIRECT, manualActivationId);
+            }
+        } catch (IllegalStateException e) {
+            MKCore.LOGGER.debug("abilities2 loadout execution for {} is ambiguous: {}", abilityId, e.getMessage());
+            return null;
+        }
+
+        return null;
+    }
+
+    private boolean matchesLoadoutGroup(AbilityGroupId groupId, ResourceLocation slotFamily) {
+        return switch (groupId) {
+            case Basic -> AbilityDatagenKeys.SLOT_FAMILY_BASIC.equals(slotFamily);
+            case Passive -> AbilityDatagenKeys.SLOT_FAMILY_PASSIVE.equals(slotFamily);
+            case Ultimate -> AbilityDatagenKeys.SLOT_FAMILY_ULTIMATE.equals(slotFamily);
+            case Item -> AbilityDatagenKeys.SLOT_FAMILY_BASIC.equals(slotFamily)
+                    || AbilityDatagenKeys.SLOT_FAMILY_PASSIVE.equals(slotFamily)
+                    || AbilityDatagenKeys.SLOT_FAMILY_ULTIMATE.equals(slotFamily);
+        };
     }
 
     private void tickActiveDeliveries() {
@@ -1077,6 +1153,14 @@ public class AbilityRuntimeService {
     }
 
     private record ReactionOwnerRuntime(UUID ownerEntityId, UUID casterEntityId) {
+    }
+
+    private enum LoadoutExecutionKind {
+        DIRECT,
+        TOGGLE
+    }
+
+    private record LoadoutExecution(LoadoutExecutionKind kind, String activationId) {
     }
 
     private record ToggleKey(UUID ownerEntityId,
