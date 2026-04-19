@@ -10,14 +10,15 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
+import javax.annotation.Nullable;
 import javax.annotation.Nonnull;
 import java.util.List;
 
 public abstract class AbilityPageBase extends PlayerPageBase implements IAbilityScreen {
-    protected MKAbility draggingAbility;
+    protected AbilityUiEntry draggingAbility;
     protected AbilityInfoWidget infoWidget;
     protected ScrollingListPanelLayout abilitiesScrollPanel;
-    private MKAbility selectedAbility;
+    private AbilityUiEntry selectedAbility;
 
 
     public AbilityPageBase(MKPlayerData playerData, Component title) {
@@ -28,7 +29,7 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
         return GuiTextures.DATA_BOX_SHORT;
     }
 
-    protected abstract List<MKAbility> getSortedAbilityList();
+    protected abstract List<AbilityUiEntry> getSortedAbilityList();
 
     public ScrollingListPanelLayout getAbilityScrollPanel(int xPos, int yPos, int width, int height) {
         ScrollingListPanelLayout panel = new ScrollingListPanelLayout(xPos, yPos, width, height);
@@ -39,7 +40,7 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
         stackLayout.setMargins(4, 4, 4, 4);
         stackLayout.setPaddings(0, 2, 2, 2);
         stackLayout.doSetChildWidth(true);
-        List<MKAbility> abilities = getSortedAbilityList();
+        List<AbilityUiEntry> abilities = getSortedAbilityList();
         int count = abilities.size();
         for (int i = 0; i < count; i++) {
             MKLayout abilityEntry = new AbilityListEntry(0, 0, 16, font, this, abilities.get(i));
@@ -95,7 +96,7 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
     @Override
     protected void persistState(boolean wasResized) {
         super.persistState(wasResized);
-        final MKAbility selected = getSelectedAbility();
+        final AbilityUiEntry selected = getSelectedAbility();
         addPostSetupCallback(() -> restoreSelectedAbility(selected));
         persistScrollingListPanelState(() -> abilitiesScrollPanel, wasResized);
     }
@@ -105,27 +106,27 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
         return false;
     }
 
-    public MKAbility getDraggingAbility() {
+    public AbilityUiEntry getDraggingAbility() {
         return draggingAbility;
     }
 
-    public void startDraggingAbility(MKAbility dragging) {
+    public void startDraggingAbility(AbilityUiEntry dragging) {
         this.draggingAbility = dragging;
     }
 
-    protected void restoreSelectedAbility(MKAbility ability) {
+    protected void restoreSelectedAbility(@Nullable AbilityUiEntry ability) {
         selectedAbility = ability;
         if (infoWidget != null) {
             infoWidget.refresh();
         }
     }
 
-    public void setSelectedAbility(MKAbility ability) {
+    public void setSelectedAbility(@Nullable AbilityUiEntry ability) {
         restoreSelectedAbility(ability);
         abilitiesScrollPanel.getContentScrollView().resetView();
     }
 
-    public MKAbility getSelectedAbility() {
+    public AbilityUiEntry getSelectedAbility() {
         return selectedAbility;
     }
 

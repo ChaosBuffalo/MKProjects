@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkcore.client.gui.widgets;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.client.gui.AbilityUiEntry;
 import com.chaosbuffalo.mkcore.client.gui.IAbilityScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.actions.WidgetHoldingDragState;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterYWithOffsetConstraint;
@@ -12,18 +12,18 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 
 public class AbilityListEntry extends MKStackLayoutHorizontal {
-    private final MKAbility ability;
+    private final AbilityUiEntry ability;
     private final IAbilityScreen screen;
     private final MKImage icon;
 
 
-    public AbilityListEntry(int x, int y, int height, Font font, IAbilityScreen screen, MKAbility ability) {
+    public AbilityListEntry(int x, int y, int height, Font font, IAbilityScreen screen, AbilityUiEntry ability) {
         super(x, y, height);
         this.ability = ability;
         this.screen = screen;
         setPaddingRight(2);
         setPaddingLeft(2);
-        icon = new MKImage(0, 0, 16, 16, ability.getAbilityIcon()) {
+        icon = new MKImage(0, 0, 16, 16, ability.getIconOrFallback()) {
             @Override
             public boolean onMousePressed(Minecraft minecraft, double mouseX, double mouseY, int mouseButton) {
                 if (screen.allowsDraggingAbilities()) {
@@ -37,7 +37,7 @@ public class AbilityListEntry extends MKStackLayoutHorizontal {
             }
         };
         addWidget(icon);
-        MKText name = new MKText(font, ability.getAbilityName());
+        MKText name = new MKText(font, ability.getDisplayName());
         name.setWidth(100);
         name.setColor(0xffffffff);
         addWidget(name);

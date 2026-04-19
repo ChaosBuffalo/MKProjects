@@ -1,20 +1,23 @@
 package com.chaosbuffalo.mkcore.client.gui;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkwidgets.client.gui.screens.IMKScreen;
+
+import javax.annotation.Nullable;
 
 public interface IAbilityScreen extends IMKScreen {
     boolean allowsDraggingAbilities();
 
-    void startDraggingAbility(MKAbility dragging);
+    void startDraggingAbility(AbilityUiEntry dragging);
 
-    MKAbility getSelectedAbility();
+    @Nullable
+    AbilityUiEntry getSelectedAbility();
 
-    void setSelectedAbility(MKAbility ability);
+    void setSelectedAbility(@Nullable AbilityUiEntry ability);
 
     void stopDraggingAbility();
 
     boolean isDraggingAbility();
 
-    MKAbility getDraggingAbility();
+    @Nullable
+    AbilityUiEntry getDraggingAbility();
 }

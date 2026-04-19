@@ -144,26 +144,37 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
     }
 
     @Override
-    protected List<MKAbility> getSortedAbilityList() {
+    protected List<AbilityUiEntry> getSortedAbilityList() {
         return currentAbilityList().stream()
-                .sorted(Comparator.comparing(a -> a.getAbilityName().getString()))
+                .sorted(Comparator.comparing(a -> a.getDisplayName().getString()))
                 .collect(Collectors.toList());
     }
 
-    private List<MKAbility> currentAbilityList() {
+    private List<AbilityUiEntry> currentAbilityList() {
         availableFilters.clear();
         availableFilters.add(AbilityFilter.All);
 
         Set<AbilityType> knownTypes = new HashSet<>();
-        List<MKAbility> knownAbilities = playerData.getAbilities()
+        LinkedHashMap<ResourceLocation, AbilityUiEntry> knownAbilities = new LinkedHashMap<>();
+        playerData.getAbilities()
                 .getAbilityInfoStream()
                 .map(info -> {
                     knownTypes.add(info.getAbilityType());
-                    return info.getAbility();
-                }).collect(Collectors.toList());
-        MKAbilityInfo itemAbility = playerData.getLoadout().getAbilityGroup(AbilityGroupId.Item).getAbilityInfo(0);
+                    return AbilityUiEntry.fromAbility(info.getAbility());
+                }).forEach(entry -> knownAbilities.put(entry.getAbilityId(), entry));
+        playerData.getAbilities()
+                .getKnownDefinitionIds()
+                .map(AbilityUiEntry::resolve)
+                .filter(Objects::nonNull)
+                .forEach(entry -> {
+                    knownTypes.add(entry.getAbilityType());
+                    knownAbilities.putIfAbsent(entry.getAbilityId(), entry);
+                });
+
+        ResourceLocation itemAbilityId = playerData.getLoadout().getAbilityGroup(AbilityGroupId.Item).getSlot(0);
+        AbilityUiEntry itemAbility = AbilityUiEntry.resolve(itemAbilityId);
         if (itemAbility != null) {
-            knownAbilities.add(itemAbility.getAbility());
+            knownAbilities.putIfAbsent(itemAbility.getAbilityId(), itemAbility);
             knownTypes.add(itemAbility.getAbilityType());
         }
         if (knownTypes.contains(AbilityType.Basic))
@@ -177,8 +188,8 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
             currentFilter = AbilityFilter.All;
         }
 
-        return knownAbilities.stream()
-                .filter(ability -> currentFilter.accepts(ability.getType()))
+        return knownAbilities.values().stream()
+                .filter(ability -> currentFilter.accepts(ability.getAbilityType()))
                 .collect(Collectors.toList());
     }
 
@@ -188,7 +199,7 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
                 f -> Component.literal("Filter: ").append(f.getName()),
                 f -> {
                     currentFilter = f;
-                    if (getSelectedAbility() != null && !currentFilter.accepts(getSelectedAbility().getType())) {
+                    if (getSelectedAbility() != null && !currentFilter.accepts(getSelectedAbility().getAbilityType())) {
                         setSelectedAbility(null);
                     }
                     abilitiesScrollPanel.getListScrollView().resetView();
@@ -259,10 +270,10 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
     }
 
     @Override
-    public void startDraggingAbility(MKAbility dragging) {
+    public void startDraggingAbility(AbilityUiEntry dragging) {
         super.startDraggingAbility(dragging);
         abilitySlots.forEach((key, widget) -> {
-            if (!key.group.fitsAbilityType(dragging.getType())) {
+            if (!key.group.fitsAbilityType(dragging.getAbilityType())) {
                 widget.setBackgroundColor(0xff555555);
                 widget.setIconColor(0xff555555);
             }

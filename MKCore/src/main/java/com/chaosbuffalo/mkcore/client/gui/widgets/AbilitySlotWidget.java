@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDefinitionData;
+import com.chaosbuffalo.mkcore.client.gui.AbilityUiEntry;
 import com.chaosbuffalo.mkcore.client.gui.GuiTextures;
 import com.chaosbuffalo.mkcore.client.gui.IAbilityScreen;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -139,7 +140,7 @@ public class AbilitySlotWidget extends MKLayout {
     public boolean onMousePressed(Minecraft minecraft, double mouseX, double mouseY, int mouseButton) {
         if (mouseButton == UIConstants.MOUSE_BUTTON_LEFT) {
             if (!(abilityId.equals(MKCoreRegistry.INVALID_ABILITY))) {
-                MKAbility ability = MKCoreRegistry.getAbility(getAbilityId());
+                AbilityUiEntry ability = AbilityUiEntry.resolve(getAbilityId());
                 if (ability == null) {
                     return false;
                 }
@@ -159,7 +160,7 @@ public class AbilitySlotWidget extends MKLayout {
     @Override
     public boolean onMouseRelease(double mouseX, double mouseY, int mouseButton) {
         if (screen.isDraggingAbility()) {
-            if (unlocked && slotGroup.fitsAbilityType(screen.getDraggingAbility().getType())) {
+            if (unlocked && slotGroup.fitsAbilityType(screen.getDraggingAbility().getAbilityType())) {
                 ResourceLocation ability = screen.getDraggingAbility().getAbilityId();
                 setSlotToAbility(ability);
             }

@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkcore.client.gui.widgets;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.client.gui.AbilityUiEntry;
 import com.chaosbuffalo.mkcore.client.gui.IAbilityScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.actions.WidgetHoldingDragState;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKImage;
@@ -11,17 +11,17 @@ import net.minecraft.resources.ResourceLocation;
 
 public class AbilityIconText extends IconText {
     private final IAbilityScreen screen;
-    private final MKAbility ability;
+    private final AbilityUiEntry ability;
 
     public AbilityIconText(int x, int y, int height, Component text, ResourceLocation iconLoc,
-                           Font font, int iconWidth, IAbilityScreen screen, MKAbility ability) {
+                           Font font, int iconWidth, IAbilityScreen screen, AbilityUiEntry ability) {
         super(x, y, height, text, iconLoc, font, iconWidth, 1);
         this.screen = screen;
         this.ability = ability;
     }
 
-    public AbilityIconText(int x, int y, int height, Font font, int iconWidth, IAbilityScreen screen, MKAbility ability) {
-        super(x, y, height, ability.getAbilityName(), ability.getAbilityIcon(), font, iconWidth, 1);
+    public AbilityIconText(int x, int y, int height, Font font, int iconWidth, IAbilityScreen screen, AbilityUiEntry ability) {
+        super(x, y, height, ability.getDisplayName(), ability.getIconOrFallback(), font, iconWidth, 1);
         this.screen = screen;
         this.ability = ability;
     }

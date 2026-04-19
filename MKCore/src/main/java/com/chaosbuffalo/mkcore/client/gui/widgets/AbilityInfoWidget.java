@@ -46,9 +46,9 @@ public class AbilityInfoWidget extends MKStackLayoutVertical {
             noSelectPrompt.setColor(0xffffffff);
             addWidget(noSelectPrompt);
         } else {
-            IconText abilityIcon = new AbilityIconText(0, 0, 16, fontRenderer, 16, screen, screen.getSelectedAbility());
+            AbilityIconText abilityIcon = new AbilityIconText(0, 0, 16, fontRenderer, 16, screen, screen.getSelectedAbility());
             addWidget(abilityIcon);
-            screen.getSelectedAbility().buildDescription(playerData, AbilityContext.forCaster(playerData, screen.getSelectedAbility()) , this::addDescriptionLine);
+            screen.getSelectedAbility().buildDescription(playerData, this::addDescriptionLine);
         }
     }
 

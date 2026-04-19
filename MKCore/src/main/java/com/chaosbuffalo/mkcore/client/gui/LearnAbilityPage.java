@@ -52,20 +52,28 @@ public class LearnAbilityPage extends AbilityPageBase {
     }
 
     @Override
-    protected List<MKAbility> getSortedAbilityList() {
-        return offeredAbilities.stream().map(AbilityTrainingEvaluation::ability).collect(Collectors.toList());
+    protected List<AbilityUiEntry> getSortedAbilityList() {
+        return offeredAbilities.stream()
+                .map(AbilityTrainingEvaluation::ability)
+                .map(AbilityUiEntry::fromAbility)
+                .collect(Collectors.toList());
     }
 
-    private Optional<AbilityTrainingEvaluation> findEvaluation(MKAbility ability) {
-        return offeredAbilities.stream().filter(evaluation -> evaluation.ability() == ability).findFirst();
+    private Optional<AbilityTrainingEvaluation> findEvaluation(AbilityUiEntry ability) {
+        return offeredAbilities.stream()
+                .filter(evaluation -> evaluation.ability().getAbilityId().equals(ability.getAbilityId()))
+                .findFirst();
     }
 
     @Override
-    protected void restoreSelectedAbility(MKAbility ability) {
+    protected void restoreSelectedAbility(AbilityUiEntry ability) {
         super.restoreSelectedAbility(ability);
-        if (requirementsTray != null) {
+        if (ability != null && requirementsTray != null) {
             findEvaluation(ability).ifPresent(eval -> {
-                requirementsTray.setAbility(ability, eval);
+                MKAbility legacyAbility = ability.getLegacyAbility();
+                if (legacyAbility != null) {
+                    requirementsTray.setAbility(legacyAbility, eval);
+                }
                 resetFooter();
             });
         }
