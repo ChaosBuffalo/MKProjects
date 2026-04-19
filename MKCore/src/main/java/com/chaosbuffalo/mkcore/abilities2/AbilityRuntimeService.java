@@ -100,6 +100,14 @@ public class AbilityRuntimeService {
         return resolveLoadoutExecution(groupId, abilityId) != null;
     }
 
+    public boolean isLoadoutDefinition(AbilityGroupId groupId, ResourceLocation abilityId) {
+        Objects.requireNonNull(groupId, "groupId");
+        Objects.requireNonNull(abilityId, "abilityId");
+
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(abilityId);
+        return definition != null && matchesLoadoutGroup(groupId, definition.definition().data().slotFamily());
+    }
+
     public InvocationResult executeLoadoutAbility(IMKEntityData ownerData,
                                                   IMKEntityData casterData,
                                                   AbilityGroupId groupId,

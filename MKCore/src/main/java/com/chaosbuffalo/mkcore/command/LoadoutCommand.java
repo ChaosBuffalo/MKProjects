@@ -83,7 +83,8 @@ public class LoadoutCommand {
 
         MKCore.getPlayer(player).ifPresent(playerData -> {
             PlayerAbilityKnowledge abilityKnowledge = playerData.getAbilities();
-            if (abilityKnowledge.knowsAbility(abilityId)) {
+            if (abilityKnowledge.knowsAbility(abilityId)
+                    || canSlotAbilityDefinition(ctx.getSource(), group, abilityId)) {
                 playerData.getLoadout().getAbilityGroup(group).setSlot(slot, abilityId);
             }
         });
@@ -99,7 +100,8 @@ public class LoadoutCommand {
 
         MKCore.getPlayer(player).ifPresent(playerData -> {
             PlayerAbilityKnowledge abilityKnowledge = playerData.getAbilities();
-            if (abilityKnowledge.knowsAbility(abilityId)) {
+            if (abilityKnowledge.knowsAbility(abilityId)
+                    || canSlotAbilityDefinition(ctx.getSource(), group, abilityId)) {
                 if (!playerData.getLoadout().getAbilityGroup(group).tryEquip(abilityId)) {
                     ChatUtils.sendMessage(player, "No room for ability");
                 }
@@ -150,14 +152,25 @@ public class LoadoutCommand {
     public static CompletableFuture<Suggestions> suggestKnownAbilities(final CommandContext<CommandSourceStack> context, final SuggestionsBuilder builder) throws CommandSyntaxException {
         AbilityGroupId group = context.getArgument("group", AbilityGroupId.class);
         ServerPlayer player = context.getSource().getPlayerOrException();
+        Stream<String> loadoutDefinitions = context.getSource().hasPermission(Commands.LEVEL_GAMEMASTERS)
+                ? MKCore.getAbilityDefinitionService().getDefinitionIds().stream()
+                .filter(abilityId -> MKCore.getAbilityRuntimeService().isLoadoutDefinition(group, abilityId))
+                .map(ResourceLocation::toString)
+                : Stream.empty();
         return SharedSuggestionProvider.suggest(MKCore.getPlayer(player)
                         .map(playerData -> playerData.getAbilities()
                                 .getAbilityInfoStream()
                                 .filter(info -> group.fitsAbilityType(info.getAbilityType()))
                                 .map(MKAbilityInfo::getId)
                                 .map(ResourceLocation::toString))
-                        .orElse(Stream.empty()),
+                        .map(knownAbilities -> Stream.concat(knownAbilities, loadoutDefinitions))
+                        .orElse(loadoutDefinitions),
                 builder);
+    }
+
+    private static boolean canSlotAbilityDefinition(CommandSourceStack source, AbilityGroupId group, ResourceLocation abilityId) {
+        return source.hasPermission(Commands.LEVEL_GAMEMASTERS)
+                && MKCore.getAbilityRuntimeService().isLoadoutDefinition(group, abilityId);
     }
 
     public static class AbilityGroupArgument implements ArgumentType<AbilityGroupId> {
