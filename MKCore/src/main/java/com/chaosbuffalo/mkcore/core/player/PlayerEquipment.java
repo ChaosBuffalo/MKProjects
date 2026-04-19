@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.entity.EntityEquipment;
 import com.chaosbuffalo.mkcore.events.PersonaEvent;
+import com.chaosbuffalo.mkcore.item.AbilitySourceOverride;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
 import com.chaosbuffalo.mkcore.item.CoreItemComponents;
 import com.chaosbuffalo.mkcore.item.ItemGrantedAbility;
@@ -178,8 +179,8 @@ public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvid
 
         ItemGrantedAbility itemAbility = newItem.get(CoreItemComponents.ITEM_ABILITY);
         if (itemAbility != null) {
-            MKAbility ability = itemAbility.ability().value();
-            playerData.getLoadout().getItemGroup().setSlot(slot, ability);
+            AbilitySourceOverride.getSource(newItem);
+            playerData.getLoadout().getItemGroup().setSlot(slot, itemAbility.abilityId());
         } else {
             playerData.getLoadout().getItemGroup().clearSlot(slot);
         }
@@ -197,8 +198,8 @@ public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvid
         ItemGrantedAbility itemAbility = oldItem.get(CoreItemComponents.ITEM_ABILITY);
         if (itemAbility != null) {
             var existingAbilityId = playerData.getLoadout().getItemGroup().getSlot(slot);
-            if (!existingAbilityId.equals(MKCoreRegistry.INVALID_ABILITY) && !itemAbility.ability().is(existingAbilityId)) {
-                MKCore.LOGGER.warn("Player {} unequipping slot {} had differing item abilities! Found {}, expected {} on {}", playerData.getEntity(), slot, itemAbility.ability().value(), existingAbilityId, oldItem);
+            if (!existingAbilityId.equals(MKCoreRegistry.INVALID_ABILITY) && !itemAbility.abilityId().equals(existingAbilityId)) {
+                MKCore.LOGGER.warn("Player {} unequipping slot {} had differing item abilities! Found {}, expected {} on {}", playerData.getEntity(), slot, itemAbility.abilityId(), existingAbilityId, oldItem);
             }
             playerData.getLoadout().getItemGroup().clearSlot(slot);
         }

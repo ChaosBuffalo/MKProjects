@@ -112,32 +112,45 @@ public class AbilityRuntimeService {
                                                   IMKEntityData casterData,
                                                   AbilityGroupId groupId,
                                                   ResourceLocation abilityId) {
+        return executeLoadoutAbility(
+                ownerData,
+                casterData,
+                groupId,
+                new AbilityReference(abilityId, null),
+                null
+        );
+    }
+
+    public InvocationResult executeLoadoutAbility(IMKEntityData ownerData,
+                                                  IMKEntityData casterData,
+                                                  AbilityGroupId groupId,
+                                                  AbilityReference ability,
+                                                  @Nullable UUID sourceId) {
         Objects.requireNonNull(ownerData, "ownerData");
         Objects.requireNonNull(casterData, "casterData");
         Objects.requireNonNull(groupId, "groupId");
-        Objects.requireNonNull(abilityId, "abilityId");
+        Objects.requireNonNull(ability, "ability");
 
-        LoadoutExecution execution = resolveLoadoutExecution(groupId, abilityId);
+        LoadoutExecution execution = resolveLoadoutExecution(groupId, ability.abilityId());
         if (execution == null) {
-            return definitionResolver.resolvePatched(abilityId) != null
+            return definitionResolver.resolvePatched(ability.abilityId()) != null
                     ? InvocationResult.failed(FailureReason.ACTIVATION_NOT_EXTERNALLY_CALLABLE)
                     : InvocationResult.failed(FailureReason.UNKNOWN_ABILITY);
         }
 
-        AbilityReference ability = new AbilityReference(abilityId, null);
         return switch (execution.kind()) {
             case DIRECT -> engine.activate(new ActivationRequest(
                     ownerData,
                     casterData,
                     ability,
                     execution.activationId(),
-                    null,
+                    sourceId,
                     null,
                     null,
                     false,
                     false
             ));
-            case TOGGLE -> requestToggle(ownerData, casterData, ability, null);
+            case TOGGLE -> requestToggle(ownerData, casterData, ability, sourceId);
         };
     }
 

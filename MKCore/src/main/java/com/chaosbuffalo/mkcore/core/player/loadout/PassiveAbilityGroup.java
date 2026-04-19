@@ -25,6 +25,7 @@ public class PassiveAbilityGroup extends AbilityGroup {
             MKCore.makeRL("grant_source.loadout"),
             MKCore.makeRL("loadout_group.passive")
     );
+    private boolean suppressAbility2PassiveRefresh = false;
 
     public PassiveAbilityGroup(Persona persona) {
         super(persona, AbilityGroupId.Passive);
@@ -56,24 +57,38 @@ public class PassiveAbilityGroup extends AbilityGroup {
 
     @Override
     protected void onAbilityDefinitionAdded(int index, ResourceLocation abilityId) {
-        refreshAbility2Passives();
+        if (!suppressAbility2PassiveRefresh) {
+            refreshAbility2Passives();
+        }
     }
 
     @Override
     protected void onAbilityDefinitionRemoved(int index, ResourceLocation abilityId) {
-        refreshAbility2Passives();
+        if (!suppressAbility2PassiveRefresh) {
+            refreshAbility2Passives();
+        }
     }
 
     @Override
     public void onPersonaActivated() {
-        super.onPersonaActivated();
+        suppressAbility2PassiveRefresh = true;
+        try {
+            super.onPersonaActivated();
+        } finally {
+            suppressAbility2PassiveRefresh = false;
+        }
         refreshAbility2Passives();
     }
 
     @Override
     public void onPersonaDeactivated() {
-        clearAbility2Passives();
-        super.onPersonaDeactivated();
+        suppressAbility2PassiveRefresh = true;
+        try {
+            clearAbility2Passives();
+            super.onPersonaDeactivated();
+        } finally {
+            suppressAbility2PassiveRefresh = false;
+        }
     }
 
     private void refreshAbility2Passives() {

@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.events;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKConfig;
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.client.gui.IPlayerDataAwareScreen;
 import com.chaosbuffalo.mkcore.client.gui.ParticleEditorScreen;
@@ -24,6 +25,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -212,10 +214,23 @@ public class ClientEventHandler {
     private static void addGrantedAbilityTooltip(ItemStack stack, List<Component> tooltip) {
         ItemGrantedAbility itemAbility = stack.get(CoreItemComponents.ITEM_ABILITY);
         if (itemAbility != null) {
-            MKAbility ability = itemAbility.ability().value();
             tooltip.add(Component.translatable("mkcore.item_tooltip.grants_ability",
-                    ability.getAbilityName()).withStyle(ChatFormatting.GOLD));
+                    resolveGrantedAbilityName(itemAbility.abilityId())).withStyle(ChatFormatting.GOLD));
         }
+    }
+
+    private static Component resolveGrantedAbilityName(ResourceLocation abilityId) {
+        MKAbility legacyAbility = MKCoreRegistry.getAbility(abilityId);
+        if (legacyAbility != null) {
+            return legacyAbility.getAbilityName();
+        }
+
+        var definition = MKCore.getAbilityDefinitionService().getDefinition(abilityId);
+        if (definition != null) {
+            return Component.literal(definition.presentation().name());
+        }
+
+        return Component.literal(abilityId.toString());
     }
 
     private static void addArmorClassTooltip(ItemTooltipEvent event) {

@@ -31,7 +31,8 @@ public class MKCoreTestItems {
 
         public AbilityArmor(Holder<ArmorMaterial> materialIn, ArmorItem.Type slot, Properties builder, Holder<MKAbility> ability) {
             super(materialIn, slot, builder
-                    .component(CoreItemComponents.ITEM_ABILITY, new ItemGrantedAbility(ability)));
+                    .component(CoreItemComponents.ITEM_ABILITY,
+                            new ItemGrantedAbility(ability.getKey().location())));
 
         }
     }
@@ -40,7 +41,8 @@ public class MKCoreTestItems {
 
         public AbilitySword() {
             super(Tiers.IRON, (new Item.Properties()
-                    .component(CoreItemComponents.ITEM_ABILITY, new ItemGrantedAbility(MKTestAbilities.TEST_WHIRLWIND_BLADES))));
+                    .component(CoreItemComponents.ITEM_ABILITY,
+                            new ItemGrantedAbility(MKTestAbilities.TEST_WHIRLWIND_BLADES.getKey().location()))));
         }
     }
 

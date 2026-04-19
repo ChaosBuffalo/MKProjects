@@ -25,14 +25,19 @@ import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
+import com.chaosbuffalo.mkcore.item.ItemGrantedAbility;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.GameType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -197,6 +202,50 @@ public class MKAbilities2RuntimeGameTests {
                 });
     }
 
+    @GameTest(template = "player_data_phase0")
+    public static void equippedItemPassiveDefinitionInstallsAndRemovesReactionRuntime(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        Player target = createTestPlayer(helper, new BlockPos(3, 2, 1));
+
+        helper.startSequence()
+                .thenExecute(() -> owner.setItemSlot(
+                        EquipmentSlot.FEET,
+                        createGrantedItem(Items.LEATHER_BOOTS, SPELL_CRIT_PASSIVE_ABILITY)
+                ))
+                .thenExecuteAfter(1, () -> {
+                    float startingHealth = target.getHealth();
+                    emitSpellCrit(owner, target);
+                    helper.assertTrue(target.getHealth() < startingHealth,
+                            "equipped abilities2 passive item should install its reaction runtime");
+                })
+                .thenExecute(() -> owner.setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY))
+                .thenExecuteAfter(1, () -> {
+                    float removedHealth = target.getHealth();
+                    emitSpellCrit(owner, target);
+                    helper.assertTrue(target.getHealth() == removedHealth,
+                            "unequipped abilities2 passive item should remove its reaction runtime");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void equippedMainhandDefinitionExecutesItemLoadoutAbility(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        owner.setItemSlot(EquipmentSlot.MAINHAND, createGrantedItem(Items.IRON_SWORD, SELF_HEAL_ABILITY));
+        owner.setHealth(owner.getMaxHealth() - 8.0f);
+        float startingHealth = owner.getHealth();
+
+        helper.startSequence()
+                .thenExecuteAfter(1, () -> ownerData.getAbilityExecutor().executeLoadoutAbility(AbilityGroupId.Item, 0))
+                .thenExecuteAfter(25, () -> {
+                    helper.assertTrue(owner.getHealth() > startingHealth,
+                            "mainhand abilities2 item should execute through the item loadout bridge");
+                    helper.succeed();
+                });
+    }
+
     private static AbilityRuntimeService createTestRuntimeService() {
         Map<ResourceLocation, AbilityDefinitionData> definitions = new LinkedHashMap<>();
         definitions.put(PROJECTILE_IMPACT_ABILITY, createProjectileImpactDefinition());
@@ -300,6 +349,27 @@ public class MKAbilities2RuntimeGameTests {
 
     private static AbilityPresentation presentation(String name) {
         return new AbilityPresentation(name, name, null, null, null, null, null);
+    }
+
+    private static void emitSpellCrit(Player owner, Player target) {
+        MKCore.getAbilityRuntimeService().getReactionBus().emit(new AbilityEventSnapshot(
+                AbilityEventType.SPELL_CRIT,
+                null,
+                UUID.randomUUID(),
+                0,
+                owner.getUUID(),
+                SPELL_SOURCE_ABILITY,
+                "cast",
+                owner.getUUID(),
+                target.getUUID(),
+                Map.of()
+        ));
+    }
+
+    private static ItemStack createGrantedItem(Item item, ResourceLocation abilityId) {
+        ItemStack stack = new ItemStack(item);
+        ItemGrantedAbility.setAbility(stack, abilityId);
+        return stack;
     }
 
     private static AbilityProjectileEntity findProjectile(GameTestHelper helper, LivingEntity caster) {
