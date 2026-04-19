@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.abilities2.actions.AbilityAction;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityEventFilter;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityActivationDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDefinitionData;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDeliveryDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityParameterDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityPresentation;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityReactionDefinition;
@@ -13,10 +14,13 @@ import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValue;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValueKind;
 import com.chaosbuffalo.mkcore.abilities2.definition.ActivationBehavior;
 import com.chaosbuffalo.mkcore.abilities2.definition.ActivationKind;
+import com.chaosbuffalo.mkcore.abilities2.definition.DeliveryKind;
 import com.chaosbuffalo.mkcore.abilities2.definition.InterruptRefundPolicy;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.init.CoreEntities;
 import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityEventType;
 import net.minecraft.data.DataGenerator;
+import net.minecraft.world.item.Items;
 
 import java.util.List;
 import java.util.Map;
@@ -96,6 +100,16 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                 .school(AbilityDatagenKeys.SCHOOL_EVOCATION)
                 .tag(AbilityDatagenKeys.TAG_FIRE)
                 .parameter(floatParameter("impact_damage", 8.0f, "Projectile impact damage"));
+
+        builder.delivery(AbilityArchetypes.PROJECTILE_DELIVERY_ID, new AbilityDeliveryDefinition(
+                DeliveryKind.PROJECTILE,
+                CoreEntities.ABILITY_PROJECTILE_TYPE.getId(),
+                Items.FIRE_CHARGE.builtInRegistryHolder().key().location(),
+                List.of(),
+                AbilityArchetypes.PROJECTILE_IMPACT_ACTIVATION_ID,
+                null,
+                null
+        ));
 
         builder.entryPoint(AbilityArchetypes.PROJECTILE_IMPACT_ENTRY_POINT, List.of(
                 new AbilityAction.DamageAction(

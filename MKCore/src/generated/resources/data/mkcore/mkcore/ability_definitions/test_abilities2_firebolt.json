@@ -33,7 +33,8 @@
     "projectile": {
       "entity_type": "mkcore:ability_projectile",
       "kind": "projectile",
-      "on_impact_activation_id": "impact_proc"
+      "on_impact_activation_id": "impact_proc",
+      "render_item": "minecraft:fire_charge"
     }
   },
   "entry_points": {

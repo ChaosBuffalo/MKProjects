@@ -10,6 +10,7 @@ import java.util.Objects;
 public record AbilityDeliveryDefinition(
         DeliveryKind kind,
         @Nullable ResourceLocation entityType,
+        @Nullable ResourceLocation renderItem,
         List<AbilityAction> onSpawn,
         @Nullable String onImpactActivationId,
         @Nullable String onAirTickActivationId,

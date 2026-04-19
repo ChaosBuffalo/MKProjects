@@ -217,13 +217,15 @@ public final class AbilityCodecs {
     public static final Codec<AbilityDeliveryDefinition> ABILITY_DELIVERY_CODEC = RecordCodecBuilder.create(builder -> builder.group(
             DELIVERY_KIND_CODEC.fieldOf("kind").forGetter(AbilityDeliveryDefinition::kind),
             ResourceLocation.CODEC.optionalFieldOf("entity_type").forGetter(value -> Optional.ofNullable(value.entityType())),
+            ResourceLocation.CODEC.optionalFieldOf("render_item").forGetter(value -> Optional.ofNullable(value.renderItem())),
             AbilityActionCodecs.ACTION_CODEC.listOf().optionalFieldOf("on_spawn", List.of()).forGetter(AbilityDeliveryDefinition::onSpawn),
             Codec.STRING.optionalFieldOf("on_impact_activation_id").forGetter(value -> Optional.ofNullable(value.onImpactActivationId())),
             Codec.STRING.optionalFieldOf("on_air_tick_activation_id").forGetter(value -> Optional.ofNullable(value.onAirTickActivationId())),
             Codec.STRING.optionalFieldOf("on_ground_tick_activation_id").forGetter(value -> Optional.ofNullable(value.onGroundTickActivationId()))
-    ).apply(builder, (kind, entityType, onSpawn, onImpactActivationId, onAirTickActivationId, onGroundTickActivationId) ->
-            new AbilityDeliveryDefinition(kind, entityType.orElse(null), onSpawn, onImpactActivationId.orElse(null),
-                    onAirTickActivationId.orElse(null), onGroundTickActivationId.orElse(null))));
+    ).apply(builder, (kind, entityType, renderItem, onSpawn, onImpactActivationId, onAirTickActivationId, onGroundTickActivationId) ->
+            new AbilityDeliveryDefinition(kind, entityType.orElse(null), renderItem.orElse(null), onSpawn,
+                    onImpactActivationId.orElse(null), onAirTickActivationId.orElse(null),
+                    onGroundTickActivationId.orElse(null))));
 
     private static final MapCodec<AbilityPatchOperation.SetParameterPatchOperation> SET_PARAMETER_PATCH_CODEC =
             RecordCodecBuilder.mapCodec(builder -> builder.group(

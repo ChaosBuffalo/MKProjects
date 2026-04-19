@@ -22,6 +22,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
@@ -974,6 +975,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
         projectile.setOwner(caster);
         projectile.moveTo(spawnPos.x(), spawnPos.y(), spawnPos.z(), caster.getYRot(), caster.getXRot());
         projectile.setAbilityId(invocation.abilityId());
+        applyProjectileRenderItem(projectile, delivery);
         projectile.setEventProvenance(AbilityEventProvenance.fromInvocation(invocation).asChildSource(projectile.getUUID()));
         projectile.setDoAirProc(delivery.onAirTickActivationId() != null);
         if (delivery.onAirTickActivationId() != null) {
@@ -1011,6 +1013,22 @@ public class SimpleAbilityEngine implements AbilityEngine {
                     ignoreCosts
             );
         }
+    }
+
+    private void applyProjectileRenderItem(AbilityProjectileEntity projectile, AbilityDeliveryDefinition delivery) {
+        ResourceLocation renderItemId = delivery.renderItem();
+        if (renderItemId == null) {
+            projectile.setItem(ItemStack.EMPTY);
+            return;
+        }
+
+        if (!BuiltInRegistries.ITEM.containsKey(renderItemId)) {
+            MKCore.LOGGER.warn("abilities2 projectile delivery referenced unknown render item {}", renderItemId);
+            projectile.setItem(ItemStack.EMPTY);
+            return;
+        }
+
+        projectile.setItem(new ItemStack(BuiltInRegistries.ITEM.get(renderItemId)));
     }
 
     private boolean evaluateCondition(AbilityConditionDefinition condition, AbilityActionContext context) {

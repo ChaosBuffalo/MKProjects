@@ -173,6 +173,10 @@ public final class CompiledAbilityDefinition {
         if (delivery.kind() == DeliveryKind.PROJECTILE && delivery.entityType() == null) {
             throw error(data, "Delivery '%s' kind PROJECTILE requires an entityType".formatted(deliveryId));
         }
+        if (delivery.kind() != DeliveryKind.PROJECTILE && delivery.renderItem() != null) {
+            throw error(data, "Delivery '%s' kind %s does not support renderItem"
+                    .formatted(deliveryId, delivery.kind()));
+        }
         validateActivationReference(data, deliveryId, "onImpactActivationId", delivery.onImpactActivationId(), activations);
         validateActivationReference(data, deliveryId, "onAirTickActivationId", delivery.onAirTickActivationId(), activations);
         validateActivationReference(data, deliveryId, "onGroundTickActivationId", delivery.onGroundTickActivationId(), activations);

@@ -96,6 +96,37 @@ public class MKAbilities2RuntimeGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void generatedProjectileDefinitionAssignsRenderItem(GameTestHelper helper) {
+        Player caster = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        var casterData = MKCore.getEntityDataOrThrow(caster);
+
+        helper.assertTrue(
+                MKCore.getAbilityDefinitionService().getResolver().resolvePatched(SPELL_SOURCE_ABILITY) != null,
+                "generated projectile definition should be loaded for the integration test"
+        );
+
+        InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                casterData,
+                casterData,
+                new AbilityReference(SPELL_SOURCE_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "generated projectile activation should start");
+
+        AbilityProjectileEntity projectile = findProjectile(helper, caster);
+        helper.assertTrue(!projectile.getItem().isEmpty(),
+                "generated abilities2 projectile should carry a non-empty render item");
+        helper.assertValueEqual(projectile.getItem().getItem(), Items.FIRE_CHARGE,
+                "generated firebolt projectile render item");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void blockImpactKeepsProjectileAliveForGroundTickCallback(GameTestHelper helper) {
         Player caster = createTestPlayer(helper, new BlockPos(1, 2, 1));
         AbilityRuntimeService service = createTestRuntimeService();
@@ -284,6 +315,7 @@ public class MKAbilities2RuntimeGameTests {
                 Map.of("projectile", new AbilityDeliveryDefinition(
                         DeliveryKind.PROJECTILE,
                         CoreEntities.ABILITY_PROJECTILE_TYPE.getId(),
+                        Items.SNOWBALL.builtInRegistryHolder().key().location(),
                         List.of(),
                         "impact_proc",
                         null,
@@ -323,6 +355,7 @@ public class MKAbilities2RuntimeGameTests {
                 Map.of("projectile", new AbilityDeliveryDefinition(
                         DeliveryKind.PROJECTILE,
                         CoreEntities.ABILITY_PROJECTILE_TYPE.getId(),
+                        Items.SNOWBALL.builtInRegistryHolder().key().location(),
                         List.of(),
                         null,
                         null,

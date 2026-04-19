@@ -13,6 +13,7 @@ import com.chaosbuffalo.mkcore.abilities2.definition.InterruptPolicy;
 import com.chaosbuffalo.mkcore.abilities2.definition.InterruptRefundPolicy;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Items;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -134,6 +135,7 @@ public final class AbilityArchetypes {
                 .delivery(PROJECTILE_DELIVERY_ID, new AbilityDeliveryDefinition(
                         DeliveryKind.PROJECTILE,
                         CoreEntities.ABILITY_PROJECTILE_TYPE.getId(),
+                        Items.SNOWBALL.builtInRegistryHolder().key().location(),
                         List.of(),
                         PROJECTILE_IMPACT_ACTIVATION_ID,
                         null,
