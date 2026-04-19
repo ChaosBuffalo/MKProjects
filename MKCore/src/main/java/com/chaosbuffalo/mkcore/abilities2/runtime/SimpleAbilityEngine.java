@@ -133,6 +133,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
                     null,
                     null,
                     null,
+                    Map.of(),
                     null,
                     true,
                     true
@@ -163,6 +164,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
                     request.inheritedRootInvocationId(),
                     request.entryPointOverride(),
                     request.targetingOverride(),
+                    request.grantParameterOverrides(),
                     request.reactionOwner(),
                     request.clearReactionOwnerOnCompletion(),
                     request.clearReactionOwnerOnInterruption()
@@ -203,6 +205,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
                     event.rootInvocationId(),
                     null,
                     null,
+                    Map.of(),
                     null,
                     true,
                     true
@@ -304,6 +307,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
                                              @Nullable UUID inheritedRootInvocationId,
                                              @Nullable String entryPointOverride,
                                              @Nullable AbilityTargetResolverDefinition targetingOverride,
+                                             Map<String, AbilityValue> grantParameterOverrides,
                                              @Nullable AbilityReactionOwner reactionOwnerOverride,
                                              boolean clearReactionOwnerOnCompletion,
                                              boolean clearReactionOwnerOnInterruption) {
@@ -349,7 +353,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
                 clearReactionOwnerOnCompletion,
                 clearReactionOwnerOnInterruption,
                 definition,
-                Map.of(),
+                grantParameterOverrides,
                 invocationStats,
                 Map.of(),
                 casterData.getEntity().getRandom()

@@ -1,9 +1,12 @@
 package com.chaosbuffalo.mkcore.abilities2.runtime;
 
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityTargetResolverDefinition;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValue;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 
 import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -23,6 +26,7 @@ public record InternalActivationRequest(
         @Nullable UUID inheritedRootInvocationId,
         @Nullable String entryPointOverride,
         @Nullable AbilityTargetResolverDefinition targetingOverride,
+        Map<String, AbilityValue> grantParameterOverrides,
         @Nullable AbilityReactionOwner reactionOwner,
         boolean clearReactionOwnerOnCompletion,
         boolean clearReactionOwnerOnInterruption
@@ -41,5 +45,7 @@ public record InternalActivationRequest(
         if (entryPointOverride != null && entryPointOverride.isBlank()) {
             throw new IllegalArgumentException("Internal activation request entryPointOverride must not be blank");
         }
+        grantParameterOverrides = Map.copyOf(new LinkedHashMap<>(Objects.requireNonNull(
+                grantParameterOverrides, "grantParameterOverrides")));
     }
 }

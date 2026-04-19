@@ -42,8 +42,7 @@ public class AbilityRuntimeService {
     private final Map<AbilityReactionOwner, ReactionOwnerRuntime> reactionOwnerRuntime = new HashMap<>();
     private final Map<AbilityReactionOwner, Map<String, AbilityReactionHandle>> installedReactionHandles = new HashMap<>();
     private final Map<ToggleKey, ToggleRuntime> activeToggles = new LinkedHashMap<>();
-    private final Map<UUID, ToggleRuntime> pendingToggleEnables = new HashMap<>();
-    private final Map<UUID, ToggleRuntime> pendingToggleDisables = new HashMap<>();
+    private final Map<PassiveKey, PassiveRuntime> activePassives = new LinkedHashMap<>();
     private long lastStateStoreTick = Long.MIN_VALUE;
 
     public AbilityRuntimeService(AbilityDefinitionResolver definitionResolver) {
@@ -88,16 +87,77 @@ public class AbilityRuntimeService {
                                           IMKEntityData casterData,
                                           AbilityReference ability,
                                           @Nullable UUID sourceId) {
+        return requestToggle(ownerData, casterData, ability, Map.of(), sourceId);
+    }
+
+    public InvocationResult requestToggle(IMKEntityData ownerData,
+                                          IMKEntityData casterData,
+                                          GrantedAbility ability,
+                                          @Nullable UUID sourceId) {
+        Objects.requireNonNull(ability, "ability");
+        return requestToggle(
+                ownerData,
+                casterData,
+                new AbilityReference(ability.abilityId(), ability.grantId()),
+                ability.parameterOverrides(),
+                sourceId
+        );
+    }
+
+    public void refreshPassives(IMKEntityData ownerData,
+                                IMKEntityData casterData,
+                                Collection<GrantedAbility> desiredPassives) {
+        Objects.requireNonNull(ownerData, "ownerData");
+        Objects.requireNonNull(casterData, "casterData");
+        Objects.requireNonNull(desiredPassives, "desiredPassives");
+
+        UUID ownerEntityId = ownerData.getEntity().getUUID();
+        LinkedHashMap<PassiveKey, PassiveRuntime> desiredByKey = new LinkedHashMap<>();
+        for (GrantedAbility grantedAbility : desiredPassives) {
+            if (grantedAbility == null) {
+                continue;
+            }
+            PassiveRuntime runtime = createPassiveRuntime(ownerData, casterData, grantedAbility);
+            if (runtime == null) {
+                continue;
+            }
+            desiredByKey.put(runtime.key(), runtime);
+        }
+
+        for (PassiveRuntime runtime : List.copyOf(activePassives.values())) {
+            if (!runtime.ownerEntityId().equals(ownerEntityId) || desiredByKey.containsKey(runtime.key())) {
+                continue;
+            }
+            requestPassiveTeardown(runtime);
+        }
+
+        for (PassiveRuntime runtime : desiredByKey.values()) {
+            if (activePassives.containsKey(runtime.key())
+                    ) {
+                continue;
+            }
+            requestPassiveSetup(runtime, ownerData, casterData);
+        }
+    }
+
+    private InvocationResult requestToggle(IMKEntityData ownerData,
+                                           IMKEntityData casterData,
+                                           AbilityReference ability,
+                                           Map<String, AbilityValue> grantParameterOverrides,
+                                           @Nullable UUID sourceId) {
         Objects.requireNonNull(ownerData, "ownerData");
         Objects.requireNonNull(casterData, "casterData");
         Objects.requireNonNull(ability, "ability");
+        Objects.requireNonNull(grantParameterOverrides, "grantParameterOverrides");
 
         PatchedAbilityDefinition definition = definitionResolver.resolvePatched(ability.abilityId());
         if (definition == null) {
             return InvocationResult.failed(FailureReason.UNKNOWN_ABILITY);
         }
 
-        UUID stableSourceId = sourceId != null ? sourceId : casterData.getEntity().getUUID();
+        UUID stableSourceId = sourceId != null
+                ? sourceId
+                : ability.grantId() != null ? ability.grantId() : casterData.getEntity().getUUID();
         ToggleKey key = new ToggleKey(ownerData.getEntity().getUUID(), ability.abilityId(), ability.grantId(), stableSourceId);
         ToggleRuntime activeToggle = activeToggles.get(key);
         if (activeToggle != null) {
@@ -127,8 +187,10 @@ public class AbilityRuntimeService {
                 : null;
         ToggleRuntime runtime = new ToggleRuntime(
                 key,
-                new AbilityReactionOwner(ReactionOwnerType.TOGGLE_STATE, UUID.randomUUID(), stableSourceId, ability.abilityId()),
+                new AbilityReactionOwner(ReactionOwnerType.TOGGLE_STATE, ownerData.getEntity().getUUID(), stableSourceId,
+                        ability.abilityId()),
                 ability,
+                grantParameterOverrides,
                 ownerData.getEntity().getUUID(),
                 casterData.getEntity().getUUID(),
                 enableActivationId,
@@ -152,12 +214,17 @@ public class AbilityRuntimeService {
                 null,
                 null,
                 null,
+                runtime.grantParameterOverrides(),
                 runtime.owner(),
                 false,
                 true
         ));
-        if (result.started() && result.invocationId() != null) {
-            pendingToggleEnables.put(result.invocationId(), runtime);
+        if (result.started()) {
+            activeToggles.put(runtime.key(), runtime);
+            runtime.scheduleNextPulse(currentGameTick());
+            if (runtime.hasAuraBehavior() && runtime.auraBehavior().pulseOnEnable()) {
+                startAuraPulse(runtime, ownerData, casterData);
+            }
         }
         return result;
     }
@@ -244,15 +311,129 @@ public class AbilityRuntimeService {
                 null,
                 null,
                 null,
+                runtime.grantParameterOverrides(),
                 runtime.owner(),
                 true,
                 true
         ));
-        if (result.started() && result.invocationId() != null) {
+        if (result.started()) {
             activeToggles.remove(runtime.key());
-            pendingToggleDisables.put(result.invocationId(), runtime);
         }
         return result;
+    }
+
+    private @Nullable PassiveRuntime createPassiveRuntime(IMKEntityData ownerData,
+                                                          IMKEntityData casterData,
+                                                          GrantedAbility grantedAbility) {
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(grantedAbility.abilityId());
+        if (definition == null) {
+            MKCore.LOGGER.debug("abilities2 passive refresh skipped unknown ability {}", grantedAbility.abilityId());
+            return null;
+        }
+
+        String setupActivationId;
+        String teardownActivationId;
+        try {
+            setupActivationId = resolveSingleActivationId(definition, ActivationKind.PASSIVE_SETUP);
+            teardownActivationId = resolveSingleActivationId(definition, ActivationKind.PASSIVE_TEARDOWN);
+        } catch (IllegalStateException e) {
+            MKCore.LOGGER.debug("abilities2 passive refresh for {} is ambiguous: {}",
+                    grantedAbility.abilityId(), e.getMessage());
+            return null;
+        }
+
+        return new PassiveRuntime(
+                new PassiveKey(ownerData.getEntity().getUUID(), grantedAbility.abilityId(), grantedAbility.grantId()),
+                new AbilityReactionOwner(ReactionOwnerType.ENTITY_PASSIVE, ownerData.getEntity().getUUID(),
+                        grantedAbility.grantId(), grantedAbility.abilityId()),
+                new AbilityReference(grantedAbility.abilityId(), grantedAbility.grantId()),
+                grantedAbility.parameterOverrides(),
+                ownerData.getEntity().getUUID(),
+                casterData.getEntity().getUUID(),
+                setupActivationId,
+                teardownActivationId
+        );
+    }
+
+    private void requestPassiveSetup(PassiveRuntime runtime,
+                                     IMKEntityData ownerData,
+                                     IMKEntityData casterData) {
+        if (runtime.setupActivationId() == null) {
+            activePassives.put(runtime.key(), runtime);
+            return;
+        }
+
+        InvocationResult result = engine.activateInternal(new InternalActivationRequest(
+                ownerData,
+                casterData,
+                runtime.ability(),
+                runtime.setupActivationId(),
+                runtime.owner().stableSourceId(),
+                null,
+                null,
+                false,
+                false,
+                ActivationReason.PASSIVE_LIFECYCLE,
+                0,
+                null,
+                null,
+                null,
+                null,
+                runtime.grantParameterOverrides(),
+                runtime.owner(),
+                false,
+                true
+        ));
+        if (result.started()) {
+            activePassives.put(runtime.key(), runtime);
+        } else {
+            MKCore.LOGGER.debug("abilities2 passive setup for {} did not start: {}",
+                    runtime.ability().abilityId(), result.failureReason());
+        }
+    }
+
+    private void requestPassiveTeardown(PassiveRuntime runtime) {
+        if (runtime.teardownActivationId() == null) {
+            activePassives.remove(runtime.key());
+            clearReactionOwner(runtime.owner());
+            return;
+        }
+
+        IMKEntityData ownerData = resolveEntityData(runtime.ownerEntityId());
+        IMKEntityData casterData = resolveEntityData(runtime.casterEntityId());
+        if (ownerData == null || casterData == null) {
+            activePassives.remove(runtime.key());
+            clearReactionOwner(runtime.owner());
+            return;
+        }
+
+        InvocationResult result = engine.activateInternal(new InternalActivationRequest(
+                ownerData,
+                casterData,
+                runtime.ability(),
+                runtime.teardownActivationId(),
+                runtime.owner().stableSourceId(),
+                null,
+                null,
+                false,
+                false,
+                ActivationReason.PASSIVE_LIFECYCLE,
+                0,
+                null,
+                null,
+                null,
+                null,
+                runtime.grantParameterOverrides(),
+                runtime.owner(),
+                true,
+                false
+        ));
+        if (result.started()) {
+            activePassives.remove(runtime.key());
+        } else {
+            MKCore.LOGGER.debug("abilities2 passive teardown for {} did not start: {}",
+                    runtime.ability().abilityId(), result.failureReason());
+        }
     }
 
     private void tickActiveToggles(long gameTick) {
@@ -299,6 +480,7 @@ public class AbilityRuntimeService {
                 null,
                 auraBehavior.pulseEntryPoint(),
                 auraBehavior.pulseTargeting(),
+                runtime.grantParameterOverrides(),
                 runtime.owner(),
                 false,
                 false
@@ -358,31 +540,9 @@ public class AbilityRuntimeService {
     }
 
     private void handleInvocationCompleted(AbilityInvocation invocation) {
-        ToggleRuntime enabledRuntime = pendingToggleEnables.remove(invocation.invocationId());
-        if (enabledRuntime != null) {
-            activeToggles.put(enabledRuntime.key(), enabledRuntime);
-            enabledRuntime.scheduleNextPulse(currentGameTick());
-            if (enabledRuntime.hasAuraBehavior() && enabledRuntime.auraBehavior().pulseOnEnable()) {
-                IMKEntityData ownerData = resolveEntityData(enabledRuntime.ownerEntityId());
-                IMKEntityData casterData = resolveEntityData(enabledRuntime.casterEntityId());
-                if (ownerData == null || casterData == null) {
-                    teardownToggle(enabledRuntime);
-                } else {
-                    startAuraPulse(enabledRuntime, ownerData, casterData);
-                }
-            }
-            return;
-        }
-
-        ToggleRuntime disabledRuntime = pendingToggleDisables.remove(invocation.invocationId());
-        if (disabledRuntime != null) {
-            clearReactionOwner(disabledRuntime.owner());
-        }
     }
 
     private void handleInvocationInterrupted(AbilityInvocation invocation) {
-        pendingToggleEnables.remove(invocation.invocationId());
-        pendingToggleDisables.remove(invocation.invocationId());
     }
 
     private boolean evaluateRelation(UUID ownerEntityId, UUID participantEntityId, ParticipantRelation relation) {
@@ -699,10 +859,16 @@ public class AbilityRuntimeService {
                              UUID stableSourceId) {
     }
 
+    private record PassiveKey(UUID ownerEntityId,
+                              ResourceLocation abilityId,
+                              UUID grantId) {
+    }
+
     private static final class ToggleRuntime {
         private final ToggleKey key;
         private final AbilityReactionOwner owner;
         private final AbilityReference ability;
+        private final Map<String, AbilityValue> grantParameterOverrides;
         private final UUID ownerEntityId;
         private final UUID casterEntityId;
         private final String enableActivationId;
@@ -713,6 +879,7 @@ public class AbilityRuntimeService {
         private ToggleRuntime(ToggleKey key,
                               AbilityReactionOwner owner,
                               AbilityReference ability,
+                              Map<String, AbilityValue> grantParameterOverrides,
                               UUID ownerEntityId,
                               UUID casterEntityId,
                               String enableActivationId,
@@ -721,6 +888,7 @@ public class AbilityRuntimeService {
             this.key = key;
             this.owner = owner;
             this.ability = ability;
+            this.grantParameterOverrides = Map.copyOf(new LinkedHashMap<>(grantParameterOverrides));
             this.ownerEntityId = ownerEntityId;
             this.casterEntityId = casterEntityId;
             this.enableActivationId = enableActivationId;
@@ -739,6 +907,10 @@ public class AbilityRuntimeService {
 
         private AbilityReference ability() {
             return ability;
+        }
+
+        private Map<String, AbilityValue> grantParameterOverrides() {
+            return grantParameterOverrides;
         }
 
         private UUID ownerEntityId() {
@@ -771,6 +943,67 @@ public class AbilityRuntimeService {
 
         private void scheduleNextPulse(long currentGameTick) {
             nextPulseTick = auraBehavior != null ? currentGameTick + auraBehavior.pulseIntervalTicks() : Long.MAX_VALUE;
+        }
+    }
+
+    private static final class PassiveRuntime {
+        private final PassiveKey key;
+        private final AbilityReactionOwner owner;
+        private final AbilityReference ability;
+        private final Map<String, AbilityValue> grantParameterOverrides;
+        private final UUID ownerEntityId;
+        private final UUID casterEntityId;
+        private final @Nullable String setupActivationId;
+        private final @Nullable String teardownActivationId;
+
+        private PassiveRuntime(PassiveKey key,
+                               AbilityReactionOwner owner,
+                               AbilityReference ability,
+                               Map<String, AbilityValue> grantParameterOverrides,
+                               UUID ownerEntityId,
+                               UUID casterEntityId,
+                               @Nullable String setupActivationId,
+                               @Nullable String teardownActivationId) {
+            this.key = key;
+            this.owner = owner;
+            this.ability = ability;
+            this.grantParameterOverrides = Map.copyOf(new LinkedHashMap<>(grantParameterOverrides));
+            this.ownerEntityId = ownerEntityId;
+            this.casterEntityId = casterEntityId;
+            this.setupActivationId = setupActivationId;
+            this.teardownActivationId = teardownActivationId;
+        }
+
+        private PassiveKey key() {
+            return key;
+        }
+
+        private AbilityReactionOwner owner() {
+            return owner;
+        }
+
+        private AbilityReference ability() {
+            return ability;
+        }
+
+        private Map<String, AbilityValue> grantParameterOverrides() {
+            return grantParameterOverrides;
+        }
+
+        private UUID ownerEntityId() {
+            return ownerEntityId;
+        }
+
+        private UUID casterEntityId() {
+            return casterEntityId;
+        }
+
+        private @Nullable String setupActivationId() {
+            return setupActivationId;
+        }
+
+        private @Nullable String teardownActivationId() {
+            return teardownActivationId;
         }
     }
 
