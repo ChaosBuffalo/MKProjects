@@ -115,15 +115,22 @@ public class AbilityRuntimeService {
 
     public void refreshPassives(IMKEntityData ownerData,
                                 IMKEntityData casterData,
+                                AbilityGrantSource grantSource,
                                 Collection<GrantedAbility> desiredPassives) {
         Objects.requireNonNull(ownerData, "ownerData");
         Objects.requireNonNull(casterData, "casterData");
+        Objects.requireNonNull(grantSource, "grantSource");
         Objects.requireNonNull(desiredPassives, "desiredPassives");
 
         UUID ownerEntityId = ownerData.getEntity().getUUID();
         LinkedHashMap<PassiveKey, PassiveRuntime> desiredByKey = new LinkedHashMap<>();
         for (GrantedAbility grantedAbility : desiredPassives) {
             if (grantedAbility == null) {
+                continue;
+            }
+            if (!grantSource.equals(grantedAbility.source())) {
+                MKCore.LOGGER.warn("abilities2 passive refresh for owner {} ignored mismatched grant source {} on {}",
+                        ownerEntityId, grantedAbility.source(), grantedAbility.abilityId());
                 continue;
             }
             PassiveRuntime runtime = createPassiveRuntime(ownerData, casterData, grantedAbility);
@@ -134,7 +141,9 @@ public class AbilityRuntimeService {
         }
 
         for (PassiveRuntime runtime : List.copyOf(activePassives.values())) {
-            if (!runtime.ownerEntityId().equals(ownerEntityId) || desiredByKey.containsKey(runtime.key())) {
+            if (!runtime.ownerEntityId().equals(ownerEntityId)
+                    || !runtime.source().equals(grantSource)
+                    || desiredByKey.containsKey(runtime.key())) {
                 continue;
             }
             requestPassiveTeardown(runtime);
@@ -353,10 +362,12 @@ public class AbilityRuntimeService {
         }
 
         return new PassiveRuntime(
-                new PassiveKey(ownerData.getEntity().getUUID(), grantedAbility.abilityId(), grantedAbility.grantId()),
+                new PassiveKey(ownerData.getEntity().getUUID(), grantedAbility.source(),
+                        grantedAbility.abilityId(), grantedAbility.grantId()),
                 new AbilityReactionOwner(ReactionOwnerType.ENTITY_PASSIVE, ownerData.getEntity().getUUID(),
                         grantedAbility.grantId(), grantedAbility.abilityId()),
                 new AbilityReference(grantedAbility.abilityId(), grantedAbility.grantId()),
+                grantedAbility.source(),
                 grantedAbility.parameterOverrides(),
                 ownerData.getEntity().getUUID(),
                 casterData.getEntity().getUUID(),
@@ -1075,6 +1086,7 @@ public class AbilityRuntimeService {
     }
 
     private record PassiveKey(UUID ownerEntityId,
+                              AbilityGrantSource source,
                               ResourceLocation abilityId,
                               UUID grantId) {
     }
@@ -1165,6 +1177,7 @@ public class AbilityRuntimeService {
         private final PassiveKey key;
         private final AbilityReactionOwner owner;
         private final AbilityReference ability;
+        private final AbilityGrantSource source;
         private final Map<String, AbilityValue> grantParameterOverrides;
         private final UUID ownerEntityId;
         private final UUID casterEntityId;
@@ -1174,6 +1187,7 @@ public class AbilityRuntimeService {
         private PassiveRuntime(PassiveKey key,
                                AbilityReactionOwner owner,
                                AbilityReference ability,
+                               AbilityGrantSource source,
                                Map<String, AbilityValue> grantParameterOverrides,
                                UUID ownerEntityId,
                                UUID casterEntityId,
@@ -1182,6 +1196,7 @@ public class AbilityRuntimeService {
             this.key = key;
             this.owner = owner;
             this.ability = ability;
+            this.source = source;
             this.grantParameterOverrides = Map.copyOf(new LinkedHashMap<>(grantParameterOverrides));
             this.ownerEntityId = ownerEntityId;
             this.casterEntityId = casterEntityId;
@@ -1199,6 +1214,10 @@ public class AbilityRuntimeService {
 
         private AbilityReference ability() {
             return ability;
+        }
+
+        private AbilityGrantSource source() {
+            return source;
         }
 
         private Map<String, AbilityValue> grantParameterOverrides() {

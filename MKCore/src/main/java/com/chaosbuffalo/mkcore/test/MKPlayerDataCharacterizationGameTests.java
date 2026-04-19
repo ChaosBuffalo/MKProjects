@@ -105,6 +105,30 @@ public class MKPlayerDataCharacterizationGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void activationPreservesSlottedAbilities2PassiveDefinition(GameTestHelper helper) {
+        ResourceLocation abilityId = MKCore.id("test_abilities2_spell_crit_passive");
+        MKServerPlayerData blankData = createPlayerData(helper);
+        HolderLookup.Provider provider = blankData.getEntity().registryAccess();
+        CompoundTag serialized = blankData.serializeNBT(provider);
+
+        setPassiveSlots(serialized, 1);
+        setPassiveAbilities(serialized, abilityId);
+
+        MKServerPlayerData restoredData = createPlayerData(helper);
+        restoredData.deserializeNBT(provider, serialized);
+        AbilityGroup restoredGroup = restoredData.getLoadout().getAbilityGroup(AbilityGroupId.Passive);
+
+        helper.assertValueEqual(restoredGroup.getSlot(0), abilityId, "deserialized passive definition slot");
+        helper.assertTrue(restoredGroup.getAbilityInfo(0) == null, "abilities2 passive should not resolve as a legacy ability");
+
+        restoredData.getPersonaManager().onJoinLevel();
+
+        helper.assertValueEqual(restoredGroup.getSlot(0), abilityId, "activation should preserve the abilities2 passive slot");
+        helper.assertTrue(restoredGroup.getAbilityInfo(0) == null, "abilities2 passive should remain a definition-backed slot");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void setSlotSwapsWithExistingAbility(GameTestHelper helper) {
         MKServerPlayerData playerData = createPlayerData(helper);
         AbilityGroup basicGroup = playerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic);
@@ -264,5 +288,19 @@ public class MKPlayerDataCharacterizationGameTests {
             list.add(StringTag.valueOf(abilityId.toString()));
         }
         personaTag.getCompound("loadout").getCompound("basic").put("abilities", list);
+    }
+
+    private static void setPassiveSlots(CompoundTag root, int slotCount) {
+        CompoundTag personaTag = getDefaultPersonaTag(root);
+        personaTag.getCompound("loadout").getCompound("passive").putInt("slots", slotCount);
+    }
+
+    private static void setPassiveAbilities(CompoundTag root, ResourceLocation... abilityIds) {
+        CompoundTag personaTag = getDefaultPersonaTag(root);
+        ListTag list = new ListTag();
+        for (ResourceLocation abilityId : abilityIds) {
+            list.add(StringTag.valueOf(abilityId.toString()));
+        }
+        personaTag.getCompound("loadout").getCompound("passive").put("abilities", list);
     }
 }

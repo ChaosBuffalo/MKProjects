@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
+import com.chaosbuffalo.mkcore.abilities2.runtime.PatchedAbilityDefinition;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.sync.adapters.SyncArrayListUpdater;
@@ -165,6 +166,39 @@ public class AbilityGroup implements ISyncGroupProvider {
         abilityInfo.getAbility().onAbilityGroupRemoved(playerData, abilityInfo);
     }
 
+    protected void onAbilityDefinitionAdded(int index, ResourceLocation abilityId) {
+    }
+
+    protected void onAbilityDefinitionRemoved(int index, ResourceLocation abilityId) {
+    }
+
+    protected void onPersonaActivatedDefinition(int index, ResourceLocation abilityId) {
+        onAbilityDefinitionAdded(index, abilityId);
+    }
+
+    protected void onPersonaDeactivatedDefinition(int index, ResourceLocation abilityId) {
+        onAbilityDefinitionRemoved(index, abilityId);
+    }
+
+    @Nullable
+    protected ResourceLocation getAbilityDefinitionSlotFamily() {
+        return null;
+    }
+
+    @Nullable
+    protected PatchedAbilityDefinition resolveAbilityDefinition(ResourceLocation abilityId) {
+        ResourceLocation slotFamily = getAbilityDefinitionSlotFamily();
+        if (slotFamily == null) {
+            return null;
+        }
+
+        PatchedAbilityDefinition definition = MKCore.getAbilityDefinitionService().getResolver().resolvePatched(abilityId);
+        if (definition == null || !definition.definition().data().slotFamily().equals(slotFamily)) {
+            return null;
+        }
+        return definition;
+    }
+
     private void setIndex(int index, ResourceLocation abilityId) {
         activeAbilities.set(index, abilityId);
         activeUpdater.setDirty(index);
@@ -181,11 +215,8 @@ public class AbilityGroup implements ISyncGroupProvider {
         // Clearing slot - no validity checks required
         if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
 //            MKCore.LOGGER.info("setSlot - clearing {} from {}", index, currentAbilityId);
-            MKAbilityInfo oldInfo = getAbilityInfo(index);
             setIndex(index, abilityId);
-            if (oldInfo != null) {
-                onAbilityRemoved(index, oldInfo);
-            }
+            notifyAbilityRemoved(index, currentAbilityId);
             return;
         }
 
@@ -206,46 +237,32 @@ public class AbilityGroup implements ISyncGroupProvider {
         // abilityId was not slotted and is being inserted into an empty slot
         if (currentAbilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
             setIndex(index, abilityId);
-            MKAbilityInfo newInfo = getAbilityInfo(index);
-            if (newInfo != null) {
-                onAbilityAdded(index, newInfo);
-            } else {
-                MKCore.LOGGER.warn("Failed to resolve ability {} for {} slot {} after slotting", abilityId, groupId, index);
-            }
+            notifyAbilityAdded(index, abilityId);
             return;
         }
 
         // New ability is not current slotted and is replacing an existing ability
-        MKAbilityInfo oldInfo = getAbilityInfo(index);
         setIndex(index, abilityId);
-        if (oldInfo != null) {
-            onAbilityRemoved(index, oldInfo);
-        }
-        MKAbilityInfo newInfo = getAbilityInfo(index);
-        if (newInfo != null) {
-            onAbilityAdded(index, newInfo);
-        } else {
-            MKCore.LOGGER.warn("Failed to resolve ability {} for {} slot {} after replacing {}", abilityId, groupId, index, currentAbilityId);
-        }
+        notifyAbilityRemoved(index, currentAbilityId);
+        notifyAbilityAdded(index, abilityId);
     }
 
     private boolean validateAbilityForSlot(int index, ResourceLocation abilityId) {
         MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-        if (ability == null) {
-            // not an ability
-            return false;
+        if (ability != null) {
+            if (requiresAbilityKnown() && !persona.getAbilities().knowsAbility(abilityId)) {
+                MKCore.LOGGER.error("setSlot({}, {}, {}) - player does not know ability!", groupId, index, abilityId);
+                return false;
+            }
+
+            if (!groupId.fitsAbilityType(ability.getType())) {
+                MKCore.LOGGER.error("setSlot({}, {}, {}) - ability does not fit in group", groupId, index, abilityId);
+                return false;
+            }
+            return true;
         }
 
-        if (requiresAbilityKnown() && !persona.getAbilities().knowsAbility(abilityId)) {
-            MKCore.LOGGER.error("setSlot({}, {}, {}) - player does not know ability!", groupId, index, abilityId);
-            return false;
-        }
-
-        if (!groupId.fitsAbilityType(ability.getType())) {
-            MKCore.LOGGER.error("setSlot({}, {}, {}) - ability does not fit in group", groupId, index, abilityId);
-            return false;
-        }
-        return true;
+        return resolveAbilityDefinition(abilityId) != null;
     }
 
     public boolean isSlotUnlocked(int slot) {
@@ -311,11 +328,18 @@ public class AbilityGroup implements ISyncGroupProvider {
                 continue;
             }
 
+            ResourceLocation abilityId = getSlot(i);
+            if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
+                continue;
+            }
+
             MKAbilityInfo abilityInfo = getAbilityInfo(i);
-            if (abilityInfo == null) {
-                clearSlot(i);
-            } else {
+            if (abilityInfo != null) {
                 onPersonaActivatedAbility(i, abilityInfo);
+            } else if (resolveAbilityDefinition(abilityId) != null) {
+                onPersonaActivatedDefinition(i, abilityId);
+            } else {
+                clearSlot(i);
             }
         }
     }
@@ -326,9 +350,16 @@ public class AbilityGroup implements ISyncGroupProvider {
 
     public void onPersonaDeactivated() {
         for (int i = 0; i < getMaximumSlotCount(); i++) {
+            ResourceLocation abilityId = getSlot(i);
+            if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
+                continue;
+            }
+
             MKAbilityInfo abilityInfo = getAbilityInfo(i);
             if (abilityInfo != null) {
                 onPersonaDeactivatedAbility(i, abilityInfo);
+            } else if (resolveAbilityDefinition(abilityId) != null) {
+                onPersonaDeactivatedDefinition(i, abilityId);
             }
         }
     }
@@ -363,11 +394,34 @@ public class AbilityGroup implements ISyncGroupProvider {
             int index = i;
             abilities.get(i).resultOrPartial(MKCore.LOGGER::error).ifPresent(idString -> {
                 ResourceLocation abilityId = ResourceLocation.parse(idString);
-                MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-                if (ability != null) {
+                if (MKCoreRegistry.getAbility(abilityId) != null || resolveAbilityDefinition(abilityId) != null) {
                     consumer.accept(index, abilityId);
                 }
             });
+        }
+    }
+
+    private void notifyAbilityAdded(int index, ResourceLocation abilityId) {
+        MKAbilityInfo abilityInfo = persona.getAbilities().getAbilityInfo(abilityId);
+        if (abilityInfo != null) {
+            onAbilityAdded(index, abilityInfo);
+        } else if (resolveAbilityDefinition(abilityId) != null) {
+            onAbilityDefinitionAdded(index, abilityId);
+        } else {
+            MKCore.LOGGER.warn("Failed to resolve ability {} for {} slot {} after slotting", abilityId, groupId, index);
+        }
+    }
+
+    private void notifyAbilityRemoved(int index, ResourceLocation abilityId) {
+        if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
+            return;
+        }
+
+        MKAbilityInfo abilityInfo = persona.getAbilities().getAbilityInfo(abilityId);
+        if (abilityInfo != null) {
+            onAbilityRemoved(index, abilityInfo);
+        } else if (resolveAbilityDefinition(abilityId) != null) {
+            onAbilityDefinitionRemoved(index, abilityId);
         }
     }
 }

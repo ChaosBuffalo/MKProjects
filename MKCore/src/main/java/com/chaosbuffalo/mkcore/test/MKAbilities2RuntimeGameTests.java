@@ -15,6 +15,8 @@ import com.chaosbuffalo.mkcore.abilities2.definition.DeliveryKind;
 import com.chaosbuffalo.mkcore.abilities2.definition.InterruptPolicy;
 import com.chaosbuffalo.mkcore.abilities2.definition.InterruptRefundPolicy;
 import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityDefinitionResolver;
+import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityEventSnapshot;
+import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityEventType;
 import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityReference;
 import com.chaosbuffalo.mkcore.abilities2.runtime.ActivationRequest;
 import com.chaosbuffalo.mkcore.abilities2.runtime.InvocationResult;
@@ -39,6 +41,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @GameTestHolder(MKCore.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -47,6 +50,10 @@ public class MKAbilities2RuntimeGameTests {
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_projectile_impact");
     private static final ResourceLocation PROJECTILE_GROUND_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_projectile_ground");
+    private static final ResourceLocation SPELL_CRIT_PASSIVE_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_spell_crit_passive");
+    private static final ResourceLocation SPELL_SOURCE_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_firebolt");
     private static final InterruptPolicy NO_INTERRUPT = new InterruptPolicy(false, 0.0f, false, 0.0, true);
 
     @GameTest(template = "player_data_phase0")
@@ -109,6 +116,39 @@ public class MKAbilities2RuntimeGameTests {
         helper.assertFalse(impactHandled, "block impact should keep the projectile active for ground callbacks");
         helper.assertFalse(groundHandled, "ground callbacks should not remove the projectile directly");
         helper.assertTrue(caster.getHealth() < startingHealth, "ground callback should damage the caster");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void slottedPassiveDefinitionInstallsReactionRuntime(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        Player target = createTestPlayer(helper, new BlockPos(3, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        helper.assertTrue(
+                MKCore.getAbilityDefinitionService().getResolver().resolvePatched(SPELL_CRIT_PASSIVE_ABILITY) != null,
+                "generated passive definition should be loaded for the integration test"
+        );
+
+        ownerData.getLoadout().getPassiveAbilityGroup().setSlots(1);
+        ownerData.getLoadout().getPassiveAbilityGroup().setSlot(0, SPELL_CRIT_PASSIVE_ABILITY);
+
+        float startingHealth = target.getHealth();
+        MKCore.getAbilityRuntimeService().getReactionBus().emit(new AbilityEventSnapshot(
+                AbilityEventType.SPELL_CRIT,
+                null,
+                UUID.randomUUID(),
+                0,
+                owner.getUUID(),
+                SPELL_SOURCE_ABILITY,
+                "cast",
+                owner.getUUID(),
+                target.getUUID(),
+                Map.of()
+        ));
+
+        helper.assertTrue(target.getHealth() < startingHealth,
+                "slotted passive definition should install a reaction that damages the crit target");
         helper.succeed();
     }
 
