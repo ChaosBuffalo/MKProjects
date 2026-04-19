@@ -55,6 +55,8 @@ public class SimpleAbilityEngine implements AbilityEngine {
     private final AbilityEventEmitter eventEmitter;
     private final ReactionController reactionController;
     private final Map<UUID, List<PendingCast>> pendingCastsByCaster = new HashMap<>();
+    private final Map<UUID, List<PendingChannel>> pendingChannelsByCaster = new HashMap<>();
+    private final Map<UUID, Float> pendingDamageInterrupts = new HashMap<>();
 
     public SimpleAbilityEngine(AbilityDefinitionResolver definitionResolver,
                                AbilityPowerResolver powerResolver,
@@ -145,32 +147,77 @@ public class SimpleAbilityEngine implements AbilityEngine {
 
     public void tickEntity(IMKEntityData entityData) {
         UUID casterId = entityData.getEntity().getUUID();
+        Float damageInterrupt = pendingDamageInterrupts.remove(casterId);
+        if (damageInterrupt != null && damageInterrupt > 0.0f) {
+            applyDamageInterrupt(entityData, damageInterrupt);
+        }
+
         List<PendingCast> casts = pendingCastsByCaster.get(casterId);
-        if (casts == null || casts.isEmpty()) {
+        if (casts != null && !casts.isEmpty()) {
+            Iterator<PendingCast> iterator = casts.iterator();
+            while (iterator.hasNext()) {
+                PendingCast pendingCast = iterator.next();
+                if (!entityData.getEntity().isAlive() || entityData.getEntity().isRemoved()) {
+                    iterator.remove();
+                    finishInterruptedInvocation(pendingCast.invocation(), FailureReason.INTERRUPTED, pendingCast.castTicksSpent());
+                    continue;
+                }
+
+                pendingCast.tick();
+                if (!pendingCast.isComplete()) {
+                    continue;
+                }
+
+                iterator.remove();
+                completeInvocation(pendingCast.invocation(), pendingCast.ignoreCosts(), pendingCast.castTicksSpent());
+            }
+
+            if (casts.isEmpty()) {
+                pendingCastsByCaster.remove(casterId);
+            }
+        }
+
+        List<PendingChannel> channels = pendingChannelsByCaster.get(casterId);
+        if (channels == null || channels.isEmpty()) {
             return;
         }
 
-        Iterator<PendingCast> iterator = casts.iterator();
-        while (iterator.hasNext()) {
-            PendingCast pendingCast = iterator.next();
+        Iterator<PendingChannel> channelIterator = channels.iterator();
+        while (channelIterator.hasNext()) {
+            PendingChannel pendingChannel = channelIterator.next();
             if (!entityData.getEntity().isAlive() || entityData.getEntity().isRemoved()) {
-                iterator.remove();
-                finishInterruptedInvocation(pendingCast.invocation(), FailureReason.INTERRUPTED, pendingCast.castTicksSpent());
+                channelIterator.remove();
+                finishInterruptedInvocation(pendingChannel.invocation(), FailureReason.INTERRUPTED,
+                        pendingChannel.castTicksSpent());
                 continue;
             }
 
-            pendingCast.tick();
-            if (!pendingCast.isComplete()) {
+            pendingChannel.tick();
+            if (!pendingChannel.readyForPulse()) {
                 continue;
             }
 
-            iterator.remove();
-            completeInvocation(pendingCast.invocation(), pendingCast.ignoreCosts(), pendingCast.castTicksSpent());
+            try {
+                runChannelPulse(pendingChannel);
+                pendingChannel.resetPulseInterval();
+            } catch (InvocationInterruptedException interrupted) {
+                channelIterator.remove();
+                finishInterruptedInvocation(pendingChannel.invocation(), interrupted.failureReason(),
+                        pendingChannel.castTicksSpent());
+            }
         }
 
-        if (casts.isEmpty()) {
-            pendingCastsByCaster.remove(casterId);
+        if (channels.isEmpty()) {
+            pendingChannelsByCaster.remove(casterId);
         }
+    }
+
+    public void queueDamageInterrupt(IMKEntityData entityData, float damageAmount) {
+        Objects.requireNonNull(entityData, "entityData");
+        if (damageAmount <= 0.0f) {
+            return;
+        }
+        pendingDamageInterrupts.merge(entityData.getEntity().getUUID(), damageAmount, Math::max);
     }
 
     private InvocationResult startActivation(IMKEntityData ownerData,
@@ -205,7 +252,8 @@ public class SimpleAbilityEngine implements AbilityEngine {
         } else if (reason == ActivationReason.REACTION && activation.kind() != ActivationKind.PROC) {
             return InvocationResult.failed(FailureReason.ACTIVATION_NOT_EXTERNALLY_CALLABLE);
         }
-        if (!(activation.behavior() instanceof ActivationBehavior.InstantBehavior)) {
+        if (!(activation.behavior() instanceof ActivationBehavior.InstantBehavior)
+                && !(activation.behavior() instanceof ActivationBehavior.ChannelBehavior)) {
             return InvocationResult.failed(FailureReason.UNSUPPORTED_FEATURE);
         }
 
@@ -259,6 +307,49 @@ public class SimpleAbilityEngine implements AbilityEngine {
             completeInvocation(invocation, ignoreCosts, 0);
         }
         return InvocationResult.started(invocation.invocationId());
+    }
+
+    private void applyDamageInterrupt(IMKEntityData entityData, float damageAmount) {
+        UUID casterId = entityData.getEntity().getUUID();
+
+        List<PendingCast> casts = pendingCastsByCaster.get(casterId);
+        if (casts != null && !casts.isEmpty()) {
+            Iterator<PendingCast> iterator = casts.iterator();
+            while (iterator.hasNext()) {
+                PendingCast pendingCast = iterator.next();
+                if (!shouldInterruptOnDamage(pendingCast.invocation(), damageAmount)) {
+                    continue;
+                }
+                iterator.remove();
+                finishInterruptedInvocation(pendingCast.invocation(), FailureReason.INTERRUPTED,
+                        pendingCast.castTicksSpent());
+            }
+            if (casts.isEmpty()) {
+                pendingCastsByCaster.remove(casterId);
+            }
+        }
+
+        List<PendingChannel> channels = pendingChannelsByCaster.get(casterId);
+        if (channels != null && !channels.isEmpty()) {
+            Iterator<PendingChannel> iterator = channels.iterator();
+            while (iterator.hasNext()) {
+                PendingChannel pendingChannel = iterator.next();
+                if (!shouldInterruptOnDamage(pendingChannel.invocation(), damageAmount)) {
+                    continue;
+                }
+                iterator.remove();
+                finishInterruptedInvocation(pendingChannel.invocation(), FailureReason.INTERRUPTED,
+                        pendingChannel.castTicksSpent());
+            }
+            if (channels.isEmpty()) {
+                pendingChannelsByCaster.remove(casterId);
+            }
+        }
+    }
+
+    private boolean shouldInterruptOnDamage(AbilityInvocation invocation, float damageAmount) {
+        InterruptPolicy interruptPolicy = activationDefinition(invocation).interruptPolicy();
+        return interruptPolicy.onDamage() && damageAmount >= interruptPolicy.minDamage();
     }
 
     private AbilityResolvedTargets resolveActivationTargets(IMKEntityData casterData,
@@ -390,6 +481,21 @@ public class SimpleAbilityEngine implements AbilityEngine {
         }
     }
 
+    private void refundActivationCostsIfEligible(AbilityInvocation invocation) {
+        AbilityActivationDefinition activation = activationDefinition(invocation);
+        if (activation.refundPolicy() != InterruptRefundPolicy.REFUND_COSTS_BEFORE_FIRST_EFFECT
+                || invocation.hasProducedGameplayEffect()) {
+            return;
+        }
+        refundActivationCosts(activation.costs(), createContext(invocation, Optional::empty));
+    }
+
+    private void refundActivationCosts(List<AbilityCostDefinition> costs, AbilityActionContext context) {
+        for (AbilityCostDefinition cost : costs) {
+            refundCost(cost, context);
+        }
+    }
+
     private boolean canAfford(AbilityCostDefinition cost, AbilityActionContext context) {
         double amount = resolveCostAmount(cost, context);
         IMKEntityData ownerData = context.ownerData();
@@ -414,6 +520,23 @@ public class SimpleAbilityEngine implements AbilityEngine {
             }
             case CUSTOM_RESOURCE -> throw new ActivationStartFailure(FailureReason.UNSUPPORTED_FEATURE);
         };
+    }
+
+    private void refundCost(AbilityCostDefinition cost, AbilityActionContext context) {
+        double amount = resolveCostAmount(cost, context);
+        IMKEntityData ownerData = context.ownerData();
+        switch (cost.kind()) {
+            case MANA -> ownerData.getStats().addMana((float) amount);
+            case HEALTH -> {
+                if (!ownerData.getEntity().isAlive()) {
+                    return;
+                }
+                ownerData.getStats().setHealth(Math.min(ownerData.getStats().getMaxHealth(),
+                        ownerData.getStats().getHealth() + (float) amount));
+            }
+            case CUSTOM_RESOURCE -> {
+            }
+        }
     }
 
     private double resolveCostAmount(AbilityCostDefinition cost, AbilityActionContext context) {
@@ -451,12 +574,17 @@ public class SimpleAbilityEngine implements AbilityEngine {
         }
         try {
             executeEntryPoint(invocation, createContext(invocation, Optional::empty), invocation.entryPointId(), ignoreCosts);
-            emitInvocationCompleted(invocation, castTicksSpent);
+            if (activationDefinition(invocation).behavior() instanceof ActivationBehavior.ChannelBehavior channelBehavior) {
+                pendingChannelsByCaster.computeIfAbsent(invocation.casterData().getEntity().getUUID(),
+                                ignored -> new ArrayList<>())
+                        .add(new PendingChannel(invocation, channelBehavior, ignoreCosts, castTicksSpent));
+            } else {
+                emitInvocationCompleted(invocation, castTicksSpent);
+                reactionController.clearOwner(invocationReactionOwner(invocation));
+            }
         } catch (InvocationInterruptedException interrupted) {
             finishInterruptedInvocation(invocation, interrupted.failureReason(), castTicksSpent);
-            return;
         }
-        reactionController.clearOwner(invocationReactionOwner(invocation));
     }
 
     private void executeEntryPoint(AbilityInvocation invocation,
@@ -641,7 +769,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
             if (target == null || !target.isAlive()) {
                 continue;
             }
-            AbilityActionContext targetContext = createContext(invocation, () -> Optional.of(target));
+            AbilityActionContext targetContext = createContext(invocation, () -> Optional.of(target), context.targets());
             executeActions(invocation, targetContext, action.actions(), ignoreCosts);
         }
     }
@@ -745,8 +873,15 @@ public class SimpleAbilityEngine implements AbilityEngine {
         return current.asFloat(key);
     }
 
-    private SimpleAbilityActionContext createContext(AbilityInvocation invocation, Supplier<Optional<LivingEntity>> currentTargetSupplier) {
-        return new SimpleAbilityActionContext(invocation, powerResolver, stateStore, currentTargetSupplier,
+    private SimpleAbilityActionContext createContext(AbilityInvocation invocation,
+                                                     Supplier<Optional<LivingEntity>> currentTargetSupplier) {
+        return createContext(invocation, currentTargetSupplier, invocation.targets());
+    }
+
+    private SimpleAbilityActionContext createContext(AbilityInvocation invocation,
+                                                     Supplier<Optional<LivingEntity>> currentTargetSupplier,
+                                                     AbilityResolvedTargets targets) {
+        return new SimpleAbilityActionContext(invocation, powerResolver, stateStore, targets, currentTargetSupplier,
                 invocationReactionOwner(invocation));
     }
 
@@ -791,6 +926,65 @@ public class SimpleAbilityEngine implements AbilityEngine {
         return invocation.targets().entityIds().stream()
                 .map(targetId -> resolveLivingEntity(invocation.casterData().getEntity(), targetId))
                 .anyMatch(target -> target != null && target.isAlive());
+    }
+
+    private void runChannelPulse(PendingChannel pendingChannel) {
+        AbilityInvocation invocation = pendingChannel.invocation();
+        AbilityResolvedTargets pulseTargets = resolveChannelPulseTargets(invocation, pendingChannel);
+        pendingChannel.updateTargets(pulseTargets);
+        executeEntryPoint(
+                invocation,
+                createContext(invocation, Optional::empty, pulseTargets),
+                pendingChannel.behavior().tickEntryPoint(),
+                pendingChannel.ignoreCosts()
+        );
+    }
+
+    private AbilityResolvedTargets resolveChannelPulseTargets(AbilityInvocation invocation,
+                                                              PendingChannel pendingChannel) {
+        ActivationBehavior.ChannelBehavior behavior = pendingChannel.behavior();
+        if (behavior.preserveInitialTargets()) {
+            return revalidatePreservedTargets(invocation, pendingChannel.currentTargets());
+        }
+
+        AbilityTargetResolverDefinition targeting = behavior.tickTargeting() != null
+                ? behavior.tickTargeting()
+                : activationDefinition(invocation).targeting();
+        try {
+            return resolveActivationTargets(invocation.casterData(), null, invocation.eventSnapshot(), targeting);
+        } catch (ActivationStartFailure failure) {
+            if (failure.failureReason() == FailureReason.INVALID_TARGETS) {
+                throw new InvocationInterruptedException(FailureReason.TARGET_LOST,
+                        "Channel targets could not be resolved for invocation " + invocation.invocationId());
+            }
+            throw new InvocationInterruptedException(failure.failureReason(),
+                    "Channel targets could not be resolved for invocation " + invocation.invocationId());
+        }
+    }
+
+    private AbilityResolvedTargets revalidatePreservedTargets(AbilityInvocation invocation,
+                                                              AbilityResolvedTargets targets) {
+        if (targets.entityIds().isEmpty()) {
+            return targets;
+        }
+
+        List<UUID> validTargets = new ArrayList<>(targets.entityIds().size());
+        for (UUID entityId : targets.entityIds()) {
+            LivingEntity target = resolveLivingEntity(invocation.casterData().getEntity(), entityId);
+            if (target != null && target.isAlive()) {
+                validTargets.add(entityId);
+            }
+        }
+        if (validTargets.isEmpty()) {
+            throw new InvocationInterruptedException(FailureReason.TARGET_LOST,
+                    "Channel lost all preserved targets for invocation " + invocation.invocationId());
+        }
+
+        UUID primaryTarget = targets.primaryEntityId() != null && validTargets.contains(targets.primaryEntityId())
+                ? targets.primaryEntityId()
+                : null;
+        return new AbilityResolvedTargets(primaryTarget, validTargets, targets.point(), targets.hitResult(),
+                targets.deliveryId());
     }
 
     private String requiredString(AbilityConditionDefinition condition, String key) {
@@ -841,6 +1035,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
     private void finishInterruptedInvocation(AbilityInvocation invocation,
                                              FailureReason failureReason,
                                              int castTicksSpent) {
+        refundActivationCostsIfEligible(invocation);
         emitInvocationInterrupted(invocation, failureReason, castTicksSpent);
         reactionController.clearOwner(invocationReactionOwner(invocation));
     }
@@ -895,12 +1090,16 @@ public class SimpleAbilityEngine implements AbilityEngine {
     }
 
     private ActivationKind activationKind(AbilityInvocation invocation) {
+        return activationDefinition(invocation).kind();
+    }
+
+    private AbilityActivationDefinition activationDefinition(AbilityInvocation invocation) {
         AbilityActivationDefinition activation = invocation.definition().definition().getActivation(invocation.activationId());
         if (activation == null) {
             throw new IllegalStateException("Invocation %s references unknown activation %s"
                     .formatted(invocation.invocationId(), invocation.activationId()));
         }
-        return activation.kind();
+        return activation;
     }
 
     private AbilityValue.ResourceLocationValue eventKeywordValue(Enum<?> value) {
@@ -942,6 +1141,63 @@ public class SimpleAbilityEngine implements AbilityEngine {
 
         private int castTicksSpent() {
             return Math.max(0, totalTicks - Math.max(remainingTicks, 0));
+        }
+    }
+
+    private static final class PendingChannel {
+        private final AbilityInvocation invocation;
+        private final ActivationBehavior.ChannelBehavior behavior;
+        private final boolean ignoreCosts;
+        private final int castTicksSpent;
+        private AbilityResolvedTargets currentTargets;
+        private int remainingPulseTicks;
+
+        private PendingChannel(AbilityInvocation invocation,
+                               ActivationBehavior.ChannelBehavior behavior,
+                               boolean ignoreCosts,
+                               int castTicksSpent) {
+            this.invocation = invocation;
+            this.behavior = behavior;
+            this.ignoreCosts = ignoreCosts;
+            this.castTicksSpent = castTicksSpent;
+            this.currentTargets = invocation.targets();
+            this.remainingPulseTicks = behavior.tickIntervalTicks();
+        }
+
+        private AbilityInvocation invocation() {
+            return invocation;
+        }
+
+        private ActivationBehavior.ChannelBehavior behavior() {
+            return behavior;
+        }
+
+        private boolean ignoreCosts() {
+            return ignoreCosts;
+        }
+
+        private int castTicksSpent() {
+            return castTicksSpent;
+        }
+
+        private AbilityResolvedTargets currentTargets() {
+            return currentTargets;
+        }
+
+        private void updateTargets(AbilityResolvedTargets currentTargets) {
+            this.currentTargets = Objects.requireNonNull(currentTargets, "currentTargets");
+        }
+
+        private void tick() {
+            remainingPulseTicks--;
+        }
+
+        private boolean readyForPulse() {
+            return remainingPulseTicks <= 0;
+        }
+
+        private void resetPulseInterval() {
+            remainingPulseTicks = behavior.tickIntervalTicks();
         }
     }
 

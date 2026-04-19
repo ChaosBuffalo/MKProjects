@@ -14,22 +14,25 @@ public class SimpleAbilityActionContext implements AbilityActionContext {
     private final AbilityInvocation invocation;
     private final AbilityPowerResolver powerResolver;
     private final AbilityStateStore stateStore;
+    private final AbilityResolvedTargets targets;
     private final Supplier<Optional<LivingEntity>> currentTargetSupplier;
     private final @Nullable AbilityReactionOwner reactionOwner;
 
     public SimpleAbilityActionContext(AbilityInvocation invocation,
                                       AbilityPowerResolver powerResolver) {
-        this(invocation, powerResolver, NoopAbilityStateStore.INSTANCE, Optional::empty, null);
+        this(invocation, powerResolver, NoopAbilityStateStore.INSTANCE, invocation.targets(), Optional::empty, null);
     }
 
     public SimpleAbilityActionContext(AbilityInvocation invocation,
                                       AbilityPowerResolver powerResolver,
                                       AbilityStateStore stateStore,
+                                      AbilityResolvedTargets targets,
                                       Supplier<Optional<LivingEntity>> currentTargetSupplier,
                                       @Nullable AbilityReactionOwner reactionOwner) {
         this.invocation = Objects.requireNonNull(invocation, "invocation");
         this.powerResolver = Objects.requireNonNull(powerResolver, "powerResolver");
         this.stateStore = Objects.requireNonNull(stateStore, "stateStore");
+        this.targets = Objects.requireNonNull(targets, "targets");
         this.currentTargetSupplier = Objects.requireNonNull(currentTargetSupplier, "currentTargetSupplier");
         this.reactionOwner = reactionOwner;
     }
@@ -56,7 +59,7 @@ public class SimpleAbilityActionContext implements AbilityActionContext {
 
     @Override
     public AbilityResolvedTargets targets() {
-        return invocation.targets();
+        return targets;
     }
 
     @Override

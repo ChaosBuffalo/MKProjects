@@ -102,6 +102,9 @@ public class AbilityRuntimeService {
         if (event.getEntity().level().isClientSide() || event.getNewDamage() <= 0.0f) {
             return;
         }
+        if (shouldQueueDamageInterrupt(event.getSource(), event.getNewDamage())) {
+            engine.queueDamageInterrupt(MKCore.getEntityDataOrThrow(event.getEntity()), event.getNewDamage());
+        }
         emitDamageTaken(event.getSource(), event.getEntity(), event.getNewDamage());
     }
 
@@ -263,6 +266,19 @@ public class AbilityRuntimeService {
                 target.getUUID(),
                 damagePayload(damageAmount, resolved)
         );
+    }
+
+    private boolean shouldQueueDamageInterrupt(DamageSource source, float damageAmount) {
+        if (damageAmount <= 0.0f) {
+            return false;
+        }
+        if (source instanceof MKDamageSource mkDamageSource
+                && mkDamageSource.getOrigination() == MKDamageSource.Origination.DAMAGE_TYPE) {
+            return false;
+        }
+        return source instanceof MKDamageSource
+                || source.getEntity() instanceof LivingEntity
+                || source.getDirectEntity() instanceof Projectile;
     }
 
     private void emitKill(DamageSource source, LivingEntity target) {
