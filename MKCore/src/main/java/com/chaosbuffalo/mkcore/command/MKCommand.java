@@ -13,6 +13,7 @@ public class MKCommand {
                 .then(AttributeCommand.register())
                 .then(CooldownCommand.register())
                 .then(AbilityCommand.register())
+                .then(Ability2Command.register())
                 .then(EffectCommand.register())
                 .then(PersonaCommand.register())
                 .then(TalentCommand.register())

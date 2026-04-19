@@ -54,6 +54,10 @@ public class AbilityDefinitionService {
         return definitions.get(abilityId);
     }
 
+    public Set<ResourceLocation> getDefinitionIds() {
+        return Collections.unmodifiableSet(definitions.keySet());
+    }
+
     public List<AbilityDefinitionPatch> getPatches(ResourceLocation abilityId) {
         return patchesByAbility.getOrDefault(abilityId, List.of());
     }
