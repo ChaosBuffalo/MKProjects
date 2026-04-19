@@ -157,14 +157,21 @@ public class LoadoutCommand {
                 .filter(abilityId -> MKCore.getAbilityRuntimeService().isLoadoutDefinition(group, abilityId))
                 .map(ResourceLocation::toString)
                 : Stream.empty();
-        return SharedSuggestionProvider.suggest(MKCore.getPlayer(player)
-                        .map(playerData -> playerData.getAbilities()
-                                .getAbilityInfoStream()
-                                .filter(info -> group.fitsAbilityType(info.getAbilityType()))
-                                .map(MKAbilityInfo::getId)
-                                .map(ResourceLocation::toString))
-                        .map(knownAbilities -> Stream.concat(knownAbilities, loadoutDefinitions))
-                        .orElse(loadoutDefinitions),
+
+        Stream<String> playerKnownAbilities = MKCore.getPlayer(player)
+                .map(playerData -> Stream.concat(
+                                playerData.getAbilities()
+                                        .getAbilityInfoStream()
+                                        .filter(info -> group.fitsAbilityType(info.getAbilityType()))
+                                        .map(MKAbilityInfo::getId),
+                                playerData.getAbilities()
+                                        .getKnownDefinitionIds()
+                                        .filter(abilityId -> MKCore.getAbilityRuntimeService().isLoadoutDefinition(group, abilityId))
+                        )
+                        .map(ResourceLocation::toString))
+                .orElse(Stream.empty());
+
+        return SharedSuggestionProvider.suggest(Stream.concat(playerKnownAbilities, loadoutDefinitions).distinct(),
                 builder);
     }
 

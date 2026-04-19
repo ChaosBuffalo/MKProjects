@@ -16,21 +16,33 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class PlayerKnownAbility implements IMKSerializable<CompoundTag> {
+    private final ResourceLocation id;
+    @Nullable
     public final MKAbilityInfo abilityInfo;
     private final Set<AbilitySource> sources = new HashSet<>(2);
     @Nullable
     private AbilitySource highestSource;
 
     public PlayerKnownAbility(MKAbilityInfo abilityInfo) {
+        this(abilityInfo.getId(), abilityInfo);
+    }
+
+    public PlayerKnownAbility(ResourceLocation id, @Nullable MKAbilityInfo abilityInfo) {
+        this.id = id;
         this.abilityInfo = abilityInfo;
     }
 
+    @Nullable
     public MKAbilityInfo getAbilityInfo() {
         return abilityInfo;
     }
 
     public ResourceLocation getId() {
-        return abilityInfo.getId();
+        return id;
+    }
+
+    public boolean isAbilityDefinition() {
+        return abilityInfo == null;
     }
 
     public Set<AbilitySource> getSources() {
@@ -112,7 +124,8 @@ public class PlayerKnownAbility implements IMKSerializable<CompoundTag> {
     @Override
     public String toString() {
         return "PlayerKnownAbility{" +
-                "ability=" + abilityInfo +
+                "id=" + id +
+                ", ability=" + abilityInfo +
                 ", sources=" + sources.size() +
                 ", highestSource=" + highestSource +
                 '}';

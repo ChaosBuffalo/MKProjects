@@ -129,6 +129,60 @@ public class MKPlayerDataCharacterizationGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void learnedAbilities2DefinitionPersistsAcrossSerialization(GameTestHelper helper) {
+        ResourceLocation abilityId = MKCore.id("test_abilities2_self_heal");
+        MKServerPlayerData sourceData = createPlayerData(helper);
+        helper.assertTrue(sourceData.getAbilities().learnAbilityDefinition(abilityId, AbilitySource.ADMIN),
+                "abilities2 definition should learn successfully");
+
+        HolderLookup.Provider provider = sourceData.getEntity().registryAccess();
+        CompoundTag serialized = sourceData.serializeNBT(provider);
+
+        MKServerPlayerData restoredData = createPlayerData(helper);
+        restoredData.deserializeNBT(provider, serialized);
+
+        helper.assertTrue(restoredData.getAbilities().knowsAbility(abilityId),
+                "deserialized player should still know the abilities2 definition");
+        helper.assertTrue(restoredData.getAbilities().getAbilityInfo(abilityId) == null,
+                "abilities2 definition should not deserialize as a legacy ability info");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void grantedAbilities2DefinitionAutoEquipsMatchingLoadoutGroup(GameTestHelper helper) {
+        ResourceLocation abilityId = MKCore.id("test_abilities2_self_heal");
+        MKServerPlayerData playerData = createPlayerData(helper);
+        AbilityGroup basicGroup = playerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic);
+        basicGroup.setSlots(1);
+
+        helper.assertTrue(playerData.getAbilities().learnAbilityDefinition(abilityId, AbilitySource.GRANTED),
+                "abilities2 definition should learn successfully");
+        helper.assertValueEqual(basicGroup.getSlot(0), abilityId,
+                "granted abilities2 definition should auto-equip into the matching group");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void unlearningAbilities2DefinitionClearsSlottedEntry(GameTestHelper helper) {
+        ResourceLocation abilityId = MKCore.id("test_abilities2_self_heal");
+        MKServerPlayerData playerData = createPlayerData(helper);
+        AbilityGroup basicGroup = playerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic);
+
+        helper.assertTrue(playerData.getAbilities().learnAbilityDefinition(abilityId, AbilitySource.ADMIN),
+                "abilities2 definition should learn successfully");
+        basicGroup.setSlot(0, abilityId);
+        helper.assertValueEqual(basicGroup.getSlot(0), abilityId, "pre-unlearn slot state");
+
+        helper.assertTrue(playerData.getAbilities().unlearnAbility(abilityId, AbilitySource.ADMIN),
+                "abilities2 definition should unlearn successfully");
+        helper.assertFalse(playerData.getAbilities().knowsAbility(abilityId),
+                "abilities2 definition should no longer be known");
+        helper.assertValueEqual(basicGroup.getSlot(0), MKCoreRegistry.INVALID_ABILITY,
+                "unlearning should clear the slotted abilities2 definition");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void setSlotSwapsWithExistingAbility(GameTestHelper helper) {
         MKServerPlayerData playerData = createPlayerData(helper);
         AbilityGroup basicGroup = playerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic);

@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDefinitionData;
 import com.chaosbuffalo.mkcore.core.IMKAbilityKnowledge;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
@@ -78,7 +79,14 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, ISyncGroupPr
     }
 
     public List<MKAbilityInfo> getPoolAbilities() {
-        return getPoolAbilityStream().map(PlayerKnownAbility::getAbilityInfo).toList();
+        return getPoolAbilityStream()
+                .map(PlayerKnownAbility::getAbilityInfo)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    public List<ResourceLocation> getPoolAbilityIds() {
+        return getPoolAbilityStream().map(PlayerKnownAbility::getId).toList();
     }
 
     public int getCurrentPoolCount() {
@@ -103,7 +111,19 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, ISyncGroupPr
     }
 
     public Stream<MKAbilityInfo> getAbilityInfoStream() {
-        return getKnownStream().map(PlayerKnownAbility::getAbilityInfo);
+        return getKnownStream()
+                .map(PlayerKnownAbility::getAbilityInfo)
+                .filter(Objects::nonNull);
+    }
+
+    public Stream<ResourceLocation> getKnownAbilityIds() {
+        return getKnownStream().map(PlayerKnownAbility::getId);
+    }
+
+    public Stream<ResourceLocation> getKnownDefinitionIds() {
+        return getKnownStream()
+                .filter(PlayerKnownAbility::isAbilityDefinition)
+                .map(PlayerKnownAbility::getId);
     }
 
     @Override
@@ -134,6 +154,45 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, ISyncGroupPr
         return true;
     }
 
+    public boolean learnAbilityDefinition(ResourceLocation abilityId, AbilitySource source) {
+        AbilityDefinitionData definition = MKCore.getAbilityDefinitionService().getDefinition(abilityId);
+        if (definition == null) {
+            MKCore.LOGGER.warn("Player {} tried to learn unknown abilities2 definition {}",
+                    playerData.getEntity(), abilityId);
+            return false;
+        }
+
+        PlayerKnownAbility knownAbility = getKnownAbility(abilityId);
+        if (knownAbility != null) {
+            if (knownAbility.hasSource(source)) {
+                return true;
+            }
+            MKCore.LOGGER.warn("Player {} updated known ability {} with new source {}",
+                    playerData.getEntity(), knownAbility, source);
+            knownAbility.addSource(source);
+            markDirty(knownAbility);
+            return true;
+        }
+
+        if (source.usesAbilityPool() && isAbilityPoolFull()) {
+            MKCore.LOGGER.warn("Player {} tried to learn pool abilities2 definition {} with a full pool ({}/{})",
+                    playerData.getEntity(), abilityId, getCurrentPoolCount(), getAbilityPoolSize());
+            return false;
+        }
+
+        knownAbility = knownAbilities.computeIfAbsent(abilityId, PlayerAbilityKnowledge::createKnownAbility);
+        if (knownAbility == null) {
+            MKCore.LOGGER.warn("Player {} failed to instantiate known abilities2 definition {}",
+                    playerData.getEntity(), abilityId);
+            return false;
+        }
+
+        knownAbility.addSource(source);
+        markDirty(knownAbility);
+        persona.getLoadout().onAbilityDefinitionLearned(definition.id(), source);
+        return true;
+    }
+
     @Override
     public boolean unlearnAbility(ResourceLocation abilityId, AbilitySource source) {
         PlayerKnownAbility knownAbility = getKnownAbility(abilityId);
@@ -146,7 +205,12 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, ISyncGroupPr
         markDirty(knownAbility);
 
         if (!knownAbility.isCurrentlyKnown()) {
-            persona.getLoadout().onAbilityUnlearned(knownAbility.getAbilityInfo());
+            MKAbilityInfo abilityInfo = knownAbility.getAbilityInfo();
+            if (abilityInfo != null) {
+                persona.getLoadout().onAbilityUnlearned(abilityInfo);
+            } else {
+                persona.getLoadout().onAbilityDefinitionUnlearned(abilityId);
+            }
             knownAbilities.remove(abilityId);
         }
         return true;
@@ -187,9 +251,14 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, ISyncGroupPr
 
     private static PlayerKnownAbility createKnownAbility(ResourceLocation abilityId) {
         MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-        if (ability == null)
-            return null;
+        if (ability != null) {
+            return new PlayerKnownAbility(ability.createAbilityInfo());
+        }
 
-        return new PlayerKnownAbility(ability.createAbilityInfo());
+        if (MKCore.getAbilityDefinitionService().getDefinition(abilityId) == null) {
+            return null;
+        }
+
+        return new PlayerKnownAbility(abilityId, null);
     }
 }

@@ -1,15 +1,20 @@
 package com.chaosbuffalo.mkcore.core.player;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
+import com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys;
+import com.chaosbuffalo.mkcore.abilities2.runtime.PatchedAbilityDefinition;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.player.loadout.ItemAbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.loadout.PassiveAbilityGroup;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
 import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
@@ -72,12 +77,53 @@ public class PlayerAbilityLoadout implements ISyncGroupProvider {
         }
     }
 
+    void onAbilityDefinitionLearned(ResourceLocation abilityId, AbilitySource source) {
+        if (!source.placeOnBarWhenLearned()) {
+            return;
+        }
+
+        AbilityGroupId targetGroup = getAbilityDefinitionGroup(abilityId);
+        if (targetGroup == null) {
+            return;
+        }
+
+        AbilityGroup group = abilityGroups.get(targetGroup);
+        if (group != null) {
+            group.tryEquip(abilityId);
+        }
+    }
+
     void onAbilityUnlearned(MKAbilityInfo abilityInfo) {
         for (AbilityGroup group : abilityGroups.values()) {
             if (group.isEquipped(abilityInfo)) {
                 group.onAbilityUnlearned(abilityInfo);
             }
         }
+    }
+
+    void onAbilityDefinitionUnlearned(ResourceLocation abilityId) {
+        for (AbilityGroup group : abilityGroups.values()) {
+            group.clearAbility(abilityId);
+        }
+    }
+
+    private @Nullable AbilityGroupId getAbilityDefinitionGroup(ResourceLocation abilityId) {
+        PatchedAbilityDefinition definition = MKCore.getAbilityDefinitionService().getResolver().resolvePatched(abilityId);
+        if (definition == null) {
+            return null;
+        }
+
+        ResourceLocation slotFamily = definition.definition().data().slotFamily();
+        if (slotFamily.equals(AbilityDatagenKeys.SLOT_FAMILY_BASIC)) {
+            return AbilityGroupId.Basic;
+        }
+        if (slotFamily.equals(AbilityDatagenKeys.SLOT_FAMILY_PASSIVE)) {
+            return AbilityGroupId.Passive;
+        }
+        if (slotFamily.equals(AbilityDatagenKeys.SLOT_FAMILY_ULTIMATE)) {
+            return AbilityGroupId.Ultimate;
+        }
+        return null;
     }
 
     public CompoundTag serializeNBT() {

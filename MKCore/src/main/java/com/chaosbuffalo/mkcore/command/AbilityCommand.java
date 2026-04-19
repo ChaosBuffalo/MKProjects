@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 public class AbilityCommand {
 
@@ -75,7 +76,7 @@ public class AbilityCommand {
 
         MKPlayerData playerData = MKCore.getPlayerOrThrow(player);
         return SharedSuggestionProvider.suggest(
-                MKCoreRegistry.ABILITIES.keySet().stream()
+                getLearnableAbilityIds()
                         .filter(abilityId -> !playerData.getAbilities().knowsAbility(abilityId))
                         .map(ResourceLocation::toString), builder);
     }
@@ -85,10 +86,16 @@ public class AbilityCommand {
         ServerPlayer player = PlayersArgument.getPlayer(context, "player");
         ResourceLocation abilityId = context.getArgument("ability", ResourceLocation.class);
 
+        MKPlayerData playerData = MKCore.getPlayerOrThrow(player);
+        boolean learned = false;
         MKAbility ability = MKCoreRegistry.getAbility(abilityId);
         if (ability != null) {
-            MKPlayerData playerData = MKCore.getPlayerOrThrow(player);
-            playerData.getAbilities().learnAbility(ability, AbilitySource.ADMIN);
+            learned = playerData.getAbilities().learnAbility(ability, AbilitySource.ADMIN);
+        } else {
+            learned = playerData.getAbilities().learnAbilityDefinition(abilityId, AbilitySource.ADMIN);
+        }
+
+        if (learned) {
             Component message = Component.translatableWithFallback("mkcore.command.ability.learn.success",
                     "Player '%s' learned ability %s",
                     player.getName(),
@@ -103,8 +110,9 @@ public class AbilityCommand {
         ServerPlayer player = PlayersArgument.getPlayer(context, "player");
 
         MKPlayerData playerData = MKCore.getPlayerOrThrow(player);
-        MKCoreRegistry.ABILITIES.forEach(ability ->
-                playerData.getAbilities().learnAbility(ability, AbilitySource.ADMIN));
+        MKCoreRegistry.ABILITIES.forEach(ability -> playerData.getAbilities().learnAbility(ability, AbilitySource.ADMIN));
+        getLearnableDefinitionIds().forEach(abilityId ->
+                playerData.getAbilities().learnAbilityDefinition(abilityId, AbilitySource.ADMIN));
 
         return Command.SINGLE_SUCCESS;
     }
@@ -113,8 +121,8 @@ public class AbilityCommand {
         ServerPlayer player = PlayersArgument.getPlayer(context, "player");
 
         MKPlayerData playerData = MKCore.getPlayerOrThrow(player);
-        List<MKAbilityInfo> allAbilities = new ArrayList<>(playerData.getAbilities().getAllAbilities());
-        allAbilities.forEach(info -> playerData.getAbilities().unlearnAbility(info.getId(), AbilitySource.ADMIN));
+        List<ResourceLocation> allAbilities = playerData.getAbilities().getKnownAbilityIds().toList();
+        allAbilities.forEach(abilityId -> playerData.getAbilities().unlearnAbility(abilityId, AbilitySource.ADMIN));
 
         return Command.SINGLE_SUCCESS;
     }
@@ -183,9 +191,32 @@ public class AbilityCommand {
         int maxSize = abilityKnowledge.getAbilityPoolSize();
         ChatUtils.sendMessageWithBrackets(commandPlayer, Component.literal("Ability Pool - ").append(player.getName()));
         ChatUtils.sendMessageWithBrackets(commandPlayer, "Pool Size: %d/%d", currentSize, maxSize);
-        abilityKnowledge.getPoolAbilities().forEach(abilityInfo -> {
-            ChatUtils.sendMessageWithBrackets(commandPlayer, "Pool Ability: %s", abilityInfo.getId());
+        abilityKnowledge.getPoolAbilityIds().forEach(abilityId -> {
+            ChatUtils.sendMessageWithBrackets(commandPlayer, "Pool Ability: %s", abilityId);
         });
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static Stream<ResourceLocation> getLearnableAbilityIds() {
+        return Stream.concat(
+                MKCoreRegistry.ABILITIES.keySet().stream(),
+                getLearnableDefinitionIds()
+        );
+    }
+
+    private static Stream<ResourceLocation> getLearnableDefinitionIds() {
+        return MKCore.getAbilityDefinitionService().getDefinitionIds().stream()
+                .filter(AbilityCommand::isLearnableDefinition);
+    }
+
+    private static boolean isLearnableDefinition(ResourceLocation abilityId) {
+        var definition = MKCore.getAbilityDefinitionService().getDefinition(abilityId);
+        if (definition == null) {
+            return false;
+        }
+        ResourceLocation slotFamily = definition.slotFamily();
+        return slotFamily.equals(com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys.SLOT_FAMILY_BASIC)
+                || slotFamily.equals(com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys.SLOT_FAMILY_PASSIVE)
+                || slotFamily.equals(com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys.SLOT_FAMILY_ULTIMATE);
     }
 }
