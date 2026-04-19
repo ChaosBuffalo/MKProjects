@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.effects;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityEventProvenance;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.utils.MKNBTUtil;
@@ -12,6 +13,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
@@ -41,6 +43,8 @@ public class MKActiveEffect {
     private LivingEntity sourceEntity;
     @Nullable
     private Entity directEntity;
+    @Nullable
+    private AbilityEventProvenance eventProvenance;
 
     // Builder
     public MKActiveEffect(MKEffectBuilder<?> builder, MKEffectState state) {
@@ -53,6 +57,7 @@ public class MKActiveEffect {
         abilityId = builder.getAbilityId();
         sourceEntity = builder.getSourceEntity();
         directEntity = builder.getDirectEntity();
+        eventProvenance = builder.getEventProvenance();
         Map<Holder<Attribute>, MKEffect.Modifier> modifierMap = effect.getAttributeModifierMap();
         attributeSkillSnapshot = new Object2FloatOpenHashMap<>(modifierMap.size());
         if (sourceEntity != null) {
@@ -73,6 +78,7 @@ public class MKActiveEffect {
         skillLevel = 0.0f;
         this.state = effect.makeState();
         attributeSkillSnapshot = new Object2FloatOpenHashMap<>(effect.getAttributeModifierMap().size());
+        eventProvenance = null;
     }
 
     public UUID getSourceId() {
@@ -92,6 +98,10 @@ public class MKActiveEffect {
         if (abilityId == null)
             return MKCoreRegistry.INVALID_ABILITY;
         return abilityId;
+    }
+
+    public @Nullable AbilityEventProvenance getEventProvenance() {
+        return eventProvenance;
     }
 
     public MKEffect getEffect() {
@@ -194,6 +204,9 @@ public class MKActiveEffect {
         if (abilityId != null) {
             tag.putString("abilityId", abilityId.toString());
         }
+        if (eventProvenance != null) {
+            tag.put("ability2Provenance", eventProvenance.serialize());
+        }
         if (!attributeSkillSnapshot.isEmpty()) {
             CompoundTag attrTag = new CompoundTag();
             // FIXME: We should make these serialize holders
@@ -224,6 +237,9 @@ public class MKActiveEffect {
         }
         if (tag.contains("state")) {
             state.deserializeStorage(tag.getCompound("state"));
+        }
+        if (tag.contains("ability2Provenance", Tag.TAG_COMPOUND)) {
+            eventProvenance = AbilityEventProvenance.deserialize(tag.getCompound("ability2Provenance"));
         }
         if (tag.contains("attrSkills")) {
             CompoundTag attrTag = tag.getCompound("attrSkills");

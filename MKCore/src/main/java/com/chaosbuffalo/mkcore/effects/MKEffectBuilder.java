@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.effects;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityEventProvenance;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -24,6 +25,8 @@ public class MKEffectBuilder<T extends MKEffectState> {
     private LivingEntity sourceEntity;
     @Nullable
     private Entity directEntity;
+    @Nullable
+    private AbilityEventProvenance eventProvenance;
     private Consumer<T> configureState;
     private ResourceLocation abilityId = MKCoreRegistry.INVALID_ABILITY;
 
@@ -81,6 +84,10 @@ public class MKEffectBuilder<T extends MKEffectState> {
         return abilityId;
     }
 
+    public @Nullable AbilityEventProvenance getEventProvenance() {
+        return eventProvenance;
+    }
+
     public MKEffectBuilder<T> amplify(int level) {
         baseStackCount += level;
         return this;
@@ -124,6 +131,11 @@ public class MKEffectBuilder<T extends MKEffectState> {
 
     public MKEffectBuilder<T> directEntity(Entity entity) {
         directEntity = entity;
+        return this;
+    }
+
+    public MKEffectBuilder<T> eventProvenance(AbilityEventProvenance eventProvenance) {
+        this.eventProvenance = eventProvenance;
         return this;
     }
 

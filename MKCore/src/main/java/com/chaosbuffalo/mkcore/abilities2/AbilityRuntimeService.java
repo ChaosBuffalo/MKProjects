@@ -203,6 +203,7 @@ public class AbilityRuntimeService {
         payload.put("cooldown_key", new AbilityValue.StringValue(event.key()));
         emitExternalEvent(
                 AbilityEventType.COOLDOWN_FINISHED,
+                null,
                 event.stableSourceId(),
                 normalizeAbilityId(event.abilityId()),
                 null,
@@ -220,8 +221,9 @@ public class AbilityRuntimeService {
         Map<String, AbilityValue> payload = damagePayload(damageAmount, resolved);
         emitExternalEvent(
                 AbilityEventType.SPELL_CRIT,
-                resolved.sourceId(),
-                resolved.sourceAbilityId(),
+                resolved.provenance(),
+                resolved.fallbackSourceId(),
+                resolved.fallbackSourceAbilityId(),
                 null,
                 resolved.actorEntityId(),
                 target.getUUID(),
@@ -239,6 +241,7 @@ public class AbilityRuntimeService {
         payload.put("stack_count", new AbilityValue.IntValue(effect.getStackCount()));
         emitExternalEvent(
                 AbilityEventType.EFFECT_REMOVED,
+                effect.getEventProvenance(),
                 effect.getSourceId(),
                 normalizeAbilityId(effect.getAbilityId()),
                 null,
@@ -252,8 +255,9 @@ public class AbilityRuntimeService {
         ResolvedCombatSource resolved = resolveCombatSource(source);
         emitExternalEvent(
                 AbilityEventType.DAMAGE_TAKEN,
-                resolved.sourceId(),
-                resolved.sourceAbilityId(),
+                resolved.provenance(),
+                resolved.fallbackSourceId(),
+                resolved.fallbackSourceAbilityId(),
                 null,
                 resolved.actorEntityId(),
                 target.getUUID(),
@@ -265,8 +269,9 @@ public class AbilityRuntimeService {
         ResolvedCombatSource resolved = resolveCombatSource(source);
         emitExternalEvent(
                 AbilityEventType.KILL,
-                resolved.sourceId(),
-                resolved.sourceAbilityId(),
+                resolved.provenance(),
+                resolved.fallbackSourceId(),
+                resolved.fallbackSourceAbilityId(),
                 null,
                 resolved.actorEntityId(),
                 target.getUUID(),
@@ -277,12 +282,16 @@ public class AbilityRuntimeService {
     private void emitProjectileHit(Projectile projectile, @Nullable LivingEntity target) {
         LivingEntity owner = projectile.getOwner() instanceof LivingEntity living ? living : null;
         UUID actorEntityId = owner != null ? owner.getUUID() : null;
+        AbilityEventProvenance provenance = projectile instanceof AbilityProjectileEntity abilityProjectile
+                ? abilityProjectile.getEventProvenance()
+                : null;
         ResourceLocation sourceAbilityId = projectile instanceof AbilityProjectileEntity abilityProjectile
                 ? normalizeAbilityId(abilityProjectile.getAbilityId())
                 : null;
         emitExternalEvent(
                 AbilityEventType.PROJECTILE_HIT,
-                actorEntityId,
+                provenance,
+                projectile.getUUID(),
                 sourceAbilityId,
                 null,
                 actorEntityId,
@@ -292,6 +301,7 @@ public class AbilityRuntimeService {
     }
 
     private void emitExternalEvent(AbilityEventType eventType,
+                                   @Nullable AbilityEventProvenance provenance,
                                    @Nullable UUID sourceId,
                                    @Nullable ResourceLocation sourceAbilityId,
                                    @Nullable String sourceActivationId,
@@ -300,12 +310,12 @@ public class AbilityRuntimeService {
                                    Map<String, AbilityValue> payload) {
         reactionBus.emit(new AbilityEventSnapshot(
                 eventType,
-                null,
-                null,
-                0,
-                sourceId,
-                sourceAbilityId,
-                sourceActivationId,
+                provenance != null ? provenance.invocationId() : null,
+                provenance != null ? provenance.rootInvocationId() : null,
+                provenance != null ? provenance.chainDepth() : 0,
+                provenance != null && provenance.sourceId() != null ? provenance.sourceId() : sourceId,
+                provenance != null && provenance.sourceAbilityId() != null ? provenance.sourceAbilityId() : sourceAbilityId,
+                provenance != null && provenance.sourceActivationId() != null ? provenance.sourceActivationId() : sourceActivationId,
                 actorEntityId,
                 targetEntityId,
                 payload
@@ -337,18 +347,21 @@ public class AbilityRuntimeService {
 
     private ResolvedCombatSource resolveCombatSource(DamageSource source) {
         UUID actorEntityId = source.getEntity() instanceof LivingEntity living ? living.getUUID() : null;
-        UUID sourceId = actorEntityId;
-        ResourceLocation sourceAbilityId = null;
+        UUID fallbackSourceId = actorEntityId;
+        ResourceLocation fallbackSourceAbilityId = null;
         ResourceLocation damageTypeId = null;
         ResourceLocation damageSchoolId = null;
+        AbilityEventProvenance provenance = null;
         if (source instanceof MKDamageSource mkDamageSource) {
+            provenance = mkDamageSource.getEventProvenance();
             damageTypeId = mkDamageSource.getMKDamageType().getId();
             damageSchoolId = damageTypeId;
             if (mkDamageSource instanceof MKDamageSource.AbilityDamage abilityDamage) {
-                sourceAbilityId = normalizeAbilityId(abilityDamage.getAbilityId());
+                fallbackSourceAbilityId = normalizeAbilityId(abilityDamage.getAbilityId());
             }
         }
-        return new ResolvedCombatSource(sourceId, sourceAbilityId, actorEntityId, damageTypeId, damageSchoolId);
+        return new ResolvedCombatSource(provenance, fallbackSourceId, fallbackSourceAbilityId, actorEntityId,
+                damageTypeId, damageSchoolId);
     }
 
     private @Nullable ResourceLocation normalizeAbilityId(@Nullable ResourceLocation abilityId) {
@@ -416,8 +429,9 @@ public class AbilityRuntimeService {
     private record ReactionOwnerRuntime(UUID ownerEntityId, UUID casterEntityId) {
     }
 
-    private record ResolvedCombatSource(@Nullable UUID sourceId,
-                                        @Nullable ResourceLocation sourceAbilityId,
+    private record ResolvedCombatSource(@Nullable AbilityEventProvenance provenance,
+                                        @Nullable UUID fallbackSourceId,
+                                        @Nullable ResourceLocation fallbackSourceAbilityId,
                                         @Nullable UUID actorEntityId,
                                         @Nullable ResourceLocation damageTypeId,
                                         @Nullable ResourceLocation damageSchoolId) {

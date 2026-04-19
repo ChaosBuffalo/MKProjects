@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.entities;
 
 import com.chaosbuffalo.mkcore.abilities.ProjectileAbility;
+import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityEventProvenance;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.FriendlyByteBuf;
@@ -20,6 +21,8 @@ public class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
     protected Supplier<? extends ProjectileAbility> abilitySupplier;
     protected float gravityVelocity;
     protected int castTime;
+    @Nullable
+    protected AbilityEventProvenance eventProvenance;
 
     public AbilityProjectileEntity(EntityType<? extends Projectile> entityTypeIn, Level worldIn) {
         super(entityTypeIn, worldIn);
@@ -44,6 +47,14 @@ public class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
     public @Nullable ResourceLocation getAbilityId() {
         ProjectileAbility ability = abilitySupplier != null ? abilitySupplier.get() : null;
         return ability != null ? ability.getAbilityId() : null;
+    }
+
+    public void setEventProvenance(@Nullable AbilityEventProvenance eventProvenance) {
+        this.eventProvenance = eventProvenance;
+    }
+
+    public @Nullable AbilityEventProvenance getEventProvenance() {
+        return eventProvenance;
     }
 
     public void setGravityVelocity(float gravityVelocity) {

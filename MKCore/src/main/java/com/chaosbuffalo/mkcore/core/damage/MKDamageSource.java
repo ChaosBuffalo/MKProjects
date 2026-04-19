@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.core.damage;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityEventProvenance;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import net.minecraft.core.registries.Registries;
@@ -21,6 +22,8 @@ public abstract class MKDamageSource extends DamageSource {
     protected float modifierScaling = 1.0f;
     @Nullable
     protected InteractionHand attackHand;
+    @Nullable
+    protected AbilityEventProvenance eventProvenance;
 
     public enum Origination {
         MK_ABILITY,
@@ -150,6 +153,15 @@ public abstract class MKDamageSource extends DamageSource {
 
     public MKDamageSource setAttackHand(@Nullable InteractionHand hand) {
         attackHand = hand;
+        return this;
+    }
+
+    public @Nullable AbilityEventProvenance getEventProvenance() {
+        return eventProvenance;
+    }
+
+    public MKDamageSource setEventProvenance(@Nullable AbilityEventProvenance eventProvenance) {
+        this.eventProvenance = eventProvenance;
         return this;
     }
 

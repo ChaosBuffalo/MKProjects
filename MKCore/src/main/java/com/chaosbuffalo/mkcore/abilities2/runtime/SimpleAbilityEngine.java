@@ -520,6 +520,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
         MKEffectBuilder<?> effect = CoreEffects.ABILITY_DAMAGE.get().builder(invocation.sourceId())
                 .sourceEntity(invocation.casterData().getEntity())
                 .ability(invocation.abilityId())
+                .eventProvenance(AbilityEventProvenance.fromInvocation(invocation))
                 .state(state -> {
                     state.setDamageType(damageType);
                     state.setScalingParameters(amount, 0.0f, 0.0f);
@@ -564,6 +565,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
         MKEffectBuilder<?> effect = effectType.builder(invocation.sourceId())
                 .sourceEntity(invocation.casterData().getEntity())
                 .ability(invocation.abilityId())
+                .eventProvenance(AbilityEventProvenance.fromInvocation(invocation))
                 .setBaseStackCount(action.stackCount());
 
         if (action.duration() != null) {
