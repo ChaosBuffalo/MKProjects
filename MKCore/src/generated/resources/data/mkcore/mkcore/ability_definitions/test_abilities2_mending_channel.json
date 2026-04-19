@@ -1,0 +1,82 @@
+{
+  "activations": {
+    "cast": {
+      "behavior": {
+        "kind": "channel",
+        "preserve_initial_targets": true,
+        "tick_entry_point": "tick",
+        "tick_interval_ticks": 20
+      },
+      "entry_point": "cast",
+      "interrupt_policy": {
+        "on_damage": true,
+        "on_death": true,
+        "on_move": true
+      },
+      "kind": "manual",
+      "targeting": {
+        "type": "self"
+      }
+    }
+  },
+  "entry_points": {
+    "cast": [
+      {
+        "type": "heal",
+        "amount": {
+          "kind": "parameter",
+          "parameter": "initial_heal"
+        },
+        "target": "primary_entity"
+      }
+    ],
+    "tick": [
+      {
+        "type": "heal",
+        "amount": {
+          "kind": "parameter",
+          "parameter": "tick_heal"
+        },
+        "target": "primary_entity"
+      }
+    ]
+  },
+  "id": "mkcore:test_abilities2_mending_channel",
+  "parameters": {
+    "initial_heal": {
+      "default_value": {
+        "kind": "float",
+        "value": 4.0
+      },
+      "description": "Initial channel heal",
+      "grant_overrideable": true,
+      "id": "initial_heal",
+      "kind": "float",
+      "patchable": true
+    },
+    "tick_heal": {
+      "default_value": {
+        "kind": "float",
+        "value": 2.0
+      },
+      "description": "Per-pulse channel heal",
+      "grant_overrideable": true,
+      "id": "tick_heal",
+      "kind": "float",
+      "patchable": true
+    }
+  },
+  "presentation": {
+    "description": "Begins with a heal, then pulses more healing while the channel is maintained.",
+    "name": "Abilities2 Mending Channel"
+  },
+  "schools": [
+    "mkcore:restoration"
+  ],
+  "slot_family": "mkcore:slot_family.basic",
+  "tags": [
+    "mkcore:channel",
+    "mkcore:heal",
+    "mkcore:spell"
+  ]
+}

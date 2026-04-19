@@ -1,0 +1,109 @@
+{
+  "activations": {
+    "passive_setup": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "entry_point": "passive_setup",
+      "interrupt_policy": {
+        "on_death": true
+      },
+      "kind": "passive_setup",
+      "targeting": {
+        "type": "none"
+      }
+    },
+    "passive_teardown": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "entry_point": "passive_teardown",
+      "interrupt_policy": {
+        "on_death": true
+      },
+      "kind": "passive_teardown",
+      "targeting": {
+        "type": "none"
+      }
+    },
+    "proc": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "entry_point": "proc",
+      "interrupt_policy": {
+        "on_death": true
+      },
+      "kind": "proc",
+      "targeting": {
+        "type": "event_target"
+      }
+    }
+  },
+  "entry_points": {
+    "passive_setup": [
+      {
+        "type": "install_reaction",
+        "reaction": "proc_reaction"
+      }
+    ],
+    "passive_teardown": [
+      {
+        "type": "remove_reaction",
+        "reaction": "proc_reaction"
+      }
+    ],
+    "proc": [
+      {
+        "type": "damage",
+        "amount": {
+          "kind": "parameter",
+          "parameter": "proc_damage"
+        },
+        "school": "mkcore:fire",
+        "target": "primary_entity"
+      }
+    ]
+  },
+  "id": "mkcore:test_abilities2_spell_crit_passive",
+  "parameters": {
+    "proc_damage": {
+      "default_value": {
+        "kind": "float",
+        "value": 3.0
+      },
+      "description": "Spell crit proc damage",
+      "grant_overrideable": true,
+      "id": "proc_damage",
+      "kind": "float",
+      "patchable": true
+    }
+  },
+  "presentation": {
+    "description": "Installs a reaction that splashes extra fire damage on spell crits.",
+    "name": "Abilities2 Spell Crit Passive"
+  },
+  "reactions": {
+    "proc_reaction": {
+      "activation_id": "proc",
+      "event_type": "spell_crit",
+      "filters": [
+        {
+          "type": "event_source_tag",
+          "tag": "mkcore:spell"
+        }
+      ],
+      "internal_cooldown_ticks": 20,
+      "max_chain_depth": 2,
+      "once_per_root": true
+    }
+  },
+  "schools": [
+    "mkcore:evocation"
+  ],
+  "slot_family": "mkcore:slot_family.passive",
+  "tags": [
+    "mkcore:fire",
+    "mkcore:passive"
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "activations": {
+    "cast": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "entry_point": "cast",
+      "interrupt_policy": {
+        "on_damage": true,
+        "on_death": true,
+        "on_move": true
+      },
+      "kind": "manual",
+      "targeting": {
+        "type": "self"
+      }
+    },
+    "impact_proc": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "entry_point": "impact_proc",
+      "interrupt_policy": {
+        "on_death": true
+      },
+      "kind": "proc",
+      "targeting": {
+        "type": "resolved"
+      }
+    }
+  },
+  "deliveries": {
+    "projectile": {
+      "entity_type": "mkcore:ability_projectile",
+      "kind": "projectile",
+      "on_impact_activation_id": "impact_proc"
+    }
+  },
+  "entry_points": {
+    "cast": [
+      {
+        "type": "spawn_projectile",
+        "delivery": "projectile",
+        "speed": {
+          "kind": "constant",
+          "value": 1.6
+        },
+        "target": "self"
+      }
+    ],
+    "impact_proc": [
+      {
+        "type": "damage",
+        "amount": {
+          "kind": "parameter",
+          "parameter": "impact_damage"
+        },
+        "school": "mkcore:fire",
+        "target": "primary_entity"
+      }
+    ]
+  },
+  "id": "mkcore:test_abilities2_firebolt",
+  "parameters": {
+    "impact_damage": {
+      "default_value": {
+        "kind": "float",
+        "value": 8.0
+      },
+      "description": "Projectile impact damage",
+      "grant_overrideable": true,
+      "id": "impact_damage",
+      "kind": "float",
+      "patchable": true
+    }
+  },
+  "presentation": {
+    "description": "Launches a projectile forward and detonates on impact.",
+    "name": "Abilities2 Firebolt"
+  },
+  "schools": [
+    "mkcore:evocation"
+  ],
+  "slot_family": "mkcore:slot_family.basic",
+  "tags": [
+    "mkcore:fire",
+    "mkcore:projectile",
+    "mkcore:spell"
+  ]
+}

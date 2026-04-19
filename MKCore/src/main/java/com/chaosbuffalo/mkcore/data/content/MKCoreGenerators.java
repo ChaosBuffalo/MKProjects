@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.data.content;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.abilities2.datagen.CoreAbilities2DefinitionProvider;
 import com.chaosbuffalo.mkcore.data.providers.MKAbilityProvider;
 import com.chaosbuffalo.mkcore.test.MKTestAbilities;
 import net.minecraft.DetectedVersion;
@@ -42,6 +43,7 @@ public class MKCoreGenerators {
                     datapackLookup, MKCore.MOD_ID, event.getExistingFileHelper());
             generator.addProvider(true, blockTagsProvider);
             generator.addProvider(true, new MKAbilityProvider.FromMod(generator, MKCore.MOD_ID));
+            generator.addProvider(true, new CoreAbilities2DefinitionProvider(generator));
             generator.addProvider(true, new CoreItemTagsProvider(generator,
                     datapackLookup, blockTagsProvider, event.getExistingFileHelper()));
             generator.addProvider(true, new CoreParticleProvider(generator));
@@ -97,4 +99,3 @@ public class MKCoreGenerators {
     }
 
 }
-
