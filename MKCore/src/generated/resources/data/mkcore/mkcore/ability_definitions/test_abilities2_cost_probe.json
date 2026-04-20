@@ -1,0 +1,65 @@
+{
+  "activations": {
+    "cast": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "costs": [
+        {
+          "amount": {
+            "kind": "constant",
+            "value": 20.0
+          },
+          "kind": "mana"
+        }
+      ],
+      "entry_point": "cast",
+      "interrupt_policy": {
+        "on_damage": true,
+        "on_death": true,
+        "on_move": true
+      },
+      "kind": "manual",
+      "targeting": {
+        "type": "self"
+      }
+    }
+  },
+  "entry_points": {
+    "cast": [
+      {
+        "type": "heal",
+        "amount": {
+          "kind": "parameter",
+          "parameter": "amount"
+        },
+        "target": "primary_entity"
+      }
+    ]
+  },
+  "id": "mkcore:test_abilities2_cost_probe",
+  "parameters": {
+    "amount": {
+      "default_value": {
+        "kind": "float",
+        "value": 2.0
+      },
+      "description": "Probe heal amount",
+      "grant_overrideable": true,
+      "id": "amount",
+      "kind": "float",
+      "patchable": true
+    }
+  },
+  "presentation": {
+    "description": "A simple self-targeted probe used to verify client-side cost gating for loadout abilities.",
+    "name": "Abilities2 Cost Probe"
+  },
+  "schools": [
+    "mkcore:restoration"
+  ],
+  "slot_family": "mkcore:slot_family.basic",
+  "tags": [
+    "mkcore:spell"
+  ]
+}

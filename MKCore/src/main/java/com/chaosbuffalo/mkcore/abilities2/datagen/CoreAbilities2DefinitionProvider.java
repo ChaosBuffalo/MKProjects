@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityAction;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityEventFilter;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityActivationDefinition;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityCostDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityCooldownDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDefinitionData;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDeliveryDefinition;
@@ -15,6 +16,7 @@ import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValue;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValueKind;
 import com.chaosbuffalo.mkcore.abilities2.definition.ActivationBehavior;
 import com.chaosbuffalo.mkcore.abilities2.definition.ActivationKind;
+import com.chaosbuffalo.mkcore.abilities2.definition.CostKind;
 import com.chaosbuffalo.mkcore.abilities2.definition.DeliveryKind;
 import com.chaosbuffalo.mkcore.abilities2.definition.InterruptRefundPolicy;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
@@ -51,6 +53,7 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
         ));
         add(createFirebolt());
         add(createCooldownProbe());
+        add(createCostProbe());
         add(createSpellCritPassive());
         add(createMendingChannel());
         add(createRestoringAura());
@@ -144,6 +147,43 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                         "ability",
                         new AbilityScalar.ConstantScalar(40.0)
                 )),
+                null,
+                0,
+                false,
+                AbilityArchetypes.STANDARD_MANUAL_INTERRUPT,
+                InterruptRefundPolicy.NONE,
+                new ActivationBehavior.InstantBehavior()
+        ));
+        builder.entryPoint(AbilityArchetypes.CAST_ENTRY_POINT, List.of(
+                new AbilityAction.HealAction(
+                        AbilityAction.ActionTarget.PRIMARY_ENTITY,
+                        new AbilityScalar.ParameterScalar("amount")
+                )
+        ));
+        return builder.build();
+    }
+
+    private AbilityDefinitionData createCostProbe() {
+        AbilityDefinitionBuilder builder = AbilityArchetypes.singleTargetSpell(
+                        MKCore.makeRL("test_abilities2_cost_probe"),
+                        "Abilities2 Cost Probe",
+                        "A simple self-targeted probe used to verify client-side cost gating for loadout abilities.",
+                        AbilityDatagenKeys.TARGET_SELF
+                )
+                .school(AbilityDatagenKeys.SCHOOL_RESTORATION)
+                .tag(AbilityDatagenKeys.TAG_SPELL)
+                .parameter(floatParameter("amount", 2.0f, "Probe heal amount"));
+
+        builder.activation(AbilityArchetypes.CAST_ACTIVATION_ID, new AbilityActivationDefinition(
+                ActivationKind.MANUAL,
+                AbilityArchetypes.CAST_ENTRY_POINT,
+                AbilityDatagenKeys.TARGET_SELF,
+                List.of(new AbilityCostDefinition(
+                        CostKind.MANA,
+                        null,
+                        new AbilityScalar.ConstantScalar(20.0)
+                )),
+                List.of(),
                 null,
                 0,
                 false,

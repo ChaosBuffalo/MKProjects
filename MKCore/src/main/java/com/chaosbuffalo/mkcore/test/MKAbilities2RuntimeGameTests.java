@@ -61,6 +61,8 @@ public class MKAbilities2RuntimeGameTests {
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_spell_crit_passive");
     private static final ResourceLocation COOLDOWN_PROBE_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_cooldown_probe");
+    private static final ResourceLocation COST_PROBE_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_cost_probe");
     private static final ResourceLocation SPELL_SOURCE_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_firebolt");
     private static final ResourceLocation SELF_HEAL_ABILITY =
@@ -248,6 +250,26 @@ public class MKAbilities2RuntimeGameTests {
                             "client loadout simulation should reject definition-backed slots while the synced cooldown timer is active");
                     helper.succeed();
                 });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void slottedDefinitionClientSimulationRejectsUnaffordableManaCost(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        helper.assertTrue(ownerData.getAbilities().learnAbilityDefinition(COST_PROBE_ABILITY, AbilitySource.ADMIN),
+                "cost probe test should learn the definition first");
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlots(1);
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(0, COST_PROBE_ABILITY);
+
+        ownerData.getStats().setMana(0.0f);
+        helper.assertFalse(ownerData.getAbilityExecutor().clientSimulateAbility(AbilityGroupId.Basic, 0),
+                "client loadout simulation should reject definition-backed slots when current mana is below the activation cost");
+
+        ownerData.getStats().setMana(ownerData.getStats().getMaxMana());
+        helper.assertTrue(ownerData.getAbilityExecutor().clientSimulateAbility(AbilityGroupId.Basic, 0),
+                "client loadout simulation should allow definition-backed slots again once the mana cost is affordable");
+        helper.succeed();
     }
 
     @GameTest(template = "player_data_phase0")

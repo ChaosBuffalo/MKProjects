@@ -45,11 +45,13 @@ public class PlayerAbilityExecutor extends AbilityExecutor {
             if (ability == null) {
                 return false;
             }
-            if (MKCore.getAbilityRuntimeService().getLoadoutCooldownTicks(getPlayerData(), ability,
-                    loadoutGroup.getExecutionSourceId(slot)) > 0) {
-                return false;
-            }
-            return MKCore.getAbilityRuntimeService().canExecuteLoadoutAbility(executingGroup, abilityId);
+            return MKCore.getAbilityRuntimeService().canClientExecuteLoadoutAbility(
+                    getPlayerData(),
+                    getPlayerData(),
+                    executingGroup,
+                    ability,
+                    loadoutGroup.getExecutionSourceId(slot)
+            );
         }
 
         MKAbility ability = info.getAbility();

@@ -348,6 +348,8 @@ public class MKOverlay implements LayeredDraw.Layer {
 
             float cooldownFactor = executor.getCurrentLoadoutAbilityCooldownPercent(abilityGroup, i, partialTicks);
 
+            var executionAbility = abilityInfo == null ? abilityGroup.getExecutionAbilityReference(i) : null;
+
             if (abilityInfo != null) {
                 float manaCost = executor.getAbilityManaCost(abilityInfo);
                 if (!executor.isCasting() && data.getStats().getMana() >= manaCost) {
@@ -355,8 +357,14 @@ public class MKOverlay implements LayeredDraw.Layer {
                 } else {
                     RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 1.0F);
                 }
-            } else if (!executor.isCasting() && cooldownFactor <= 0.0f
-                    && MKCore.getAbilityRuntimeService().canExecuteLoadoutAbility(group, abilityId)) {
+            } else if (executionAbility != null
+                    && !executor.isCasting()
+                    && MKCore.getAbilityRuntimeService().canClientExecuteLoadoutAbility(
+                    data,
+                    data,
+                    group,
+                    executionAbility,
+                    abilityGroup.getExecutionSourceId(i))) {
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             } else {
                 RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 1.0F);

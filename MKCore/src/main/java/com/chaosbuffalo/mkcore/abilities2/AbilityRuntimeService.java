@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityEventFilter.ParticipantRelation;
 import com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityActivationDefinition;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityCostDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityCooldownDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDeliveryDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityReactionDefinition;
@@ -107,6 +108,35 @@ public class AbilityRuntimeService {
 
         PatchedAbilityDefinition definition = definitionResolver.resolvePatched(abilityId);
         return definition != null && matchesLoadoutGroup(groupId, definition.definition().data().slotFamily());
+    }
+
+    public boolean canClientExecuteLoadoutAbility(IMKEntityData ownerData,
+                                                  IMKEntityData casterData,
+                                                  AbilityGroupId groupId,
+                                                  AbilityReference ability,
+                                                  @Nullable UUID sourceId) {
+        Objects.requireNonNull(ownerData, "ownerData");
+        Objects.requireNonNull(casterData, "casterData");
+        Objects.requireNonNull(groupId, "groupId");
+        Objects.requireNonNull(ability, "ability");
+
+        LoadoutExecution execution = resolveLoadoutExecution(groupId, ability.abilityId());
+        if (execution == null || getLoadoutCooldownTicks(ownerData, ability, sourceId) > 0) {
+            return false;
+        }
+
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(ability.abilityId());
+        if (definition == null) {
+            return false;
+        }
+        AbilityActivationDefinition activation = definition.definition().getActivation(execution.activationId());
+        if (activation == null) {
+            return false;
+        }
+
+        AbilityActionContext context = createLoadoutPreviewContext(ownerData, casterData, ability, sourceId,
+                execution.activationId(), definition, Map.of());
+        return activation.costs().stream().allMatch(cost -> canAffordLoadoutPreview(cost, context));
     }
 
     public int getLoadoutCooldownTicks(IMKEntityData ownerData,
@@ -642,7 +672,7 @@ public class AbilityRuntimeService {
             return;
         }
 
-        AbilityActionContext context = createCooldownPreviewContext(ownerData, casterData, ability, sourceId,
+        AbilityActionContext context = createLoadoutPreviewContext(ownerData, casterData, ability, sourceId,
                 activationId, definition, grantParameterOverrides);
         int maxDuration = activation.cooldowns().stream()
                 .mapToInt(cooldown -> previewCooldownDuration(cooldown, context))
@@ -653,13 +683,13 @@ public class AbilityRuntimeService {
         }
     }
 
-    private AbilityActionContext createCooldownPreviewContext(IMKEntityData ownerData,
-                                                              IMKEntityData casterData,
-                                                              AbilityReference ability,
-                                                              @Nullable UUID sourceId,
-                                                              String activationId,
-                                                              PatchedAbilityDefinition definition,
-                                                              Map<String, AbilityValue> grantParameterOverrides) {
+    private AbilityActionContext createLoadoutPreviewContext(IMKEntityData ownerData,
+                                                             IMKEntityData casterData,
+                                                             AbilityReference ability,
+                                                             @Nullable UUID sourceId,
+                                                             String activationId,
+                                                             PatchedAbilityDefinition definition,
+                                                             Map<String, AbilityValue> grantParameterOverrides) {
         UUID previewInvocationId = UUID.randomUUID();
         AbilityInvocation previewInvocation = new AbilityInvocation(
                 previewInvocationId,
@@ -692,6 +722,23 @@ public class AbilityRuntimeService {
         int baseDuration = Math.max(0, (int) Math.round(powerResolver.resolve(cooldown.duration(), context)));
         double modifier = 2.0 - context.stats(StatCapturePolicy.ON_INVOCATION).cooldownRate();
         return Math.max(0, (int) (modifier * baseDuration));
+    }
+
+    private boolean canAffordLoadoutPreview(AbilityCostDefinition cost, AbilityActionContext context) {
+        double amount = previewCostAmount(cost, context);
+        return switch (cost.kind()) {
+            case MANA -> context.ownerData().getStats().getMana() >= amount;
+            case HEALTH -> context.ownerData().getEntity().getHealth() > amount;
+            case CUSTOM_RESOURCE -> false;
+        };
+    }
+
+    private double previewCostAmount(AbilityCostDefinition cost, AbilityActionContext context) {
+        double amount = powerResolver.resolve(cost.amount(), context);
+        if (cost.kind() == com.chaosbuffalo.mkcore.abilities2.definition.CostKind.MANA) {
+            amount *= context.stats(StatCapturePolicy.ON_INVOCATION).manaCostMultiplier();
+        }
+        return Math.max(0.0, amount);
     }
 
     private void tickActiveDeliveries() {
