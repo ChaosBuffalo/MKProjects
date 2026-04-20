@@ -153,8 +153,8 @@ public class ItemAbilityGroup extends AbilityGroup {
 
     @Override
     public void executeSlot(int index) {
-        ResourceLocation abilityId = getSlot(index);
-        if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
+        AbilityReference ability = getExecutionAbilityReference(index);
+        if (ability == null) {
             return;
         }
 
@@ -164,8 +164,7 @@ public class ItemAbilityGroup extends AbilityGroup {
             return;
         }
 
-        EquipmentSlot slot = index2slot(index);
-        UUID sourceId = getEquippedAbilitySourceId(slot, abilityId);
+        UUID sourceId = getExecutionSourceId(index);
         if (sourceId == null) {
             return;
         }
@@ -174,9 +173,29 @@ public class ItemAbilityGroup extends AbilityGroup {
                 playerData,
                 playerData,
                 groupId,
-                new AbilityReference(abilityId, sourceId),
+                ability,
                 sourceId
         );
+    }
+
+    @Override
+    public @Nullable AbilityReference getExecutionAbilityReference(int index) {
+        ResourceLocation abilityId = getSlot(index);
+        if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
+            return null;
+        }
+        UUID sourceId = getExecutionSourceId(index);
+        return sourceId != null ? new AbilityReference(abilityId, sourceId) : null;
+    }
+
+    @Override
+    public @Nullable UUID getExecutionSourceId(int index) {
+        EquipmentSlot slot = index2slot(index);
+        ResourceLocation abilityId = getEquippedAbilityId(slot);
+        if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
+            return null;
+        }
+        return getEquippedAbilitySourceId(slot, abilityId);
     }
 
     @Override

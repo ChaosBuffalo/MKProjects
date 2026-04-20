@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityAction;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityEventFilter;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityActivationDefinition;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityCooldownDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDefinitionData;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDeliveryDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityParameterDefinition;
@@ -49,6 +50,7 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                 Map.of("amount", new AbilityValue.FloatValue(24.0f))
         ));
         add(createFirebolt());
+        add(createCooldownProbe());
         add(createSpellCritPassive());
         add(createMendingChannel());
         add(createRestoringAura());
@@ -116,6 +118,43 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                         AbilityAction.ActionTarget.PRIMARY_ENTITY,
                         new AbilityScalar.ParameterScalar("impact_damage"),
                         CoreDamageTypes.FireDamage.getId()
+                )
+        ));
+        return builder.build();
+    }
+
+    private AbilityDefinitionData createCooldownProbe() {
+        AbilityDefinitionBuilder builder = AbilityArchetypes.singleTargetSpell(
+                        MKCore.makeRL("test_abilities2_cooldown_probe"),
+                        "Abilities2 Cooldown Probe",
+                        "A simple self-targeted probe used to verify synced loadout cooldown timers.",
+                        AbilityDatagenKeys.TARGET_SELF
+                )
+                .school(AbilityDatagenKeys.SCHOOL_RESTORATION)
+                .tag(AbilityDatagenKeys.TAG_SPELL)
+                .parameter(floatParameter("amount", 2.0f, "Probe heal amount"));
+
+        builder.activation(AbilityArchetypes.CAST_ACTIVATION_ID, new AbilityActivationDefinition(
+                ActivationKind.MANUAL,
+                AbilityArchetypes.CAST_ENTRY_POINT,
+                AbilityDatagenKeys.TARGET_SELF,
+                List.of(),
+                List.of(new AbilityCooldownDefinition(
+                        com.chaosbuffalo.mkcore.abilities2.definition.StateScope.ABILITY_FAMILY,
+                        "ability",
+                        new AbilityScalar.ConstantScalar(40.0)
+                )),
+                null,
+                0,
+                false,
+                AbilityArchetypes.STANDARD_MANUAL_INTERRUPT,
+                InterruptRefundPolicy.NONE,
+                new ActivationBehavior.InstantBehavior()
+        ));
+        builder.entryPoint(AbilityArchetypes.CAST_ENTRY_POINT, List.of(
+                new AbilityAction.HealAction(
+                        AbilityAction.ActionTarget.PRIMARY_ENTITY,
+                        new AbilityScalar.ParameterScalar("amount")
                 )
         ));
         return builder.build();

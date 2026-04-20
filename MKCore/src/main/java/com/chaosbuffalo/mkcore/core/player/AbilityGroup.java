@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys;
+import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityReference;
 import com.chaosbuffalo.mkcore.abilities2.runtime.PatchedAbilityDefinition;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
@@ -26,6 +27,7 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -65,6 +67,10 @@ public class AbilityGroup implements ISyncGroupProvider {
 
     public int getCurrentSlotCount() {
         return slots.get();
+    }
+
+    public AbilityGroupId getGroupId() {
+        return groupId;
     }
 
     public int getMaximumSlotCount() {
@@ -157,6 +163,18 @@ public class AbilityGroup implements ISyncGroupProvider {
             return activeAbilities.get(slot);
         }
         return MKCoreRegistry.INVALID_ABILITY;
+    }
+
+    public @Nullable AbilityReference getExecutionAbilityReference(int index) {
+        ResourceLocation abilityId = getSlot(index);
+        if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
+            return null;
+        }
+        return new AbilityReference(abilityId, null);
+    }
+
+    public @Nullable UUID getExecutionSourceId(int index) {
+        return null;
     }
 
     protected void onAbilityAdded(int index, MKAbilityInfo abilityInfo) {

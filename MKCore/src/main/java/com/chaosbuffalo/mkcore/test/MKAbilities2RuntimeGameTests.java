@@ -59,6 +59,8 @@ public class MKAbilities2RuntimeGameTests {
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_projectile_ground");
     private static final ResourceLocation SPELL_CRIT_PASSIVE_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_spell_crit_passive");
+    private static final ResourceLocation COOLDOWN_PROBE_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_cooldown_probe");
     private static final ResourceLocation SPELL_SOURCE_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_firebolt");
     private static final ResourceLocation SELF_HEAL_ABILITY =
@@ -214,6 +216,36 @@ public class MKAbilities2RuntimeGameTests {
                 .thenExecuteAfter(25, () -> {
                     helper.assertTrue(owner.getHealth() > startingHealth,
                             "loadout execution should start the default abilities2 manual activation");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void slottedDefinitionMirrorsCooldownIntoSyncedTimer(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        helper.assertTrue(ownerData.getAbilities().learnAbilityDefinition(COOLDOWN_PROBE_ABILITY, AbilitySource.ADMIN),
+                "cooldown probe test should learn the definition first");
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlots(1);
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(0, COOLDOWN_PROBE_ABILITY);
+
+        helper.startSequence()
+                .thenExecute(() -> ownerData.getAbilityExecutor().executeLoadoutAbility(AbilityGroupId.Basic, 0))
+                .thenExecuteAfter(1, () -> {
+                    var abilityGroup = ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic);
+                    var ability = abilityGroup.getExecutionAbilityReference(0);
+                    helper.assertTrue(ability != null, "cooldown probe slot should resolve an execution reference");
+
+                    int cooldownTicks = MKCore.getAbilityRuntimeService().getLoadoutCooldownTicks(
+                            ownerData,
+                            ability,
+                            abilityGroup.getExecutionSourceId(0)
+                    );
+                    helper.assertTrue(cooldownTicks > 0,
+                            "loadout execution should mirror abilities2 cooldowns into synced player timers");
+                    helper.assertFalse(ownerData.getAbilityExecutor().clientSimulateAbility(AbilityGroupId.Basic, 0),
+                            "client loadout simulation should reject definition-backed slots while the synced cooldown timer is active");
                     helper.succeed();
                 });
     }

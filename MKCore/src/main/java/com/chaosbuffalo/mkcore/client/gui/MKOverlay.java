@@ -346,6 +346,8 @@ public class MKOverlay implements LayeredDraw.Layer {
                 continue;
             }
 
+            float cooldownFactor = executor.getCurrentLoadoutAbilityCooldownPercent(abilityGroup, i, partialTicks);
+
             if (abilityInfo != null) {
                 float manaCost = executor.getAbilityManaCost(abilityInfo);
                 if (!executor.isCasting() && data.getStats().getMana() >= manaCost) {
@@ -353,7 +355,8 @@ public class MKOverlay implements LayeredDraw.Layer {
                 } else {
                     RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 1.0F);
                 }
-            } else if (!executor.isCasting() && MKCore.getAbilityRuntimeService().canExecuteLoadoutAbility(group, abilityId)) {
+            } else if (!executor.isCasting() && cooldownFactor <= 0.0f
+                    && MKCore.getAbilityRuntimeService().canExecuteLoadoutAbility(group, abilityId)) {
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             } else {
                 RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 1.0F);
@@ -365,19 +368,16 @@ public class MKOverlay implements LayeredDraw.Layer {
             graphics.blit(iconLocation, slotX, slotY, 0, 0, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE);
 
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            if (abilityInfo != null) {
-                float cooldownFactor = executor.getCurrentAbilityCooldownPercent(abilityInfo.getId(), partialTicks);
-                if (globalCooldown > 0.0f && cooldownFactor == 0) {
-                    cooldownFactor = globalCooldown / ClientEventHandler.getTotalGlobalCooldown();
-                }
+            if (globalCooldown > 0.0f && cooldownFactor == 0) {
+                cooldownFactor = globalCooldown / ClientEventHandler.getTotalGlobalCooldown();
+            }
 
-                if (cooldownFactor > 0) {
-                    int coolDownHeight = (int) (cooldownFactor * ABILITY_ICON_SIZE);
-                    if (coolDownHeight < 1) {
-                        coolDownHeight = 1;
-                    }
-                    graphics.blit(COOLDOWN_ICON, slotX, slotY, 0, 0, ABILITY_ICON_SIZE, coolDownHeight, ABILITY_ICON_SIZE, coolDownHeight);
+            if (cooldownFactor > 0) {
+                int coolDownHeight = (int) (cooldownFactor * ABILITY_ICON_SIZE);
+                if (coolDownHeight < 1) {
+                    coolDownHeight = 1;
                 }
+                graphics.blit(COOLDOWN_ICON, slotX, slotY, 0, 0, ABILITY_ICON_SIZE, coolDownHeight, ABILITY_ICON_SIZE, coolDownHeight);
             }
 
             if (ability != null) {

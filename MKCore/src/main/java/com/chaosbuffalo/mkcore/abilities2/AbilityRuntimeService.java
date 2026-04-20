@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityEventFilter.ParticipantRelation;
 import com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityActivationDefinition;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityCooldownDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDeliveryDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityReactionDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityTargetResolverDefinition;
@@ -108,6 +109,27 @@ public class AbilityRuntimeService {
         return definition != null && matchesLoadoutGroup(groupId, definition.definition().data().slotFamily());
     }
 
+    public int getLoadoutCooldownTicks(IMKEntityData ownerData,
+                                       AbilityReference ability,
+                                       @Nullable UUID sourceId) {
+        Objects.requireNonNull(ownerData, "ownerData");
+        Objects.requireNonNull(ability, "ability");
+
+        ResourceLocation timerId = getLoadoutCooldownTimerId(ability, sourceId);
+        return timerId != null ? ownerData.getStats().getTimer(timerId) : 0;
+    }
+
+    public float getLoadoutCooldownPercent(IMKEntityData ownerData,
+                                           AbilityReference ability,
+                                           @Nullable UUID sourceId,
+                                           float partialTicks) {
+        Objects.requireNonNull(ownerData, "ownerData");
+        Objects.requireNonNull(ability, "ability");
+
+        ResourceLocation timerId = getLoadoutCooldownTimerId(ability, sourceId);
+        return timerId != null ? ownerData.getStats().getTimerPercent(timerId, partialTicks) : 0.0f;
+    }
+
     public InvocationResult executeLoadoutAbility(IMKEntityData ownerData,
                                                   IMKEntityData casterData,
                                                   AbilityGroupId groupId,
@@ -139,17 +161,23 @@ public class AbilityRuntimeService {
         }
 
         return switch (execution.kind()) {
-            case DIRECT -> engine.activate(new ActivationRequest(
-                    ownerData,
-                    casterData,
-                    ability,
-                    execution.activationId(),
-                    sourceId,
-                    null,
-                    null,
-                    false,
-                    false
-            ));
+            case DIRECT -> {
+                InvocationResult result = engine.activate(new ActivationRequest(
+                        ownerData,
+                        casterData,
+                        ability,
+                        execution.activationId(),
+                        sourceId,
+                        null,
+                        null,
+                        false,
+                        false
+                ));
+                if (result.started()) {
+                    syncLoadoutCooldownTimer(ownerData, casterData, ability, sourceId, execution.activationId(), Map.of());
+                }
+                yield result;
+            }
             case TOGGLE -> requestToggle(ownerData, casterData, ability, sourceId);
         };
     }
@@ -302,6 +330,8 @@ public class AbilityRuntimeService {
         if (result.started()) {
             activeToggles.put(runtime.key(), runtime);
             runtime.scheduleNextPulse(currentGameTick());
+            syncLoadoutCooldownTimer(ownerData, casterData, ability, stableSourceId, enableActivationId,
+                    runtime.grantParameterOverrides());
             if (runtime.hasAuraBehavior() && runtime.auraBehavior().pulseOnEnable()) {
                 startAuraPulse(runtime, ownerData, casterData);
             }
@@ -399,6 +429,8 @@ public class AbilityRuntimeService {
         ));
         if (result.started()) {
             activeToggles.remove(runtime.key());
+            syncLoadoutCooldownTimer(ownerData, casterData, runtime.ability(), runtime.owner().stableSourceId(),
+                    runtime.disableActivationId(), runtime.grantParameterOverrides());
         }
         return result;
     }
@@ -575,6 +607,91 @@ public class AbilityRuntimeService {
                     || AbilityDatagenKeys.SLOT_FAMILY_PASSIVE.equals(slotFamily)
                     || AbilityDatagenKeys.SLOT_FAMILY_ULTIMATE.equals(slotFamily);
         };
+    }
+
+    private @Nullable ResourceLocation getLoadoutCooldownTimerId(AbilityReference ability, @Nullable UUID sourceId) {
+        ResourceLocation abilityId = ability.abilityId();
+        StringBuilder path = new StringBuilder("timer.abilities2/")
+                .append(abilityId.getNamespace())
+                .append("/")
+                .append(abilityId.getPath());
+        UUID scopeId = sourceId != null ? sourceId : ability.grantId();
+        if (scopeId != null) {
+            path.append("/source/").append(scopeId);
+        }
+        return ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, path.toString());
+    }
+
+    private void syncLoadoutCooldownTimer(IMKEntityData ownerData,
+                                          IMKEntityData casterData,
+                                          AbilityReference ability,
+                                          @Nullable UUID sourceId,
+                                          String activationId,
+                                          Map<String, AbilityValue> grantParameterOverrides) {
+        ResourceLocation timerId = getLoadoutCooldownTimerId(ability, sourceId);
+        if (timerId == null) {
+            return;
+        }
+
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(ability.abilityId());
+        if (definition == null) {
+            return;
+        }
+        AbilityActivationDefinition activation = definition.definition().getActivation(activationId);
+        if (activation == null || activation.cooldowns().isEmpty()) {
+            return;
+        }
+
+        AbilityActionContext context = createCooldownPreviewContext(ownerData, casterData, ability, sourceId,
+                activationId, definition, grantParameterOverrides);
+        int maxDuration = activation.cooldowns().stream()
+                .mapToInt(cooldown -> previewCooldownDuration(cooldown, context))
+                .max()
+                .orElse(0);
+        if (maxDuration > 0) {
+            ownerData.getStats().setTimer(timerId, maxDuration);
+        }
+    }
+
+    private AbilityActionContext createCooldownPreviewContext(IMKEntityData ownerData,
+                                                              IMKEntityData casterData,
+                                                              AbilityReference ability,
+                                                              @Nullable UUID sourceId,
+                                                              String activationId,
+                                                              PatchedAbilityDefinition definition,
+                                                              Map<String, AbilityValue> grantParameterOverrides) {
+        UUID previewInvocationId = UUID.randomUUID();
+        AbilityInvocation previewInvocation = new AbilityInvocation(
+                previewInvocationId,
+                previewInvocationId,
+                0,
+                null,
+                ability.abilityId(),
+                ability.grantId(),
+                activationId,
+                activationId,
+                ActivationReason.DIRECT_REQUEST,
+                ownerData,
+                casterData,
+                sourceId != null ? sourceId : casterData.getEntity().getUUID(),
+                new AbilityResolvedTargets(null, List.of(), null, null, null),
+                null,
+                null,
+                false,
+                false,
+                definition,
+                grantParameterOverrides,
+                powerResolver.captureInvocationStats(casterData),
+                Map.of(),
+                casterData.getEntity().getRandom()
+        );
+        return new SimpleAbilityActionContext(previewInvocation, powerResolver);
+    }
+
+    private int previewCooldownDuration(AbilityCooldownDefinition cooldown, AbilityActionContext context) {
+        int baseDuration = Math.max(0, (int) Math.round(powerResolver.resolve(cooldown.duration(), context)));
+        double modifier = 2.0 - context.stats(StatCapturePolicy.ON_INVOCATION).cooldownRate();
+        return Math.max(0, (int) (modifier * baseDuration));
     }
 
     private void tickActiveDeliveries() {

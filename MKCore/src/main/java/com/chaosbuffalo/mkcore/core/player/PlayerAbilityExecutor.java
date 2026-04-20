@@ -41,6 +41,14 @@ public class PlayerAbilityExecutor extends AbilityExecutor {
 
         MKAbilityInfo info = loadoutGroup.getAbilityInfo(slot);
         if (info == null) {
+            var ability = loadoutGroup.getExecutionAbilityReference(slot);
+            if (ability == null) {
+                return false;
+            }
+            if (MKCore.getAbilityRuntimeService().getLoadoutCooldownTicks(getPlayerData(), ability,
+                    loadoutGroup.getExecutionSourceId(slot)) > 0) {
+                return false;
+            }
             return MKCore.getAbilityRuntimeService().canExecuteLoadoutAbility(executingGroup, abilityId);
         }
 
@@ -55,6 +63,24 @@ public class PlayerAbilityExecutor extends AbilityExecutor {
             }
         }
         return false;
+    }
+
+    public float getCurrentLoadoutAbilityCooldownPercent(AbilityGroup loadoutGroup, int slot, float partialTicks) {
+        MKAbilityInfo info = loadoutGroup.getAbilityInfo(slot);
+        if (info != null) {
+            return getCurrentAbilityCooldownPercent(info.getId(), partialTicks);
+        }
+
+        var ability = loadoutGroup.getExecutionAbilityReference(slot);
+        if (ability == null) {
+            return 0.0f;
+        }
+        return MKCore.getAbilityRuntimeService().getLoadoutCooldownPercent(
+                getPlayerData(),
+                ability,
+                loadoutGroup.getExecutionSourceId(slot),
+                partialTicks
+        );
     }
 
     @Override

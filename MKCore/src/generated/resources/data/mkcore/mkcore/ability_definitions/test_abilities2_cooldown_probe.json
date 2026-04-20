@@ -1,0 +1,66 @@
+{
+  "activations": {
+    "cast": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "cooldowns": [
+        {
+          "duration": {
+            "kind": "constant",
+            "value": 40.0
+          },
+          "key": "ability",
+          "scope": "ability_family"
+        }
+      ],
+      "entry_point": "cast",
+      "interrupt_policy": {
+        "on_damage": true,
+        "on_death": true,
+        "on_move": true
+      },
+      "kind": "manual",
+      "targeting": {
+        "type": "self"
+      }
+    }
+  },
+  "entry_points": {
+    "cast": [
+      {
+        "type": "heal",
+        "amount": {
+          "kind": "parameter",
+          "parameter": "amount"
+        },
+        "target": "primary_entity"
+      }
+    ]
+  },
+  "id": "mkcore:test_abilities2_cooldown_probe",
+  "parameters": {
+    "amount": {
+      "default_value": {
+        "kind": "float",
+        "value": 2.0
+      },
+      "description": "Probe heal amount",
+      "grant_overrideable": true,
+      "id": "amount",
+      "kind": "float",
+      "patchable": true
+    }
+  },
+  "presentation": {
+    "description": "A simple self-targeted probe used to verify synced loadout cooldown timers.",
+    "name": "Abilities2 Cooldown Probe"
+  },
+  "schools": [
+    "mkcore:restoration"
+  ],
+  "slot_family": "mkcore:slot_family.basic",
+  "tags": [
+    "mkcore:spell"
+  ]
+}
