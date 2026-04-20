@@ -122,6 +122,9 @@ public abstract class EntityStats implements IMKEntityStats, ISyncGroupProvider 
             if (entityData.getAbilityExecutor().isCasting()) {
                 entityData.getAbilityExecutor().interruptCast(CastInterruptReason.StartedBlocking);
             }
+            if (MKCore.getAbilityRuntimeService().hasPendingActivation(entityData)) {
+                MKCore.getAbilityRuntimeService().interruptPendingActivations(entityData);
+            }
             if (isBroken) {
                 getEntity().releaseUsingItem();
             }

@@ -20,6 +20,7 @@ import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityEventSnapshot;
 import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityEventType;
 import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityReference;
 import com.chaosbuffalo.mkcore.abilities2.runtime.ActivationRequest;
+import com.chaosbuffalo.mkcore.abilities2.runtime.FailureReason;
 import com.chaosbuffalo.mkcore.abilities2.runtime.InvocationResult;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
@@ -27,12 +28,14 @@ import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
 import com.chaosbuffalo.mkcore.item.ItemGrantedAbility;
+import com.chaosbuffalo.mkcore.test.MKTestAbilities;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.GameType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -217,6 +220,7 @@ public class MKAbilities2RuntimeGameTests {
         ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(0, SELF_HEAL_ABILITY);
 
         owner.setHealth(owner.getMaxHealth() - 8.0f);
+        ownerData.getStats().setMana(ownerData.getStats().getMaxMana());
         float startingHealth = owner.getHealth();
 
         helper.startSequence()
@@ -312,6 +316,174 @@ public class MKAbilities2RuntimeGameTests {
                             "client simulation should reject another definition in the same synced gcd group");
                     helper.assertTrue(ownerData.getAbilityExecutor().clientSimulateAbility(AbilityGroupId.Basic, 2),
                             "client simulation should still allow a definition in a different synced gcd group");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void slottedDefinitionClientSimulationRejectsWhileAnotherDefinitionCastIsPending(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        helper.assertTrue(ownerData.getAbilities().learnAbilityDefinition(SELF_HEAL_ABILITY, AbilitySource.ADMIN),
+                "busy-state probe should learn the cast-time definition first");
+        helper.assertTrue(ownerData.getAbilities().learnAbilityDefinition(COST_PROBE_ABILITY, AbilitySource.ADMIN),
+                "busy-state probe should learn the follow-up definition first");
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlots(2);
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(0, SELF_HEAL_ABILITY);
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(1, COST_PROBE_ABILITY);
+
+        owner.setHealth(owner.getMaxHealth() - 8.0f);
+        ownerData.getStats().setMana(ownerData.getStats().getMaxMana());
+        float startingHealth = owner.getHealth();
+
+        helper.startSequence()
+                .thenExecute(() -> ownerData.getAbilityExecutor().executeLoadoutAbility(AbilityGroupId.Basic, 0))
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(MKCore.getAbilityRuntimeService().hasPendingActivation(ownerData),
+                            "abilities2 cast-time activation should register as a pending runtime cast");
+                    helper.assertFalse(ownerData.getAbilityExecutor().clientSimulateAbility(AbilityGroupId.Basic, 1),
+                            "client simulation should reject another definition-backed slot while an abilities2 cast is pending");
+                    InvocationResult busyResult = MKCore.getAbilityRuntimeService().executeLoadoutAbility(
+                            ownerData,
+                            ownerData,
+                            AbilityGroupId.Basic,
+                            COST_PROBE_ABILITY
+                    );
+                    helper.assertFalse(busyResult.started(),
+                            "server-side loadout execution should also reject another definition while an abilities2 cast is pending");
+                    helper.assertValueEqual(busyResult.failureReason(), FailureReason.BUSY,
+                            "definition-backed loadout busy failure reason");
+                })
+                .thenExecuteAfter(25, () -> {
+                    helper.assertTrue(owner.getHealth() > startingHealth,
+                            "the original cast-time definition should still complete once the pending cast finishes");
+                    helper.assertFalse(MKCore.getAbilityRuntimeService().hasPendingActivation(ownerData),
+                            "the pending cast should clear once the original definition finishes");
+                    ownerData.getStats().setMana(ownerData.getStats().getMaxMana());
+                    InvocationResult readyResult = MKCore.getAbilityRuntimeService().executeLoadoutAbility(
+                            ownerData,
+                            ownerData,
+                            AbilityGroupId.Basic,
+                            COST_PROBE_ABILITY
+                    );
+                    helper.assertTrue(readyResult.started(),
+                            "the second definition should become executable again once the pending cast clears");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void slottedDefinitionExecutionRejectsWhileLegacyCastIsPending(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        helper.assertTrue(ownerData.getAbilities().learnAbilityDefinition(COST_PROBE_ABILITY, AbilitySource.ADMIN),
+                "legacy busy-state probe should learn the abilities2 definition first");
+        helper.assertTrue(ownerData.getAbilities().learnAbility(MKTestAbilities.TEST_HEAL.get(), AbilitySource.ADMIN),
+                "legacy busy-state probe should learn the legacy heal first");
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlots(1);
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(0, COST_PROBE_ABILITY);
+        ownerData.getStats().setMana(ownerData.getStats().getMaxMana());
+
+        helper.startSequence()
+                .thenExecute(() -> ownerData.getAbilityExecutor().executeAbility(MKTestAbilities.TEST_HEAL.get().getAbilityId()))
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(ownerData.getAbilityExecutor().isCasting(),
+                            "legacy heal should be in a casting state for the cross-runtime busy check");
+                    InvocationResult result = MKCore.getAbilityRuntimeService().executeLoadoutAbility(
+                            ownerData,
+                            ownerData,
+                            AbilityGroupId.Basic,
+                            COST_PROBE_ABILITY
+                    );
+                    helper.assertFalse(result.started(),
+                            "definition-backed loadout execution should reject while a legacy cast is pending");
+                    helper.assertValueEqual(result.failureReason(), FailureReason.BUSY,
+                            "definition-backed loadout execution failure reason");
+                    helper.assertFalse(ownerData.getAbilityExecutor().clientSimulateAbility(AbilityGroupId.Basic, 0),
+                            "client simulation should also reject a definition-backed slot while a legacy cast is pending");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void legacyAbilityActivationRejectsWhileDefinitionCastIsPending(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        helper.assertTrue(ownerData.getAbilities().learnAbilityDefinition(SELF_HEAL_ABILITY, AbilitySource.ADMIN),
+                "cross-runtime busy probe should learn the abilities2 definition first");
+        helper.assertTrue(ownerData.getAbilities().learnAbility(MKTestAbilities.TEST_HEAL.get(), AbilitySource.ADMIN),
+                "cross-runtime busy probe should learn the legacy heal first");
+        ownerData.getStats().setMana(ownerData.getStats().getMaxMana());
+
+        InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                ownerData,
+                ownerData,
+                new AbilityReference(SELF_HEAL_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "abilities2 cast-time activation should start for the busy-state probe");
+
+        helper.startSequence()
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(MKCore.getAbilityRuntimeService().hasPendingActivation(ownerData),
+                            "abilities2 cast-time activation should still be pending during the legacy cross-check");
+                    helper.assertFalse(ownerData.getAbilityExecutor().canActivateAbility(
+                                    ownerData.getAbilities().getAbilityInfo(MKTestAbilities.TEST_HEAL.get().getAbilityId())),
+                            "legacy ability activation should reject while an abilities2 cast is pending");
+                })
+                .thenExecuteAfter(25, () -> {
+                    helper.assertFalse(MKCore.getAbilityRuntimeService().hasPendingActivation(ownerData),
+                            "abilities2 pending cast should clear once the cast completes");
+                    ownerData.getStats().setMana(ownerData.getStats().getMaxMana());
+                    helper.assertTrue(ownerData.getAbilityExecutor().canActivateAbility(
+                                    ownerData.getAbilities().getAbilityInfo(MKTestAbilities.TEST_HEAL.get().getAbilityId())),
+                            "legacy ability activation should be allowed again once the abilities2 cast completes");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void blockingInterruptsDefinitionCastBeforeCompletion(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        owner.setHealth(owner.getMaxHealth() - 8.0f);
+        float startingHealth = owner.getHealth();
+
+        InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                ownerData,
+                ownerData,
+                new AbilityReference(SELF_HEAL_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "abilities2 cast-time activation should start for the blocking interrupt probe");
+
+        helper.startSequence()
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(MKCore.getAbilityRuntimeService().hasPendingActivation(ownerData),
+                            "abilities2 cast should be pending before the blocking interrupt starts");
+                    beginBlocking(owner);
+                })
+                .thenExecuteAfter(1, () -> {
+                    helper.assertFalse(MKCore.getAbilityRuntimeService().hasPendingActivation(ownerData),
+                            "starting to block should interrupt pending abilities2 casts");
+                })
+                .thenExecuteAfter(25, () -> {
+                    helper.assertTrue(owner.getHealth() < owner.getMaxHealth(),
+                            "interrupted abilities2 cast should not complete its full heal after blocking");
                     helper.succeed();
                 });
     }
@@ -508,6 +680,13 @@ public class MKAbilities2RuntimeGameTests {
         ItemStack stack = new ItemStack(item);
         ItemGrantedAbility.setAbility(stack, abilityId);
         return stack;
+    }
+
+    private static void beginBlocking(Player player) {
+        player.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.SHIELD));
+        player.startUsingItem(InteractionHand.OFF_HAND);
+        player.tick();
+        player.tick();
     }
 
     private static AbilityProjectileEntity findProjectile(GameTestHelper helper, LivingEntity caster) {

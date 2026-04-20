@@ -88,6 +88,9 @@ public class AbilityExecutor {
         if (isCasting() || entityData.getEntity().isBlocking())
             return false;
 
+        if (MKCore.getAbilityRuntimeService().hasPendingActivation(entityData))
+            return false;
+
         if (isOnGlobalCooldown())
             return false;
 

@@ -97,6 +97,16 @@ public class AbilityRuntimeService {
         return engine;
     }
 
+    public boolean hasPendingActivation(IMKEntityData casterData) {
+        Objects.requireNonNull(casterData, "casterData");
+        return engine.hasPendingActivation(casterData);
+    }
+
+    public void interruptPendingActivations(IMKEntityData casterData) {
+        Objects.requireNonNull(casterData, "casterData");
+        engine.interruptPendingActivations(casterData);
+    }
+
     public boolean canExecuteLoadoutAbility(AbilityGroupId groupId, ResourceLocation abilityId) {
         Objects.requireNonNull(groupId, "groupId");
         Objects.requireNonNull(abilityId, "abilityId");
@@ -123,6 +133,9 @@ public class AbilityRuntimeService {
 
         LoadoutExecution execution = resolveLoadoutExecution(groupId, ability.abilityId());
         if (execution == null || getLoadoutCooldownTicks(ownerData, ability, sourceId) > 0) {
+            return false;
+        }
+        if (execution.kind() == LoadoutExecutionKind.DIRECT && isCasterBusyForDirectActivation(casterData)) {
             return false;
         }
 
@@ -349,6 +362,9 @@ public class AbilityRuntimeService {
         if (activeToggle != null) {
             return requestToggleDisable(activeToggle);
         }
+        if (isCasterBusyForDirectActivation(casterData)) {
+            return InvocationResult.failed(FailureReason.BUSY);
+        }
 
         String enableActivationId;
         String disableActivationId;
@@ -472,6 +488,12 @@ public class AbilityRuntimeService {
     private long currentGameTick() {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         return server != null ? server.overworld().getGameTime() : 0L;
+    }
+
+    private boolean isCasterBusyForDirectActivation(IMKEntityData casterData) {
+        return casterData.getEntity().isBlocking()
+                || casterData.getAbilityExecutor().isCasting()
+                || engine.hasPendingActivation(casterData);
     }
 
     private InvocationResult requestToggleDisable(ToggleRuntime runtime) {

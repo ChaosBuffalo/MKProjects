@@ -320,6 +320,22 @@ public class SimpleAbilityEngine implements AbilityEngine {
         pendingDamageInterrupts.merge(entityData.getEntity().getUUID(), damageAmount, Math::max);
     }
 
+    public boolean hasPendingActivation(IMKEntityData entityData) {
+        Objects.requireNonNull(entityData, "entityData");
+        UUID casterId = entityData.getEntity().getUUID();
+        List<PendingCast> casts = pendingCastsByCaster.get(casterId);
+        if (casts != null && !casts.isEmpty()) {
+            return true;
+        }
+        List<PendingChannel> channels = pendingChannelsByCaster.get(casterId);
+        return channels != null && !channels.isEmpty();
+    }
+
+    public void interruptPendingActivations(IMKEntityData entityData) {
+        Objects.requireNonNull(entityData, "entityData");
+        interruptPendingActivations(entityData.getEntity().getUUID(), FailureReason.INTERRUPTED);
+    }
+
     private InvocationResult startActivation(IMKEntityData ownerData,
                                              IMKEntityData casterData,
                                              ResourceLocation abilityId,
@@ -356,6 +372,9 @@ public class SimpleAbilityEngine implements AbilityEngine {
         }
         if (!isBehaviorSupported(activation.behavior())) {
             return InvocationResult.failed(FailureReason.UNSUPPORTED_FEATURE);
+        }
+        if (reason == ActivationReason.DIRECT_REQUEST && isBusyForDirectRequest(casterData)) {
+            return InvocationResult.failed(FailureReason.BUSY);
         }
 
         AbilityResolvedTargets targets = resolveActivationTargets(casterData, forcedTargets, eventSnapshot,
@@ -479,6 +498,28 @@ public class SimpleAbilityEngine implements AbilityEngine {
     private boolean shouldInterruptOnDamage(AbilityInvocation invocation, float damageAmount) {
         InterruptPolicy interruptPolicy = activationDefinition(invocation).interruptPolicy();
         return interruptPolicy.onDamage() && damageAmount >= interruptPolicy.minDamage();
+    }
+
+    private boolean isBusyForDirectRequest(IMKEntityData casterData) {
+        return casterData.getEntity().isBlocking()
+                || casterData.getAbilityExecutor().isCasting()
+                || hasPendingActivation(casterData);
+    }
+
+    private void interruptPendingActivations(UUID casterId, FailureReason failureReason) {
+        List<PendingCast> casts = pendingCastsByCaster.remove(casterId);
+        if (casts != null) {
+            for (PendingCast pendingCast : casts) {
+                finishInterruptedInvocation(pendingCast.invocation(), failureReason, pendingCast.castTicksSpent());
+            }
+        }
+
+        List<PendingChannel> channels = pendingChannelsByCaster.remove(casterId);
+        if (channels != null) {
+            for (PendingChannel pendingChannel : channels) {
+                finishInterruptedInvocation(pendingChannel.invocation(), failureReason, pendingChannel.castTicksSpent());
+            }
+        }
     }
 
     private AbilityResolvedTargets resolveActivationTargets(IMKEntityData casterData,

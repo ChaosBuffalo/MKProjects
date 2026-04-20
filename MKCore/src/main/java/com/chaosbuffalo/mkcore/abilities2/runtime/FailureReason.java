@@ -7,6 +7,7 @@ public enum FailureReason {
     INVALID_TARGETS,
     NOT_ENOUGH_RESOURCE,
     ON_COOLDOWN,
+    BUSY,
     INTERRUPTED,
     TARGET_LOST,
     UNSUPPORTED_FEATURE
