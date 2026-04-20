@@ -5,9 +5,12 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys;
+import com.chaosbuffalo.mkcore.abilities2.description.AbilityDefinitionDescriptions;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDefinitionData;
+import com.chaosbuffalo.mkcore.abilities2.runtime.PatchedAbilityDefinition;
 import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.player.PlayerKnownAbility;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -123,6 +126,13 @@ public final class AbilityUiEntry {
     public void buildDescription(MKPlayerData playerData, Consumer<Component> consumer) {
         if (legacyAbility != null) {
             legacyAbility.buildDescription(playerData, AbilityContext.forCaster(playerData, legacyAbility), consumer);
+            return;
+        }
+
+        PatchedAbilityDefinition patchedDefinition = MKCore.getAbilityDefinitionService().getResolver().resolvePatched(abilityId);
+        if (patchedDefinition != null) {
+            PlayerKnownAbility knownAbility = playerData.getAbilities().getKnownAbility(abilityId);
+            AbilityDefinitionDescriptions.buildDescription(knownAbility, patchedDefinition, consumer);
             return;
         }
 

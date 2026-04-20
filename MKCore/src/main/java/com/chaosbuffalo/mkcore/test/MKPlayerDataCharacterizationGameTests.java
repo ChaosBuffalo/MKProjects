@@ -5,10 +5,14 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEntry;
+import com.chaosbuffalo.mkcore.abilities2.description.AbilityDefinitionDescriptions;
+import com.chaosbuffalo.mkcore.abilities2.runtime.PatchedAbilityDefinition;
 import com.chaosbuffalo.mkcore.core.MKServerPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.PersonaManager;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
+import com.chaosbuffalo.mkcore.core.player.PlayerKnownAbility;
+import com.chaosbuffalo.mkcore.utils.text.IconTextComponent;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.gametest.framework.GameTest;
@@ -16,6 +20,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -284,6 +289,43 @@ public class MKPlayerDataCharacterizationGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void abilities2DescriptionFormatterShowsPoolUsageForKnownPoolDefinition(GameTestHelper helper) {
+        ResourceLocation abilityId = MKCore.id("test_abilities2_self_heal");
+        MKServerPlayerData playerData = createPlayerData(helper);
+
+        helper.assertTrue(playerData.getAbilities().learnAbilityDefinition(abilityId, AbilitySource.TRAINED),
+                "abilities2 definition should learn successfully");
+        PlayerKnownAbility knownAbility = playerData.getAbilities().getKnownAbility(abilityId);
+        PatchedAbilityDefinition definition = MKCore.getAbilityDefinitionService().getResolver().resolvePatched(abilityId);
+
+        helper.assertTrue(knownAbility != null, "trained definition should produce a known ability entry");
+        helper.assertTrue(definition != null, "trained definition should resolve a patched description");
+
+        List<Component> lines = AbilityDefinitionDescriptions.collectDescription(knownAbility, definition);
+        helper.assertFalse(lines.isEmpty(), "description lines should not be empty");
+        helper.assertTrue(lines.getFirst() instanceof IconTextComponent,
+                "trained definitions should start with the uses-pool indicator");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void abilities2DescriptionFormatterSummarizesChannelBehaviorAndParameters(GameTestHelper helper) {
+        ResourceLocation abilityId = MKCore.id("test_abilities2_mending_channel");
+        PatchedAbilityDefinition definition = MKCore.getAbilityDefinitionService().getResolver().resolvePatched(abilityId);
+
+        helper.assertTrue(definition != null, "channel definition should resolve a patched description");
+
+        List<Component> lines = AbilityDefinitionDescriptions.collectDescription(null, definition);
+        helper.assertTrue(containsLine(lines, "Cast: instant, channels every 1s"),
+                "channel definitions should describe their pulse interval");
+        helper.assertTrue(containsLine(lines, "Initial channel heal: 4"),
+                "channel definitions should list the initial heal parameter");
+        helper.assertTrue(containsLine(lines, "Per-pulse channel heal: 2"),
+                "channel definitions should list the per-pulse heal parameter");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void setSlotSwapsWithExistingAbility(GameTestHelper helper) {
         MKServerPlayerData playerData = createPlayerData(helper);
         AbilityGroup basicGroup = playerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic);
@@ -438,6 +480,10 @@ public class MKPlayerDataCharacterizationGameTests {
             throw new IllegalStateException("Failed to learn test ability " + ability.getAbilityId());
         }
         return ability.getAbilityId();
+    }
+
+    private static boolean containsLine(List<Component> lines, String expected) {
+        return lines.stream().map(Component::getString).anyMatch(expected::equals);
     }
 
     private static CompoundTag getDefaultPersonaTag(CompoundTag root) {

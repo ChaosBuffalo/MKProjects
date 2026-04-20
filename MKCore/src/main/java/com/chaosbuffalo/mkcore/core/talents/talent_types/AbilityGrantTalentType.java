@@ -3,7 +3,9 @@ package com.chaosbuffalo.mkcore.core.talents.talent_types;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys;
+import com.chaosbuffalo.mkcore.abilities2.description.AbilityDefinitionDescriptions;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDefinitionData;
+import com.chaosbuffalo.mkcore.abilities2.runtime.PatchedAbilityDefinition;
 import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
@@ -50,7 +52,11 @@ public class AbilityGrantTalentType extends TalentType<AbilityGrantTalentNode> {
         AbilityDefinitionData definition = abilityNode.getAbilityDefinition();
         if (definition != null) {
             consumer.accept(Component.literal(definition.presentation().name()));
-            if (!definition.presentation().description().isBlank()) {
+            PatchedAbilityDefinition patched = com.chaosbuffalo.mkcore.MKCore.getAbilityDefinitionService()
+                    .getResolver().resolvePatched(definition.id());
+            if (patched != null) {
+                AbilityDefinitionDescriptions.buildDescription(null, patched, consumer);
+            } else if (!definition.presentation().description().isBlank()) {
                 consumer.accept(Component.literal(definition.presentation().description()));
             }
             return;
