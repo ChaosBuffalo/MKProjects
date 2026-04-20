@@ -83,9 +83,11 @@ public class LoadoutCommand {
 
         MKCore.getPlayer(player).ifPresent(playerData -> {
             PlayerAbilityKnowledge abilityKnowledge = playerData.getAbilities();
-            if (abilityKnowledge.knowsAbility(abilityId)
-                    || canSlotAbilityDefinition(ctx.getSource(), group, abilityId)) {
-                playerData.getLoadout().getAbilityGroup(group).setSlot(slot, abilityId);
+            AbilityGroup abilityGroup = playerData.getLoadout().getAbilityGroup(group);
+            if (abilityKnowledge.knowsAbility(abilityId)) {
+                abilityGroup.setSlot(slot, abilityId);
+            } else if (canSlotAbilityDefinition(ctx.getSource(), group, abilityId)) {
+                abilityGroup.forceSetSlot(slot, abilityId);
             }
         });
 
@@ -100,9 +102,13 @@ public class LoadoutCommand {
 
         MKCore.getPlayer(player).ifPresent(playerData -> {
             PlayerAbilityKnowledge abilityKnowledge = playerData.getAbilities();
-            if (abilityKnowledge.knowsAbility(abilityId)
-                    || canSlotAbilityDefinition(ctx.getSource(), group, abilityId)) {
-                if (!playerData.getLoadout().getAbilityGroup(group).tryEquip(abilityId)) {
+            AbilityGroup abilityGroup = playerData.getLoadout().getAbilityGroup(group);
+            if (abilityKnowledge.knowsAbility(abilityId)) {
+                if (!abilityGroup.tryEquip(abilityId)) {
+                    ChatUtils.sendMessage(player, "No room for ability");
+                }
+            } else if (canSlotAbilityDefinition(ctx.getSource(), group, abilityId)) {
+                if (!abilityGroup.forceTryEquip(abilityId)) {
                     ChatUtils.sendMessage(player, "No room for ability");
                 }
             }

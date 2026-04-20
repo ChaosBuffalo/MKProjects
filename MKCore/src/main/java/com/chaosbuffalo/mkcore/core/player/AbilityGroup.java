@@ -122,12 +122,20 @@ public class AbilityGroup implements ISyncGroupProvider {
     }
 
     public boolean tryEquip(ResourceLocation abilityId) {
+        return tryEquip(abilityId, false);
+    }
+
+    public boolean forceTryEquip(ResourceLocation abilityId) {
+        return tryEquip(abilityId, true);
+    }
+
+    private boolean tryEquip(ResourceLocation abilityId, boolean allowUnknownDefinitions) {
         int slot = getAbilitySlot(abilityId);
         if (slot == -1) {
             // Ability was just learned so let's try to put it on the bar
             slot = getFirstFreeAbilitySlot();
             if (slot != -1 && slot < getCurrentSlotCount()) {
-                setSlot(slot, abilityId);
+                setSlot(slot, abilityId, allowUnknownDefinitions);
                 return true;
             }
         }
@@ -211,6 +219,14 @@ public class AbilityGroup implements ISyncGroupProvider {
     }
 
     public void setSlot(int index, ResourceLocation abilityId) {
+        setSlot(index, abilityId, false);
+    }
+
+    public void forceSetSlot(int index, ResourceLocation abilityId) {
+        setSlot(index, abilityId, true);
+    }
+
+    private void setSlot(int index, ResourceLocation abilityId, boolean allowUnknownDefinitions) {
 //        MKCore.LOGGER.debug("AbilityGroup.setSlot({}, {}, {})", groupId, index, abilityId);
 
         ResourceLocation currentAbilityId = activeAbilities.get(index);
@@ -237,7 +253,7 @@ public class AbilityGroup implements ISyncGroupProvider {
         }
 
         // abilityId was not already slotted - run the validity checks
-        if (!validateAbilityForSlot(index, abilityId))
+        if (!validateAbilityForSlot(index, abilityId, allowUnknownDefinitions))
             return;
 
         // abilityId was not slotted and is being inserted into an empty slot
@@ -253,7 +269,7 @@ public class AbilityGroup implements ISyncGroupProvider {
         notifyAbilityAdded(index, abilityId);
     }
 
-    private boolean validateAbilityForSlot(int index, ResourceLocation abilityId) {
+    private boolean validateAbilityForSlot(int index, ResourceLocation abilityId, boolean allowUnknownDefinitions) {
         MKAbility ability = MKCoreRegistry.getAbility(abilityId);
         if (ability != null) {
             if (requiresAbilityKnown() && !persona.getAbilities().knowsAbility(abilityId)) {
@@ -268,7 +284,15 @@ public class AbilityGroup implements ISyncGroupProvider {
             return true;
         }
 
-        return resolveAbilityDefinition(abilityId) != null;
+        PatchedAbilityDefinition definition = resolveAbilityDefinition(abilityId);
+        if (definition == null) {
+            return false;
+        }
+        if (!allowUnknownDefinitions && requiresAbilityKnown() && !persona.getAbilities().knowsAbility(abilityId)) {
+            MKCore.LOGGER.error("setSlot({}, {}, {}) - player does not know abilities2 definition!", groupId, index, abilityId);
+            return false;
+        }
+        return true;
     }
 
     public boolean isSlotUnlocked(int slot) {
@@ -342,7 +366,7 @@ public class AbilityGroup implements ISyncGroupProvider {
             MKAbilityInfo abilityInfo = getAbilityInfo(i);
             if (abilityInfo != null) {
                 onPersonaActivatedAbility(i, abilityInfo);
-            } else if (resolveAbilityDefinition(abilityId) != null) {
+            } else if (canActivateDefinition(abilityId)) {
                 onPersonaActivatedDefinition(i, abilityId);
             } else {
                 clearSlot(i);
@@ -368,6 +392,13 @@ public class AbilityGroup implements ISyncGroupProvider {
                 onPersonaDeactivatedDefinition(i, abilityId);
             }
         }
+    }
+
+    private boolean canActivateDefinition(ResourceLocation abilityId) {
+        if (resolveAbilityDefinition(abilityId) == null) {
+            return false;
+        }
+        return !requiresAbilityKnown() || persona.getAbilities().knowsAbility(abilityId);
     }
 
     protected <T> T serialize(DynamicOps<T> ops) {

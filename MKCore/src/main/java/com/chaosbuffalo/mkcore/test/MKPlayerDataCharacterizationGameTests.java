@@ -141,14 +141,19 @@ public class MKPlayerDataCharacterizationGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
-    public static void activationPreservesSlottedAbilities2PassiveDefinition(GameTestHelper helper) {
+    public static void activationPreservesKnownSlottedAbilities2PassiveDefinition(GameTestHelper helper) {
         ResourceLocation abilityId = MKCore.id("test_abilities2_spell_crit_passive");
-        MKServerPlayerData blankData = createPlayerData(helper);
-        HolderLookup.Provider provider = blankData.getEntity().registryAccess();
-        CompoundTag serialized = blankData.serializeNBT(provider);
+        MKServerPlayerData sourceData = createPlayerData(helper);
+        helper.assertTrue(sourceData.getAbilities().learnAbilityDefinition(abilityId, AbilitySource.ADMIN),
+                "abilities2 passive definition should learn successfully");
+        AbilityGroup sourceGroup = sourceData.getLoadout().getAbilityGroup(AbilityGroupId.Passive);
+        sourceGroup.setSlots(1);
+        sourceGroup.setSlot(0, abilityId);
+
+        HolderLookup.Provider provider = sourceData.getEntity().registryAccess();
+        CompoundTag serialized = sourceData.serializeNBT(provider);
 
         setPassiveSlots(serialized, 1);
-        setPassiveAbilities(serialized, abilityId);
 
         MKServerPlayerData restoredData = createPlayerData(helper);
         restoredData.deserializeNBT(provider, serialized);
@@ -161,6 +166,27 @@ public class MKPlayerDataCharacterizationGameTests {
 
         helper.assertValueEqual(restoredGroup.getSlot(0), abilityId, "activation should preserve the abilities2 passive slot");
         helper.assertTrue(restoredGroup.getAbilityInfo(0) == null, "abilities2 passive should remain a definition-backed slot");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void activationClearsUnknownSlottedAbilities2PassiveDefinition(GameTestHelper helper) {
+        ResourceLocation abilityId = MKCore.id("test_abilities2_spell_crit_passive");
+        MKServerPlayerData blankData = createPlayerData(helper);
+        HolderLookup.Provider provider = blankData.getEntity().registryAccess();
+        CompoundTag serialized = blankData.serializeNBT(provider);
+
+        setPassiveSlots(serialized, 1);
+        setPassiveAbilities(serialized, abilityId);
+
+        MKServerPlayerData restoredData = createPlayerData(helper);
+        restoredData.deserializeNBT(provider, serialized);
+        AbilityGroup restoredGroup = restoredData.getLoadout().getAbilityGroup(AbilityGroupId.Passive);
+
+        restoredData.getPersonaManager().onJoinLevel();
+
+        helper.assertValueEqual(restoredGroup.getSlot(0), MKCoreRegistry.INVALID_ABILITY,
+                "activation should clear an unknown slotted abilities2 passive definition");
         helper.succeed();
     }
 
@@ -299,6 +325,20 @@ public class MKPlayerDataCharacterizationGameTests {
 
         helper.assertValueEqual(basicGroup.getSlot(0), MKCoreRegistry.INVALID_ABILITY, "passive ability should not fit in basic slots");
         helper.assertTrue(basicGroup.getAbilityInfo(0) == null, "wrong-typed ability should not resolve in the slot");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void setSlotRejectsUnknownAbilities2Definition(GameTestHelper helper) {
+        MKServerPlayerData playerData = createPlayerData(helper);
+        AbilityGroup basicGroup = playerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic);
+        ResourceLocation abilityId = MKCore.id("test_abilities2_self_heal");
+
+        basicGroup.setSlots(1);
+        basicGroup.setSlot(0, abilityId);
+
+        helper.assertValueEqual(basicGroup.getSlot(0), MKCoreRegistry.INVALID_ABILITY,
+                "unknown abilities2 definition should not be slotted");
         helper.succeed();
     }
 

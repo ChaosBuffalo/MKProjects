@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.test;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities2.AbilityRuntimeService;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityAction;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityActivationDefinition;
@@ -171,6 +172,8 @@ public class MKAbilities2RuntimeGameTests {
                 "generated passive definition should be loaded for the integration test"
         );
 
+        helper.assertTrue(ownerData.getAbilities().learnAbilityDefinition(SPELL_CRIT_PASSIVE_ABILITY, AbilitySource.ADMIN),
+                "slotted passive runtime test should learn the passive definition first");
         ownerData.getLoadout().getPassiveAbilityGroup().setSlots(1);
         ownerData.getLoadout().getPassiveAbilityGroup().setSlot(0, SPELL_CRIT_PASSIVE_ABILITY);
 
@@ -198,6 +201,8 @@ public class MKAbilities2RuntimeGameTests {
         Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
         MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
 
+        helper.assertTrue(ownerData.getAbilities().learnAbilityDefinition(SELF_HEAL_ABILITY, AbilitySource.ADMIN),
+                "slotted basic runtime test should learn the definition first");
         ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlots(1);
         ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(0, SELF_HEAL_ABILITY);
 
@@ -218,6 +223,8 @@ public class MKAbilities2RuntimeGameTests {
         Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
         MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
 
+        helper.assertTrue(ownerData.getAbilities().learnAbilityDefinition(RESTORING_AURA_ABILITY, AbilitySource.ADMIN),
+                "slotted toggle runtime test should learn the definition first");
         ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlots(1);
         ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(0, RESTORING_AURA_ABILITY);
 
