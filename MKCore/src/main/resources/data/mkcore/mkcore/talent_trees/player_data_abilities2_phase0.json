@@ -1,0 +1,23 @@
+{
+  "display_name": "MKPlayerData Abilities2 Phase 0",
+  "is_default": false,
+  "lines": [
+    {
+      "line_name": "a",
+      "talents": [
+        {
+          "type": "mkcore:entitlement_grant",
+          "display_info": "mkcore:ability_slot",
+          "entitlement": "mkcore:ability_slot.basic.test",
+          "nodeId": "22222222-2222-2222-2222-222222222222"
+        },
+        {
+          "type": "mkcore:ability_grant",
+          "ability": "mkcore:test_abilities2_self_heal",
+          "display_info": "mkcore:ability_slot"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

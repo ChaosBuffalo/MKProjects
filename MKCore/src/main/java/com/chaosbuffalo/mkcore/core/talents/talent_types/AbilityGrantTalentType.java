@@ -2,6 +2,9 @@ package com.chaosbuffalo.mkcore.core.talents.talent_types;
 
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDefinitionData;
+import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
@@ -12,6 +15,7 @@ import com.chaosbuffalo.mkcore.core.talents.nodes.AbilityGrantTalentNode;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.Locale;
 import java.util.function.Consumer;
@@ -37,8 +41,22 @@ public class AbilityGrantTalentType extends TalentType<AbilityGrantTalentNode> {
         }
 
         MKAbility ability = abilityNode.getAbility();
-        consumer.accept(ability.getAbilityName());
-        ability.buildDescription(entityData, AbilityContext.forCaster(entityData, ability), consumer);
+        if (ability != null) {
+            consumer.accept(ability.getAbilityName());
+            ability.buildDescription(entityData, AbilityContext.forCaster(entityData, ability), consumer);
+            return;
+        }
+
+        AbilityDefinitionData definition = abilityNode.getAbilityDefinition();
+        if (definition != null) {
+            consumer.accept(Component.literal(definition.presentation().name()));
+            if (!definition.presentation().description().isBlank()) {
+                consumer.accept(Component.literal(definition.presentation().description()));
+            }
+            return;
+        }
+
+        consumer.accept(Component.literal(abilityNode.getAbilityId().toString()));
     }
 
     @Override
@@ -47,7 +65,17 @@ public class AbilityGrantTalentType extends TalentType<AbilityGrantTalentNode> {
             return Component.literal("bad talent type");
         }
 
-        return abilityNode.getAbility().getAbilityName();
+        MKAbility ability = abilityNode.getAbility();
+        if (ability != null) {
+            return ability.getAbilityName();
+        }
+
+        AbilityDefinitionData definition = abilityNode.getAbilityDefinition();
+        if (definition != null) {
+            return Component.literal(definition.presentation().name());
+        }
+
+        return Component.literal(abilityNode.getAbilityId().toString());
     }
 
     @Override
@@ -56,15 +84,19 @@ public class AbilityGrantTalentType extends TalentType<AbilityGrantTalentNode> {
             return Component.literal("bad talent type");
         }
 
-        MKAbility ability = abilityNode.getAbility();
-        return switch (ability.getType()) {
+        AbilityType abilityType = resolveAbilityType(abilityNode);
+        if (abilityType == null) {
+            return Component.literal("Ability Talent");
+        }
+
+        return switch (abilityType) {
             case Basic ->
                     Component.translatableWithFallback("talent_type.mkcore.ability_grant.basic.name", "Basic Ability Talent");
             case Passive ->
                     Component.translatableWithFallback("talent_type.mkcore.ability_grant.passive.name", "Passive Ability Talent");
             case Ultimate ->
                     Component.translatableWithFallback("talent_type.mkcore.ability_grant.ultimate.name", "Ultimate Ability Talent");
-            default -> Component.literal("%s Ability Talent".formatted(ability.getType()));
+            default -> Component.literal("Ability Talent");
         };
     }
 
@@ -74,9 +106,41 @@ public class AbilityGrantTalentType extends TalentType<AbilityGrantTalentNode> {
             return Component.literal("bad talent type");
         }
 
+        MutableComponent displayName = getTalentNodeName(record);
+        AbilityType abilityType = resolveAbilityType(abilityNode);
+        if (abilityType == null) {
+            return Component.literal("Grants the %s ability".formatted(displayName.getString()));
+        }
+
         return Component.translatableWithFallback("talent_type.mkcore.ability_grant.description",
                 "Grants the %s %s ability",
-                abilityNode.getAbility().getAbilityName(),
-                Component.literal(abilityNode.getAbility().getType().name().toLowerCase(Locale.ROOT)));
+                displayName,
+                Component.literal(abilityType.name().toLowerCase(Locale.ROOT)));
+    }
+
+    private AbilityType resolveAbilityType(AbilityGrantTalentNode abilityNode) {
+        MKAbility ability = abilityNode.getAbility();
+        if (ability != null) {
+            return ability.getType();
+        }
+
+        AbilityDefinitionData definition = abilityNode.getAbilityDefinition();
+        if (definition == null) {
+            return null;
+        }
+        return resolveAbilityType(definition.slotFamily());
+    }
+
+    private AbilityType resolveAbilityType(ResourceLocation slotFamily) {
+        if (slotFamily.equals(AbilityDatagenKeys.SLOT_FAMILY_BASIC)) {
+            return AbilityType.Basic;
+        }
+        if (slotFamily.equals(AbilityDatagenKeys.SLOT_FAMILY_PASSIVE)) {
+            return AbilityType.Passive;
+        }
+        if (slotFamily.equals(AbilityDatagenKeys.SLOT_FAMILY_ULTIMATE)) {
+            return AbilityType.Ultimate;
+        }
+        return null;
     }
 }

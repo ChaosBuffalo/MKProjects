@@ -31,6 +31,8 @@ import java.util.UUID;
 public class MKPlayerDataCharacterizationGameTests {
     private static final ResourceKey<com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition> TEST_TREE =
             ResourceKey.create(MKCoreRegistry.TALENT_TREE_REGISTRY_KEY, MKCore.id("player_data_phase0"));
+    private static final ResourceKey<com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition> TEST_ABILITIES2_TREE =
+            ResourceKey.create(MKCoreRegistry.TALENT_TREE_REGISTRY_KEY, MKCore.id("player_data_abilities2_phase0"));
     private static final String TEST_LINE = "a";
 
     @GameTest(template = "player_data_phase0")
@@ -103,6 +105,38 @@ public class MKPlayerDataCharacterizationGameTests {
         helper.assertValueEqual(cloneGroup.getCurrentSlotCount(), 1, "cloned basic slot count");
         helper.assertValueEqual(cloneGroup.getSlot(0), abilityId, "cloned slotted ability");
         helper.assertTrue(cloneGroup.getAbilityInfo(0) != null, "Cloned slotted ability should resolve after activation");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void deserializedLoadoutRestoresTalentGrantedAbilities2DefinitionDuringActivation(GameTestHelper helper) {
+        ResourceLocation abilityId = MKCore.id("test_abilities2_self_heal");
+        MKServerPlayerData sourceData = createPlayerData(helper);
+        setupTalentedLoadout(sourceData, TEST_ABILITIES2_TREE, abilityId);
+
+        HolderLookup.Provider provider = sourceData.getEntity().registryAccess();
+        CompoundTag serialized = sourceData.serializeNBT(provider);
+        removePersistedAbility(serialized, abilityId);
+        setBasicSlots(serialized, 0);
+
+        MKServerPlayerData restoredData = createPlayerData(helper);
+        restoredData.deserializeNBT(provider, serialized);
+
+        AbilityGroup restoredGroup = restoredData.getLoadout().getAbilityGroup(AbilityGroupId.Basic);
+        helper.assertFalse(restoredData.getAbilities().knowsAbility(abilityId),
+                "abilities2 talent definition should not be restored before activation");
+        helper.assertValueEqual(restoredGroup.getCurrentSlotCount(), 0, "pre-activation abilities2 basic slot count");
+        helper.assertTrue(restoredGroup.getAbilityInfo(0) == null,
+                "abilities2 talent slot should not resolve as a legacy ability before activation");
+
+        restoredData.getPersonaManager().onJoinLevel();
+
+        helper.assertTrue(restoredData.getAbilities().knowsAbility(abilityId),
+                "abilities2 talent activation should restore the granted definition");
+        helper.assertValueEqual(restoredGroup.getCurrentSlotCount(), 1, "post-activation abilities2 basic slot count");
+        helper.assertValueEqual(restoredGroup.getSlot(0), abilityId, "restored abilities2 talent slot");
+        helper.assertTrue(restoredGroup.getAbilityInfo(0) == null,
+                "abilities2 talent slot should remain definition-backed after activation");
         helper.succeed();
     }
 
@@ -181,6 +215,26 @@ public class MKPlayerDataCharacterizationGameTests {
                 "abilities2 definition should no longer be known");
         helper.assertValueEqual(basicGroup.getSlot(0), MKCoreRegistry.INVALID_ABILITY,
                 "unlearning should clear the slotted abilities2 definition");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void refundingTalentGrantedAbilities2DefinitionClearsKnowledgeAndSlot(GameTestHelper helper) {
+        ResourceLocation abilityId = MKCore.id("test_abilities2_self_heal");
+        MKServerPlayerData playerData = createPlayerData(helper);
+        setupTalentedLoadout(playerData, TEST_ABILITIES2_TREE, abilityId);
+
+        AbilityGroup basicGroup = playerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic);
+        helper.assertTrue(playerData.getAbilities().knowsAbility(abilityId),
+                "abilities2 talent definition should be known after spending the talent");
+        helper.assertValueEqual(basicGroup.getSlot(0), abilityId, "pre-refund abilities2 talent slot");
+
+        helper.assertTrue(playerData.getTalents().refundTalentPoint(TEST_ABILITIES2_TREE, TEST_LINE, 1),
+                "abilities2 talent should refund successfully");
+        helper.assertFalse(playerData.getAbilities().knowsAbility(abilityId),
+                "abilities2 talent refund should remove the granted definition");
+        helper.assertValueEqual(basicGroup.getSlot(0), MKCoreRegistry.INVALID_ABILITY,
+                "abilities2 talent refund should clear the slotted definition");
         helper.succeed();
     }
 
@@ -316,16 +370,22 @@ public class MKPlayerDataCharacterizationGameTests {
     }
 
     private static void setupTalentedLoadout(MKServerPlayerData playerData, ResourceLocation abilityId) {
+        setupTalentedLoadout(playerData, TEST_TREE, abilityId);
+    }
+
+    private static void setupTalentedLoadout(MKServerPlayerData playerData,
+                                             ResourceKey<com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition> treeId,
+                                             ResourceLocation abilityId) {
         playerData.getTalents().grantTalentPoints(2);
-        boolean unlocked = playerData.getTalents().unlockTree(TEST_TREE);
+        boolean unlocked = playerData.getTalents().unlockTree(treeId);
         if (!unlocked) {
-            throw new IllegalStateException("Failed to unlock test talent tree");
+            throw new IllegalStateException("Failed to unlock test talent tree " + treeId.location());
         }
 
-        if (!playerData.getTalents().spendTalentPoint(TEST_TREE, TEST_LINE, 0)) {
+        if (!playerData.getTalents().spendTalentPoint(treeId, TEST_LINE, 0)) {
             throw new IllegalStateException("Failed to unlock slot-granting test talent");
         }
-        if (!playerData.getTalents().spendTalentPoint(TEST_TREE, TEST_LINE, 1)) {
+        if (!playerData.getTalents().spendTalentPoint(treeId, TEST_LINE, 1)) {
             throw new IllegalStateException("Failed to unlock ability-granting test talent");
         }
 

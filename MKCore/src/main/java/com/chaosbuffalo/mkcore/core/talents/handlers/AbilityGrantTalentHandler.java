@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.core.talents.handlers;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
@@ -15,11 +16,13 @@ public class AbilityGrantTalentHandler extends TalentTypeHandler {
     @Override
     public void onRecordUpdated(TalentRecord record) {
         if (record.getNode() instanceof AbilityGrantTalentNode abilityNode) {
-            MKAbility ability = abilityNode.getAbility();
+            AbilitySource source = nodeSource(record);
             if (!record.isKnown()) {
-                persona.getAbilities().unlearnAbility(ability.getAbilityId(), nodeSource(record));
+                if (persona.getAbilities().knowsAbility(abilityNode.getAbilityId())) {
+                    persona.getAbilities().unlearnAbility(abilityNode.getAbilityId(), source);
+                }
             } else {
-                tryLearn(record, ability);
+                tryLearn(record, abilityNode);
             }
         }
     }
@@ -27,8 +30,7 @@ public class AbilityGrantTalentHandler extends TalentTypeHandler {
     @Override
     public void onRecordLoaded(TalentRecord record) {
         if (record.getNode() instanceof AbilityGrantTalentNode abilityNode) {
-            MKAbility ability = abilityNode.getAbility();
-            tryLearn(record, ability);
+            tryLearn(record, abilityNode);
         }
     }
 
@@ -36,7 +38,19 @@ public class AbilityGrantTalentHandler extends TalentTypeHandler {
         return AbilitySource.forTalent(record);
     }
 
-    protected void tryLearn(TalentRecord record, MKAbility ability) {
-        persona.getAbilities().learnAbility(ability, nodeSource(record));
+    protected void tryLearn(TalentRecord record, AbilityGrantTalentNode abilityNode) {
+        MKAbility ability = abilityNode.getAbility();
+        if (ability != null) {
+            persona.getAbilities().learnAbility(ability, nodeSource(record));
+            return;
+        }
+
+        if (abilityNode.getAbilityDefinition() != null) {
+            persona.getAbilities().learnAbilityDefinition(abilityNode.getAbilityId(), nodeSource(record));
+            return;
+        }
+
+        MKCore.LOGGER.warn("Persona {} tried to apply unknown talent-granted ability {}",
+                persona.getEntity(), abilityNode.getAbilityId());
     }
 }
