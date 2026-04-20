@@ -300,9 +300,8 @@ public class AbilityTracker implements ISyncObject {
     }
 
     public static class ExternalEventsTracker extends AbilityTracker {
-        protected static HashMap<ResourceLocation, Consumer<Boolean>> removedCallbacks = new HashMap<>();
-        protected static HashMap<ResourceLocation, BiConsumer<Integer, Boolean>> addedCallbacks = new HashMap<>();
-
+        protected final Map<ResourceLocation, Consumer<Boolean>> removedCallbacks = new HashMap<>();
+        protected final Map<ResourceLocation, BiConsumer<Integer, Boolean>> addedCallbacks = new HashMap<>();
 
         @Override
         protected void onTimerAdded(ResourceLocation timerId, int ticksIn, boolean local) {
@@ -313,11 +312,11 @@ public class AbilityTracker implements ISyncObject {
             }
         }
 
-        public void subscribeToRemoved(ResourceLocation timerId, Consumer<Boolean> cb){
+        public void subscribeToRemoved(ResourceLocation timerId, Consumer<Boolean> cb) {
             removedCallbacks.put(timerId, cb);
         }
 
-        public void subscribeToAdded(ResourceLocation timerId, BiConsumer<Integer, Boolean> cb){
+        public void subscribeToAdded(ResourceLocation timerId, BiConsumer<Integer, Boolean> cb) {
             addedCallbacks.put(timerId, cb);
         }
 
