@@ -263,6 +263,18 @@ public class MKOverlay implements LayeredDraw.Layer {
     private void drawCastBar(GuiGraphics graphics, MKPlayerData data, int winHeight, int winWidth) {
         PlayerAbilityExecutor executor = data.getAbilityExecutor();
         if (!executor.isCasting()) {
+            float ability2Progress = MKCore.getAbilityRuntimeService().getClientCastProgress(data, mc.getTimer().getGameTimeDeltaPartialTick(true));
+            int ability2CastTicks = MKCore.getAbilityRuntimeService().getClientCastTicks(data);
+            if (ability2Progress <= 0.0f || ability2CastTicks <= 0) {
+                return;
+            }
+            int castStartY = winHeight / 2 + 8;
+            int width = 50;
+            int barSize = Math.max(1, Math.round(width * ability2Progress));
+            int castStartX = winWidth / 2 - barSize / 2;
+            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+            GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(graphics, GuiTextures.CAST_BAR_REGION, castStartX, castStartY, barSize);
             return;
         }
 
@@ -353,7 +365,9 @@ public class MKOverlay implements LayeredDraw.Layer {
 
             if (abilityInfo != null) {
                 float manaCost = executor.getAbilityManaCost(abilityInfo);
-                if (!executor.isCasting() && data.getStats().getMana() >= manaCost) {
+                if (!executor.isCasting()
+                        && !MKCore.getAbilityRuntimeService().hasPendingActivation(data)
+                        && data.getStats().getMana() >= manaCost) {
                     RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
                 } else {
                     RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 1.0F);

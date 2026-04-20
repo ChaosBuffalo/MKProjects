@@ -70,7 +70,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
         LifecycleListener NOOP = new LifecycleListener() {
         };
 
-        default void onInvocationStarted(AbilityInvocation invocation) {
+        default void onInvocationStarted(AbilityInvocation invocation, int castTicks) {
         }
 
         default void onInvocationCompleted(AbilityInvocation invocation, int castTicksSpent) {
@@ -423,7 +423,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
         }
 
         int castTicks = resolveCastTicks(activation, invocation.invocationStats());
-        emitInvocationStarted(invocation);
+        emitInvocationStarted(invocation, castTicks);
         if (castTicks > 0) {
             pendingCastsByCaster.computeIfAbsent(invocation.casterData().getEntity().getUUID(), ignored -> new ArrayList<>())
                     .add(new PendingCast(invocation, castTicks, ignoreCosts));
@@ -1295,10 +1295,14 @@ public class SimpleAbilityEngine implements AbilityEngine {
     }
 
     private void emitInvocationStarted(AbilityInvocation invocation) {
+        emitInvocationStarted(invocation, 0);
+    }
+
+    private void emitInvocationStarted(AbilityInvocation invocation, int castTicks) {
         Map<String, AbilityValue> payload = new LinkedHashMap<>();
         payload.put("activation_kind", eventKeywordValue(activationKind(invocation)));
         emitEvent(AbilityEventType.INVOCATION_STARTED, invocation, invocation.targets().primaryEntityId(), payload);
-        lifecycleListener.onInvocationStarted(invocation);
+        lifecycleListener.onInvocationStarted(invocation, castTicks);
     }
 
     private void emitInvocationCompleted(AbilityInvocation invocation, int castTicksSpent) {

@@ -20,6 +20,8 @@ import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
+import com.chaosbuffalo.mkcore.network.Ability2CastPacket;
+import com.chaosbuffalo.mkcore.network.PacketHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
@@ -56,6 +58,7 @@ public class AbilityRuntimeService {
     private final Map<ToggleKey, ToggleRuntime> activeToggles = new LinkedHashMap<>();
     private final Map<PassiveKey, PassiveRuntime> activePassives = new LinkedHashMap<>();
     private final Map<UUID, DeliveryRuntime> activeDeliveries = new LinkedHashMap<>();
+    private final Map<Integer, ClientCastState> clientCasts = new HashMap<>();
     private long lastStateStoreTick = Long.MIN_VALUE;
 
     public AbilityRuntimeService(AbilityDefinitionResolver definitionResolver) {
@@ -99,12 +102,50 @@ public class AbilityRuntimeService {
 
     public boolean hasPendingActivation(IMKEntityData casterData) {
         Objects.requireNonNull(casterData, "casterData");
+        if (casterData.isClientSide()) {
+            return getClientCastState(casterData) != null;
+        }
         return engine.hasPendingActivation(casterData);
     }
 
     public void interruptPendingActivations(IMKEntityData casterData) {
         Objects.requireNonNull(casterData, "casterData");
         engine.interruptPendingActivations(casterData);
+    }
+
+    public void startClientCast(Entity entity, ResourceLocation abilityId, int castTicks) {
+        Objects.requireNonNull(entity, "entity");
+        Objects.requireNonNull(abilityId, "abilityId");
+        if (castTicks <= 0) {
+            clientCasts.remove(entity.getId());
+            return;
+        }
+        clientCasts.put(entity.getId(), new ClientCastState(abilityId, castTicks, entity.tickCount));
+    }
+
+    public void stopClientCast(Entity entity, ResourceLocation abilityId) {
+        Objects.requireNonNull(entity, "entity");
+        Objects.requireNonNull(abilityId, "abilityId");
+        ClientCastState existing = clientCasts.get(entity.getId());
+        if (existing != null && existing.abilityId().equals(abilityId)) {
+            clientCasts.remove(entity.getId());
+        }
+    }
+
+    public float getClientCastProgress(IMKEntityData entityData, float partialTicks) {
+        Objects.requireNonNull(entityData, "entityData");
+        ClientCastState state = getClientCastState(entityData);
+        if (state == null || state.castTicks() <= 0) {
+            return 0.0f;
+        }
+        float elapsedTicks = (entityData.getEntity().tickCount - state.startTick()) + partialTicks;
+        return Math.min(Math.max(elapsedTicks / state.castTicks(), 0.0f), 1.0f);
+    }
+
+    public int getClientCastTicks(IMKEntityData entityData) {
+        Objects.requireNonNull(entityData, "entityData");
+        ClientCastState state = getClientCastState(entityData);
+        return state != null ? state.castTicks() : 0;
     }
 
     public boolean canExecuteLoadoutAbility(AbilityGroupId groupId, ResourceLocation abilityId) {
@@ -493,7 +534,22 @@ public class AbilityRuntimeService {
     private boolean isCasterBusyForDirectActivation(IMKEntityData casterData) {
         return casterData.getEntity().isBlocking()
                 || casterData.getAbilityExecutor().isCasting()
-                || engine.hasPendingActivation(casterData);
+                || hasPendingActivation(casterData);
+    }
+
+    private @Nullable ClientCastState getClientCastState(IMKEntityData entityData) {
+        if (!entityData.isClientSide()) {
+            return null;
+        }
+        ClientCastState state = clientCasts.get(entityData.getEntity().getId());
+        if (state == null) {
+            return null;
+        }
+        if ((entityData.getEntity().tickCount - state.startTick()) >= state.castTicks()) {
+            clientCasts.remove(entityData.getEntity().getId());
+            return null;
+        }
+        return state;
     }
 
     private InvocationResult requestToggleDisable(ToggleRuntime runtime) {
@@ -1419,7 +1475,13 @@ public class AbilityRuntimeService {
 
     private final class EngineLifecycleListener implements SimpleAbilityEngine.LifecycleListener {
         @Override
+        public void onInvocationStarted(AbilityInvocation invocation, int castTicks) {
+            syncCastState(invocation, castTicks, true);
+        }
+
+        @Override
         public void onInvocationCompleted(AbilityInvocation invocation, int castTicksSpent) {
+            syncCastState(invocation, 0, false);
             handleInvocationCompleted(invocation);
         }
 
@@ -1427,7 +1489,29 @@ public class AbilityRuntimeService {
         public void onInvocationInterrupted(AbilityInvocation invocation,
                                             FailureReason failureReason,
                                             int castTicksSpent) {
+            syncCastState(invocation, 0, false);
             handleInvocationInterrupted(invocation);
+        }
+    }
+
+    private void syncCastState(AbilityInvocation invocation, int castTicks, boolean active) {
+        if (invocation.reason() != ActivationReason.DIRECT_REQUEST || invocation.casterData().isClientSide()) {
+            return;
+        }
+        if (castTicks <= 0 && active) {
+            return;
+        }
+        Entity caster = invocation.casterData().getEntity();
+        if (active) {
+            PacketHandler.sendToTrackingAndSelf(
+                    Ability2CastPacket.start(caster, invocation.abilityId(), castTicks),
+                    caster
+            );
+        } else {
+            PacketHandler.sendToTrackingAndSelf(
+                    Ability2CastPacket.stop(caster, invocation.abilityId()),
+                    caster
+            );
         }
     }
 
@@ -1465,6 +1549,9 @@ public class AbilityRuntimeService {
                              ResourceLocation abilityId,
                              @Nullable UUID grantId,
                              UUID stableSourceId) {
+    }
+
+    private record ClientCastState(ResourceLocation abilityId, int castTicks, int startTick) {
     }
 
     private record PassiveKey(UUID ownerEntityId,

@@ -36,6 +36,11 @@ public class PacketHandler {
                 EntityCastPacket::handle
         );
         registrar.playToClient(
+                Ability2CastPacket.TYPE,
+                Ability2CastPacket.STREAM_CODEC,
+                Ability2CastPacket::handle
+        );
+        registrar.playToClient(
                 EntityEffectPacket.TYPE,
                 EntityEffectPacket.STREAM_CODEC,
                 EntityEffectPacket::handle
