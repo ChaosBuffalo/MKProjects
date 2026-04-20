@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.command;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.command.arguments.AbilityIdArgument;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
@@ -20,6 +21,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -148,7 +150,12 @@ public class LoadoutCommand {
             int max = container.getMaximumSlotCount();
             ChatUtils.sendMessageWithBrackets(player, "%s Action Bar (%d/%d slots)", group, current, max);
             for (int i = 0; i < current; i++) {
-                ChatUtils.sendMessage(player, "%d: %s", i, container.getSlot(i));
+                ResourceLocation abilityId = container.getSlot(i);
+                if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
+                    ChatUtils.sendMessage(player, "%d: empty", i);
+                } else {
+                    ChatUtils.sendMessage(player, Component.literal(i + ": ").append(AbilityCommand.formatAbilityDisplay(abilityId)));
+                }
             }
         });
 

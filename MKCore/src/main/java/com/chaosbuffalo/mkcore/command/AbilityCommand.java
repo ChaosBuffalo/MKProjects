@@ -7,6 +7,8 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.command.arguments.AbilityIdArgument;
 import com.chaosbuffalo.mkcore.command.arguments.PlayersArgument;
+import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
+import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.PlayerAbilityKnowledge;
 import com.chaosbuffalo.mkcore.core.player.PlayerKnownAbility;
@@ -96,10 +98,10 @@ public class AbilityCommand {
         }
 
         if (learned) {
-            Component message = Component.translatableWithFallback("mkcore.command.ability.learn.success",
-                    "Player '%s' learned ability %s",
-                    player.getName(),
-                    Component.translationArg(abilityId));
+            Component message = Component.literal("Player '")
+                    .append(player.getName())
+                    .append("' learned ")
+                    .append(formatAbilityDisplay(abilityId));
             ChatUtils.sendMessage(commandPlayer, message);
         }
 
@@ -166,7 +168,7 @@ public class AbilityCommand {
         if (!abilities.isEmpty()) {
             ChatUtils.sendMessageWithBrackets(commandPlayer, Component.literal("Known Abilities - ").append(player.getName()));
             abilities.forEach(info -> {
-                ChatUtils.sendMessageWithBrackets(commandPlayer, "%s", info.getId());
+                ChatUtils.sendMessageWithBrackets(commandPlayer, formatAbilityDisplay(info.getId()));
                 info.getSources().forEach(s -> ChatUtils.sendMessage(commandPlayer, "- %s", s.encode()));
             });
         } else {
@@ -192,9 +194,23 @@ public class AbilityCommand {
         ChatUtils.sendMessageWithBrackets(commandPlayer, Component.literal("Ability Pool - ").append(player.getName()));
         ChatUtils.sendMessageWithBrackets(commandPlayer, "Pool Size: %d/%d", currentSize, maxSize);
         abilityKnowledge.getPoolAbilityIds().forEach(abilityId -> {
-            ChatUtils.sendMessageWithBrackets(commandPlayer, "Pool Ability: %s", abilityId);
+            ChatUtils.sendMessageWithBrackets(commandPlayer,
+                    Component.literal("Pool Ability: ").append(formatAbilityDisplay(abilityId)));
         });
         return Command.SINGLE_SUCCESS;
+    }
+
+    static Component formatAbilityDisplay(ResourceLocation abilityId) {
+        AbilityDisplayEntry display = AbilityDisplayEntry.resolve(abilityId);
+        Component result = display.displayName().copy();
+        AbilityType type = display.abilityType();
+        if (type != null) {
+            result = result.copy().append(Component.literal(" [" + type + "]"));
+        }
+        if (display.definitionBacked()) {
+            result = result.copy().append(Component.literal(" {abilities2}"));
+        }
+        return result.copy().append(Component.literal(" (" + abilityId + ")"));
     }
 
     private static Stream<ResourceLocation> getLearnableAbilityIds() {

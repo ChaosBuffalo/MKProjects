@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEntry;
 import com.chaosbuffalo.mkcore.abilities2.description.AbilityDefinitionDescriptions;
 import com.chaosbuffalo.mkcore.abilities2.runtime.PatchedAbilityDefinition;
+import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
 import com.chaosbuffalo.mkcore.core.MKServerPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.PersonaManager;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
@@ -322,6 +323,17 @@ public class MKPlayerDataCharacterizationGameTests {
                 "channel definitions should list the initial heal parameter");
         helper.assertTrue(containsLine(lines, "Per-pulse channel heal: 2"),
                 "channel definitions should list the per-pulse heal parameter");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void abilityDisplayEntryResolvesAbilities2DefinitionMetadata(GameTestHelper helper) {
+        AbilityDisplayEntry display = AbilityDisplayEntry.resolve(MKCore.id("test_abilities2_self_heal"));
+
+        helper.assertTrue(display.definitionBacked(), "abilities2 definitions should be marked definition-backed");
+        helper.assertValueEqual(display.displayName().getString(), "Abilities2 Self Heal",
+                "definition display name should come from the presentation block");
+        helper.assertTrue(display.abilityType() != null, "definition display should expose a loadout ability type");
         helper.succeed();
     }
 
