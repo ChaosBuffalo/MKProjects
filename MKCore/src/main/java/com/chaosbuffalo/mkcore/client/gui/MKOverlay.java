@@ -332,7 +332,6 @@ public class MKOverlay implements LayeredDraw.Layer {
         drawBarSlots(graphics, group, startingSlot, slotCount, totalSlots);
 
         PlayerAbilityExecutor executor = data.getAbilityExecutor();
-        float globalCooldown = executor.getGlobalCooldownPercent(partialTicks);
 
         for (int i = 0; i < slotCount; i++) {
             ResourceLocation abilityId = abilityGroup.getSlot(i);
@@ -346,9 +345,11 @@ public class MKOverlay implements LayeredDraw.Layer {
                 continue;
             }
 
-            float cooldownFactor = executor.getCurrentLoadoutAbilityCooldownPercent(abilityGroup, i, partialTicks);
-
             var executionAbility = abilityInfo == null ? abilityGroup.getExecutionAbilityReference(i) : null;
+            float cooldownFactor = executor.getCurrentLoadoutAbilityCooldownPercent(abilityGroup, i, partialTicks);
+            float globalCooldown = abilityInfo != null || executionAbility == null
+                    ? executor.getGlobalCooldownPercent(partialTicks)
+                    : MKCore.getAbilityRuntimeService().getLoadoutGcdPercent(data, group, executionAbility, partialTicks);
 
             if (abilityInfo != null) {
                 float manaCost = executor.getAbilityManaCost(abilityInfo);

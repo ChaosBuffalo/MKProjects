@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.abilities2;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityEventFilter.ParticipantRelation;
 import com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityActivationDefinition;
@@ -133,10 +134,56 @@ public class AbilityRuntimeService {
         if (activation == null) {
             return false;
         }
+        if (getLoadoutGcdTicks(ownerData, activation.gcdGroup()) > 0) {
+            return false;
+        }
 
         AbilityActionContext context = createLoadoutPreviewContext(ownerData, casterData, ability, sourceId,
                 execution.activationId(), definition, Map.of());
         return activation.costs().stream().allMatch(cost -> canAffordLoadoutPreview(cost, context));
+    }
+
+    public int getLoadoutGcdTicks(IMKEntityData ownerData,
+                                  AbilityGroupId groupId,
+                                  AbilityReference ability) {
+        Objects.requireNonNull(ownerData, "ownerData");
+        Objects.requireNonNull(groupId, "groupId");
+        Objects.requireNonNull(ability, "ability");
+
+        LoadoutExecution execution = resolveLoadoutExecution(groupId, ability.abilityId());
+        if (execution == null) {
+            return 0;
+        }
+
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(ability.abilityId());
+        if (definition == null) {
+            return 0;
+        }
+
+        AbilityActivationDefinition activation = definition.definition().getActivation(execution.activationId());
+        return activation != null ? getLoadoutGcdTicks(ownerData, activation.gcdGroup()) : 0;
+    }
+
+    public float getLoadoutGcdPercent(IMKEntityData ownerData,
+                                      AbilityGroupId groupId,
+                                      AbilityReference ability,
+                                      float partialTicks) {
+        Objects.requireNonNull(ownerData, "ownerData");
+        Objects.requireNonNull(groupId, "groupId");
+        Objects.requireNonNull(ability, "ability");
+
+        LoadoutExecution execution = resolveLoadoutExecution(groupId, ability.abilityId());
+        if (execution == null) {
+            return 0.0f;
+        }
+
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(ability.abilityId());
+        if (definition == null) {
+            return 0.0f;
+        }
+
+        AbilityActivationDefinition activation = definition.definition().getActivation(execution.activationId());
+        return activation != null ? getLoadoutGcdPercent(ownerData, activation.gcdGroup(), partialTicks) : 0.0f;
     }
 
     public int getLoadoutCooldownTicks(IMKEntityData ownerData,
@@ -204,6 +251,7 @@ public class AbilityRuntimeService {
                         false
                 ));
                 if (result.started()) {
+                    syncLoadoutGcdTimer(ownerData, ability, execution.activationId());
                     syncLoadoutCooldownTimer(ownerData, casterData, ability, sourceId, execution.activationId(), Map.of());
                 }
                 yield result;
@@ -360,6 +408,7 @@ public class AbilityRuntimeService {
         if (result.started()) {
             activeToggles.put(runtime.key(), runtime);
             runtime.scheduleNextPulse(currentGameTick());
+            syncLoadoutGcdTimer(ownerData, ability, enableActivationId);
             syncLoadoutCooldownTimer(ownerData, casterData, ability, stableSourceId, enableActivationId,
                     runtime.grantParameterOverrides());
             if (runtime.hasAuraBehavior() && runtime.auraBehavior().pulseOnEnable()) {
@@ -459,6 +508,7 @@ public class AbilityRuntimeService {
         ));
         if (result.started()) {
             activeToggles.remove(runtime.key());
+            syncLoadoutGcdTimer(ownerData, runtime.ability(), runtime.disableActivationId());
             syncLoadoutCooldownTimer(ownerData, casterData, runtime.ability(), runtime.owner().stableSourceId(),
                     runtime.disableActivationId(), runtime.grantParameterOverrides());
         }
@@ -652,6 +702,16 @@ public class AbilityRuntimeService {
         return ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, path.toString());
     }
 
+    private @Nullable ResourceLocation getLoadoutGcdTimerId(@Nullable ResourceLocation gcdGroup) {
+        if (gcdGroup == null) {
+            return null;
+        }
+        return ResourceLocation.fromNamespaceAndPath(
+                MKCore.MOD_ID,
+                "timer.abilities2_gcd/" + gcdGroup.getNamespace() + "/" + gcdGroup.getPath()
+        );
+    }
+
     private void syncLoadoutCooldownTimer(IMKEntityData ownerData,
                                           IMKEntityData casterData,
                                           AbilityReference ability,
@@ -680,6 +740,25 @@ public class AbilityRuntimeService {
                 .orElse(0);
         if (maxDuration > 0) {
             ownerData.getStats().setTimer(timerId, maxDuration);
+        }
+    }
+
+    private void syncLoadoutGcdTimer(IMKEntityData ownerData,
+                                     AbilityReference ability,
+                                     String activationId) {
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(ability.abilityId());
+        if (definition == null) {
+            return;
+        }
+
+        AbilityActivationDefinition activation = definition.definition().getActivation(activationId);
+        if (activation == null || activation.gcdGroup() == null) {
+            return;
+        }
+
+        ResourceLocation timerId = getLoadoutGcdTimerId(activation.gcdGroup());
+        if (timerId != null) {
+            ownerData.getStats().setTimer(timerId, GameConstants.GLOBAL_COOLDOWN_TICKS);
         }
     }
 
@@ -722,6 +801,18 @@ public class AbilityRuntimeService {
         int baseDuration = Math.max(0, (int) Math.round(powerResolver.resolve(cooldown.duration(), context)));
         double modifier = 2.0 - context.stats(StatCapturePolicy.ON_INVOCATION).cooldownRate();
         return Math.max(0, (int) (modifier * baseDuration));
+    }
+
+    private int getLoadoutGcdTicks(IMKEntityData ownerData, @Nullable ResourceLocation gcdGroup) {
+        ResourceLocation timerId = getLoadoutGcdTimerId(gcdGroup);
+        return timerId != null ? ownerData.getStats().getTimer(timerId) : 0;
+    }
+
+    private float getLoadoutGcdPercent(IMKEntityData ownerData,
+                                       @Nullable ResourceLocation gcdGroup,
+                                       float partialTicks) {
+        ResourceLocation timerId = getLoadoutGcdTimerId(gcdGroup);
+        return timerId != null ? ownerData.getStats().getTimerPercent(timerId, partialTicks) : 0.0f;
     }
 
     private boolean canAffordLoadoutPreview(AbilityCostDefinition cost, AbilityActionContext context) {

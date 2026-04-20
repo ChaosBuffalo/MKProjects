@@ -54,6 +54,23 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
         add(createFirebolt());
         add(createCooldownProbe());
         add(createCostProbe());
+        AbilityDefinitionData gcdSharedProbe = createGcdSharedProbe();
+        add(gcdSharedProbe);
+        add(AbilityVariants.variant(
+                gcdSharedProbe,
+                MKCore.makeRL("test_abilities2_gcd_probe_shared_b"),
+                new AbilityPresentation(
+                        "Abilities2 GCD Probe Shared B",
+                        "A second probe in the same shared GCD bucket.",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
+                ),
+                Map.of("amount", new AbilityValue.FloatValue(3.0f))
+        ));
+        add(createGcdOtherProbe());
         add(createSpellCritPassive());
         add(createMendingChannel());
         add(createRestoringAura());
@@ -185,6 +202,60 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                 )),
                 List.of(),
                 null,
+                0,
+                false,
+                AbilityArchetypes.STANDARD_MANUAL_INTERRUPT,
+                InterruptRefundPolicy.NONE,
+                new ActivationBehavior.InstantBehavior()
+        ));
+        builder.entryPoint(AbilityArchetypes.CAST_ENTRY_POINT, List.of(
+                new AbilityAction.HealAction(
+                        AbilityAction.ActionTarget.PRIMARY_ENTITY,
+                        new AbilityScalar.ParameterScalar("amount")
+                )
+        ));
+        return builder.build();
+    }
+
+    private AbilityDefinitionData createGcdSharedProbe() {
+        return createGcdProbe(
+                MKCore.makeRL("test_abilities2_gcd_probe_shared_a"),
+                "Abilities2 GCD Probe Shared A",
+                "A simple self-targeted probe used to verify shared abilities2 GCD synchronization.",
+                MKCore.makeRL("gcd_probe.shared")
+        );
+    }
+
+    private AbilityDefinitionData createGcdOtherProbe() {
+        return createGcdProbe(
+                MKCore.makeRL("test_abilities2_gcd_probe_other"),
+                "Abilities2 GCD Probe Other",
+                "A simple self-targeted probe used to verify independent abilities2 GCD groups.",
+                MKCore.makeRL("gcd_probe.other")
+        );
+    }
+
+    private AbilityDefinitionData createGcdProbe(net.minecraft.resources.ResourceLocation id,
+                                                 String name,
+                                                 String description,
+                                                 net.minecraft.resources.ResourceLocation gcdGroup) {
+        AbilityDefinitionBuilder builder = AbilityArchetypes.singleTargetSpell(
+                        id,
+                        name,
+                        description,
+                        AbilityDatagenKeys.TARGET_SELF
+                )
+                .school(AbilityDatagenKeys.SCHOOL_RESTORATION)
+                .tag(AbilityDatagenKeys.TAG_SPELL)
+                .parameter(floatParameter("amount", 2.0f, "Probe heal amount"));
+
+        builder.activation(AbilityArchetypes.CAST_ACTIVATION_ID, new AbilityActivationDefinition(
+                ActivationKind.MANUAL,
+                AbilityArchetypes.CAST_ENTRY_POINT,
+                AbilityDatagenKeys.TARGET_SELF,
+                List.of(),
+                List.of(),
+                gcdGroup,
                 0,
                 false,
                 AbilityArchetypes.STANDARD_MANUAL_INTERRUPT,

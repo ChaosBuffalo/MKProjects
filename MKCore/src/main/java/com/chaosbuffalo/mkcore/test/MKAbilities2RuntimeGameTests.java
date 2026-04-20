@@ -63,6 +63,12 @@ public class MKAbilities2RuntimeGameTests {
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_cooldown_probe");
     private static final ResourceLocation COST_PROBE_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_cost_probe");
+    private static final ResourceLocation GCD_PROBE_SHARED_A_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_gcd_probe_shared_a");
+    private static final ResourceLocation GCD_PROBE_SHARED_B_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_gcd_probe_shared_b");
+    private static final ResourceLocation GCD_PROBE_OTHER_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_gcd_probe_other");
     private static final ResourceLocation SPELL_SOURCE_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_firebolt");
     private static final ResourceLocation SELF_HEAL_ABILITY =
@@ -270,6 +276,44 @@ public class MKAbilities2RuntimeGameTests {
         helper.assertTrue(ownerData.getAbilityExecutor().clientSimulateAbility(AbilityGroupId.Basic, 0),
                 "client loadout simulation should allow definition-backed slots again once the mana cost is affordable");
         helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void slottedDefinitionMirrorsGroupScopedGcdTimers(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        helper.assertTrue(ownerData.getAbilities().learnAbilityDefinition(GCD_PROBE_SHARED_A_ABILITY, AbilitySource.ADMIN),
+                "shared gcd probe A should be learned first");
+        helper.assertTrue(ownerData.getAbilities().learnAbilityDefinition(GCD_PROBE_SHARED_B_ABILITY, AbilitySource.ADMIN),
+                "shared gcd probe B should be learned first");
+        helper.assertTrue(ownerData.getAbilities().learnAbilityDefinition(GCD_PROBE_OTHER_ABILITY, AbilitySource.ADMIN),
+                "other gcd probe should be learned first");
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlots(3);
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(0, GCD_PROBE_SHARED_A_ABILITY);
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(1, GCD_PROBE_SHARED_B_ABILITY);
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(2, GCD_PROBE_OTHER_ABILITY);
+
+        helper.startSequence()
+                .thenExecute(() -> ownerData.getAbilityExecutor().executeLoadoutAbility(AbilityGroupId.Basic, 0))
+                .thenExecuteAfter(1, () -> {
+                    var abilityGroup = ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic);
+                    var sharedA = abilityGroup.getExecutionAbilityReference(0);
+                    helper.assertTrue(sharedA != null, "shared gcd probe A should resolve an execution reference");
+
+                    int gcdTicks = MKCore.getAbilityRuntimeService().getLoadoutGcdTicks(
+                            ownerData,
+                            AbilityGroupId.Basic,
+                            sharedA
+                    );
+                    helper.assertTrue(gcdTicks > 0,
+                            "loadout execution should mirror abilities2 gcd groups into synced player timers");
+                    helper.assertFalse(ownerData.getAbilityExecutor().clientSimulateAbility(AbilityGroupId.Basic, 1),
+                            "client simulation should reject another definition in the same synced gcd group");
+                    helper.assertTrue(ownerData.getAbilityExecutor().clientSimulateAbility(AbilityGroupId.Basic, 2),
+                            "client simulation should still allow a definition in a different synced gcd group");
+                    helper.succeed();
+                });
     }
 
     @GameTest(template = "player_data_phase0")

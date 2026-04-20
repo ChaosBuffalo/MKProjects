@@ -1,0 +1,57 @@
+{
+  "activations": {
+    "cast": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "entry_point": "cast",
+      "gcd_group": "mkcore:gcd_probe.shared",
+      "interrupt_policy": {
+        "on_damage": true,
+        "on_death": true,
+        "on_move": true
+      },
+      "kind": "manual",
+      "targeting": {
+        "type": "self"
+      }
+    }
+  },
+  "entry_points": {
+    "cast": [
+      {
+        "type": "heal",
+        "amount": {
+          "kind": "parameter",
+          "parameter": "amount"
+        },
+        "target": "primary_entity"
+      }
+    ]
+  },
+  "id": "mkcore:test_abilities2_gcd_probe_shared_b",
+  "parameters": {
+    "amount": {
+      "default_value": {
+        "kind": "float",
+        "value": 3.0
+      },
+      "description": "Probe heal amount",
+      "grant_overrideable": true,
+      "id": "amount",
+      "kind": "float",
+      "patchable": true
+    }
+  },
+  "presentation": {
+    "description": "A second probe in the same shared GCD bucket.",
+    "name": "Abilities2 GCD Probe Shared B"
+  },
+  "schools": [
+    "mkcore:restoration"
+  ],
+  "slot_family": "mkcore:slot_family.basic",
+  "tags": [
+    "mkcore:spell"
+  ]
+}
