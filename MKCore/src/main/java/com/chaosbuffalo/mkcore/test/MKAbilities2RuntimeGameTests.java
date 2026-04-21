@@ -79,6 +79,8 @@ public class MKAbilities2RuntimeGameTests {
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_firebolt");
     private static final ResourceLocation SELF_HEAL_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_self_heal");
+    private static final ResourceLocation MENDING_CHANNEL_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_mending_channel");
     private static final ResourceLocation RESTORING_AURA_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_restoring_aura");
     private static final InterruptPolicy NO_INTERRUPT = new InterruptPolicy(false, 0.0f, false, 0.0, true);
@@ -605,6 +607,103 @@ public class MKAbilities2RuntimeGameTests {
                 .thenExecuteAfter(10, () -> {
                     helper.assertTrue(restoredHolder[0].getHealth() > restoredStartingHealth[0],
                             "serialized toggle restore should resume aura pulses after the restored player joins");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void serializedPendingDefinitionCastCompletesAfterJoin(GameTestHelper helper) {
+        Player source = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData sourceData = MKCore.getPlayerOrThrow(source);
+
+        Player[] restoredHolder = new Player[1];
+        float[] restoredStartingHealth = new float[1];
+        helper.startSequence()
+                .thenExecute(() -> {
+                    InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                            sourceData,
+                            sourceData,
+                            new AbilityReference(SELF_HEAL_ABILITY, null),
+                            "cast",
+                            null,
+                            null,
+                            null,
+                            false,
+                            false
+                    ));
+                    helper.assertTrue(result.started(), "serialized cast restore probe should start the cast-time activation");
+                    helper.assertTrue(MKCore.getAbilityRuntimeService().hasPendingActivation(sourceData),
+                            "serialized cast restore probe should snapshot a live pending cast");
+
+                    Player restored = createDeserializedTestPlayer(
+                            helper,
+                            new BlockPos(3, 2, 1),
+                            serializePlayerData(sourceData),
+                            sourceData.getEntity().registryAccess()
+                    );
+                    restored.setHealth(restored.getMaxHealth() - 8.0f);
+                    restoredHolder[0] = restored;
+                    restoredStartingHealth[0] = restored.getHealth();
+                })
+                .thenExecuteAfter(2, () -> {
+                    MKPlayerData restoredData = MKCore.getPlayerOrThrow(restoredHolder[0]);
+                    helper.assertTrue(MKCore.getAbilityRuntimeService().hasPendingActivation(restoredData),
+                            "serialized cast restore should rebuild the pending cast runtime after join");
+                })
+                .thenExecuteAfter(25, () -> {
+                    MKPlayerData restoredData = MKCore.getPlayerOrThrow(restoredHolder[0]);
+                    helper.assertTrue(restoredHolder[0].getHealth() > restoredStartingHealth[0],
+                            "serialized cast restore should let the pending cast complete after the restored player joins");
+                    helper.assertFalse(MKCore.getAbilityRuntimeService().hasPendingActivation(restoredData),
+                            "serialized cast restore should clear the pending cast after completion");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void serializedPendingDefinitionChannelResumesPulsesAfterJoin(GameTestHelper helper) {
+        Player source = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData sourceData = MKCore.getPlayerOrThrow(source);
+
+        Player[] restoredHolder = new Player[1];
+        float[] restoredStartingHealth = new float[1];
+        helper.startSequence()
+                .thenExecute(() -> {
+                    InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                            sourceData,
+                            sourceData,
+                            new AbilityReference(MENDING_CHANNEL_ABILITY, null),
+                            "cast",
+                            null,
+                            null,
+                            null,
+                            false,
+                            false
+                    ));
+                    helper.assertTrue(result.started(), "serialized channel restore probe should start the channel activation");
+                    helper.assertTrue(MKCore.getAbilityRuntimeService().hasPendingActivation(sourceData),
+                            "serialized channel restore probe should snapshot a live pending channel");
+
+                    Player restored = createDeserializedTestPlayer(
+                            helper,
+                            new BlockPos(3, 2, 1),
+                            serializePlayerData(sourceData),
+                            sourceData.getEntity().registryAccess()
+                    );
+                    restored.setHealth(restored.getMaxHealth() - 6.0f);
+                    restoredHolder[0] = restored;
+                    restoredStartingHealth[0] = restored.getHealth();
+                })
+                .thenExecuteAfter(2, () -> {
+                    MKPlayerData restoredData = MKCore.getPlayerOrThrow(restoredHolder[0]);
+                    helper.assertTrue(MKCore.getAbilityRuntimeService().hasPendingActivation(restoredData),
+                            "serialized channel restore should rebuild the pending channel runtime after join");
+                    helper.assertTrue(restoredHolder[0].getHealth() == restoredStartingHealth[0],
+                            "serialized channel restore should not replay the initial channel entry point on join");
+                })
+                .thenExecuteAfter(25, () -> {
+                    helper.assertTrue(restoredHolder[0].getHealth() > restoredStartingHealth[0],
+                            "serialized channel restore should resume periodic channel pulses after the restored player joins");
                     helper.succeed();
                 });
     }

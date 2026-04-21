@@ -27,6 +27,7 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class SimpleAbilityEngine implements AbilityEngine {
@@ -336,6 +337,125 @@ public class SimpleAbilityEngine implements AbilityEngine {
         interruptPendingActivations(entityData.getEntity().getUUID(), FailureReason.INTERRUPTED);
     }
 
+    public List<PersistedPendingAbilityActivation> snapshotOwnedActivations(UUID ownerEntityId) {
+        Objects.requireNonNull(ownerEntityId, "ownerEntityId");
+        List<PersistedPendingAbilityActivation> snapshot = new ArrayList<>();
+
+        for (List<PendingCast> casts : pendingCastsByCaster.values()) {
+            for (PendingCast pendingCast : casts) {
+                if (!isOwnedBy(pendingCast.invocation(), ownerEntityId) || pendingCast.remainingTicks() <= 0) {
+                    continue;
+                }
+                snapshot.add(new PersistedPendingAbilityActivation(
+                        PersistedPendingAbilityActivation.PendingActivationType.CAST,
+                        PersistedPendingAbilityActivation.InvocationEntry.fromInvocation(pendingCast.invocation()),
+                        pendingCast.ignoreCosts(),
+                        pendingCast.remainingTicks(),
+                        pendingCast.castTicksSpent(),
+                        null
+                ));
+            }
+        }
+
+        for (List<PendingChannel> channels : pendingChannelsByCaster.values()) {
+            for (PendingChannel pendingChannel : channels) {
+                if (!isOwnedBy(pendingChannel.invocation(), ownerEntityId)) {
+                    continue;
+                }
+                snapshot.add(new PersistedPendingAbilityActivation(
+                        PersistedPendingAbilityActivation.PendingActivationType.CHANNEL,
+                        PersistedPendingAbilityActivation.InvocationEntry.fromInvocation(pendingChannel.invocation()),
+                        pendingChannel.ignoreCosts(),
+                        pendingChannel.remainingPulseTicks(),
+                        pendingChannel.castTicksSpent(),
+                        PersistedPendingAbilityActivation.TargetsEntry.fromTargets(pendingChannel.currentTargets())
+                ));
+            }
+        }
+
+        return List.copyOf(snapshot);
+    }
+
+    public void restoreOwnedActivations(IMKEntityData ownerData,
+                                        List<PersistedPendingAbilityActivation> activations,
+                                        Function<UUID, IMKEntityData> entityResolver) {
+        Objects.requireNonNull(ownerData, "ownerData");
+        Objects.requireNonNull(activations, "activations");
+        Objects.requireNonNull(entityResolver, "entityResolver");
+        UUID ownerEntityId = ownerData.getEntity().getUUID();
+
+        for (PersistedPendingAbilityActivation activation : activations) {
+            AbilityInvocation invocation = restoreInvocation(activation.invocation(), ownerData, entityResolver);
+            if (invocation == null || !isOwnedBy(invocation, ownerEntityId)) {
+                continue;
+            }
+
+            switch (activation.type()) {
+                case CAST -> {
+                    if (activation.remainingTicks() <= 0) {
+                        continue;
+                    }
+                    pendingCastsByCaster.computeIfAbsent(invocation.casterData().getEntity().getUUID(),
+                                    ignored -> new ArrayList<>())
+                            .add(PendingCast.restore(invocation, activation.remainingTicks(),
+                                    activation.castTicksSpent(), activation.ignoreCosts()));
+                }
+                case CHANNEL -> {
+                    if (!(activationDefinition(invocation).behavior() instanceof ActivationBehavior.ChannelBehavior channelBehavior)) {
+                        continue;
+                    }
+                    AbilityResolvedTargets currentTargets = activation.currentTargets() != null
+                            ? activation.currentTargets().toTargets()
+                            : invocation.targets();
+                    pendingChannelsByCaster.computeIfAbsent(invocation.casterData().getEntity().getUUID(),
+                                    ignored -> new ArrayList<>())
+                            .add(PendingChannel.restore(invocation, channelBehavior, activation.ignoreCosts(),
+                                    activation.castTicksSpent(), currentTargets, activation.remainingTicks()));
+                }
+            }
+        }
+    }
+
+    public void interruptOwnedActivations(UUID ownerEntityId, FailureReason failureReason) {
+        Objects.requireNonNull(ownerEntityId, "ownerEntityId");
+        Objects.requireNonNull(failureReason, "failureReason");
+
+        Iterator<Map.Entry<UUID, List<PendingCast>>> castLists = pendingCastsByCaster.entrySet().iterator();
+        while (castLists.hasNext()) {
+            Map.Entry<UUID, List<PendingCast>> entry = castLists.next();
+            Iterator<PendingCast> iterator = entry.getValue().iterator();
+            while (iterator.hasNext()) {
+                PendingCast pendingCast = iterator.next();
+                if (!isOwnedBy(pendingCast.invocation(), ownerEntityId)) {
+                    continue;
+                }
+                iterator.remove();
+                finishInterruptedInvocation(pendingCast.invocation(), failureReason, pendingCast.castTicksSpent());
+            }
+            if (entry.getValue().isEmpty()) {
+                castLists.remove();
+            }
+        }
+
+        Iterator<Map.Entry<UUID, List<PendingChannel>>> channelLists = pendingChannelsByCaster.entrySet().iterator();
+        while (channelLists.hasNext()) {
+            Map.Entry<UUID, List<PendingChannel>> entry = channelLists.next();
+            Iterator<PendingChannel> iterator = entry.getValue().iterator();
+            while (iterator.hasNext()) {
+                PendingChannel pendingChannel = iterator.next();
+                if (!isOwnedBy(pendingChannel.invocation(), ownerEntityId)) {
+                    continue;
+                }
+                iterator.remove();
+                finishInterruptedInvocation(pendingChannel.invocation(), failureReason,
+                        pendingChannel.castTicksSpent());
+            }
+            if (entry.getValue().isEmpty()) {
+                channelLists.remove();
+            }
+        }
+    }
+
     private InvocationResult startActivation(IMKEntityData ownerData,
                                              IMKEntityData casterData,
                                              ResourceLocation abilityId,
@@ -520,6 +640,59 @@ public class SimpleAbilityEngine implements AbilityEngine {
                 finishInterruptedInvocation(pendingChannel.invocation(), failureReason, pendingChannel.castTicksSpent());
             }
         }
+    }
+
+    private boolean isOwnedBy(AbilityInvocation invocation, UUID ownerEntityId) {
+        return invocation.ownerData().getEntity().getUUID().equals(ownerEntityId);
+    }
+
+    private @Nullable AbilityInvocation restoreInvocation(PersistedPendingAbilityActivation.InvocationEntry entry,
+                                                          IMKEntityData ownerData,
+                                                          Function<UUID, IMKEntityData> entityResolver) {
+        IMKEntityData casterData = entry.casterEntityId().equals(entry.ownerEntityId())
+                ? ownerData
+                : entityResolver.apply(entry.casterEntityId());
+        if (ownerData == null || casterData == null) {
+            return null;
+        }
+        if (!ownerData.getEntity().isAlive() || ownerData.getEntity().isRemoved()
+                || !casterData.getEntity().isAlive() || casterData.getEntity().isRemoved()) {
+            return null;
+        }
+
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(entry.abilityId());
+        if (definition == null || definition.definition().getActivation(entry.activationId()) == null) {
+            return null;
+        }
+
+        AbilityInvocation invocation = new AbilityInvocation(
+                entry.invocationId(),
+                entry.rootInvocationId(),
+                entry.chainDepth(),
+                entry.parentInvocationId(),
+                entry.abilityId(),
+                entry.abilityInstanceId(),
+                entry.activationId(),
+                entry.entryPointId(),
+                entry.reason(),
+                ownerData,
+                casterData,
+                entry.sourceId(),
+                entry.targets().toTargets(),
+                entry.eventSnapshot() != null ? entry.eventSnapshot().toSnapshot() : null,
+                entry.reactionOwner() != null ? entry.reactionOwner().toOwner() : null,
+                entry.clearReactionOwnerOnCompletion(),
+                entry.clearReactionOwnerOnInterruption(),
+                definition,
+                entry.grantParameterOverrides(),
+                entry.invocationStats().toSnapshot(),
+                entry.graphVars(),
+                casterData.getEntity().getRandom()
+        );
+        if (entry.hasProducedGameplayEffect()) {
+            invocation.markProducedGameplayEffect();
+        }
+        return invocation;
     }
 
     private AbilityResolvedTargets resolveActivationTargets(IMKEntityData casterData,
@@ -1432,12 +1605,33 @@ public class SimpleAbilityEngine implements AbilityEngine {
             this.ignoreCosts = ignoreCosts;
         }
 
+        private PendingCast(AbilityInvocation invocation,
+                            int totalTicks,
+                            int remainingTicks,
+                            boolean ignoreCosts) {
+            this.invocation = Objects.requireNonNull(invocation, "invocation");
+            this.totalTicks = Math.max(0, totalTicks);
+            this.remainingTicks = Math.max(0, remainingTicks);
+            this.ignoreCosts = ignoreCosts;
+        }
+
+        private static PendingCast restore(AbilityInvocation invocation,
+                                           int remainingTicks,
+                                           int castTicksSpent,
+                                           boolean ignoreCosts) {
+            return new PendingCast(invocation, castTicksSpent + Math.max(0, remainingTicks), remainingTicks, ignoreCosts);
+        }
+
         private AbilityInvocation invocation() {
             return invocation;
         }
 
         private boolean ignoreCosts() {
             return ignoreCosts;
+        }
+
+        private int remainingTicks() {
+            return Math.max(0, remainingTicks);
         }
 
         private void tick() {
@@ -1473,6 +1667,30 @@ public class SimpleAbilityEngine implements AbilityEngine {
             this.remainingPulseTicks = behavior.tickIntervalTicks();
         }
 
+        private PendingChannel(AbilityInvocation invocation,
+                               ActivationBehavior.ChannelBehavior behavior,
+                               boolean ignoreCosts,
+                               int castTicksSpent,
+                               AbilityResolvedTargets currentTargets,
+                               int remainingPulseTicks) {
+            this.invocation = Objects.requireNonNull(invocation, "invocation");
+            this.behavior = Objects.requireNonNull(behavior, "behavior");
+            this.ignoreCosts = ignoreCosts;
+            this.castTicksSpent = Math.max(0, castTicksSpent);
+            this.currentTargets = Objects.requireNonNull(currentTargets, "currentTargets");
+            this.remainingPulseTicks = Math.max(0, remainingPulseTicks);
+        }
+
+        private static PendingChannel restore(AbilityInvocation invocation,
+                                              ActivationBehavior.ChannelBehavior behavior,
+                                              boolean ignoreCosts,
+                                              int castTicksSpent,
+                                              AbilityResolvedTargets currentTargets,
+                                              int remainingPulseTicks) {
+            return new PendingChannel(invocation, behavior, ignoreCosts, castTicksSpent, currentTargets,
+                    remainingPulseTicks);
+        }
+
         private AbilityInvocation invocation() {
             return invocation;
         }
@@ -1495,6 +1713,10 @@ public class SimpleAbilityEngine implements AbilityEngine {
 
         private void updateTargets(AbilityResolvedTargets currentTargets) {
             this.currentTargets = Objects.requireNonNull(currentTargets, "currentTargets");
+        }
+
+        private int remainingPulseTicks() {
+            return Math.max(0, remainingPulseTicks);
         }
 
         private void tick() {

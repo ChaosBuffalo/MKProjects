@@ -118,7 +118,8 @@ public class AbilityRuntimeService {
                 stateSnapshot.cooldowns(),
                 stateSnapshot.gcds(),
                 stateSnapshot.states(),
-                toggles
+                toggles,
+                engine.snapshotOwnedActivations(ownerEntityId)
         );
     }
 
@@ -627,6 +628,8 @@ public class AbilityRuntimeService {
         PersistedAbilityRuntimeState snapshot = extension.getSnapshot();
         if (!snapshot.isEmpty()) {
             stateStore.restoreOwner(playerData.getEntity().getUUID(), snapshot, currentGameTick());
+            engine.restoreOwnedActivations(playerData, snapshot.pendingActivations(),
+                    this::resolveEntityData);
             snapshot.toggles().forEach(toggle -> restoreToggle(playerData, toggle));
         }
         extension.setCaptureLiveRuntimeOnSerialize(true);
@@ -634,7 +637,7 @@ public class AbilityRuntimeService {
 
     private void clearLiveRuntime(MKPlayerData playerData, boolean clearPassives, boolean gracefulToggleDisable) {
         pendingPersonaRestores.remove(playerData.getEntity().getUUID());
-        interruptPendingActivations(playerData);
+        engine.interruptOwnedActivations(playerData.getEntity().getUUID(), FailureReason.INTERRUPTED);
         if (clearPassives) {
             clearPassivesForOwner(playerData.getEntity().getUUID());
         }

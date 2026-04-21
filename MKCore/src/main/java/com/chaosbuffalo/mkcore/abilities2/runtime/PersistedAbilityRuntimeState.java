@@ -21,25 +21,29 @@ public record PersistedAbilityRuntimeState(
         List<CooldownEntry> cooldowns,
         List<GcdEntry> gcds,
         List<StateEntry> states,
-        List<ToggleEntry> toggles
+        List<ToggleEntry> toggles,
+        List<PersistedPendingAbilityActivation> pendingActivations
 ) {
     public static final PersistedAbilityRuntimeState EMPTY =
-            new PersistedAbilityRuntimeState(List.of(), List.of(), List.of(), List.of());
+            new PersistedAbilityRuntimeState(List.of(), List.of(), List.of(), List.of(), List.of());
 
     private static final String COOLDOWNS_TAG = "cooldowns";
     private static final String GCDS_TAG = "gcds";
     private static final String STATES_TAG = "states";
     private static final String TOGGLES_TAG = "toggles";
+    private static final String PENDING_ACTIVATIONS_TAG = "pending_activations";
 
     public PersistedAbilityRuntimeState {
         cooldowns = List.copyOf(Objects.requireNonNull(cooldowns, "cooldowns"));
         gcds = List.copyOf(Objects.requireNonNull(gcds, "gcds"));
         states = List.copyOf(Objects.requireNonNull(states, "states"));
         toggles = List.copyOf(Objects.requireNonNull(toggles, "toggles"));
+        pendingActivations = List.copyOf(Objects.requireNonNull(pendingActivations, "pendingActivations"));
     }
 
     public boolean isEmpty() {
-        return cooldowns.isEmpty() && gcds.isEmpty() && states.isEmpty() && toggles.isEmpty();
+        return cooldowns.isEmpty() && gcds.isEmpty() && states.isEmpty() && toggles.isEmpty()
+                && pendingActivations.isEmpty();
     }
 
     public CompoundTag serialize(HolderLookup.Provider provider) {
@@ -64,6 +68,11 @@ public record PersistedAbilityRuntimeState(
             toggles.forEach(entry -> list.add(entry.serialize(provider)));
             tag.put(TOGGLES_TAG, list);
         }
+        if (!pendingActivations.isEmpty()) {
+            ListTag list = new ListTag();
+            pendingActivations.forEach(entry -> list.add(entry.serialize(provider)));
+            tag.put(PENDING_ACTIVATIONS_TAG, list);
+        }
         return tag;
     }
 
@@ -84,7 +93,10 @@ public record PersistedAbilityRuntimeState(
         List<ToggleEntry> toggles = readCompoundList(tag, TOGGLES_TAG).stream()
                 .map(entry -> ToggleEntry.deserialize(provider, entry))
                 .toList();
-        return new PersistedAbilityRuntimeState(cooldowns, gcds, states, toggles);
+        List<PersistedPendingAbilityActivation> pendingActivations = readCompoundList(tag, PENDING_ACTIVATIONS_TAG).stream()
+                .map(entry -> PersistedPendingAbilityActivation.deserialize(provider, entry))
+                .toList();
+        return new PersistedAbilityRuntimeState(cooldowns, gcds, states, toggles, pendingActivations);
     }
 
     private static List<CompoundTag> readCompoundList(CompoundTag root, String key) {

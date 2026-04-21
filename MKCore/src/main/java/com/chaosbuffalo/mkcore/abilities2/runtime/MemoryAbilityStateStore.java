@@ -100,7 +100,7 @@ public final class MemoryAbilityStateStore implements AbilityStateStore {
                 .map(this::snapshotState)
                 .toList();
 
-        return new PersistedAbilityRuntimeState(cooldowns, gcds, states, List.of());
+        return new PersistedAbilityRuntimeState(cooldowns, gcds, states, List.of(), List.of());
     }
 
     public void restoreOwner(UUID ownerEntityId, PersistedAbilityRuntimeState snapshot, long gameTick) {
