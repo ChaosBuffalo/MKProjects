@@ -16,6 +16,7 @@ import com.chaosbuffalo.mkcore.abilities2.definition.ActivationKind;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValue;
 import com.chaosbuffalo.mkcore.abilities2.runtime.*;
 import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
+import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
@@ -26,9 +27,11 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.events.PersonaEvent;
 import com.chaosbuffalo.mkcore.network.Ability2CastPacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
+import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -136,14 +139,23 @@ public class AbilityRuntimeService {
         engine.interruptPendingActivations(casterData);
     }
 
-    public void startClientCast(Entity entity, ResourceLocation abilityId, int castTicks) {
+    public void startClientCast(Entity entity, ResourceLocation abilityId, int castTicks, int elapsedTicks) {
         Objects.requireNonNull(entity, "entity");
         Objects.requireNonNull(abilityId, "abilityId");
         if (castTicks <= 0) {
-            clientCasts.remove(entity.getId());
+            clearClientCastState(entity.getId());
             return;
         }
-        clientCasts.put(entity.getId(), new ClientCastState(abilityId, castTicks, entity.tickCount));
+        clearClientCastState(entity.getId());
+        int clampedElapsedTicks = Math.max(0, Math.min(elapsedTicks, castTicks));
+        clientCasts.put(entity.getId(), new ClientCastState(abilityId, castTicks, entity.tickCount - clampedElapsedTicks));
+        if (entity instanceof LivingEntity livingEntity) {
+            Ability2VisualAbility visualAbility = createVisualAbility(abilityId);
+            SoundEvent sound = visualAbility != null ? visualAbility.getCastingSoundEvent() : null;
+            if (sound != null) {
+                ClientCastAudio.start(livingEntity, sound, castTicks, abilityId);
+            }
+        }
     }
 
     public void stopClientCast(Entity entity, ResourceLocation abilityId) {
@@ -151,7 +163,7 @@ public class AbilityRuntimeService {
         Objects.requireNonNull(abilityId, "abilityId");
         ClientCastState existing = clientCasts.get(entity.getId());
         if (existing != null && existing.abilityId().equals(abilityId)) {
-            clientCasts.remove(entity.getId());
+            clearClientCastState(entity.getId());
         }
     }
 
@@ -169,6 +181,12 @@ public class AbilityRuntimeService {
         Objects.requireNonNull(entityData, "entityData");
         ClientCastState state = getClientCastState(entityData);
         return state != null ? state.castTicks() : 0;
+    }
+
+    public @Nullable ResourceLocation getClientCastAbilityId(IMKEntityData entityData) {
+        Objects.requireNonNull(entityData, "entityData");
+        ClientCastState state = getClientCastState(entityData);
+        return state != null ? state.abilityId() : null;
     }
 
     public boolean canExecuteLoadoutAbility(AbilityGroupId groupId, ResourceLocation abilityId) {
@@ -630,6 +648,8 @@ public class AbilityRuntimeService {
             stateStore.restoreOwner(playerData.getEntity().getUUID(), snapshot, currentGameTick());
             engine.restoreOwnedActivations(playerData, snapshot.pendingActivations(),
                     this::resolveEntityData);
+            syncRestoredDirectCastStates(playerData, snapshot.pendingActivations());
+            syncRestoredDirectCastVisuals(playerData, snapshot.pendingActivations());
             snapshot.toggles().forEach(toggle -> restoreToggle(playerData, toggle));
         }
         extension.setCaptureLiveRuntimeOnSerialize(true);
@@ -795,10 +815,15 @@ public class AbilityRuntimeService {
             return null;
         }
         if ((entityData.getEntity().tickCount - state.startTick()) >= state.castTicks()) {
-            clientCasts.remove(entityData.getEntity().getId());
+            clearClientCastState(entityData.getEntity().getId());
             return null;
         }
         return state;
+    }
+
+    private void clearClientCastState(int entityId) {
+        clientCasts.remove(entityId);
+        ClientCastAudio.stop(entityId);
     }
 
     private InvocationResult requestToggleDisable(ToggleRuntime runtime) {
@@ -1400,6 +1425,100 @@ public class AbilityRuntimeService {
         return entity != null ? MKCore.getEntityDataOrThrow(entity) : null;
     }
 
+    private @Nullable Ability2VisualAbility createVisualAbility(ResourceLocation abilityId) {
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(abilityId);
+        if (definition == null) {
+            return null;
+        }
+        return new Ability2VisualAbility(abilityId, definition.definition().data().presentation());
+    }
+
+    private void syncRestoredDirectCastStates(MKPlayerData ownerData,
+                                              List<PersistedPendingAbilityActivation> pendingActivations) {
+        for (PersistedPendingAbilityActivation activation : pendingActivations) {
+            if (activation.type() != PersistedPendingAbilityActivation.PendingActivationType.CAST
+                    || activation.remainingTicks() <= 0
+                    || activation.invocation().reason() != ActivationReason.DIRECT_REQUEST) {
+                continue;
+            }
+            LivingEntity caster = resolveRestoredCastCaster(ownerData, activation.invocation());
+            if (caster == null) {
+                continue;
+            }
+            int totalCastTicks = activation.castTicksSpent() + activation.remainingTicks();
+            PacketHandler.sendToTrackingAndSelf(
+                    Ability2CastPacket.start(caster, activation.invocation().abilityId(), totalCastTicks,
+                            activation.castTicksSpent()),
+                    caster
+            );
+        }
+    }
+
+    private void syncRestoredDirectCastVisuals(MKPlayerData ownerData,
+                                               List<PersistedPendingAbilityActivation> pendingActivations) {
+        for (PersistedPendingAbilityActivation activation : pendingActivations) {
+            if (activation.type() != PersistedPendingAbilityActivation.PendingActivationType.CAST
+                    || activation.remainingTicks() <= 0
+                    || activation.invocation().reason() != ActivationReason.DIRECT_REQUEST) {
+                continue;
+            }
+            Ability2VisualAbility visualAbility = createVisualAbility(activation.invocation().abilityId());
+            if (visualAbility == null) {
+                continue;
+            }
+            ownerData.getAnimationModule().restoreCast(visualAbility,
+                    activation.castTicksSpent() + activation.remainingTicks(),
+                    activation.castTicksSpent());
+        }
+    }
+
+    private @Nullable LivingEntity resolveRestoredCastCaster(MKPlayerData ownerData,
+                                                             PersistedPendingAbilityActivation.InvocationEntry invocation) {
+        if (invocation.casterEntityId().equals(invocation.ownerEntityId())) {
+            return ownerData.getEntity();
+        }
+        IMKEntityData casterData = resolveEntityData(invocation.casterEntityId());
+        return casterData != null ? casterData.getEntity() : null;
+    }
+
+    private void syncDirectCastVisualStart(AbilityInvocation invocation, int castTicks) {
+        if (castTicks <= 0 || invocation.reason() != ActivationReason.DIRECT_REQUEST) {
+            return;
+        }
+        Ability2VisualAbility visualAbility = createVisualAbility(invocation.abilityId());
+        if (visualAbility == null) {
+            return;
+        }
+        invocation.casterData().getAnimationModule().startCast(visualAbility, castTicks);
+    }
+
+    private void syncDirectCastVisualCompletion(AbilityInvocation invocation) {
+        if (invocation.reason() != ActivationReason.DIRECT_REQUEST) {
+            return;
+        }
+        Ability2VisualAbility visualAbility = createVisualAbility(invocation.abilityId());
+        if (visualAbility == null) {
+            return;
+        }
+        invocation.casterData().getAnimationModule().endCast(visualAbility);
+        SoundEvent completeSound = visualAbility.getSpellCompleteSoundEvent();
+        if (completeSound != null && !invocation.casterData().isClientSide()) {
+            SoundUtils.serverPlaySoundAtEntity(invocation.casterData().getEntity(), completeSound,
+                    invocation.casterData().getEntity().getSoundSource());
+        }
+    }
+
+    private void syncDirectCastVisualInterrupt(AbilityInvocation invocation) {
+        if (invocation.reason() != ActivationReason.DIRECT_REQUEST) {
+            return;
+        }
+        Ability2VisualAbility visualAbility = createVisualAbility(invocation.abilityId());
+        if (visualAbility == null) {
+            return;
+        }
+        invocation.casterData().getAnimationModule().interruptCast(visualAbility, CastInterruptReason.Other);
+    }
+
     private void teardownToggle(ToggleRuntime runtime) {
         activeToggles.remove(runtime.key());
         clearReactionOwner(runtime.owner());
@@ -1720,11 +1839,13 @@ public class AbilityRuntimeService {
         @Override
         public void onInvocationStarted(AbilityInvocation invocation, int castTicks) {
             syncCastState(invocation, castTicks, true);
+            syncDirectCastVisualStart(invocation, castTicks);
         }
 
         @Override
         public void onInvocationCompleted(AbilityInvocation invocation, int castTicksSpent) {
             syncCastState(invocation, 0, false);
+            syncDirectCastVisualCompletion(invocation);
             handleInvocationCompleted(invocation);
         }
 
@@ -1733,6 +1854,7 @@ public class AbilityRuntimeService {
                                             FailureReason failureReason,
                                             int castTicksSpent) {
             syncCastState(invocation, 0, false);
+            syncDirectCastVisualInterrupt(invocation);
             handleInvocationInterrupted(invocation);
         }
     }
@@ -1775,6 +1897,29 @@ public class AbilityRuntimeService {
     private @Nullable LivingEntity findEntity(UUID entityId) {
         Entity entity = findAnyEntity(entityId);
         return entity instanceof LivingEntity livingEntity ? livingEntity : null;
+    }
+
+    private static final class ClientCastAudio {
+        private static final Map<Integer, com.chaosbuffalo.mkcore.client.sound.MovingSoundCasting> ACTIVE_SOUNDS =
+                new HashMap<>();
+
+        private ClientCastAudio() {
+        }
+
+        private static void start(LivingEntity entity, SoundEvent sound, int castTicks, ResourceLocation abilityId) {
+            stop(entity.getId());
+            com.chaosbuffalo.mkcore.client.sound.MovingSoundCasting movingSound =
+                    new com.chaosbuffalo.mkcore.client.sound.MovingSoundCasting(entity, sound, castTicks, abilityId);
+            ACTIVE_SOUNDS.put(entity.getId(), movingSound);
+            net.minecraft.client.Minecraft.getInstance().getSoundManager().play(movingSound);
+        }
+
+        private static void stop(int entityId) {
+            com.chaosbuffalo.mkcore.client.sound.MovingSoundCasting sound = ACTIVE_SOUNDS.remove(entityId);
+            if (sound != null) {
+                net.minecraft.client.Minecraft.getInstance().getSoundManager().stop(sound);
+            }
+        }
     }
 
     private record ReactionOwnerRuntime(UUID ownerEntityId, UUID casterEntityId) {

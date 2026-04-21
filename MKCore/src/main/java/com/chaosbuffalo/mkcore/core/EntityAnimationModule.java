@@ -105,6 +105,14 @@ public class EntityAnimationModule implements ISyncGroupProvider {
         castAnimTimer = 0;
     }
 
+    public void restoreCast(MKAbility ability, int totalTicks, int elapsedTicks) {
+        visualCastState = VisualCastState.CASTING;
+        castingAbility = ability;
+        castTicks = totalTicks;
+        currentCastTicks = Math.max(0, Math.min(elapsedTicks, totalTicks));
+        castAnimTimer = 0;
+    }
+
     public void endCast(MKAbility ability) {
         castingAbility = ability;
         visualCastState = VisualCastState.RELEASE;

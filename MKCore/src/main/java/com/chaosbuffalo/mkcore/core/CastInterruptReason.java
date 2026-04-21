@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.core;
 
 public enum CastInterruptReason {
+    Other(false),
     Jump(false),
     StartedBlocking(false),
     Stun(false),

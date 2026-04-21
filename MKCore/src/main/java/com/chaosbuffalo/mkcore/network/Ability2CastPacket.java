@@ -21,25 +21,31 @@ public class Ability2CastPacket implements CustomPacketPayload {
     private final CastAction action;
     private final ResourceLocation abilityId;
     private final int castTicks;
+    private final int elapsedTicks;
 
     public enum CastAction {
         START,
         STOP
     }
 
-    public Ability2CastPacket(int entityId, CastAction action, ResourceLocation abilityId, int castTicks) {
+    public Ability2CastPacket(int entityId, CastAction action, ResourceLocation abilityId, int castTicks, int elapsedTicks) {
         this.entityId = entityId;
         this.action = action;
         this.abilityId = abilityId;
         this.castTicks = castTicks;
+        this.elapsedTicks = elapsedTicks;
     }
 
     public static Ability2CastPacket start(Entity entity, ResourceLocation abilityId, int castTicks) {
-        return new Ability2CastPacket(entity.getId(), CastAction.START, abilityId, castTicks);
+        return start(entity, abilityId, castTicks, 0);
+    }
+
+    public static Ability2CastPacket start(Entity entity, ResourceLocation abilityId, int castTicks, int elapsedTicks) {
+        return new Ability2CastPacket(entity.getId(), CastAction.START, abilityId, castTicks, elapsedTicks);
     }
 
     public static Ability2CastPacket stop(Entity entity, ResourceLocation abilityId) {
-        return new Ability2CastPacket(entity.getId(), CastAction.STOP, abilityId, 0);
+        return new Ability2CastPacket(entity.getId(), CastAction.STOP, abilityId, 0, 0);
     }
 
     private Ability2CastPacket(FriendlyByteBuf buffer) {
@@ -47,6 +53,7 @@ public class Ability2CastPacket implements CustomPacketPayload {
         this.action = buffer.readEnum(CastAction.class);
         this.abilityId = buffer.readResourceLocation();
         this.castTicks = action == CastAction.START ? buffer.readInt() : 0;
+        this.elapsedTicks = action == CastAction.START ? buffer.readInt() : 0;
     }
 
     private void toBytes(FriendlyByteBuf buffer) {
@@ -55,6 +62,7 @@ public class Ability2CastPacket implements CustomPacketPayload {
         buffer.writeResourceLocation(abilityId);
         if (action == CastAction.START) {
             buffer.writeInt(castTicks);
+            buffer.writeInt(elapsedTicks);
         }
     }
 
@@ -82,7 +90,7 @@ public class Ability2CastPacket implements CustomPacketPayload {
             }
 
             if (packet.action == CastAction.START) {
-                MKCore.getAbilityRuntimeService().startClientCast(entity, packet.abilityId, packet.castTicks);
+                MKCore.getAbilityRuntimeService().startClientCast(entity, packet.abilityId, packet.castTicks, packet.elapsedTicks);
             } else {
                 MKCore.getAbilityRuntimeService().stopClientCast(entity, packet.abilityId);
             }

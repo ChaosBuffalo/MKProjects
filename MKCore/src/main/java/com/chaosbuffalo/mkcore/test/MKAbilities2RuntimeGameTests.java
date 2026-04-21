@@ -23,6 +23,7 @@ import com.chaosbuffalo.mkcore.abilities2.runtime.ActivationRequest;
 import com.chaosbuffalo.mkcore.abilities2.runtime.FailureReason;
 import com.chaosbuffalo.mkcore.abilities2.runtime.InvocationResult;
 import com.chaosbuffalo.mkcore.abilities2.runtime.PersistedAbilityRuntimeState;
+import com.chaosbuffalo.mkcore.core.EntityAnimationModule;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
@@ -656,6 +657,87 @@ public class MKAbilities2RuntimeGameTests {
                             "serialized cast restore should let the pending cast complete after the restored player joins");
                     helper.assertFalse(MKCore.getAbilityRuntimeService().hasPendingActivation(restoredData),
                             "serialized cast restore should clear the pending cast after completion");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void definitionCastUpdatesAnimationModule(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                ownerData,
+                ownerData,
+                new AbilityReference(SELF_HEAL_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "animation probe should start the cast-time definition");
+        helper.assertValueEqual(ownerData.getAnimationModule().getVisualCastState(),
+                EntityAnimationModule.VisualCastState.CASTING,
+                "abilities2 cast should enter the server-side casting animation state");
+
+        helper.startSequence()
+                .thenExecuteAfter(25, () -> helper.assertValueEqual(
+                        ownerData.getAnimationModule().getVisualCastState(),
+                        EntityAnimationModule.VisualCastState.RELEASE,
+                        "abilities2 cast completion should transition into the release animation state"
+                ))
+                .thenExecuteAfter(20, () -> {
+                    helper.assertValueEqual(ownerData.getAnimationModule().getVisualCastState(),
+                            EntityAnimationModule.VisualCastState.NONE,
+                            "abilities2 release animation should expire after the standard release window");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void serializedPendingDefinitionCastRestoresAnimationModule(GameTestHelper helper) {
+        Player source = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData sourceData = MKCore.getPlayerOrThrow(source);
+
+        Player[] restoredHolder = new Player[1];
+        helper.startSequence()
+                .thenExecute(() -> {
+                    InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                            sourceData,
+                            sourceData,
+                            new AbilityReference(SELF_HEAL_ABILITY, null),
+                            "cast",
+                            null,
+                            null,
+                            null,
+                            false,
+                            false
+                    ));
+                    helper.assertTrue(result.started(), "animation restore probe should start the cast-time definition");
+                    helper.assertValueEqual(sourceData.getAnimationModule().getVisualCastState(),
+                            EntityAnimationModule.VisualCastState.CASTING,
+                            "source player should enter the casting animation before serialization");
+
+                    restoredHolder[0] = createDeserializedTestPlayer(
+                            helper,
+                            new BlockPos(3, 2, 1),
+                            serializePlayerData(sourceData),
+                            sourceData.getEntity().registryAccess()
+                    );
+                })
+                .thenExecuteAfter(2, () -> {
+                    MKPlayerData restoredData = MKCore.getPlayerOrThrow(restoredHolder[0]);
+                    helper.assertValueEqual(restoredData.getAnimationModule().getVisualCastState(),
+                            EntityAnimationModule.VisualCastState.CASTING,
+                            "restored pending casts should rebuild the casting animation state after join");
+                })
+                .thenExecuteAfter(25, () -> {
+                    MKPlayerData restoredData = MKCore.getPlayerOrThrow(restoredHolder[0]);
+                    helper.assertValueEqual(restoredData.getAnimationModule().getVisualCastState(),
+                            EntityAnimationModule.VisualCastState.RELEASE,
+                            "restored pending casts should still transition into the release animation state");
                     helper.succeed();
                 });
     }
