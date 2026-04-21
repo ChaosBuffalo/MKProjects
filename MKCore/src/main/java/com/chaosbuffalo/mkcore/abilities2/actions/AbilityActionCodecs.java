@@ -101,6 +101,13 @@ public final class AbilityActionCodecs {
                             .forGetter(AbilityAction.SpawnProjectileAction::inaccuracy)
             ).apply(builder, AbilityAction.SpawnProjectileAction::new));
 
+    private static final MapCodec<AbilityAction.StartDeliveryAction> START_DELIVERY_ACTION_CODEC =
+            RecordCodecBuilder.mapCodec(builder -> builder.group(
+                    Codec.STRING.fieldOf("delivery").forGetter(AbilityAction.StartDeliveryAction::delivery),
+                    ACTION_TARGET_CODEC.optionalFieldOf("target", AbilityAction.ActionTarget.PRIMARY_ENTITY)
+                            .forGetter(AbilityAction.StartDeliveryAction::target)
+            ).apply(builder, AbilityAction.StartDeliveryAction::new));
+
     public static final Codec<AbilityAction> ACTION_CODEC = Codec.lazyInitialized(() ->
             Codec.STRING.dispatch(AbilityAction::type, type -> switch (type) {
                 case "damage" -> DAMAGE_ACTION_CODEC;
@@ -115,6 +122,7 @@ public final class AbilityActionCodecs {
                 case "install_reaction" -> INSTALL_REACTION_ACTION_CODEC;
                 case "remove_reaction" -> REMOVE_REACTION_ACTION_CODEC;
                 case "spawn_projectile" -> SPAWN_PROJECTILE_ACTION_CODEC;
+                case "start_delivery" -> START_DELIVERY_ACTION_CODEC;
                 default -> throw new IllegalStateException("Unknown ability action type " + type);
             }));
 }

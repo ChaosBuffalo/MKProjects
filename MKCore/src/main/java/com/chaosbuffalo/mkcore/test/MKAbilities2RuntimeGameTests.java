@@ -19,6 +19,7 @@ import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityDefinitionResolver;
 import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityEventSnapshot;
 import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityEventType;
 import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityReference;
+import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityResolvedTargets;
 import com.chaosbuffalo.mkcore.abilities2.runtime.ActivationRequest;
 import com.chaosbuffalo.mkcore.abilities2.runtime.FailureReason;
 import com.chaosbuffalo.mkcore.abilities2.runtime.InvocationResult;
@@ -64,6 +65,10 @@ public class MKAbilities2RuntimeGameTests {
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_projectile_impact");
     private static final ResourceLocation PROJECTILE_GROUND_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_projectile_ground");
+    private static final ResourceLocation DELAYED_BURST_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_delayed_burst");
+    private static final ResourceLocation HEALING_CLOUD_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_healing_cloud");
     private static final ResourceLocation SPELL_CRIT_PASSIVE_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_spell_crit_passive");
     private static final ResourceLocation COOLDOWN_PROBE_ABILITY =
@@ -178,6 +183,87 @@ public class MKAbilities2RuntimeGameTests {
         helper.assertFalse(groundHandled, "ground callbacks should not remove the projectile directly");
         helper.assertTrue(caster.getHealth() < startingHealth, "ground callback should damage the caster");
         helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void delayedBurstDefinitionDetonatesAfterConfiguredDelay(GameTestHelper helper) {
+        Player caster = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        Player target = createTestPlayer(helper, new BlockPos(4, 2, 1));
+        var casterData = MKCore.getEntityDataOrThrow(caster);
+
+        helper.assertTrue(
+                MKCore.getAbilityDefinitionService().getResolver().resolvePatched(DELAYED_BURST_ABILITY) != null,
+                "generated delayed burst definition should be loaded for the integration test"
+        );
+
+        float startingHealth = target.getHealth();
+        AbilityResolvedTargets forcedTargets = new AbilityResolvedTargets(
+                target.getUUID(),
+                List.of(target.getUUID()),
+                target.position(),
+                null,
+                null
+        );
+
+        helper.startSequence()
+                .thenExecute(() -> {
+                    InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                            casterData,
+                            casterData,
+                            new AbilityReference(DELAYED_BURST_ABILITY, null),
+                            "cast",
+                            null,
+                            forcedTargets,
+                            null,
+                            false,
+                            false
+                    ));
+                    helper.assertTrue(result.started(), "delayed burst activation should start");
+                })
+                .thenExecuteAfter(3, () -> helper.assertValueEqual(target.getHealth(), startingHealth,
+                        "delayed burst should not detonate before the configured delay expires"))
+                .thenExecuteAfter(3, () -> {
+                    helper.assertTrue(target.getHealth() < startingHealth,
+                            "delayed burst should damage the selected target once the delay expires");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void healingCloudDefinitionPulsesAfterConfiguredInterval(GameTestHelper helper) {
+        Player caster = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        var casterData = MKCore.getEntityDataOrThrow(caster);
+
+        helper.assertTrue(
+                MKCore.getAbilityDefinitionService().getResolver().resolvePatched(HEALING_CLOUD_ABILITY) != null,
+                "generated healing cloud definition should be loaded for the integration test"
+        );
+
+        caster.setHealth(caster.getMaxHealth() - 8.0f);
+        float startingHealth = caster.getHealth();
+
+        helper.startSequence()
+                .thenExecute(() -> {
+                    InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                            casterData,
+                            casterData,
+                            new AbilityReference(HEALING_CLOUD_ABILITY, null),
+                            "cast",
+                            null,
+                            null,
+                            null,
+                            false,
+                            false
+                    ));
+                    helper.assertTrue(result.started(), "healing cloud activation should start");
+                })
+                .thenExecuteAfter(3, () -> helper.assertValueEqual(caster.getHealth(), startingHealth,
+                        "healing cloud should wait until its first ground pulse interval"))
+                .thenExecuteAfter(3, () -> {
+                    helper.assertTrue(caster.getHealth() > startingHealth,
+                            "healing cloud should heal the caster once its first ground pulse fires");
+                    helper.succeed();
+                });
     }
 
     @GameTest(template = "player_data_phase0")
@@ -942,6 +1028,10 @@ public class MKAbilities2RuntimeGameTests {
                         CoreEntities.ABILITY_PROJECTILE_TYPE.getId(),
                         Items.SNOWBALL.builtInRegistryHolder().key().location(),
                         List.of(),
+                        null,
+                        null,
+                        null,
+                        null,
                         "impact_proc",
                         null,
                         null
@@ -982,6 +1072,10 @@ public class MKAbilities2RuntimeGameTests {
                         CoreEntities.ABILITY_PROJECTILE_TYPE.getId(),
                         Items.SNOWBALL.builtInRegistryHolder().key().location(),
                         List.of(),
+                        null,
+                        null,
+                        null,
+                        null,
                         null,
                         null,
                         "ground_proc"

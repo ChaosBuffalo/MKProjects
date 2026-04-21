@@ -12,6 +12,10 @@ public record AbilityDeliveryDefinition(
         @Nullable ResourceLocation entityType,
         @Nullable ResourceLocation renderItem,
         List<AbilityAction> onSpawn,
+        @Nullable AbilityScalar delayTicks,
+        @Nullable AbilityScalar durationTicks,
+        @Nullable AbilityScalar tickIntervalTicks,
+        @Nullable AbilityScalar radius,
         @Nullable String onImpactActivationId,
         @Nullable String onAirTickActivationId,
         @Nullable String onGroundTickActivationId
@@ -21,6 +25,9 @@ public record AbilityDeliveryDefinition(
         onSpawn = List.copyOf(Objects.requireNonNull(onSpawn, "onSpawn"));
         if (kind == DeliveryKind.PROJECTILE && entityType == null) {
             throw new IllegalArgumentException("Projectile deliveries require an entityType");
+        }
+        if (kind != DeliveryKind.PROJECTILE && entityType != null) {
+            throw new IllegalArgumentException("Only projectile deliveries support an entityType");
         }
     }
 }

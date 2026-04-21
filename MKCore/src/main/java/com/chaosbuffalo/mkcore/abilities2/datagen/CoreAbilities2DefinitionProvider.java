@@ -56,6 +56,8 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
         add(createAiFirebolt());
         add(createCooldownProbe());
         add(createCostProbe());
+        add(createDelayedBurst());
+        add(createHealingCloud());
         AbilityDefinitionData gcdSharedProbe = createGcdSharedProbe();
         add(gcdSharedProbe);
         add(AbilityVariants.variant(
@@ -130,6 +132,10 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                 CoreEntities.ABILITY_PROJECTILE_TYPE.getId(),
                 Items.FIRE_CHARGE.builtInRegistryHolder().key().location(),
                 List.of(),
+                null,
+                null,
+                null,
+                null,
                 AbilityArchetypes.PROJECTILE_IMPACT_ACTIVATION_ID,
                 null,
                 null
@@ -247,6 +253,10 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                 CoreEntities.ABILITY_PROJECTILE_TYPE.getId(),
                 Items.FIRE_CHARGE.builtInRegistryHolder().key().location(),
                 List.of(),
+                null,
+                null,
+                null,
+                null,
                 AbilityArchetypes.PROJECTILE_IMPACT_ACTIVATION_ID,
                 null,
                 null
@@ -294,6 +304,133 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                         AbilityAction.ActionTarget.PRIMARY_ENTITY,
                         new AbilityScalar.ParameterScalar("amount")
                 )
+        ));
+        return builder.build();
+    }
+
+    private AbilityDefinitionData createDelayedBurst() {
+        AbilityDefinitionBuilder builder = AbilityDefinitionBuilder.create(
+                        MKCore.makeRL("test_abilities2_delayed_burst"),
+                        "Abilities2 Delayed Burst",
+                        "Stages a delayed ground burst under the selected target before detonating.",
+                        AbilityDatagenKeys.SLOT_FAMILY_BASIC
+                )
+                .school(AbilityDatagenKeys.SCHOOL_EVOCATION)
+                .tag(AbilityDatagenKeys.TAG_SPELL)
+                .tag(AbilityDatagenKeys.TAG_FIRE)
+                .parameter(floatParameter("impact_damage", 6.0f, "Burst impact damage"));
+
+        builder.activation("cast", new AbilityActivationDefinition(
+                ActivationKind.MANUAL,
+                "cast",
+                AbilityDatagenKeys.TARGET_RESOLVED,
+                List.of(),
+                List.of(),
+                null,
+                0,
+                false,
+                AbilityArchetypes.STANDARD_MANUAL_INTERRUPT,
+                InterruptRefundPolicy.NONE,
+                new ActivationBehavior.InstantBehavior()
+        ));
+        builder.activation("burst_impact", new AbilityActivationDefinition(
+                ActivationKind.PROC,
+                "burst_impact",
+                AbilityDatagenKeys.TARGET_RESOLVED,
+                List.of(),
+                List.of(),
+                null,
+                0,
+                false,
+                AbilityArchetypes.INTERNAL_INTERRUPT,
+                InterruptRefundPolicy.NONE,
+                new ActivationBehavior.InstantBehavior()
+        ));
+        builder.entryPoint("cast", List.of(
+                new AbilityAction.StartDeliveryAction("burst", AbilityAction.ActionTarget.PRIMARY_ENTITY)
+        ));
+        builder.entryPoint("burst_impact", List.of(
+                new AbilityAction.DamageAction(
+                        AbilityAction.ActionTarget.PRIMARY_ENTITY,
+                        new AbilityScalar.ParameterScalar("impact_damage"),
+                        CoreDamageTypes.FireDamage.getId()
+                )
+        ));
+        builder.delivery("burst", new AbilityDeliveryDefinition(
+                DeliveryKind.DELAYED_GROUND_BURST,
+                null,
+                null,
+                List.of(),
+                new AbilityScalar.ConstantScalar(4.0),
+                null,
+                null,
+                new AbilityScalar.ConstantScalar(1.5),
+                "burst_impact",
+                null,
+                null
+        ));
+        return builder.build();
+    }
+
+    private AbilityDefinitionData createHealingCloud() {
+        AbilityDefinitionBuilder builder = AbilityDefinitionBuilder.create(
+                        MKCore.makeRL("test_abilities2_healing_cloud"),
+                        "Abilities2 Healing Cloud",
+                        "Creates a short-lived healing cloud that pulses around the caster.",
+                        AbilityDatagenKeys.SLOT_FAMILY_BASIC
+                )
+                .school(AbilityDatagenKeys.SCHOOL_RESTORATION)
+                .tag(AbilityDatagenKeys.TAG_SPELL)
+                .tag(AbilityDatagenKeys.TAG_HEAL)
+                .parameter(floatParameter("tick_heal", 2.0f, "Cloud pulse heal"));
+
+        builder.activation("cast", new AbilityActivationDefinition(
+                ActivationKind.MANUAL,
+                "cast",
+                AbilityDatagenKeys.TARGET_SELF,
+                List.of(),
+                List.of(),
+                null,
+                0,
+                false,
+                AbilityArchetypes.STANDARD_MANUAL_INTERRUPT,
+                InterruptRefundPolicy.NONE,
+                new ActivationBehavior.InstantBehavior()
+        ));
+        builder.activation("cloud_tick", new AbilityActivationDefinition(
+                ActivationKind.PROC,
+                "cloud_tick",
+                AbilityDatagenKeys.TARGET_RESOLVED,
+                List.of(),
+                List.of(),
+                null,
+                0,
+                false,
+                AbilityArchetypes.INTERNAL_INTERRUPT,
+                InterruptRefundPolicy.NONE,
+                new ActivationBehavior.InstantBehavior()
+        ));
+        builder.entryPoint("cast", List.of(
+                new AbilityAction.StartDeliveryAction("cloud", AbilityAction.ActionTarget.SELF)
+        ));
+        builder.entryPoint("cloud_tick", List.of(
+                new AbilityAction.HealAction(
+                        AbilityAction.ActionTarget.PRIMARY_ENTITY,
+                        new AbilityScalar.ParameterScalar("tick_heal")
+                )
+        ));
+        builder.delivery("cloud", new AbilityDeliveryDefinition(
+                DeliveryKind.AREA_CLOUD,
+                null,
+                null,
+                List.of(),
+                null,
+                new AbilityScalar.ConstantScalar(14.0),
+                new AbilityScalar.ConstantScalar(4.0),
+                new AbilityScalar.ConstantScalar(2.0),
+                null,
+                null,
+                "cloud_tick"
         ));
         return builder.build();
     }

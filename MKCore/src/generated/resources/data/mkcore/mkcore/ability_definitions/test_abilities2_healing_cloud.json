@@ -1,0 +1,95 @@
+{
+  "activations": {
+    "cast": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "entry_point": "cast",
+      "interrupt_policy": {
+        "on_damage": true,
+        "on_death": true,
+        "on_move": true
+      },
+      "kind": "manual",
+      "targeting": {
+        "type": "self"
+      }
+    },
+    "cloud_tick": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "entry_point": "cloud_tick",
+      "interrupt_policy": {
+        "on_death": true
+      },
+      "kind": "proc",
+      "targeting": {
+        "type": "resolved"
+      }
+    }
+  },
+  "deliveries": {
+    "cloud": {
+      "duration_ticks": {
+        "kind": "constant",
+        "value": 14.0
+      },
+      "kind": "area_cloud",
+      "on_ground_tick_activation_id": "cloud_tick",
+      "radius": {
+        "kind": "constant",
+        "value": 2.0
+      },
+      "tick_interval_ticks": {
+        "kind": "constant",
+        "value": 4.0
+      }
+    }
+  },
+  "entry_points": {
+    "cast": [
+      {
+        "type": "start_delivery",
+        "delivery": "cloud",
+        "target": "self"
+      }
+    ],
+    "cloud_tick": [
+      {
+        "type": "heal",
+        "amount": {
+          "kind": "parameter",
+          "parameter": "tick_heal"
+        },
+        "target": "primary_entity"
+      }
+    ]
+  },
+  "id": "mkcore:test_abilities2_healing_cloud",
+  "parameters": {
+    "tick_heal": {
+      "default_value": {
+        "kind": "float",
+        "value": 2.0
+      },
+      "description": "Cloud pulse heal",
+      "grant_overrideable": true,
+      "id": "tick_heal",
+      "kind": "float",
+      "patchable": true
+    }
+  },
+  "presentation": {
+    "description": "Creates a short-lived healing cloud that pulses around the caster.",
+    "name": "Abilities2 Healing Cloud"
+  },
+  "schools": [
+    "mkcore:restoration"
+  ],
+  "slot_family": "mkcore:slot_family.basic",
+  "tags": [
+    "mkcore:heal",
+    "mkcore:spell"
+  ]
+}

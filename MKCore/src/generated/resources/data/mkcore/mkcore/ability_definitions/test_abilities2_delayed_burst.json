@@ -1,0 +1,91 @@
+{
+  "activations": {
+    "burst_impact": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "entry_point": "burst_impact",
+      "interrupt_policy": {
+        "on_death": true
+      },
+      "kind": "proc",
+      "targeting": {
+        "type": "resolved"
+      }
+    },
+    "cast": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "entry_point": "cast",
+      "interrupt_policy": {
+        "on_damage": true,
+        "on_death": true,
+        "on_move": true
+      },
+      "kind": "manual",
+      "targeting": {
+        "type": "resolved"
+      }
+    }
+  },
+  "deliveries": {
+    "burst": {
+      "delay_ticks": {
+        "kind": "constant",
+        "value": 4.0
+      },
+      "kind": "delayed_ground_burst",
+      "on_impact_activation_id": "burst_impact",
+      "radius": {
+        "kind": "constant",
+        "value": 1.5
+      }
+    }
+  },
+  "entry_points": {
+    "burst_impact": [
+      {
+        "type": "damage",
+        "amount": {
+          "kind": "parameter",
+          "parameter": "impact_damage"
+        },
+        "school": "mkcore:fire",
+        "target": "primary_entity"
+      }
+    ],
+    "cast": [
+      {
+        "type": "start_delivery",
+        "delivery": "burst"
+      }
+    ]
+  },
+  "id": "mkcore:test_abilities2_delayed_burst",
+  "parameters": {
+    "impact_damage": {
+      "default_value": {
+        "kind": "float",
+        "value": 6.0
+      },
+      "description": "Burst impact damage",
+      "grant_overrideable": true,
+      "id": "impact_damage",
+      "kind": "float",
+      "patchable": true
+    }
+  },
+  "presentation": {
+    "description": "Stages a delayed ground burst under the selected target before detonating.",
+    "name": "Abilities2 Delayed Burst"
+  },
+  "schools": [
+    "mkcore:evocation"
+  ],
+  "slot_family": "mkcore:slot_family.basic",
+  "tags": [
+    "mkcore:fire",
+    "mkcore:spell"
+  ]
+}

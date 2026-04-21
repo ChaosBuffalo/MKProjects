@@ -14,6 +14,7 @@ import com.chaosbuffalo.mkcore.abilities2.definition.AbilityTargetResolverDefini
 import com.chaosbuffalo.mkcore.abilities2.definition.ActivationBehavior;
 import com.chaosbuffalo.mkcore.abilities2.definition.ActivationKind;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValue;
+import com.chaosbuffalo.mkcore.abilities2.definition.DeliveryKind;
 import com.chaosbuffalo.mkcore.abilities2.runtime.*;
 import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
 import com.chaosbuffalo.mkcore.core.CastInterruptReason;
@@ -30,11 +31,13 @@ import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
@@ -46,8 +49,10 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -784,12 +789,12 @@ public class AbilityRuntimeService {
                 continue;
             }
             if (discardEntity) {
-                Entity entity = findAnyEntity(runtime.deliveryEntityId());
+                Entity entity = runtime.trackedEntityId() != null ? findAnyEntity(runtime.trackedEntityId()) : null;
                 if (entity != null && !entity.isRemoved()) {
                     entity.discard();
                 }
             }
-            closeDelivery(runtime.deliveryEntityId());
+            closeDelivery(runtime.instanceId());
         }
     }
 
@@ -1282,15 +1287,33 @@ public class AbilityRuntimeService {
     }
 
     private void tickActiveDeliveries() {
-        Iterator<DeliveryRuntime> iterator = activeDeliveries.values().iterator();
-        while (iterator.hasNext()) {
-            DeliveryRuntime runtime = iterator.next();
-            Entity entity = findAnyEntity(runtime.deliveryEntityId());
-            if (entity instanceof AbilityProjectileEntity projectile && !projectile.isRemoved()) {
+        for (UUID deliveryInstanceId : List.copyOf(activeDeliveries.keySet())) {
+            DeliveryRuntime runtime = activeDeliveries.get(deliveryInstanceId);
+            if (runtime == null) {
                 continue;
             }
-            iterator.remove();
-            clearReactionOwner(runtime.owner());
+            if (runtime.kind() == DeliveryKind.PROJECTILE) {
+                Entity entity = runtime.trackedEntityId() != null ? findAnyEntity(runtime.trackedEntityId()) : null;
+                if (entity instanceof AbilityProjectileEntity projectile && !projectile.isRemoved()) {
+                    continue;
+                }
+                closeDelivery(runtime.instanceId());
+                continue;
+            }
+
+            IMKEntityData ownerData = resolveEntityData(runtime.ownerEntityId());
+            IMKEntityData casterData = resolveEntityData(runtime.casterEntityId());
+            ServerLevel level = resolveServerLevel(runtime.dimension());
+            if (ownerData == null || casterData == null || level == null
+                    || ownerData.getEntity().level().dimension() != runtime.dimension()
+                    || casterData.getEntity().level().dimension() != runtime.dimension()
+                    || !ownerData.getEntity().isAlive() || ownerData.getEntity().isRemoved()
+                    || !casterData.getEntity().isAlive() || casterData.getEntity().isRemoved()) {
+                closeDelivery(runtime.instanceId());
+                continue;
+            }
+
+            tickVirtualDelivery(runtime, ownerData, casterData, level);
         }
     }
 
@@ -1305,7 +1328,7 @@ public class AbilityRuntimeService {
         IMKEntityData ownerData = resolveEntityData(runtime.ownerEntityId());
         IMKEntityData casterData = resolveEntityData(runtime.casterEntityId());
         if (ownerData == null || casterData == null) {
-            closeDelivery(runtime.deliveryEntityId());
+            closeDelivery(runtime.instanceId());
             return true;
         }
 
@@ -1324,7 +1347,7 @@ public class AbilityRuntimeService {
         }
 
         if (!persistAfterImpact) {
-            closeDelivery(runtime.deliveryEntityId());
+            closeDelivery(runtime.instanceId());
             return true;
         }
         return false;
@@ -1339,7 +1362,7 @@ public class AbilityRuntimeService {
         IMKEntityData ownerData = resolveEntityData(runtime.ownerEntityId());
         IMKEntityData casterData = resolveEntityData(runtime.casterEntityId());
         if (ownerData == null || casterData == null) {
-            closeDelivery(runtime.deliveryEntityId());
+            closeDelivery(runtime.instanceId());
             return true;
         }
 
@@ -1366,7 +1389,7 @@ public class AbilityRuntimeService {
         IMKEntityData ownerData = resolveEntityData(runtime.ownerEntityId());
         IMKEntityData casterData = resolveEntityData(runtime.casterEntityId());
         if (ownerData == null || casterData == null) {
-            closeDelivery(runtime.deliveryEntityId());
+            closeDelivery(runtime.instanceId());
             return true;
         }
 
@@ -1436,8 +1459,8 @@ public class AbilityRuntimeService {
         reactionOwnerRuntime.remove(owner);
     }
 
-    private void closeDelivery(UUID deliveryEntityId) {
-        DeliveryRuntime runtime = activeDeliveries.remove(deliveryEntityId);
+    private void closeDelivery(UUID deliveryInstanceId) {
+        DeliveryRuntime runtime = activeDeliveries.remove(deliveryInstanceId);
         if (runtime != null) {
             clearReactionOwner(runtime.owner());
         }
@@ -1457,13 +1480,60 @@ public class AbilityRuntimeService {
         ));
         activeDeliveries.put(projectile.getUUID(), new DeliveryRuntime(
                 projectile.getUUID(),
+                projectile.getUUID(),
+                projectile.level().dimension(),
                 owner,
                 new AbilityReference(invocation.abilityId(), invocation.abilityInstanceId()),
                 invocation.grantParameterOverrides(),
                 invocation.ownerData().getEntity().getUUID(),
                 invocation.casterData().getEntity().getUUID(),
                 deliveryId,
+                definition.kind(),
                 AbilityEventProvenance.fromInvocation(invocation).asChildSource(projectile.getUUID()),
+                null,
+                0.0,
+                0,
+                0,
+                0,
+                definition.onImpactActivationId(),
+                definition.onAirTickActivationId(),
+                definition.onGroundTickActivationId()
+        ));
+        return owner;
+    }
+
+    private AbilityReactionOwner registerRuntimeDelivery(AbilityInvocation invocation,
+                                                         String deliveryId,
+                                                         AbilityDeliveryDefinition definition,
+                                                         Vec3 point,
+                                                         double radius,
+                                                         int delayTicks,
+                                                         int durationTicks,
+                                                         int tickIntervalTicks) {
+        UUID runtimeId = UUID.randomUUID();
+        AbilityReactionOwner owner = new AbilityReactionOwner(ReactionOwnerType.DELIVERY, runtimeId,
+                runtimeId, invocation.abilityId());
+        reactionOwnerRuntime.put(owner, new ReactionOwnerRuntime(
+                invocation.ownerData().getEntity().getUUID(),
+                invocation.casterData().getEntity().getUUID()
+        ));
+        activeDeliveries.put(runtimeId, new DeliveryRuntime(
+                runtimeId,
+                null,
+                invocation.casterData().getEntity().level().dimension(),
+                owner,
+                new AbilityReference(invocation.abilityId(), invocation.abilityInstanceId()),
+                invocation.grantParameterOverrides(),
+                invocation.ownerData().getEntity().getUUID(),
+                invocation.casterData().getEntity().getUUID(),
+                deliveryId,
+                definition.kind(),
+                AbilityEventProvenance.fromInvocation(invocation).asChildSource(runtimeId),
+                point,
+                radius,
+                delayTicks,
+                durationTicks,
+                tickIntervalTicks,
                 definition.onImpactActivationId(),
                 definition.onAirTickActivationId(),
                 definition.onGroundTickActivationId()
@@ -1526,6 +1596,121 @@ public class AbilityRuntimeService {
     private @Nullable IMKEntityData resolveEntityData(UUID entityId) {
         LivingEntity entity = findEntity(entityId);
         return entity != null ? MKCore.getEntityDataOrThrow(entity) : null;
+    }
+
+    private void tickVirtualDelivery(DeliveryRuntime runtime,
+                                     IMKEntityData ownerData,
+                                     IMKEntityData casterData,
+                                     ServerLevel level) {
+        switch (runtime.kind()) {
+            case DELAYED_GROUND_BURST -> tickDelayedGroundBurst(runtime, ownerData, casterData, level);
+            case AREA_CLOUD -> tickAreaCloud(runtime, ownerData, casterData, level);
+            case PROJECTILE -> {
+            }
+        }
+    }
+
+    private void tickDelayedGroundBurst(DeliveryRuntime runtime,
+                                        IMKEntityData ownerData,
+                                        IMKEntityData casterData,
+                                        ServerLevel level) {
+        if (runtime.delayTicksRemaining() > 0) {
+            runtime.delayTicksRemaining(runtime.delayTicksRemaining() - 1);
+            return;
+        }
+
+        if (runtime.onImpactActivationId() != null) {
+            InvocationResult callbackResult = startDeliveryCallback(
+                    runtime,
+                    ownerData,
+                    casterData,
+                    runtime.onImpactActivationId(),
+                    areaDeliveryTargets(runtime, level)
+            );
+            if (!callbackResult.started()) {
+                MKCore.LOGGER.debug("abilities2 delayed burst callback {} for {} did not start: {}",
+                        runtime.onImpactActivationId(), runtime.ability().abilityId(), callbackResult.failureReason());
+            }
+        }
+        closeDelivery(runtime.instanceId());
+    }
+
+    private void tickAreaCloud(DeliveryRuntime runtime,
+                               IMKEntityData ownerData,
+                               IMKEntityData casterData,
+                               ServerLevel level) {
+        if (runtime.delayTicksRemaining() > 0) {
+            runtime.delayTicksRemaining(runtime.delayTicksRemaining() - 1);
+            if (runtime.delayTicksRemaining() > 0) {
+                return;
+            }
+            if (runtime.onImpactActivationId() != null) {
+                InvocationResult callbackResult = startDeliveryCallback(
+                        runtime,
+                        ownerData,
+                        casterData,
+                        runtime.onImpactActivationId(),
+                        areaDeliveryTargets(runtime, level)
+                );
+                if (!callbackResult.started()) {
+                    MKCore.LOGGER.debug("abilities2 area cloud impact callback {} for {} did not start: {}",
+                            runtime.onImpactActivationId(), runtime.ability().abilityId(), callbackResult.failureReason());
+                }
+            }
+        }
+
+        if (runtime.durationTicksRemaining() <= 0) {
+            closeDelivery(runtime.instanceId());
+            return;
+        }
+
+        runtime.durationTicksRemaining(runtime.durationTicksRemaining() - 1);
+        runtime.ticksUntilNextGroundTick(runtime.ticksUntilNextGroundTick() - 1);
+        if (runtime.ticksUntilNextGroundTick() <= 0) {
+            if (runtime.onGroundTickActivationId() != null) {
+                InvocationResult callbackResult = startDeliveryCallback(
+                        runtime,
+                        ownerData,
+                        casterData,
+                        runtime.onGroundTickActivationId(),
+                        areaDeliveryTargets(runtime, level)
+                );
+                if (!callbackResult.started()) {
+                    MKCore.LOGGER.debug("abilities2 area cloud ground callback {} for {} did not start: {}",
+                            runtime.onGroundTickActivationId(), runtime.ability().abilityId(), callbackResult.failureReason());
+                }
+            }
+            runtime.ticksUntilNextGroundTick(runtime.tickIntervalTicks());
+        }
+
+        if (runtime.durationTicksRemaining() <= 0) {
+            closeDelivery(runtime.instanceId());
+        }
+    }
+
+    private AbilityResolvedTargets areaDeliveryTargets(DeliveryRuntime runtime, ServerLevel level) {
+        Vec3 point = runtime.point() != null ? runtime.point() : Vec3.ZERO;
+        if (runtime.radius() <= 0.0) {
+            return new AbilityResolvedTargets(null, List.of(), point, null, runtime.instanceId());
+        }
+
+        double radiusSqr = runtime.radius() * runtime.radius();
+        List<LivingEntity> entities = level.getEntitiesOfClass(
+                LivingEntity.class,
+                new AABB(point, point).inflate(runtime.radius()),
+                entity -> EntitySelector.NO_SPECTATORS.test(entity) && EntitySelector.LIVING_ENTITY_STILL_ALIVE.test(entity)
+        );
+        entities.removeIf(entity -> entity.position().distanceToSqr(point) > radiusSqr);
+        entities.sort(Comparator.comparingDouble(entity -> entity.position().distanceToSqr(point)));
+
+        List<UUID> entityIds = entities.stream().map(Entity::getUUID).toList();
+        UUID primaryEntityId = entityIds.isEmpty() ? null : entityIds.getFirst();
+        return new AbilityResolvedTargets(primaryEntityId, entityIds, point, null, runtime.instanceId());
+    }
+
+    private @Nullable ServerLevel resolveServerLevel(ResourceKey<Level> dimension) {
+        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        return server != null ? server.getLevel(dimension) : null;
     }
 
     private @Nullable Ability2VisualAbility createVisualAbility(ResourceLocation abilityId) {
@@ -1936,6 +2121,19 @@ public class AbilityRuntimeService {
                                                        AbilityProjectileEntity projectile) {
             return registerProjectileDelivery(invocation, deliveryId, definition, projectile);
         }
+
+        @Override
+        public AbilityReactionOwner registerRuntime(AbilityInvocation invocation,
+                                                    String deliveryId,
+                                                    AbilityDeliveryDefinition definition,
+                                                    Vec3 point,
+                                                    double radius,
+                                                    int delayTicks,
+                                                    int durationTicks,
+                                                    int tickIntervalTicks) {
+            return registerRuntimeDelivery(invocation, deliveryId, definition, point, radius, delayTicks,
+                    durationTicks, tickIntervalTicks);
+        }
     }
 
     private final class EngineLifecycleListener implements SimpleAbilityEngine.LifecycleListener {
@@ -2208,28 +2406,162 @@ public class AbilityRuntimeService {
         }
     }
 
-    private record DeliveryRuntime(UUID deliveryEntityId,
-                                   AbilityReactionOwner owner,
-                                   AbilityReference ability,
-                                   Map<String, AbilityValue> grantParameterOverrides,
-                                   UUID ownerEntityId,
-                                   UUID casterEntityId,
-                                   String deliveryId,
-                                   AbilityEventProvenance callbackProvenance,
-                                   @Nullable String onImpactActivationId,
-                                   @Nullable String onAirTickActivationId,
-                                   @Nullable String onGroundTickActivationId) {
-        private DeliveryRuntime {
-            Objects.requireNonNull(deliveryEntityId, "deliveryEntityId");
-            Objects.requireNonNull(owner, "owner");
-            Objects.requireNonNull(ability, "ability");
-            grantParameterOverrides = Map.copyOf(new LinkedHashMap<>(grantParameterOverrides));
-            Objects.requireNonNull(ownerEntityId, "ownerEntityId");
-            Objects.requireNonNull(casterEntityId, "casterEntityId");
+    private static final class DeliveryRuntime {
+        private final UUID instanceId;
+        private final @Nullable UUID trackedEntityId;
+        private final ResourceKey<Level> dimension;
+        private final AbilityReactionOwner owner;
+        private final AbilityReference ability;
+        private final Map<String, AbilityValue> grantParameterOverrides;
+        private final UUID ownerEntityId;
+        private final UUID casterEntityId;
+        private final String deliveryId;
+        private final DeliveryKind kind;
+        private final AbilityEventProvenance callbackProvenance;
+        private final @Nullable Vec3 point;
+        private final double radius;
+        private final int tickIntervalTicks;
+        private final @Nullable String onImpactActivationId;
+        private final @Nullable String onAirTickActivationId;
+        private final @Nullable String onGroundTickActivationId;
+        private int delayTicksRemaining;
+        private int durationTicksRemaining;
+        private int ticksUntilNextGroundTick;
+
+        private DeliveryRuntime(UUID instanceId,
+                                @Nullable UUID trackedEntityId,
+                                ResourceKey<Level> dimension,
+                                AbilityReactionOwner owner,
+                                AbilityReference ability,
+                                Map<String, AbilityValue> grantParameterOverrides,
+                                UUID ownerEntityId,
+                                UUID casterEntityId,
+                                String deliveryId,
+                                DeliveryKind kind,
+                                AbilityEventProvenance callbackProvenance,
+                                @Nullable Vec3 point,
+                                double radius,
+                                int delayTicksRemaining,
+                                int durationTicksRemaining,
+                                int tickIntervalTicks,
+                                @Nullable String onImpactActivationId,
+                                @Nullable String onAirTickActivationId,
+                                @Nullable String onGroundTickActivationId) {
+            this.instanceId = Objects.requireNonNull(instanceId, "instanceId");
+            this.trackedEntityId = trackedEntityId;
+            this.dimension = Objects.requireNonNull(dimension, "dimension");
+            this.owner = Objects.requireNonNull(owner, "owner");
+            this.ability = Objects.requireNonNull(ability, "ability");
+            this.grantParameterOverrides = Map.copyOf(new LinkedHashMap<>(grantParameterOverrides));
+            this.ownerEntityId = Objects.requireNonNull(ownerEntityId, "ownerEntityId");
+            this.casterEntityId = Objects.requireNonNull(casterEntityId, "casterEntityId");
             if (deliveryId == null || deliveryId.isBlank()) {
                 throw new IllegalArgumentException("Delivery runtime deliveryId must not be blank");
             }
-            Objects.requireNonNull(callbackProvenance, "callbackProvenance");
+            this.deliveryId = deliveryId;
+            this.kind = Objects.requireNonNull(kind, "kind");
+            this.callbackProvenance = Objects.requireNonNull(callbackProvenance, "callbackProvenance");
+            this.point = point;
+            this.radius = Math.max(0.0, radius);
+            this.delayTicksRemaining = Math.max(0, delayTicksRemaining);
+            this.durationTicksRemaining = Math.max(0, durationTicksRemaining);
+            this.tickIntervalTicks = Math.max(0, tickIntervalTicks);
+            this.ticksUntilNextGroundTick = Math.max(0, tickIntervalTicks);
+            this.onImpactActivationId = onImpactActivationId;
+            this.onAirTickActivationId = onAirTickActivationId;
+            this.onGroundTickActivationId = onGroundTickActivationId;
+        }
+
+        private UUID instanceId() {
+            return instanceId;
+        }
+
+        private @Nullable UUID trackedEntityId() {
+            return trackedEntityId;
+        }
+
+        private ResourceKey<Level> dimension() {
+            return dimension;
+        }
+
+        private AbilityReactionOwner owner() {
+            return owner;
+        }
+
+        private AbilityReference ability() {
+            return ability;
+        }
+
+        private Map<String, AbilityValue> grantParameterOverrides() {
+            return grantParameterOverrides;
+        }
+
+        private UUID ownerEntityId() {
+            return ownerEntityId;
+        }
+
+        private UUID casterEntityId() {
+            return casterEntityId;
+        }
+
+        private String deliveryId() {
+            return deliveryId;
+        }
+
+        private DeliveryKind kind() {
+            return kind;
+        }
+
+        private AbilityEventProvenance callbackProvenance() {
+            return callbackProvenance;
+        }
+
+        private @Nullable Vec3 point() {
+            return point;
+        }
+
+        private double radius() {
+            return radius;
+        }
+
+        private int tickIntervalTicks() {
+            return tickIntervalTicks;
+        }
+
+        private int delayTicksRemaining() {
+            return delayTicksRemaining;
+        }
+
+        private void delayTicksRemaining(int delayTicksRemaining) {
+            this.delayTicksRemaining = Math.max(0, delayTicksRemaining);
+        }
+
+        private int durationTicksRemaining() {
+            return durationTicksRemaining;
+        }
+
+        private void durationTicksRemaining(int durationTicksRemaining) {
+            this.durationTicksRemaining = Math.max(0, durationTicksRemaining);
+        }
+
+        private int ticksUntilNextGroundTick() {
+            return ticksUntilNextGroundTick;
+        }
+
+        private void ticksUntilNextGroundTick(int ticksUntilNextGroundTick) {
+            this.ticksUntilNextGroundTick = ticksUntilNextGroundTick;
+        }
+
+        private @Nullable String onImpactActivationId() {
+            return onImpactActivationId;
+        }
+
+        private @Nullable String onAirTickActivationId() {
+            return onAirTickActivationId;
+        }
+
+        private @Nullable String onGroundTickActivationId() {
+            return onGroundTickActivationId;
         }
     }
 

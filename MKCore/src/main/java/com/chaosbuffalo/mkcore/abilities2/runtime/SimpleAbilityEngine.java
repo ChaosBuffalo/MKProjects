@@ -65,6 +65,18 @@ public class SimpleAbilityEngine implements AbilityEngine {
             return new AbilityReactionOwner(ReactionOwnerType.DELIVERY, projectile.getUUID(), projectile.getUUID(),
                     invocation.abilityId());
         }
+
+        default AbilityReactionOwner registerRuntime(AbilityInvocation invocation,
+                                                     String deliveryId,
+                                                     AbilityDeliveryDefinition definition,
+                                                     Vec3 point,
+                                                     double radius,
+                                                     int delayTicks,
+                                                     int durationTicks,
+                                                     int tickIntervalTicks) {
+            UUID runtimeId = UUID.randomUUID();
+            return new AbilityReactionOwner(ReactionOwnerType.DELIVERY, runtimeId, runtimeId, invocation.abilityId());
+        }
     }
 
     public interface LifecycleListener {
@@ -1119,6 +1131,8 @@ public class SimpleAbilityEngine implements AbilityEngine {
                         executeRemoveReaction(invocation, context, removeReactionAction);
                 case AbilityAction.SpawnProjectileAction spawnProjectileAction ->
                         executeSpawnProjectile(invocation, context, spawnProjectileAction, ignoreCosts);
+                case AbilityAction.StartDeliveryAction startDeliveryAction ->
+                        executeStartDelivery(invocation, context, startDeliveryAction, ignoreCosts);
             }
         }
     }
@@ -1379,6 +1393,80 @@ public class SimpleAbilityEngine implements AbilityEngine {
         }
     }
 
+    private void executeStartDelivery(AbilityInvocation invocation,
+                                      AbilityActionContext context,
+                                      AbilityAction.StartDeliveryAction action,
+                                      boolean ignoreCosts) {
+        AbilityDeliveryDefinition delivery = invocation.definition().definition().getDelivery(action.delivery());
+        if (delivery == null) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Unknown delivery " + action.delivery());
+        }
+        if (delivery.kind() == DeliveryKind.PROJECTILE) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "start_delivery does not support projectile deliveries");
+        }
+        if (!(invocation.casterData().getEntity().level() instanceof ServerLevel)) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Deliveries require a server level");
+        }
+
+        LivingEntity target = resolveActionTarget(context, action.target()).orElse(null);
+        Vec3 anchorPoint = resolveDeliveryAnchorPoint(context, target);
+        int delayTicks = delivery.delayTicks() != null ? resolveScalarTicks(delivery.delayTicks(), context) : 0;
+        int durationTicks = delivery.durationTicks() != null ? resolveScalarTicks(delivery.durationTicks(), context) : 0;
+        int tickIntervalTicks = delivery.tickIntervalTicks() != null
+                ? resolveScalarTicks(delivery.tickIntervalTicks(), context)
+                : 0;
+        double radius = delivery.radius() != null ? Math.max(0.0, powerResolver.resolve(delivery.radius(), context)) : 0.0;
+
+        switch (delivery.kind()) {
+            case DELAYED_GROUND_BURST -> {
+                if (delivery.onImpactActivationId() == null) {
+                    throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                            "Delayed ground burst delivery requires an impact callback");
+                }
+            }
+            case AREA_CLOUD -> {
+                if (delivery.onGroundTickActivationId() == null || durationTicks <= 0 || tickIntervalTicks <= 0
+                        || radius <= 0.0) {
+                    throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                            "Area cloud delivery requires positive radius/duration/tick interval and a ground callback");
+                }
+            }
+            case PROJECTILE -> throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Unsupported delivery kind " + delivery.kind());
+        }
+
+        AbilityReactionOwner deliveryOwner = deliveryController.registerRuntime(
+                invocation,
+                action.delivery(),
+                delivery,
+                anchorPoint,
+                radius,
+                delayTicks,
+                durationTicks,
+                tickIntervalTicks
+        );
+        invocation.markProducedGameplayEffect();
+
+        if (!delivery.onSpawn().isEmpty()) {
+            AbilityResolvedTargets deliveryTargets = new AbilityResolvedTargets(
+                    target != null ? target.getUUID() : null,
+                    target != null ? List.of(target.getUUID()) : List.of(),
+                    anchorPoint,
+                    null,
+                    deliveryOwner.stableSourceId()
+            );
+            executeActions(
+                    invocation,
+                    createContext(invocation, () -> Optional.ofNullable(target), deliveryTargets, deliveryOwner),
+                    delivery.onSpawn(),
+                    ignoreCosts
+            );
+        }
+    }
+
     private void applyProjectileRenderItem(AbilityProjectileEntity projectile, AbilityDeliveryDefinition delivery) {
         ResourceLocation renderItemId = delivery.renderItem();
         if (renderItemId == null) {
@@ -1492,6 +1580,17 @@ public class SimpleAbilityEngine implements AbilityEngine {
             return context.targets().point();
         }
         return spawnPos.add(context.casterData().getEntity().getViewVector(1.0f));
+    }
+
+    private Vec3 resolveDeliveryAnchorPoint(AbilityActionContext context,
+                                            @Nullable LivingEntity target) {
+        if (target != null) {
+            return target.position();
+        }
+        if (context.targets().point() != null) {
+            return context.targets().point();
+        }
+        return context.casterData().getEntity().position();
     }
 
     private Optional<LivingEntity> resolveActionTarget(AbilityActionContext context, AbilityAction.ActionTarget target) {

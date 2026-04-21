@@ -14,7 +14,8 @@ public sealed interface AbilityAction permits AbilityAction.DamageAction, Abilit
         AbilityAction.ApplyEffectAction, AbilityAction.ModifyStateAction, AbilityAction.PayCostAction,
         AbilityAction.SetVarAction, AbilityAction.BranchAction, AbilityAction.ForEachTargetAction,
         AbilityAction.StartEntryPointAction, AbilityAction.InstallReactionAction,
-        AbilityAction.RemoveReactionAction, AbilityAction.SpawnProjectileAction {
+        AbilityAction.RemoveReactionAction, AbilityAction.SpawnProjectileAction,
+        AbilityAction.StartDeliveryAction {
 
     String type();
 
@@ -216,6 +217,21 @@ public sealed interface AbilityAction permits AbilityAction.DamageAction, Abilit
         @Override
         public String type() {
             return "spawn_projectile";
+        }
+    }
+
+    record StartDeliveryAction(String delivery,
+                               ActionTarget target) implements AbilityAction {
+        public StartDeliveryAction {
+            if (delivery == null || delivery.isBlank()) {
+                throw new IllegalArgumentException("Start delivery delivery must not be blank");
+            }
+            Objects.requireNonNull(target, "target");
+        }
+
+        @Override
+        public String type() {
+            return "start_delivery";
         }
     }
 }

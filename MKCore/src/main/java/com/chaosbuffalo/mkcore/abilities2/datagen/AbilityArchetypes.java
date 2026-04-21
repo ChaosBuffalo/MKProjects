@@ -137,6 +137,10 @@ public final class AbilityArchetypes {
                         CoreEntities.ABILITY_PROJECTILE_TYPE.getId(),
                         Items.SNOWBALL.builtInRegistryHolder().key().location(),
                         List.of(),
+                        null,
+                        null,
+                        null,
+                        null,
                         PROJECTILE_IMPACT_ACTIVATION_ID,
                         null,
                         null

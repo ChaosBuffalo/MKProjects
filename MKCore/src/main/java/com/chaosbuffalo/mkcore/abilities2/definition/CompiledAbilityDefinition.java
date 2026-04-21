@@ -173,9 +173,48 @@ public final class CompiledAbilityDefinition {
         if (delivery.kind() == DeliveryKind.PROJECTILE && delivery.entityType() == null) {
             throw error(data, "Delivery '%s' kind PROJECTILE requires an entityType".formatted(deliveryId));
         }
+        if (delivery.kind() != DeliveryKind.PROJECTILE && delivery.entityType() != null) {
+            throw error(data, "Delivery '%s' kind %s does not support entityType"
+                    .formatted(deliveryId, delivery.kind()));
+        }
         if (delivery.kind() != DeliveryKind.PROJECTILE && delivery.renderItem() != null) {
             throw error(data, "Delivery '%s' kind %s does not support renderItem"
                     .formatted(deliveryId, delivery.kind()));
+        }
+        if (delivery.kind() == DeliveryKind.PROJECTILE
+                && (delivery.delayTicks() != null || delivery.durationTicks() != null
+                || delivery.tickIntervalTicks() != null || delivery.radius() != null)) {
+            throw error(data, "Delivery '%s' kind PROJECTILE does not support delay/duration/tickInterval/radius"
+                    .formatted(deliveryId));
+        }
+        if (delivery.kind() == DeliveryKind.DELAYED_GROUND_BURST) {
+            if (delivery.onImpactActivationId() == null) {
+                throw error(data, "Delivery '%s' kind DELAYED_GROUND_BURST requires onImpactActivationId"
+                        .formatted(deliveryId));
+            }
+            if (delivery.onAirTickActivationId() != null || delivery.onGroundTickActivationId() != null) {
+                throw error(data, "Delivery '%s' kind DELAYED_GROUND_BURST only supports onImpactActivationId"
+                        .formatted(deliveryId));
+            }
+        }
+        if (delivery.kind() == DeliveryKind.AREA_CLOUD) {
+            if (delivery.radius() == null) {
+                throw error(data, "Delivery '%s' kind AREA_CLOUD requires radius".formatted(deliveryId));
+            }
+            if (delivery.durationTicks() == null) {
+                throw error(data, "Delivery '%s' kind AREA_CLOUD requires durationTicks".formatted(deliveryId));
+            }
+            if (delivery.tickIntervalTicks() == null) {
+                throw error(data, "Delivery '%s' kind AREA_CLOUD requires tickIntervalTicks".formatted(deliveryId));
+            }
+            if (delivery.onGroundTickActivationId() == null) {
+                throw error(data, "Delivery '%s' kind AREA_CLOUD requires onGroundTickActivationId"
+                        .formatted(deliveryId));
+            }
+            if (delivery.onAirTickActivationId() != null) {
+                throw error(data, "Delivery '%s' kind AREA_CLOUD does not support onAirTickActivationId"
+                        .formatted(deliveryId));
+            }
         }
         validateActivationReference(data, deliveryId, "onImpactActivationId", delivery.onImpactActivationId(), activations);
         validateActivationReference(data, deliveryId, "onAirTickActivationId", delivery.onAirTickActivationId(), activations);

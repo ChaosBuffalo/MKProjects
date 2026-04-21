@@ -219,11 +219,18 @@ public final class AbilityCodecs {
             ResourceLocation.CODEC.optionalFieldOf("entity_type").forGetter(value -> Optional.ofNullable(value.entityType())),
             ResourceLocation.CODEC.optionalFieldOf("render_item").forGetter(value -> Optional.ofNullable(value.renderItem())),
             AbilityActionCodecs.ACTION_CODEC.listOf().optionalFieldOf("on_spawn", List.of()).forGetter(AbilityDeliveryDefinition::onSpawn),
+            ABILITY_SCALAR_CODEC.optionalFieldOf("delay_ticks").forGetter(value -> Optional.ofNullable(value.delayTicks())),
+            ABILITY_SCALAR_CODEC.optionalFieldOf("duration_ticks").forGetter(value -> Optional.ofNullable(value.durationTicks())),
+            ABILITY_SCALAR_CODEC.optionalFieldOf("tick_interval_ticks").forGetter(value -> Optional.ofNullable(value.tickIntervalTicks())),
+            ABILITY_SCALAR_CODEC.optionalFieldOf("radius").forGetter(value -> Optional.ofNullable(value.radius())),
             Codec.STRING.optionalFieldOf("on_impact_activation_id").forGetter(value -> Optional.ofNullable(value.onImpactActivationId())),
             Codec.STRING.optionalFieldOf("on_air_tick_activation_id").forGetter(value -> Optional.ofNullable(value.onAirTickActivationId())),
             Codec.STRING.optionalFieldOf("on_ground_tick_activation_id").forGetter(value -> Optional.ofNullable(value.onGroundTickActivationId()))
-    ).apply(builder, (kind, entityType, renderItem, onSpawn, onImpactActivationId, onAirTickActivationId, onGroundTickActivationId) ->
+    ).apply(builder, (kind, entityType, renderItem, onSpawn, delayTicks, durationTicks, tickIntervalTicks, radius,
+                      onImpactActivationId, onAirTickActivationId, onGroundTickActivationId) ->
             new AbilityDeliveryDefinition(kind, entityType.orElse(null), renderItem.orElse(null), onSpawn,
+                    delayTicks.orElse(null), durationTicks.orElse(null), tickIntervalTicks.orElse(null),
+                    radius.orElse(null),
                     onImpactActivationId.orElse(null), onAirTickActivationId.orElse(null),
                     onGroundTickActivationId.orElse(null))));
 
