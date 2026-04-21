@@ -2,10 +2,10 @@ package com.chaosbuffalo.mkcore.core.talents.talent_types;
 
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
-import com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys;
 import com.chaosbuffalo.mkcore.abilities2.description.AbilityDefinitionDescriptions;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDefinitionData;
 import com.chaosbuffalo.mkcore.abilities2.runtime.PatchedAbilityDefinition;
+import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
 import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
@@ -138,15 +138,6 @@ public class AbilityGrantTalentType extends TalentType<AbilityGrantTalentNode> {
     }
 
     private AbilityType resolveAbilityType(ResourceLocation slotFamily) {
-        if (slotFamily.equals(AbilityDatagenKeys.SLOT_FAMILY_BASIC)) {
-            return AbilityType.Basic;
-        }
-        if (slotFamily.equals(AbilityDatagenKeys.SLOT_FAMILY_PASSIVE)) {
-            return AbilityType.Passive;
-        }
-        if (slotFamily.equals(AbilityDatagenKeys.SLOT_FAMILY_ULTIMATE)) {
-            return AbilityType.Ultimate;
-        }
-        return null;
+        return AbilityDisplayEntry.resolveAbilityType(slotFamily);
     }
 }

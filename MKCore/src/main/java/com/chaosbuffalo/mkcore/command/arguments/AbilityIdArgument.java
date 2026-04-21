@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.command.arguments;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
@@ -26,8 +27,11 @@ public class AbilityIdArgument implements ArgumentType<ResourceLocation> {
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-        Stream<String> values = MKCoreRegistry.ABILITIES.keySet()
-                .stream()
+        Stream<String> values = Stream.concat(
+                        MKCoreRegistry.ABILITIES.keySet().stream(),
+                        MKCore.getAbilityDefinitionService().getDefinitionIds().stream()
+                )
+                .distinct()
                 .map(ResourceLocation::toString);
         return SharedSuggestionProvider.suggest(values, builder);
     }

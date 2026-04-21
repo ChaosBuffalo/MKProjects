@@ -7,9 +7,14 @@ import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.stream.Stream;
 
 public interface IMKAbilityKnowledge {
     Collection<MKAbilityInfo> getAllAbilities();
+
+    default Stream<ResourceLocation> getKnownAbilityIds() {
+        return getAllAbilities().stream().map(MKAbilityInfo::getId);
+    }
 
     boolean learnAbility(MKAbility ability, AbilitySource source);
 

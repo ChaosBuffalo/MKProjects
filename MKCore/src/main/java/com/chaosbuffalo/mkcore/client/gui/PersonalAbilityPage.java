@@ -157,13 +157,7 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
         Set<AbilityType> knownTypes = new HashSet<>();
         LinkedHashMap<ResourceLocation, AbilityUiEntry> knownAbilities = new LinkedHashMap<>();
         playerData.getAbilities()
-                .getAbilityInfoStream()
-                .map(info -> {
-                    knownTypes.add(info.getAbilityType());
-                    return AbilityUiEntry.fromAbility(info.getAbility());
-                }).forEach(entry -> knownAbilities.put(entry.getAbilityId(), entry));
-        playerData.getAbilities()
-                .getKnownDefinitionIds()
+                .getKnownAbilityIds()
                 .map(AbilityUiEntry::resolve)
                 .filter(Objects::nonNull)
                 .forEach(entry -> {

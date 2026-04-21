@@ -226,13 +226,7 @@ public class AbilityCommand {
     }
 
     private static boolean isLearnableDefinition(ResourceLocation abilityId) {
-        var definition = MKCore.getAbilityDefinitionService().getDefinition(abilityId);
-        if (definition == null) {
-            return false;
-        }
-        ResourceLocation slotFamily = definition.slotFamily();
-        return slotFamily.equals(com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys.SLOT_FAMILY_BASIC)
-                || slotFamily.equals(com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys.SLOT_FAMILY_PASSIVE)
-                || slotFamily.equals(com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys.SLOT_FAMILY_ULTIMATE);
+        AbilityDisplayEntry display = AbilityDisplayEntry.resolve(abilityId);
+        return display.definitionBacked() && display.isLoadoutAbility();
     }
 }

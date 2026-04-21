@@ -3,8 +3,8 @@ package com.chaosbuffalo.mkcore.command;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.command.arguments.AbilityIdArgument;
+import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.player.PlayerAbilityKnowledge;
@@ -167,20 +167,14 @@ public class LoadoutCommand {
         ServerPlayer player = context.getSource().getPlayerOrException();
         Stream<String> loadoutDefinitions = context.getSource().hasPermission(Commands.LEVEL_GAMEMASTERS)
                 ? MKCore.getAbilityDefinitionService().getDefinitionIds().stream()
-                .filter(abilityId -> MKCore.getAbilityRuntimeService().isLoadoutDefinition(group, abilityId))
+                .filter(abilityId -> AbilityDisplayEntry.resolve(abilityId).fitsLoadoutGroup(group))
                 .map(ResourceLocation::toString)
                 : Stream.empty();
 
         Stream<String> playerKnownAbilities = MKCore.getPlayer(player)
-                .map(playerData -> Stream.concat(
-                                playerData.getAbilities()
-                                        .getAbilityInfoStream()
-                                        .filter(info -> group.fitsAbilityType(info.getAbilityType()))
-                                        .map(MKAbilityInfo::getId),
-                                playerData.getAbilities()
-                                        .getKnownDefinitionIds()
-                                        .filter(abilityId -> MKCore.getAbilityRuntimeService().isLoadoutDefinition(group, abilityId))
-                        )
+                .map(playerData -> playerData.getAbilities()
+                        .getKnownAbilityIds()
+                        .filter(abilityId -> AbilityDisplayEntry.resolve(abilityId).fitsLoadoutGroup(group))
                         .map(ResourceLocation::toString))
                 .orElse(Stream.empty());
 

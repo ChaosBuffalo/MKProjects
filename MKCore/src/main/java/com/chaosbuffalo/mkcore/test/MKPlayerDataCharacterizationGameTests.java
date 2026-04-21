@@ -327,6 +327,25 @@ public class MKPlayerDataCharacterizationGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void knownAbilityIdStreamIncludesLegacyAndAbilities2Definitions(GameTestHelper helper) {
+        ResourceLocation legacyAbilityId = MKTestAbilities.TEST_HEAL.get().getAbilityId();
+        ResourceLocation definitionAbilityId = MKCore.id("test_abilities2_self_heal");
+        MKServerPlayerData playerData = createPlayerData(helper);
+
+        helper.assertTrue(playerData.getAbilities().learnAbility(MKTestAbilities.TEST_HEAL.get(), AbilitySource.ADMIN),
+                "legacy ability should learn successfully");
+        helper.assertTrue(playerData.getAbilities().learnAbilityDefinition(definitionAbilityId, AbilitySource.ADMIN),
+                "abilities2 definition should learn successfully");
+
+        List<ResourceLocation> knownAbilityIds = playerData.getAbilities().getKnownAbilityIds().toList();
+        helper.assertTrue(knownAbilityIds.contains(legacyAbilityId),
+                "known ability ids should include learned legacy abilities");
+        helper.assertTrue(knownAbilityIds.contains(definitionAbilityId),
+                "known ability ids should include learned abilities2 definitions");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void abilityDisplayEntryResolvesAbilities2DefinitionMetadata(GameTestHelper helper) {
         AbilityDisplayEntry display = AbilityDisplayEntry.resolve(MKCore.id("test_abilities2_self_heal"));
 
@@ -334,6 +353,10 @@ public class MKPlayerDataCharacterizationGameTests {
         helper.assertValueEqual(display.displayName().getString(), "Abilities2 Self Heal",
                 "definition display name should come from the presentation block");
         helper.assertTrue(display.abilityType() != null, "definition display should expose a loadout ability type");
+        helper.assertTrue(display.fitsLoadoutGroup(AbilityGroupId.Basic),
+                "basic abilities2 definitions should fit the basic loadout group");
+        helper.assertFalse(display.fitsLoadoutGroup(AbilityGroupId.Passive),
+                "basic abilities2 definitions should not fit passive loadout slots");
         helper.succeed();
     }
 

@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkcore.client.gui.IPlayerDataAwareScreen;
 import com.chaosbuffalo.mkcore.client.gui.ParticleEditorScreen;
 import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
 import com.chaosbuffalo.mkcore.client.rendering.MKPlayerRenderer;
+import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
@@ -220,17 +221,7 @@ public class ClientEventHandler {
     }
 
     private static Component resolveGrantedAbilityName(ResourceLocation abilityId) {
-        MKAbility legacyAbility = MKCoreRegistry.getAbility(abilityId);
-        if (legacyAbility != null) {
-            return legacyAbility.getAbilityName();
-        }
-
-        var definition = MKCore.getAbilityDefinitionService().getDefinition(abilityId);
-        if (definition != null) {
-            return Component.literal(definition.presentation().name());
-        }
-
-        return Component.literal(abilityId.toString());
+        return AbilityDisplayEntry.resolve(abilityId).displayName();
     }
 
     private static void addArmorClassTooltip(ItemTooltipEvent event) {

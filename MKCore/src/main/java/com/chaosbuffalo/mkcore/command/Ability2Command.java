@@ -101,7 +101,8 @@ public class Ability2Command {
             return Command.SINGLE_SUCCESS;
         }
         sendBracketedMessage(context.getSource(), "Loaded abilities2 definitions: %d", definitions.size());
-        definitions.forEach(id -> sendMessage(context.getSource(), "- %s", id));
+        definitions.forEach(id ->
+                sendMessage(context.getSource(), Component.literal("- ").append(AbilityCommand.formatAbilityDisplay(id))));
         return Command.SINGLE_SUCCESS;
     }
 
@@ -109,7 +110,8 @@ public class Ability2Command {
         ResourceLocation abilityId = ResourceLocationArgument.getId(context, "ability");
         PatchedAbilityDefinition definition = MKCore.getAbilityDefinitionService().getResolver().resolvePatched(abilityId);
         if (definition == null) {
-            sendMessage(context.getSource(), "Unknown abilities2 definition %s", abilityId);
+            sendMessage(context.getSource(),
+                    Component.literal("Unknown abilities2 definition ").append(AbilityCommand.formatAbilityDisplay(abilityId)));
             return Command.SINGLE_SUCCESS;
         }
 
@@ -117,11 +119,17 @@ public class Ability2Command {
         try {
             activationId = resolveSingleActivationId(definition, ActivationKind.MANUAL);
         } catch (IllegalStateException e) {
-            sendMessage(context.getSource(), "Ability %s has multiple manual activations; specify one explicitly", abilityId);
+            sendMessage(context.getSource(),
+                    Component.literal("Ability ")
+                            .append(AbilityCommand.formatAbilityDisplay(abilityId))
+                            .append(" has multiple manual activations; specify one explicitly"));
             return Command.SINGLE_SUCCESS;
         }
         if (activationId == null) {
-            sendMessage(context.getSource(), "Ability %s has no manual activation", abilityId);
+            sendMessage(context.getSource(),
+                    Component.literal("Ability ")
+                            .append(AbilityCommand.formatAbilityDisplay(abilityId))
+                            .append(" has no manual activation"));
             return Command.SINGLE_SUCCESS;
         }
         return activate(context, abilityId, activationId);
@@ -153,25 +161,21 @@ public class Ability2Command {
                 false
         ));
         if (!result.started()) {
-            sendMessage(
-                    context.getSource(),
-                    "abilities2 activation %s:%s failed for %s: %s",
-                    abilityId,
-                    activationId,
-                    player.getName().getString(),
-                    result.failureReason()
-            );
+            sendMessage(context.getSource(),
+                    Component.literal("abilities2 activation ")
+                            .append(AbilityCommand.formatAbilityDisplay(abilityId))
+                            .append(Component.literal(":" + activationId + " failed for "))
+                            .append(player.getName())
+                            .append(Component.literal(": " + result.failureReason())));
             return Command.SINGLE_SUCCESS;
         }
 
-        sendMessage(
-                context.getSource(),
-                "Started abilities2 activation %s:%s for %s (%s)",
-                abilityId,
-                activationId,
-                player.getName().getString(),
-                result.invocationId()
-        );
+        sendMessage(context.getSource(),
+                Component.literal("Started abilities2 activation ")
+                        .append(AbilityCommand.formatAbilityDisplay(abilityId))
+                        .append(Component.literal(":" + activationId + " for "))
+                        .append(player.getName())
+                        .append(Component.literal(" (" + result.invocationId() + ")")));
         return Command.SINGLE_SUCCESS;
     }
 
@@ -187,23 +191,21 @@ public class Ability2Command {
                 null
         );
         if (!result.started()) {
-            sendMessage(
-                    context.getSource(),
-                    "abilities2 toggle %s failed for %s: %s",
-                    abilityId,
-                    player.getName().getString(),
-                    result.failureReason()
-            );
+            sendMessage(context.getSource(),
+                    Component.literal("abilities2 toggle ")
+                            .append(AbilityCommand.formatAbilityDisplay(abilityId))
+                            .append(Component.literal(" failed for "))
+                            .append(player.getName())
+                            .append(Component.literal(": " + result.failureReason())));
             return Command.SINGLE_SUCCESS;
         }
 
-        sendMessage(
-                context.getSource(),
-                "Started abilities2 toggle transition %s for %s (%s)",
-                abilityId,
-                player.getName().getString(),
-                result.invocationId()
-        );
+        sendMessage(context.getSource(),
+                Component.literal("Started abilities2 toggle transition ")
+                        .append(AbilityCommand.formatAbilityDisplay(abilityId))
+                        .append(Component.literal(" for "))
+                        .append(player.getName())
+                        .append(Component.literal(" (" + result.invocationId() + ")")));
         return Command.SINGLE_SUCCESS;
     }
 
@@ -231,6 +233,10 @@ public class Ability2Command {
 
     private static void sendMessage(CommandSourceStack source, String format, Object... args) {
         source.sendSuccess(() -> Component.literal(String.format(format, args)), false);
+    }
+
+    private static void sendMessage(CommandSourceStack source, Component message) {
+        source.sendSuccess(() -> message, false);
     }
 
     private static void sendBracketedMessage(CommandSourceStack source, String format, Object... args) {

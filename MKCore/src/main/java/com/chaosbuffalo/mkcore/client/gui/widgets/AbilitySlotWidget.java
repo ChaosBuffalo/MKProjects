@@ -2,11 +2,10 @@ package com.chaosbuffalo.mkcore.client.gui.widgets;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
-import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDefinitionData;
 import com.chaosbuffalo.mkcore.client.gui.AbilityUiEntry;
 import com.chaosbuffalo.mkcore.client.gui.GuiTextures;
 import com.chaosbuffalo.mkcore.client.gui.IAbilityScreen;
+import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
@@ -188,30 +187,11 @@ public class AbilitySlotWidget extends MKLayout {
     }
 
     private @Nullable ResourceLocation resolveAbilityIcon(ResourceLocation abilityId) {
-        MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-        if (ability != null) {
-            return ability.getAbilityIcon();
-        }
-
-        AbilityDefinitionData definition = MKCore.getAbilityDefinitionService().getDefinition(abilityId);
-        if (definition != null) {
-            return definition.presentation().icon();
-        }
-
-        return null;
+        return AbilityDisplayEntry.resolve(abilityId).icon();
     }
 
     private @Nullable Component resolveAbilityDisplayName(ResourceLocation abilityId) {
-        MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-        if (ability != null) {
-            return ability.getAbilityName();
-        }
-
-        AbilityDefinitionData definition = MKCore.getAbilityDefinitionService().getDefinition(abilityId);
-        if (definition != null) {
-            return Component.literal(definition.presentation().name());
-        }
-
-        return null;
+        AbilityDisplayEntry display = AbilityDisplayEntry.resolve(abilityId);
+        return display.displayName().getString().equals(abilityId.toString()) ? null : display.displayName();
     }
 }

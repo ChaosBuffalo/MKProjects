@@ -4,10 +4,10 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
-import com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys;
 import com.chaosbuffalo.mkcore.abilities2.description.AbilityDefinitionDescriptions;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDefinitionData;
 import com.chaosbuffalo.mkcore.abilities2.runtime.PatchedAbilityDefinition;
+import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
 import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.PlayerKnownAbility;
@@ -151,16 +151,7 @@ public final class AbilityUiEntry {
     }
 
     private static @Nullable AbilityType resolveAbilityType(ResourceLocation slotFamily) {
-        if (slotFamily.equals(AbilityDatagenKeys.SLOT_FAMILY_BASIC)) {
-            return AbilityType.Basic;
-        }
-        if (slotFamily.equals(AbilityDatagenKeys.SLOT_FAMILY_PASSIVE)) {
-            return AbilityType.Passive;
-        }
-        if (slotFamily.equals(AbilityDatagenKeys.SLOT_FAMILY_ULTIMATE)) {
-            return AbilityType.Ultimate;
-        }
-        return null;
+        return AbilityDisplayEntry.resolveAbilityType(slotFamily);
     }
 
     private static String formatIds(Collection<ResourceLocation> ids) {

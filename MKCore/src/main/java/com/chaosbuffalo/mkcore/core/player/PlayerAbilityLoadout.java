@@ -3,8 +3,8 @@ package com.chaosbuffalo.mkcore.core.player;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
-import com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys;
 import com.chaosbuffalo.mkcore.abilities2.runtime.PatchedAbilityDefinition;
+import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.player.loadout.ItemAbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.loadout.PassiveAbilityGroup;
@@ -113,17 +113,7 @@ public class PlayerAbilityLoadout implements ISyncGroupProvider {
             return null;
         }
 
-        ResourceLocation slotFamily = definition.definition().data().slotFamily();
-        if (slotFamily.equals(AbilityDatagenKeys.SLOT_FAMILY_BASIC)) {
-            return AbilityGroupId.Basic;
-        }
-        if (slotFamily.equals(AbilityDatagenKeys.SLOT_FAMILY_PASSIVE)) {
-            return AbilityGroupId.Passive;
-        }
-        if (slotFamily.equals(AbilityDatagenKeys.SLOT_FAMILY_ULTIMATE)) {
-            return AbilityGroupId.Ultimate;
-        }
-        return null;
+        return AbilityDisplayEntry.resolveAbilityGroup(definition.definition().data().slotFamily());
     }
 
     public CompoundTag serializeNBT() {
