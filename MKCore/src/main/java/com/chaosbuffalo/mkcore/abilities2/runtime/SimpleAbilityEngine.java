@@ -300,6 +300,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
         if (damageInterrupt != null && damageInterrupt > 0.0f) {
             applyDamageInterrupt(entityData, damageInterrupt);
         }
+        Vec3 currentPosition = entityData.getEntity().position();
 
         List<PendingCast> casts = pendingCastsByCaster.get(casterId);
         if (casts != null && !casts.isEmpty()) {
@@ -309,6 +310,12 @@ public class SimpleAbilityEngine implements AbilityEngine {
                 if (!entityData.getEntity().isAlive() || entityData.getEntity().isRemoved()) {
                     iterator.remove();
                     finishInterruptedInvocation(pendingCast.invocation(), FailureReason.INTERRUPTED, pendingCast.castTicksSpent());
+                    continue;
+                }
+                if (shouldInterruptOnMove(pendingCast.invocation(), pendingCast.startPosition(), currentPosition)) {
+                    iterator.remove();
+                    finishInterruptedInvocation(pendingCast.invocation(), FailureReason.INTERRUPTED,
+                            pendingCast.castTicksSpent());
                     continue;
                 }
 
@@ -334,17 +341,23 @@ public class SimpleAbilityEngine implements AbilityEngine {
         Iterator<PendingChannel> channelIterator = channels.iterator();
         while (channelIterator.hasNext()) {
             PendingChannel pendingChannel = channelIterator.next();
-            if (!entityData.getEntity().isAlive() || entityData.getEntity().isRemoved()) {
-                channelIterator.remove();
-                finishInterruptedInvocation(pendingChannel.invocation(), FailureReason.INTERRUPTED,
-                        pendingChannel.castTicksSpent());
-                continue;
-            }
+                if (!entityData.getEntity().isAlive() || entityData.getEntity().isRemoved()) {
+                    channelIterator.remove();
+                    finishInterruptedInvocation(pendingChannel.invocation(), FailureReason.INTERRUPTED,
+                            pendingChannel.castTicksSpent());
+                    continue;
+                }
+                if (shouldInterruptOnMove(pendingChannel.invocation(), pendingChannel.startPosition(), currentPosition)) {
+                    channelIterator.remove();
+                    finishInterruptedInvocation(pendingChannel.invocation(), FailureReason.INTERRUPTED,
+                            pendingChannel.castTicksSpent());
+                    continue;
+                }
 
-            pendingChannel.tick();
-            if (!pendingChannel.readyForPulse()) {
-                continue;
-            }
+                pendingChannel.tick();
+                if (!pendingChannel.readyForPulse()) {
+                    continue;
+                }
 
             try {
                 runChannelPulse(pendingChannel);
@@ -746,6 +759,15 @@ public class SimpleAbilityEngine implements AbilityEngine {
     private boolean shouldInterruptOnDamage(AbilityInvocation invocation, float damageAmount) {
         InterruptPolicy interruptPolicy = activationDefinition(invocation).interruptPolicy();
         return interruptPolicy.onDamage() && damageAmount >= interruptPolicy.minDamage();
+    }
+
+    private boolean shouldInterruptOnMove(AbilityInvocation invocation, Vec3 startPosition, Vec3 currentPosition) {
+        InterruptPolicy interruptPolicy = activationDefinition(invocation).interruptPolicy();
+        if (!interruptPolicy.onMove()) {
+            return false;
+        }
+        double threshold = interruptPolicy.moveThresholdBlocks();
+        return currentPosition.distanceToSqr(startPosition) > threshold * threshold;
     }
 
     private boolean isBusyForDirectRequest(IMKEntityData casterData) {
@@ -1724,6 +1746,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
         private final AbilityInvocation invocation;
         private final int totalTicks;
         private final boolean ignoreCosts;
+        private final Vec3 startPosition;
         private int remainingTicks;
 
         private PendingCast(AbilityInvocation invocation, int castTicks, boolean ignoreCosts) {
@@ -1731,23 +1754,27 @@ public class SimpleAbilityEngine implements AbilityEngine {
             this.totalTicks = castTicks;
             this.remainingTicks = castTicks;
             this.ignoreCosts = ignoreCosts;
+            this.startPosition = invocation.casterData().getEntity().position();
         }
 
         private PendingCast(AbilityInvocation invocation,
                             int totalTicks,
                             int remainingTicks,
-                            boolean ignoreCosts) {
+                            boolean ignoreCosts,
+                            Vec3 startPosition) {
             this.invocation = Objects.requireNonNull(invocation, "invocation");
             this.totalTicks = Math.max(0, totalTicks);
             this.remainingTicks = Math.max(0, remainingTicks);
             this.ignoreCosts = ignoreCosts;
+            this.startPosition = Objects.requireNonNull(startPosition, "startPosition");
         }
 
         private static PendingCast restore(AbilityInvocation invocation,
                                            int remainingTicks,
                                            int castTicksSpent,
                                            boolean ignoreCosts) {
-            return new PendingCast(invocation, castTicksSpent + Math.max(0, remainingTicks), remainingTicks, ignoreCosts);
+            return new PendingCast(invocation, castTicksSpent + Math.max(0, remainingTicks), remainingTicks,
+                    ignoreCosts, invocation.casterData().getEntity().position());
         }
 
         private AbilityInvocation invocation() {
@@ -1756,6 +1783,10 @@ public class SimpleAbilityEngine implements AbilityEngine {
 
         private boolean ignoreCosts() {
             return ignoreCosts;
+        }
+
+        private Vec3 startPosition() {
+            return startPosition;
         }
 
         private int remainingTicks() {
@@ -1780,6 +1811,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
         private final ActivationBehavior.ChannelBehavior behavior;
         private final boolean ignoreCosts;
         private final int castTicksSpent;
+        private final Vec3 startPosition;
         private AbilityResolvedTargets currentTargets;
         private int remainingPulseTicks;
 
@@ -1791,6 +1823,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
             this.behavior = behavior;
             this.ignoreCosts = ignoreCosts;
             this.castTicksSpent = castTicksSpent;
+            this.startPosition = invocation.casterData().getEntity().position();
             this.currentTargets = invocation.targets();
             this.remainingPulseTicks = behavior.tickIntervalTicks();
         }
@@ -1799,12 +1832,14 @@ public class SimpleAbilityEngine implements AbilityEngine {
                                ActivationBehavior.ChannelBehavior behavior,
                                boolean ignoreCosts,
                                int castTicksSpent,
+                               Vec3 startPosition,
                                AbilityResolvedTargets currentTargets,
                                int remainingPulseTicks) {
             this.invocation = Objects.requireNonNull(invocation, "invocation");
             this.behavior = Objects.requireNonNull(behavior, "behavior");
             this.ignoreCosts = ignoreCosts;
             this.castTicksSpent = Math.max(0, castTicksSpent);
+            this.startPosition = Objects.requireNonNull(startPosition, "startPosition");
             this.currentTargets = Objects.requireNonNull(currentTargets, "currentTargets");
             this.remainingPulseTicks = Math.max(0, remainingPulseTicks);
         }
@@ -1815,7 +1850,8 @@ public class SimpleAbilityEngine implements AbilityEngine {
                                               int castTicksSpent,
                                               AbilityResolvedTargets currentTargets,
                                               int remainingPulseTicks) {
-            return new PendingChannel(invocation, behavior, ignoreCosts, castTicksSpent, currentTargets,
+            return new PendingChannel(invocation, behavior, ignoreCosts, castTicksSpent,
+                    invocation.casterData().getEntity().position(), currentTargets,
                     remainingPulseTicks);
         }
 
@@ -1833,6 +1869,10 @@ public class SimpleAbilityEngine implements AbilityEngine {
 
         private int castTicksSpent() {
             return castTicksSpent;
+        }
+
+        private Vec3 startPosition() {
+            return startPosition;
         }
 
         private AbilityResolvedTargets currentTargets() {

@@ -495,6 +495,74 @@ public class MKAbilities2RuntimeGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void movingInterruptsDefinitionCastBeforeCompletion(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        owner.setHealth(owner.getMaxHealth() - 8.0f);
+        float startingHealth = owner.getHealth();
+
+        InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                ownerData,
+                ownerData,
+                new AbilityReference(SELF_HEAL_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "abilities2 cast-time activation should start for the movement interrupt probe");
+
+        helper.startSequence()
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(MKCore.getAbilityRuntimeService().hasPendingActivation(ownerData),
+                            "abilities2 cast should be pending before the movement interrupt starts");
+                    owner.moveTo(owner.getX() + 0.5, owner.getY(), owner.getZ(), owner.getYRot(), owner.getXRot());
+                })
+                .thenExecuteAfter(1, () -> helper.assertFalse(MKCore.getAbilityRuntimeService().hasPendingActivation(ownerData),
+                        "moving beyond the interrupt threshold should cancel pending abilities2 casts"))
+                .thenExecuteAfter(25, () -> {
+                    helper.assertTrue(owner.getHealth() < owner.getMaxHealth(),
+                            "movement-interrupted abilities2 cast should not complete its full heal");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void deathInterruptsDefinitionCastBeforeCompletion(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                ownerData,
+                ownerData,
+                new AbilityReference(SELF_HEAL_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "abilities2 cast-time activation should start for the death interrupt probe");
+
+        helper.startSequence()
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(MKCore.getAbilityRuntimeService().hasPendingActivation(ownerData),
+                            "abilities2 cast should be pending before the death interrupt starts");
+                    owner.kill();
+                })
+                .thenExecuteAfter(1, () -> {
+                    helper.assertFalse(MKCore.getAbilityRuntimeService().hasPendingActivation(ownerData),
+                            "death should clear pending abilities2 casts immediately");
+                    helper.assertFalse(owner.isAlive(), "death interrupt probe should leave the caster dead");
+                })
+                .thenExecuteAfter(10, helper::succeed);
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void slottedBasicToggleDefinitionUsesLoadoutTogglePath(GameTestHelper helper) {
         Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
         MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);

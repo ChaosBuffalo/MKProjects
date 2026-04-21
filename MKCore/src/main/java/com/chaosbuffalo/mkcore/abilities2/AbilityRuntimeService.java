@@ -679,6 +679,7 @@ public class AbilityRuntimeService {
         if (event.getEntity().level().isClientSide()) {
             return;
         }
+        engine.interruptPendingActivations(MKCore.getEntityDataOrThrow(event.getEntity()));
         emitKill(event.getSource(), event.getEntity());
     }
 
