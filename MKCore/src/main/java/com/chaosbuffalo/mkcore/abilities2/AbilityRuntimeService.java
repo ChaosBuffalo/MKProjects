@@ -109,6 +109,90 @@ public class AbilityRuntimeService {
         return engine;
     }
 
+    public @Nullable AiActivationExecution resolveAiExecution(ResourceLocation abilityId,
+                                                              @Nullable String requestedActivationId) {
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(abilityId);
+        if (definition == null) {
+            return null;
+        }
+
+        if (requestedActivationId != null) {
+            AbilityActivationDefinition activation = definition.definition().getActivation(requestedActivationId);
+            if (activation == null || activation.kind() != ActivationKind.AI) {
+                return null;
+            }
+            return new AiActivationExecution(requestedActivationId, activation);
+        }
+
+        try {
+            String activationId = resolveSingleActivationId(definition, ActivationKind.AI);
+            if (activationId == null) {
+                return null;
+            }
+            AbilityActivationDefinition activation = definition.definition().getActivation(activationId);
+            return activation != null ? new AiActivationExecution(activationId, activation) : null;
+        } catch (IllegalStateException e) {
+            MKCore.LOGGER.debug("abilities2 AI execution for {} is ambiguous: {}", abilityId, e.getMessage());
+            return null;
+        }
+    }
+
+    public @Nullable FailureReason previewAiAbility(IMKEntityData ownerData,
+                                                    IMKEntityData casterData,
+                                                    AbilityReference ability,
+                                                    @Nullable String requestedActivationId,
+                                                    AbilityResolvedTargets forcedTargets) {
+        Objects.requireNonNull(ownerData, "ownerData");
+        Objects.requireNonNull(casterData, "casterData");
+        Objects.requireNonNull(ability, "ability");
+        Objects.requireNonNull(forcedTargets, "forcedTargets");
+
+        AiActivationExecution execution = resolveAiExecution(ability.abilityId(), requestedActivationId);
+        if (execution == null) {
+            return resolveAiFailureReason(ability.abilityId(), requestedActivationId);
+        }
+
+        return engine.previewActivationFailure(new ActivationRequest(
+                ownerData,
+                casterData,
+                ability,
+                execution.activationId(),
+                null,
+                forcedTargets,
+                null,
+                false,
+                false
+        ));
+    }
+
+    public InvocationResult activateAiAbility(IMKEntityData ownerData,
+                                              IMKEntityData casterData,
+                                              AbilityReference ability,
+                                              @Nullable String requestedActivationId,
+                                              AbilityResolvedTargets forcedTargets) {
+        Objects.requireNonNull(ownerData, "ownerData");
+        Objects.requireNonNull(casterData, "casterData");
+        Objects.requireNonNull(ability, "ability");
+        Objects.requireNonNull(forcedTargets, "forcedTargets");
+
+        AiActivationExecution execution = resolveAiExecution(ability.abilityId(), requestedActivationId);
+        if (execution == null) {
+            return InvocationResult.failed(resolveAiFailureReason(ability.abilityId(), requestedActivationId));
+        }
+
+        return engine.activate(new ActivationRequest(
+                ownerData,
+                casterData,
+                ability,
+                execution.activationId(),
+                null,
+                forcedTargets,
+                null,
+                false,
+                false
+        ));
+    }
+
     public PersistedAbilityRuntimeState capturePersonaRuntime(Persona persona) {
         Objects.requireNonNull(persona, "persona");
         UUID ownerEntityId = persona.getPlayerData().getEntity().getUUID();
@@ -1030,6 +1114,24 @@ public class AbilityRuntimeService {
         return null;
     }
 
+    private FailureReason resolveAiFailureReason(ResourceLocation abilityId, @Nullable String requestedActivationId) {
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(abilityId);
+        if (definition == null) {
+            return FailureReason.UNKNOWN_ABILITY;
+        }
+        if (requestedActivationId != null) {
+            AbilityActivationDefinition activation = definition.definition().getActivation(requestedActivationId);
+            return activation == null ? FailureReason.UNKNOWN_ACTIVATION : FailureReason.ACTIVATION_NOT_EXTERNALLY_CALLABLE;
+        }
+        try {
+            return resolveSingleActivationId(definition, ActivationKind.AI) == null
+                    ? FailureReason.ACTIVATION_NOT_EXTERNALLY_CALLABLE
+                    : FailureReason.ACTIVATION_NOT_EXTERNALLY_CALLABLE;
+        } catch (IllegalStateException e) {
+            return FailureReason.ACTIVATION_NOT_EXTERNALLY_CALLABLE;
+        }
+    }
+
     private boolean matchesLoadoutGroup(AbilityGroupId groupId, ResourceLocation slotFamily) {
         var abilityType = AbilityDisplayEntry.resolveAbilityType(slotFamily);
         return abilityType != null && groupId.fitsAbilityType(abilityType);
@@ -1931,6 +2033,9 @@ public class AbilityRuntimeService {
     }
 
     private record LoadoutExecution(LoadoutExecutionKind kind, String activationId) {
+    }
+
+    public record AiActivationExecution(String activationId, AbilityActivationDefinition activation) {
     }
 
     private record ToggleKey(UUID ownerEntityId,

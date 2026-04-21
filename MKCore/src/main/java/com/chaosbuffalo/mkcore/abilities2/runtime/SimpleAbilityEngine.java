@@ -174,6 +174,54 @@ public class SimpleAbilityEngine implements AbilityEngine {
         }
     }
 
+    public @Nullable FailureReason previewActivationFailure(ActivationRequest request) {
+        Objects.requireNonNull(request, "request");
+        try {
+            PreparedActivation prepared = prepareActivation(
+                    request.ownerData(),
+                    request.casterData(),
+                    request.ability().abilityId(),
+                    request.ability().grantId(),
+                    request.activationId(),
+                    request.sourceId(),
+                    request.forcedTargets(),
+                    request.eventSnapshot(),
+                    request.ignoreCosts(),
+                    request.ignoreCooldowns(),
+                    ActivationReason.DIRECT_REQUEST,
+                    true
+            );
+            AbilityInvocation invocation = createInvocation(
+                    prepared,
+                    request.ownerData(),
+                    request.casterData(),
+                    request.ability().abilityId(),
+                    request.ability().grantId(),
+                    Map.of(),
+                    ActivationReason.DIRECT_REQUEST,
+                    0,
+                    null,
+                    null,
+                    null,
+                    request.eventSnapshot(),
+                    null,
+                    true,
+                    true
+            );
+            AbilityActionContext context = createContext(invocation, Optional::empty);
+            long gameTick = currentGameTick(request.casterData());
+            if (!request.ignoreCooldowns()) {
+                checkCooldowns(invocation, prepared.activation(), context, gameTick);
+            }
+            if (!request.ignoreCosts()) {
+                checkCosts(prepared.activation().costs(), context);
+            }
+            return null;
+        } catch (ActivationStartFailure failure) {
+            return failure.failureReason();
+        }
+    }
+
     public InvocationResult activateInternal(InternalActivationRequest request) {
         Objects.requireNonNull(request, "request");
         try {
@@ -477,72 +525,54 @@ public class SimpleAbilityEngine implements AbilityEngine {
                                              @Nullable AbilityReactionOwner reactionOwnerOverride,
                                              boolean clearReactionOwnerOnCompletion,
                                              boolean clearReactionOwnerOnInterruption) {
-        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(abilityId);
-        if (definition == null) {
-            return InvocationResult.failed(FailureReason.UNKNOWN_ABILITY);
-        }
-
-        AbilityActivationDefinition activation = definition.definition().getActivation(activationId);
-        if (activation == null) {
-            return InvocationResult.failed(FailureReason.UNKNOWN_ACTIVATION);
-        }
-
-        if (!isActivationAllowed(activation, reason, externalOnly)) {
-            return InvocationResult.failed(FailureReason.ACTIVATION_NOT_EXTERNALLY_CALLABLE);
-        }
-        if (!isBehaviorSupported(activation.behavior())) {
-            return InvocationResult.failed(FailureReason.UNSUPPORTED_FEATURE);
-        }
-        if (reason == ActivationReason.DIRECT_REQUEST && isBusyForDirectRequest(casterData)) {
-            return InvocationResult.failed(FailureReason.BUSY);
-        }
-
-        AbilityResolvedTargets targets = resolveActivationTargets(casterData, forcedTargets, eventSnapshot,
-                targetingOverride != null ? targetingOverride : activation.targeting());
-        UUID resolvedSourceId = sourceId != null ? sourceId : casterData.getEntity().getUUID();
-        AbilityStatSnapshot invocationStats = powerResolver.captureInvocationStats(casterData);
-
-        UUID invocationId = UUID.randomUUID();
-        AbilityInvocation invocation = new AbilityInvocation(
-                invocationId,
-                inheritedRootInvocationId != null ? inheritedRootInvocationId : invocationId,
-                chainDepth,
-                parentInvocationId,
+        PreparedActivation prepared = prepareActivation(
+                ownerData,
+                casterData,
                 abilityId,
                 abilityInstanceId,
                 activationId,
-                entryPointOverride != null ? entryPointOverride : activation.entryPoint(),
+                sourceId,
+                forcedTargets,
+                eventSnapshot,
+                ignoreCosts,
+                ignoreCooldowns,
                 reason,
+                externalOnly,
+                targetingOverride
+        );
+        AbilityInvocation invocation = createInvocation(
+                prepared,
                 ownerData,
                 casterData,
-                resolvedSourceId,
-                targets,
+                abilityId,
+                abilityInstanceId,
+                grantParameterOverrides,
+                reason,
+                chainDepth,
+                parentInvocationId,
+                inheritedRootInvocationId,
+                entryPointOverride,
                 eventSnapshot,
                 reactionOwnerOverride,
                 clearReactionOwnerOnCompletion,
-                clearReactionOwnerOnInterruption,
-                definition,
-                grantParameterOverrides,
-                invocationStats,
-                Map.of(),
-                casterData.getEntity().getRandom()
+                clearReactionOwnerOnInterruption
         );
 
         SimpleAbilityActionContext context = createContext(invocation, Optional::empty);
         long gameTick = currentGameTick(casterData);
 
         if (!ignoreCooldowns) {
-            checkCooldowns(invocation, activation, context, gameTick);
+            checkCooldowns(invocation, prepared.activation(), context, gameTick);
         }
         if (!ignoreCosts) {
-            checkCosts(activation.costs(), context);
-            consumeCosts(activation.costs(), context);
+            checkCosts(prepared.activation().costs(), context);
+            consumeCosts(prepared.activation().costs(), context);
         }
         if (!ignoreCooldowns) {
-            writeCooldowns(invocation, activation, context, gameTick);
+            writeCooldowns(invocation, prepared.activation(), context, gameTick);
         }
 
-        int castTicks = resolveCastTicks(activation, invocation.invocationStats());
+        int castTicks = resolveCastTicks(prepared.activation(), invocation.invocationStats());
         emitInvocationStarted(invocation, castTicks);
         if (castTicks > 0) {
             pendingCastsByCaster.computeIfAbsent(invocation.casterData().getEntity().getUUID(), ignored -> new ArrayList<>())
@@ -551,6 +581,104 @@ public class SimpleAbilityEngine implements AbilityEngine {
             completeInvocation(invocation, ignoreCosts, 0);
         }
         return InvocationResult.started(invocation.invocationId());
+    }
+
+    private PreparedActivation prepareActivation(IMKEntityData ownerData,
+                                                 IMKEntityData casterData,
+                                                 ResourceLocation abilityId,
+                                                 @Nullable UUID abilityInstanceId,
+                                                 String activationId,
+                                                 @Nullable UUID sourceId,
+                                                 @Nullable AbilityResolvedTargets forcedTargets,
+                                                 @Nullable AbilityEventSnapshot eventSnapshot,
+                                                 boolean ignoreCosts,
+                                                 boolean ignoreCooldowns,
+                                                 ActivationReason reason,
+                                                 boolean externalOnly) {
+        return prepareActivation(ownerData, casterData, abilityId, abilityInstanceId, activationId, sourceId,
+                forcedTargets, eventSnapshot, ignoreCosts, ignoreCooldowns, reason, externalOnly, null);
+    }
+
+    private PreparedActivation prepareActivation(IMKEntityData ownerData,
+                                                 IMKEntityData casterData,
+                                                 ResourceLocation abilityId,
+                                                 @Nullable UUID abilityInstanceId,
+                                                 String activationId,
+                                                 @Nullable UUID sourceId,
+                                                 @Nullable AbilityResolvedTargets forcedTargets,
+                                                 @Nullable AbilityEventSnapshot eventSnapshot,
+                                                 boolean ignoreCosts,
+                                                 boolean ignoreCooldowns,
+                                                 ActivationReason reason,
+                                                 boolean externalOnly,
+                                                 @Nullable AbilityTargetResolverDefinition targetingOverride) {
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(abilityId);
+        if (definition == null) {
+            throw new ActivationStartFailure(FailureReason.UNKNOWN_ABILITY);
+        }
+
+        AbilityActivationDefinition activation = definition.definition().getActivation(activationId);
+        if (activation == null) {
+            throw new ActivationStartFailure(FailureReason.UNKNOWN_ACTIVATION);
+        }
+
+        if (!isActivationAllowed(activation, reason, externalOnly)) {
+            throw new ActivationStartFailure(FailureReason.ACTIVATION_NOT_EXTERNALLY_CALLABLE);
+        }
+        if (!isBehaviorSupported(activation.behavior())) {
+            throw new ActivationStartFailure(FailureReason.UNSUPPORTED_FEATURE);
+        }
+        if (reason == ActivationReason.DIRECT_REQUEST && isBusyForDirectRequest(casterData)) {
+            throw new ActivationStartFailure(FailureReason.BUSY);
+        }
+
+        AbilityResolvedTargets targets = resolveActivationTargets(casterData, forcedTargets, eventSnapshot,
+                targetingOverride != null ? targetingOverride : activation.targeting());
+        UUID resolvedSourceId = sourceId != null ? sourceId : casterData.getEntity().getUUID();
+        AbilityStatSnapshot invocationStats = powerResolver.captureInvocationStats(casterData);
+        return new PreparedActivation(definition, activationId, activation, targets, resolvedSourceId, invocationStats);
+    }
+
+    private AbilityInvocation createInvocation(PreparedActivation prepared,
+                                               IMKEntityData ownerData,
+                                               IMKEntityData casterData,
+                                               ResourceLocation abilityId,
+                                               @Nullable UUID abilityInstanceId,
+                                               Map<String, AbilityValue> grantParameterOverrides,
+                                               ActivationReason reason,
+                                               int chainDepth,
+                                               @Nullable UUID parentInvocationId,
+                                               @Nullable UUID inheritedRootInvocationId,
+                                               @Nullable String entryPointOverride,
+                                               @Nullable AbilityEventSnapshot eventSnapshot,
+                                               @Nullable AbilityReactionOwner reactionOwnerOverride,
+                                               boolean clearReactionOwnerOnCompletion,
+                                               boolean clearReactionOwnerOnInterruption) {
+        UUID invocationId = UUID.randomUUID();
+        return new AbilityInvocation(
+                invocationId,
+                inheritedRootInvocationId != null ? inheritedRootInvocationId : invocationId,
+                chainDepth,
+                parentInvocationId,
+                abilityId,
+                abilityInstanceId,
+                prepared.activationId(),
+                entryPointOverride != null ? entryPointOverride : prepared.activation().entryPoint(),
+                reason,
+                ownerData,
+                casterData,
+                prepared.resolvedSourceId(),
+                prepared.targets(),
+                eventSnapshot,
+                reactionOwnerOverride,
+                clearReactionOwnerOnCompletion,
+                clearReactionOwnerOnInterruption,
+                prepared.definition(),
+                grantParameterOverrides,
+                prepared.invocationStats(),
+                Map.of(),
+                casterData.getEntity().getRandom()
+        );
     }
 
     private boolean isActivationAllowed(AbilityActivationDefinition activation,
@@ -1730,6 +1858,16 @@ public class SimpleAbilityEngine implements AbilityEngine {
         private void resetPulseInterval() {
             remainingPulseTicks = behavior.tickIntervalTicks();
         }
+    }
+
+    private record PreparedActivation(
+            PatchedAbilityDefinition definition,
+            String activationId,
+            AbilityActivationDefinition activation,
+            AbilityResolvedTargets targets,
+            UUID resolvedSourceId,
+            AbilityStatSnapshot invocationStats
+    ) {
     }
 
     private static final class ActivationStartFailure extends RuntimeException {

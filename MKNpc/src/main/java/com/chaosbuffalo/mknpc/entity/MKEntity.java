@@ -647,6 +647,17 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }
     }
 
+    public MovementStrategy getMovementStrategy(AbilityTargetingDecision.MovementSuggestion movementSuggestion) {
+        return switch (movementSuggestion) {
+            case KITE -> new KiteMovementStrategy(Math.max(getMinimumRangedCastingDistance(), 2.0), canFly());
+            case FOLLOW -> canFly()
+                    ? new FlyingFollowMovementStrategy(1.0f, Math.max(1, Math.round((float) getMinimumRangedCastingDistance() / 2.0f)))
+                    : new FollowMovementStrategy(1.0f, Math.max(1, Math.round((float) getMinimumRangedCastingDistance() / 2.0f)));
+            case MELEE -> canFly() ? new FlyingFollowMovementStrategy(1.0f, 1) : new FollowMovementStrategy(1.0f, 1);
+            case STATIONARY -> StationaryMovementStrategy.STATIONARY_MOVEMENT_STRATEGY;
+        };
+    }
+
     public void returnToSpawnTick() {
         boolean isReturningToPlayer = getEntityDataCap().getPets().isPet() && getEntityDataCap().getPets().getOwner() instanceof Player;
         if (!isReturningToPlayer) {

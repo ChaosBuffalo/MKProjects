@@ -52,6 +52,8 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                 Map.of("amount", new AbilityValue.FloatValue(24.0f))
         ));
         add(createFirebolt());
+        add(createAiSelfHeal());
+        add(createAiFirebolt());
         add(createCooldownProbe());
         add(createCostProbe());
         AbilityDefinitionData gcdSharedProbe = createGcdSharedProbe();
@@ -175,6 +177,85 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                 new AbilityAction.HealAction(
                         AbilityAction.ActionTarget.PRIMARY_ENTITY,
                         new AbilityScalar.ParameterScalar("amount")
+                )
+        ));
+        return builder.build();
+    }
+
+    private AbilityDefinitionData createAiSelfHeal() {
+        AbilityDefinitionBuilder builder = AbilityArchetypes.singleTargetSpell(
+                        MKCore.makeRL("test_abilities2_ai_self_heal"),
+                        "Abilities2 AI Self Heal",
+                        "A self-targeted AI activation used to validate NPC execution of abilities2 definitions.",
+                        AbilityDatagenKeys.TARGET_SELF
+                )
+                .school(AbilityDatagenKeys.SCHOOL_RESTORATION)
+                .tag(AbilityDatagenKeys.TAG_HEAL)
+                .parameter(floatParameter("amount", 8.0f, "Heal amount"));
+
+        builder.activation(AbilityArchetypes.CAST_ACTIVATION_ID, new AbilityActivationDefinition(
+                ActivationKind.AI,
+                AbilityArchetypes.CAST_ENTRY_POINT,
+                AbilityDatagenKeys.TARGET_SELF,
+                List.of(),
+                List.of(),
+                null,
+                0,
+                false,
+                AbilityArchetypes.STANDARD_MANUAL_INTERRUPT,
+                InterruptRefundPolicy.NONE,
+                new ActivationBehavior.InstantBehavior()
+        ));
+        builder.entryPoint(AbilityArchetypes.CAST_ENTRY_POINT, List.of(
+                new AbilityAction.HealAction(
+                        AbilityAction.ActionTarget.PRIMARY_ENTITY,
+                        new AbilityScalar.ParameterScalar("amount")
+                )
+        ));
+        return builder.build();
+    }
+
+    private AbilityDefinitionData createAiFirebolt() {
+        AbilityDefinitionBuilder builder = AbilityArchetypes.projectileSpell(
+                        MKCore.makeRL("test_abilities2_ai_firebolt"),
+                        "Abilities2 AI Firebolt",
+                        "A threat-targeted AI projectile activation used to validate NPC selection of abilities2 definitions.",
+                        AbilityDatagenKeys.TARGET_RESOLVED,
+                        AbilityAction.ActionTarget.PRIMARY_ENTITY,
+                        new AbilityScalar.ConstantScalar(1.6),
+                        new AbilityScalar.ConstantScalar(0.0)
+                )
+                .school(AbilityDatagenKeys.SCHOOL_EVOCATION)
+                .tag(AbilityDatagenKeys.TAG_FIRE)
+                .parameter(floatParameter("impact_damage", 6.0f, "Projectile impact damage"));
+
+        builder.activation(AbilityArchetypes.CAST_ACTIVATION_ID, new AbilityActivationDefinition(
+                ActivationKind.AI,
+                AbilityArchetypes.CAST_ENTRY_POINT,
+                AbilityDatagenKeys.TARGET_RESOLVED,
+                List.of(),
+                List.of(),
+                null,
+                0,
+                false,
+                AbilityArchetypes.STANDARD_MANUAL_INTERRUPT,
+                InterruptRefundPolicy.NONE,
+                new ActivationBehavior.InstantBehavior()
+        ));
+        builder.delivery(AbilityArchetypes.PROJECTILE_DELIVERY_ID, new AbilityDeliveryDefinition(
+                DeliveryKind.PROJECTILE,
+                CoreEntities.ABILITY_PROJECTILE_TYPE.getId(),
+                Items.FIRE_CHARGE.builtInRegistryHolder().key().location(),
+                List.of(),
+                AbilityArchetypes.PROJECTILE_IMPACT_ACTIVATION_ID,
+                null,
+                null
+        ));
+        builder.entryPoint(AbilityArchetypes.PROJECTILE_IMPACT_ENTRY_POINT, List.of(
+                new AbilityAction.DamageAction(
+                        AbilityAction.ActionTarget.PRIMARY_ENTITY,
+                        new AbilityScalar.ParameterScalar("impact_damage"),
+                        CoreDamageTypes.FireDamage.getId()
                 )
         ));
         return builder.build();

@@ -42,6 +42,14 @@ public class AbilitiesOption extends WorldPermanentOption {
         return this;
     }
 
+    public AbilitiesOption withAbilityDefinitionOption(ResourceLocation abilityId,
+                                                       @org.jetbrains.annotations.Nullable String activationId,
+                                                       int priority,
+                                                       double chance) {
+        abilities.add(new NpcAbilityEntry(abilityId, activationId, priority, chance));
+        return this;
+    }
+
     @Override
     protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Level level, RandomSource random) {
         List<NpcAbilityEntry> finalChoices = new ArrayList<>();

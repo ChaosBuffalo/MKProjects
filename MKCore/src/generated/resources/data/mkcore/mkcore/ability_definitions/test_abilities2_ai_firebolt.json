@@ -1,0 +1,90 @@
+{
+  "activations": {
+    "cast": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "entry_point": "cast",
+      "interrupt_policy": {
+        "on_damage": true,
+        "on_death": true,
+        "on_move": true
+      },
+      "kind": "ai",
+      "targeting": {
+        "type": "resolved"
+      }
+    },
+    "impact_proc": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "entry_point": "impact_proc",
+      "interrupt_policy": {
+        "on_death": true
+      },
+      "kind": "proc",
+      "targeting": {
+        "type": "resolved"
+      }
+    }
+  },
+  "deliveries": {
+    "projectile": {
+      "entity_type": "mkcore:ability_projectile",
+      "kind": "projectile",
+      "on_impact_activation_id": "impact_proc",
+      "render_item": "minecraft:fire_charge"
+    }
+  },
+  "entry_points": {
+    "cast": [
+      {
+        "type": "spawn_projectile",
+        "delivery": "projectile",
+        "speed": {
+          "kind": "constant",
+          "value": 1.6
+        }
+      }
+    ],
+    "impact_proc": [
+      {
+        "type": "damage",
+        "amount": {
+          "kind": "parameter",
+          "parameter": "impact_damage"
+        },
+        "school": "mkcore:fire",
+        "target": "primary_entity"
+      }
+    ]
+  },
+  "id": "mkcore:test_abilities2_ai_firebolt",
+  "parameters": {
+    "impact_damage": {
+      "default_value": {
+        "kind": "float",
+        "value": 6.0
+      },
+      "description": "Projectile impact damage",
+      "grant_overrideable": true,
+      "id": "impact_damage",
+      "kind": "float",
+      "patchable": true
+    }
+  },
+  "presentation": {
+    "description": "A threat-targeted AI projectile activation used to validate NPC selection of abilities2 definitions.",
+    "name": "Abilities2 AI Firebolt"
+  },
+  "schools": [
+    "mkcore:evocation"
+  ],
+  "slot_family": "mkcore:slot_family.basic",
+  "tags": [
+    "mkcore:fire",
+    "mkcore:projectile",
+    "mkcore:spell"
+  ]
+}

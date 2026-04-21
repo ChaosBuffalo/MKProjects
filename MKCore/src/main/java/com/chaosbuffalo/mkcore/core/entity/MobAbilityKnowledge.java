@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.core.entity;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
@@ -13,11 +14,12 @@ import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class MobAbilityKnowledge implements IMKAbilityKnowledge, IMKSerializable<CompoundTag> {
     private final MKEntityData entityData;
     private final Map<ResourceLocation, MobKnownAbility> knownAbilities = new HashMap<>();
-    private List<MKAbilityInfo> priorityOrder = new ArrayList<>();
+    private List<MobKnownAbility> priorityOrder = new ArrayList<>();
 
     public MobAbilityKnowledge(MKEntityData entityData) {
         this.entityData = entityData;
@@ -25,25 +27,33 @@ public class MobAbilityKnowledge implements IMKAbilityKnowledge, IMKSerializable
 
     @Override
     public Collection<MKAbilityInfo> getAllAbilities() {
-        return priorityOrder;
+        return priorityOrder.stream()
+                .map(MobKnownAbility::getAbilityInfo)
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     public void updatePriorityOrder() {
         Comparator<MobKnownAbility> comp = Comparator.comparingInt(MobKnownAbility::getPriority);
-        priorityOrder = knownAbilities.values().stream().sorted(comp).map(MobKnownAbility::getAbilityInfo).toList();
+        priorityOrder = knownAbilities.values().stream().sorted(comp).toList();
     }
 
-    public List<MKAbilityInfo> getAbilitiesPriorityOrder() {
+    public List<MobKnownAbility> getAbilitiesPriorityOrder() {
         return priorityOrder;
     }
 
     public boolean learnAbility(MKAbility ability, int priority) {
+        return learnAbility(ability, priority, null);
+    }
+
+    public boolean learnAbility(MKAbility ability, int priority, @Nullable String activationId) {
         MobKnownAbility info = knownAbilities.get(ability.getAbilityId());
         if (info == null) {
-            info = new MobKnownAbility(ability.createAbilityInfo(), priority);
+            info = new MobKnownAbility(ability.createAbilityInfo(), priority, activationId);
             knownAbilities.put(ability.getAbilityId(), info);
         } else {
             info.setPriority(priority);
+            info.setActivationId(activationId);
         }
 
         updatePriorityOrder();
@@ -53,6 +63,24 @@ public class MobAbilityKnowledge implements IMKAbilityKnowledge, IMKSerializable
     @Override
     public boolean learnAbility(MKAbility ability, AbilitySource source) {
         return learnAbility(ability, 1);
+    }
+
+    public boolean learnAbilityDefinition(ResourceLocation abilityId, int priority, @Nullable String activationId) {
+        if (MKCore.getAbilityDefinitionService().getDefinition(abilityId) == null) {
+            return false;
+        }
+
+        MobKnownAbility info = knownAbilities.get(abilityId);
+        if (info == null) {
+            info = new MobKnownAbility(abilityId, null, priority, activationId);
+            knownAbilities.put(abilityId, info);
+        } else {
+            info.setPriority(priority);
+            info.setActivationId(activationId);
+        }
+
+        updatePriorityOrder();
+        return true;
     }
 
     @Override
@@ -65,6 +93,11 @@ public class MobAbilityKnowledge implements IMKAbilityKnowledge, IMKSerializable
     @Override
     public boolean knowsAbility(ResourceLocation abilityId) {
         return knownAbilities.containsKey(abilityId);
+    }
+
+    @Override
+    public Stream<ResourceLocation> getKnownAbilityIds() {
+        return knownAbilities.keySet().stream();
     }
 
     @Nullable
@@ -104,9 +137,14 @@ public class MobAbilityKnowledge implements IMKAbilityKnowledge, IMKSerializable
 
     private static MobKnownAbility createKnownAbility(ResourceLocation abilityId) {
         MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-        if (ability == null)
-            return null;
+        if (ability != null) {
+            return new MobKnownAbility(ability.createAbilityInfo(), 1, null);
+        }
 
-        return new MobKnownAbility(ability.createAbilityInfo(), 1);
+        if (MKCore.getAbilityDefinitionService().getDefinition(abilityId) == null) {
+            return null;
+        }
+
+        return new MobKnownAbility(abilityId, null, 1, null);
     }
 }

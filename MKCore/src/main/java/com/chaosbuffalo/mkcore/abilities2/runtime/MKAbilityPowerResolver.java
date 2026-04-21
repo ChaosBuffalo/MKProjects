@@ -49,11 +49,11 @@ public final class MKAbilityPowerResolver implements AbilityPowerResolver {
 
         return new AbilityStatSnapshot(
                 attributes,
-                caster.getEntity().getAttributeValue(MKAttributes.CASTING_SPEED),
-                caster.getEntity().getAttributeValue(MKAttributes.COOLDOWN),
+                MKAttributes.getValueSafe(MKAttributes.CASTING_SPEED, caster.getEntity()),
+                MKAttributes.getValueSafe(MKAttributes.COOLDOWN, caster.getEntity()),
                 1.0,
-                caster.getEntity().getAttributeValue(MKAttributes.SPELL_CRIT),
-                caster.getEntity().getAttributeValue(MKAttributes.SPELL_CRIT_MULTIPLIER)
+                MKAttributes.getValueSafe(MKAttributes.SPELL_CRIT, caster.getEntity()),
+                MKAttributes.getValueSafe(MKAttributes.SPELL_CRIT_MULTIPLIER, caster.getEntity())
         );
     }
 
@@ -62,7 +62,7 @@ public final class MKAbilityPowerResolver implements AbilityPowerResolver {
                                   Holder<Attribute> attributeHolder) {
         ResourceLocation id = BuiltInRegistries.ATTRIBUTE.getKey(attributeHolder.value());
         if (id != null) {
-            attributes.put(id, caster.getEntity().getAttributeValue(attributeHolder));
+            attributes.put(id, MKAttributes.getValueSafe(attributeHolder, caster.getEntity()));
         }
     }
 

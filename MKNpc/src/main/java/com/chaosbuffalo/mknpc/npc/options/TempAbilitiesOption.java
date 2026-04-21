@@ -47,6 +47,14 @@ public class TempAbilitiesOption extends NpcDefinitionOption {
         return this;
     }
 
+    public TempAbilitiesOption withAbilityDefinitionOption(ResourceLocation abilityId,
+                                                           @org.jetbrains.annotations.Nullable String activationId,
+                                                           int priority,
+                                                           double chance) {
+        addAbilityEntry(new NpcAbilityEntry(abilityId, activationId, priority, chance));
+        return this;
+    }
+
     @Override
     public boolean canBeBossStage() {
         return true;
@@ -61,17 +69,20 @@ public class TempAbilitiesOption extends NpcDefinitionOption {
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
         if (entity instanceof LivingEntity livingEntity) {
             MKCore.getEntitySpecificData(livingEntity).ifPresent((cap) -> {
-                List<ResourceLocation> toUnlearn = new ArrayList<>();
-                for (MKAbilityInfo ability : cap.getAbilities().getAllAbilities()) {
-                    toUnlearn.add(ability.getId());
-                }
+                List<ResourceLocation> toUnlearn = cap.getAbilities().getKnownAbilityIds().toList();
                 for (ResourceLocation loc : toUnlearn) {
                     cap.getAbilities().unlearnAbility(loc, AbilitySource.TRAINED);
                 }
                 for (NpcAbilityEntry entry : abilities) {
                     MKAbility ability = entry.getAbility();
-                    if (ability != null && entity.getRandom().nextDouble() <= entry.getChance()) {
-                        cap.getAbilities().learnAbility(ability, entry.getPriority());
+                    if (entity.getRandom().nextDouble() > entry.getChance()) {
+                        continue;
+                    }
+                    if (ability != null) {
+                        cap.getAbilities().learnAbility(ability, entry.getPriority(), entry.getActivationId());
+                    } else {
+                        cap.getAbilities().learnAbilityDefinition(entry.getAbilityId(), entry.getPriority(),
+                                entry.getActivationId());
                     }
                 }
             });
