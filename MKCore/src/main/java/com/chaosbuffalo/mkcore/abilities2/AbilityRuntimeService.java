@@ -15,6 +15,7 @@ import com.chaosbuffalo.mkcore.abilities2.definition.ActivationBehavior;
 import com.chaosbuffalo.mkcore.abilities2.definition.ActivationKind;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValue;
 import com.chaosbuffalo.mkcore.abilities2.runtime.*;
+import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
@@ -757,14 +758,8 @@ public class AbilityRuntimeService {
     }
 
     private boolean matchesLoadoutGroup(AbilityGroupId groupId, ResourceLocation slotFamily) {
-        return switch (groupId) {
-            case Basic -> AbilityDatagenKeys.SLOT_FAMILY_BASIC.equals(slotFamily);
-            case Passive -> AbilityDatagenKeys.SLOT_FAMILY_PASSIVE.equals(slotFamily);
-            case Ultimate -> AbilityDatagenKeys.SLOT_FAMILY_ULTIMATE.equals(slotFamily);
-            case Item -> AbilityDatagenKeys.SLOT_FAMILY_BASIC.equals(slotFamily)
-                    || AbilityDatagenKeys.SLOT_FAMILY_PASSIVE.equals(slotFamily)
-                    || AbilityDatagenKeys.SLOT_FAMILY_ULTIMATE.equals(slotFamily);
-        };
+        var abilityType = AbilityDisplayEntry.resolveAbilityType(slotFamily);
+        return abilityType != null && groupId.fitsAbilityType(abilityType);
     }
 
     private @Nullable ResourceLocation getLoadoutCooldownTimerId(AbilityReference ability, @Nullable UUID sourceId) {

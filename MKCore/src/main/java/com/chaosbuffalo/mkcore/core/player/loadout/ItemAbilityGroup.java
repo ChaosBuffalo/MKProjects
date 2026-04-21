@@ -5,11 +5,11 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
-import com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys;
 import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityGrantSource;
 import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityReference;
 import com.chaosbuffalo.mkcore.abilities2.runtime.GrantedAbility;
 import com.chaosbuffalo.mkcore.abilities2.runtime.PatchedAbilityDefinition;
+import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
 import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
@@ -142,10 +142,8 @@ public class ItemAbilityGroup extends AbilityGroup {
             return null;
         }
 
-        ResourceLocation slotFamily = definition.definition().data().slotFamily();
-        if (AbilityDatagenKeys.SLOT_FAMILY_BASIC.equals(slotFamily)
-                || AbilityDatagenKeys.SLOT_FAMILY_PASSIVE.equals(slotFamily)
-                || AbilityDatagenKeys.SLOT_FAMILY_ULTIMATE.equals(slotFamily)) {
+        AbilityType abilityType = AbilityDisplayEntry.resolveAbilityType(definition.definition().data().slotFamily());
+        if (abilityType != null) {
             return definition;
         }
         return null;
@@ -253,7 +251,7 @@ public class ItemAbilityGroup extends AbilityGroup {
 
             PatchedAbilityDefinition definition = resolveAbilityDefinition(abilityId);
             if (definition == null
-                    || !AbilityDatagenKeys.SLOT_FAMILY_PASSIVE.equals(definition.definition().data().slotFamily())) {
+                    || AbilityDisplayEntry.resolveAbilityType(definition.definition().data().slotFamily()) != AbilityType.Passive) {
                 continue;
             }
 

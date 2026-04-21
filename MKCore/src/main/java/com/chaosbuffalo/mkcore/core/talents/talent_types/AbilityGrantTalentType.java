@@ -51,7 +51,7 @@ public class AbilityGrantTalentType extends TalentType<AbilityGrantTalentNode> {
 
         AbilityDefinitionData definition = abilityNode.getAbilityDefinition();
         if (definition != null) {
-            consumer.accept(Component.literal(definition.presentation().name()));
+            consumer.accept(AbilityDisplayEntry.resolve(abilityNode.getAbilityId()).displayName());
             PatchedAbilityDefinition patched = com.chaosbuffalo.mkcore.MKCore.getAbilityDefinitionService()
                     .getResolver().resolvePatched(definition.id());
             if (patched != null) {
@@ -76,12 +76,7 @@ public class AbilityGrantTalentType extends TalentType<AbilityGrantTalentNode> {
             return ability.getAbilityName();
         }
 
-        AbilityDefinitionData definition = abilityNode.getAbilityDefinition();
-        if (definition != null) {
-            return Component.literal(definition.presentation().name());
-        }
-
-        return Component.literal(abilityNode.getAbilityId().toString());
+        return AbilityDisplayEntry.resolve(abilityNode.getAbilityId()).displayName().copy();
     }
 
     @Override
