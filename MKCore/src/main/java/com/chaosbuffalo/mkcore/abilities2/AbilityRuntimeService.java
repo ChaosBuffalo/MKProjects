@@ -17,10 +17,13 @@ import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValue;
 import com.chaosbuffalo.mkcore.abilities2.runtime.*;
 import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
+import com.chaosbuffalo.mkcore.events.PersonaEvent;
 import com.chaosbuffalo.mkcore.network.Ability2CastPacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import net.minecraft.server.MinecraftServer;
@@ -36,6 +39,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -50,7 +54,7 @@ public class AbilityRuntimeService {
             new AbilityTargetResolverDefinition("resolved");
 
     private final AbilityDefinitionResolver definitionResolver;
-    private final AbilityStateStore stateStore;
+    private final MemoryAbilityStateStore stateStore;
     private final AbilityPowerResolver powerResolver;
     private final AbilityReactionBus reactionBus;
     private final SimpleAbilityEngine engine;
@@ -60,6 +64,7 @@ public class AbilityRuntimeService {
     private final Map<PassiveKey, PassiveRuntime> activePassives = new LinkedHashMap<>();
     private final Map<UUID, DeliveryRuntime> activeDeliveries = new LinkedHashMap<>();
     private final Map<Integer, ClientCastState> clientCasts = new HashMap<>();
+    private final Map<UUID, Persona> pendingPersonaRestores = new HashMap<>();
     private long lastStateStoreTick = Long.MIN_VALUE;
 
     public AbilityRuntimeService(AbilityDefinitionResolver definitionResolver) {
@@ -99,6 +104,22 @@ public class AbilityRuntimeService {
 
     public AbilityEngine getEngine() {
         return engine;
+    }
+
+    public PersistedAbilityRuntimeState capturePersonaRuntime(Persona persona) {
+        Objects.requireNonNull(persona, "persona");
+        UUID ownerEntityId = persona.getPlayerData().getEntity().getUUID();
+        PersistedAbilityRuntimeState stateSnapshot = stateStore.snapshotOwner(ownerEntityId, currentGameTick());
+        List<PersistedAbilityRuntimeState.ToggleEntry> toggles = activeToggles.values().stream()
+                .filter(runtime -> runtime.ownerEntityId().equals(ownerEntityId))
+                .map(runtime -> snapshotToggle(runtime))
+                .toList();
+        return new PersistedAbilityRuntimeState(
+                stateSnapshot.cooldowns(),
+                stateSnapshot.gcds(),
+                stateSnapshot.states(),
+                toggles
+        );
     }
 
     public boolean hasPendingActivation(IMKEntityData casterData) {
@@ -477,6 +498,46 @@ public class AbilityRuntimeService {
     }
 
     @SubscribeEvent
+    public void onPersonaActivated(PersonaEvent.PersonaActivated event) {
+        MKPlayerData playerData = event.getPlayerData();
+        if (playerData.isClientSide()) {
+            return;
+        }
+        AbilityRuntimePersonaExtension extension = getRuntimeExtension(event.getPersona());
+        if (extension != null) {
+            extension.setCaptureLiveRuntimeOnSerialize(false);
+        }
+        pendingPersonaRestores.put(playerData.getEntity().getUUID(), event.getPersona());
+    }
+
+    @SubscribeEvent
+    public void onPersonaDeactivated(PersonaEvent.PersonaDeactivated event) {
+        MKPlayerData playerData = event.getPlayerData();
+        if (playerData.isClientSide()) {
+            return;
+        }
+        persistAndClearPersonaRuntime(event.getPersona(), playerData);
+    }
+
+    @SubscribeEvent
+    public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        MKPlayerData playerData = MKCore.getPlayerOrThrow(event.getEntity());
+        if (playerData.isClientSide()) {
+            return;
+        }
+        persistAndClearPersonaRuntime(playerData.getPersonaManager().getActivePersona(), playerData);
+    }
+
+    @SubscribeEvent
+    public void onPlayerClone(PlayerEvent.Clone event) {
+        MKPlayerData oldData = MKCore.getPlayerOrThrow(event.getOriginal());
+        if (oldData.isClientSide()) {
+            return;
+        }
+        clearLiveRuntime(oldData, true, true);
+    }
+
+    @SubscribeEvent
     public void onEntityTick(EntityTickEvent.Post event) {
         if (event.getEntity() instanceof LivingEntity living && !living.level().isClientSide()) {
             engine.tickEntity(MKCore.getEntityDataOrThrow(living));
@@ -493,6 +554,7 @@ public class AbilityRuntimeService {
             return;
         }
         lastStateStoreTick = gameTick;
+        processPendingPersonaRestores();
         stateStore.tick(gameTick, this::emitCooldownFinished);
         tickActiveDeliveries();
         tickActiveToggles(gameTick);
@@ -530,6 +592,189 @@ public class AbilityRuntimeService {
     private long currentGameTick() {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         return server != null ? server.overworld().getGameTime() : 0L;
+    }
+
+    private void processPendingPersonaRestores() {
+        if (pendingPersonaRestores.isEmpty()) {
+            return;
+        }
+        List<Persona> restores = List.copyOf(pendingPersonaRestores.values());
+        pendingPersonaRestores.clear();
+        for (Persona persona : restores) {
+            restorePersonaRuntime(persona);
+        }
+    }
+
+    private void persistAndClearPersonaRuntime(Persona persona, MKPlayerData playerData) {
+        pendingPersonaRestores.remove(playerData.getEntity().getUUID());
+        AbilityRuntimePersonaExtension extension = getRuntimeExtension(persona);
+        if (extension != null) {
+            extension.setSnapshot(capturePersonaRuntime(persona));
+            extension.setCaptureLiveRuntimeOnSerialize(false);
+        }
+        clearLiveRuntime(playerData, true, true);
+    }
+
+    private void restorePersonaRuntime(Persona persona) {
+        AbilityRuntimePersonaExtension extension = getRuntimeExtension(persona);
+        if (extension == null) {
+            return;
+        }
+
+        MKPlayerData playerData = persona.getPlayerData();
+        clearLiveRuntime(playerData, false, false);
+
+        PersistedAbilityRuntimeState snapshot = extension.getSnapshot();
+        if (!snapshot.isEmpty()) {
+            stateStore.restoreOwner(playerData.getEntity().getUUID(), snapshot, currentGameTick());
+            snapshot.toggles().forEach(toggle -> restoreToggle(playerData, toggle));
+        }
+        extension.setCaptureLiveRuntimeOnSerialize(true);
+    }
+
+    private void clearLiveRuntime(MKPlayerData playerData, boolean clearPassives, boolean gracefulToggleDisable) {
+        pendingPersonaRestores.remove(playerData.getEntity().getUUID());
+        interruptPendingActivations(playerData);
+        if (clearPassives) {
+            clearPassivesForOwner(playerData.getEntity().getUUID());
+        }
+        clearTogglesForOwner(playerData.getEntity().getUUID(), gracefulToggleDisable);
+        closeDeliveriesForOwner(playerData.getEntity().getUUID(), true);
+        stateStore.clearOwner(playerData.getEntity().getUUID());
+    }
+
+    private void clearPassivesForOwner(UUID ownerEntityId) {
+        for (PassiveRuntime runtime : List.copyOf(activePassives.values())) {
+            if (!runtime.ownerEntityId().equals(ownerEntityId)) {
+                continue;
+            }
+            requestPassiveTeardown(runtime);
+            if (activePassives.containsKey(runtime.key())) {
+                activePassives.remove(runtime.key());
+                clearReactionOwner(runtime.owner());
+            }
+        }
+    }
+
+    private void clearTogglesForOwner(UUID ownerEntityId, boolean gracefulDisable) {
+        for (ToggleRuntime runtime : List.copyOf(activeToggles.values())) {
+            if (!runtime.ownerEntityId().equals(ownerEntityId)) {
+                continue;
+            }
+            if (gracefulDisable) {
+                requestToggleDisable(runtime);
+            }
+            if (activeToggles.containsKey(runtime.key())) {
+                teardownToggle(runtime);
+            }
+        }
+    }
+
+    private void closeDeliveriesForOwner(UUID ownerEntityId, boolean discardEntity) {
+        for (DeliveryRuntime runtime : List.copyOf(activeDeliveries.values())) {
+            if (!runtime.ownerEntityId().equals(ownerEntityId)) {
+                continue;
+            }
+            if (discardEntity) {
+                Entity entity = findAnyEntity(runtime.deliveryEntityId());
+                if (entity != null && !entity.isRemoved()) {
+                    entity.discard();
+                }
+            }
+            closeDelivery(runtime.deliveryEntityId());
+        }
+    }
+
+    private void restoreToggle(MKPlayerData ownerData, PersistedAbilityRuntimeState.ToggleEntry entry) {
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(entry.abilityId());
+        if (definition == null || !ownerData.getAbilities().knowsAbility(entry.abilityId())) {
+            return;
+        }
+
+        String enableActivationId;
+        String disableActivationId;
+        try {
+            enableActivationId = resolveSingleActivationId(definition, ActivationKind.TOGGLE_ENABLE);
+            disableActivationId = resolveSingleActivationId(definition, ActivationKind.TOGGLE_DISABLE);
+        } catch (IllegalStateException e) {
+            MKCore.LOGGER.debug("abilities2 toggle restore for {} is ambiguous: {}", entry.abilityId(), e.getMessage());
+            return;
+        }
+        if (enableActivationId == null) {
+            return;
+        }
+
+        AbilityActivationDefinition enableActivation = definition.definition().getActivation(enableActivationId);
+        if (enableActivation == null) {
+            return;
+        }
+
+        IMKEntityData casterData = entry.casterEntityId() != null ? resolveEntityData(entry.casterEntityId()) : null;
+        if (casterData == null) {
+            casterData = ownerData;
+        }
+
+        ToggleRuntime runtime = new ToggleRuntime(
+                new ToggleKey(ownerData.getEntity().getUUID(), entry.abilityId(), entry.grantId(), entry.stableSourceId()),
+                new AbilityReactionOwner(ReactionOwnerType.TOGGLE_STATE, ownerData.getEntity().getUUID(),
+                        entry.stableSourceId(), entry.abilityId()),
+                new AbilityReference(entry.abilityId(), entry.grantId()),
+                entry.grantParameterOverrides(),
+                ownerData.getEntity().getUUID(),
+                casterData.getEntity().getUUID(),
+                enableActivationId,
+                disableActivationId,
+                enableActivation.behavior() instanceof ActivationBehavior.AuraBehavior auraBehavior ? auraBehavior : null
+        );
+
+        InvocationResult result = engine.activateInternal(new InternalActivationRequest(
+                ownerData,
+                casterData,
+                runtime.ability(),
+                enableActivationId,
+                entry.stableSourceId(),
+                null,
+                null,
+                true,
+                true,
+                ActivationReason.TOGGLE_LIFECYCLE,
+                0,
+                null,
+                null,
+                null,
+                null,
+                runtime.grantParameterOverrides(),
+                runtime.owner(),
+                false,
+                true
+        ));
+        if (result.started()) {
+            activeToggles.put(runtime.key(), runtime);
+            runtime.restoreNextPulse(currentGameTick(), entry.nextPulseDelayTicks());
+        } else {
+            MKCore.LOGGER.debug("abilities2 toggle restore for {} did not start: {}",
+                    entry.abilityId(), result.failureReason());
+        }
+    }
+
+    private PersistedAbilityRuntimeState.ToggleEntry snapshotToggle(ToggleRuntime runtime) {
+        long currentGameTick = currentGameTick();
+        long nextPulseDelay = runtime.hasAuraBehavior()
+                ? Math.max(0L, runtime.nextPulseTick() - currentGameTick)
+                : 0L;
+        int persistedDelay = nextPulseDelay > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) nextPulseDelay;
+        return new PersistedAbilityRuntimeState.ToggleEntry(
+                runtime.ability().abilityId(),
+                runtime.ability().grantId(),
+                runtime.owner().stableSourceId(),
+                runtime.casterEntityId(),
+                runtime.grantParameterOverrides(),
+                persistedDelay
+        );
+    }
+
+    private @Nullable AbilityRuntimePersonaExtension getRuntimeExtension(Persona persona) {
+        return persona.getExtension(AbilityRuntimePersonaExtension.class);
     }
 
     private boolean isCasterBusyForDirectActivation(IMKEntityData casterData) {
@@ -1634,6 +1879,10 @@ public class AbilityRuntimeService {
 
         private void scheduleNextPulse(long currentGameTick) {
             nextPulseTick = auraBehavior != null ? currentGameTick + auraBehavior.pulseIntervalTicks() : Long.MAX_VALUE;
+        }
+
+        private void restoreNextPulse(long currentGameTick, int delayTicks) {
+            nextPulseTick = auraBehavior != null ? currentGameTick + Math.max(0, delayTicks) : Long.MAX_VALUE;
         }
     }
 

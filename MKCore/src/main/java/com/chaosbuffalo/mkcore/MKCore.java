@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore;
 
 import com.chaosbuffalo.mkcore.abilities.AbilityManager;
 import com.chaosbuffalo.mkcore.abilities2.AbilityDefinitionService;
+import com.chaosbuffalo.mkcore.abilities2.AbilityRuntimePersonaExtension;
 import com.chaosbuffalo.mkcore.abilities2.AbilityRuntimeService;
 import com.chaosbuffalo.mkcore.command.MKCommand;
 import com.chaosbuffalo.mkcore.compat.CoreCompatHooks;
@@ -76,6 +77,7 @@ public class MKCore {
         abilityManager = new AbilityManager();
         abilityDefinitionService = new AbilityDefinitionService();
         abilityRuntimeService = new AbilityRuntimeService(abilityDefinitionService.getResolver());
+        PersonaManager.registerExtension(AbilityRuntimePersonaExtension::new);
         NeoForge.EVENT_BUS.register(abilityRuntimeService);
         particleAnimationManager = new ParticleAnimationManager();
         AbilityManager.setupDeserializers();

@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -79,6 +80,67 @@ public final class MemoryAbilityStateStore implements AbilityStateStore {
         pruneExpired(gcdExpiry, gameTick);
     }
 
+    public PersistedAbilityRuntimeState snapshotOwner(UUID ownerEntityId, long gameTick) {
+        Objects.requireNonNull(ownerEntityId, "ownerEntityId");
+
+        List<PersistedAbilityRuntimeState.CooldownEntry> cooldowns = cooldownExpiry.entrySet().stream()
+                .filter(entry -> entry.getKey().scopeKey().ownerEntityId().equals(ownerEntityId))
+                .map(entry -> snapshotCooldown(entry, gameTick))
+                .filter(Objects::nonNull)
+                .toList();
+
+        List<PersistedAbilityRuntimeState.GcdEntry> gcds = gcdExpiry.entrySet().stream()
+                .filter(entry -> entry.getKey().ownerEntityId().equals(ownerEntityId))
+                .map(entry -> snapshotGcd(entry, gameTick))
+                .filter(Objects::nonNull)
+                .toList();
+
+        List<PersistedAbilityRuntimeState.StateEntry> states = stateValues.entrySet().stream()
+                .filter(entry -> entry.getKey().scopeKey().ownerEntityId().equals(ownerEntityId))
+                .map(this::snapshotState)
+                .toList();
+
+        return new PersistedAbilityRuntimeState(cooldowns, gcds, states, List.of());
+    }
+
+    public void restoreOwner(UUID ownerEntityId, PersistedAbilityRuntimeState snapshot, long gameTick) {
+        Objects.requireNonNull(ownerEntityId, "ownerEntityId");
+        Objects.requireNonNull(snapshot, "snapshot");
+
+        clearOwner(ownerEntityId);
+
+        for (PersistedAbilityRuntimeState.CooldownEntry entry : snapshot.cooldowns()) {
+            if (entry.remainingTicks() <= 0) {
+                continue;
+            }
+            cooldownExpiry.put(new CooldownKey(
+                            new ScopeKey(entry.scope(), ownerEntityId, entry.stableSourceId(), entry.abilityId()),
+                            entry.key()),
+                    gameTick + entry.remainingTicks());
+        }
+
+        for (PersistedAbilityRuntimeState.GcdEntry entry : snapshot.gcds()) {
+            if (entry.remainingTicks() <= 0) {
+                continue;
+            }
+            gcdExpiry.put(new GcdKey(ownerEntityId, entry.gcdGroup()), gameTick + entry.remainingTicks());
+        }
+
+        for (PersistedAbilityRuntimeState.StateEntry entry : snapshot.states()) {
+            stateValues.put(new StateKey(
+                    new ScopeKey(entry.scope(), ownerEntityId, entry.stableSourceId(), entry.abilityId()),
+                    entry.stateKey()
+            ), entry.value());
+        }
+    }
+
+    public void clearOwner(UUID ownerEntityId) {
+        Objects.requireNonNull(ownerEntityId, "ownerEntityId");
+        cooldownExpiry.entrySet().removeIf(entry -> entry.getKey().scopeKey().ownerEntityId().equals(ownerEntityId));
+        gcdExpiry.entrySet().removeIf(entry -> entry.getKey().ownerEntityId().equals(ownerEntityId));
+        stateValues.entrySet().removeIf(entry -> entry.getKey().scopeKey().ownerEntityId().equals(ownerEntityId));
+    }
+
     private ScopeKey resolveScopeKey(AbilityInvocation invocation, StateScope scope) {
         UUID ownerEntityId = invocation.ownerData().getEntity().getUUID();
         return switch (scope) {
@@ -92,6 +154,40 @@ public final class MemoryAbilityStateStore implements AbilityStateStore {
         };
     }
 
+    private @Nullable PersistedAbilityRuntimeState.CooldownEntry snapshotCooldown(Map.Entry<CooldownKey, Long> entry,
+                                                                                  long gameTick) {
+        int remainingTicks = remainingTicks(entry.getValue(), gameTick);
+        if (remainingTicks <= 0) {
+            return null;
+        }
+        ScopeKey scopeKey = entry.getKey().scopeKey();
+        return new PersistedAbilityRuntimeState.CooldownEntry(
+                scopeKey.scope(),
+                entry.getKey().key(),
+                remainingTicks,
+                scopeKey.stableSourceId(),
+                scopeKey.abilityId()
+        );
+    }
+
+    private @Nullable PersistedAbilityRuntimeState.GcdEntry snapshotGcd(Map.Entry<GcdKey, Long> entry, long gameTick) {
+        int remainingTicks = remainingTicks(entry.getValue(), gameTick);
+        return remainingTicks > 0
+                ? new PersistedAbilityRuntimeState.GcdEntry(entry.getKey().gcdGroup(), remainingTicks)
+                : null;
+    }
+
+    private PersistedAbilityRuntimeState.StateEntry snapshotState(Map.Entry<StateKey, AbilityValue> entry) {
+        ScopeKey scopeKey = entry.getKey().scopeKey();
+        return new PersistedAbilityRuntimeState.StateEntry(
+                scopeKey.scope(),
+                entry.getKey().stateKey(),
+                scopeKey.stableSourceId(),
+                scopeKey.abilityId(),
+                entry.getValue()
+        );
+    }
+
     private <K> int getRemainingTicks(Map<K, Long> expiryMap, K key, long gameTick, boolean removeExpired) {
         Long expiry = expiryMap.get(key);
         if (expiry == null) {
@@ -101,6 +197,14 @@ public final class MemoryAbilityStateStore implements AbilityStateStore {
             if (removeExpired) {
                 expiryMap.remove(key);
             }
+            return 0;
+        }
+        long remaining = expiry - gameTick;
+        return remaining > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) remaining;
+    }
+
+    private int remainingTicks(long expiry, long gameTick) {
+        if (expiry <= gameTick) {
             return 0;
         }
         long remaining = expiry - gameTick;

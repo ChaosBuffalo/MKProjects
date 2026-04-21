@@ -22,6 +22,7 @@ import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityReference;
 import com.chaosbuffalo.mkcore.abilities2.runtime.ActivationRequest;
 import com.chaosbuffalo.mkcore.abilities2.runtime.FailureReason;
 import com.chaosbuffalo.mkcore.abilities2.runtime.InvocationResult;
+import com.chaosbuffalo.mkcore.abilities2.runtime.PersistedAbilityRuntimeState;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
@@ -29,8 +30,10 @@ import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
 import com.chaosbuffalo.mkcore.item.ItemGrantedAbility;
 import com.chaosbuffalo.mkcore.test.MKTestAbilities;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.GameType;
 import net.minecraft.core.BlockPos;
@@ -511,6 +514,102 @@ public class MKAbilities2RuntimeGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void serializedDefinitionCooldownBlocksReactivationAfterJoin(GameTestHelper helper) {
+        Player source = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData sourceData = MKCore.getPlayerOrThrow(source);
+
+        helper.assertTrue(sourceData.getAbilities().learnAbilityDefinition(COOLDOWN_PROBE_ABILITY, AbilitySource.ADMIN),
+                "serialized cooldown restore test should learn the cooldown probe first");
+        sourceData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlots(1);
+        sourceData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(0, COOLDOWN_PROBE_ABILITY);
+
+        Player[] restoredHolder = new Player[1];
+        helper.startSequence()
+                .thenExecute(() -> {
+                    InvocationResult initialResult = MKCore.getAbilityRuntimeService().executeLoadoutAbility(
+                            sourceData,
+                            sourceData,
+                            AbilityGroupId.Basic,
+                            COOLDOWN_PROBE_ABILITY
+                    );
+                    helper.assertTrue(initialResult.started(),
+                            "initial cooldown probe execution should start before serialization");
+                    PersistedAbilityRuntimeState sourceSnapshot = MKCore.getAbilityRuntimeService()
+                            .capturePersonaRuntime(sourceData.getPersonaManager().getActivePersona());
+                    helper.assertTrue(sourceSnapshot.cooldowns().stream()
+                                    .anyMatch(entry -> COOLDOWN_PROBE_ABILITY.equals(entry.abilityId()) && "ability".equals(entry.key())),
+                            "source player should build a live abilities2 cooldown entry before serialization");
+                    restoredHolder[0] = createDeserializedTestPlayer(
+                            helper,
+                            new BlockPos(3, 2, 1),
+                            serializePlayerData(sourceData),
+                            sourceData.getEntity().registryAccess()
+                    );
+                })
+                .thenExecuteAfter(5, () -> {
+                    MKPlayerData restoredData = MKCore.getPlayerOrThrow(restoredHolder[0]);
+                    PersistedAbilityRuntimeState restoredSnapshot = MKCore.getAbilityRuntimeService()
+                            .capturePersonaRuntime(restoredData.getPersonaManager().getActivePersona());
+                    helper.assertTrue(restoredSnapshot.cooldowns().stream()
+                                    .anyMatch(entry -> COOLDOWN_PROBE_ABILITY.equals(entry.abilityId()) && "ability".equals(entry.key())),
+                            "restored player should rebuild the abilities2 cooldown entry in live runtime state");
+                    InvocationResult restoredResult = MKCore.getAbilityRuntimeService().executeLoadoutAbility(
+                            restoredData,
+                            restoredData,
+                            AbilityGroupId.Basic,
+                            COOLDOWN_PROBE_ABILITY
+                    );
+                    helper.assertFalse(restoredResult.started(),
+                            "restored player should still be server-gated by the serialized abilities2 cooldown");
+                    helper.assertValueEqual(restoredResult.failureReason(), FailureReason.ON_COOLDOWN,
+                            "serialized abilities2 cooldown restore failure reason");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void serializedToggleDefinitionRestoresAuraPulseAfterJoin(GameTestHelper helper) {
+        Player source = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData sourceData = MKCore.getPlayerOrThrow(source);
+
+        helper.assertTrue(sourceData.getAbilities().learnAbilityDefinition(RESTORING_AURA_ABILITY, AbilitySource.ADMIN),
+                "serialized toggle restore test should learn the restoring aura first");
+        sourceData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlots(1);
+        sourceData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(0, RESTORING_AURA_ABILITY);
+
+        Player[] restoredHolder = new Player[1];
+        float[] restoredStartingHealth = new float[1];
+        helper.startSequence()
+                .thenExecute(() -> {
+                    source.setHealth(source.getMaxHealth() - 6.0f);
+                    InvocationResult enableResult = MKCore.getAbilityRuntimeService().executeLoadoutAbility(
+                            sourceData,
+                            sourceData,
+                            AbilityGroupId.Basic,
+                            RESTORING_AURA_ABILITY
+                    );
+                    helper.assertTrue(enableResult.started(),
+                            "restoring aura should enable before serialization");
+                })
+                .thenExecuteAfter(35, () -> {
+                    Player restored = createDeserializedTestPlayer(
+                            helper,
+                            new BlockPos(3, 2, 1),
+                            serializePlayerData(sourceData),
+                            sourceData.getEntity().registryAccess()
+                    );
+                    restored.setHealth(restored.getMaxHealth() - 4.0f);
+                    restoredHolder[0] = restored;
+                    restoredStartingHealth[0] = restored.getHealth();
+                })
+                .thenExecuteAfter(10, () -> {
+                    helper.assertTrue(restoredHolder[0].getHealth() > restoredStartingHealth[0],
+                            "serialized toggle restore should resume aura pulses after the restored player joins");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void equippedItemPassiveDefinitionInstallsAndRemovesReactionRuntime(GameTestHelper helper) {
         Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
         Player target = createTestPlayer(helper, new BlockPos(3, 2, 1));
@@ -680,6 +779,26 @@ public class MKAbilities2RuntimeGameTests {
         ItemStack stack = new ItemStack(item);
         ItemGrantedAbility.setAbility(stack, abilityId);
         return stack;
+    }
+
+    private static CompoundTag serializePlayerData(MKPlayerData playerData) {
+        return playerData.serializeNBT(playerData.getEntity().registryAccess());
+    }
+
+    private static Player createDeserializedTestPlayer(GameTestHelper helper,
+                                                       BlockPos relativePos,
+                                                       CompoundTag serialized,
+                                                       HolderLookup.Provider provider) {
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        BlockPos absolutePos = helper.absolutePos(relativePos);
+        player.moveTo(absolutePos.getX() + 0.5, absolutePos.getY(), absolutePos.getZ() + 0.5, 0.0f, 0.0f);
+        MKPlayerData playerData = MKCore.getPlayerOrThrow(player);
+        playerData.deserializeNBT(provider, serialized);
+        if (helper.getLevel().getEntity(player.getUUID()) == null) {
+            helper.getLevel().addFreshEntity(player);
+        }
+        playerData.getPersonaManager().onJoinLevel();
+        return player;
     }
 
     private static void beginBlocking(Player player) {
