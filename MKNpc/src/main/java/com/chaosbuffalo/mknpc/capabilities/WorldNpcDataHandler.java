@@ -46,7 +46,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
 
     private final HashMap<UUID, WorldPermanentSpawnConfiguration> worldPermanentSpawnConfigurations;
     private final HashMap<UUID, MKStructureEntry> structureIndex;
-    private final HashMap<ResourceLocation, List<UUID>> structureToInstanceIndex;
+    private final HashMap<ResourceLocation, Set<UUID>> structureToInstanceIndex;
     private final HashMap<UUID, QuestChainInstance> quests;
     private final HashMap<UUID, NotableChestEntry> notableChests;
     private final HashMap<UUID, NotableNpcEntry> notableNpcs;
@@ -234,7 +234,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     }
 
     private void indexStructureEntry(MKStructureEntry structureEntry) {
-        structureToInstanceIndex.computeIfAbsent(structureEntry.getStructureName(), key -> new ArrayList<>())
+        structureToInstanceIndex.computeIfAbsent(structureEntry.getStructureName(), key -> new HashSet<>())
                 .add(structureEntry.getStructureId());
     }
 
@@ -298,12 +298,12 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     }
 
     protected boolean hasStructureInstance(ResourceLocation structId, UUID instanceId) {
-        List<UUID> instances = structureToInstanceIndex.get(structId);
+        Set<UUID> instances = structureToInstanceIndex.get(structId);
         return instances != null && instances.contains(instanceId);
     }
 
     protected boolean isStructureIndexed(ResourceLocation structureName) {
-        List<UUID> instances = structureToInstanceIndex.get(structureName);
+        Set<UUID> instances = structureToInstanceIndex.get(structureName);
         return instances != null && !instances.isEmpty();
     }
 
