@@ -283,7 +283,12 @@ public class EntityEffectHandler {
     public boolean isEffectActive(MKEffect effect) {
         if (!hasEffects())
             return false;
-        return sources.values().stream().anyMatch(s -> s.isEffectActive(effect));
+        for (EffectSource source : sources.values()) {
+            if (source.isEffectActive(effect)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isEffectActive(MKEffect effect, UUID sourceId) {
