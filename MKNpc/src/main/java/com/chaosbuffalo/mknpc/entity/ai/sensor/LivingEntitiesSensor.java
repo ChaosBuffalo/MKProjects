@@ -11,7 +11,6 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class LivingEntitiesSensor extends Sensor<MKEntity> {
 
@@ -26,18 +25,28 @@ public class LivingEntitiesSensor extends Sensor<MKEntity> {
         entities.sort(Comparator.comparingDouble(entityIn::distanceToSqr));
         Brain<?> brain = entityIn.getBrain();
 
-        Map<Targeting.TargetRelation, List<LivingEntity>> groups = entities.stream()
-                .collect(Collectors.groupingBy(other -> Targeting.getTargetRelation(entityIn, other)));
+        List<LivingEntity> enemies = new ArrayList<>();
+        List<LivingEntity> friends = new ArrayList<>();
+        for (LivingEntity other : entities) {
+            Targeting.TargetRelation relation = Targeting.getTargetRelation(entityIn, other);
+            if (relation == Targeting.TargetRelation.ENEMY) {
+                enemies.add(other);
+            } else if (relation == Targeting.TargetRelation.FRIEND) {
+                friends.add(other);
+            }
+        }
+        friends.sort(this::sortByHealth);
 
-        List<LivingEntity> enemies = groups.getOrDefault(Targeting.TargetRelation.ENEMY, Collections.emptyList());
-        List<LivingEntity> friends = groups.getOrDefault(Targeting.TargetRelation.FRIEND, Collections.emptyList())
-                .stream()
-                .sorted(this::sortByHealth)
-                .collect(Collectors.toList());
+        List<LivingEntity> visibleEnemies = new ArrayList<>();
+        for (LivingEntity enemy : enemies) {
+            if (entityIn.getSensing().hasLineOfSight(enemy)) {
+                visibleEnemies.add(enemy);
+            }
+        }
+
         brain.setMemory(MKMemoryModuleTypes.ENEMIES.get(), enemies);
         brain.setMemory(MKMemoryModuleTypes.ALLIES.get(), friends);
-        brain.setMemory(MKMemoryModuleTypes.VISIBLE_ENEMIES.get(),
-                enemies.stream().filter(x -> entityIn.getSensing().hasLineOfSight(x)).toList());
+        brain.setMemory(MKMemoryModuleTypes.VISIBLE_ENEMIES.get(), visibleEnemies);
     }
 
     private int sortByHealth(LivingEntity friend, LivingEntity other) {
