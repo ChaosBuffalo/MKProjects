@@ -57,15 +57,21 @@ public class Targeting {
         UNHANDLED
     }
 
+    private static final EnumSet<TargetRelation> FRIEND_SET  = EnumSet.of(TargetRelation.FRIEND);
+    private static final EnumSet<TargetRelation> ENEMY_SET   = EnumSet.of(TargetRelation.ENEMY);
+    private static final EnumSet<TargetRelation> NEUTRAL_SET = EnumSet.of(TargetRelation.NEUTRAL, TargetRelation.UNHANDLED);
+
     /**
-     * Compares two entities by UUID.
+     * Compares two entities by reference then by integer entity ID.
      *
      * @param first the first entity
      * @param second the second entity
-     * @return {@code true} if both entities are non-null and have the same UUID
+     * @return {@code true} if both entities are non-null and refer to the same entity
      */
     public static boolean areEntitiesEqual(Entity first, Entity second) {
-        return first != null && second != null && first.getUUID().compareTo(second.getUUID()) == 0;
+        if (first == null || second == null) return false;
+        if (first == second) return true;
+        return first.getId() == second.getId();
     }
 
     static TargetRelation defaultRelationCheck(Entity source, Entity target) {
@@ -107,17 +113,13 @@ public class Targeting {
             return TargetRelation.FRIEND;
         }
 
-        if (!relationCallbacks.isEmpty()) {
-            for (TargetRelationCallback func : relationCallbacks) {
-                TargetRelation result = func.func.apply(source, target);
-                if (result != TargetRelation.UNHANDLED) {
-                    return result;
-                }
+        for (TargetRelationCallback func : relationCallbacks) {
+            TargetRelation result = func.func.apply(source, target);
+            if (result != TargetRelation.UNHANDLED) {
+                return result;
             }
-        } else {
-            return defaultRelationCheck(source, target);
         }
-        return TargetRelation.UNHANDLED;
+        return defaultRelationCheck(source, target);
     }
 
     /**
@@ -159,16 +161,24 @@ public class Targeting {
     }
 
     private static Entity getRootEntity(Entity source) {
+        return getRootEntity(source, 5);
+    }
+
+    private static Entity getRootEntity(Entity source, int depth) {
+        if (depth == 0) {
+            return source;
+        }
+
         Entity controller = source.getControllingPassenger();
         if (controller != null) {
-            return getRootEntity(controller);
+            return getRootEntity(controller, depth - 1);
         }
 
         if (source instanceof OwnableEntity owned) {
             Entity owner = owned.getOwner();
             if (owner != null) {
                 // Owner is online, so use it for relationship checks
-                return getRootEntity(owner);
+                return getRootEntity(owner, depth - 1);
             } else if (owned.getOwnerUUID() != null) {
                 // Entity is owned, but the owner is offline
                 // If the owner if offline then there's not much we can do.
@@ -179,7 +189,7 @@ public class Targeting {
         if (source instanceof ITargetingOwner owned) {
             Entity owner = owned.getTargetingOwner();
             if (owner != null) {
-                return getRootEntity(owner);
+                return getRootEntity(owner, depth - 1);
             }
         }
 
@@ -213,7 +223,7 @@ public class Targeting {
      * @return {@code true} if the resolved relation is friendly
      */
     public static boolean isValidFriendly(Entity caster, Entity target) {
-        return validCheck(caster, target, EnumSet.of(TargetRelation.FRIEND));
+        return validCheck(caster, target, FRIEND_SET);
     }
 
     /**
@@ -224,7 +234,7 @@ public class Targeting {
      * @return {@code true} if the resolved relation is enemy
      */
     public static boolean isValidEnemy(Entity caster, Entity target) {
-        return validCheck(caster, target, EnumSet.of(TargetRelation.ENEMY));
+        return validCheck(caster, target, ENEMY_SET);
     }
 
     /**
@@ -235,6 +245,6 @@ public class Targeting {
      * @return {@code true} if the resolved relation is neutral or unhandled
      */
     public static boolean isValidNeutral(Entity caster, Entity target) {
-        return validCheck(caster, target, EnumSet.of(TargetRelation.NEUTRAL, TargetRelation.UNHANDLED));
+        return validCheck(caster, target, NEUTRAL_SET);
     }
 }
