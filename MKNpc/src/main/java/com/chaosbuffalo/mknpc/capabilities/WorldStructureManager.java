@@ -107,23 +107,25 @@ public class WorldStructureManager {
             }
         }
 
-        public boolean tick() {
-            Set<UUID> toRemove = new HashSet<>();
-            for (Map.Entry<UUID, ActivePlayerEntry> entry : activePlayers.entrySet()) {
+        public boolean isExpired() {
+            return ticksEmpty > PLAYER_TIMEOUT;
+        }
+
+        public void tick() {
+            activePlayers.entrySet().removeIf(entry -> {
                 entry.getValue().ticksSinceSeen++;
-                if (entry.getValue().ticksSinceSeen > PLAYER_TIMEOUT || !entry.getValue().player.isAlive()) {
-                    toRemove.add(entry.getKey());
+                boolean shouldRemove = entry.getValue().ticksSinceSeen > PLAYER_TIMEOUT
+                        || !entry.getValue().player.isAlive();
+                if (shouldRemove) {
+                    playerRemoveCallback.accept(entry.getValue().player, this);
                 }
-            }
-            for (UUID rem : toRemove) {
-                removePlayer(rem);
-            }
+                return shouldRemove;
+            });
             if (activePlayers.isEmpty()) {
                 ticksEmpty++;
             } else {
                 ticksEmpty = 0;
             }
-            return ticksEmpty > PLAYER_TIMEOUT;
         }
 
 
@@ -203,23 +205,23 @@ public class WorldStructureManager {
         if (activeStructures.isEmpty()) {
             return;
         }
-        Set<UUID> toRemove = new HashSet<>();
-        for (Map.Entry<UUID, ActiveStructure> entry : activeStructures.entrySet()) {
-            if (entry.getValue().tick()) {
-                toRemove.add(entry.getKey());
-            }
-            handler.getStructureData(entry.getValue().structureId).ifPresent(structureEntry -> {
+        activeStructures.forEach((id, struct) -> {
+            struct.tick();
+            handler.getStructureData(id).ifPresent(structureEntry -> {
                 structureEntry.getCooldownTracker().tick();
                 structureEntry.getStructure().ifPresent(structure ->
-                        structure.onActiveTick(structureEntry, entry.getValue(), handler.getWorld()));
+                        structure.onActiveTick(structureEntry, struct, handler.getWorld()));
             });
-        }
-        for (UUID structId : toRemove) {
-            handler.getStructureData(structId).ifPresent(structureEntry ->
-                    structureEntry.getStructure().ifPresent(structure ->
-                            structure.onStructureDeactivate(structureEntry,
-                                    activeStructures.get(structId), handler.getWorld())));
-            activeStructures.remove(structId);
-        }
+        });
+        activeStructures.entrySet().removeIf(entry -> {
+            if (entry.getValue().isExpired()) {
+                handler.getStructureData(entry.getKey()).ifPresent(structureEntry ->
+                        structureEntry.getStructure().ifPresent(structure ->
+                                structure.onStructureDeactivate(structureEntry,
+                                        entry.getValue(), handler.getWorld())));
+                return true;
+            }
+            return false;
+        });
     }
 }
