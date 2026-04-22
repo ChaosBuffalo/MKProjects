@@ -165,14 +165,17 @@ public class WorldNpcDataHandler implements IWorldNpcData {
                 // sort by number of possibilites so we pick the structure with the least possibilites first
                 var inOrder = possibilities.entrySet().stream().sorted(Comparator.comparingInt(x -> x.getValue().size())).toList();
                 // final choices
+                ChunkPos playerChunk = new ChunkPos(pos);
                 Map<QuestStructureLocation, MKStructureEntry> questStructures = new HashMap<>();
+                Set<UUID> chosenStructureIds = new HashSet<>();
                 for (var entry : inOrder) {
                     List<MKStructureEntry> byDistance = entry.getValue().stream().sorted(Comparator.comparingInt(
-                                    x -> new ChunkPos(pos).getChessboardDistance(x.getChunkPos())))
+                                    x -> playerChunk.getChessboardDistance(x.getChunkPos())))
                             .toList();
                     for (var found : byDistance) {
-                        if (questStructures.values().stream().noneMatch(x -> x.getStructureId().equals(found.getStructureId()))) {
+                        if (!chosenStructureIds.contains(found.getStructureId())) {
                             questStructures.put(entry.getKey(), found);
+                            chosenStructureIds.add(found.getStructureId());
                             break;
                         }
                     }
