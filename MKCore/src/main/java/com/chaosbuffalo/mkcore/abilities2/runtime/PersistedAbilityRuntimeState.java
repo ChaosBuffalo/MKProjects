@@ -147,6 +147,25 @@ public record PersistedAbilityRuntimeState(
         return tag.hasUUID(key) ? tag.getUUID(key) : null;
     }
 
+    private static void putOptionalVec3(CompoundTag tag, String key, @Nullable Vec3 value) {
+        if (value == null) {
+            return;
+        }
+        CompoundTag vecTag = new CompoundTag();
+        vecTag.putDouble("x", value.x());
+        vecTag.putDouble("y", value.y());
+        vecTag.putDouble("z", value.z());
+        tag.put(key, vecTag);
+    }
+
+    private static @Nullable Vec3 getOptionalVec3(CompoundTag tag, String key) {
+        if (!tag.contains(key, Tag.TAG_COMPOUND)) {
+            return null;
+        }
+        CompoundTag vecTag = tag.getCompound(key);
+        return new Vec3(vecTag.getDouble("x"), vecTag.getDouble("y"), vecTag.getDouble("z"));
+    }
+
     private static Tag encodeAbilityValue(HolderLookup.Provider provider, AbilityValue value) {
         return AbilityCodecs.ABILITY_VALUE_CODEC.encodeStart(provider.createSerializationContext(NbtOps.INSTANCE), value)
                 .getOrThrow();
@@ -314,11 +333,13 @@ public record PersistedAbilityRuntimeState(
             DeliveryKind kind,
             ResourceKey<Level> dimension,
             Vec3 point,
+            @Nullable Vec3 velocity,
             double radius,
             int delayTicksRemaining,
             int durationTicksRemaining,
             int tickIntervalTicks,
             int ticksUntilNextGroundTick,
+            int projectileTicksInAir,
             AbilityEventProvenance callbackProvenance
     ) {
         public DeliveryEntry {
@@ -332,11 +353,14 @@ public record PersistedAbilityRuntimeState(
             Objects.requireNonNull(kind, "kind");
             Objects.requireNonNull(dimension, "dimension");
             Objects.requireNonNull(point, "point");
+            if (kind == DeliveryKind.PROJECTILE && velocity == null) {
+                throw new IllegalArgumentException("Projectile delivery entries require a velocity");
+            }
             if (radius < 0.0) {
                 throw new IllegalArgumentException("Delivery entry radius must be >= 0");
             }
             if (delayTicksRemaining < 0 || durationTicksRemaining < 0 || tickIntervalTicks < 0
-                    || ticksUntilNextGroundTick < 0) {
+                    || ticksUntilNextGroundTick < 0 || projectileTicksInAir < 0) {
                 throw new IllegalArgumentException("Delivery entry tick values must be >= 0");
             }
             Objects.requireNonNull(callbackProvenance, "callbackProvenance");
@@ -359,11 +383,13 @@ public record PersistedAbilityRuntimeState(
             tag.putDouble("x", point.x);
             tag.putDouble("y", point.y);
             tag.putDouble("z", point.z);
+            putOptionalVec3(tag, "velocity", velocity);
             tag.putDouble("radius", radius);
             tag.putInt("delay_ticks_remaining", delayTicksRemaining);
             tag.putInt("duration_ticks_remaining", durationTicksRemaining);
             tag.putInt("tick_interval_ticks", tickIntervalTicks);
             tag.putInt("ticks_until_next_ground_tick", ticksUntilNextGroundTick);
+            tag.putInt("projectile_ticks_in_air", projectileTicksInAir);
             tag.put("callback_provenance", callbackProvenance.serialize());
             return tag;
         }
@@ -384,11 +410,13 @@ public record PersistedAbilityRuntimeState(
                     DeliveryKind.valueOf(tag.getString("kind")),
                     ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(tag.getString("dimension"))),
                     new Vec3(tag.getDouble("x"), tag.getDouble("y"), tag.getDouble("z")),
+                    getOptionalVec3(tag, "velocity"),
                     tag.getDouble("radius"),
                     tag.getInt("delay_ticks_remaining"),
                     tag.getInt("duration_ticks_remaining"),
                     tag.getInt("tick_interval_ticks"),
                     tag.getInt("ticks_until_next_ground_tick"),
+                    tag.getInt("projectile_ticks_in_air"),
                     Objects.requireNonNull(AbilityEventProvenance.deserialize(tag.getCompound("callback_provenance")))
             );
         }

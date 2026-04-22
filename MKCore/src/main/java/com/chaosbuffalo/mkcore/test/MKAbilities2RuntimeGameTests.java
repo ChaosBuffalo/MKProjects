@@ -83,6 +83,8 @@ public class MKAbilities2RuntimeGameTests {
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_gcd_probe_other");
     private static final ResourceLocation SPELL_SOURCE_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_firebolt");
+    private static final ResourceLocation AI_FIREBOLT_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_ai_firebolt");
     private static final ResourceLocation SELF_HEAL_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_self_heal");
     private static final ResourceLocation MENDING_CHANNEL_ABILITY =
@@ -1004,6 +1006,72 @@ public class MKAbilities2RuntimeGameTests {
                 .thenExecuteAfter(1, () -> {
                     helper.assertTrue(restoredHolder[0].getHealth() > restoredStartingHealth[0],
                             "serialized cloud restore should resume the next cloud pulse using the remaining delay");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void serializedProjectileDeliveryRestoresMidFlightImpactCallbacksAfterJoin(GameTestHelper helper) {
+        Player source = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        Player target = createTestPlayer(helper, new BlockPos(12, 2, 1));
+        MKPlayerData sourceData = MKCore.getPlayerOrThrow(source);
+        float startingHealth = target.getHealth();
+
+        Player[] restoredHolder = new Player[1];
+        helper.startSequence()
+                .thenExecute(() -> {
+                    InvocationResult result = MKCore.getAbilityRuntimeService().activateAiAbility(
+                            sourceData,
+                            sourceData,
+                            new AbilityReference(AI_FIREBOLT_ABILITY, null),
+                            "cast",
+                            new AbilityResolvedTargets(target.getUUID(), List.of(target.getUUID()), null, null, null)
+                    );
+                    helper.assertTrue(result.started(), "serialized projectile restore probe should start the AI firebolt");
+                })
+                .thenExecuteAfter(1, () -> {
+                    PersistedAbilityRuntimeState sourceSnapshot = MKCore.getAbilityRuntimeService()
+                            .capturePersonaRuntime(sourceData.getPersonaManager().getActivePersona());
+                    helper.assertTrue(sourceSnapshot.deliveries().stream()
+                                    .anyMatch(entry -> entry.abilityId().equals(AI_FIREBOLT_ABILITY)
+                                            && entry.kind() == DeliveryKind.PROJECTILE
+                                            && entry.velocity() != null),
+                            "serialized projectile restore probe should snapshot the mid-flight projectile delivery");
+
+                    AbilityProjectileEntity projectile = findProjectile(helper, source);
+                    CompoundTag serialized = serializePlayerData(sourceData);
+                    projectile.discard();
+                    source.discard();
+
+                    restoredHolder[0] = createDeserializedTestPlayer(
+                            helper,
+                            new BlockPos(1, 2, 1),
+                            serialized,
+                            sourceData.getEntity().registryAccess()
+                    );
+                })
+                .thenExecuteAfter(1, () -> {
+                    MKPlayerData restoredData = MKCore.getPlayerOrThrow(restoredHolder[0]);
+                    PersistedAbilityRuntimeState restoredSnapshot = MKCore.getAbilityRuntimeService()
+                            .capturePersonaRuntime(restoredData.getPersonaManager().getActivePersona());
+                    helper.assertTrue(restoredSnapshot.deliveries().stream()
+                                    .anyMatch(entry -> entry.abilityId().equals(AI_FIREBOLT_ABILITY)
+                                            && entry.kind() == DeliveryKind.PROJECTILE
+                                            && entry.velocity() != null),
+                            "serialized projectile restore should rebuild the mid-flight projectile runtime after join");
+                    helper.assertValueEqual(target.getHealth(), startingHealth,
+                            "serialized projectile restore should not replay the impact early on join");
+
+                    AbilityProjectileEntity restoredProjectile = findProjectile(helper, restoredHolder[0]);
+                    boolean handled = MKCore.getAbilityRuntimeService().handleProjectileImpact(
+                            restoredProjectile,
+                            restoredHolder[0],
+                            new EntityHitResult(target)
+                    );
+                    helper.assertTrue(handled,
+                            "serialized projectile restore should preserve the delivery callback runtime on the respawned projectile");
+                    helper.assertTrue(target.getHealth() < startingHealth,
+                            "serialized projectile restore should let the restored projectile impact callback damage the target");
                     helper.succeed();
                 });
     }

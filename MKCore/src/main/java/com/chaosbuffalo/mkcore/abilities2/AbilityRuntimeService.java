@@ -29,6 +29,7 @@ import com.chaosbuffalo.mkcore.events.PersonaEvent;
 import com.chaosbuffalo.mkcore.network.Ability2CastPacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceKey;
@@ -37,9 +38,11 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
@@ -894,7 +897,32 @@ public class AbilityRuntimeService {
     }
 
     private @Nullable PersistedAbilityRuntimeState.DeliveryEntry snapshotDelivery(DeliveryRuntime runtime) {
-        if (runtime.trackedEntityId() != null || runtime.point() == null) {
+        if (runtime.trackedEntityId() != null) {
+            Entity entity = findAnyEntity(runtime.trackedEntityId());
+            if (!(entity instanceof AbilityProjectileEntity projectile) || projectile.isRemoved() || projectile.isInGround()) {
+                return null;
+            }
+            return new PersistedAbilityRuntimeState.DeliveryEntry(
+                    runtime.ability().abilityId(),
+                    runtime.ability().grantId(),
+                    runtime.owner().stableSourceId(),
+                    runtime.casterEntityId(),
+                    runtime.grantParameterOverrides(),
+                    runtime.deliveryId(),
+                    runtime.kind(),
+                    runtime.dimension(),
+                    projectile.position(),
+                    projectile.getDeltaMovement(),
+                    runtime.radius(),
+                    runtime.delayTicksRemaining(),
+                    runtime.durationTicksRemaining(),
+                    runtime.tickIntervalTicks(),
+                    runtime.ticksUntilNextGroundTick(),
+                    projectile.getTicksInAir(),
+                    runtime.callbackProvenance().withSourceId(runtime.owner().stableSourceId())
+            );
+        }
+        if (runtime.point() == null) {
             return null;
         }
         return new PersistedAbilityRuntimeState.DeliveryEntry(
@@ -907,20 +935,18 @@ public class AbilityRuntimeService {
                 runtime.kind(),
                 runtime.dimension(),
                 runtime.point(),
+                null,
                 runtime.radius(),
                 runtime.delayTicksRemaining(),
                 runtime.durationTicksRemaining(),
                 runtime.tickIntervalTicks(),
                 runtime.ticksUntilNextGroundTick(),
+                0,
                 runtime.callbackProvenance().withSourceId(runtime.owner().stableSourceId())
         );
     }
 
     private void restoreDelivery(MKPlayerData ownerData, PersistedAbilityRuntimeState.DeliveryEntry entry) {
-        if (entry.kind() == DeliveryKind.PROJECTILE) {
-            return;
-        }
-
         PatchedAbilityDefinition definition = definitionResolver.resolvePatched(entry.abilityId());
         if (definition == null) {
             return;
@@ -946,6 +972,11 @@ public class AbilityRuntimeService {
         }
 
         closeDelivery(entry.stableSourceId());
+
+        if (entry.kind() == DeliveryKind.PROJECTILE) {
+            restoreProjectileDelivery(entry, delivery, ownerData, casterData, level);
+            return;
+        }
 
         AbilityReactionOwner owner = new AbilityReactionOwner(ReactionOwnerType.DELIVERY, entry.stableSourceId(),
                 entry.stableSourceId(), entry.abilityId());
@@ -977,6 +1008,84 @@ public class AbilityRuntimeService {
         );
         runtime.ticksUntilNextGroundTick(entry.ticksUntilNextGroundTick());
         activeDeliveries.put(runtime.instanceId(), runtime);
+    }
+
+    private void restoreProjectileDelivery(PersistedAbilityRuntimeState.DeliveryEntry entry,
+                                           AbilityDeliveryDefinition delivery,
+                                           IMKEntityData ownerData,
+                                           IMKEntityData casterData,
+                                           ServerLevel level) {
+        if (delivery.entityType() == null || entry.velocity() == null) {
+            return;
+        }
+
+        EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(delivery.entityType());
+        Entity entity = entityType != null ? entityType.create(level) : null;
+        if (!(entity instanceof AbilityProjectileEntity projectile)) {
+            return;
+        }
+
+        projectile.setUUID(entry.stableSourceId());
+        projectile.setOwner(casterData.getEntity());
+        projectile.moveTo(entry.point().x(), entry.point().y(), entry.point().z(), projectile.getYRot(), projectile.getXRot());
+        projectile.setDeltaMovement(entry.velocity());
+        projectile.setAbilityId(entry.abilityId());
+        applyRestoredProjectileRenderItem(projectile, delivery);
+        projectile.setEventProvenance(entry.callbackProvenance().withSourceId(entry.stableSourceId()));
+        projectile.setDoAirProc(delivery.onAirTickActivationId() != null);
+        if (delivery.onAirTickActivationId() != null) {
+            projectile.setAirProcTime(1);
+            projectile.setTicksInAir(entry.projectileTicksInAir());
+        }
+        projectile.setDoGroundProc(delivery.onGroundTickActivationId() != null);
+        if (delivery.onGroundTickActivationId() != null) {
+            projectile.setGroundProcTime(1);
+        }
+        level.addFreshEntity(projectile);
+
+        AbilityReactionOwner owner = new AbilityReactionOwner(ReactionOwnerType.DELIVERY, entry.stableSourceId(),
+                entry.stableSourceId(), entry.abilityId());
+        reactionOwnerRuntime.put(owner, new ReactionOwnerRuntime(
+                ownerData.getEntity().getUUID(),
+                casterData.getEntity().getUUID()
+        ));
+        activeDeliveries.put(entry.stableSourceId(), new DeliveryRuntime(
+                entry.stableSourceId(),
+                projectile.getUUID(),
+                level.dimension(),
+                owner,
+                new AbilityReference(entry.abilityId(), entry.grantId()),
+                entry.grantParameterOverrides(),
+                ownerData.getEntity().getUUID(),
+                casterData.getEntity().getUUID(),
+                entry.deliveryId(),
+                entry.kind(),
+                entry.callbackProvenance().withSourceId(entry.stableSourceId()),
+                null,
+                entry.radius(),
+                entry.delayTicksRemaining(),
+                entry.durationTicksRemaining(),
+                entry.tickIntervalTicks(),
+                delivery.onImpactActivationId(),
+                delivery.onAirTickActivationId(),
+                delivery.onGroundTickActivationId()
+        ));
+    }
+
+    private void applyRestoredProjectileRenderItem(AbilityProjectileEntity projectile, AbilityDeliveryDefinition delivery) {
+        ResourceLocation renderItemId = delivery.renderItem();
+        if (renderItemId == null) {
+            projectile.setItem(ItemStack.EMPTY);
+            return;
+        }
+
+        if (!BuiltInRegistries.ITEM.containsKey(renderItemId)) {
+            MKCore.LOGGER.warn("abilities2 projectile delivery referenced unknown render item {}", renderItemId);
+            projectile.setItem(ItemStack.EMPTY);
+            return;
+        }
+
+        projectile.setItem(new ItemStack(BuiltInRegistries.ITEM.get(renderItemId)));
     }
 
     private @Nullable AbilityRuntimePersonaExtension getRuntimeExtension(Persona persona) {
@@ -1411,7 +1520,7 @@ public class AbilityRuntimeService {
     }
 
     public boolean handleProjectileImpact(AbilityProjectileEntity projectile, LivingEntity caster, HitResult result) {
-        DeliveryRuntime runtime = activeDeliveries.get(projectile.getUUID());
+        DeliveryRuntime runtime = resolveProjectileRuntime(projectile);
         if (runtime == null) {
             return false;
         }
@@ -1447,7 +1556,7 @@ public class AbilityRuntimeService {
     }
 
     public boolean handleProjectileAirTick(AbilityProjectileEntity projectile, LivingEntity caster) {
-        DeliveryRuntime runtime = activeDeliveries.get(projectile.getUUID());
+        DeliveryRuntime runtime = resolveProjectileRuntime(projectile);
         if (runtime == null || runtime.onAirTickActivationId() == null) {
             return false;
         }
@@ -1474,7 +1583,7 @@ public class AbilityRuntimeService {
     }
 
     public boolean handleProjectileGroundTick(AbilityProjectileEntity projectile, LivingEntity caster) {
-        DeliveryRuntime runtime = activeDeliveries.get(projectile.getUUID());
+        DeliveryRuntime runtime = resolveProjectileRuntime(projectile);
         if (runtime == null || runtime.onGroundTickActivationId() == null) {
             return false;
         }
@@ -1498,6 +1607,21 @@ public class AbilityRuntimeService {
                     runtime.onGroundTickActivationId(), runtime.ability().abilityId(), callbackResult.failureReason());
         }
         return false;
+    }
+
+    private @Nullable DeliveryRuntime resolveProjectileRuntime(AbilityProjectileEntity projectile) {
+        DeliveryRuntime direct = activeDeliveries.get(projectile.getUUID());
+        if (direct != null) {
+            return direct;
+        }
+        for (DeliveryRuntime runtime : activeDeliveries.values()) {
+            if (runtime.kind() == DeliveryKind.PROJECTILE
+                    && runtime.trackedEntityId() != null
+                    && runtime.trackedEntityId().equals(projectile.getUUID())) {
+                return runtime;
+            }
+        }
+        return null;
     }
 
     private void startAuraPulse(ToggleRuntime runtime, IMKEntityData ownerData, IMKEntityData casterData) {
