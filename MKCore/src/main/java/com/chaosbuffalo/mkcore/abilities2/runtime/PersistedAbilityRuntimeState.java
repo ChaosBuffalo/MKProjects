@@ -339,6 +339,7 @@ public record PersistedAbilityRuntimeState(
             int durationTicksRemaining,
             int tickIntervalTicks,
             int ticksUntilNextGroundTick,
+            int projectileEntityTickCount,
             boolean projectileInGround,
             int projectileTicksInGround,
             int projectileTicksInAir,
@@ -362,7 +363,8 @@ public record PersistedAbilityRuntimeState(
                 throw new IllegalArgumentException("Delivery entry radius must be >= 0");
             }
             if (delayTicksRemaining < 0 || durationTicksRemaining < 0 || tickIntervalTicks < 0
-                    || ticksUntilNextGroundTick < 0 || projectileTicksInGround < 0 || projectileTicksInAir < 0) {
+                    || ticksUntilNextGroundTick < 0 || projectileEntityTickCount < 0
+                    || projectileTicksInGround < 0 || projectileTicksInAir < 0) {
                 throw new IllegalArgumentException("Delivery entry tick values must be >= 0");
             }
             Objects.requireNonNull(callbackProvenance, "callbackProvenance");
@@ -391,6 +393,7 @@ public record PersistedAbilityRuntimeState(
             tag.putInt("duration_ticks_remaining", durationTicksRemaining);
             tag.putInt("tick_interval_ticks", tickIntervalTicks);
             tag.putInt("ticks_until_next_ground_tick", ticksUntilNextGroundTick);
+            tag.putInt("projectile_entity_tick_count", projectileEntityTickCount);
             tag.putBoolean("projectile_in_ground", projectileInGround);
             tag.putInt("projectile_ticks_in_ground", projectileTicksInGround);
             tag.putInt("projectile_ticks_in_air", projectileTicksInAir);
@@ -420,6 +423,7 @@ public record PersistedAbilityRuntimeState(
                     tag.getInt("duration_ticks_remaining"),
                     tag.getInt("tick_interval_ticks"),
                     tag.getInt("ticks_until_next_ground_tick"),
+                    tag.getInt("projectile_entity_tick_count"),
                     tag.getBoolean("projectile_in_ground"),
                     tag.getInt("projectile_ticks_in_ground"),
                     tag.getInt("projectile_ticks_in_air"),

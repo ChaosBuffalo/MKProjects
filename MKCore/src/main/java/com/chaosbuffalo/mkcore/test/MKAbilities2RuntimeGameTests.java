@@ -1148,6 +1148,72 @@ public class MKAbilities2RuntimeGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void serializedProjectileDeliveryRestoresRemainingLifetimeAfterJoin(GameTestHelper helper) {
+        Player source = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData sourceData = MKCore.getPlayerOrThrow(source);
+
+        Player[] restoredHolder = new Player[1];
+        helper.startSequence()
+                .thenExecute(() -> {
+                    InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                            sourceData,
+                            sourceData,
+                            new AbilityReference(PROJECTILE_GROUND_ABILITY, null),
+                            "cast",
+                            null,
+                            null,
+                            null,
+                            false,
+                            false
+                    ));
+                    helper.assertTrue(result.started(), "serialized projectile lifetime restore probe should start");
+
+                    AbilityProjectileEntity projectile = findProjectile(helper, source);
+                    BlockPos groundedPos = helper.absolutePos(new BlockPos(4, 2, 1));
+                    helper.getLevel().setBlock(groundedPos, Blocks.STONE.defaultBlockState(), 3);
+                    projectile.moveTo(groundedPos.getX() + 0.5, groundedPos.getY() + 0.5, groundedPos.getZ() + 0.5,
+                            projectile.getYRot(), projectile.getXRot());
+                    projectile.setDeltaMovement(Vec3.ZERO);
+                    projectile.restoreGroundedState(0);
+                    projectile.restoreTickCount(99);
+
+                    PersistedAbilityRuntimeState sourceSnapshot = MKCore.getAbilityRuntimeService()
+                            .capturePersonaRuntime(sourceData.getPersonaManager().getActivePersona());
+                    helper.assertTrue(sourceSnapshot.deliveries().stream()
+                                    .anyMatch(entry -> entry.abilityId().equals(PROJECTILE_GROUND_ABILITY)
+                                            && entry.kind() == DeliveryKind.PROJECTILE
+                                            && entry.projectileEntityTickCount() == 99),
+                            "serialized projectile lifetime restore probe should snapshot the remaining projectile lifetime");
+
+                    CompoundTag serialized = serializePlayerData(sourceData);
+                    projectile.discard();
+                    source.discard();
+
+                    restoredHolder[0] = createDeserializedTestPlayer(
+                            helper,
+                            new BlockPos(1, 2, 1),
+                            serialized,
+                            sourceData.getEntity().registryAccess()
+                    );
+                })
+                .thenExecuteAfter(1, () -> {
+                    List<AbilityProjectileEntity> restoredProjectiles = helper.getLevel().getEntitiesOfClass(
+                            AbilityProjectileEntity.class,
+                            restoredHolder[0].getBoundingBox().inflate(8.0)
+                    );
+                    helper.assertTrue(restoredProjectiles.isEmpty(),
+                            "serialized projectile lifetime restore should preserve the remaining lifetime instead of resetting the projectile age");
+
+                    PersistedAbilityRuntimeState restoredSnapshot = MKCore.getAbilityRuntimeService()
+                            .capturePersonaRuntime(MKCore.getPlayerOrThrow(restoredHolder[0]).getPersonaManager().getActivePersona());
+                    helper.assertTrue(restoredSnapshot.deliveries().stream()
+                                    .noneMatch(entry -> entry.abilityId().equals(PROJECTILE_GROUND_ABILITY)),
+                            "serialized projectile lifetime restore should clear the delivery runtime once the restored projectile expires");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void equippedItemPassiveDefinitionInstallsAndRemovesReactionRuntime(GameTestHelper helper) {
         Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
         Player target = createTestPlayer(helper, new BlockPos(3, 2, 1));

@@ -918,6 +918,7 @@ public class AbilityRuntimeService {
                     runtime.durationTicksRemaining(),
                     runtime.tickIntervalTicks(),
                     runtime.ticksUntilNextGroundTick(),
+                    projectile.tickCount,
                     projectile.isInGround(),
                     projectile.getTicksInGround(),
                     projectile.getTicksInAir(),
@@ -943,6 +944,7 @@ public class AbilityRuntimeService {
                 runtime.durationTicksRemaining(),
                 runtime.tickIntervalTicks(),
                 runtime.ticksUntilNextGroundTick(),
+                0,
                 false,
                 0,
                 0,
@@ -1036,6 +1038,7 @@ public class AbilityRuntimeService {
         projectile.setAbilityId(entry.abilityId());
         applyRestoredProjectileRenderItem(projectile, delivery);
         projectile.setEventProvenance(entry.callbackProvenance().withSourceId(entry.stableSourceId()));
+        projectile.restoreTickCount(entry.projectileEntityTickCount());
         projectile.setDoAirProc(delivery.onAirTickActivationId() != null);
         if (delivery.onAirTickActivationId() != null) {
             projectile.setAirProcTime(1);

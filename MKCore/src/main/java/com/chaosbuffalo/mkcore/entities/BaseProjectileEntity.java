@@ -149,6 +149,10 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
         this.ticksInAir = 0;
     }
 
+    public void restoreTickCount(int tickCount) {
+        this.tickCount = Math.max(0, tickCount);
+    }
+
     public void setDoAirProc(boolean newVal) {
         this.doAirProc = newVal;
     }
