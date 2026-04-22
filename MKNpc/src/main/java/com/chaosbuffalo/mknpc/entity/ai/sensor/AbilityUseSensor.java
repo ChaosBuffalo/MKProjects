@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityDecisionContext;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
+import com.chaosbuffalo.mkcore.core.AbilityExecutor;
 import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
@@ -30,17 +31,22 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
     protected void doTick(@Nonnull ServerLevel worldIn, MKEntity entityIn) {
         Optional<MKAbilityInfo> abilityOptional = entityIn.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get());
         int timeOut = entityIn.getBrain().getMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT.get()).orElse(0);
-        boolean isCasting = entityIn.getEntityDataCap().getAbilityExecutor().isCasting();
+        MKEntityData mkEntityData = entityIn.getEntityDataCap();
+        AbilityExecutor executor = mkEntityData.getAbilityExecutor();
+        boolean isCasting = executor.isCasting();
         if (abilityOptional.isPresent() && !isCasting && timeOut <= 20) {
             entityIn.getBrain().setMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT.get(), timeOut + 1);
             return;
         }
 
-        MKEntityData mkEntityData = entityIn.getEntityDataCap();
+        if (isCasting || entityIn.isBlocking() || executor.isOnGlobalCooldown()) {
+            return;
+        }
+
         AbilityDecisionContext context = createAbilityDecisionContext(entityIn);
         for (MKAbilityInfo abilityInfo : mkEntityData.getAbilities().getAbilitiesPriorityOrder()) {
             MKAbility mkAbility = abilityInfo.getAbility();
-            if (!mkEntityData.getAbilityExecutor().canActivateAbility(abilityInfo))
+            if (!executor.canActivateAbility(abilityInfo))
                 continue;
 
             AbilityTargetingDecision targetSelection = mkAbility.getUseCondition().getDecision(context);
