@@ -123,9 +123,8 @@ public class WorldNpcDataHandler implements IWorldNpcData {
 
     @Override
     public boolean hasEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute, UUID spawnId) {
-        return worldPermanentSpawnConfigurations.containsKey(spawnId) &&
-                worldPermanentSpawnConfigurations.get(spawnId).hasAttributeEntry(
-                        definition.getDefinitionName(), attribute.getName());
+        WorldPermanentSpawnConfiguration config = worldPermanentSpawnConfigurations.get(spawnId);
+        return config != null && config.hasAttributeEntry(definition.getDefinitionName(), attribute.getName());
     }
 
     public static UUID getSpawnIdForEntity(Entity entity) {
