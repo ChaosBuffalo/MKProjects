@@ -37,9 +37,9 @@ public class EntityEffectHandler {
             this.sourceId = sourceId;
         }
 
-        public void tick() {
+        public boolean tick() {
             if (isEmpty())
-                return;
+                return false;
 
             for (MKActiveEffect active : activeEffectMap.values()) {
                 MKEffectTickAction action = active.tick(entityData);
@@ -55,10 +55,12 @@ public class EntityEffectHandler {
             }
             pendingUpdates.clear();
 
+            boolean hadRemovals = !pendingRemovals.isEmpty();
             for (MKActiveEffect active : pendingRemovals) {
                 removeEffectInstance(active);
             }
             pendingRemovals.clear();
+            return hadRemovals;
         }
 
         private void removeEffectInstance(MKActiveEffect expiredInstance) {
@@ -255,9 +257,14 @@ public class EntityEffectHandler {
         if (!hasEffects() || !canTick())
             return;
 
-        sources.values().forEach(EffectSource::tick);
+        boolean anyRemovals = false;
+        for (EffectSource source : sources.values()) {
+            anyRemovals |= source.tick();
+        }
 
-        checkEmpty();
+        if (anyRemovals) {
+            checkEmpty();
+        }
     }
 
     public void onJoinLevel() {
