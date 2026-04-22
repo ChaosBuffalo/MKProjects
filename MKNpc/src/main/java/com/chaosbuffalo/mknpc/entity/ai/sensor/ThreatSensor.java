@@ -19,6 +19,8 @@ public class ThreatSensor extends Sensor<MKEntity> {
     private static final float ADD_THREAT = 125.0f;
     private static final float REMOVE_DIST_2 = 10000.0f;
 
+    private final List<Map.Entry<LivingEntity, ThreatMapEntry>> sortedThreat = new ArrayList<>();
+    private final List<LivingEntity> threatList = new ArrayList<>();
 
     private float getAggroDistanceForEntity(LivingEntity entity) {
         double aggroDist = entity.getAttributeValue(MKNpcAttributes.AGGRO_RANGE);
@@ -57,9 +59,10 @@ public class ThreatSensor extends Sensor<MKEntity> {
                 ThreatMapEntry threat = entry.getValue().addThreat((1.0f - (dist2 / THREAT_FALLOFF_2)) * MAX_THREAT_FROM_DISTANCE);
                 return threat.getCurrentThreat() < 0 || dist2 > REMOVE_DIST_2 || !entry.getKey().isAlive();
             });
-            List<Map.Entry<LivingEntity, ThreatMapEntry>> sortedThreat = new ArrayList<>(threatMap.entrySet());
+            sortedThreat.clear();
+            sortedThreat.addAll(threatMap.entrySet());
             sortedThreat.sort(Comparator.comparingDouble(e -> -e.getValue().getCurrentThreat()));
-            List<LivingEntity> threatList = new ArrayList<>(sortedThreat.size());
+            threatList.clear();
             for (Map.Entry<LivingEntity, ThreatMapEntry> e : sortedThreat) {
                 threatList.add(e.getKey());
             }
