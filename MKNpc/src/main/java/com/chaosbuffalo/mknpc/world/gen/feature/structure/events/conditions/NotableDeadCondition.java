@@ -37,9 +37,9 @@ public class NotableDeadCondition extends StructureEventCondition {
             return false;
         }
         return allNotables ?
-                entry.getAllNotablesOfType(npcDefinition, level.registryAccess()).stream()
+                entry.getAllNotablesOfType(npcDefinition).stream()
                         .allMatch(x -> checkSpawnerDead(x, level)) :
-                entry.getAllNotablesOfType(npcDefinition, level.registryAccess())
+                entry.getAllNotablesOfType(npcDefinition)
                         .stream().anyMatch(x -> checkSpawnerDead(x, level));
     }
 

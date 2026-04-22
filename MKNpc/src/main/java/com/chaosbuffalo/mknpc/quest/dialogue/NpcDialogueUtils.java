@@ -42,7 +42,7 @@ public class NpcDialogueUtils {
         ResourceLocation defName = ResourceLocation.parse(splitArgs[2]);
         ResourceKey<NpcDefinition> defKey = ResourceKey.create(NpcRegistries.NPC_DEFINITIONS, defName);
         Optional<NotableNpcEntry> npc = parseData.questStructures.get(new QuestStructureLocation(structureName, name))
-                .getFirstNotableOfType(defKey, parseData.questChain.getLevel().registryAccess());
+                .getFirstNotableOfType(defKey);
         return npc.map(x -> String.format("{notable:%s}", x.getNotableId())).orElse("#notable.not_found#");
     }
 

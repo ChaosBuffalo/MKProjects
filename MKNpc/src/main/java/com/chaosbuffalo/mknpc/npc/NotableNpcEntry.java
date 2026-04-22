@@ -8,6 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 
@@ -54,6 +55,10 @@ public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
 
     public Component getName() {
         return name;
+    }
+
+    public ResourceKey<NpcDefinition> getDefinitionKey() {
+        return ResourceKey.create(NpcRegistries.NPC_DEFINITIONS, definition);
     }
 
     @Nullable

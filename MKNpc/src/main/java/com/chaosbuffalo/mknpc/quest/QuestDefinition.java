@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.CanStartQuestCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.StartQuestChainEffect;
+import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -64,6 +65,7 @@ public class QuestDefinition {
     private final ResourceLocation name;
     private final List<Quest> questChain;
     private final Map<String, Quest> questIndex;
+    private final Map<QuestStructureLocation, List<QuestObjective<?>>> objectivesByLocation;
     private boolean repeatable;
     private Component questName;
     private static final Component defaultQuestName = Component.literal("Default");
@@ -85,13 +87,18 @@ public class QuestDefinition {
         this.startQuestTree = startQuestTree;
         this.additionalNotables = additionalNotables;
         questIndex = new HashMap<>(quests.size());
-        quests.forEach(quest -> questIndex.put(quest.getQuestName(), quest));
+        objectivesByLocation = new HashMap<>();
+        quests.forEach(quest -> {
+            questIndex.put(quest.getQuestName(), quest);
+            indexObjectives(quest);
+        });
     }
 
     public QuestDefinition(ResourceKey<QuestDefinition> name) {
         this.name = name.location();
         this.questChain = new ArrayList<>();
         this.questIndex = new HashMap<>();
+        this.objectivesByLocation = new HashMap<>();
         this.requirements = new ArrayList<>();
         this.additionalNotables = new ArrayList<>();
         this.repeatable = false;
@@ -196,12 +203,21 @@ public class QuestDefinition {
         }
     }
 
+    private void indexObjectives(Quest quest) {
+        for (QuestObjective<?> obj : quest.getObjectives()) {
+            if (obj.getLocation() != null) {
+                objectivesByLocation.computeIfAbsent(obj.getLocation(), k -> new ArrayList<>()).add(obj);
+            }
+        }
+    }
+
     public void addQuest(Quest quest) {
         if (questIndex.containsKey(quest.getQuestName())) {
             MKNpc.LOGGER.error("Trying to add quest with existing quest name {} to quest definition: {}", quest.getQuestName(), name.toString());
         } else {
             questChain.add(quest);
             questIndex.put(quest.getQuestName(), quest);
+            indexObjectives(quest);
         }
     }
 
@@ -229,18 +245,13 @@ public class QuestDefinition {
         if (entry == null) {
             return false;
         }
-        boolean meetsRequires = questChain.stream()
-                .flatMap(x -> x.getObjectives().stream())
-                .filter(x -> x.getLocation() != null && x.getLocation().equals(location))
-                .allMatch(x -> x.isStructureRelevant(entry));
-        if (!meetsRequires) {
+        List<QuestObjective<?>> objectives = objectivesByLocation.get(location);
+        if (objectives != null && !objectives.stream().allMatch(x -> x.isStructureRelevant(entry))) {
             return false;
         }
         for (AdditionalNotable not : additionalNotables) {
-            if (not.location.equals(location)) {
-                if (!entry.hasNotableOfType(not.notableDef, entry.getWorldData().getWorld().registryAccess())) {
-                    return false;
-                }
+            if (not.location.equals(location) && !entry.hasNotableOfType(not.notableDef)) {
+                return false;
             }
         }
         return true;

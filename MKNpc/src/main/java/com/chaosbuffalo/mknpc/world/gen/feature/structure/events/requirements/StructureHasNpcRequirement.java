@@ -26,6 +26,6 @@ public class StructureHasNpcRequirement extends StructureEventRequirement{
 
     @Override
     public boolean meetsRequirements(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world) {
-        return entry.hasNpc(npcDefinition, world.registryAccess());
+        return entry.hasNpc(npcDefinition);
     }
 }

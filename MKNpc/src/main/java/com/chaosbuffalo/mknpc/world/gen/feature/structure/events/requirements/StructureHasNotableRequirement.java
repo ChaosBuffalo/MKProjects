@@ -26,6 +26,6 @@ public class StructureHasNotableRequirement extends StructureEventRequirement {
     @Override
     public boolean meetsRequirements(MKStructureEntry entry,
                                      WorldStructureManager.ActiveStructure activeStructure, Level level) {
-        return entry.hasNotableOfType(npcDefinition, level.registryAccess());
+        return entry.hasNotableOfType(npcDefinition);
     }
 }

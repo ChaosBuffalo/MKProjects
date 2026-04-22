@@ -126,7 +126,7 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
 
     @Override
     public boolean isStructureRelevant(MKStructureEntry entry) {
-        return location.getStructureId().equals(entry.getStructureName()) && entry.hasNpc(npcDefinition, entry.getWorldData().getWorld().registryAccess());
+        return location.getStructureId().equals(entry.getStructureName()) && entry.hasNpc(npcDefinition);
     }
 
     @Override

@@ -46,7 +46,7 @@ public class NotableFactionOverrideReward extends QuestReward {
         Optional<NotableNpcEntry> notable = context.questChain()
                 .getStructureId(location)
                 .flatMap(context.worldNpcData()::getStructureData)
-                .flatMap(entry -> entry.getFirstNotableOfType(npcDefinition, context.player().registryAccess()));
+                .flatMap(entry -> entry.getFirstNotableOfType(npcDefinition));
 
         if (notable.isEmpty()) {
             MKNpc.LOGGER.warn("Unable to resolve notable faction override reward target for quest {} at {} {}",

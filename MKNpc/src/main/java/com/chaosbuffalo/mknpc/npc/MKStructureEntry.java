@@ -98,48 +98,33 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         return notableChests.stream().anyMatch(x -> x.getLabel() != null && x.getLabel().equals(tag));
     }
 
-    public boolean hasNotableOfType(ResourceKey<NpcDefinition> npcDef, RegistryAccess registryAccess) {
-        return notables.stream().anyMatch(x -> {
-            var definition = x.getDefinition(registryAccess);
-            return definition != null && definition.getDefinitionKey().equals(npcDef);
-        });
+    public boolean hasNotableOfType(ResourceKey<NpcDefinition> npcDef) {
+        return notables.stream().anyMatch(x -> x.getDefinitionKey().equals(npcDef));
     }
 
-    public Optional<NotableNpcEntry> getFirstNotableOfType(ResourceKey<NpcDefinition> npcDef, RegistryAccess registryAccess) {
-        return notables.stream().filter(x -> {
-            var definition = x.getDefinition(registryAccess);
-            return definition != null && definition.getDefinitionKey().equals(npcDef);
-        }).findFirst();
+    public Optional<NotableNpcEntry> getFirstNotableOfType(ResourceKey<NpcDefinition> npcDef) {
+        return notables.stream().filter(x -> x.getDefinitionKey().equals(npcDef)).findFirst();
     }
 
-    public boolean hasAnyNotableOfTypes(Set<ResourceKey<NpcDefinition>> defs, RegistryAccess registryAccess) {
-        return notables.stream().anyMatch(x -> {
-            var definition = x.getDefinition(registryAccess);
-            return definition != null && defs.contains(definition.getDefinitionKey());
-        });
+    public boolean hasAnyNotableOfTypes(Set<ResourceKey<NpcDefinition>> defs) {
+        return notables.stream().anyMatch(x -> defs.contains(x.getDefinitionKey()));
     }
 
-    public boolean hasNpc(ResourceKey<NpcDefinition> npcDef, RegistryAccess registryAccess) {
+    public boolean hasNpc(ResourceKey<NpcDefinition> npcDef) {
         return mobs.contains(npcDef);
     }
 
-    public List<NotableNpcEntry> getNotablesOfTypes(Set<ResourceKey<NpcDefinition>> defs, RegistryAccess registryAccess) {
-        return notables.stream().filter(x -> {
-            var definition = x.getDefinition(registryAccess);
-            return definition != null && defs.contains(definition.getDefinitionKey());
-        }).collect(Collectors.toList());
+    public List<NotableNpcEntry> getNotablesOfTypes(Set<ResourceKey<NpcDefinition>> defs) {
+        return notables.stream().filter(x -> defs.contains(x.getDefinitionKey())).collect(Collectors.toList());
     }
 
-    public Optional<NotableNpcEntry> getRandomNotableFromTypes(Set<ResourceKey<NpcDefinition>> defs, RegistryAccess registryAccess) {
-        var matches = getNotablesOfTypes(defs, registryAccess);
+    public Optional<NotableNpcEntry> getRandomNotableFromTypes(Set<ResourceKey<NpcDefinition>> defs) {
+        var matches = getNotablesOfTypes(defs);
         return matches.isEmpty() ? Optional.empty() : Optional.of(matches.get(getWorldData().getWorld().getRandom().nextInt(matches.size())));
     }
 
-    public List<NotableNpcEntry> getAllNotablesOfType(ResourceKey<NpcDefinition> npcDef, RegistryAccess registryAccess) {
-        return notables.stream().filter(x -> {
-            var definition = x.getDefinition(registryAccess);
-            return definition != null && definition.getDefinitionKey().equals(npcDef);
-        }).collect(Collectors.toList());
+    public List<NotableNpcEntry> getAllNotablesOfType(ResourceKey<NpcDefinition> npcDef) {
+        return notables.stream().filter(x -> x.getDefinitionKey().equals(npcDef)).collect(Collectors.toList());
     }
 
     public Optional<NotableChestEntry> getFirstChestWithTag(String tag) {
