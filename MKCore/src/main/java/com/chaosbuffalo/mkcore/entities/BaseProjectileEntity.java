@@ -143,6 +143,12 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
         this.ticksInGround = newVal;
     }
 
+    public void restoreGroundedState(int ticksInGround) {
+        this.inGround = true;
+        this.ticksInGround = Math.max(0, ticksInGround);
+        this.ticksInAir = 0;
+    }
+
     public void setDoAirProc(boolean newVal) {
         this.doAirProc = newVal;
     }

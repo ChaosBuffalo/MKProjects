@@ -1,0 +1,105 @@
+{
+  "activations": {
+    "cast": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "entry_point": "cast",
+      "interrupt_policy": {
+        "on_damage": true,
+        "on_death": true,
+        "on_move": true
+      },
+      "kind": "manual",
+      "targeting": {
+        "type": "self"
+      }
+    },
+    "ground_proc": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "entry_point": "ground_proc",
+      "interrupt_policy": {
+        "on_death": true
+      },
+      "kind": "proc",
+      "targeting": {
+        "type": "self"
+      }
+    },
+    "impact_proc": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "entry_point": "impact_proc",
+      "interrupt_policy": {
+        "on_death": true
+      },
+      "kind": "proc",
+      "targeting": {
+        "type": "resolved"
+      }
+    }
+  },
+  "deliveries": {
+    "projectile": {
+      "entity_type": "mkcore:ability_projectile",
+      "kind": "projectile",
+      "on_ground_tick_activation_id": "ground_proc",
+      "render_item": "minecraft:snowball"
+    }
+  },
+  "entry_points": {
+    "cast": [
+      {
+        "type": "spawn_projectile",
+        "delivery": "projectile",
+        "speed": {
+          "kind": "constant",
+          "value": 1.0
+        },
+        "target": "self"
+      }
+    ],
+    "ground_proc": [
+      {
+        "type": "damage",
+        "amount": {
+          "kind": "parameter",
+          "parameter": "ground_damage"
+        },
+        "school": "mkcore:fire",
+        "target": "self"
+      }
+    ],
+    "impact_proc": []
+  },
+  "id": "mkcore:test_abilities2_projectile_ground",
+  "parameters": {
+    "ground_damage": {
+      "default_value": {
+        "kind": "float",
+        "value": 2.0
+      },
+      "description": "Ground callback damage",
+      "grant_overrideable": true,
+      "id": "ground_damage",
+      "kind": "float",
+      "patchable": true
+    }
+  },
+  "presentation": {
+    "description": "A self-targeted projectile fixture used to verify grounded projectile callback persistence.",
+    "name": "Abilities2 Projectile Ground"
+  },
+  "schools": [
+    "mkcore:evocation"
+  ],
+  "slot_family": "mkcore:slot_family.basic",
+  "tags": [
+    "mkcore:fire",
+    "mkcore:projectile",
+    "mkcore:spell"
+  ]
+}

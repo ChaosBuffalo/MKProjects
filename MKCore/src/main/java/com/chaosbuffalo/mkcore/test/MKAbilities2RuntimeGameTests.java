@@ -47,8 +47,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -1072,6 +1074,75 @@ public class MKAbilities2RuntimeGameTests {
                             "serialized projectile restore should preserve the delivery callback runtime on the respawned projectile");
                     helper.assertTrue(target.getHealth() < startingHealth,
                             "serialized projectile restore should let the restored projectile impact callback damage the target");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void serializedProjectileDeliveryRestoresGroundedCallbacksAfterJoin(GameTestHelper helper) {
+        Player source = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData sourceData = MKCore.getPlayerOrThrow(source);
+
+        Player[] restoredHolder = new Player[1];
+        float[] restoredStartingHealth = new float[1];
+        helper.startSequence()
+                .thenExecute(() -> {
+                    InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                            sourceData,
+                            sourceData,
+                            new AbilityReference(PROJECTILE_GROUND_ABILITY, null),
+                            "cast",
+                            null,
+                            null,
+                            null,
+                            false,
+                            false
+                    ));
+                    helper.assertTrue(result.started(), "serialized grounded projectile restore probe should start");
+
+                    AbilityProjectileEntity projectile = findProjectile(helper, source);
+                    BlockPos groundedPos = helper.absolutePos(new BlockPos(4, 2, 1));
+                    helper.getLevel().setBlock(groundedPos, Blocks.STONE.defaultBlockState(), 3);
+                    projectile.moveTo(groundedPos.getX() + 0.5, groundedPos.getY() + 0.5, groundedPos.getZ() + 0.5,
+                            projectile.getYRot(), projectile.getXRot());
+                    projectile.setDeltaMovement(Vec3.ZERO);
+                    projectile.restoreGroundedState(0);
+
+                    PersistedAbilityRuntimeState sourceSnapshot = MKCore.getAbilityRuntimeService()
+                            .capturePersonaRuntime(sourceData.getPersonaManager().getActivePersona());
+                    helper.assertTrue(sourceSnapshot.deliveries().stream()
+                                    .anyMatch(entry -> entry.abilityId().equals(PROJECTILE_GROUND_ABILITY)
+                                            && entry.kind() == DeliveryKind.PROJECTILE
+                                            && entry.projectileInGround()),
+                            "serialized grounded projectile restore probe should snapshot the grounded projectile delivery");
+
+                    CompoundTag serialized = serializePlayerData(sourceData);
+                    projectile.discard();
+                    source.discard();
+
+                    restoredHolder[0] = createDeserializedTestPlayer(
+                            helper,
+                            new BlockPos(1, 2, 1),
+                            serialized,
+                            sourceData.getEntity().registryAccess()
+                    );
+                    restoredStartingHealth[0] = restoredHolder[0].getHealth();
+                })
+                .thenExecuteAfter(1, () -> {
+                    MKPlayerData restoredData = MKCore.getPlayerOrThrow(restoredHolder[0]);
+                    PersistedAbilityRuntimeState restoredSnapshot = MKCore.getAbilityRuntimeService()
+                            .capturePersonaRuntime(restoredData.getPersonaManager().getActivePersona());
+                    helper.assertTrue(restoredSnapshot.deliveries().stream()
+                                    .anyMatch(entry -> entry.abilityId().equals(PROJECTILE_GROUND_ABILITY)
+                                            && entry.kind() == DeliveryKind.PROJECTILE
+                                            && entry.projectileInGround()),
+                            "serialized grounded projectile restore should rebuild the grounded projectile runtime after join");
+
+                    AbilityProjectileEntity restoredProjectile = findProjectile(helper, restoredHolder[0]);
+                    helper.assertTrue(restoredProjectile.isInGround(),
+                            "serialized grounded projectile restore should respawn the projectile in its grounded state");
+                    helper.assertTrue(restoredHolder[0].getHealth() < restoredStartingHealth[0],
+                            "serialized grounded projectile restore should resume the grounded callback after join");
                     helper.succeed();
                 });
     }

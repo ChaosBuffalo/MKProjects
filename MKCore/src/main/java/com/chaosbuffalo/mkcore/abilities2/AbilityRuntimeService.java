@@ -899,7 +899,7 @@ public class AbilityRuntimeService {
     private @Nullable PersistedAbilityRuntimeState.DeliveryEntry snapshotDelivery(DeliveryRuntime runtime) {
         if (runtime.trackedEntityId() != null) {
             Entity entity = findAnyEntity(runtime.trackedEntityId());
-            if (!(entity instanceof AbilityProjectileEntity projectile) || projectile.isRemoved() || projectile.isInGround()) {
+            if (!(entity instanceof AbilityProjectileEntity projectile) || projectile.isRemoved()) {
                 return null;
             }
             return new PersistedAbilityRuntimeState.DeliveryEntry(
@@ -918,6 +918,8 @@ public class AbilityRuntimeService {
                     runtime.durationTicksRemaining(),
                     runtime.tickIntervalTicks(),
                     runtime.ticksUntilNextGroundTick(),
+                    projectile.isInGround(),
+                    projectile.getTicksInGround(),
                     projectile.getTicksInAir(),
                     runtime.callbackProvenance().withSourceId(runtime.owner().stableSourceId())
             );
@@ -941,6 +943,8 @@ public class AbilityRuntimeService {
                 runtime.durationTicksRemaining(),
                 runtime.tickIntervalTicks(),
                 runtime.ticksUntilNextGroundTick(),
+                false,
+                0,
                 0,
                 runtime.callbackProvenance().withSourceId(runtime.owner().stableSourceId())
         );
@@ -1040,6 +1044,9 @@ public class AbilityRuntimeService {
         projectile.setDoGroundProc(delivery.onGroundTickActivationId() != null);
         if (delivery.onGroundTickActivationId() != null) {
             projectile.setGroundProcTime(1);
+        }
+        if (entry.projectileInGround()) {
+            projectile.restoreGroundedState(entry.projectileTicksInGround());
         }
         level.addFreshEntity(projectile);
 

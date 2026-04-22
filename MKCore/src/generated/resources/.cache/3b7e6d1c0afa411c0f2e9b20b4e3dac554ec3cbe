@@ -1,4 +1,4 @@
-// 1.21.1	2026-04-21T13:50:18.271422	Abilities2 Definitions: mkcore
+// 1.21.1	2026-04-21T18:49:29.326772	Abilities2 Definitions: mkcore
 9e69d2f2b0245e3179bc3532462134d3b7381236 data/mkcore/mkcore/ability_definitions/test_abilities2_ai_firebolt.json
 e99778cc88e6b7ff917618c05a47177a64c7f8e7 data/mkcore/mkcore/ability_definitions/test_abilities2_ai_self_heal.json
 21579ef3d50f839b0676d065bc8bb81ad6aeae3a data/mkcore/mkcore/ability_definitions/test_abilities2_cooldown_probe.json
@@ -11,6 +11,7 @@ ea34f9c9251509fa68ff5739cd92018e0131c5a6 data/mkcore/mkcore/ability_definitions/
 87b4af186335ee7a66448996355540b5ae7111d5 data/mkcore/mkcore/ability_definitions/test_abilities2_greater_self_heal.json
 ee6208a3aad0beefba3b86d1677964a99c7ad23b data/mkcore/mkcore/ability_definitions/test_abilities2_healing_cloud.json
 9230eeca9a5c46fd299704eeb361b33f9c84cfa6 data/mkcore/mkcore/ability_definitions/test_abilities2_mending_channel.json
+14aff5f40b0a02f7404737a02e03a304301ea78c data/mkcore/mkcore/ability_definitions/test_abilities2_projectile_ground.json
 ae0e6e8c46e750963e30c7f0792926085046f9a8 data/mkcore/mkcore/ability_definitions/test_abilities2_restoring_aura.json
 5f5ddb9dbd348430a247fa0314c62910409399a5 data/mkcore/mkcore/ability_definitions/test_abilities2_self_heal.json
 831646c915a894b07d60aed63bedc5c4e4a9e283 data/mkcore/mkcore/ability_definitions/test_abilities2_spell_crit_passive.json

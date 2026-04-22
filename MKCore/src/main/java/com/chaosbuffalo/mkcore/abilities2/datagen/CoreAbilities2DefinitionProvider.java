@@ -52,6 +52,7 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                 Map.of("amount", new AbilityValue.FloatValue(24.0f))
         ));
         add(createFirebolt());
+        add(createProjectileGround());
         add(createAiSelfHeal());
         add(createAiFirebolt());
         add(createCooldownProbe());
@@ -145,6 +146,56 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                 new AbilityAction.DamageAction(
                         AbilityAction.ActionTarget.PRIMARY_ENTITY,
                         new AbilityScalar.ParameterScalar("impact_damage"),
+                        CoreDamageTypes.FireDamage.getId()
+                )
+        ));
+        return builder.build();
+    }
+
+    private AbilityDefinitionData createProjectileGround() {
+        AbilityDefinitionBuilder builder = AbilityArchetypes.projectileSpell(
+                        MKCore.makeRL("test_abilities2_projectile_ground"),
+                        "Abilities2 Projectile Ground",
+                        "A self-targeted projectile fixture used to verify grounded projectile callback persistence.",
+                        AbilityDatagenKeys.TARGET_SELF,
+                        AbilityAction.ActionTarget.SELF,
+                        new AbilityScalar.ConstantScalar(1.0),
+                        new AbilityScalar.ConstantScalar(0.0)
+                )
+                .school(AbilityDatagenKeys.SCHOOL_EVOCATION)
+                .tag(AbilityDatagenKeys.TAG_FIRE)
+                .parameter(floatParameter("ground_damage", 2.0f, "Ground callback damage"));
+
+        builder.delivery(AbilityArchetypes.PROJECTILE_DELIVERY_ID, new AbilityDeliveryDefinition(
+                DeliveryKind.PROJECTILE,
+                CoreEntities.ABILITY_PROJECTILE_TYPE.getId(),
+                Items.SNOWBALL.builtInRegistryHolder().key().location(),
+                List.of(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "ground_proc"
+        ));
+        builder.activation("ground_proc", new AbilityActivationDefinition(
+                ActivationKind.PROC,
+                "ground_proc",
+                AbilityDatagenKeys.TARGET_SELF,
+                List.of(),
+                List.of(),
+                null,
+                0,
+                false,
+                AbilityArchetypes.INTERNAL_INTERRUPT,
+                InterruptRefundPolicy.NONE,
+                new ActivationBehavior.InstantBehavior()
+        ));
+        builder.entryPoint("ground_proc", List.of(
+                new AbilityAction.DamageAction(
+                        AbilityAction.ActionTarget.SELF,
+                        new AbilityScalar.ParameterScalar("ground_damage"),
                         CoreDamageTypes.FireDamage.getId()
                 )
         ));
