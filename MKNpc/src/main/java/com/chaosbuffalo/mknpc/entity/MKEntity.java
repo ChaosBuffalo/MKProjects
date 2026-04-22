@@ -1221,15 +1221,12 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     @Override
     public float getHighestThreat() {
-        return getBrain().getMemory(MKMemoryModuleTypes.THREAT_MAP.get()).map(x -> {
-            List<ThreatMapEntry> sorted = x.values().stream()
-                    .sorted(Comparator.comparingDouble(ThreatMapEntry::getCurrentThreat))
-                    .toList();
-            if (sorted.isEmpty()) {
-                return 0f;
-            }
-            return sorted.get(sorted.size() - 1).getCurrentThreat();
-        }).orElse(0f);
+        return getBrain().getMemory(MKMemoryModuleTypes.THREAT_MAP.get()).map(x ->
+            (float) x.values().stream()
+                    .mapToDouble(ThreatMapEntry::getCurrentThreat)
+                    .max()
+                    .orElse(0.0)
+        ).orElse(0f);
     }
 
 
