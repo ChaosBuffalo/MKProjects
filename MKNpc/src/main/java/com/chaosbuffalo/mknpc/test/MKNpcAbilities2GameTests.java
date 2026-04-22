@@ -16,9 +16,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.GameType;
+import net.minecraft.world.entity.EntityType;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -31,11 +29,13 @@ public class MKNpcAbilities2GameTests {
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_ai_self_heal");
     private static final ResourceLocation AI_FIREBOLT_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_ai_firebolt");
+    private static final ResourceLocation AI_FRIENDLY_HEAL_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_ai_friendly_heal");
 
     @GameTest(template = "player_data_phase0")
     public static void abilitySensorSelectsDefinitionBackedAiActivation(GameTestHelper helper) {
         MKSkeletonEntity skeleton = helper.spawn(MKNpcEntityTypes.SKELETON_TYPE.get(), new BlockPos(1, 2, 1));
-        Player target = createTestPlayer(helper, new BlockPos(4, 2, 1));
+        var target = helper.spawn(EntityType.VILLAGER, new BlockPos(4, 2, 1));
 
         helper.assertTrue(
                 skeleton.getEntityDataCap().getAbilities().learnAbilityDefinition(AI_FIREBOLT_ABILITY, 1, null),
@@ -57,6 +57,35 @@ public class MKNpcAbilities2GameTests {
                         .map(target::equals)
                         .orElse(false),
                 "sensor should set the resolved threat target as the active ability target");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void abilitySensorSelectsFriendlyDefinitionBackedAiActivation(GameTestHelper helper) {
+        MKSkeletonEntity skeleton = helper.spawn(MKNpcEntityTypes.SKELETON_TYPE.get(), new BlockPos(1, 2, 1));
+        MKSkeletonEntity ally = helper.spawn(MKNpcEntityTypes.SKELETON_TYPE.get(), new BlockPos(4, 2, 1));
+        var enemy = helper.spawn(EntityType.VILLAGER, new BlockPos(6, 2, 1));
+        ally.setHealth(ally.getMaxHealth() - 6.0f);
+
+        helper.assertTrue(
+                skeleton.getEntityDataCap().getAbilities().learnAbilityDefinition(AI_FRIENDLY_HEAL_ABILITY, 1, null),
+                "NPC should learn the definition-backed AI friendly heal"
+        );
+        skeleton.getBrain().setMemory(MKMemoryModuleTypes.ALLIES.get(), List.of(ally));
+        skeleton.getBrain().setMemory(MKMemoryModuleTypes.ENEMIES.get(), List.of(enemy));
+
+        new TestAbilityUseSensor().runTick(helper.getLevel(), skeleton);
+
+        NpcAbilitySelection selection = skeleton.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get()).orElse(null);
+        helper.assertTrue(selection != null, "sensor should select a friendly-targeted ability");
+        helper.assertTrue(selection.isDefinitionBacked(), "selected friendly ability should be definition-backed");
+        helper.assertValueEqual(selection.abilityId(), AI_FRIENDLY_HEAL_ABILITY, "selected abilities2 AI friendly heal");
+        helper.assertValueEqual(selection.movementSuggestion(), AbilityTargetingDecision.MovementSuggestion.STATIONARY,
+                "friendly-targeted abilities2 casts should keep the skeleton stationary");
+        helper.assertTrue(skeleton.getBrain().getMemory(MKAbilityMemories.ABILITY_TARGET.get())
+                        .map(ally::equals)
+                        .orElse(false),
+                "sensor should set the allied target for friendly-targeted abilities2 casts");
         helper.succeed();
     }
 
@@ -85,15 +114,31 @@ public class MKNpcAbilities2GameTests {
         helper.succeed();
     }
 
-    private static Player createTestPlayer(GameTestHelper helper, BlockPos relativePos) {
-        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        BlockPos absolutePos = helper.absolutePos(relativePos);
-        if (helper.getLevel().getEntity(player.getUUID()) == null) {
-            helper.getLevel().addFreshEntity(player);
-        }
-        player.moveTo(absolutePos.getX() + 0.5, absolutePos.getY(), absolutePos.getZ() + 0.5, 0.0f, 0.0f);
-        player.setHealth(player.getMaxHealth());
-        return player;
+    @GameTest(template = "player_data_phase0")
+    public static void useAbilityGoalExecutesFriendlyDefinitionBackedAiActivation(GameTestHelper helper) {
+        MKSkeletonEntity skeleton = helper.spawn(MKNpcEntityTypes.SKELETON_TYPE.get(), new BlockPos(1, 2, 1));
+        MKSkeletonEntity ally = helper.spawn(MKNpcEntityTypes.SKELETON_TYPE.get(), new BlockPos(4, 2, 1));
+        var enemy = helper.spawn(EntityType.VILLAGER, new BlockPos(6, 2, 1));
+        ally.setHealth(ally.getMaxHealth() - 6.0f);
+        float allyStartingHealth = ally.getHealth();
+
+        helper.assertTrue(
+                skeleton.getEntityDataCap().getAbilities().learnAbilityDefinition(AI_FRIENDLY_HEAL_ABILITY, 1, null),
+                "NPC should learn the definition-backed AI friendly heal"
+        );
+        skeleton.getBrain().setMemory(MKMemoryModuleTypes.ALLIES.get(), List.of(ally));
+        skeleton.getBrain().setMemory(MKMemoryModuleTypes.ENEMIES.get(), List.of(enemy));
+
+        new TestAbilityUseSensor().runTick(helper.getLevel(), skeleton);
+
+        UseAbilityGoal goal = new UseAbilityGoal(skeleton, false);
+        helper.assertTrue(goal.canUse(), "goal should accept the selected friendly-targeted abilities2 AI activation");
+        goal.start();
+
+        helper.assertTrue(ally.getHealth() > allyStartingHealth,
+                "starting the abilities2 AI friendly heal should restore health to the allied target");
+        goal.stop();
+        helper.succeed();
     }
 
     private static class TestAbilityUseSensor extends AbilityUseSensor {

@@ -23,7 +23,10 @@ import net.minecraft.world.entity.ai.sensing.Sensor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -120,24 +123,14 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
             return null;
         }
 
-        AbilityTargetingDecision.MovementSuggestion movementSuggestion = switch (execution.activation().targeting().type()) {
-            case "resolved" -> switch (AbilityTargeting.relation(execution.activation().targeting())) {
-                case ENEMY -> switch (entity.getCombatMoveType()) {
-                    case RANGE -> AbilityTargetingDecision.MovementSuggestion.KITE;
-                    case MELEE -> AbilityTargetingDecision.MovementSuggestion.MELEE;
-                    case STATIONARY -> AbilityTargetingDecision.MovementSuggestion.STATIONARY;
-                };
-                case ALL, FRIENDLY -> AbilityTargetingDecision.MovementSuggestion.STATIONARY;
-            };
-            case "none", "self" -> AbilityTargetingDecision.MovementSuggestion.STATIONARY;
-            default -> null;
-        };
-        if (movementSuggestion == null) {
+        LivingEntity targetEntity = resolveDefinitionTargetEntity(entity, context, execution.activation().targeting());
+        if (targetEntity == null) {
             return null;
         }
 
-        LivingEntity targetEntity = resolveDefinitionTargetEntity(entity, context, execution.activation().targeting());
-        if (targetEntity == null) {
+        AbilityTargetingDecision.MovementSuggestion movementSuggestion =
+                resolveDefinitionMovementSuggestion(entity, execution.activation().targeting(), targetEntity);
+        if (movementSuggestion == null) {
             return null;
         }
 
@@ -155,13 +148,84 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
         return switch (targeting.type()) {
             case "none", "self" -> entity;
             case "resolved" -> switch (AbilityTargeting.relation(targeting)) {
-                case ENEMY -> context.getThreatTarget() != null ? context.getThreatTarget()
-                        : context.getEnemies().stream().findFirst().orElse(null);
-                case ALL -> context.getThreatTarget() != null ? context.getThreatTarget() : entity;
-                case FRIENDLY -> entity;
+                case ENEMY -> selectEnemyTarget(entity, context, targeting);
+                case ALL -> selectAllTarget(entity, context, targeting);
+                case FRIENDLY -> selectFriendlyTarget(entity, context, targeting);
             };
             default -> null;
         };
+    }
+
+    private @Nullable AbilityTargetingDecision.MovementSuggestion resolveDefinitionMovementSuggestion(
+            MKEntity entity,
+            com.chaosbuffalo.mkcore.abilities2.definition.AbilityTargetResolverDefinition targeting,
+            LivingEntity targetEntity) {
+        return switch (targeting.type()) {
+            case "resolved" -> switch (AbilityTargeting.relation(targeting)) {
+                case ENEMY -> enemyMovementSuggestion(entity);
+                case FRIENDLY -> AbilityTargetingDecision.MovementSuggestion.STATIONARY;
+                case ALL -> AbilityTargeting.isValidTarget(AbilityTargeting.resolved(
+                        com.chaosbuffalo.mkcore.abilities2.definition.AbilityTargetRelation.ENEMY), entity, targetEntity)
+                        ? enemyMovementSuggestion(entity)
+                        : AbilityTargetingDecision.MovementSuggestion.STATIONARY;
+            };
+            case "none", "self" -> AbilityTargetingDecision.MovementSuggestion.STATIONARY;
+            default -> null;
+        };
+    }
+
+    private AbilityTargetingDecision.MovementSuggestion enemyMovementSuggestion(MKEntity entity) {
+        return switch (entity.getCombatMoveType()) {
+            case RANGE -> AbilityTargetingDecision.MovementSuggestion.KITE;
+            case MELEE -> AbilityTargetingDecision.MovementSuggestion.MELEE;
+            case STATIONARY -> AbilityTargetingDecision.MovementSuggestion.STATIONARY;
+        };
+    }
+
+    private @Nullable LivingEntity selectEnemyTarget(MKEntity entity,
+                                                     AbilityDecisionContext context,
+                                                     com.chaosbuffalo.mkcore.abilities2.definition.AbilityTargetResolverDefinition targeting) {
+        if (isValidDefinitionTarget(entity, targeting, context.getThreatTarget())) {
+            return context.getThreatTarget();
+        }
+        return context.getEnemies().stream()
+                .filter(candidate -> isValidDefinitionTarget(entity, targeting, candidate))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private @Nullable LivingEntity selectFriendlyTarget(MKEntity entity,
+                                                        AbilityDecisionContext context,
+                                                        com.chaosbuffalo.mkcore.abilities2.definition.AbilityTargetResolverDefinition targeting) {
+        List<LivingEntity> candidates = new ArrayList<>();
+        candidates.add(entity);
+        candidates.addAll(context.getFriendlies());
+        return candidates.stream()
+                .filter(candidate -> isValidDefinitionTarget(entity, targeting, candidate))
+                .min(Comparator.comparingDouble(AbilityUseSensor::healthFraction)
+                        .thenComparingDouble(candidate -> candidate.distanceToSqr(entity)))
+                .orElse(null);
+    }
+
+    private @Nullable LivingEntity selectAllTarget(MKEntity entity,
+                                                   AbilityDecisionContext context,
+                                                   com.chaosbuffalo.mkcore.abilities2.definition.AbilityTargetResolverDefinition targeting) {
+        LivingEntity enemyTarget = selectEnemyTarget(entity, context, targeting);
+        if (enemyTarget != null) {
+            return enemyTarget;
+        }
+        LivingEntity friendlyTarget = selectFriendlyTarget(entity, context, targeting);
+        return friendlyTarget != null ? friendlyTarget : entity;
+    }
+
+    private boolean isValidDefinitionTarget(MKEntity entity,
+                                            com.chaosbuffalo.mkcore.abilities2.definition.AbilityTargetResolverDefinition targeting,
+                                            @Nullable LivingEntity target) {
+        return target != null && target.isAlive() && AbilityTargeting.isValidTarget(targeting, entity, target);
+    }
+
+    private static double healthFraction(LivingEntity entity) {
+        return entity.getHealth() / Math.max(1.0f, entity.getMaxHealth());
     }
 
     @Nonnull

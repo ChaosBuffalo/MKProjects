@@ -55,6 +55,7 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
         add(createProjectileGround());
         add(createAiSelfHeal());
         add(createAiFirebolt());
+        add(createAiFriendlyHeal());
         add(createFriendlyHeal());
         add(createCooldownProbe());
         add(createCostProbe());
@@ -319,6 +320,39 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                         AbilityAction.ActionTarget.PRIMARY_ENTITY,
                         new AbilityScalar.ParameterScalar("impact_damage"),
                         CoreDamageTypes.FireDamage.getId()
+                )
+        ));
+        return builder.build();
+    }
+
+    private AbilityDefinitionData createAiFriendlyHeal() {
+        AbilityDefinitionBuilder builder = AbilityArchetypes.singleTargetSpell(
+                        MKCore.makeRL("test_abilities2_ai_friendly_heal"),
+                        "Abilities2 AI Friendly Heal",
+                        "A friendly-targeted AI heal used to validate NPC ally selection for abilities2 definitions.",
+                        AbilityDatagenKeys.TARGET_RESOLVED_FRIENDLY
+                )
+                .school(AbilityDatagenKeys.SCHOOL_RESTORATION)
+                .tag(AbilityDatagenKeys.TAG_HEAL)
+                .parameter(floatParameter("amount", 8.0f, "Heal amount"));
+
+        builder.activation(AbilityArchetypes.CAST_ACTIVATION_ID, new AbilityActivationDefinition(
+                ActivationKind.AI,
+                AbilityArchetypes.CAST_ENTRY_POINT,
+                AbilityDatagenKeys.TARGET_RESOLVED_FRIENDLY,
+                List.of(),
+                List.of(),
+                null,
+                0,
+                false,
+                AbilityArchetypes.STANDARD_MANUAL_INTERRUPT,
+                InterruptRefundPolicy.NONE,
+                new ActivationBehavior.InstantBehavior()
+        ));
+        builder.entryPoint(AbilityArchetypes.CAST_ENTRY_POINT, List.of(
+                new AbilityAction.HealAction(
+                        AbilityAction.ActionTarget.PRIMARY_ENTITY,
+                        new AbilityScalar.ParameterScalar("amount")
                 )
         ));
         return builder.build();

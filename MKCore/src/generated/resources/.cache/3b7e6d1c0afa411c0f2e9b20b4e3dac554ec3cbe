@@ -1,5 +1,6 @@
-// 1.21.1	2026-04-22T00:05:30.801122	Abilities2 Definitions: mkcore
+// 1.21.1	2026-04-22T00:18:03.411611	Abilities2 Definitions: mkcore
 c826503a2d05279bbba5930e4fdbe03f8e30c44c data/mkcore/mkcore/ability_definitions/test_abilities2_ai_firebolt.json
+5320f00c5b05ca9fcc2e51645052418460e1e3ec data/mkcore/mkcore/ability_definitions/test_abilities2_ai_friendly_heal.json
 e99778cc88e6b7ff917618c05a47177a64c7f8e7 data/mkcore/mkcore/ability_definitions/test_abilities2_ai_self_heal.json
 21579ef3d50f839b0676d065bc8bb81ad6aeae3a data/mkcore/mkcore/ability_definitions/test_abilities2_cooldown_probe.json
 34c0b2c907e4146c5058c1ad6c78c73f1884d14b data/mkcore/mkcore/ability_definitions/test_abilities2_cost_probe.json
