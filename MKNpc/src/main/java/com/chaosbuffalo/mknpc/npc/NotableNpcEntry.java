@@ -61,6 +61,10 @@ public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
         return ResourceKey.create(NpcRegistries.NPC_DEFINITIONS, definition);
     }
 
+    public boolean isDefinitionValid(RegistryAccess registryAccess) {
+        return registryAccess.registryOrThrow(NpcRegistries.NPC_DEFINITIONS).containsKey(definition);
+    }
+
     @Nullable
     public NpcDefinition getDefinition(RegistryAccess registryAccess) {
         return registryAccess.registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(definition);

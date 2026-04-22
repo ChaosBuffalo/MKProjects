@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.npc;
 
 import com.chaosbuffalo.mkcore.core.AbilityTracker;
+import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
 import com.chaosbuffalo.mknpc.capabilities.PointOfInterestEntry;
 import com.chaosbuffalo.mknpc.capabilities.WorldNpcDataHandler;
@@ -251,9 +252,14 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         structureName = ResourceLocation.parse(nbt.getString("structureName"));
         structureId = nbt.getUUID("structureId");
         ListTag notablesNbt = nbt.getList("notables", Tag.TAG_COMPOUND);
+        RegistryAccess registryAccess = worldData.getWorld().registryAccess();
         for (Tag notTag : notablesNbt) {
             NotableNpcEntry newEntry = new NotableNpcEntry();
             newEntry.deserializeNBT(provider, (CompoundTag) notTag);
+            if (!newEntry.isDefinitionValid(registryAccess)) {
+                MKNpc.LOGGER.warn("Dropping notable {} with missing NpcDefinition {}", newEntry.getNotableId(), newEntry.getDefinitionKey());
+                continue;
+            }
             worldData.putNotableNpc(newEntry);
             notables.add(newEntry);
         }
