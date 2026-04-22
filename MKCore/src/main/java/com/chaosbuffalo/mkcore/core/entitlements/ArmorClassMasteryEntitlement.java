@@ -11,8 +11,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceKey;
 
-import java.util.stream.Collectors;
-
 public class ArmorClassMasteryEntitlement extends MKEntitlement {
     public static final MapCodec<ArmorClassMasteryEntitlement> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
             ComponentSerialization.CODEC.fieldOf("display_name").forGetter(MKEntitlement::getName),
@@ -41,12 +39,12 @@ public class ArmorClassMasteryEntitlement extends MKEntitlement {
         }
 
         private void applyEffects() {
-            levelsByEntitlement.object2IntEntrySet().stream().collect(Collectors.groupingBy(
-                    k -> k.getKey().armorClassKey,
-                    Collectors.summingInt(Object2IntMap.Entry::getIntValue)
-            )).forEach((ac, count) -> {
-                persona.getPlayerData().getEquipment().enableArmorMastery(ac, count > 0);
-            });
+            Object2IntArrayMap<ResourceKey<ArmorClass>> totals = new Object2IntArrayMap<>(levelsByEntitlement.size());
+            for (var entry : levelsByEntitlement.object2IntEntrySet()) {
+                totals.mergeInt(entry.getKey().armorClassKey, entry.getIntValue(), Integer::sum);
+            }
+            totals.object2IntEntrySet().forEach(e ->
+                    persona.getPlayerData().getEquipment().enableArmorMastery(e.getKey(), e.getIntValue() > 0));
         }
 
         private void updateRecord(EntitlementInstance record, boolean apply) {

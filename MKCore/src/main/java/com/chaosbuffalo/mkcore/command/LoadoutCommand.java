@@ -173,7 +173,7 @@ public class LoadoutCommand {
 
         @Override
         public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-            return SharedSuggestionProvider.suggest(Arrays.stream(AbilityGroupId.values()).map(Enum::toString), builder);
+            return SharedSuggestionProvider.suggest(Arrays.stream(AbilityGroupId.VALUES).map(Enum::toString), builder);
         }
     }
 }

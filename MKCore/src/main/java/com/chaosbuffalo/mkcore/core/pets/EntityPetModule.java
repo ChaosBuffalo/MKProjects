@@ -11,10 +11,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class EntityPetModule implements ISyncGroupProvider {
     private final SyncGroup syncGroup = new SyncGroup();
@@ -53,7 +54,18 @@ public class EntityPetModule implements ISyncGroupProvider {
 
     public void tick() {
         clientPetMap.values().forEach(MKPet.ClientMKPet::tick);
-        pets.values().stream().filter(MKPet::tick).collect(Collectors.toList()).forEach(this::removePet);
+        List<MKPet<?>> expired = null;
+        for (MKPet<?> pet : pets.values()) {
+            if (pet.tick()) {
+                if (expired == null) expired = new ArrayList<>();
+                expired.add(pet);
+            }
+        }
+        if (expired != null) {
+            for (MKPet<?> pet : expired) {
+                removePet(pet);
+            }
+        }
     }
 
     public void removePet(MKPet<?> pet) {
@@ -68,7 +80,10 @@ public class EntityPetModule implements ISyncGroupProvider {
     }
 
     public boolean hasPet() {
-        return pets.values().stream().anyMatch(MKPet::isActive);
+        for (MKPet<?> pet : pets.values()) {
+            if (pet.isActive()) return true;
+        }
+        return false;
     }
 
     public boolean isPetActive(ResourceLocation name) {

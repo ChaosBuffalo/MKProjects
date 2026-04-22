@@ -10,8 +10,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 
-import java.util.stream.Collectors;
-
 public class AbilitySlotEntitlement extends MKEntitlement {
     public static final MapCodec<AbilitySlotEntitlement> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
             ComponentSerialization.CODEC.fieldOf("display_name").forGetter(MKEntitlement::getName),
@@ -37,21 +35,20 @@ public class AbilitySlotEntitlement extends MKEntitlement {
 
     public static class AbilitySlotEntitlementHandler implements EntitlementTypeHandler {
         private final Persona persona;
-        private final Object2IntMap<AbilitySlotEntitlement> levelsByEntitlement = new Object2IntArrayMap<>();
+        private final Object2IntMap<AbilitySlotEntitlement> levelsByEntitlement = new Object2IntArrayMap<>(AbilityGroupId.VALUES.length);
 
         public AbilitySlotEntitlementHandler(Persona persona) {
             this.persona = persona;
         }
 
         private void applyEffects() {
-            levelsByEntitlement.object2IntEntrySet().stream().collect(Collectors.groupingBy(
-                    k -> k.getKey().getGroup(),
-                    Collectors.summingInt(Object2IntMap.Entry::getIntValue)
-            )).forEach((groupId, count) -> {
-                persona.getLoadout()
-                        .getAbilityGroup(groupId)
-                        .setBonusSlots(count);
-            });
+            Object2IntArrayMap<AbilityGroupId> totals = new Object2IntArrayMap<>(AbilityGroupId.VALUES.length);
+            for (var entry : levelsByEntitlement.object2IntEntrySet()) {
+                totals.mergeInt(entry.getKey().getGroup(), entry.getIntValue(), Integer::sum);
+            }
+            for (AbilityGroupId groupId : AbilityGroupId.VALUES) {
+                persona.getLoadout().getAbilityGroup(groupId).setBonusSlots(totals.getInt(groupId));
+            }
         }
 
         private void updateRecord(EntitlementInstance record, boolean apply) {

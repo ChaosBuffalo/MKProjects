@@ -15,6 +15,7 @@ public enum AbilityGroupId implements StringRepresentable {
     Ultimate(EnumSet.of(AbilityType.Ultimate), GameConstants.DEFAULT_ULTIMATE_ABILITIES, GameConstants.MAX_ULTIMATE_ABILITIES),
     Item(EnumSet.of(AbilityType.Basic, AbilityType.Passive, AbilityType.Ultimate), GameConstants.DEFAULT_ITEM_ABILITIES, GameConstants.MAX_ITEM_ABILITIES);
 
+    public static final AbilityGroupId[] VALUES = values();
     public static final Codec<AbilityGroupId> CODEC = StringRepresentable.fromValues(AbilityGroupId::values);
 
     private final Set<AbilityType> memberTypes;
