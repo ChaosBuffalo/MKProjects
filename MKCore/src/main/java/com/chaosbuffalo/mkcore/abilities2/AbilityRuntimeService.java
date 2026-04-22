@@ -19,6 +19,7 @@ import com.chaosbuffalo.mkcore.abilities2.runtime.*;
 import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
 import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
@@ -41,9 +42,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
@@ -76,6 +79,7 @@ public class AbilityRuntimeService {
     private final Map<UUID, DeliveryRuntime> activeDeliveries = new LinkedHashMap<>();
     private final Map<Integer, ClientCastState> clientCasts = new HashMap<>();
     private final Map<UUID, Persona> pendingPersonaRestores = new HashMap<>();
+    private final Map<UUID, MKEntityData> pendingEntityRestores = new HashMap<>();
     private long lastStateStoreTick = Long.MIN_VALUE;
 
     public AbilityRuntimeService(AbilityDefinitionResolver definitionResolver) {
@@ -201,9 +205,9 @@ public class AbilityRuntimeService {
         ));
     }
 
-    public PersistedAbilityRuntimeState capturePersonaRuntime(Persona persona) {
-        Objects.requireNonNull(persona, "persona");
-        UUID ownerEntityId = persona.getPlayerData().getEntity().getUUID();
+    public PersistedAbilityRuntimeState captureOwnerRuntime(IMKEntityData ownerData) {
+        Objects.requireNonNull(ownerData, "ownerData");
+        UUID ownerEntityId = ownerData.getEntity().getUUID();
         PersistedAbilityRuntimeState stateSnapshot = stateStore.snapshotOwner(ownerEntityId, currentGameTick());
         List<PersistedAbilityRuntimeState.ToggleEntry> toggles = activeToggles.values().stream()
                 .filter(runtime -> runtime.ownerEntityId().equals(ownerEntityId))
@@ -222,6 +226,19 @@ public class AbilityRuntimeService {
                 deliveries,
                 engine.snapshotOwnedActivations(ownerEntityId)
         );
+    }
+
+    public PersistedAbilityRuntimeState capturePersonaRuntime(Persona persona) {
+        Objects.requireNonNull(persona, "persona");
+        return captureOwnerRuntime(persona.getPlayerData());
+    }
+
+    public void queueEntityRuntimeRestore(MKEntityData entityData) {
+        Objects.requireNonNull(entityData, "entityData");
+        if (entityData.getAbilityRuntimeSnapshot().isEmpty()) {
+            return;
+        }
+        pendingEntityRestores.put(entityData.getEntity().getUUID(), entityData);
     }
 
     public boolean hasPendingActivation(IMKEntityData casterData) {
@@ -655,6 +672,18 @@ public class AbilityRuntimeService {
     }
 
     @SubscribeEvent
+    public void onEntityLeaveLevel(EntityLeaveLevelEvent event) {
+        if (!(event.getEntity() instanceof LivingEntity living) || living.level().isClientSide() || living instanceof Player) {
+            return;
+        }
+
+        IMKEntityData entityData = MKCore.getEntityDataOrThrow(living);
+        if (entityData instanceof MKEntityData mkEntityData) {
+            persistAndClearEntityRuntime(mkEntityData);
+        }
+    }
+
+    @SubscribeEvent
     public void onEntityTick(EntityTickEvent.Post event) {
         if (event.getEntity() instanceof LivingEntity living && !living.level().isClientSide()) {
             engine.tickEntity(MKCore.getEntityDataOrThrow(living));
@@ -672,6 +701,7 @@ public class AbilityRuntimeService {
         }
         lastStateStoreTick = gameTick;
         processPendingPersonaRestores();
+        processPendingEntityRestores();
         stateStore.tick(gameTick, this::emitCooldownFinished);
         tickActiveDeliveries();
         tickActiveToggles(gameTick);
@@ -723,11 +753,21 @@ public class AbilityRuntimeService {
         }
     }
 
+    private void processPendingEntityRestores() {
+        if (pendingEntityRestores.isEmpty()) {
+            return;
+        }
+        List<MKEntityData> restores = List.copyOf(pendingEntityRestores.values());
+        pendingEntityRestores.clear();
+        for (MKEntityData entityData : restores) {
+            restoreEntityRuntime(entityData);
+        }
+    }
+
     private void persistAndClearPersonaRuntime(Persona persona, MKPlayerData playerData) {
-        pendingPersonaRestores.remove(playerData.getEntity().getUUID());
         AbilityRuntimePersonaExtension extension = getRuntimeExtension(persona);
         if (extension != null) {
-            extension.setSnapshot(capturePersonaRuntime(persona));
+            extension.setSnapshot(captureOwnerRuntime(playerData));
             extension.setCaptureLiveRuntimeOnSerialize(false);
         }
         clearLiveRuntime(playerData, true, true);
@@ -739,31 +779,48 @@ public class AbilityRuntimeService {
             return;
         }
 
-        MKPlayerData playerData = persona.getPlayerData();
-        clearLiveRuntime(playerData, false, false);
-
-        PersistedAbilityRuntimeState snapshot = extension.getSnapshot();
-        if (!snapshot.isEmpty()) {
-            stateStore.restoreOwner(playerData.getEntity().getUUID(), snapshot, currentGameTick());
-            engine.restoreOwnedActivations(playerData, snapshot.pendingActivations(),
-                    this::resolveEntityData);
-            syncRestoredDirectCastStates(playerData, snapshot.pendingActivations());
-            syncRestoredDirectCastVisuals(playerData, snapshot.pendingActivations());
-            snapshot.toggles().forEach(toggle -> restoreToggle(playerData, toggle));
-            snapshot.deliveries().forEach(delivery -> restoreDelivery(playerData, delivery));
-        }
+        restoreOwnedRuntime(persona.getPlayerData(), extension.getSnapshot());
         extension.setCaptureLiveRuntimeOnSerialize(true);
     }
 
-    private void clearLiveRuntime(MKPlayerData playerData, boolean clearPassives, boolean gracefulToggleDisable) {
-        pendingPersonaRestores.remove(playerData.getEntity().getUUID());
-        engine.interruptOwnedActivations(playerData.getEntity().getUUID(), FailureReason.INTERRUPTED);
-        if (clearPassives) {
-            clearPassivesForOwner(playerData.getEntity().getUUID());
+    private void persistAndClearEntityRuntime(MKEntityData entityData) {
+        if (entityData.getEntity().isAlive()) {
+            entityData.setAbilityRuntimeSnapshot(captureOwnerRuntime(entityData));
+        } else {
+            entityData.setAbilityRuntimeSnapshot(PersistedAbilityRuntimeState.EMPTY);
         }
-        clearTogglesForOwner(playerData.getEntity().getUUID(), gracefulToggleDisable);
-        closeDeliveriesForOwner(playerData.getEntity().getUUID(), true);
-        stateStore.clearOwner(playerData.getEntity().getUUID());
+        entityData.setCaptureLiveRuntimeOnSerialize(false);
+        clearLiveRuntime(entityData, true, true);
+    }
+
+    private void restoreEntityRuntime(MKEntityData entityData) {
+        restoreOwnedRuntime(entityData, entityData.getAbilityRuntimeSnapshot());
+        entityData.setCaptureLiveRuntimeOnSerialize(true);
+    }
+
+    private void restoreOwnedRuntime(IMKEntityData ownerData, PersistedAbilityRuntimeState snapshot) {
+        clearLiveRuntime(ownerData, false, false);
+        if (!snapshot.isEmpty()) {
+            stateStore.restoreOwner(ownerData.getEntity().getUUID(), snapshot, currentGameTick());
+            engine.restoreOwnedActivations(ownerData, snapshot.pendingActivations(), this::resolveEntityData);
+            syncRestoredDirectCastStates(ownerData, snapshot.pendingActivations());
+            syncRestoredDirectCastVisuals(ownerData, snapshot.pendingActivations());
+            snapshot.toggles().forEach(toggle -> restoreToggle(ownerData, toggle));
+            snapshot.deliveries().forEach(delivery -> restoreDelivery(ownerData, delivery));
+        }
+    }
+
+    private void clearLiveRuntime(IMKEntityData ownerData, boolean clearPassives, boolean gracefulToggleDisable) {
+        UUID ownerEntityId = ownerData.getEntity().getUUID();
+        pendingPersonaRestores.remove(ownerEntityId);
+        pendingEntityRestores.remove(ownerEntityId);
+        engine.interruptOwnedActivations(ownerEntityId, FailureReason.INTERRUPTED);
+        if (clearPassives) {
+            clearPassivesForOwner(ownerEntityId);
+        }
+        clearTogglesForOwner(ownerEntityId, gracefulToggleDisable);
+        closeDeliveriesForOwner(ownerEntityId, true);
+        stateStore.clearOwner(ownerEntityId);
     }
 
     private void clearPassivesForOwner(UUID ownerEntityId) {
@@ -808,7 +865,7 @@ public class AbilityRuntimeService {
         }
     }
 
-    private void restoreToggle(MKPlayerData ownerData, PersistedAbilityRuntimeState.ToggleEntry entry) {
+    private void restoreToggle(IMKEntityData ownerData, PersistedAbilityRuntimeState.ToggleEntry entry) {
         PatchedAbilityDefinition definition = definitionResolver.resolvePatched(entry.abilityId());
         if (definition == null || !ownerData.getAbilities().knowsAbility(entry.abilityId())) {
             return;
@@ -952,7 +1009,7 @@ public class AbilityRuntimeService {
         );
     }
 
-    private void restoreDelivery(MKPlayerData ownerData, PersistedAbilityRuntimeState.DeliveryEntry entry) {
+    private void restoreDelivery(IMKEntityData ownerData, PersistedAbilityRuntimeState.DeliveryEntry entry) {
         PatchedAbilityDefinition definition = definitionResolver.resolvePatched(entry.abilityId());
         if (definition == null) {
             return;
@@ -1948,7 +2005,7 @@ public class AbilityRuntimeService {
         return new Ability2VisualAbility(abilityId, definition.definition().data().presentation());
     }
 
-    private void syncRestoredDirectCastStates(MKPlayerData ownerData,
+    private void syncRestoredDirectCastStates(IMKEntityData ownerData,
                                               List<PersistedPendingAbilityActivation> pendingActivations) {
         for (PersistedPendingAbilityActivation activation : pendingActivations) {
             if (activation.type() != PersistedPendingAbilityActivation.PendingActivationType.CAST
@@ -1969,7 +2026,7 @@ public class AbilityRuntimeService {
         }
     }
 
-    private void syncRestoredDirectCastVisuals(MKPlayerData ownerData,
+    private void syncRestoredDirectCastVisuals(IMKEntityData ownerData,
                                                List<PersistedPendingAbilityActivation> pendingActivations) {
         for (PersistedPendingAbilityActivation activation : pendingActivations) {
             if (activation.type() != PersistedPendingAbilityActivation.PendingActivationType.CAST
@@ -1987,7 +2044,7 @@ public class AbilityRuntimeService {
         }
     }
 
-    private @Nullable LivingEntity resolveRestoredCastCaster(MKPlayerData ownerData,
+    private @Nullable LivingEntity resolveRestoredCastCaster(IMKEntityData ownerData,
                                                              PersistedPendingAbilityActivation.InvocationEntry invocation) {
         if (invocation.casterEntityId().equals(invocation.ownerEntityId())) {
             return ownerData.getEntity();

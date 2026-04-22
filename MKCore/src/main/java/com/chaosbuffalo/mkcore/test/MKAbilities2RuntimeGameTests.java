@@ -25,6 +25,7 @@ import com.chaosbuffalo.mkcore.abilities2.runtime.FailureReason;
 import com.chaosbuffalo.mkcore.abilities2.runtime.InvocationResult;
 import com.chaosbuffalo.mkcore.abilities2.runtime.PersistedAbilityRuntimeState;
 import com.chaosbuffalo.mkcore.core.EntityAnimationModule;
+import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
@@ -42,7 +43,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -820,6 +823,64 @@ public class MKAbilities2RuntimeGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void serializedPendingDefinitionCastForNonPlayerCompletesAfterJoin(GameTestHelper helper) {
+        Zombie source = createTestZombie(helper, new BlockPos(1, 2, 1));
+        MKEntityData sourceData = MKCore.getEntitySpecificData(source).orElseThrow();
+        helper.assertTrue(sourceData.getAbilities().learnAbilityDefinition(SELF_HEAL_ABILITY, 1, null),
+                "serialized non-player cast restore test should learn the cast-time definition first");
+
+        Zombie[] restoredHolder = new Zombie[1];
+        float[] restoredStartingHealth = new float[1];
+        helper.startSequence()
+                .thenExecute(() -> {
+                    source.setHealth(source.getMaxHealth() - 8.0f);
+                    InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                            sourceData,
+                            sourceData,
+                            new AbilityReference(SELF_HEAL_ABILITY, null),
+                            "cast",
+                            null,
+                            null,
+                            null,
+                            false,
+                            false
+                    ));
+                    helper.assertTrue(result.started(),
+                            "serialized non-player cast restore probe should start the cast-time activation");
+                    helper.assertTrue(MKCore.getAbilityRuntimeService().hasPendingActivation(sourceData),
+                            "serialized non-player cast restore probe should snapshot a live pending cast");
+
+                    CompoundTag serialized = serializeEntityData(sourceData);
+                    UUID sourceId = source.getUUID();
+                    source.discard();
+
+                    Zombie restored = createDeserializedTestZombie(
+                            helper,
+                            new BlockPos(3, 2, 1),
+                            sourceId,
+                            serialized,
+                            sourceData.getEntity().registryAccess()
+                    );
+                    restored.setHealth(restored.getMaxHealth() - 8.0f);
+                    restoredHolder[0] = restored;
+                    restoredStartingHealth[0] = restored.getHealth();
+                })
+                .thenExecuteAfter(2, () -> {
+                    MKEntityData restoredData = MKCore.getEntitySpecificData(restoredHolder[0]).orElseThrow();
+                    helper.assertTrue(MKCore.getAbilityRuntimeService().hasPendingActivation(restoredData),
+                            "serialized non-player cast restore should rebuild the pending cast runtime after join");
+                })
+                .thenExecuteAfter(25, () -> {
+                    MKEntityData restoredData = MKCore.getEntitySpecificData(restoredHolder[0]).orElseThrow();
+                    helper.assertTrue(restoredHolder[0].getHealth() > restoredStartingHealth[0],
+                            "serialized non-player cast restore should let the pending cast complete after join");
+                    helper.assertFalse(MKCore.getAbilityRuntimeService().hasPendingActivation(restoredData),
+                            "serialized non-player cast restore should clear the pending cast after completion");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void definitionCastUpdatesAnimationModule(GameTestHelper helper) {
         Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
         MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
@@ -1397,6 +1458,10 @@ public class MKAbilities2RuntimeGameTests {
         return playerData.serializeNBT(playerData.getEntity().registryAccess());
     }
 
+    private static CompoundTag serializeEntityData(MKEntityData entityData) {
+        return entityData.serializeNBT(entityData.getEntity().registryAccess());
+    }
+
     private static Player createDeserializedTestPlayer(GameTestHelper helper,
                                                        BlockPos relativePos,
                                                        CompoundTag serialized,
@@ -1411,6 +1476,25 @@ public class MKAbilities2RuntimeGameTests {
         }
         playerData.getPersonaManager().onJoinLevel();
         return player;
+    }
+
+    private static Zombie createDeserializedTestZombie(GameTestHelper helper,
+                                                       BlockPos relativePos,
+                                                       UUID entityId,
+                                                       CompoundTag serialized,
+                                                       HolderLookup.Provider provider) {
+        Zombie zombie = EntityType.ZOMBIE.create(helper.getLevel());
+        if (zombie == null) {
+            throw new IllegalStateException("test zombie should construct");
+        }
+        BlockPos absolutePos = helper.absolutePos(relativePos);
+        zombie.setUUID(entityId);
+        zombie.moveTo(absolutePos.getX() + 0.5, absolutePos.getY(), absolutePos.getZ() + 0.5, 0.0f, 0.0f);
+        MKCore.getEntitySpecificData(zombie).orElseThrow().deserializeNBT(provider, serialized);
+        if (helper.getLevel().getEntity(zombie.getUUID()) == null) {
+            helper.getLevel().addFreshEntity(zombie);
+        }
+        return zombie;
     }
 
     private static void beginBlocking(Player player) {
@@ -1438,5 +1522,11 @@ public class MKAbilities2RuntimeGameTests {
         player.moveTo(absolutePos.getX() + 0.5, absolutePos.getY(), absolutePos.getZ() + 0.5, 0.0f, 0.0f);
         player.setHealth(player.getMaxHealth());
         return player;
+    }
+
+    private static Zombie createTestZombie(GameTestHelper helper, BlockPos relativePos) {
+        Zombie zombie = helper.spawn(EntityType.ZOMBIE, relativePos);
+        zombie.setHealth(zombie.getMaxHealth());
+        return zombie;
     }
 }
