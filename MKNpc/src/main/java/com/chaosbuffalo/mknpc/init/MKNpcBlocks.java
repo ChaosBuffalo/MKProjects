@@ -3,7 +3,6 @@ package com.chaosbuffalo.mknpc.init;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.blocks.MKPoiBlock;
 import com.chaosbuffalo.mknpc.blocks.MKSpawnerBlock;
-import com.chaosbuffalo.mknpc.items.FirstUseBlockItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -26,7 +25,7 @@ public class MKNpcBlocks {
                     .pushReaction(PushReaction.IGNORE).noOcclusion().strength(-1.0F, 3600000.0F)));
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MKNpc.MODID);
     public static final DeferredItem<BlockItem> MK_SPAWNER_ITEM = ITEMS.register("mk_spawner",
-            () -> new FirstUseBlockItem(MK_SPAWNER_BLOCK.get(), new Item.Properties()));
+            () -> new BlockItem(MK_SPAWNER_BLOCK.get(), new Item.Properties()));
     public static final DeferredBlock<MKPoiBlock> MK_POI_BLOCK = BLOCKS.register("mk_poi",
             () -> new MKPoiBlock(BlockBehaviour.Properties.of().mapColor(MapColor.NONE)
                     .pushReaction(PushReaction.IGNORE).noOcclusion()

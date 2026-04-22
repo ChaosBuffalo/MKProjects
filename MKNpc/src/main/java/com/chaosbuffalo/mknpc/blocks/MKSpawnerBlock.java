@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.blocks;
 
 
-import com.chaosbuffalo.mknpc.blocks.interfaces.IFirstUseBlock;
 import com.chaosbuffalo.mknpc.components.NpcComponents;
 import com.chaosbuffalo.mknpc.components.SpawnerDataComponent;
 import com.chaosbuffalo.mknpc.init.MKNpcBlockEntityTypes;
@@ -18,7 +17,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -37,35 +35,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 
-public class MKSpawnerBlock extends BaseEntityBlock implements IFirstUseBlock, LiquidBlockContainer {
+public class MKSpawnerBlock extends BaseEntityBlock implements LiquidBlockContainer {
     public static final MapCodec<MKSpawnerBlock> CODEC = simpleCodec(MKSpawnerBlock::new);
-
-    @Override
-    public InteractionResult onFirstUse(ItemStack stack, UseOnContext context) {
-        BlockEntity entity = context.getLevel().getBlockEntity(context.getClickedPos());
-        if (entity instanceof MKSpawnerBlockEntity spawner)
-        {
-            if (stack.getItem().equals(MKNpcBlocks.MK_SPAWNER_ITEM.asItem())) {
-                if (context.getPlayer().isCreative()) {
-                    if (context.getPlayer().isShiftKeyDown()) {
-                        if (stack.has(NpcComponents.SPAWNER_DATA)) {
-                            SpawnerDataComponent data = stack.get(NpcComponents.SPAWNER_DATA);
-                            if (data == null) {
-                                return InteractionResult.FAIL;
-                            }
-                            if (!context.getLevel().isClientSide) {
-                                spawner.setSpawnList(data.spawns());
-                                spawner.setRespawnTime(data.spawnTime());
-                                spawner.setMoveType(data.moveType());
-                            }
-                            return InteractionResult.SUCCESS;
-                        }
-                    }
-                }
-            }
-        }
-        return InteractionResult.PASS;
-    }
 
 
     @Override
@@ -209,18 +180,29 @@ public class MKSpawnerBlock extends BaseEntityBlock implements IFirstUseBlock, L
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (stack.getItem().equals(MKNpcBlocks.MK_SPAWNER_ITEM.asItem())) {
-            if (player.isCreative()) {
-                if (!player.isShiftKeyDown()) {
+        if (stack.getItem().equals(MKNpcBlocks.MK_SPAWNER_ITEM.asItem()) && player.isCreative()) {
+            if (player.isShiftKeyDown()) {
+                SpawnerDataComponent data = stack.get(NpcComponents.SPAWNER_DATA);
+                if (data != null) {
                     if (!level.isClientSide) {
                         BlockEntity entity = level.getBlockEntity(pos);
                         if (entity instanceof MKSpawnerBlockEntity spawner) {
-                            stack.set(NpcComponents.SPAWNER_DATA, new SpawnerDataComponent(spawner.getSpawnList(),
-                                    spawner.getRespawnTime(), spawner.getMoveType()));
+                            spawner.setSpawnList(data.spawns());
+                            spawner.setRespawnTime(data.spawnTime());
+                            spawner.setMoveType(data.moveType());
                         }
                     }
                     return ItemInteractionResult.SUCCESS;
                 }
+            } else {
+                if (!level.isClientSide) {
+                    BlockEntity entity = level.getBlockEntity(pos);
+                    if (entity instanceof MKSpawnerBlockEntity spawner) {
+                        stack.set(NpcComponents.SPAWNER_DATA, new SpawnerDataComponent(spawner.getSpawnList(),
+                                spawner.getRespawnTime(), spawner.getMoveType()));
+                    }
+                }
+                return ItemInteractionResult.SUCCESS;
             }
         }
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
