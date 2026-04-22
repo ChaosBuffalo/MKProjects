@@ -1,14 +1,19 @@
 package com.chaosbuffalo.mkcore.abilities2.runtime;
 
 import com.chaosbuffalo.mkcore.abilities2.codec.AbilityCodecs;
+import com.chaosbuffalo.mkcore.abilities2.definition.DeliveryKind;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValue;
 import com.chaosbuffalo.mkcore.abilities2.definition.StateScope;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
@@ -22,15 +27,17 @@ public record PersistedAbilityRuntimeState(
         List<GcdEntry> gcds,
         List<StateEntry> states,
         List<ToggleEntry> toggles,
+        List<DeliveryEntry> deliveries,
         List<PersistedPendingAbilityActivation> pendingActivations
 ) {
     public static final PersistedAbilityRuntimeState EMPTY =
-            new PersistedAbilityRuntimeState(List.of(), List.of(), List.of(), List.of(), List.of());
+            new PersistedAbilityRuntimeState(List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
 
     private static final String COOLDOWNS_TAG = "cooldowns";
     private static final String GCDS_TAG = "gcds";
     private static final String STATES_TAG = "states";
     private static final String TOGGLES_TAG = "toggles";
+    private static final String DELIVERIES_TAG = "deliveries";
     private static final String PENDING_ACTIVATIONS_TAG = "pending_activations";
 
     public PersistedAbilityRuntimeState {
@@ -38,11 +45,13 @@ public record PersistedAbilityRuntimeState(
         gcds = List.copyOf(Objects.requireNonNull(gcds, "gcds"));
         states = List.copyOf(Objects.requireNonNull(states, "states"));
         toggles = List.copyOf(Objects.requireNonNull(toggles, "toggles"));
+        deliveries = List.copyOf(Objects.requireNonNull(deliveries, "deliveries"));
         pendingActivations = List.copyOf(Objects.requireNonNull(pendingActivations, "pendingActivations"));
     }
 
     public boolean isEmpty() {
         return cooldowns.isEmpty() && gcds.isEmpty() && states.isEmpty() && toggles.isEmpty()
+                && deliveries.isEmpty()
                 && pendingActivations.isEmpty();
     }
 
@@ -67,6 +76,11 @@ public record PersistedAbilityRuntimeState(
             ListTag list = new ListTag();
             toggles.forEach(entry -> list.add(entry.serialize(provider)));
             tag.put(TOGGLES_TAG, list);
+        }
+        if (!deliveries.isEmpty()) {
+            ListTag list = new ListTag();
+            deliveries.forEach(entry -> list.add(entry.serialize(provider)));
+            tag.put(DELIVERIES_TAG, list);
         }
         if (!pendingActivations.isEmpty()) {
             ListTag list = new ListTag();
@@ -93,10 +107,13 @@ public record PersistedAbilityRuntimeState(
         List<ToggleEntry> toggles = readCompoundList(tag, TOGGLES_TAG).stream()
                 .map(entry -> ToggleEntry.deserialize(provider, entry))
                 .toList();
+        List<DeliveryEntry> deliveries = readCompoundList(tag, DELIVERIES_TAG).stream()
+                .map(entry -> DeliveryEntry.deserialize(provider, entry))
+                .toList();
         List<PersistedPendingAbilityActivation> pendingActivations = readCompoundList(tag, PENDING_ACTIVATIONS_TAG).stream()
                 .map(entry -> PersistedPendingAbilityActivation.deserialize(provider, entry))
                 .toList();
-        return new PersistedAbilityRuntimeState(cooldowns, gcds, states, toggles, pendingActivations);
+        return new PersistedAbilityRuntimeState(cooldowns, gcds, states, toggles, deliveries, pendingActivations);
     }
 
     private static List<CompoundTag> readCompoundList(CompoundTag root, String key) {
@@ -283,6 +300,96 @@ public record PersistedAbilityRuntimeState(
                     getOptionalUuid(tag, "caster_entity_id"),
                     overrides,
                     tag.getInt("next_pulse_delay_ticks")
+            );
+        }
+    }
+
+    public record DeliveryEntry(
+            ResourceLocation abilityId,
+            @Nullable UUID grantId,
+            UUID stableSourceId,
+            @Nullable UUID casterEntityId,
+            Map<String, AbilityValue> grantParameterOverrides,
+            String deliveryId,
+            DeliveryKind kind,
+            ResourceKey<Level> dimension,
+            Vec3 point,
+            double radius,
+            int delayTicksRemaining,
+            int durationTicksRemaining,
+            int tickIntervalTicks,
+            int ticksUntilNextGroundTick,
+            AbilityEventProvenance callbackProvenance
+    ) {
+        public DeliveryEntry {
+            Objects.requireNonNull(abilityId, "abilityId");
+            Objects.requireNonNull(stableSourceId, "stableSourceId");
+            grantParameterOverrides = Map.copyOf(new LinkedHashMap<>(Objects.requireNonNull(
+                    grantParameterOverrides, "grantParameterOverrides")));
+            if (deliveryId == null || deliveryId.isBlank()) {
+                throw new IllegalArgumentException("Delivery entry deliveryId must not be blank");
+            }
+            Objects.requireNonNull(kind, "kind");
+            Objects.requireNonNull(dimension, "dimension");
+            Objects.requireNonNull(point, "point");
+            if (radius < 0.0) {
+                throw new IllegalArgumentException("Delivery entry radius must be >= 0");
+            }
+            if (delayTicksRemaining < 0 || durationTicksRemaining < 0 || tickIntervalTicks < 0
+                    || ticksUntilNextGroundTick < 0) {
+                throw new IllegalArgumentException("Delivery entry tick values must be >= 0");
+            }
+            Objects.requireNonNull(callbackProvenance, "callbackProvenance");
+        }
+
+        private CompoundTag serialize(HolderLookup.Provider provider) {
+            CompoundTag tag = new CompoundTag();
+            tag.putString("ability_id", abilityId.toString());
+            putOptionalUuid(tag, "grant_id", grantId);
+            tag.putUUID("stable_source_id", stableSourceId);
+            putOptionalUuid(tag, "caster_entity_id", casterEntityId);
+            if (!grantParameterOverrides.isEmpty()) {
+                CompoundTag overridesTag = new CompoundTag();
+                grantParameterOverrides.forEach((key, value) -> overridesTag.put(key, encodeAbilityValue(provider, value)));
+                tag.put("grant_parameter_overrides", overridesTag);
+            }
+            tag.putString("delivery_id", deliveryId);
+            tag.putString("kind", kind.name());
+            tag.putString("dimension", dimension.location().toString());
+            tag.putDouble("x", point.x);
+            tag.putDouble("y", point.y);
+            tag.putDouble("z", point.z);
+            tag.putDouble("radius", radius);
+            tag.putInt("delay_ticks_remaining", delayTicksRemaining);
+            tag.putInt("duration_ticks_remaining", durationTicksRemaining);
+            tag.putInt("tick_interval_ticks", tickIntervalTicks);
+            tag.putInt("ticks_until_next_ground_tick", ticksUntilNextGroundTick);
+            tag.put("callback_provenance", callbackProvenance.serialize());
+            return tag;
+        }
+
+        private static DeliveryEntry deserialize(HolderLookup.Provider provider, CompoundTag tag) {
+            Map<String, AbilityValue> overrides = new LinkedHashMap<>();
+            CompoundTag overridesTag = tag.getCompound("grant_parameter_overrides");
+            for (String key : overridesTag.getAllKeys()) {
+                overrides.put(key, decodeAbilityValue(provider, overridesTag.get(key)));
+            }
+            return new DeliveryEntry(
+                    ResourceLocation.parse(tag.getString("ability_id")),
+                    getOptionalUuid(tag, "grant_id"),
+                    tag.getUUID("stable_source_id"),
+                    getOptionalUuid(tag, "caster_entity_id"),
+                    overrides,
+                    tag.getString("delivery_id"),
+                    DeliveryKind.valueOf(tag.getString("kind")),
+                    ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(tag.getString("dimension"))),
+                    new Vec3(tag.getDouble("x"), tag.getDouble("y"), tag.getDouble("z")),
+                    tag.getDouble("radius"),
+                    tag.getInt("delay_ticks_remaining"),
+                    tag.getInt("duration_ticks_remaining"),
+                    tag.getInt("tick_interval_ticks"),
+                    tag.getInt("ticks_until_next_ground_tick"),
+                    Objects.requireNonNull(AbilityEventProvenance.deserialize(tag.getCompound("callback_provenance")))
             );
         }
     }

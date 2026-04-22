@@ -945,6 +945,70 @@ public class MKAbilities2RuntimeGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void serializedAreaCloudDeliveryResumesRemainingPulseDelayAfterJoin(GameTestHelper helper) {
+        Player source = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData sourceData = MKCore.getPlayerOrThrow(source);
+
+        source.setHealth(source.getMaxHealth() - 8.0f);
+        Player[] restoredHolder = new Player[1];
+        float[] restoredStartingHealth = new float[1];
+        helper.startSequence()
+                .thenExecute(() -> {
+                    InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                            sourceData,
+                            sourceData,
+                            new AbilityReference(HEALING_CLOUD_ABILITY, null),
+                            "cast",
+                            null,
+                            null,
+                            null,
+                            false,
+                            false
+                    ));
+                    helper.assertTrue(result.started(), "serialized cloud restore probe should start the healing cloud");
+                })
+                .thenExecuteAfter(2, () -> {
+                    PersistedAbilityRuntimeState sourceSnapshot = MKCore.getAbilityRuntimeService()
+                            .capturePersonaRuntime(sourceData.getPersonaManager().getActivePersona());
+                    helper.assertTrue(sourceSnapshot.deliveries().stream()
+                                    .anyMatch(entry -> entry.abilityId().equals(HEALING_CLOUD_ABILITY)
+                                            && entry.kind() == DeliveryKind.AREA_CLOUD
+                                            && entry.ticksUntilNextGroundTick() == 2),
+                            "serialized cloud restore probe should snapshot the remaining cloud pulse delay");
+
+                    CompoundTag serialized = serializePlayerData(sourceData);
+                    source.discard();
+
+                    Player restored = createDeserializedTestPlayer(
+                            helper,
+                            new BlockPos(1, 2, 1),
+                            serialized,
+                            sourceData.getEntity().registryAccess()
+                    );
+                    restored.setHealth(restored.getMaxHealth() - 8.0f);
+                    restoredHolder[0] = restored;
+                    restoredStartingHealth[0] = restored.getHealth();
+                })
+                .thenExecuteAfter(1, () -> {
+                    MKPlayerData restoredData = MKCore.getPlayerOrThrow(restoredHolder[0]);
+                    PersistedAbilityRuntimeState restoredSnapshot = MKCore.getAbilityRuntimeService()
+                            .capturePersonaRuntime(restoredData.getPersonaManager().getActivePersona());
+                    helper.assertTrue(restoredSnapshot.deliveries().stream()
+                                    .anyMatch(entry -> entry.abilityId().equals(HEALING_CLOUD_ABILITY)
+                                            && entry.kind() == DeliveryKind.AREA_CLOUD
+                                            && entry.ticksUntilNextGroundTick() == 1),
+                            "serialized cloud restore should rebuild the area cloud runtime with the remaining pulse delay");
+                    helper.assertValueEqual(restoredHolder[0].getHealth(), restoredStartingHealth[0],
+                            "serialized cloud restore should not replay the cloud pulse early on join");
+                })
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(restoredHolder[0].getHealth() > restoredStartingHealth[0],
+                            "serialized cloud restore should resume the next cloud pulse using the remaining delay");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void equippedItemPassiveDefinitionInstallsAndRemovesReactionRuntime(GameTestHelper helper) {
         Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
         Player target = createTestPlayer(helper, new BlockPos(3, 2, 1));

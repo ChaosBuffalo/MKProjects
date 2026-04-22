@@ -206,11 +206,17 @@ public class AbilityRuntimeService {
                 .filter(runtime -> runtime.ownerEntityId().equals(ownerEntityId))
                 .map(runtime -> snapshotToggle(runtime))
                 .toList();
+        List<PersistedAbilityRuntimeState.DeliveryEntry> deliveries = activeDeliveries.values().stream()
+                .filter(runtime -> runtime.ownerEntityId().equals(ownerEntityId))
+                .map(this::snapshotDelivery)
+                .filter(Objects::nonNull)
+                .toList();
         return new PersistedAbilityRuntimeState(
                 stateSnapshot.cooldowns(),
                 stateSnapshot.gcds(),
                 stateSnapshot.states(),
                 toggles,
+                deliveries,
                 engine.snapshotOwnedActivations(ownerEntityId)
         );
     }
@@ -741,6 +747,7 @@ public class AbilityRuntimeService {
             syncRestoredDirectCastStates(playerData, snapshot.pendingActivations());
             syncRestoredDirectCastVisuals(playerData, snapshot.pendingActivations());
             snapshot.toggles().forEach(toggle -> restoreToggle(playerData, toggle));
+            snapshot.deliveries().forEach(delivery -> restoreDelivery(playerData, delivery));
         }
         extension.setCaptureLiveRuntimeOnSerialize(true);
     }
@@ -884,6 +891,92 @@ public class AbilityRuntimeService {
                 runtime.grantParameterOverrides(),
                 persistedDelay
         );
+    }
+
+    private @Nullable PersistedAbilityRuntimeState.DeliveryEntry snapshotDelivery(DeliveryRuntime runtime) {
+        if (runtime.trackedEntityId() != null || runtime.point() == null) {
+            return null;
+        }
+        return new PersistedAbilityRuntimeState.DeliveryEntry(
+                runtime.ability().abilityId(),
+                runtime.ability().grantId(),
+                runtime.owner().stableSourceId(),
+                runtime.casterEntityId(),
+                runtime.grantParameterOverrides(),
+                runtime.deliveryId(),
+                runtime.kind(),
+                runtime.dimension(),
+                runtime.point(),
+                runtime.radius(),
+                runtime.delayTicksRemaining(),
+                runtime.durationTicksRemaining(),
+                runtime.tickIntervalTicks(),
+                runtime.ticksUntilNextGroundTick(),
+                runtime.callbackProvenance().withSourceId(runtime.owner().stableSourceId())
+        );
+    }
+
+    private void restoreDelivery(MKPlayerData ownerData, PersistedAbilityRuntimeState.DeliveryEntry entry) {
+        if (entry.kind() == DeliveryKind.PROJECTILE) {
+            return;
+        }
+
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(entry.abilityId());
+        if (definition == null) {
+            return;
+        }
+
+        AbilityDeliveryDefinition delivery = definition.definition().getDelivery(entry.deliveryId());
+        if (delivery == null || delivery.kind() != entry.kind()) {
+            return;
+        }
+
+        ServerLevel level = resolveServerLevel(entry.dimension());
+        if (level == null) {
+            return;
+        }
+
+        IMKEntityData casterData = entry.casterEntityId() != null ? resolveEntityData(entry.casterEntityId()) : null;
+        if (casterData == null) {
+            casterData = ownerData;
+        }
+        if (!ownerData.getEntity().isAlive() || ownerData.getEntity().isRemoved()
+                || !casterData.getEntity().isAlive() || casterData.getEntity().isRemoved()) {
+            return;
+        }
+
+        closeDelivery(entry.stableSourceId());
+
+        AbilityReactionOwner owner = new AbilityReactionOwner(ReactionOwnerType.DELIVERY, entry.stableSourceId(),
+                entry.stableSourceId(), entry.abilityId());
+        reactionOwnerRuntime.put(owner, new ReactionOwnerRuntime(
+                ownerData.getEntity().getUUID(),
+                casterData.getEntity().getUUID()
+        ));
+
+        DeliveryRuntime runtime = new DeliveryRuntime(
+                entry.stableSourceId(),
+                null,
+                level.dimension(),
+                owner,
+                new AbilityReference(entry.abilityId(), entry.grantId()),
+                entry.grantParameterOverrides(),
+                ownerData.getEntity().getUUID(),
+                casterData.getEntity().getUUID(),
+                entry.deliveryId(),
+                entry.kind(),
+                entry.callbackProvenance().withSourceId(entry.stableSourceId()),
+                entry.point(),
+                entry.radius(),
+                entry.delayTicksRemaining(),
+                entry.durationTicksRemaining(),
+                entry.tickIntervalTicks(),
+                delivery.onImpactActivationId(),
+                delivery.onAirTickActivationId(),
+                delivery.onGroundTickActivationId()
+        );
+        runtime.ticksUntilNextGroundTick(entry.ticksUntilNextGroundTick());
+        activeDeliveries.put(runtime.instanceId(), runtime);
     }
 
     private @Nullable AbilityRuntimePersonaExtension getRuntimeExtension(Persona persona) {
