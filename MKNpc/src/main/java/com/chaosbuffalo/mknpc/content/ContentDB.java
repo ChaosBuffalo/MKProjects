@@ -3,7 +3,6 @@ package com.chaosbuffalo.mknpc.content;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -12,15 +11,12 @@ import net.neoforged.neoforge.event.level.LevelEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 @EventBusSubscriber(modid = MKNpc.MODID)
 public class ContentDB {
 
-    static Map<ResourceKey<Level>, IWorldNpcData> levelCaps = new IdentityHashMap<>();
     @Nullable
     static IWorldNpcData overworldData = null;
 
@@ -36,14 +32,10 @@ public class ContentDB {
 
     @Nonnull
     public static Optional<IWorldNpcData> tryGetLevelData(Level level) {
-        IWorldNpcData cap = levelCaps.get(level.dimension());
-        if (cap == null) {
-            cap = IWorldNpcData.get(level);
-            if (cap != null) {
-                levelCaps.put(level.dimension(), cap);
-            }
+        if (level instanceof ServerLevel serverLevel) {
+            return Optional.of(IWorldNpcData.get(serverLevel));
         }
-        return Optional.ofNullable(cap);
+        return Optional.empty();
     }
 
     @Nonnull
@@ -63,23 +55,17 @@ public class ContentDB {
 
     @SubscribeEvent
     public static void onLevelLoad(LevelEvent.Load event) {
-        if (event.getLevel() instanceof ServerLevel serverLevel) {
-            IWorldNpcData worldData = IWorldNpcData.get(serverLevel);
-
-            levelCaps.put(serverLevel.dimension(), worldData);
-            if (serverLevel.dimension() == Level.OVERWORLD) {
-                overworldData = worldData;
-            }
+        if (event.getLevel() instanceof ServerLevel serverLevel
+                && serverLevel.dimension() == Level.OVERWORLD) {
+            overworldData = IWorldNpcData.get(serverLevel);
         }
     }
 
     @SubscribeEvent
     public static void onLevelUnload(LevelEvent.Unload event) {
-        if (event.getLevel() instanceof ServerLevel serverLevel) {
-            levelCaps.remove(serverLevel.dimension());
-            if (serverLevel.dimension() == Level.OVERWORLD) {
-                overworldData = null;
-            }
+        if (event.getLevel() instanceof ServerLevel serverLevel
+                && serverLevel.dimension() == Level.OVERWORLD) {
+            overworldData = null;
         }
     }
 }
