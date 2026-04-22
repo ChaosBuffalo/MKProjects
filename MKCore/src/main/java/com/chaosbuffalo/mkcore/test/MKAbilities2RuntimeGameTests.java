@@ -33,6 +33,7 @@ import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
 import com.chaosbuffalo.mkcore.item.ItemGrantedAbility;
 import com.chaosbuffalo.mkcore.test.MKTestAbilities;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -555,6 +556,95 @@ public class MKAbilities2RuntimeGameTests {
         helper.assertTrue(ownerData.getAbilityExecutor().clientSimulateAbility(AbilityGroupId.Basic, 0),
                 "client loadout simulation should allow definition-backed slots again once the mana cost is affordable");
         helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void slottedFriendlyDefinitionUsesLookedAtFriendlyTarget(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        Player ally = createTestPlayer(helper, new BlockPos(1, 2, 4));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        helper.assertTrue(ownerData.getAbilities().learnAbilityDefinition(FRIENDLY_HEAL_ABILITY, AbilitySource.ADMIN),
+                "friendly heal loadout test should learn the definition first");
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlots(1);
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(0, FRIENDLY_HEAL_ABILITY);
+
+        owner.setHealth(owner.getMaxHealth() - 4.0f);
+        ally.setHealth(ally.getMaxHealth() - 8.0f);
+        float ownerStartingHealth = owner.getHealth();
+        float allyStartingHealth = ally.getHealth();
+        lookAtEntity(owner, ally);
+
+        InvocationResult result = MKCore.getAbilityRuntimeService().executeLoadoutAbility(
+                ownerData,
+                ownerData,
+                AbilityGroupId.Basic,
+                FRIENDLY_HEAL_ABILITY
+        );
+        helper.assertTrue(result.started(), "friendly-targeted loadout execution should start with a looked-at ally");
+        helper.assertValueEqual(owner.getHealth(), ownerStartingHealth,
+                "friendly-targeted loadout execution should not fall back to self while an allied target is selected");
+        helper.assertTrue(ally.getHealth() > allyStartingHealth,
+                "friendly-targeted loadout execution should heal the looked-at allied target");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void slottedEnemyDefinitionClientSimulationRequiresLookedAtEnemy(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        Player friendly = createTestPlayer(helper, new BlockPos(1, 2, 4));
+        Zombie enemy = createTestZombie(helper, new BlockPos(4, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        helper.assertTrue(ownerData.getAbilities().learnAbilityDefinition(DELAYED_BURST_ABILITY, AbilitySource.ADMIN),
+                "enemy loadout simulation test should learn the definition first");
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlots(1);
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(0, DELAYED_BURST_ABILITY);
+
+        lookAtEntity(owner, friendly);
+        helper.assertFalse(ownerData.getAbilityExecutor().clientSimulateAbility(AbilityGroupId.Basic, 0),
+                "client loadout simulation should reject enemy-targeted definitions when a friendly target is selected");
+
+        lookAtEntity(owner, enemy);
+        helper.assertTrue(ownerData.getAbilityExecutor().clientSimulateAbility(AbilityGroupId.Basic, 0),
+                "client loadout simulation should allow enemy-targeted definitions when an enemy target is selected");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void slottedEnemyDefinitionExecutesAgainstLookedAtEnemy(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        Player friendly = createTestPlayer(helper, new BlockPos(1, 2, 4));
+        Zombie enemy = createTestZombie(helper, new BlockPos(4, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        helper.assertTrue(ownerData.getAbilities().learnAbilityDefinition(DELAYED_BURST_ABILITY, AbilitySource.ADMIN),
+                "enemy loadout execution test should learn the definition first");
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlots(1);
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(0, DELAYED_BURST_ABILITY);
+
+        float enemyStartingHealth = enemy.getHealth();
+        float friendlyStartingHealth = friendly.getHealth();
+        lookAtEntity(owner, enemy);
+
+        helper.startSequence()
+                .thenExecute(() -> {
+                    InvocationResult result = MKCore.getAbilityRuntimeService().executeLoadoutAbility(
+                            ownerData,
+                            ownerData,
+                            AbilityGroupId.Basic,
+                            DELAYED_BURST_ABILITY
+                    );
+                    helper.assertTrue(result.started(),
+                            "enemy-targeted loadout execution should start with a looked-at enemy target");
+                })
+                .thenExecuteAfter(5, () -> {
+                    helper.assertTrue(enemy.getHealth() < enemyStartingHealth,
+                            "enemy-targeted loadout execution should damage the looked-at enemy target");
+                    helper.assertValueEqual(friendly.getHealth(), friendlyStartingHealth,
+                            "enemy-targeted loadout execution should not affect a friendly target");
+                    helper.succeed();
+                });
     }
 
     @GameTest(template = "player_data_phase0")
@@ -1683,6 +1773,12 @@ public class MKAbilities2RuntimeGameTests {
         player.startUsingItem(InteractionHand.OFF_HAND);
         player.tick();
         player.tick();
+    }
+
+    private static void lookAtEntity(Player player, LivingEntity target) {
+        player.lookAt(EntityAnchorArgument.Anchor.EYES, target.getEyePosition());
+        player.yHeadRot = player.getYRot();
+        player.yBodyRot = player.getYRot();
     }
 
     private static AbilityProjectileEntity findProjectile(GameTestHelper helper, LivingEntity caster) {

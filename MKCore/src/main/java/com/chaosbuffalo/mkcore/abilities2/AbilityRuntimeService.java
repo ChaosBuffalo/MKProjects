@@ -30,6 +30,7 @@ import com.chaosbuffalo.mkcore.events.PersonaEvent;
 import com.chaosbuffalo.mkcore.network.Ability2CastPacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
+import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import com.chaosbuffalo.targeting_api.Targeting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
@@ -65,6 +66,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public class AbilityRuntimeService {
+    private static final float LOADOUT_TARGET_ACQUISITION_DISTANCE = 32.0f;
     private final AbilityDefinitionResolver definitionResolver;
     private final MemoryAbilityStateStore stateStore;
     private final AbilityPowerResolver powerResolver;
@@ -345,6 +347,10 @@ public class AbilityRuntimeService {
         if (getLoadoutGcdTicks(ownerData, activation.gcdGroup()) > 0) {
             return false;
         }
+        if ("resolved".equals(activation.targeting().type())
+                && resolveLoadoutDirectTargets(casterData, activation.targeting()) == null) {
+            return false;
+        }
 
         AbilityActionContext context = createLoadoutPreviewContext(ownerData, casterData, ability, sourceId,
                 execution.activationId(), definition, Map.of());
@@ -445,15 +451,28 @@ public class AbilityRuntimeService {
                     : InvocationResult.failed(FailureReason.UNKNOWN_ABILITY);
         }
 
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(ability.abilityId());
+        if (definition == null) {
+            return InvocationResult.failed(FailureReason.UNKNOWN_ABILITY);
+        }
+        AbilityActivationDefinition activation = definition.definition().getActivation(execution.activationId());
+        if (activation == null) {
+            return InvocationResult.failed(FailureReason.UNKNOWN_ACTIVATION);
+        }
+
         return switch (execution.kind()) {
             case DIRECT -> {
+                AbilityResolvedTargets forcedTargets = resolveLoadoutDirectTargets(casterData, activation.targeting());
+                if ("resolved".equals(activation.targeting().type()) && forcedTargets == null) {
+                    yield InvocationResult.failed(FailureReason.INVALID_TARGETS);
+                }
                 InvocationResult result = engine.activate(new ActivationRequest(
                         ownerData,
                         casterData,
                         ability,
                         execution.activationId(),
                         sourceId,
-                        null,
+                        forcedTargets,
                         null,
                         false,
                         false
@@ -466,6 +485,32 @@ public class AbilityRuntimeService {
             }
             case TOGGLE -> requestToggle(ownerData, casterData, ability, sourceId);
         };
+    }
+
+    private @Nullable AbilityResolvedTargets resolveLoadoutDirectTargets(IMKEntityData casterData,
+                                                                         AbilityTargetResolverDefinition targeting) {
+        if (!"resolved".equals(targeting.type())) {
+            return null;
+        }
+
+        LivingEntity target = switch (AbilityTargeting.relation(targeting)) {
+            case ENEMY -> TargetUtil.getSingleLivingTarget(
+                    casterData.getEntity(),
+                    LOADOUT_TARGET_ACQUISITION_DISTANCE,
+                    (caster, candidate) -> AbilityTargeting.isValidTarget(targeting, caster, candidate)
+            );
+            case FRIENDLY, ALL -> TargetUtil.getSingleLivingTargetOrSelf(
+                    casterData.getEntity(),
+                    LOADOUT_TARGET_ACQUISITION_DISTANCE,
+                    (caster, candidate) -> AbilityTargeting.isValidTarget(targeting, caster, candidate)
+            );
+        };
+        if (target == null) {
+            return null;
+        }
+
+        UUID targetId = target.getUUID();
+        return new AbilityResolvedTargets(targetId, List.of(targetId), null, null, null);
     }
 
     public InvocationResult requestToggle(IMKEntityData ownerData,
