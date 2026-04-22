@@ -12,7 +12,6 @@ import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.QuestStructureLocation;
 import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
-import com.chaosbuffalo.mknpc.block_entities.MKPoiBlockEntity;
 import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import com.chaosbuffalo.mknpc.world.gen.StructureStartExtension;
@@ -263,13 +262,6 @@ public class WorldNpcDataHandler implements IWorldNpcData {
                 key -> computeStructureEntry(chestData));
         structure.addChest(chestData);
 
-    }
-
-    @Override
-    public void addPointOfInterest(MKPoiBlockEntity entity) {
-        MKStructureEntry structure = structureIndex.computeIfAbsent(entity.getStructureId(),
-                key -> computeStructureEntry(entity));
-        structure.addPOI(entity);
     }
 
     @Override

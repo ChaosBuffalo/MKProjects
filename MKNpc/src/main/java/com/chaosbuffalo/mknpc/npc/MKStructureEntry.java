@@ -8,7 +8,6 @@ import com.chaosbuffalo.mknpc.capabilities.WorldNpcDataHandler;
 import com.chaosbuffalo.mknpc.capabilities.structure_tracking.StructureData;
 import com.chaosbuffalo.mknpc.event.WorldStructureHandler;
 import com.chaosbuffalo.mknpc.spawn.SpawnOption;
-import com.chaosbuffalo.mknpc.block_entities.MKPoiBlockEntity;
 import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
 import com.chaosbuffalo.mknpc.utils.NBTSerializableMappedData;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKStructure;
@@ -182,11 +181,6 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
 
     public NBTSerializableMappedData getCustomData() {
         return customStructureData;
-    }
-
-    public void addPOI(MKPoiBlockEntity poi) {
-        PointOfInterestEntry entry = new PointOfInterestEntry(poi);
-        putPoi(entry);
     }
 
     public void addPOI(GlobalPos location, String label, UUID structureId, UUID pointId) {

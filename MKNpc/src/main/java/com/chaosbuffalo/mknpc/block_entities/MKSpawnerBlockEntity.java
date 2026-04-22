@@ -23,7 +23,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -58,8 +57,7 @@ public class MKSpawnerBlockEntity extends BlockEntity implements IStructurePlace
     private MKEntity.NonCombatMoveType moveType;
     private ResourceLocation structureName;
     private UUID structureId;
-    private boolean needsUploadToWorld;
-    private boolean placedByStructure;
+    private boolean needsRegistration;
     private boolean needsPopulate = false;
     private final Map<ResourceLocation, UUID> notableIds = new HashMap<>();
 
@@ -70,14 +68,13 @@ public class MKSpawnerBlockEntity extends BlockEntity implements IStructurePlace
         this.spawnUUID = UUID.randomUUID();
         this.structureName = null;
         this.structureId = null;
-        this.needsUploadToWorld = false;
+        this.needsRegistration = false;
         this.respawnTime = GameConstants.TICKS_PER_SECOND * 300;
         this.ticksSinceDeath = 0;
         this.ticksSincePlayer = 0;
         this.entity = null;
         this.moveType = MKEntity.NonCombatMoveType.STATIONARY;
         this.randomSpawns = new RandomCollection<>();
-        this.placedByStructure = false;
     }
 
     @Override
@@ -162,8 +159,7 @@ public class MKSpawnerBlockEntity extends BlockEntity implements IStructurePlace
         compound.putUUID("spawnId", spawnUUID);
         compound.putInt("ticksSinceDeath", ticksSinceDeath);
         compound.putInt("moveType", moveType.ordinal());
-        compound.putBoolean("hasUploadedToWorld", needsUploadToWorld);
-        compound.putBoolean("placedByStructure", placedByStructure);
+        compound.putBoolean("hasUploadedToWorld", needsRegistration);
         compound.putInt("respawnTime", respawnTime);
         if (isInsideStructure()) {
             compound.putString("structureName", structureName.toString());
@@ -205,12 +201,9 @@ public class MKSpawnerBlockEntity extends BlockEntity implements IStructurePlace
         return SPAWN_RANGE;
     }
 
-    public void regenerateSpawnID() {
-        if (!placedByStructure) {
-            this.spawnUUID = UUID.randomUUID();
-            this.needsUploadToWorld = true;
-            this.placedByStructure = true;
-        }
+    public void initForStructure() {
+        this.spawnUUID = UUID.randomUUID();
+        this.needsRegistration = true;
     }
 
     @Override
@@ -230,10 +223,7 @@ public class MKSpawnerBlockEntity extends BlockEntity implements IStructurePlace
             setStructureId(compound.getUUID("structureId"));
         }
         if (compound.contains("hasUploadedToWorld")) {
-            needsUploadToWorld = compound.getBoolean("hasUploadedToWorld");
-        }
-        if (compound.contains("placedByStructure")) {
-            placedByStructure = compound.getBoolean("placedByStructure");
+            needsRegistration = compound.getBoolean("hasUploadedToWorld");
         }
         ticksSinceDeath = compound.getInt("ticksSinceDeath");
         if (compound.contains("spawnId")) {
@@ -363,6 +353,18 @@ public class MKSpawnerBlockEntity extends BlockEntity implements IStructurePlace
     }
 
     @Override
+    public void onLoad() {
+        super.onLoad();
+        if (!level.isClientSide() && needsRegistration && level.getServer() != null) {
+            ContentDB.getPrimaryData().addSpawner(this);
+            if (!isAir(level, getBlockPos().above())) {
+                level.setBlock(getBlockPos().above(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            }
+            needsRegistration = false;
+        }
+    }
+
+    @Override
     public void onChunkUnloaded() {
         super.onChunkUnloaded();
         clearSpawn();
@@ -384,18 +386,8 @@ public class MKSpawnerBlockEntity extends BlockEntity implements IStructurePlace
             populateRandomSpawns();
         }
         if (level != null && randomSpawns.size() > 0) {
-            if (needsUploadToWorld) {
-                MinecraftServer server = level.getServer();
-                if (server != null) {
-                    ContentDB.getPrimaryData().addSpawner(this);
-                    if (!isAir(level, getBlockPos().above())) {
-                        level.setBlock(getBlockPos().above(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-                    }
-                    needsUploadToWorld = false;
-                }
-            }
             if (!isAir(level, getBlockPos().above())) {
-                if (placedByStructure) {
+                if (isInsideStructure()) {
                     level.setBlock(getBlockPos().above(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                 } else {
                     return;

@@ -50,9 +50,9 @@ public class StructureUtils {
             BlockEntity blockEntity = worldIn.getBlockEntity(pos.below());
             if (blockEntity instanceof MKSpawnerBlockEntity spawner) {
                 worldIn.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
-                spawner.regenerateSpawnID();
                 spawner.setStructureName(structureName);
                 spawner.setStructureId(instanceId);
+                spawner.initForStructure();
             }
         } else if (function.startsWith("mkcontainer")) {
             String[] names = function.split("#", 2);

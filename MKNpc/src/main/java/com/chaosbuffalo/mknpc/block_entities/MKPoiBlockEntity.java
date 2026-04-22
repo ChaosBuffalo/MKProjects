@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc.block_entities;
 
-import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.init.MKNpcBlockEntityTypes;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import net.minecraft.core.BlockPos;
@@ -9,7 +8,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -20,8 +18,6 @@ public class MKPoiBlockEntity extends BlockEntity implements IStructurePlaced {
     private ResourceLocation structureName;
     private UUID structureId;
     private UUID poiID;
-    private boolean needsUploadToWorld;
-    private boolean placedByStructure;
     private String tag;
 
 
@@ -29,8 +25,6 @@ public class MKPoiBlockEntity extends BlockEntity implements IStructurePlaced {
         super(MKNpcBlockEntityTypes.MK_POI_BLOCK_ENTITY_TYPE.get(), blockPos, blockState);
         this.structureName = null;
         this.structureId = null;
-        this.placedByStructure = false;
-        this.needsUploadToWorld = false;
         this.poiID = UUID.randomUUID();
     }
 
@@ -73,7 +67,6 @@ public class MKPoiBlockEntity extends BlockEntity implements IStructurePlaced {
         this.structureId = structureId;
     }
 
-
     @Override
     public GlobalPos getGlobalPos() {
         return GlobalPos.of(getLevel().dimension(), getBlockPos());
@@ -85,35 +78,10 @@ public class MKPoiBlockEntity extends BlockEntity implements IStructurePlaced {
         return getLevel();
     }
 
-    public static void poiTick(Level world, BlockPos blockPos, BlockState blockState, MKPoiBlockEntity blockEntity) {
-        blockEntity.tick(world);
-    }
-
-    public void tick(Level level) {
-        if (level != null && !level.isClientSide) {
-            if (needsUploadToWorld) {
-                ContentDB.getPrimaryData().addPointOfInterest(this);
-
-                level.setBlock(getBlockPos(), Blocks.AIR.defaultBlockState(), 3);
-                needsUploadToWorld = false;
-            }
-        }
-    }
-
-    public void regenerateId() {
-        if (!placedByStructure) {
-            this.poiID = UUID.randomUUID();
-            this.needsUploadToWorld = true;
-            this.placedByStructure = true;
-        }
-    }
-
     @Override
     protected void saveAdditional(CompoundTag compound, HolderLookup.Provider registries) {
         super.saveAdditional(compound, registries);
         compound.putUUID("poiId", poiID);
-        compound.putBoolean("hasUploadedToWorld", needsUploadToWorld);
-        compound.putBoolean("placedByStructure", placedByStructure);
         if (isInsideStructure()) {
             compound.putString("structureName", structureName.toString());
             compound.putUUID("structureId", structureId);
@@ -129,13 +97,6 @@ public class MKPoiBlockEntity extends BlockEntity implements IStructurePlaced {
         if (compound.contains("structureId")) {
             setStructureId(compound.getUUID("structureId"));
         }
-        if (compound.contains("hasUploadedToWorld")) {
-            needsUploadToWorld = compound.getBoolean("hasUploadedToWorld");
-        }
-        if (compound.contains("placedByStructure")) {
-            placedByStructure = compound.getBoolean("placedByStructure");
-        }
-
         if (compound.contains("poiId")) {
             poiID = compound.getUUID("poiId");
         } else {

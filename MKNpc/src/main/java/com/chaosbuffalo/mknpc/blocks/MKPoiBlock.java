@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.blocks;
 
 
-import com.chaosbuffalo.mknpc.init.MKNpcBlockEntityTypes;
 import com.chaosbuffalo.mknpc.block_entities.MKPoiBlockEntity;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -51,8 +50,7 @@ public class MKPoiBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
-        return level.isClientSide() ? null : createTickerHelper(blockEntityType,
-                MKNpcBlockEntityTypes.MK_POI_BLOCK_ENTITY_TYPE.get(), MKPoiBlockEntity::poiTick);
+        return null;
     }
 
 }
