@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.data;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonLayoutSettings;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEvent;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
@@ -30,6 +31,7 @@ public class MKJigsawBuilder {
     private int maxDistFromCenter;
     private boolean fillFloor;
     private Optional<BlockState> fillState;
+    private Optional<MKDungeonLayoutSettings> dungeonLayout;
 
     private final HashMap<String, StructureEvent> events = new HashMap<>();
 
@@ -45,6 +47,7 @@ public class MKJigsawBuilder {
         maxDistFromCenter = 80;
         fillState = Optional.empty();
         fillFloor = false;
+        dungeonLayout = Optional.empty();
 
     }
 
@@ -97,10 +100,15 @@ public class MKJigsawBuilder {
         return this;
     }
 
+    public MKJigsawBuilder setDungeonLayout(MKDungeonLayoutSettings dungeonLayout) {
+        this.dungeonLayout = Optional.of(dungeonLayout);
+        return this;
+    }
+
     public MKJigsawStructure build() {
         var struct = new MKJigsawStructure(settings, templatePool, startJigsawName, maxDepth, heightProvider,
                 useExpansionHack, heightmapTypes, maxDistFromCenter, List.of(),
-                JigsawStructure.DEFAULT_DIMENSION_PADDING, JigsawStructure.DEFAULT_LIQUID_SETTINGS, new CompoundTag(),
+                JigsawStructure.DEFAULT_DIMENSION_PADDING, JigsawStructure.DEFAULT_LIQUID_SETTINGS, dungeonLayout, new CompoundTag(),
                 fillFloor, fillState);
         for (var entry : events.entrySet()) {
             struct.addEvent(entry.getValue());
