@@ -3,8 +3,15 @@ package com.chaosbuffalo.targeting_api;
 
 import com.mojang.logging.LogUtils;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.slf4j.Logger;
 
 
@@ -31,6 +38,18 @@ public class TargetingAPI {
      * @param modContainer the owning mod container
      */
     public TargetingAPI(IEventBus modEventBus, ModContainer modContainer) {
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, TargetingAPI::onServerTickStart);
+    }
 
+    private static void onServerTickStart(ServerTickEvent.Pre event) {
+        Targeting.clearTickCaches();
+    }
+
+    @EventBusSubscriber(modid = MODID, value = Dist.CLIENT)
+    public static class ClientEvents {
+        @SubscribeEvent
+        public static void onClientTickStart(ClientTickEvent.Pre event) {
+            Targeting.clearTickCaches();
+        }
     }
 }

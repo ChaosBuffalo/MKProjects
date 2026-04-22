@@ -1,5 +1,7 @@
 package com.chaosbuffalo.targeting_api;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.OwnableEntity;
@@ -21,19 +23,54 @@ public class Targeting {
 
     private static final List<TargetRelationCallback> relationCallbacks = new ArrayList<>();
 
-    protected static class TargetRelationCallback {
-        BiFunction<Entity, Entity, TargetRelation> func;
-        int priority;
+    // Per-tick caches, cleared at the start of each client/server tick.
+    // relationCache key: two entity IDs packed into a long (source << 32 | target);
+    //   value: TargetRelation.ordinal(). -1 sentinel means no cached entry.
+    // rootCache key: entity ID; value: the resolved root entity for that entity.
+    private static final int RELATION_CACHE_MISS = -1;
+    private static final int ROOT_ENTITY_MAX_DEPTH = 5;
+    private static final Long2IntOpenHashMap relationCache = new Long2IntOpenHashMap();
+    private static final Int2ObjectOpenHashMap<Entity> rootCache = new Int2ObjectOpenHashMap<>();
+    private static final TargetRelation[] RELATION_VALUES = TargetRelation.values();
 
-        TargetRelationCallback(BiFunction<Entity, Entity, TargetRelation> func, int priority) {
-            this.func = func;
-            this.priority = priority;
-        }
-
-        public int getPriority() {
-            return priority;
-        }
+    static {
+        relationCache.defaultReturnValue(RELATION_CACHE_MISS);
     }
+
+    static void clearTickCaches() {
+        relationCache.clear();
+        rootCache.clear();
+    }
+
+    /**
+     * Removes the cached relation for a specific entity pair.
+     * <p>
+     * Call this when a relationship between two known entities changes mid-tick.
+     * The relation will be recomputed on the next check.
+     *
+     * @param source the acting entity
+     * @param target the other entity
+     */
+    public static void invalidateRelation(Entity source, Entity target) {
+        relationCache.remove(packRelationKey(source.getId(), target.getId()));
+        relationCache.remove(packRelationKey(target.getId(), source.getId()));
+    }
+
+    /**
+     * Clears the entire per-tick relation cache.
+     * <p>
+     * Call this when a change affects an entity whose full set of cached
+     * pairs is unknown, such as a faction reassignment.
+     */
+    public static void invalidateAllRelations() {
+        relationCache.clear();
+    }
+
+    private static long packRelationKey(int sourceId, int targetId) {
+        return ((long) sourceId << 32) | (targetId & 0xFFFFFFFFL);
+    }
+
+    protected record TargetRelationCallback(BiFunction<Entity, Entity, TargetRelation> func, int priority) {}
 
     /**
      * Describes how one {@link Entity} relates to another for targeting purposes.
@@ -95,12 +132,22 @@ public class Targeting {
     }
 
     private static TargetRelation getTargetRelationInternal(Entity source, Entity target) {
-        // can't be enemy with self
-        //need to handle null
         if (source == null || target == null) {
             return TargetRelation.NEUTRAL;
         }
 
+        long key = packRelationKey(source.getId(), target.getId());
+        int cached = relationCache.get(key);
+        if (cached != RELATION_CACHE_MISS) {
+            return RELATION_VALUES[cached];
+        }
+
+        TargetRelation result = resolveRelation(source, target);
+        relationCache.put(key, result.ordinal());
+        return result;
+    }
+
+    private static TargetRelation resolveRelation(Entity source, Entity target) {
         if (areEntitiesEqual(source, target)) {
             return TargetRelation.FRIEND;
         }
@@ -108,13 +155,13 @@ public class Targeting {
         if (!EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(target)) {
             return TargetRelation.UNHANDLED;
         }
-        // can't be enemy with entities on same team
+
         if (source.isAlliedTo(target)) {
             return TargetRelation.FRIEND;
         }
 
         for (TargetRelationCallback func : relationCallbacks) {
-            TargetRelation result = func.func.apply(source, target);
+            TargetRelation result = func.func().apply(source, target);
             if (result != TargetRelation.UNHANDLED) {
                 return result;
             }
@@ -132,7 +179,7 @@ public class Targeting {
      */
     public static void registerRelationCallback(BiFunction<Entity, Entity, TargetRelation> callback) {
         relationCallbacks.add(new TargetRelationCallback(callback, 10));
-        relationCallbacks.sort(Comparator.comparingInt(TargetRelationCallback::getPriority));
+        relationCallbacks.sort(Comparator.comparingInt(TargetRelationCallback::priority));
     }
 
     /**
@@ -145,7 +192,7 @@ public class Targeting {
      */
     public static void registerRelationCallback(BiFunction<Entity, Entity, TargetRelation> callback, int priority) {
         relationCallbacks.add(new TargetRelationCallback(callback, priority));
-        relationCallbacks.sort(Comparator.comparingInt(TargetRelationCallback::getPriority));
+        relationCallbacks.sort(Comparator.comparingInt(TargetRelationCallback::priority));
     }
 
     /**
@@ -161,7 +208,14 @@ public class Targeting {
     }
 
     private static Entity getRootEntity(Entity source) {
-        return getRootEntity(source, 5);
+        int id = source.getId();
+        Entity cached = rootCache.get(id);
+        if (cached != null) {
+            return cached;
+        }
+        Entity root = getRootEntity(source, ROOT_ENTITY_MAX_DEPTH);
+        rootCache.put(id, root);
+        return root;
     }
 
     private static Entity getRootEntity(Entity source, int depth) {
