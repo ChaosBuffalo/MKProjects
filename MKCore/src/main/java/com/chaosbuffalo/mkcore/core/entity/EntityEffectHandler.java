@@ -8,7 +8,6 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectTickAction;
 import com.chaosbuffalo.mkcore.network.EntityEffectPacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
-import com.google.common.collect.ImmutableList;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -31,6 +30,8 @@ public class EntityEffectHandler {
     public class EffectSource {
         private final UUID sourceId;
         protected final Map<MKEffect, MKActiveEffect> activeEffectMap = new HashMap<>();
+        private final List<MKActiveEffect> pendingUpdates = new ArrayList<>();
+        private final List<MKActiveEffect> pendingRemovals = new ArrayList<>();
 
         public EffectSource(UUID sourceId) {
             this.sourceId = sourceId;
@@ -40,15 +41,24 @@ public class EntityEffectHandler {
             if (isEmpty())
                 return;
 
-            List<MKActiveEffect> activeEffects = ImmutableList.copyOf(activeEffectMap.values());
-            activeEffects.forEach(active -> {
+            for (MKActiveEffect active : activeEffectMap.values()) {
                 MKEffectTickAction action = active.tick(entityData);
                 if (action == MKEffectTickAction.Update) {
-                    onEffectUpdated(active);
+                    pendingUpdates.add(active);
                 } else if (action == MKEffectTickAction.Remove) {
-                    removeEffectInstance(active);
+                    pendingRemovals.add(active);
                 }
-            });
+            }
+
+            for (MKActiveEffect active : pendingUpdates) {
+                onEffectUpdated(active);
+            }
+            pendingUpdates.clear();
+
+            for (MKActiveEffect active : pendingRemovals) {
+                removeEffectInstance(active);
+            }
+            pendingRemovals.clear();
         }
 
         private void removeEffectInstance(MKActiveEffect expiredInstance) {
