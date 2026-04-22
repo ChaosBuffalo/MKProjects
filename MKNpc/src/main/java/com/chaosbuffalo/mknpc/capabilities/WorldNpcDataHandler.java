@@ -26,6 +26,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -149,13 +150,14 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     }
 
     @Override
-    public Optional<QuestChainBuildResult> buildQuest(QuestDefinition definition, BlockPos pos) {
+    public Optional<QuestChainBuildResult> buildQuest(QuestDefinition definition, BlockPos pos, ResourceKey<Level> dimension) {
         Set<QuestStructureLocation>structuresNeeded = definition.getStructuresNeeded();
         if (hasStructureInstances(structuresNeeded)) {
             Map<QuestStructureLocation, List<MKStructureEntry>> possibilities = structuresNeeded.stream()
                     .map(x -> new Pair<>(x, structureToInstanceIndex.get(x.getStructureId())))
                     .map(x -> x.mapSecond(ids -> ids.stream().map(structureIndex::get)
                             .filter(Objects::nonNull)
+                            .filter(y -> y.getDimension().filter(dimension::equals).isPresent())
                             .filter(y -> definition.doesStructureMeetRequirements(x.getFirst(), y))))
                     .collect(Collectors.toMap(Pair::getFirst, pair -> pair.getSecond().collect(Collectors.toList())));
             if (possibilities.entrySet().stream().anyMatch(x -> x.getValue().isEmpty())) {

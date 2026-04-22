@@ -18,6 +18,7 @@ import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
@@ -68,6 +69,10 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         } else {
             return ChunkPos.ZERO;
         }
+    }
+
+    public Optional<ResourceKey<Level>> getDimension() {
+        return structureData != null ? Optional.of(structureData.getWorldKey()) : Optional.empty();
     }
 
     public MKStructureEntry(WorldNpcDataHandler worldData) {

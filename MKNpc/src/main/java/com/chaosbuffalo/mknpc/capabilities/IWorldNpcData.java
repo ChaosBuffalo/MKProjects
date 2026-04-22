@@ -14,6 +14,7 @@ import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -55,7 +56,7 @@ public interface IWorldNpcData extends INBTSerializable<CompoundTag> {
     @Nullable
     QuestChainInstance getQuest(UUID questId);
 
-    Optional<QuestChainBuildResult> buildQuest(QuestDefinition definition, BlockPos pos);
+    Optional<QuestChainBuildResult> buildQuest(QuestDefinition definition, BlockPos pos, ResourceKey<Level> dimension);
 
     @Nullable
     NotableChestEntry getNotableChest(UUID id);

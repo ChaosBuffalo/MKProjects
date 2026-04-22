@@ -160,7 +160,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             return;
         }
         if (server != null && entry.getQuestId() == null) {
-            Optional<QuestChainBuildResult> quest = ContentDB.getQuestDB().buildQuest(questDef, getSpawnPos());
+            Optional<QuestChainBuildResult> quest = ContentDB.getQuestDB().buildQuest(questDef, getSpawnPos(), entity.level().dimension());
             if (quest.isPresent()) {
                 QuestChainBuildResult result = quest.get();
                 QuestChainInstance newQuest = result.instance;

@@ -41,6 +41,10 @@ public class StructureData implements INBTSerializable<CompoundTag> {
         return chunkPos;
     }
 
+    public ResourceKey<Level> getWorldKey() {
+        return worldKey;
+    }
+
     public BoundingBox getBoundingBox() {
         return boundingBox;
     }

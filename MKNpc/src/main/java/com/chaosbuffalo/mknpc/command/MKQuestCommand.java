@@ -53,7 +53,7 @@ public class MKQuestCommand {
         if (definition != null) {
             BlockPos pos = player.blockPosition();
             IWorldNpcData questDatabase = ContentDB.getQuestDB();
-            Optional<QuestChainBuildResult> quest = questDatabase.buildQuest(definition, pos);
+            Optional<QuestChainBuildResult> quest = questDatabase.buildQuest(definition, pos, player.level().dimension());
             if (quest.isPresent()) {
                 QuestChainInstance newQuest = quest.get().instance;
                 player.sendSystemMessage(Component.literal("Generated quest: " + newQuest.getQuestId()));
