@@ -91,7 +91,20 @@ public class Targeting {
         /**
          * No relation could be determined by the current checks.
          */
-        UNHANDLED
+        UNHANDLED;
+
+        public boolean isFriendly() { return this == FRIEND; }
+        public boolean isHostile()  { return this == ENEMY; }
+        public boolean isNeutral()  { return this == NEUTRAL; }
+        public boolean isHandled()  { return this != UNHANDLED; }
+
+        public TargetRelation opposite() {
+            return switch (this) {
+                case FRIEND -> ENEMY;
+                case ENEMY  -> FRIEND;
+                default     -> this;
+            };
+        }
     }
 
     private static final EnumSet<TargetRelation> FRIEND_SET  = EnumSet.of(TargetRelation.FRIEND);

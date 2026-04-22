@@ -33,7 +33,11 @@ public class PlayerFactionEntry implements IMKSerializable<CompoundTag> {
 
     public void setFactionScore(int factionScore) {
         this.factionScore = factionScore;
-        factionStatus = PlayerFactionStatus.forScore(factionScore);
+        PlayerFactionStatus newStatus = PlayerFactionStatus.forScore(factionScore);
+        if (newStatus != factionStatus) {
+            factionStatus = newStatus;
+            Targeting.invalidateAllRelations();
+        }
         markDirty();
     }
 

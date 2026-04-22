@@ -61,20 +61,18 @@ public enum PlayerFactionStatus {
         return relation;
     }
 
-    public static PlayerFactionStatus forScore(int factionAmount) {
-        PlayerFactionStatus status = PlayerFactionStatus.UNKNOWN;
-        for (PlayerFactionStatus playerFactionStatus : sortedStatus) {
-            int threshold = playerFactionStatus.getThreshold();
-            if (threshold < 0) {
-                if (factionAmount <= threshold && threshold < status.getThreshold()) {
-                    status = playerFactionStatus;
-                }
-            } else {
-                if (factionAmount >= threshold && threshold >= status.getThreshold()) {
-                    status = playerFactionStatus;
-                }
+    public static PlayerFactionStatus forScore(int score) {
+        if (score < 0) {
+            for (PlayerFactionStatus s : sortedStatus) {
+                if (s.threshold < 0 && score <= s.threshold) return s;
             }
+        } else {
+            PlayerFactionStatus result = UNKNOWN;
+            for (PlayerFactionStatus s : sortedStatus) {
+                if (s.threshold >= 0 && score >= s.threshold) result = s;
+            }
+            return result;
         }
-        return status;
+        return UNKNOWN;
     }
 }

@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.PlayerFactionEntry;
+import com.chaosbuffalo.targeting_api.Targeting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -148,11 +149,13 @@ public class PlayerFactionHandler implements IPlayerFaction {
 
         public void setNpcFactionOverride(UUID spawnId, int factionScore) {
             overrideMap.computeIfAbsent(spawnId, this::createNewOverrideEntry).setFactionScore(factionScore);
+            Targeting.invalidateAllRelations();
         }
 
         public void clearNpcFactionOverride(UUID spawnId) {
             if (overrideMap.remove(spawnId) != null) {
                 overrideUpdater.markDirty(spawnId);
+                Targeting.invalidateAllRelations();
             }
         }
 

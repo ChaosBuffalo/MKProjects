@@ -218,6 +218,7 @@ public class TargetingContext {
          * @return the created targeting context
          */
         public TargetingContext build() {
+            if (targetTest == null) throw new IllegalStateException("targetTest must be set before building a TargetingContext");
             return new TargetingContext(this);
         }
 

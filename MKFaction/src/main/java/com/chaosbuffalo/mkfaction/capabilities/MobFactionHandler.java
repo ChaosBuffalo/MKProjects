@@ -40,6 +40,7 @@ public class MobFactionHandler implements IMobFaction {
     public void setFaction(@Nullable Holder<MKFaction> faction) {
         this.faction = faction;
         if (!getEntity().level().isClientSide) {
+            Targeting.invalidateAllRelations();
             syncToAllTracking();
         }
     }
