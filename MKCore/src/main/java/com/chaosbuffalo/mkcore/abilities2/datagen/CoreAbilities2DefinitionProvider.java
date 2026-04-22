@@ -55,10 +55,12 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
         add(createProjectileGround());
         add(createAiSelfHeal());
         add(createAiFirebolt());
+        add(createFriendlyHeal());
         add(createCooldownProbe());
         add(createCostProbe());
         add(createDelayedBurst());
         add(createHealingCloud());
+        add(createFireCloud());
         AbilityDefinitionData gcdSharedProbe = createGcdSharedProbe();
         add(gcdSharedProbe);
         add(AbilityVariants.variant(
@@ -277,7 +279,7 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                         MKCore.makeRL("test_abilities2_ai_firebolt"),
                         "Abilities2 AI Firebolt",
                         "A threat-targeted AI projectile activation used to validate NPC selection of abilities2 definitions.",
-                        AbilityDatagenKeys.TARGET_RESOLVED,
+                        AbilityDatagenKeys.TARGET_RESOLVED_ENEMY,
                         AbilityAction.ActionTarget.PRIMARY_ENTITY,
                         new AbilityScalar.ConstantScalar(1.6),
                         new AbilityScalar.ConstantScalar(0.0)
@@ -289,7 +291,7 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
         builder.activation(AbilityArchetypes.CAST_ACTIVATION_ID, new AbilityActivationDefinition(
                 ActivationKind.AI,
                 AbilityArchetypes.CAST_ENTRY_POINT,
-                AbilityDatagenKeys.TARGET_RESOLVED,
+                AbilityDatagenKeys.TARGET_RESOLVED_ENEMY,
                 List.of(),
                 List.of(),
                 null,
@@ -317,6 +319,26 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                         AbilityAction.ActionTarget.PRIMARY_ENTITY,
                         new AbilityScalar.ParameterScalar("impact_damage"),
                         CoreDamageTypes.FireDamage.getId()
+                )
+        ));
+        return builder.build();
+    }
+
+    private AbilityDefinitionData createFriendlyHeal() {
+        AbilityDefinitionBuilder builder = AbilityArchetypes.singleTargetSpell(
+                        MKCore.makeRL("test_abilities2_friendly_heal"),
+                        "Abilities2 Friendly Heal",
+                        "A friendly-targeted direct heal used to validate relation-aware forced target checks.",
+                        AbilityDatagenKeys.TARGET_RESOLVED_FRIENDLY
+                )
+                .school(AbilityDatagenKeys.SCHOOL_RESTORATION)
+                .tag(AbilityDatagenKeys.TAG_HEAL)
+                .parameter(floatParameter("amount", 10.0f, "Heal amount"));
+
+        builder.entryPoint(AbilityArchetypes.CAST_ENTRY_POINT, List.of(
+                new AbilityAction.HealAction(
+                        AbilityAction.ActionTarget.PRIMARY_ENTITY,
+                        new AbilityScalar.ParameterScalar("amount")
                 )
         ));
         return builder.build();
@@ -374,7 +396,7 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
         builder.activation("cast", new AbilityActivationDefinition(
                 ActivationKind.MANUAL,
                 "cast",
-                AbilityDatagenKeys.TARGET_RESOLVED,
+                AbilityDatagenKeys.TARGET_RESOLVED_ENEMY,
                 List.of(),
                 List.of(),
                 null,
@@ -387,7 +409,7 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
         builder.activation("burst_impact", new AbilityActivationDefinition(
                 ActivationKind.PROC,
                 "burst_impact",
-                AbilityDatagenKeys.TARGET_RESOLVED,
+                AbilityDatagenKeys.TARGET_RESOLVED_ENEMY,
                 List.of(),
                 List.of(),
                 null,
@@ -451,7 +473,7 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
         builder.activation("cloud_tick", new AbilityActivationDefinition(
                 ActivationKind.PROC,
                 "cloud_tick",
-                AbilityDatagenKeys.TARGET_RESOLVED,
+                AbilityDatagenKeys.TARGET_RESOLVED_FRIENDLY,
                 List.of(),
                 List.of(),
                 null,
@@ -468,6 +490,70 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                 new AbilityAction.HealAction(
                         AbilityAction.ActionTarget.PRIMARY_ENTITY,
                         new AbilityScalar.ParameterScalar("tick_heal")
+                )
+        ));
+        builder.delivery("cloud", new AbilityDeliveryDefinition(
+                DeliveryKind.AREA_CLOUD,
+                null,
+                null,
+                List.of(),
+                null,
+                new AbilityScalar.ConstantScalar(14.0),
+                new AbilityScalar.ConstantScalar(4.0),
+                new AbilityScalar.ConstantScalar(2.0),
+                null,
+                null,
+                "cloud_tick"
+        ));
+        return builder.build();
+    }
+
+    private AbilityDefinitionData createFireCloud() {
+        AbilityDefinitionBuilder builder = AbilityDefinitionBuilder.create(
+                        MKCore.makeRL("test_abilities2_fire_cloud"),
+                        "Abilities2 Fire Cloud",
+                        "Creates a short-lived damage cloud that should only select enemies in range.",
+                        AbilityDatagenKeys.SLOT_FAMILY_BASIC
+                )
+                .school(AbilityDatagenKeys.SCHOOL_EVOCATION)
+                .tag(AbilityDatagenKeys.TAG_SPELL)
+                .tag(AbilityDatagenKeys.TAG_FIRE)
+                .parameter(floatParameter("tick_damage", 2.0f, "Cloud pulse damage"));
+
+        builder.activation("cast", new AbilityActivationDefinition(
+                ActivationKind.MANUAL,
+                "cast",
+                AbilityDatagenKeys.TARGET_SELF,
+                List.of(),
+                List.of(),
+                null,
+                0,
+                false,
+                AbilityArchetypes.STANDARD_MANUAL_INTERRUPT,
+                InterruptRefundPolicy.NONE,
+                new ActivationBehavior.InstantBehavior()
+        ));
+        builder.activation("cloud_tick", new AbilityActivationDefinition(
+                ActivationKind.PROC,
+                "cloud_tick",
+                AbilityDatagenKeys.TARGET_RESOLVED_ENEMY,
+                List.of(),
+                List.of(),
+                null,
+                0,
+                false,
+                AbilityArchetypes.INTERNAL_INTERRUPT,
+                InterruptRefundPolicy.NONE,
+                new ActivationBehavior.InstantBehavior()
+        ));
+        builder.entryPoint("cast", List.of(
+                new AbilityAction.StartDeliveryAction("cloud", AbilityAction.ActionTarget.SELF)
+        ));
+        builder.entryPoint("cloud_tick", List.of(
+                new AbilityAction.DamageAction(
+                        AbilityAction.ActionTarget.PRIMARY_ENTITY,
+                        new AbilityScalar.ParameterScalar("tick_damage"),
+                        CoreDamageTypes.FireDamage.getId()
                 )
         ));
         builder.delivery("cloud", new AbilityDeliveryDefinition(

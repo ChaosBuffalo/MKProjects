@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mkcore.abilities2.datagen;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.abilities2.AbilityTargeting;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityTargetRelation;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityTargetResolverDefinition;
 import net.minecraft.resources.ResourceLocation;
 
@@ -26,6 +28,10 @@ public final class AbilityDatagenKeys {
     public static final AbilityTargetResolverDefinition TARGET_EVENT_TARGET = new AbilityTargetResolverDefinition("event_target");
     public static final AbilityTargetResolverDefinition TARGET_EVENT_ACTOR = new AbilityTargetResolverDefinition("event_actor");
     public static final AbilityTargetResolverDefinition TARGET_RESOLVED = new AbilityTargetResolverDefinition("resolved");
+    public static final AbilityTargetResolverDefinition TARGET_RESOLVED_FRIENDLY =
+            AbilityTargeting.resolved(AbilityTargetRelation.FRIENDLY);
+    public static final AbilityTargetResolverDefinition TARGET_RESOLVED_ENEMY =
+            AbilityTargeting.resolved(AbilityTargetRelation.ENEMY);
 
     private AbilityDatagenKeys() {
     }

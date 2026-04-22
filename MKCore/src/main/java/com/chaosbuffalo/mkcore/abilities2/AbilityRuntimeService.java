@@ -30,6 +30,7 @@ import com.chaosbuffalo.mkcore.events.PersonaEvent;
 import com.chaosbuffalo.mkcore.network.Ability2CastPacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
+import com.chaosbuffalo.targeting_api.Targeting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -64,9 +65,6 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public class AbilityRuntimeService {
-    private static final AbilityTargetResolverDefinition RESOLVED_TARGETING =
-            new AbilityTargetResolverDefinition("resolved");
-
     private final AbilityDefinitionResolver definitionResolver;
     private final MemoryAbilityStateStore stateStore;
     private final AbilityPowerResolver powerResolver;
@@ -1830,13 +1828,14 @@ public class AbilityRuntimeService {
                                                    IMKEntityData casterData,
                                                    String activationId,
                                                    AbilityResolvedTargets forcedTargets) {
+        AbilityTargetResolverDefinition targeting = resolveDeliveryCallbackTargeting(runtime.ability().abilityId(), activationId);
         return engine.activateInternal(new InternalActivationRequest(
                 ownerData,
                 casterData,
                 runtime.ability(),
                 activationId,
                 runtime.owner().stableSourceId(),
-                forcedTargets,
+                adaptDeliveryTargets(casterData, targeting, forcedTargets),
                 null,
                 false,
                 false,
@@ -1845,12 +1844,75 @@ public class AbilityRuntimeService {
                 runtime.callbackProvenance().invocationId(),
                 runtime.callbackProvenance().rootInvocationId(),
                 null,
-                RESOLVED_TARGETING,
+                targeting,
                 runtime.grantParameterOverrides(),
                 runtime.owner(),
                 false,
                 false
         ));
+    }
+
+    private AbilityTargetResolverDefinition resolveDeliveryCallbackTargeting(ResourceLocation abilityId, String activationId) {
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(abilityId);
+        if (definition == null) {
+            return AbilityDatagenKeys.TARGET_RESOLVED;
+        }
+        AbilityActivationDefinition activation = definition.definition().getActivation(activationId);
+        if (activation == null || "none".equals(activation.targeting().type())) {
+            return AbilityDatagenKeys.TARGET_RESOLVED;
+        }
+        return activation.targeting();
+    }
+
+    private AbilityResolvedTargets adaptDeliveryTargets(IMKEntityData casterData,
+                                                        AbilityTargetResolverDefinition targeting,
+                                                        AbilityResolvedTargets forcedTargets) {
+        return switch (targeting.type()) {
+            case "none" -> new AbilityResolvedTargets(
+                    null,
+                    List.of(),
+                    forcedTargets.point(),
+                    forcedTargets.hitResult(),
+                    forcedTargets.deliveryId()
+            );
+            case "self" -> {
+                UUID casterId = casterData.getEntity().getUUID();
+                yield new AbilityResolvedTargets(
+                        casterId,
+                        List.of(casterId),
+                        forcedTargets.point(),
+                        forcedTargets.hitResult(),
+                        forcedTargets.deliveryId()
+                );
+            }
+            case "resolved" -> filterDeliveryTargets(casterData, targeting, forcedTargets);
+            default -> forcedTargets;
+        };
+    }
+
+    private AbilityResolvedTargets filterDeliveryTargets(IMKEntityData casterData,
+                                                         AbilityTargetResolverDefinition targeting,
+                                                         AbilityResolvedTargets forcedTargets) {
+        List<UUID> filtered = new ArrayList<>(forcedTargets.entityIds().size());
+        for (UUID entityId : forcedTargets.entityIds()) {
+            LivingEntity target = findEntity(entityId);
+            if (target == null || !target.isAlive()
+                    || !AbilityTargeting.isValidTarget(targeting, casterData.getEntity(), target)) {
+                continue;
+            }
+            filtered.add(entityId);
+        }
+
+        UUID primaryEntityId = filtered.contains(forcedTargets.primaryEntityId())
+                ? forcedTargets.primaryEntityId()
+                : (filtered.isEmpty() ? null : filtered.getFirst());
+        return new AbilityResolvedTargets(
+                primaryEntityId,
+                List.copyOf(filtered),
+                forcedTargets.point(),
+                forcedTargets.hitResult(),
+                forcedTargets.deliveryId()
+        );
     }
 
     private AbilityResolvedTargets impactTargets(AbilityProjectileEntity projectile, HitResult result) {
@@ -2002,7 +2064,36 @@ public class AbilityRuntimeService {
         if (definition == null) {
             return null;
         }
-        return new Ability2VisualAbility(abilityId, definition.definition().data().presentation());
+        return new Ability2VisualAbility(
+                abilityId,
+                definition.definition().data().presentation(),
+                AbilityTargeting.toTargetingContext(resolveVisualTargeting(definition))
+        );
+    }
+
+    private AbilityTargetResolverDefinition resolveVisualTargeting(PatchedAbilityDefinition definition) {
+        try {
+            String manualActivationId = resolveSingleActivationId(definition, ActivationKind.MANUAL);
+            if (manualActivationId != null) {
+                AbilityActivationDefinition activation = definition.definition().getActivation(manualActivationId);
+                if (activation != null) {
+                    return activation.targeting();
+                }
+            }
+        } catch (IllegalStateException ignored) {
+        }
+
+        try {
+            String aiActivationId = resolveSingleActivationId(definition, ActivationKind.AI);
+            if (aiActivationId != null) {
+                AbilityActivationDefinition activation = definition.definition().getActivation(aiActivationId);
+                if (activation != null) {
+                    return activation.targeting();
+                }
+            }
+        } catch (IllegalStateException ignored) {
+        }
+        return AbilityDatagenKeys.TARGET_SELF;
     }
 
     private void syncRestoredDirectCastStates(IMKEntityData ownerData,
@@ -2131,10 +2222,13 @@ public class AbilityRuntimeService {
             return false;
         }
 
+        Targeting.TargetRelation resolvedRelation = Targeting.getTargetRelation(owner, participant);
         return switch (relation) {
             case IS_SELF -> ownerEntityId.equals(participantEntityId);
-            case IS_ALLY -> !ownerEntityId.equals(participantEntityId) && owner.isAlliedTo(participant);
-            case IS_ENEMY -> !ownerEntityId.equals(participantEntityId) && !owner.isAlliedTo(participant);
+            case IS_ALLY -> !ownerEntityId.equals(participantEntityId)
+                    && resolvedRelation == Targeting.TargetRelation.FRIEND;
+            case IS_ENEMY -> !ownerEntityId.equals(participantEntityId)
+                    && resolvedRelation == Targeting.TargetRelation.ENEMY;
         };
     }
 

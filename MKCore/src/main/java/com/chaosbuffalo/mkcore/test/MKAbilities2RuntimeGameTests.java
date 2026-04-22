@@ -74,6 +74,8 @@ public class MKAbilities2RuntimeGameTests {
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_delayed_burst");
     private static final ResourceLocation HEALING_CLOUD_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_healing_cloud");
+    private static final ResourceLocation FIRE_CLOUD_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_fire_cloud");
     private static final ResourceLocation SPELL_CRIT_PASSIVE_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_spell_crit_passive");
     private static final ResourceLocation COOLDOWN_PROBE_ABILITY =
@@ -90,6 +92,8 @@ public class MKAbilities2RuntimeGameTests {
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_firebolt");
     private static final ResourceLocation AI_FIREBOLT_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_ai_firebolt");
+    private static final ResourceLocation FRIENDLY_HEAL_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_friendly_heal");
     private static final ResourceLocation SELF_HEAL_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_self_heal");
     private static final ResourceLocation MENDING_CHANNEL_ABILITY =
@@ -195,7 +199,7 @@ public class MKAbilities2RuntimeGameTests {
     @GameTest(template = "player_data_phase0")
     public static void delayedBurstDefinitionDetonatesAfterConfiguredDelay(GameTestHelper helper) {
         Player caster = createTestPlayer(helper, new BlockPos(1, 2, 1));
-        Player target = createTestPlayer(helper, new BlockPos(4, 2, 1));
+        Zombie target = createTestZombie(helper, new BlockPos(4, 2, 1));
         var casterData = MKCore.getEntityDataOrThrow(caster);
 
         helper.assertTrue(
@@ -269,6 +273,178 @@ public class MKAbilities2RuntimeGameTests {
                 .thenExecuteAfter(3, () -> {
                     helper.assertTrue(caster.getHealth() > startingHealth,
                             "healing cloud should heal the caster once its first ground pulse fires");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void friendlyResolvedActivationRejectsEnemyForcedTarget(GameTestHelper helper) {
+        Player caster = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        Player ally = createTestPlayer(helper, new BlockPos(3, 2, 1));
+        Zombie enemy = createTestZombie(helper, new BlockPos(5, 2, 1));
+        var casterData = MKCore.getEntityDataOrThrow(caster);
+
+        helper.assertTrue(
+                MKCore.getAbilityDefinitionService().getResolver().resolvePatched(FRIENDLY_HEAL_ABILITY) != null,
+                "generated friendly heal definition should be loaded for the integration test"
+        );
+
+        InvocationResult invalidResult = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                casterData,
+                casterData,
+                new AbilityReference(FRIENDLY_HEAL_ABILITY, null),
+                "cast",
+                null,
+                singleTarget(enemy),
+                null,
+                false,
+                false
+        ));
+        helper.assertFalse(invalidResult.started(),
+                "friendly-targeted activations should reject enemy forced targets");
+        helper.assertValueEqual(invalidResult.failureReason(), FailureReason.INVALID_TARGETS,
+                "friendly-targeted activation enemy rejection reason");
+
+        ally.setHealth(ally.getMaxHealth() - 6.0f);
+        float allyStartingHealth = ally.getHealth();
+        InvocationResult validResult = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                casterData,
+                casterData,
+                new AbilityReference(FRIENDLY_HEAL_ABILITY, null),
+                "cast",
+                null,
+                singleTarget(ally),
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(validResult.started(),
+                "friendly-targeted activations should accept allied forced targets");
+        helper.assertTrue(ally.getHealth() > allyStartingHealth,
+                "friendly-targeted activation should heal the allied target");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void enemyResolvedAiActivationRejectsFriendlyForcedTarget(GameTestHelper helper) {
+        Player caster = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        Player friendly = createTestPlayer(helper, new BlockPos(3, 2, 1));
+        Zombie enemy = createTestZombie(helper, new BlockPos(5, 2, 1));
+        var casterData = MKCore.getEntityDataOrThrow(caster);
+
+        helper.assertTrue(
+                MKCore.getAbilityDefinitionService().getResolver().resolvePatched(AI_FIREBOLT_ABILITY) != null,
+                "generated AI firebolt definition should be loaded for the integration test"
+        );
+
+        InvocationResult invalidResult = MKCore.getAbilityRuntimeService().activateAiAbility(
+                casterData,
+                casterData,
+                new AbilityReference(AI_FIREBOLT_ABILITY, null),
+                "cast",
+                singleTarget(friendly)
+        );
+        helper.assertFalse(invalidResult.started(),
+                "enemy-targeted AI activations should reject friendly forced targets");
+        helper.assertValueEqual(invalidResult.failureReason(), FailureReason.INVALID_TARGETS,
+                "enemy-targeted AI activation friendly rejection reason");
+
+        float enemyStartingHealth = enemy.getHealth();
+        InvocationResult validResult = MKCore.getAbilityRuntimeService().activateAiAbility(
+                casterData,
+                casterData,
+                new AbilityReference(AI_FIREBOLT_ABILITY, null),
+                "cast",
+                singleTarget(enemy)
+        );
+        helper.assertTrue(validResult.started(),
+                "enemy-targeted AI activations should accept enemy forced targets");
+
+        AbilityProjectileEntity projectile = findProjectile(helper, caster);
+        boolean handled = MKCore.getAbilityRuntimeService().handleProjectileImpact(
+                projectile,
+                caster,
+                new EntityHitResult(enemy)
+        );
+        helper.assertTrue(handled, "enemy-targeted AI projectile impact should complete normally");
+        helper.assertTrue(enemy.getHealth() < enemyStartingHealth,
+                "enemy-targeted AI projectile should damage the enemy target");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void delayedBurstEnemyCallbackIgnoresCloserFriendlyTarget(GameTestHelper helper) {
+        Player caster = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        Player friendly = createTestPlayer(helper, new BlockPos(8, 2, 1));
+        Zombie enemy = createTestZombie(helper, new BlockPos(4, 2, 1));
+        var casterData = MKCore.getEntityDataOrThrow(caster);
+
+        float friendlyStartingHealth = friendly.getHealth();
+        float enemyStartingHealth = enemy.getHealth();
+        Vec3[] burstCenter = new Vec3[1];
+
+        helper.startSequence()
+                .thenExecute(() -> {
+                    burstCenter[0] = enemy.position();
+                    InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                            casterData,
+                            casterData,
+                            new AbilityReference(DELAYED_BURST_ABILITY, null),
+                            "cast",
+                            null,
+                            singleTarget(enemy),
+                            null,
+                            false,
+                            false
+                    ));
+                    helper.assertTrue(result.started(), "delayed burst enemy callback probe should start");
+
+                    friendly.moveTo(burstCenter[0].x + 0.2, burstCenter[0].y, burstCenter[0].z, 0.0f, 0.0f);
+                    enemy.moveTo(burstCenter[0].x + 1.1, burstCenter[0].y, burstCenter[0].z, 0.0f, 0.0f);
+                })
+                .thenExecuteAfter(6, () -> {
+                    helper.assertValueEqual(friendly.getHealth(), friendlyStartingHealth,
+                            "enemy-targeted burst callbacks should ignore closer friendly targets");
+                    helper.assertTrue(enemy.getHealth() < enemyStartingHealth,
+                            "enemy-targeted burst callbacks should still damage a valid enemy in radius");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void fireCloudEnemyCallbackTargetsEnemyInsteadOfCaster(GameTestHelper helper) {
+        Player caster = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        Zombie enemy = createTestZombie(helper, new BlockPos(3, 2, 1));
+        var casterData = MKCore.getEntityDataOrThrow(caster);
+
+        helper.assertTrue(
+                MKCore.getAbilityDefinitionService().getResolver().resolvePatched(FIRE_CLOUD_ABILITY) != null,
+                "generated fire cloud definition should be loaded for the integration test"
+        );
+
+        float casterStartingHealth = caster.getHealth();
+        float enemyStartingHealth = enemy.getHealth();
+
+        helper.startSequence()
+                .thenExecute(() -> {
+                    InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                            casterData,
+                            casterData,
+                            new AbilityReference(FIRE_CLOUD_ABILITY, null),
+                            "cast",
+                            null,
+                            null,
+                            null,
+                            false,
+                            false
+                    ));
+                    helper.assertTrue(result.started(), "fire cloud activation should start");
+                })
+                .thenExecuteAfter(6, () -> {
+                    helper.assertValueEqual(caster.getHealth(), casterStartingHealth,
+                            "enemy-targeted area clouds should not treat the caster as the selected target");
+                    helper.assertTrue(enemy.getHealth() < enemyStartingHealth,
+                            "enemy-targeted area clouds should damage a valid enemy in range");
                     helper.succeed();
                 });
     }
@@ -1076,7 +1252,7 @@ public class MKAbilities2RuntimeGameTests {
     @GameTest(template = "player_data_phase0")
     public static void serializedProjectileDeliveryRestoresMidFlightImpactCallbacksAfterJoin(GameTestHelper helper) {
         Player source = createTestPlayer(helper, new BlockPos(1, 2, 1));
-        Player target = createTestPlayer(helper, new BlockPos(12, 2, 1));
+        Zombie target = createTestZombie(helper, new BlockPos(12, 2, 1));
         MKPlayerData sourceData = MKCore.getPlayerOrThrow(source);
         float startingHealth = target.getHealth();
 
@@ -1460,6 +1636,11 @@ public class MKAbilities2RuntimeGameTests {
 
     private static CompoundTag serializeEntityData(MKEntityData entityData) {
         return entityData.serializeNBT(entityData.getEntity().registryAccess());
+    }
+
+    private static AbilityResolvedTargets singleTarget(LivingEntity target) {
+        UUID targetId = target.getUUID();
+        return new AbilityResolvedTargets(targetId, List.of(targetId), null, null, null);
     }
 
     private static Player createDeserializedTestPlayer(GameTestHelper helper,

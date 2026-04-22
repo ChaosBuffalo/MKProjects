@@ -3,7 +3,6 @@ package com.chaosbuffalo.mkcore.abilities2.runtime;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityPresentation;
 import com.chaosbuffalo.targeting_api.TargetingContext;
-import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -13,14 +12,18 @@ import java.util.Objects;
 
 public class Ability2VisualAbility extends MKAbility {
     private final ResourceLocation abilityId;
+    private final TargetingContext targetContext;
     @Nullable
     private final SoundEvent castingSound;
     @Nullable
     private final SoundEvent completeSound;
 
-    public Ability2VisualAbility(ResourceLocation abilityId, AbilityPresentation presentation) {
+    public Ability2VisualAbility(ResourceLocation abilityId,
+                                 AbilityPresentation presentation,
+                                 TargetingContext targetContext) {
         this.abilityId = Objects.requireNonNull(abilityId, "abilityId");
         Objects.requireNonNull(presentation, "presentation");
+        this.targetContext = Objects.requireNonNull(targetContext, "targetContext");
         if (presentation.castingParticles() != null) {
             castingParticles.setValue(presentation.castingParticles());
         }
@@ -35,7 +38,7 @@ public class Ability2VisualAbility extends MKAbility {
 
     @Override
     public TargetingContext getTargetContext() {
-        return TargetingContexts.SELF;
+        return targetContext;
     }
 
     @Override

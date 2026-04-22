@@ -10,7 +10,8 @@
       },
       "kind": "proc",
       "targeting": {
-        "type": "resolved"
+        "type": "resolved",
+        "relation": "enemy"
       }
     },
     "cast": {
@@ -25,7 +26,8 @@
       },
       "kind": "manual",
       "targeting": {
-        "type": "resolved"
+        "type": "resolved",
+        "relation": "enemy"
       }
     }
   },

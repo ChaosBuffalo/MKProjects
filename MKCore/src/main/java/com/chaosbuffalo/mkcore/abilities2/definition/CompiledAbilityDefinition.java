@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.abilities2.definition;
 
+import com.chaosbuffalo.mkcore.abilities2.AbilityTargeting;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityAction;
 
 import javax.annotation.Nullable;
@@ -98,6 +99,7 @@ public final class CompiledAbilityDefinition {
                                            String activationId,
                                            AbilityActivationDefinition activation,
                                            Map<String, List<AbilityAction>> entryPoints) {
+        validateTargetResolver(data, "Activation '%s' targeting".formatted(activationId), activation.targeting());
         if (!entryPoints.containsKey(activation.entryPoint())) {
             throw error(data, "Activation '%s' references unknown entry point '%s'"
                     .formatted(activationId, activation.entryPoint()));
@@ -106,11 +108,17 @@ public final class CompiledAbilityDefinition {
         ActivationKind kind = activation.kind();
         ActivationBehavior behavior = activation.behavior();
         if (behavior instanceof ActivationBehavior.ChannelBehavior channel) {
+            if (channel.tickTargeting() != null) {
+                validateTargetResolver(data, "Activation '%s' channel tickTargeting".formatted(activationId),
+                        channel.tickTargeting());
+            }
             if (!entryPoints.containsKey(channel.tickEntryPoint())) {
                 throw error(data, "Activation '%s' channel tickEntryPoint '%s' is missing"
                         .formatted(activationId, channel.tickEntryPoint()));
             }
         } else if (behavior instanceof ActivationBehavior.AuraBehavior aura) {
+            validateTargetResolver(data, "Activation '%s' aura pulseTargeting".formatted(activationId),
+                    aura.pulseTargeting());
             if (!entryPoints.containsKey(aura.pulseEntryPoint())) {
                 throw error(data, "Activation '%s' aura pulseEntryPoint '%s' is missing"
                         .formatted(activationId, aura.pulseEntryPoint()));
@@ -153,6 +161,31 @@ public final class CompiledAbilityDefinition {
                 throw error(data, "Activation '%s' kind %s must use refundPolicy NONE"
                         .formatted(activationId, kind));
             }
+        }
+    }
+
+    private static void validateTargetResolver(AbilityDefinitionData data,
+                                               String label,
+                                               AbilityTargetResolverDefinition targeting) {
+        switch (targeting.type()) {
+            case "none", "self" -> {
+                if (!targeting.data().isEmpty()) {
+                    throw error(data, "%s does not support additional data".formatted(label));
+                }
+            }
+            case "resolved", "event_target", "event_actor" -> {
+                for (String key : targeting.data().keySet()) {
+                    if (!AbilityTargeting.RELATION_KEY.equals(key)) {
+                        throw error(data, "%s has unsupported field '%s'".formatted(label, key));
+                    }
+                }
+                try {
+                    AbilityTargeting.relation(targeting);
+                } catch (IllegalArgumentException e) {
+                    throw error(data, "%s %s".formatted(label, e.getMessage()));
+                }
+            }
+            default -> throw error(data, "%s has unsupported type '%s'".formatted(label, targeting.type()));
         }
     }
 

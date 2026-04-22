@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.abilities2.runtime;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.abilities2.AbilityTargeting;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityAction;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityConditionDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.*;
@@ -874,23 +875,26 @@ public class SimpleAbilityEngine implements AbilityEngine {
             }
             case "event_target" -> {
                 UUID targetId = eventSnapshot != null ? eventSnapshot.targetEntityId() : null;
-                yield resolveSingleTarget(casterData, targetId);
+                yield resolveSingleTarget(casterData, targetId, targeting);
             }
             case "event_actor" -> {
                 UUID targetId = eventSnapshot != null ? eventSnapshot.actorEntityId() : null;
-                yield resolveSingleTarget(casterData, targetId);
+                yield resolveSingleTarget(casterData, targetId, targeting);
             }
             case "resolved" -> throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
             default -> throw new ActivationStartFailure(FailureReason.UNSUPPORTED_FEATURE);
         };
     }
 
-    private AbilityResolvedTargets resolveSingleTarget(IMKEntityData casterData, @Nullable UUID targetId) {
+    private AbilityResolvedTargets resolveSingleTarget(IMKEntityData casterData,
+                                                       @Nullable UUID targetId,
+                                                       AbilityTargetResolverDefinition targeting) {
         if (targetId == null) {
             throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
         }
         LivingEntity target = resolveLivingEntity(casterData.getEntity(), targetId);
-        if (target == null || !target.isAlive()) {
+        if (target == null || !target.isAlive()
+                || !AbilityTargeting.isValidTarget(targeting, casterData.getEntity(), target)) {
             throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
         }
         return new AbilityResolvedTargets(targetId, List.of(targetId), null, null, null);
@@ -900,7 +904,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
                                        @Nullable AbilityEventSnapshot eventSnapshot,
                                        AbilityTargetResolverDefinition targeting,
                                        AbilityResolvedTargets targets) {
-        validateTargetEntities(casterData, targets);
+        validateTargetEntities(casterData, targets, null);
         switch (targeting.type()) {
             case "none" -> {
                 if (targets.primaryEntityId() != null || !targets.entityIds().isEmpty()) {
@@ -919,22 +923,27 @@ public class SimpleAbilityEngine implements AbilityEngine {
                 if (!Objects.equals(expected, targets.primaryEntityId())) {
                     throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
                 }
+                validateTargetEntities(casterData, targets, targeting);
             }
             case "event_actor" -> {
                 UUID expected = eventSnapshot != null ? eventSnapshot.actorEntityId() : null;
                 if (!Objects.equals(expected, targets.primaryEntityId())) {
                     throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
                 }
+                validateTargetEntities(casterData, targets, targeting);
             }
-            case "resolved" -> validateTargetEntities(casterData, targets);
+            case "resolved" -> validateTargetEntities(casterData, targets, targeting);
             default -> throw new ActivationStartFailure(FailureReason.UNSUPPORTED_FEATURE);
         }
     }
 
-    private void validateTargetEntities(IMKEntityData casterData, AbilityResolvedTargets targets) {
+    private void validateTargetEntities(IMKEntityData casterData,
+                                        AbilityResolvedTargets targets,
+                                        @Nullable AbilityTargetResolverDefinition targeting) {
         for (UUID entityId : targets.entityIds()) {
             LivingEntity entity = resolveLivingEntity(casterData.getEntity(), entityId);
-            if (entity == null || !entity.isAlive()) {
+            if (entity == null || !entity.isAlive()
+                    || (targeting != null && !AbilityTargeting.isValidTarget(targeting, casterData.getEntity(), entity))) {
                 throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
             }
         }

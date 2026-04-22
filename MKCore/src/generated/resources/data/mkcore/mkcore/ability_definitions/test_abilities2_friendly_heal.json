@@ -1,0 +1,58 @@
+{
+  "activations": {
+    "cast": {
+      "behavior": {
+        "kind": "instant"
+      },
+      "entry_point": "cast",
+      "interrupt_policy": {
+        "on_damage": true,
+        "on_death": true,
+        "on_move": true
+      },
+      "kind": "manual",
+      "targeting": {
+        "type": "resolved",
+        "relation": "friendly"
+      }
+    }
+  },
+  "entry_points": {
+    "cast": [
+      {
+        "type": "heal",
+        "amount": {
+          "kind": "parameter",
+          "parameter": "amount"
+        },
+        "target": "primary_entity"
+      }
+    ]
+  },
+  "id": "mkcore:test_abilities2_friendly_heal",
+  "parameters": {
+    "amount": {
+      "default_value": {
+        "kind": "float",
+        "value": 10.0
+      },
+      "description": "Heal amount",
+      "grant_overrideable": true,
+      "id": "amount",
+      "kind": "float",
+      "patchable": true
+    }
+  },
+  "presentation": {
+    "description": "A friendly-targeted direct heal used to validate relation-aware forced target checks.",
+    "name": "Abilities2 Friendly Heal"
+  },
+  "schools": [
+    "mkcore:restoration"
+  ],
+  "slot_family": "mkcore:slot_family.basic",
+  "tags": [
+    "mkcore:heal",
+    "mkcore:spell"
+  ]
+}

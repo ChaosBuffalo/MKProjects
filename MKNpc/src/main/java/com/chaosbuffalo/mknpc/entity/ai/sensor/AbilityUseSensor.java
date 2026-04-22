@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityDecisionContext;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
+import com.chaosbuffalo.mkcore.abilities2.AbilityTargeting;
 import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityReference;
 import com.chaosbuffalo.mkcore.abilities2.runtime.FailureReason;
 import com.chaosbuffalo.mkcore.core.MKEntityData;
@@ -120,10 +121,13 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
         }
 
         AbilityTargetingDecision.MovementSuggestion movementSuggestion = switch (execution.activation().targeting().type()) {
-            case "resolved" -> switch (entity.getCombatMoveType()) {
-                case RANGE -> AbilityTargetingDecision.MovementSuggestion.KITE;
-                case MELEE -> AbilityTargetingDecision.MovementSuggestion.MELEE;
-                case STATIONARY -> AbilityTargetingDecision.MovementSuggestion.STATIONARY;
+            case "resolved" -> switch (AbilityTargeting.relation(execution.activation().targeting())) {
+                case ENEMY -> switch (entity.getCombatMoveType()) {
+                    case RANGE -> AbilityTargetingDecision.MovementSuggestion.KITE;
+                    case MELEE -> AbilityTargetingDecision.MovementSuggestion.MELEE;
+                    case STATIONARY -> AbilityTargetingDecision.MovementSuggestion.STATIONARY;
+                };
+                case ALL, FRIENDLY -> AbilityTargetingDecision.MovementSuggestion.STATIONARY;
             };
             case "none", "self" -> AbilityTargetingDecision.MovementSuggestion.STATIONARY;
             default -> null;
@@ -150,7 +154,12 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
                                                                  com.chaosbuffalo.mkcore.abilities2.definition.AbilityTargetResolverDefinition targeting) {
         return switch (targeting.type()) {
             case "none", "self" -> entity;
-            case "resolved" -> context.getThreatTarget();
+            case "resolved" -> switch (AbilityTargeting.relation(targeting)) {
+                case ENEMY -> context.getThreatTarget() != null ? context.getThreatTarget()
+                        : context.getEnemies().stream().findFirst().orElse(null);
+                case ALL -> context.getThreatTarget() != null ? context.getThreatTarget() : entity;
+                case FRIENDLY -> entity;
+            };
             default -> null;
         };
     }

@@ -25,7 +25,8 @@
       },
       "kind": "proc",
       "targeting": {
-        "type": "resolved"
+        "type": "resolved",
+        "relation": "friendly"
       }
     }
   },
