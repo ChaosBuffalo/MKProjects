@@ -19,6 +19,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -59,7 +60,12 @@ public class MKStructureCommands {
                         .then(Commands.argument("template", ResourceLocationArgument.id())
                                 .suggests((ctx, builder) ->
                                         SharedSuggestionProvider.suggest(listSnbtFiles(ctx.getSource()), builder))
-                                .executes(MKStructureCommands::importStructure)));
+                                .executes(MKStructureCommands::importStructure)))
+                .then(Commands.literal("tonbt")
+                        .then(Commands.argument("template", ResourceLocationArgument.id())
+                                .suggests((ctx, builder) ->
+                                        SharedSuggestionProvider.suggest(listSnbtFiles(ctx.getSource()), builder))
+                                .executes(MKStructureCommands::convertSnbtToNbt)));
     }
 
     private static Stream<String> listTemplateIds(CommandSourceStack source) {
@@ -210,6 +216,40 @@ public class MKStructureCommands {
                     "Placed " + templateId + " at " + pos.toShortString()));
         } catch (IOException e) {
             player.sendSystemMessage(Component.literal("Failed to read SNBT: " + e.getMessage()));
+        } catch (CommandSyntaxException e) {
+            player.sendSystemMessage(Component.literal("Failed to parse SNBT: " + e.getMessage()));
+        }
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    static int convertSnbtToNbt(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        MinecraftServer server = player.getServer();
+        if (server == null) {
+            return Command.SINGLE_SUCCESS;
+        }
+
+        ResourceLocation templateId = ResourceLocationArgument.getId(ctx, "template");
+        Path dir = server.getWorldPath(LevelResource.GENERATED_DIR)
+                .resolve("debug_structures")
+                .resolve(templateId.getNamespace());
+        String baseName = templateId.getPath().replace('/', '_');
+        Path snbtFile = dir.resolve(baseName + ".snbt");
+        Path nbtFile  = dir.resolve(baseName + ".nbt");
+
+        if (!Files.exists(snbtFile)) {
+            player.sendSystemMessage(Component.literal("SNBT file not found: " + snbtFile));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        try {
+            String snbt = Files.readString(snbtFile);
+            CompoundTag tag = NbtUtils.snbtToStructure(snbt);
+            NbtIo.writeCompressed(tag, nbtFile);
+            player.sendSystemMessage(Component.literal("Converted " + templateId + " → " + nbtFile));
+        } catch (IOException e) {
+            player.sendSystemMessage(Component.literal("Failed to convert SNBT: " + e.getMessage()));
         } catch (CommandSyntaxException e) {
             player.sendSystemMessage(Component.literal("Failed to parse SNBT: " + e.getMessage()));
         }
