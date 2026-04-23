@@ -15,6 +15,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -23,8 +24,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.storage.LevelResource;
 
@@ -51,7 +54,12 @@ public class MKStructureCommands {
                         .then(Commands.argument("template", ResourceLocationArgument.id())
                                 .suggests((ctx, builder) ->
                                         SharedSuggestionProvider.suggest(listTemplateIds(ctx.getSource()), builder))
-                                .executes(MKStructureCommands::dumpStructure)));
+                                .executes(MKStructureCommands::dumpStructure)))
+                .then(Commands.literal("import")
+                        .then(Commands.argument("template", ResourceLocationArgument.id())
+                                .suggests((ctx, builder) ->
+                                        SharedSuggestionProvider.suggest(listSnbtFiles(ctx.getSource()), builder))
+                                .executes(MKStructureCommands::importStructure)));
     }
 
     private static Stream<String> listTemplateIds(CommandSourceStack source) {
@@ -143,6 +151,67 @@ public class MKStructureCommands {
                             structureId, startId));
                 }
             });
+        }
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static Stream<String> listSnbtFiles(CommandSourceStack source) {
+        Path debugDir = source.getServer().getWorldPath(LevelResource.GENERATED_DIR)
+                .resolve("debug_structures");
+        if (!Files.isDirectory(debugDir)) {
+            return Stream.empty();
+        }
+        try {
+            return Files.walk(debugDir, 2)
+                    .filter(p -> p.toString().endsWith(".snbt"))
+                    .map(p -> {
+                        Path rel = debugDir.relativize(p);
+                        String namespace = rel.getName(0).toString();
+                        String name = rel.getName(1).toString().replace(".snbt", "");
+                        return namespace + ":" + name;
+                    });
+        } catch (IOException e) {
+            return Stream.empty();
+        }
+    }
+
+    static int importStructure(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        MinecraftServer server = player.getServer();
+        if (server == null) {
+            return Command.SINGLE_SUCCESS;
+        }
+
+        ResourceLocation templateId = ResourceLocationArgument.getId(ctx, "template");
+        Path inFile = server.getWorldPath(LevelResource.GENERATED_DIR)
+                .resolve("debug_structures")
+                .resolve(templateId.getNamespace())
+                .resolve(templateId.getPath().replace('/', '_') + ".snbt");
+
+        if (!Files.exists(inFile)) {
+            player.sendSystemMessage(Component.literal("SNBT file not found: " + inFile));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        try {
+            String snbt = Files.readString(inFile);
+            CompoundTag tag = NbtUtils.snbtToStructure(snbt);
+
+            StructureTemplate template = new StructureTemplate();
+            template.load(server.registryAccess().lookupOrThrow(Registries.BLOCK), tag);
+
+            BlockPos pos = player.blockPosition();
+            StructurePlaceSettings settings = new StructurePlaceSettings();
+            template.placeInWorld(player.serverLevel(), pos, pos, settings,
+                    player.serverLevel().getRandom(), Block.UPDATE_ALL);
+
+            player.sendSystemMessage(Component.literal(
+                    "Placed " + templateId + " at " + pos.toShortString()));
+        } catch (IOException e) {
+            player.sendSystemMessage(Component.literal("Failed to read SNBT: " + e.getMessage()));
+        } catch (CommandSyntaxException e) {
+            player.sendSystemMessage(Component.literal("Failed to parse SNBT: " + e.getMessage()));
         }
 
         return Command.SINGLE_SUCCESS;
