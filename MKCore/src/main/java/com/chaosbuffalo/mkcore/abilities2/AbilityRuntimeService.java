@@ -254,6 +254,12 @@ public class AbilityRuntimeService {
         engine.interruptPendingActivations(casterData);
     }
 
+    public void interruptPendingActivations(IMKEntityData casterData, FailureReason failureReason) {
+        Objects.requireNonNull(casterData, "casterData");
+        Objects.requireNonNull(failureReason, "failureReason");
+        engine.interruptPendingActivations(casterData, failureReason);
+    }
+
     public void startClientCast(Entity entity, ResourceLocation abilityId, int castTicks, int elapsedTicks) {
         Objects.requireNonNull(entity, "entity");
         Objects.requireNonNull(abilityId, "abilityId");
@@ -766,7 +772,8 @@ public class AbilityRuntimeService {
         if (event.getEntity().level().isClientSide()) {
             return;
         }
-        engine.interruptPendingActivations(MKCore.getEntityDataOrThrow(event.getEntity()));
+        engine.interruptPendingActivations(MKCore.getEntityDataOrThrow(event.getEntity()),
+                FailureReason.INTERRUPTED_BY_DEATH);
         emitKill(event.getSource(), event.getEntity());
     }
 

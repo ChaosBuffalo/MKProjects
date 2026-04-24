@@ -322,12 +322,13 @@ public class SimpleAbilityEngine implements AbilityEngine {
                 PendingCast pendingCast = iterator.next();
                 if (!entityData.getEntity().isAlive() || entityData.getEntity().isRemoved()) {
                     iterator.remove();
-                    finishInterruptedInvocation(pendingCast.invocation(), FailureReason.INTERRUPTED, pendingCast.castTicksSpent());
+                    finishInterruptedInvocation(pendingCast.invocation(), FailureReason.INTERRUPTED_BY_DEATH,
+                            pendingCast.castTicksSpent());
                     continue;
                 }
                 if (shouldInterruptOnMove(pendingCast.invocation(), pendingCast.startPosition(), currentPosition)) {
                     iterator.remove();
-                    finishInterruptedInvocation(pendingCast.invocation(), FailureReason.INTERRUPTED,
+                    finishInterruptedInvocation(pendingCast.invocation(), FailureReason.INTERRUPTED_BY_MOVE,
                             pendingCast.castTicksSpent());
                     continue;
                 }
@@ -356,13 +357,13 @@ public class SimpleAbilityEngine implements AbilityEngine {
             PendingChannel pendingChannel = channelIterator.next();
                 if (!entityData.getEntity().isAlive() || entityData.getEntity().isRemoved()) {
                     channelIterator.remove();
-                    finishInterruptedInvocation(pendingChannel.invocation(), FailureReason.INTERRUPTED,
+                    finishInterruptedInvocation(pendingChannel.invocation(), FailureReason.INTERRUPTED_BY_DEATH,
                             pendingChannel.castTicksSpent());
                     continue;
                 }
                 if (shouldInterruptOnMove(pendingChannel.invocation(), pendingChannel.startPosition(), currentPosition)) {
                     channelIterator.remove();
-                    finishInterruptedInvocation(pendingChannel.invocation(), FailureReason.INTERRUPTED,
+                    finishInterruptedInvocation(pendingChannel.invocation(), FailureReason.INTERRUPTED_BY_MOVE,
                             pendingChannel.castTicksSpent());
                     continue;
                 }
@@ -409,6 +410,12 @@ public class SimpleAbilityEngine implements AbilityEngine {
     public void interruptPendingActivations(IMKEntityData entityData) {
         Objects.requireNonNull(entityData, "entityData");
         interruptPendingActivations(entityData.getEntity().getUUID(), FailureReason.INTERRUPTED);
+    }
+
+    public void interruptPendingActivations(IMKEntityData entityData, FailureReason failureReason) {
+        Objects.requireNonNull(entityData, "entityData");
+        Objects.requireNonNull(failureReason, "failureReason");
+        interruptPendingActivations(entityData.getEntity().getUUID(), failureReason);
     }
 
     public List<PersistedPendingAbilityActivation> snapshotOwnedActivations(UUID ownerEntityId) {
@@ -743,7 +750,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
                     continue;
                 }
                 iterator.remove();
-                finishInterruptedInvocation(pendingCast.invocation(), FailureReason.INTERRUPTED,
+                finishInterruptedInvocation(pendingCast.invocation(), FailureReason.INTERRUPTED_BY_DAMAGE,
                         pendingCast.castTicksSpent());
             }
             if (casts.isEmpty()) {
@@ -760,7 +767,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
                     continue;
                 }
                 iterator.remove();
-                finishInterruptedInvocation(pendingChannel.invocation(), FailureReason.INTERRUPTED,
+                finishInterruptedInvocation(pendingChannel.invocation(), FailureReason.INTERRUPTED_BY_DAMAGE,
                         pendingChannel.castTicksSpent());
             }
             if (channels.isEmpty()) {
@@ -1497,8 +1504,39 @@ public class SimpleAbilityEngine implements AbilityEngine {
             case "always" -> true;
             case "event_has_actor" -> context.eventSnapshot() != null && context.eventSnapshot().actorEntityId() != null;
             case "event_has_target" -> context.eventSnapshot() != null && context.eventSnapshot().targetEntityId() != null;
+            case "event_has_payload" -> eventPayloadValue(context, requiredString(condition, "key")) != null;
             case "has_current_target" -> context.currentTarget().isPresent();
             case "has_primary_target" -> context.targets().primaryEntityId() != null;
+            case "event_payload_bool" -> {
+                String key = requiredString(condition, "key");
+                AbilityValue payload = eventPayloadValueOfKind(context, key, AbilityValueKind.BOOL, condition.type());
+                yield payload != null && payload.asBool(key) == optionalBoolean(condition, "value", true);
+            }
+            case "event_payload_int" -> {
+                String key = requiredString(condition, "key");
+                AbilityValue payload = eventPayloadValueOfKind(context, key, AbilityValueKind.INT, condition.type());
+                yield payload != null && compareInts(payload.asInt(key), conditionOperator(condition),
+                        requiredInt(condition, "value"));
+            }
+            case "event_payload_float" -> {
+                String key = requiredString(condition, "key");
+                AbilityValue payload = eventPayloadValueOfKind(context, key, AbilityValueKind.FLOAT, condition.type());
+                yield payload != null && compareFloats(payload.asFloat(key), conditionOperator(condition),
+                        requiredFloat(condition, "value"));
+            }
+            case "event_payload_string" -> {
+                String key = requiredString(condition, "key");
+                AbilityValue payload = eventPayloadValueOfKind(context, key, AbilityValueKind.STRING, condition.type());
+                yield payload != null && compareStrings(payload.asString(key), conditionOperator(condition),
+                        requiredString(condition, "value"));
+            }
+            case "event_payload_resource_location" -> {
+                String key = requiredString(condition, "key");
+                AbilityValue payload = eventPayloadValueOfKind(context, key, AbilityValueKind.RESOURCE_LOCATION,
+                        condition.type());
+                yield payload != null && compareResourceLocations(payload.asResourceLocation(key),
+                        conditionOperator(condition), requiredResourceLocation(condition, "value"));
+            }
             case "param_bool" -> context.getBoolParam(requiredString(condition, "parameter")) == optionalBoolean(condition, "value", true);
             case "var_bool" -> context.getBoolVar(requiredString(condition, "name")) == optionalBoolean(condition, "value", true);
             case "param_int" -> compareInts(
@@ -1627,6 +1665,47 @@ public class SimpleAbilityEngine implements AbilityEngine {
             case LT -> comparison < 0;
             case LTE -> comparison <= 0;
         };
+    }
+
+    private boolean compareStrings(String actual, ConditionOperator operator, String expected) {
+        return switch (operator) {
+            case EQ -> actual.equals(expected);
+            case NE -> !actual.equals(expected);
+            case GT, GTE, LT, LTE -> throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "String conditions only support eq/ne operators");
+        };
+    }
+
+    private boolean compareResourceLocations(ResourceLocation actual,
+                                             ConditionOperator operator,
+                                             ResourceLocation expected) {
+        return switch (operator) {
+            case EQ -> actual.equals(expected);
+            case NE -> !actual.equals(expected);
+            case GT, GTE, LT, LTE -> throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Resource location conditions only support eq/ne operators");
+        };
+    }
+
+    private @Nullable AbilityValue eventPayloadValue(AbilityActionContext context, String key) {
+        AbilityEventSnapshot eventSnapshot = context.eventSnapshot();
+        return eventSnapshot != null ? eventSnapshot.payload().get(key) : null;
+    }
+
+    private @Nullable AbilityValue eventPayloadValueOfKind(AbilityActionContext context,
+                                                           String key,
+                                                           AbilityValueKind kind,
+                                                           String conditionType) {
+        AbilityValue payload = eventPayloadValue(context, key);
+        if (payload == null) {
+            return null;
+        }
+        if (payload.kind() != kind) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Condition " + conditionType + " expected payload " + key + " to be " + kind
+                            + " but was " + payload.kind());
+        }
+        return payload;
     }
 
     private SimpleAbilityActionContext createContext(AbilityInvocation invocation,
@@ -1822,6 +1901,15 @@ public class SimpleAbilityEngine implements AbilityEngine {
                     "Condition " + condition.type() + " requires numeric field " + key);
         }
         return value.getAsFloat();
+    }
+
+    private ResourceLocation requiredResourceLocation(AbilityConditionDefinition condition, String key) {
+        ResourceLocation value = ResourceLocation.tryParse(requiredString(condition, key));
+        if (value == null) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Condition " + condition.type() + " field " + key + " must be a valid resource location");
+        }
+        return value;
     }
 
     private void emitInvocationStarted(AbilityInvocation invocation) {

@@ -28,7 +28,10 @@ import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityResolvedTargets;
 import com.chaosbuffalo.mkcore.abilities2.runtime.ActivationRequest;
 import com.chaosbuffalo.mkcore.abilities2.runtime.FailureReason;
 import com.chaosbuffalo.mkcore.abilities2.runtime.InvocationResult;
+import com.chaosbuffalo.mkcore.abilities2.runtime.MKAbilityPowerResolver;
+import com.chaosbuffalo.mkcore.abilities2.runtime.MemoryAbilityStateStore;
 import com.chaosbuffalo.mkcore.abilities2.runtime.PersistedAbilityRuntimeState;
+import com.chaosbuffalo.mkcore.abilities2.runtime.SimpleAbilityEngine;
 import com.chaosbuffalo.mkcore.core.EntityAnimationModule;
 import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -65,6 +68,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +88,10 @@ public class MKAbilities2RuntimeGameTests {
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_branch_float_conditions");
     private static final ResourceLocation EVENT_ACTOR_BRANCH_CONDITION_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_branch_event_actor_conditions");
+    private static final ResourceLocation EVENT_PAYLOAD_BRANCH_CONDITION_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_branch_event_payload_conditions");
+    private static final ResourceLocation INTERRUPT_REASON_PROBE_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_interrupt_reason_probe");
     private static final ResourceLocation DELAYED_BURST_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_delayed_burst");
     private static final ResourceLocation HEALING_CLOUD_ABILITY =
@@ -115,6 +123,7 @@ public class MKAbilities2RuntimeGameTests {
     private static final ResourceLocation RESTORING_AURA_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_restoring_aura");
     private static final InterruptPolicy NO_INTERRUPT = new InterruptPolicy(false, 0.0f, false, 0.0, true);
+    private static final InterruptPolicy FULL_INTERRUPT_PROBE = new InterruptPolicy(true, 0.0f, true, 0.1, true);
 
     @GameTest(template = "player_data_phase0")
     public static void projectileImpactCallbackDamagesEntityTarget(GameTestHelper helper) {
@@ -428,6 +437,109 @@ public class MKAbilities2RuntimeGameTests {
                 "event_has_actor true branch should mark the state as present");
         helper.assertFalse(stateBool(actorMissingSnapshot, "actor_present"),
                 "event_has_actor false branch should mark the state as absent");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void eventPayloadBranchConditionsReadTypedPayloadValues(GameTestHelper helper) {
+        Player caster = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        AbilityRuntimeService service = createTestRuntimeService();
+        var casterData = MKCore.getEntityDataOrThrow(caster);
+
+        InvocationResult result = service.getEngine().activate(new ActivationRequest(
+                casterData,
+                casterData,
+                new AbilityReference(EVENT_PAYLOAD_BRANCH_CONDITION_ABILITY, null),
+                "cast",
+                null,
+                null,
+                new AbilityEventSnapshot(
+                        AbilityEventType.SPELL_HIT,
+                        null,
+                        UUID.randomUUID(),
+                        0,
+                        caster.getUUID(),
+                        EVENT_PAYLOAD_BRANCH_CONDITION_ABILITY,
+                        "cast",
+                        caster.getUUID(),
+                        caster.getUUID(),
+                        Map.of(
+                                "stack_count", new AbilityValue.IntValue(2),
+                                "impact_rating", new AbilityValue.FloatValue(2.0f),
+                                "critical", new AbilityValue.BoolValue(true),
+                                "phase", new AbilityValue.StringValue("burst"),
+                                "damage_type", new AbilityValue.ResourceLocationValue(CoreDamageTypes.FireDamage.getId())
+                        )
+                ),
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "event payload branch probe should start");
+
+        PersistedAbilityRuntimeState snapshot = service.captureOwnerRuntime(casterData);
+        helper.assertTrue(stateBool(snapshot, "has_stack_payload"),
+                "event_has_payload should detect a present payload entry");
+        helper.assertTrue(stateBool(snapshot, "stack_gate"),
+                "event_payload_int should evaluate numeric payload comparisons");
+        helper.assertTrue(stateBool(snapshot, "rating_gate"),
+                "event_payload_float should evaluate float payload comparisons");
+        helper.assertTrue(stateBool(snapshot, "critical_gate"),
+                "event_payload_bool should evaluate boolean payload values");
+        helper.assertTrue(stateBool(snapshot, "phase_gate"),
+                "event_payload_string should evaluate string payload values");
+        helper.assertTrue(stateBool(snapshot, "damage_type_gate"),
+                "event_payload_resource_location should evaluate resource location payload values");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void eventPayloadBranchConditionsTreatMissingOrMismatchedValuesAsFalse(GameTestHelper helper) {
+        Player caster = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        AbilityRuntimeService service = createTestRuntimeService();
+        var casterData = MKCore.getEntityDataOrThrow(caster);
+
+        InvocationResult result = service.getEngine().activate(new ActivationRequest(
+                casterData,
+                casterData,
+                new AbilityReference(EVENT_PAYLOAD_BRANCH_CONDITION_ABILITY, null),
+                "cast",
+                null,
+                null,
+                new AbilityEventSnapshot(
+                        AbilityEventType.SPELL_HIT,
+                        null,
+                        UUID.randomUUID(),
+                        0,
+                        caster.getUUID(),
+                        EVENT_PAYLOAD_BRANCH_CONDITION_ABILITY,
+                        "cast",
+                        caster.getUUID(),
+                        caster.getUUID(),
+                        Map.of(
+                                "impact_rating", new AbilityValue.FloatValue(0.5f),
+                                "critical", new AbilityValue.BoolValue(false),
+                                "phase", new AbilityValue.StringValue("fizzle"),
+                                "damage_type", new AbilityValue.ResourceLocationValue(CoreDamageTypes.FrostDamage.getId())
+                        )
+                ),
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "event payload branch negative probe should start");
+
+        PersistedAbilityRuntimeState snapshot = service.captureOwnerRuntime(casterData);
+        helper.assertFalse(stateBool(snapshot, "has_stack_payload"),
+                "event_has_payload should be false when the payload key is missing");
+        helper.assertFalse(stateBool(snapshot, "stack_gate"),
+                "event_payload_int should be false when the numeric payload is missing");
+        helper.assertFalse(stateBool(snapshot, "rating_gate"),
+                "event_payload_float should be false when the comparison fails");
+        helper.assertFalse(stateBool(snapshot, "critical_gate"),
+                "event_payload_bool should be false when the boolean payload does not match");
+        helper.assertFalse(stateBool(snapshot, "phase_gate"),
+                "event_payload_string should be false when the string payload does not match");
+        helper.assertFalse(stateBool(snapshot, "damage_type_gate"),
+                "event_payload_resource_location should be false when the resource location does not match");
         helper.succeed();
     }
 
@@ -1072,6 +1184,142 @@ public class MKAbilities2RuntimeGameTests {
                     helper.assertFalse(owner.isAlive(), "death interrupt probe should leave the caster dead");
                 })
                 .thenExecuteAfter(10, helper::succeed);
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void movementInterruptReportsSpecificFailureReason(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+        List<FailureReason> reasons = new ArrayList<>();
+        SimpleAbilityEngine engine = createInterruptReasonTestEngine(new SimpleAbilityEngine.LifecycleListener() {
+            @Override
+            public void onInvocationInterrupted(com.chaosbuffalo.mkcore.abilities2.runtime.AbilityInvocation invocation,
+                                                FailureReason failureReason,
+                                                int castTicksSpent) {
+                reasons.add(failureReason);
+            }
+        });
+
+        InvocationResult result = engine.activate(new ActivationRequest(
+                ownerData,
+                ownerData,
+                new AbilityReference(INTERRUPT_REASON_PROBE_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "interrupt reason probe should start for movement");
+
+        helper.startSequence()
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(engine.hasPendingActivation(ownerData),
+                            "interrupt reason probe should be pending before movement");
+                    owner.moveTo(owner.getX() + 0.5, owner.getY(), owner.getZ(), owner.getYRot(), owner.getXRot());
+                    engine.tickEntity(ownerData);
+                })
+                .thenExecuteAfter(1, () -> {
+                    helper.assertFalse(engine.hasPendingActivation(ownerData),
+                            "movement should clear the interrupt reason probe");
+                    helper.assertValueEqual(reasons.size(), 1,
+                            "movement interrupt should report exactly one failure reason");
+                    helper.assertValueEqual(reasons.get(0), FailureReason.INTERRUPTED_BY_MOVE,
+                            "movement interrupt should report the move-specific failure reason");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void damageInterruptReportsSpecificFailureReason(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+        List<FailureReason> reasons = new ArrayList<>();
+        SimpleAbilityEngine engine = createInterruptReasonTestEngine(new SimpleAbilityEngine.LifecycleListener() {
+            @Override
+            public void onInvocationInterrupted(com.chaosbuffalo.mkcore.abilities2.runtime.AbilityInvocation invocation,
+                                                FailureReason failureReason,
+                                                int castTicksSpent) {
+                reasons.add(failureReason);
+            }
+        });
+
+        InvocationResult result = engine.activate(new ActivationRequest(
+                ownerData,
+                ownerData,
+                new AbilityReference(INTERRUPT_REASON_PROBE_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "interrupt reason probe should start for damage");
+
+        helper.startSequence()
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(engine.hasPendingActivation(ownerData),
+                            "interrupt reason probe should be pending before damage");
+                    engine.queueDamageInterrupt(ownerData, 1.0f);
+                    engine.tickEntity(ownerData);
+                })
+                .thenExecuteAfter(1, () -> {
+                    helper.assertFalse(engine.hasPendingActivation(ownerData),
+                            "damage should clear the interrupt reason probe");
+                    helper.assertValueEqual(reasons.size(), 1,
+                            "damage interrupt should report exactly one failure reason");
+                    helper.assertValueEqual(reasons.get(0), FailureReason.INTERRUPTED_BY_DAMAGE,
+                            "damage interrupt should report the damage-specific failure reason");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void deathInterruptReportsSpecificFailureReason(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+        List<FailureReason> reasons = new ArrayList<>();
+        SimpleAbilityEngine engine = createInterruptReasonTestEngine(new SimpleAbilityEngine.LifecycleListener() {
+            @Override
+            public void onInvocationInterrupted(com.chaosbuffalo.mkcore.abilities2.runtime.AbilityInvocation invocation,
+                                                FailureReason failureReason,
+                                                int castTicksSpent) {
+                reasons.add(failureReason);
+            }
+        });
+
+        InvocationResult result = engine.activate(new ActivationRequest(
+                ownerData,
+                ownerData,
+                new AbilityReference(INTERRUPT_REASON_PROBE_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "interrupt reason probe should start for death");
+
+        helper.startSequence()
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(engine.hasPendingActivation(ownerData),
+                            "interrupt reason probe should be pending before death");
+                    owner.kill();
+                    engine.tickEntity(ownerData);
+                })
+                .thenExecuteAfter(1, () -> {
+                    helper.assertFalse(engine.hasPendingActivation(ownerData),
+                            "death should clear the interrupt reason probe");
+                    helper.assertFalse(owner.isAlive(), "death interrupt probe should leave the caster dead");
+                    helper.assertValueEqual(reasons.size(), 1,
+                            "death interrupt should report exactly one failure reason");
+                    helper.assertValueEqual(reasons.get(0), FailureReason.INTERRUPTED_BY_DEATH,
+                            "death interrupt should report the death-specific failure reason");
+                    helper.succeed();
+                });
     }
 
     @GameTest(template = "player_data_phase0")
@@ -1744,7 +1992,23 @@ public class MKAbilities2RuntimeGameTests {
         definitions.put(INT_BRANCH_CONDITION_ABILITY, createIntBranchConditionDefinition());
         definitions.put(FLOAT_BRANCH_CONDITION_ABILITY, createFloatBranchConditionDefinition());
         definitions.put(EVENT_ACTOR_BRANCH_CONDITION_ABILITY, createEventActorBranchConditionDefinition());
+        definitions.put(EVENT_PAYLOAD_BRANCH_CONDITION_ABILITY, createEventPayloadBranchConditionDefinition());
         return new AbilityRuntimeService(new AbilityDefinitionResolver(definitions::get));
+    }
+
+    private static SimpleAbilityEngine createInterruptReasonTestEngine(SimpleAbilityEngine.LifecycleListener listener) {
+        Map<ResourceLocation, AbilityDefinitionData> definitions = new LinkedHashMap<>();
+        definitions.put(INTERRUPT_REASON_PROBE_ABILITY, createInterruptReasonProbeDefinition());
+        return new SimpleAbilityEngine(
+                new AbilityDefinitionResolver(definitions::get),
+                new MKAbilityPowerResolver(),
+                new MemoryAbilityStateStore(),
+                event -> {
+                },
+                SimpleAbilityEngine.ReactionController.NOOP,
+                SimpleAbilityEngine.DeliveryController.NOOP,
+                listener
+        );
     }
 
     private static AbilityDefinitionData createProjectileImpactDefinition() {
@@ -2032,6 +2296,84 @@ public class MKAbilities2RuntimeGameTests {
         );
     }
 
+    private static AbilityDefinitionData createEventPayloadBranchConditionDefinition() {
+        Map<String, AbilityActivationDefinition> activations = new LinkedHashMap<>();
+        activations.put("cast", activation(ActivationKind.MANUAL, "cast", new AbilityTargetResolverDefinition("self")));
+
+        Map<String, List<AbilityAction>> entryPoints = new LinkedHashMap<>();
+        entryPoints.put("cast", List.of(
+                payloadStateBranch("event_has_payload", "has_stack_payload", Map.of(
+                        "key", stringConditionValue("stack_count")
+                )),
+                payloadStateBranch("event_payload_int", "stack_gate", Map.of(
+                        "key", stringConditionValue("stack_count"),
+                        "operator", stringConditionValue("gte"),
+                        "value", numberConditionValue(2)
+                )),
+                payloadStateBranch("event_payload_float", "rating_gate", Map.of(
+                        "key", stringConditionValue("impact_rating"),
+                        "operator", stringConditionValue("gt"),
+                        "value", numberConditionValue(1.5f)
+                )),
+                payloadStateBranch("event_payload_bool", "critical_gate", Map.of(
+                        "key", stringConditionValue("critical"),
+                        "value", new JsonPrimitive(true)
+                )),
+                payloadStateBranch("event_payload_string", "phase_gate", Map.of(
+                        "key", stringConditionValue("phase"),
+                        "value", stringConditionValue("burst")
+                )),
+                payloadStateBranch("event_payload_resource_location", "damage_type_gate", Map.of(
+                        "key", stringConditionValue("damage_type"),
+                        "value", stringConditionValue(CoreDamageTypes.FireDamage.getId().toString())
+                ))
+        ));
+
+        return new AbilityDefinitionData(
+                EVENT_PAYLOAD_BRANCH_CONDITION_ABILITY,
+                presentation("Event Payload Branch Condition Test"),
+                MKCore.id("test"),
+                Set.of(),
+                Set.of(),
+                Map.of(),
+                activations,
+                entryPoints,
+                Map.of(),
+                Map.of()
+        );
+    }
+
+    private static AbilityDefinitionData createInterruptReasonProbeDefinition() {
+        Map<String, AbilityActivationDefinition> activations = new LinkedHashMap<>();
+        activations.put("cast", activation(
+                ActivationKind.MANUAL,
+                "cast",
+                new AbilityTargetResolverDefinition("self"),
+                20,
+                false,
+                FULL_INTERRUPT_PROBE
+        ));
+
+        Map<String, List<AbilityAction>> entryPoints = new LinkedHashMap<>();
+        entryPoints.put("cast", List.of(new AbilityAction.HealAction(
+                AbilityAction.ActionTarget.SELF,
+                new AbilityScalar.ConstantScalar(4.0)
+        )));
+
+        return new AbilityDefinitionData(
+                INTERRUPT_REASON_PROBE_ABILITY,
+                presentation("Interrupt Reason Probe"),
+                MKCore.id("test"),
+                Set.of(),
+                Set.of(),
+                Map.of(),
+                activations,
+                entryPoints,
+                Map.of(),
+                Map.of()
+        );
+    }
+
     private static AbilityActivationDefinition activation(ActivationKind kind, String entryPoint) {
         return activation(kind, entryPoint, new AbilityTargetResolverDefinition("none"));
     }
@@ -2049,6 +2391,27 @@ public class MKAbilities2RuntimeGameTests {
                 0,
                 false,
                 NO_INTERRUPT,
+                InterruptRefundPolicy.NONE,
+                new ActivationBehavior.InstantBehavior()
+        );
+    }
+
+    private static AbilityActivationDefinition activation(ActivationKind kind,
+                                                          String entryPoint,
+                                                          AbilityTargetResolverDefinition targeting,
+                                                          int castTicks,
+                                                          boolean affectedByCastSpeed,
+                                                          InterruptPolicy interruptPolicy) {
+        return new AbilityActivationDefinition(
+                kind,
+                entryPoint,
+                targeting,
+                List.of(),
+                List.of(),
+                null,
+                castTicks,
+                affectedByCastSpeed,
+                interruptPolicy,
                 InterruptRefundPolicy.NONE,
                 new ActivationBehavior.InstantBehavior()
         );
@@ -2090,6 +2453,26 @@ public class MKAbilities2RuntimeGameTests {
 
     private static JsonPrimitive numberConditionValue(Number value) {
         return new JsonPrimitive(value);
+    }
+
+    private static AbilityAction.BranchAction payloadStateBranch(String conditionType,
+                                                                String stateKey,
+                                                                Map<String, JsonElement> data) {
+        return new AbilityAction.BranchAction(
+                condition(conditionType, data),
+                List.of(new AbilityAction.ModifyStateAction(
+                        StateScope.SELF,
+                        stateKey,
+                        AbilityAction.ModifyStateOperation.SET_BOOL,
+                        new AbilityValue.BoolValue(true)
+                )),
+                List.of(new AbilityAction.ModifyStateAction(
+                        StateScope.SELF,
+                        stateKey,
+                        AbilityAction.ModifyStateOperation.SET_BOOL,
+                        new AbilityValue.BoolValue(false)
+                ))
+        );
     }
 
     private static void emitSpellCrit(Player owner, Player target) {
