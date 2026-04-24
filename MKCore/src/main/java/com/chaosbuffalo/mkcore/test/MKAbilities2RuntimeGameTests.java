@@ -4,17 +4,22 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities2.AbilityRuntimeService;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityAction;
+import com.chaosbuffalo.mkcore.abilities2.actions.AbilityConditionDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityActivationDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDefinitionData;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDeliveryDefinition;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityParameterDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityPresentation;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityScalar;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityTargetResolverDefinition;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValue;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValueKind;
 import com.chaosbuffalo.mkcore.abilities2.definition.ActivationBehavior;
 import com.chaosbuffalo.mkcore.abilities2.definition.ActivationKind;
 import com.chaosbuffalo.mkcore.abilities2.definition.DeliveryKind;
 import com.chaosbuffalo.mkcore.abilities2.definition.InterruptPolicy;
 import com.chaosbuffalo.mkcore.abilities2.definition.InterruptRefundPolicy;
+import com.chaosbuffalo.mkcore.abilities2.definition.StateScope;
 import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityDefinitionResolver;
 import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityEventSnapshot;
 import com.chaosbuffalo.mkcore.abilities2.runtime.AbilityEventType;
@@ -33,6 +38,8 @@ import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
 import com.chaosbuffalo.mkcore.item.ItemGrantedAbility;
 import com.chaosbuffalo.mkcore.test.MKTestAbilities;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.gametest.framework.GameTest;
@@ -71,6 +78,12 @@ public class MKAbilities2RuntimeGameTests {
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_projectile_impact");
     private static final ResourceLocation PROJECTILE_GROUND_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_projectile_ground");
+    private static final ResourceLocation INT_BRANCH_CONDITION_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_branch_int_conditions");
+    private static final ResourceLocation FLOAT_BRANCH_CONDITION_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_branch_float_conditions");
+    private static final ResourceLocation EVENT_ACTOR_BRANCH_CONDITION_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_branch_event_actor_conditions");
     private static final ResourceLocation DELAYED_BURST_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_delayed_burst");
     private static final ResourceLocation HEALING_CLOUD_ABILITY =
@@ -276,6 +289,146 @@ public class MKAbilities2RuntimeGameTests {
                             "healing cloud should heal the caster once its first ground pulse fires");
                     helper.succeed();
                 });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void intBranchConditionsReadVarsParamsAndState(GameTestHelper helper) {
+        Player caster = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        AbilityRuntimeService service = createTestRuntimeService();
+        var casterData = MKCore.getEntityDataOrThrow(caster);
+
+        caster.setHealth(caster.getMaxHealth() - 8.0f);
+        float startingHealth = caster.getHealth();
+
+        InvocationResult result = service.getEngine().activate(new ActivationRequest(
+                casterData,
+                casterData,
+                new AbilityReference(INT_BRANCH_CONDITION_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "int branch condition probe should start");
+
+        PersistedAbilityRuntimeState snapshot = service.captureOwnerRuntime(casterData);
+        helper.assertTrue(caster.getHealth() > startingHealth,
+                "state-driven int branch conditions should allow the follow-up heal");
+        helper.assertTrue(stateBool(snapshot, "charges_gate"),
+                "var_int branch should mark the boolean gate state");
+        helper.assertValueEqual(stateInt(snapshot, "bonus_count"), 1,
+                "param_float branch should store the expected int state value");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void floatBranchConditionsReadVarsParamsAndState(GameTestHelper helper) {
+        Player caster = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        AbilityRuntimeService service = createTestRuntimeService();
+        var casterData = MKCore.getEntityDataOrThrow(caster);
+
+        caster.setHealth(caster.getMaxHealth() - 6.0f);
+        float startingHealth = caster.getHealth();
+
+        InvocationResult result = service.getEngine().activate(new ActivationRequest(
+                casterData,
+                casterData,
+                new AbilityReference(FLOAT_BRANCH_CONDITION_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "float branch condition probe should start");
+
+        PersistedAbilityRuntimeState snapshot = service.captureOwnerRuntime(casterData);
+        helper.assertTrue(caster.getHealth() > startingHealth,
+                "state-driven float branch conditions should allow the follow-up heal");
+        helper.assertTrue(stateBool(snapshot, "param_gate"),
+                "param_int branch should mark the boolean gate state");
+        helper.assertValueEqual(stateInt(snapshot, "float_gate"), 1,
+                "var_float branch should store the expected int gate state");
+        helper.assertValueEqual(stateFloat(snapshot, "rating"), 1.25f,
+                "modify_state should preserve the float value used by the state_float condition");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void eventHasActorConditionBranchesOnSnapshotActor(GameTestHelper helper) {
+        Player actorPresentCaster = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        Player actorMissingCaster = createTestPlayer(helper, new BlockPos(4, 2, 1));
+        AbilityRuntimeService service = createTestRuntimeService();
+        var actorPresentData = MKCore.getEntityDataOrThrow(actorPresentCaster);
+        var actorMissingData = MKCore.getEntityDataOrThrow(actorMissingCaster);
+
+        actorPresentCaster.setHealth(actorPresentCaster.getMaxHealth() - 4.0f);
+        actorMissingCaster.setHealth(actorMissingCaster.getMaxHealth() - 4.0f);
+        float actorPresentStartingHealth = actorPresentCaster.getHealth();
+        float actorMissingStartingHealth = actorMissingCaster.getHealth();
+
+        InvocationResult actorPresentResult = service.getEngine().activate(new ActivationRequest(
+                actorPresentData,
+                actorPresentData,
+                new AbilityReference(EVENT_ACTOR_BRANCH_CONDITION_ABILITY, null),
+                "cast",
+                null,
+                null,
+                new AbilityEventSnapshot(
+                        AbilityEventType.SPELL_HIT,
+                        null,
+                        UUID.randomUUID(),
+                        0,
+                        actorPresentCaster.getUUID(),
+                        EVENT_ACTOR_BRANCH_CONDITION_ABILITY,
+                        "cast",
+                        actorPresentCaster.getUUID(),
+                        null,
+                        Map.of()
+                ),
+                false,
+                false
+        ));
+        helper.assertTrue(actorPresentResult.started(), "event_has_actor positive probe should start");
+
+        InvocationResult actorMissingResult = service.getEngine().activate(new ActivationRequest(
+                actorMissingData,
+                actorMissingData,
+                new AbilityReference(EVENT_ACTOR_BRANCH_CONDITION_ABILITY, null),
+                "cast",
+                null,
+                null,
+                new AbilityEventSnapshot(
+                        AbilityEventType.SPELL_HIT,
+                        null,
+                        UUID.randomUUID(),
+                        0,
+                        actorMissingCaster.getUUID(),
+                        EVENT_ACTOR_BRANCH_CONDITION_ABILITY,
+                        "cast",
+                        null,
+                        null,
+                        Map.of()
+                ),
+                false,
+                false
+        ));
+        helper.assertTrue(actorMissingResult.started(), "event_has_actor negative probe should start");
+
+        PersistedAbilityRuntimeState actorPresentSnapshot = service.captureOwnerRuntime(actorPresentData);
+        PersistedAbilityRuntimeState actorMissingSnapshot = service.captureOwnerRuntime(actorMissingData);
+        helper.assertTrue(actorPresentCaster.getHealth() > actorPresentStartingHealth,
+                "event_has_actor should take the true branch when the snapshot includes an actor");
+        helper.assertValueEqual(actorMissingCaster.getHealth(), actorMissingStartingHealth,
+                "event_has_actor should skip the heal when the snapshot omits an actor");
+        helper.assertTrue(stateBool(actorPresentSnapshot, "actor_present"),
+                "event_has_actor true branch should mark the state as present");
+        helper.assertFalse(stateBool(actorMissingSnapshot, "actor_present"),
+                "event_has_actor false branch should mark the state as absent");
+        helper.succeed();
     }
 
     @GameTest(template = "player_data_phase0")
@@ -1588,6 +1741,9 @@ public class MKAbilities2RuntimeGameTests {
         Map<ResourceLocation, AbilityDefinitionData> definitions = new LinkedHashMap<>();
         definitions.put(PROJECTILE_IMPACT_ABILITY, createProjectileImpactDefinition());
         definitions.put(PROJECTILE_GROUND_ABILITY, createProjectileGroundDefinition());
+        definitions.put(INT_BRANCH_CONDITION_ABILITY, createIntBranchConditionDefinition());
+        definitions.put(FLOAT_BRANCH_CONDITION_ABILITY, createFloatBranchConditionDefinition());
+        definitions.put(EVENT_ACTOR_BRANCH_CONDITION_ABILITY, createEventActorBranchConditionDefinition());
         return new AbilityRuntimeService(new AbilityDefinitionResolver(definitions::get));
     }
 
@@ -1679,11 +1835,214 @@ public class MKAbilities2RuntimeGameTests {
         );
     }
 
+    private static AbilityDefinitionData createIntBranchConditionDefinition() {
+        Map<String, AbilityActivationDefinition> activations = new LinkedHashMap<>();
+        activations.put("cast", activation(ActivationKind.MANUAL, "cast", new AbilityTargetResolverDefinition("self")));
+
+        Map<String, List<AbilityAction>> entryPoints = new LinkedHashMap<>();
+        entryPoints.put("cast", List.of(
+                new AbilityAction.SetVarAction("charges", new AbilityValue.IntValue(2)),
+                new AbilityAction.BranchAction(
+                        condition("var_int", Map.of(
+                                "name", stringConditionValue("charges"),
+                                "operator", stringConditionValue("gte"),
+                                "value", numberConditionValue(2)
+                        )),
+                        List.of(new AbilityAction.ModifyStateAction(
+                                StateScope.SELF,
+                                "charges_gate",
+                                AbilityAction.ModifyStateOperation.SET_BOOL,
+                                new AbilityValue.BoolValue(true)
+                        )),
+                        List.of(new AbilityAction.ModifyStateAction(
+                                StateScope.SELF,
+                                "charges_gate",
+                                AbilityAction.ModifyStateOperation.SET_BOOL,
+                                new AbilityValue.BoolValue(false)
+                        ))
+                ),
+                new AbilityAction.BranchAction(
+                        condition("param_float", Map.of(
+                                "parameter", stringConditionValue("bonus_scale"),
+                                "operator", stringConditionValue("gt"),
+                                "value", numberConditionValue(1.5f)
+                        )),
+                        List.of(new AbilityAction.ModifyStateAction(
+                                StateScope.SELF,
+                                "bonus_count",
+                                AbilityAction.ModifyStateOperation.SET_INT,
+                                new AbilityValue.IntValue(1)
+                        )),
+                        List.of(new AbilityAction.ModifyStateAction(
+                                StateScope.SELF,
+                                "bonus_count",
+                                AbilityAction.ModifyStateOperation.SET_INT,
+                                new AbilityValue.IntValue(0)
+                        ))
+                ),
+                new AbilityAction.BranchAction(
+                        condition("state_int", Map.of(
+                                "scope", stringConditionValue("self"),
+                                "state_key", stringConditionValue("bonus_count"),
+                                "operator", stringConditionValue("eq"),
+                                "value", numberConditionValue(1)
+                        )),
+                        List.of(new AbilityAction.HealAction(
+                                AbilityAction.ActionTarget.PRIMARY_ENTITY,
+                                new AbilityScalar.ConstantScalar(4.0)
+                        )),
+                        List.of()
+                )
+        ));
+
+        return new AbilityDefinitionData(
+                INT_BRANCH_CONDITION_ABILITY,
+                presentation("Int Branch Conditions Test"),
+                MKCore.id("test"),
+                Set.of(),
+                Set.of(),
+                Map.of("bonus_scale", floatParameter("bonus_scale", 2.0f)),
+                activations,
+                entryPoints,
+                Map.of(),
+                Map.of()
+        );
+    }
+
+    private static AbilityDefinitionData createFloatBranchConditionDefinition() {
+        Map<String, AbilityActivationDefinition> activations = new LinkedHashMap<>();
+        activations.put("cast", activation(ActivationKind.MANUAL, "cast", new AbilityTargetResolverDefinition("self")));
+
+        Map<String, List<AbilityAction>> entryPoints = new LinkedHashMap<>();
+        entryPoints.put("cast", List.of(
+                new AbilityAction.ModifyStateAction(
+                        StateScope.SELF,
+                        "rating",
+                        AbilityAction.ModifyStateOperation.SET_FLOAT,
+                        new AbilityValue.FloatValue(1.25f)
+                ),
+                new AbilityAction.SetVarAction("bonus", new AbilityValue.FloatValue(1.5f)),
+                new AbilityAction.BranchAction(
+                        condition("param_int", Map.of(
+                                "parameter", stringConditionValue("required_charges"),
+                                "operator", stringConditionValue("eq"),
+                                "value", numberConditionValue(2)
+                        )),
+                        List.of(new AbilityAction.ModifyStateAction(
+                                StateScope.SELF,
+                                "param_gate",
+                                AbilityAction.ModifyStateOperation.SET_BOOL,
+                                new AbilityValue.BoolValue(true)
+                        )),
+                        List.of(new AbilityAction.ModifyStateAction(
+                                StateScope.SELF,
+                                "param_gate",
+                                AbilityAction.ModifyStateOperation.SET_BOOL,
+                                new AbilityValue.BoolValue(false)
+                        ))
+                ),
+                new AbilityAction.BranchAction(
+                        condition("var_float", Map.of(
+                                "name", stringConditionValue("bonus"),
+                                "operator", stringConditionValue("gte"),
+                                "value", numberConditionValue(1.5f)
+                        )),
+                        List.of(new AbilityAction.ModifyStateAction(
+                                StateScope.SELF,
+                                "float_gate",
+                                AbilityAction.ModifyStateOperation.SET_INT,
+                                new AbilityValue.IntValue(1)
+                        )),
+                        List.of(new AbilityAction.ModifyStateAction(
+                                StateScope.SELF,
+                                "float_gate",
+                                AbilityAction.ModifyStateOperation.SET_INT,
+                                new AbilityValue.IntValue(0)
+                        ))
+                ),
+                new AbilityAction.BranchAction(
+                        condition("state_float", Map.of(
+                                "scope", stringConditionValue("self"),
+                                "state_key", stringConditionValue("rating"),
+                                "operator", stringConditionValue("lt"),
+                                "value", numberConditionValue(2.0f)
+                        )),
+                        List.of(new AbilityAction.HealAction(
+                                AbilityAction.ActionTarget.PRIMARY_ENTITY,
+                                new AbilityScalar.ConstantScalar(3.0)
+                        )),
+                        List.of()
+                )
+        ));
+
+        return new AbilityDefinitionData(
+                FLOAT_BRANCH_CONDITION_ABILITY,
+                presentation("Float Branch Conditions Test"),
+                MKCore.id("test"),
+                Set.of(),
+                Set.of(),
+                Map.of("required_charges", intParameter("required_charges", 2)),
+                activations,
+                entryPoints,
+                Map.of(),
+                Map.of()
+        );
+    }
+
+    private static AbilityDefinitionData createEventActorBranchConditionDefinition() {
+        Map<String, AbilityActivationDefinition> activations = new LinkedHashMap<>();
+        activations.put("cast", activation(ActivationKind.MANUAL, "cast", new AbilityTargetResolverDefinition("self")));
+
+        Map<String, List<AbilityAction>> entryPoints = new LinkedHashMap<>();
+        entryPoints.put("cast", List.of(
+                new AbilityAction.BranchAction(
+                        new AbilityConditionDefinition("event_has_actor"),
+                        List.of(
+                                new AbilityAction.ModifyStateAction(
+                                        StateScope.SELF,
+                                        "actor_present",
+                                        AbilityAction.ModifyStateOperation.SET_BOOL,
+                                        new AbilityValue.BoolValue(true)
+                                ),
+                                new AbilityAction.HealAction(
+                                        AbilityAction.ActionTarget.PRIMARY_ENTITY,
+                                        new AbilityScalar.ConstantScalar(2.0)
+                                )
+                        ),
+                        List.of(new AbilityAction.ModifyStateAction(
+                                StateScope.SELF,
+                                "actor_present",
+                                AbilityAction.ModifyStateOperation.SET_BOOL,
+                                new AbilityValue.BoolValue(false)
+                        ))
+                )
+        ));
+
+        return new AbilityDefinitionData(
+                EVENT_ACTOR_BRANCH_CONDITION_ABILITY,
+                presentation("Event Actor Branch Condition Test"),
+                MKCore.id("test"),
+                Set.of(),
+                Set.of(),
+                Map.of(),
+                activations,
+                entryPoints,
+                Map.of(),
+                Map.of()
+        );
+    }
+
     private static AbilityActivationDefinition activation(ActivationKind kind, String entryPoint) {
+        return activation(kind, entryPoint, new AbilityTargetResolverDefinition("none"));
+    }
+
+    private static AbilityActivationDefinition activation(ActivationKind kind,
+                                                          String entryPoint,
+                                                          AbilityTargetResolverDefinition targeting) {
         return new AbilityActivationDefinition(
                 kind,
                 entryPoint,
-                new AbilityTargetResolverDefinition("none"),
+                targeting,
                 List.of(),
                 List.of(),
                 null,
@@ -1697,6 +2056,40 @@ public class MKAbilities2RuntimeGameTests {
 
     private static AbilityPresentation presentation(String name) {
         return new AbilityPresentation(name, name, null, null, null, null, null);
+    }
+
+    private static AbilityParameterDefinition floatParameter(String id, float defaultValue) {
+        return new AbilityParameterDefinition(
+                id,
+                new AbilityValue.FloatValue(defaultValue),
+                AbilityValueKind.FLOAT,
+                true,
+                true,
+                id
+        );
+    }
+
+    private static AbilityParameterDefinition intParameter(String id, int defaultValue) {
+        return new AbilityParameterDefinition(
+                id,
+                new AbilityValue.IntValue(defaultValue),
+                AbilityValueKind.INT,
+                true,
+                true,
+                id
+        );
+    }
+
+    private static AbilityConditionDefinition condition(String type, Map<String, JsonElement> data) {
+        return new AbilityConditionDefinition(type, data);
+    }
+
+    private static JsonPrimitive stringConditionValue(String value) {
+        return new JsonPrimitive(value);
+    }
+
+    private static JsonPrimitive numberConditionValue(Number value) {
+        return new JsonPrimitive(value);
     }
 
     private static void emitSpellCrit(Player owner, Player target) {
@@ -1731,6 +2124,38 @@ public class MKAbilities2RuntimeGameTests {
     private static AbilityResolvedTargets singleTarget(LivingEntity target) {
         UUID targetId = target.getUUID();
         return new AbilityResolvedTargets(targetId, List.of(targetId), null, null, null);
+    }
+
+    private static AbilityValue stateValue(PersistedAbilityRuntimeState snapshot, String stateKey) {
+        return snapshot.states().stream()
+                .filter(entry -> stateKey.equals(entry.stateKey()))
+                .map(PersistedAbilityRuntimeState.StateEntry::value)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Missing runtime state " + stateKey));
+    }
+
+    private static boolean stateBool(PersistedAbilityRuntimeState snapshot, String stateKey) {
+        AbilityValue value = stateValue(snapshot, stateKey);
+        if (!(value instanceof AbilityValue.BoolValue boolValue)) {
+            throw new IllegalStateException("State " + stateKey + " should be a bool");
+        }
+        return boolValue.value();
+    }
+
+    private static int stateInt(PersistedAbilityRuntimeState snapshot, String stateKey) {
+        AbilityValue value = stateValue(snapshot, stateKey);
+        if (!(value instanceof AbilityValue.IntValue intValue)) {
+            throw new IllegalStateException("State " + stateKey + " should be an int");
+        }
+        return intValue.value();
+    }
+
+    private static float stateFloat(PersistedAbilityRuntimeState snapshot, String stateKey) {
+        AbilityValue value = stateValue(snapshot, stateKey);
+        if (!(value instanceof AbilityValue.FloatValue floatValue)) {
+            throw new IllegalStateException("State " + stateKey + " should be a float");
+        }
+        return floatValue.value();
     }
 
     private static Player createDeserializedTestPlayer(GameTestHelper helper,

@@ -1495,19 +1495,50 @@ public class SimpleAbilityEngine implements AbilityEngine {
     private boolean evaluateCondition(AbilityConditionDefinition condition, AbilityActionContext context) {
         return switch (condition.type()) {
             case "always" -> true;
+            case "event_has_actor" -> context.eventSnapshot() != null && context.eventSnapshot().actorEntityId() != null;
             case "event_has_target" -> context.eventSnapshot() != null && context.eventSnapshot().targetEntityId() != null;
             case "has_current_target" -> context.currentTarget().isPresent();
             case "has_primary_target" -> context.targets().primaryEntityId() != null;
             case "param_bool" -> context.getBoolParam(requiredString(condition, "parameter")) == optionalBoolean(condition, "value", true);
             case "var_bool" -> context.getBoolVar(requiredString(condition, "name")) == optionalBoolean(condition, "value", true);
+            case "param_int" -> compareInts(
+                    context.getIntParam(requiredString(condition, "parameter")),
+                    conditionOperator(condition),
+                    requiredInt(condition, "value")
+            );
+            case "var_int" -> compareInts(
+                    context.getIntVar(requiredString(condition, "name")),
+                    conditionOperator(condition),
+                    requiredInt(condition, "value")
+            );
             case "state_bool" -> {
-                StateScope scope = StateScope.valueOf(requiredString(condition, "scope").toUpperCase(Locale.ROOT));
+                StateScope scope = requiredStateScope(condition);
                 String key = requiredString(condition, "state_key");
                 boolean expected = optionalBoolean(condition, "value", true);
                 AbilityValue current = context.stateStore().getState(context.invocation(), scope, key);
                 boolean actual = current instanceof AbilityValue.BoolValue boolValue && boolValue.value();
                 yield actual == expected;
             }
+            case "state_int" -> compareInts(
+                    currentIntState(context.invocation(), requiredStateScope(condition), requiredString(condition, "state_key")),
+                    conditionOperator(condition),
+                    requiredInt(condition, "value")
+            );
+            case "param_float" -> compareFloats(
+                    context.getFloatParam(requiredString(condition, "parameter")),
+                    conditionOperator(condition),
+                    requiredFloat(condition, "value")
+            );
+            case "var_float" -> compareFloats(
+                    context.getFloatVar(requiredString(condition, "name")),
+                    conditionOperator(condition),
+                    requiredFloat(condition, "value")
+            );
+            case "state_float" -> compareFloats(
+                    currentFloatState(context.invocation(), requiredStateScope(condition), requiredString(condition, "state_key")),
+                    conditionOperator(condition),
+                    requiredFloat(condition, "value")
+            );
             default -> throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
                     "Unsupported condition type " + condition.type());
         };
@@ -1558,6 +1589,44 @@ public class SimpleAbilityEngine implements AbilityEngine {
                     "State " + key + " is not a float");
         }
         return current.asFloat(key);
+    }
+
+    private StateScope requiredStateScope(AbilityConditionDefinition condition) {
+        String scopeName = requiredString(condition, "scope");
+        try {
+            return StateScope.valueOf(scopeName.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ignored) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Condition " + condition.type() + " field scope has unknown value " + scopeName);
+        }
+    }
+
+    private ConditionOperator conditionOperator(AbilityConditionDefinition condition) {
+        return ConditionOperator.fromSerializedName(optionalString(condition, "operator",
+                optionalString(condition, "op", "eq")));
+    }
+
+    private boolean compareInts(int actual, ConditionOperator operator, int expected) {
+        return switch (operator) {
+            case EQ -> actual == expected;
+            case NE -> actual != expected;
+            case GT -> actual > expected;
+            case GTE -> actual >= expected;
+            case LT -> actual < expected;
+            case LTE -> actual <= expected;
+        };
+    }
+
+    private boolean compareFloats(float actual, ConditionOperator operator, float expected) {
+        int comparison = Float.compare(actual, expected);
+        return switch (operator) {
+            case EQ -> comparison == 0;
+            case NE -> comparison != 0;
+            case GT -> comparison > 0;
+            case GTE -> comparison >= 0;
+            case LT -> comparison < 0;
+            case LTE -> comparison <= 0;
+        };
     }
 
     private SimpleAbilityActionContext createContext(AbilityInvocation invocation,
@@ -1713,6 +1782,18 @@ public class SimpleAbilityEngine implements AbilityEngine {
         return value.getAsString();
     }
 
+    private String optionalString(AbilityConditionDefinition condition, String key, String defaultValue) {
+        var value = condition.get(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        if (!value.isJsonPrimitive() || !value.getAsJsonPrimitive().isString()) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Condition " + condition.type() + " field " + key + " must be string");
+        }
+        return value.getAsString();
+    }
+
     private boolean optionalBoolean(AbilityConditionDefinition condition, String key, boolean defaultValue) {
         var value = condition.get(key);
         if (value == null) {
@@ -1723,6 +1804,24 @@ public class SimpleAbilityEngine implements AbilityEngine {
                     "Condition " + condition.type() + " field " + key + " must be boolean");
         }
         return value.getAsBoolean();
+    }
+
+    private int requiredInt(AbilityConditionDefinition condition, String key) {
+        var value = condition.get(key);
+        if (value == null || !value.isJsonPrimitive() || !value.getAsJsonPrimitive().isNumber()) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Condition " + condition.type() + " requires numeric field " + key);
+        }
+        return value.getAsInt();
+    }
+
+    private float requiredFloat(AbilityConditionDefinition condition, String key) {
+        var value = condition.get(key);
+        if (value == null || !value.isJsonPrimitive() || !value.getAsJsonPrimitive().isNumber()) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Condition " + condition.type() + " requires numeric field " + key);
+        }
+        return value.getAsFloat();
     }
 
     private void emitInvocationStarted(AbilityInvocation invocation) {
@@ -1848,6 +1947,28 @@ public class SimpleAbilityEngine implements AbilityEngine {
 
     private AbilityValue.ResourceLocationValue eventKeywordValue(String value) {
         return new AbilityValue.ResourceLocationValue(ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, value));
+    }
+
+    private enum ConditionOperator {
+        EQ,
+        NE,
+        GT,
+        GTE,
+        LT,
+        LTE;
+
+        private static ConditionOperator fromSerializedName(String serializedName) {
+            return switch (serializedName.toLowerCase(Locale.ROOT)) {
+                case "eq", "==" -> EQ;
+                case "ne", "!=" -> NE;
+                case "gt", ">" -> GT;
+                case "gte", ">=" -> GTE;
+                case "lt", "<" -> LT;
+                case "lte", "<=" -> LTE;
+                default -> throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                        "Unsupported condition operator " + serializedName);
+            };
+        }
     }
 
     private static final class PendingCast {
