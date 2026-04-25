@@ -108,7 +108,10 @@ public class TalentTreeRecord {
             }
         }
 
-        record.setRank(nextRank);
+        if (!record.setRank(nextRank)) {
+            return false;
+        }
+
         updater.markUpdated(lineName, index);
         return true;
     }
@@ -338,8 +341,13 @@ public class TalentTreeRecord {
                         int index = nodeInfo[i];
                         int rank = nodeInfo[i + 1];
                         TalentRecord record = lineRecord.getRecord(index);
-                        if (record != null) {
-                            record.setRank(rank);
+                        if (record == null) {
+                            MKCore.LOGGER.warn("TalentTreeUpdater received unknown talent index {} for line {}", index, line);
+                            continue;
+                        }
+                        if (!record.setRank(rank)) {
+                            MKCore.LOGGER.warn("TalentTreeUpdater received invalid rank {} for talent {}:{}", rank, line, index);
+                            continue;
                         }
                     }
                 }

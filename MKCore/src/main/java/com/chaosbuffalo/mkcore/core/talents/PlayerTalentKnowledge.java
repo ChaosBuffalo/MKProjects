@@ -73,13 +73,20 @@ public class PlayerTalentKnowledge implements ISyncGroupProvider {
     }
 
     public void addTalentXp(int value) {
+        if (!playerData.isServerSide()) {
+            return;
+        }
+
         int maxPoints = MKConfig.SERVER.maxTalentPoints.get();
         if (maxPoints > 0 && getTotalTalentPoints() >= maxPoints) {
             return;
         }
         talentXp.add(value);
-        if (shouldLevel()) {
+        while (shouldLevel()) {
             performLevel();
+            if (maxPoints > 0 && getTotalTalentPoints() >= maxPoints) {
+                break;
+            }
         }
     }
 

@@ -30,12 +30,13 @@ public class TalentButton extends MKButton {
     public static final int SLOT_Y_OFFSET = 4;
     public static final int TEXT_OFFSET = 4;
     public static final int SLOT_X_OFFSET = (WIDTH - SLOT_WIDTH) / 2;
-    private final List<Component> tooltip;
 
     public final int index;
     public final String line;
     public final TalentRecord record;
+    private final IMKEntityData entityData;
     private final TalentNodeDisplay nodeDisplay;
+    private final TalentType<?> talentType;
 
     public TalentButton(IMKEntityData entityData, int index, String line, TalentRecord record,
                         int x, int y) {
@@ -43,11 +44,15 @@ public class TalentButton extends MKButton {
         this.index = index;
         this.line = line;
         this.record = record;
-        this.tooltip = new ArrayList<>();
+        this.entityData = entityData;
         nodeDisplay = record.getNode().getDisplay();
+        talentType = record.getNode().getType();
+    }
 
-        TalentType<?> talentType = record.getNode().getType();
+    private List<Component> buildTooltip() {
+        List<Component> tooltip = new ArrayList<>();
         talentType.buildTooltip(entityData, record, tooltip::add);
+        return tooltip;
     }
 
 
@@ -119,7 +124,7 @@ public class TalentButton extends MKButton {
                     textColor);
             if (isHovered()) {
                 if (getScreen() != null) {
-                    getScreen().addPostRenderInstruction(new HoveringTextInstruction(tooltip,
+                    getScreen().addPostRenderInstruction(new HoveringTextInstruction(buildTooltip(),
                             getParentCoords(new Vec2i(mouseX, mouseY))));
                 }
             }

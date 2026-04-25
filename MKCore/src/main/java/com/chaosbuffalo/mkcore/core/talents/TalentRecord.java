@@ -47,17 +47,12 @@ public class TalentRecord implements IRecordInstance<TalentRecord> {
         return currentRank;
     }
 
-    public void setRank(int value) {
-        currentRank = value;
-    }
-
-    public boolean modifyRank(int value) {
-        int next = currentRank + value;
-        if (next >= 0 && next <= node.getMaxRanks()) {
-            setRank(next);
-            return true;
+    public boolean setRank(int value) {
+        if (value < 0 || value > node.getMaxRanks()) {
+            return false;
         }
-        return false;
+        currentRank = value;
+        return true;
     }
 
     public <T> T serialize(DynamicOps<T> ops) {
@@ -68,11 +63,7 @@ public class TalentRecord implements IRecordInstance<TalentRecord> {
 
     public <T> boolean deserialize(Dynamic<T> dynamic) {
         int rank = dynamic.get("rank").asInt(0);
-        if (rank > node.getMaxRanks())
-            return false;
-        // Validation complete, assign the points
-        currentRank = rank;
-        return true;
+        return setRank(rank);
     }
 
     public String toString() {

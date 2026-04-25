@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.test;
 
+import com.chaosbuffalo.mkcore.MKConfig;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
@@ -8,12 +9,18 @@ import com.chaosbuffalo.mkcore.core.MKServerPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.PersonaManager;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
+import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
+import com.chaosbuffalo.mkcore.core.talents.TalentTreeRecord;
+import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
 import com.mojang.authlib.GameProfile;
+import com.mojang.serialization.Dynamic;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -22,6 +29,7 @@ import net.minecraft.server.network.CommonListenerCookie;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
+import java.lang.reflect.Method;
 import java.util.UUID;
 
 @GameTestHolder(MKCore.MOD_ID)
@@ -252,6 +260,83 @@ public class MKPlayerDataCharacterizationGameTests {
         helper.succeed();
     }
 
+    @GameTest(template = "player_data_phase0")
+    public static void singleXpGrantAwardsMultipleTalentLevels(GameTestHelper helper) {
+        int maxPoints = MKConfig.SERVER.maxTalentPoints.get();
+        if (maxPoints > 0 && maxPoints < 2) {
+            throw new IllegalStateException("Test requires max talent points >= 2");
+        }
+
+        MKServerPlayerData playerData = createPlayerData(helper);
+        MKServerPlayerData thresholdProbe = createPlayerData(helper);
+        int firstThreshold = thresholdProbe.getTalents().getXpToNextLevel();
+        thresholdProbe.getTalents().grantTalentPoints(1);
+        int secondThreshold = thresholdProbe.getTalents().getXpToNextLevel();
+
+        playerData.getTalents().addTalentXp(firstThreshold + secondThreshold);
+
+        helper.assertValueEqual(playerData.getTalents().getTotalTalentPoints(), 2,
+                "single xp grant should award both talent points");
+        helper.assertValueEqual(playerData.getTalents().getUnspentTalentPoints(), 2,
+                "single xp grant should leave both earned points unspent");
+        helper.assertValueEqual(playerData.getTalents().getTalentXp(), 0,
+                "exact multi-level xp grant should fully consume its xp");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void negativeTalentRankDeserializeIsRejected(GameTestHelper helper) {
+        MKServerPlayerData playerData = createPlayerData(helper);
+        playerData.getTalents().grantTalentPoints(1);
+        if (!playerData.getTalents().unlockTree(TEST_TREE)) {
+            throw new IllegalStateException("Failed to unlock test talent tree");
+        }
+        if (!playerData.getTalents().spendTalentPoint(TEST_TREE, TEST_LINE, 0)) {
+            throw new IllegalStateException("Failed to unlock test talent");
+        }
+
+        TalentRecord record = playerData.getTalents().getRecord(TEST_TREE, TEST_LINE, 0);
+        if (record == null) {
+            throw new IllegalStateException("Failed to resolve test talent");
+        }
+
+        CompoundTag invalidRank = new CompoundTag();
+        invalidRank.putInt("rank", -1);
+
+        helper.assertFalse(record.deserialize(new Dynamic<>(NbtOps.INSTANCE, invalidRank)),
+                "negative talent rank should be rejected during deserialize");
+        helper.assertValueEqual(record.getRank(), 1,
+                "rejected deserialize should not mutate the existing rank");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void invalidTalentSyncRankIsIgnored(GameTestHelper helper) {
+        MKServerPlayerData playerData = createPlayerData(helper);
+        playerData.getTalents().grantTalentPoints(1);
+        if (!playerData.getTalents().unlockTree(TEST_TREE)) {
+            throw new IllegalStateException("Failed to unlock test talent tree");
+        }
+        if (!playerData.getTalents().spendTalentPoint(TEST_TREE, TEST_LINE, 0)) {
+            throw new IllegalStateException("Failed to unlock test talent");
+        }
+
+        TalentTreeRecord treeRecord = playerData.getTalents().getTree(TEST_TREE);
+        TalentRecord record = playerData.getTalents().getRecord(TEST_TREE, TEST_LINE, 0);
+        if (treeRecord == null || record == null) {
+            throw new IllegalStateException("Failed to resolve test talent tree state");
+        }
+
+        CompoundTag invalidUpdate = new CompoundTag();
+        invalidUpdate.putIntArray(TEST_LINE, new int[]{0, -1});
+
+        getTalentUpdater(treeRecord).handleUpdatePayload(null, invalidUpdate, SyncVisibility.Private);
+
+        helper.assertValueEqual(record.getRank(), 1,
+                "invalid sync rank should not mutate the existing rank");
+        helper.succeed();
+    }
+
     private static MKServerPlayerData createPlayerData(GameTestHelper helper) {
         var cookie = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "phase0-test-player"), false);
         ServerPlayer player = new ServerPlayer(
@@ -286,6 +371,16 @@ public class MKPlayerDataCharacterizationGameTests {
             throw new IllegalStateException("Failed to learn test ability " + ability.getAbilityId());
         }
         return ability.getAbilityId();
+    }
+
+    private static ISyncObject getTalentUpdater(TalentTreeRecord treeRecord) {
+        try {
+            Method method = TalentTreeRecord.class.getDeclaredMethod("getUpdater");
+            method.setAccessible(true);
+            return (ISyncObject) method.invoke(treeRecord);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("Failed to access talent tree updater", e);
+        }
     }
 
     private static CompoundTag getDefaultPersonaTag(CompoundTag root) {
