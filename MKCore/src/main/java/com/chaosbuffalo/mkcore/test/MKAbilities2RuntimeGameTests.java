@@ -93,6 +93,8 @@ public class MKAbilities2RuntimeGameTests {
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_branch_event_actor_conditions");
     private static final ResourceLocation EVENT_PAYLOAD_BRANCH_CONDITION_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_branch_event_payload_conditions");
+    private static final ResourceLocation EVENT_RELATION_BRANCH_CONDITION_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_branch_event_relation_conditions");
     private static final ResourceLocation INTERRUPT_REASON_PROBE_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_interrupt_reason_probe");
     private static final ResourceLocation DELAYED_BURST_ABILITY =
@@ -561,6 +563,100 @@ public class MKAbilities2RuntimeGameTests {
                 "event_payload_tag should be false when the resource-location payload is missing the tag");
         helper.assertFalse(stateBool(snapshot, "actor_ref_gate"),
                 "event_payload_entity_ref should be false when the entity ref does not match");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void eventParticipantRelationBranchConditionsMatchSelfAndAllies(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        Player ally = createTestPlayer(helper, new BlockPos(3, 2, 1));
+        AbilityRuntimeService service = createTestRuntimeService();
+        var ownerData = MKCore.getEntityDataOrThrow(owner);
+
+        InvocationResult result = service.getEngine().activate(new ActivationRequest(
+                ownerData,
+                ownerData,
+                new AbilityReference(EVENT_RELATION_BRANCH_CONDITION_ABILITY, null),
+                "cast",
+                null,
+                null,
+                new AbilityEventSnapshot(
+                        AbilityEventType.SPELL_HIT,
+                        null,
+                        UUID.randomUUID(),
+                        0,
+                        owner.getUUID(),
+                        SPELL_SOURCE_ABILITY,
+                        "cast",
+                        owner.getUUID(),
+                        ally.getUUID(),
+                        Map.of()
+                ),
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "event relation branch probe should start for self and ally");
+
+        PersistedAbilityRuntimeState snapshot = service.captureOwnerRuntime(ownerData);
+        helper.assertTrue(stateBool(snapshot, "actor_is_self"),
+                "event_actor_relation should treat the owner actor as self");
+        helper.assertFalse(stateBool(snapshot, "actor_is_ally"),
+                "event_actor_relation should not treat the owner actor as ally");
+        helper.assertFalse(stateBool(snapshot, "actor_is_enemy"),
+                "event_actor_relation should not treat the owner actor as enemy");
+        helper.assertFalse(stateBool(snapshot, "target_is_self"),
+                "event_target_relation should not treat an allied target as self");
+        helper.assertTrue(stateBool(snapshot, "target_is_ally"),
+                "event_target_relation should treat an allied target as ally");
+        helper.assertFalse(stateBool(snapshot, "target_is_enemy"),
+                "event_target_relation should not treat an allied target as enemy");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void eventParticipantRelationBranchConditionsMatchEnemiesAndSelfTargets(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        Zombie enemy = createTestZombie(helper, new BlockPos(5, 2, 1));
+        AbilityRuntimeService service = createTestRuntimeService();
+        var ownerData = MKCore.getEntityDataOrThrow(owner);
+
+        InvocationResult result = service.getEngine().activate(new ActivationRequest(
+                ownerData,
+                ownerData,
+                new AbilityReference(EVENT_RELATION_BRANCH_CONDITION_ABILITY, null),
+                "cast",
+                null,
+                null,
+                new AbilityEventSnapshot(
+                        AbilityEventType.SPELL_HIT,
+                        null,
+                        UUID.randomUUID(),
+                        0,
+                        owner.getUUID(),
+                        SPELL_SOURCE_ABILITY,
+                        "cast",
+                        enemy.getUUID(),
+                        owner.getUUID(),
+                        Map.of()
+                ),
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "event relation branch probe should start for enemy and self target");
+
+        PersistedAbilityRuntimeState snapshot = service.captureOwnerRuntime(ownerData);
+        helper.assertFalse(stateBool(snapshot, "actor_is_self"),
+                "event_actor_relation should not treat an enemy actor as self");
+        helper.assertFalse(stateBool(snapshot, "actor_is_ally"),
+                "event_actor_relation should not treat an enemy actor as ally");
+        helper.assertTrue(stateBool(snapshot, "actor_is_enemy"),
+                "event_actor_relation should treat an enemy actor as enemy");
+        helper.assertTrue(stateBool(snapshot, "target_is_self"),
+                "event_target_relation should treat the owner target as self");
+        helper.assertFalse(stateBool(snapshot, "target_is_ally"),
+                "event_target_relation should not treat the owner target as ally");
+        helper.assertFalse(stateBool(snapshot, "target_is_enemy"),
+                "event_target_relation should not treat the owner target as enemy");
         helper.succeed();
     }
 
@@ -2304,6 +2400,7 @@ public class MKAbilities2RuntimeGameTests {
         definitions.put(FLOAT_BRANCH_CONDITION_ABILITY, createFloatBranchConditionDefinition());
         definitions.put(EVENT_ACTOR_BRANCH_CONDITION_ABILITY, createEventActorBranchConditionDefinition());
         definitions.put(EVENT_PAYLOAD_BRANCH_CONDITION_ABILITY, createEventPayloadBranchConditionDefinition());
+        definitions.put(EVENT_RELATION_BRANCH_CONDITION_ABILITY, createEventRelationBranchConditionDefinition());
         return new AbilityRuntimeService(new AbilityDefinitionResolver(definitions::get));
     }
 
@@ -2613,39 +2710,39 @@ public class MKAbilities2RuntimeGameTests {
 
         Map<String, List<AbilityAction>> entryPoints = new LinkedHashMap<>();
         entryPoints.put("cast", List.of(
-                payloadStateBranch("event_has_payload", "has_stack_payload", Map.of(
+                conditionStateBranch("event_has_payload", "has_stack_payload", Map.of(
                         "key", stringConditionValue("stack_count")
                 )),
-                payloadStateBranch("event_payload_int", "stack_gate", Map.of(
+                conditionStateBranch("event_payload_int", "stack_gate", Map.of(
                         "key", stringConditionValue("stack_count"),
                         "operator", stringConditionValue("gte"),
                         "value", numberConditionValue(2)
                 )),
-                payloadStateBranch("event_payload_float", "rating_gate", Map.of(
+                conditionStateBranch("event_payload_float", "rating_gate", Map.of(
                         "key", stringConditionValue("impact_rating"),
                         "operator", stringConditionValue("gt"),
                         "value", numberConditionValue(1.5f)
                 )),
-                payloadStateBranch("event_source_tag", "source_tag_gate", Map.of(
+                conditionStateBranch("event_source_tag", "source_tag_gate", Map.of(
                         "tag", stringConditionValue(AbilityDatagenKeys.TAG_FIRE.toString())
                 )),
-                payloadStateBranch("event_payload_bool", "critical_gate", Map.of(
+                conditionStateBranch("event_payload_bool", "critical_gate", Map.of(
                         "key", stringConditionValue("critical"),
                         "value", new JsonPrimitive(true)
                 )),
-                payloadStateBranch("event_payload_string", "phase_gate", Map.of(
+                conditionStateBranch("event_payload_string", "phase_gate", Map.of(
                         "key", stringConditionValue("phase"),
                         "value", stringConditionValue("burst")
                 )),
-                payloadStateBranch("event_payload_resource_location", "damage_type_gate", Map.of(
+                conditionStateBranch("event_payload_resource_location", "damage_type_gate", Map.of(
                         "key", stringConditionValue("damage_type"),
                         "value", stringConditionValue(CoreDamageTypes.FireDamage.getId().toString())
                 )),
-                payloadStateBranch("event_payload_tag", "fire_tag_gate", Map.of(
+                conditionStateBranch("event_payload_tag", "fire_tag_gate", Map.of(
                         "key", stringConditionValue("ability_tag_probe"),
                         "tag", stringConditionValue(AbilityDatagenKeys.TAG_FIRE.toString())
                 )),
-                payloadStateBranch("event_payload_entity_ref", "actor_ref_gate", Map.of(
+                conditionStateBranch("event_payload_entity_ref", "actor_ref_gate", Map.of(
                         "key", stringConditionValue("actor_ref"),
                         "value", stringConditionValue(EVENT_PAYLOAD_ENTITY_REF_PROBE_ID.toString())
                 ))
@@ -2657,6 +2754,46 @@ public class MKAbilities2RuntimeGameTests {
                 MKCore.id("test"),
                 Set.of(),
                 Set.of(AbilityDatagenKeys.TAG_FIRE),
+                Map.of(),
+                activations,
+                entryPoints,
+                Map.of(),
+                Map.of()
+        );
+    }
+
+    private static AbilityDefinitionData createEventRelationBranchConditionDefinition() {
+        Map<String, AbilityActivationDefinition> activations = new LinkedHashMap<>();
+        activations.put("cast", activation(ActivationKind.MANUAL, "cast", new AbilityTargetResolverDefinition("self")));
+
+        Map<String, List<AbilityAction>> entryPoints = new LinkedHashMap<>();
+        entryPoints.put("cast", List.of(
+                conditionStateBranch("event_actor_relation", "actor_is_self", Map.of(
+                        "relation", stringConditionValue("is_self")
+                )),
+                conditionStateBranch("event_actor_relation", "actor_is_ally", Map.of(
+                        "relation", stringConditionValue("is_ally")
+                )),
+                conditionStateBranch("event_actor_relation", "actor_is_enemy", Map.of(
+                        "relation", stringConditionValue("is_enemy")
+                )),
+                conditionStateBranch("event_target_relation", "target_is_self", Map.of(
+                        "relation", stringConditionValue("is_self")
+                )),
+                conditionStateBranch("event_target_relation", "target_is_ally", Map.of(
+                        "relation", stringConditionValue("is_ally")
+                )),
+                conditionStateBranch("event_target_relation", "target_is_enemy", Map.of(
+                        "relation", stringConditionValue("is_enemy")
+                ))
+        ));
+
+        return new AbilityDefinitionData(
+                EVENT_RELATION_BRANCH_CONDITION_ABILITY,
+                presentation("Event Relation Branch Condition Test"),
+                MKCore.id("test"),
+                Set.of(),
+                Set.of(),
                 Map.of(),
                 activations,
                 entryPoints,
@@ -2777,9 +2914,9 @@ public class MKAbilities2RuntimeGameTests {
         return new JsonPrimitive(value);
     }
 
-    private static AbilityAction.BranchAction payloadStateBranch(String conditionType,
-                                                                String stateKey,
-                                                                Map<String, JsonElement> data) {
+    private static AbilityAction.BranchAction conditionStateBranch(String conditionType,
+                                                                  String stateKey,
+                                                                  Map<String, JsonElement> data) {
         return new AbilityAction.BranchAction(
                 condition(conditionType, data),
                 List.of(new AbilityAction.ModifyStateAction(

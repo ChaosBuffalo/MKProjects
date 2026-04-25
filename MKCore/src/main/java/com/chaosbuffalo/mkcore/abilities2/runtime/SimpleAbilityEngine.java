@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities2.AbilityTargeting;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityAction;
+import com.chaosbuffalo.mkcore.abilities2.actions.AbilityEventFilter.ParticipantRelation;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityConditionDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
@@ -81,6 +82,11 @@ public class SimpleAbilityEngine implements AbilityEngine {
         }
     }
 
+    @FunctionalInterface
+    public interface ParticipantRelationEvaluator {
+        boolean test(UUID ownerEntityId, UUID participantEntityId, ParticipantRelation relation);
+    }
+
     public interface LifecycleListener {
         LifecycleListener NOOP = new LifecycleListener() {
         };
@@ -104,6 +110,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
     private final ReactionController reactionController;
     private final DeliveryController deliveryController;
     private final LifecycleListener lifecycleListener;
+    private final ParticipantRelationEvaluator participantRelationEvaluator;
     private final BiPredicate<ResourceLocation, ResourceLocation> tagMatcher;
     private final Map<UUID, List<PendingCast>> pendingCastsByCaster = new HashMap<>();
     private final Map<UUID, List<PendingChannel>> pendingChannelsByCaster = new HashMap<>();
@@ -149,7 +156,10 @@ public class SimpleAbilityEngine implements AbilityEngine {
                                DeliveryController deliveryController,
                                LifecycleListener lifecycleListener) {
         this(definitionResolver, powerResolver, stateStore, eventEmitter, reactionController, deliveryController,
-                lifecycleListener, ResourceLocation::equals);
+                lifecycleListener,
+                (ownerEntityId, participantEntityId, relation) ->
+                        relation == ParticipantRelation.IS_SELF && ownerEntityId.equals(participantEntityId),
+                ResourceLocation::equals);
     }
 
     public SimpleAbilityEngine(AbilityDefinitionResolver definitionResolver,
@@ -160,6 +170,22 @@ public class SimpleAbilityEngine implements AbilityEngine {
                                DeliveryController deliveryController,
                                LifecycleListener lifecycleListener,
                                BiPredicate<ResourceLocation, ResourceLocation> tagMatcher) {
+        this(definitionResolver, powerResolver, stateStore, eventEmitter, reactionController, deliveryController,
+                lifecycleListener,
+                (ownerEntityId, participantEntityId, relation) ->
+                        relation == ParticipantRelation.IS_SELF && ownerEntityId.equals(participantEntityId),
+                tagMatcher);
+    }
+
+    public SimpleAbilityEngine(AbilityDefinitionResolver definitionResolver,
+                               AbilityPowerResolver powerResolver,
+                               AbilityStateStore stateStore,
+                               AbilityEventEmitter eventEmitter,
+                               ReactionController reactionController,
+                               DeliveryController deliveryController,
+                               LifecycleListener lifecycleListener,
+                               ParticipantRelationEvaluator participantRelationEvaluator,
+                               BiPredicate<ResourceLocation, ResourceLocation> tagMatcher) {
         this.definitionResolver = Objects.requireNonNull(definitionResolver, "definitionResolver");
         this.powerResolver = Objects.requireNonNull(powerResolver, "powerResolver");
         this.stateStore = Objects.requireNonNull(stateStore, "stateStore");
@@ -167,6 +193,8 @@ public class SimpleAbilityEngine implements AbilityEngine {
         this.reactionController = Objects.requireNonNull(reactionController, "reactionController");
         this.deliveryController = Objects.requireNonNull(deliveryController, "deliveryController");
         this.lifecycleListener = Objects.requireNonNull(lifecycleListener, "lifecycleListener");
+        this.participantRelationEvaluator = Objects.requireNonNull(participantRelationEvaluator,
+                "participantRelationEvaluator");
         this.tagMatcher = Objects.requireNonNull(tagMatcher, "tagMatcher");
     }
 
@@ -1519,6 +1547,12 @@ public class SimpleAbilityEngine implements AbilityEngine {
             case "always" -> true;
             case "event_has_actor" -> context.eventSnapshot() != null && context.eventSnapshot().actorEntityId() != null;
             case "event_has_target" -> context.eventSnapshot() != null && context.eventSnapshot().targetEntityId() != null;
+            case "event_actor_relation" -> matchesEventParticipantRelation(context,
+                    context.eventSnapshot() != null ? context.eventSnapshot().actorEntityId() : null,
+                    requiredParticipantRelation(condition));
+            case "event_target_relation" -> matchesEventParticipantRelation(context,
+                    context.eventSnapshot() != null ? context.eventSnapshot().targetEntityId() : null,
+                    requiredParticipantRelation(condition));
             case "event_source_tag" -> {
                 AbilityEventSnapshot eventSnapshot = context.eventSnapshot();
                 ResourceLocation sourceAbilityId = eventSnapshot != null ? eventSnapshot.sourceAbilityId() : null;
@@ -1674,9 +1708,30 @@ public class SimpleAbilityEngine implements AbilityEngine {
         }
     }
 
+    private ParticipantRelation requiredParticipantRelation(AbilityConditionDefinition condition) {
+        String relationName = requiredString(condition, "relation");
+        return switch (relationName.toLowerCase(Locale.ROOT)) {
+            case "is_self" -> ParticipantRelation.IS_SELF;
+            case "is_ally" -> ParticipantRelation.IS_ALLY;
+            case "is_enemy" -> ParticipantRelation.IS_ENEMY;
+            default -> throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Condition " + condition.type() + " field relation has unknown value " + relationName);
+        };
+    }
+
     private ConditionOperator conditionOperator(AbilityConditionDefinition condition) {
         return ConditionOperator.fromSerializedName(optionalString(condition, "operator",
                 optionalString(condition, "op", "eq")));
+    }
+
+    private boolean matchesEventParticipantRelation(AbilityActionContext context,
+                                                    @Nullable UUID participantEntityId,
+                                                    ParticipantRelation relation) {
+        if (participantEntityId == null) {
+            return false;
+        }
+        return participantRelationEvaluator.test(context.ownerData().getEntity().getUUID(), participantEntityId,
+                relation);
     }
 
     private boolean compareInts(int actual, ConditionOperator operator, int expected) {

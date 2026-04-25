@@ -103,6 +103,7 @@ public class AbilityRuntimeService {
                 new EngineReactionController(),
                 new EngineDeliveryController(),
                 new EngineLifecycleListener(),
+                this::evaluateRelation,
                 this::matchesTag
         );
     }
