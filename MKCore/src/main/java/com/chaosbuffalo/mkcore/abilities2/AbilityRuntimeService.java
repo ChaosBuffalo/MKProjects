@@ -34,6 +34,7 @@ import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import com.chaosbuffalo.targeting_api.Targeting;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceKey;
@@ -2303,6 +2304,20 @@ public class AbilityRuntimeService {
     }
 
     private void handleInvocationInterrupted(AbilityInvocation invocation, FailureReason failureReason) {
+        if (invocation.reason() != ActivationReason.DIRECT_REQUEST || invocation.casterData().isClientSide()) {
+            return;
+        }
+        if (!(invocation.casterData() instanceof MKPlayerData playerData)) {
+            return;
+        }
+
+        Component message = playerData.getAbilityExecutor().buildAbilityFeedbackMessage(
+                invocation.abilityId(),
+                failureReason
+        );
+        if (message != null) {
+            playerData.getEntity().displayClientMessage(message, true);
+        }
     }
 
     private CastInterruptReason toCastInterruptReason(FailureReason failureReason) {

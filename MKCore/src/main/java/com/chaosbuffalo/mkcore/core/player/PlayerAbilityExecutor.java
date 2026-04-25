@@ -90,7 +90,7 @@ public class PlayerAbilityExecutor extends AbilityExecutor {
 
     public void showLoadoutFailure(ResourceLocation abilityId, @javax.annotation.Nullable FailureReason failureReason) {
         Player player = getPlayerData().getEntity();
-        Component message = buildLoadoutFailureMessage(abilityId, failureReason);
+        Component message = buildAbilityFeedbackMessage(abilityId, failureReason);
         if (message != null) {
             player.displayClientMessage(message, true);
         }
@@ -100,7 +100,7 @@ public class PlayerAbilityExecutor extends AbilityExecutor {
         getPlayerData().getEntity().displayClientMessage(message, true);
     }
 
-    private @javax.annotation.Nullable Component buildLoadoutFailureMessage(ResourceLocation abilityId,
+    public @javax.annotation.Nullable Component buildAbilityFeedbackMessage(ResourceLocation abilityId,
                                                                            @javax.annotation.Nullable FailureReason failureReason) {
         if (failureReason == null) {
             return null;
@@ -127,6 +127,47 @@ public class PlayerAbilityExecutor extends AbilityExecutor {
                     "mkcore.ability.feedback.busy",
                     "You are already casting"
             ).withStyle(ChatFormatting.RED);
+            case TARGET_LOST -> Component.translatableWithFallback(
+                    "mkcore.ability.feedback.target_lost",
+                    "%s lost its target",
+                    abilityName
+            ).withStyle(ChatFormatting.RED);
+            case INTERRUPTED -> Component.translatableWithFallback(
+                    "mkcore.ability.feedback.interrupted",
+                    "%s was interrupted",
+                    abilityName
+            ).withStyle(ChatFormatting.RED);
+            case INTERRUPTED_BY_MOVE -> Component.translatableWithFallback(
+                    "mkcore.ability.feedback.interrupted_move",
+                    "%s was interrupted by movement",
+                    abilityName
+            ).withStyle(ChatFormatting.RED);
+            case INTERRUPTED_BY_DAMAGE -> Component.translatableWithFallback(
+                    "mkcore.ability.feedback.interrupted_damage",
+                    "%s was interrupted by damage",
+                    abilityName
+            ).withStyle(ChatFormatting.RED);
+            case INTERRUPTED_BY_BLOCK -> Component.translatableWithFallback(
+                    "mkcore.ability.feedback.interrupted_block",
+                    "%s was interrupted by blocking",
+                    abilityName
+            ).withStyle(ChatFormatting.RED);
+            case INTERRUPTED_BY_JUMP -> Component.translatableWithFallback(
+                    "mkcore.ability.feedback.interrupted_jump",
+                    "%s was interrupted by jumping",
+                    abilityName
+            ).withStyle(ChatFormatting.RED);
+            case INTERRUPTED_BY_STUN -> Component.translatableWithFallback(
+                    "mkcore.ability.feedback.interrupted_stun",
+                    "%s was interrupted by stun",
+                    abilityName
+            ).withStyle(ChatFormatting.RED);
+            case INTERRUPTED_BY_DEATH -> Component.translatableWithFallback(
+                    "mkcore.ability.feedback.interrupted_death",
+                    "%s was interrupted by death",
+                    abilityName
+            ).withStyle(ChatFormatting.RED);
+            case INTERRUPTED_BY_LOGOUT, INTERRUPTED_BY_UNLOAD -> null;
             default -> Component.translatableWithFallback(
                     "mkcore.ability.feedback.unavailable",
                     "%s cannot be used right now",

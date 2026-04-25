@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEntry;
 import com.chaosbuffalo.mkcore.abilities2.description.AbilityDefinitionDescriptions;
+import com.chaosbuffalo.mkcore.abilities2.runtime.FailureReason;
 import com.chaosbuffalo.mkcore.abilities2.runtime.PatchedAbilityDefinition;
 import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
 import com.chaosbuffalo.mkcore.core.MKServerPlayerData;
@@ -359,6 +360,31 @@ public class MKPlayerDataCharacterizationGameTests {
                 "channel definitions should list the initial heal parameter");
         helper.assertTrue(containsLine(lines, "Per-pulse channel heal: 2"),
                 "channel definitions should list the per-pulse heal parameter");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void abilityExecutorFormatsAbilities2InterruptionFeedback(GameTestHelper helper) {
+        MKServerPlayerData playerData = createPlayerData(helper);
+        ResourceLocation abilityId = MKCore.id("test_abilities2_targeted_firebolt");
+
+        Component moveInterrupted = playerData.getAbilityExecutor().buildAbilityFeedbackMessage(
+                abilityId,
+                FailureReason.INTERRUPTED_BY_MOVE
+        );
+        Component targetLost = playerData.getAbilityExecutor().buildAbilityFeedbackMessage(
+                abilityId,
+                FailureReason.TARGET_LOST
+        );
+
+        helper.assertTrue(moveInterrupted != null, "move interruption feedback should produce a visible message");
+        helper.assertValueEqual(moveInterrupted.getString(),
+                "Abilities2 Targeted Firebolt was interrupted by movement",
+                "move interruption feedback should name the spell and the interrupt cause");
+        helper.assertTrue(targetLost != null, "target-lost feedback should produce a visible message");
+        helper.assertValueEqual(targetLost.getString(),
+                "Abilities2 Targeted Firebolt lost its target",
+                "target-lost feedback should name the spell and explain the target failure");
         helper.succeed();
     }
 

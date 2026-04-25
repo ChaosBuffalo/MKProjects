@@ -147,6 +147,13 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mkcore.ability.feedback.stunned", "You are stunned");
         add("mkcore.ability.feedback.busy", "You are already casting");
         add("mkcore.ability.feedback.invalid_target", "No valid target for %s");
+        add("mkcore.ability.feedback.interrupted", "%s was interrupted");
+        add("mkcore.ability.feedback.interrupted_block", "%s was interrupted by blocking");
+        add("mkcore.ability.feedback.interrupted_damage", "%s was interrupted by damage");
+        add("mkcore.ability.feedback.interrupted_death", "%s was interrupted by death");
+        add("mkcore.ability.feedback.interrupted_jump", "%s was interrupted by jumping");
+        add("mkcore.ability.feedback.interrupted_move", "%s was interrupted by movement");
+        add("mkcore.ability.feedback.interrupted_stun", "%s was interrupted by stun");
         add("mkcore.ability.feedback.learned", "Learned %s");
         add("mkcore.ability.feedback.learned_and_slotted", "Learned %s and slotted it in %s %s");
         add("mkcore.ability.feedback.learned_manual_slot", "Learned %s. Slot it into %s to cast it.");
@@ -154,6 +161,7 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mkcore.ability.feedback.learn_requirements", "You do not meet the requirements for %s");
         add("mkcore.ability.feedback.not_enough_resource", "Not enough mana for %s");
         add("mkcore.ability.feedback.on_cooldown", "%s is not ready yet");
+        add("mkcore.ability.feedback.target_lost", "%s lost its target");
         add("mkcore.ability.feedback.unavailable", "%s cannot be used right now");
         add("mkcore.item_tooltip.grants_ability", "Grants Ability: %s");
         add("key.hud.active_ability1", "Ability Slot 1");
