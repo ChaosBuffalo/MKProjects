@@ -14,7 +14,11 @@ The longer-term goal is:
 
 ## Current State
 
-Today, `Export All Structure Pieces` only saves structure NBT through the configured structure blocks.
+The current tower workspace flow now saves:
+
+- structure NBT through configured structure blocks
+- a workspace export manifest
+- exported `mk_jigsaw_piece_meta`
 
 Relevant code:
 
@@ -22,7 +26,9 @@ Relevant code:
 - [ExportWorkspacePiecesPacket.java](/E:/MinecraftDev/MKProjects/MKNpc/src/main/java/com/chaosbuffalo/mknpc/network/packets/ExportWorkspacePiecesPacket.java:43)
 - [MKStructureWorkspaceService.java](/E:/MinecraftDev/MKProjects/MKNpc/src/main/java/com/chaosbuffalo/mknpc/world/gen/workspace/MKStructureWorkspaceService.java:168)
 
-That means we lose the authoring context needed to:
+The remaining problem is not lack of export data, but keeping downstream runtime/datagen usage aligned with the exported authoring data.
+
+Without a clear boundary we can still drift in places like:
 
 - reconstruct topology intent from a set of saved NBTs
 - distinguish base roles from instance variants cleanly
@@ -276,7 +282,6 @@ Definition of done:
 Create a loader used during `runData` that reads exported manifests and generates:
 
 - template pools
-- structure registration fragments if desired
 - `mk_jigsaw_piece_meta`
 - tags or helper registries if appropriate
 
@@ -287,7 +292,7 @@ Suggested classes:
 
 Definition of done:
 
-- `test_tower` can be driven from manifest import instead of manually duplicated registration data
+- `test_tower` can drive template pools and MK piece metadata from manifest import instead of manually duplicated pool data
 
 ### Task 7. Decide generated-vs-handwritten boundary
 
@@ -308,6 +313,13 @@ Reason:
 
 - avoids over-automating world placement policy too early
 - still removes the most repetitive and error-prone manual work
+
+Current implementation note:
+
+- exported-workspace pool bootstrap can be shared across mods
+- each mod should still filter to its own namespace
+- each mod should still manually register its `Structure` and `StructureSet`
+- `MKNpc` uses this model for `test_tower`
 
 ## Phase 3: Support Workspace Rehydration in Another Save
 
@@ -438,12 +450,12 @@ This is illustrative, not final:
       "tags": {},
       "connectors": [
         {
-          "role": "stairs_up",
+          "role": "connect_up",
           "facing": "up",
           "relative_pos": { "x": 7, "y": 6, "z": 7 },
-          "jigsaw_name": "mknpc:stairs_up",
-          "jigsaw_target": "mknpc:stairs_down",
-          "target_pool": "mknpc:test_tower/entry"
+          "jigsaw_name": "mknpc:connect_up",
+          "jigsaw_target": "mknpc:connect_down",
+          "target_pool": "mknpc:test_tower/connect_up"
         }
       ]
     }
@@ -482,6 +494,7 @@ Mitigation:
 Mitigation:
 
 - make manifest the source for generated pools and piece metadata during datagen
+- keep the explicit manual/runtime boundary documented so structure placement policy remains intentional
 
 ### Risk 4. Future family types needing different metadata
 

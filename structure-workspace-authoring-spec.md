@@ -16,16 +16,16 @@ V1 includes:
 - a dedicated dev block that defines the workspace anchor and opens the UI
 - an `MKWidgets` screen for creating and managing workspaces
 - server-side scaffold generation
-- canonical piece generation for the three family types:
-  - `TOWER`
-  - `DUNGEON`
-  - `LABYRINTH`
+- canonical piece generation for `TOWER`
 - one canonical variant per role
-- shell geometry only
+- shell geometry
 - jigsaw blocks
 - structure blocks
 - signs
 - optional connector marker blocks outside the export area
+- stair authoring directly into eligible tower room pieces
+- workspace export manifest writing
+- workspace rehydration from exported manifests
 
 V1 does not include:
 
@@ -35,7 +35,9 @@ V1 does not include:
 - encounter setup
 - automatic decorative passes
 - automatic branch-heavy graph authoring
-- automatic structure saving/export
+- automatic structure registration from manifests
+- `DUNGEON` workspace generation
+- `LABYRINTH` workspace generation
 
 ## Core Authoring Model
 
@@ -145,12 +147,11 @@ Responsibilities:
 - opens the UI on interaction
 - stores the current workspace id once a workspace is created
 - provides a physical authoring station for designers
+- offers both `Create New Workspace` and `Load Existing Workspace`
 
 ### Block Entity Data
 
 - `@Nullable UUID workspaceId`
-- optional cached namespace
-- optional cached structure name
 
 The block position is the workspace anchor. All preview placement is derived relative to this anchor.
 
@@ -160,16 +161,16 @@ Use `MKWidgets` and a dedicated `MKScreen`.
 
 ### UI States
 
-- `select_family`
+- `home`
+- `import`
 - `workspace_form`
-- `review_roles`
 - `manage_workspace`
+- room category detail / stair-authoring views
 
 ### Required Inputs
 
 - namespace
 - structure name
-- family type
 - room width
 - room length
 - vertical shaft size
@@ -183,6 +184,12 @@ Use `MKWidgets` and a dedicated `MKScreen`.
 - wall block
 - ceiling block
 - piece spacing margin in preview grid
+
+Current implementation note:
+
+- the workspace UI is tower-specific
+- `family type` is not a user-facing V1 choice in `MKNpc`
+- imported workspace selection is available from the dev block home screen
 
 ### Future Inputs
 
@@ -205,6 +212,7 @@ All horizontal authored dimensions that need centered connectors must be odd.
 - `basement_height >= 3`
 - `doorway_height >= 2`
 - `shell_margin >= 1`
+- `preview_margin >= 2`
 
 ### Allowed Narrow Cases
 
@@ -312,7 +320,10 @@ Examples:
 - `MKStructureFamilyType familyType`
 - `MKWorkspaceDimensions dimensions`
 - `MKWorkspaceMaterialPalette palette`
+- `MKWorkspaceStairAuthoringConfig stairConfig`
+- `MKTowerStairPlacement towerStairPlacement`
 - `int shellMargin`
+- `int exteriorAirMargin`
 - `int previewMargin`
 - `List<MKWorkspacePieceDefinition> pieces`
 - `long createdAt`
@@ -349,9 +360,11 @@ These values describe the logical interior target sizes.
 - `List<MKWorkspaceConnectorDefinition> connectors`
 - `BlockPos worldOrigin`
 - `BoundingBox exportBounds`
+- `BoundingBox previewBounds`
 - `BlockPos structureBlockPos`
 - `BlockPos signPos`
 - `List<BlockPos> markerPositions`
+- `List<BlockPos> generatedStairPositions`
 - `Map<String, String> tags`
 
 ### `MKWorkspaceConnectorDefinition`
@@ -388,37 +401,11 @@ Characteristics:
 - stairs authored directly into room pieces
 - cap room is final boss room
 
-### `DUNGEON`
+### Future Families
 
-Canonical roles:
+`DUNGEON` and `LABYRINTH` remain future planner additions.
 
-- `SURFACE_ENTRY`
-- `MAIN_HALL`
-- `MAIN_ROOM`
-- `STAIRS_DOWN`
-- `BOSS_APPROACH`
-- `BOSS_ROOM`
-
-Characteristics:
-
-- surface entrance
-- descends into multiple floors
-- canonical V1 output focuses on mainline pieces
-
-### `LABYRINTH`
-
-Canonical roles:
-
-- `ENTRY`
-- `MAZE_HALL`
-- `MAZE_ROOM`
-- `BOSS_ROOM`
-
-Characteristics:
-
-- single logical floor
-- boss room is the logical root
-- preview layout remains a flat catalog grid like every other family
+The shared workspace model should continue to leave room for them, but `MKNpc` V1 only implements tower generation.
 
 ## Planner Contract
 
@@ -547,9 +534,9 @@ The server is authoritative.
 - `GenerateWorkspacePacket`
   - client to server
   - trigger canonical piece generation
-- future `ExtendWorkspacePacket`
+- `LoadWorkspaceFromManifestPacket`
   - client to server
-  - add variants later
+  - load an exported workspace at the current anchor
 
 ### Server Validation
 
@@ -571,6 +558,19 @@ Suggested root:
 - `/mkworkspace regenerate`
 - `/mkworkspace debug`
 
+## Runtime Registration Boundary
+
+Exported workspaces are not themselves runtime registrations.
+
+Current intended boundary:
+
+- exported manifests drive runtime pool and metadata generation
+- individual mod implementations still manually register their `Structure` and `StructureSet`
+- `MKNpc` only registers exported workspaces in the `mknpc` namespace
+- other mods may reuse the same exported-workspace pool bootstrap pattern for their own namespace
+
+This keeps biome tags, placement spacing, salt, and other worldgen policy decisions mod-owned.
+
 ## Recommended V1 Delivery Order
 
 1. add new workspace capability
@@ -580,13 +580,12 @@ Suggested root:
 5. implement `TOWER` planner first
 6. implement scaffold builder and preview grid placement
 7. add `MKWidgets` screen and networking
-8. add `DUNGEON` planner
-9. add `LABYRINTH` planner
-10. add commands and debug helpers
+8. add commands and debug helpers
+9. add later family planners if needed
 
 ## Recommended First Milestone
 
-Even though V1 supports all three family types in the design, implementation should still start with `TOWER`.
+V1 is tower-first and tower-only in `MKNpc`.
 
 Why:
 
@@ -598,4 +597,4 @@ Why:
 - proves narrow-connector support
 - proves save-bound exclusion for signs and markers
 
-Once that pipeline is solid, `DUNGEON` and `LABYRINTH` become planner additions instead of system redesigns.
+Once that pipeline is solid, `DUNGEON` and `LABYRINTH` can be added as planner additions instead of system redesigns.

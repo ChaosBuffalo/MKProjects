@@ -13,7 +13,10 @@ The tower workspace flow is complete when a designer can:
 1. place a tower workspace dev block
 2. open the workspace UI
 3. create or edit a tower workspace definition
-4. configure:
+4. choose either:
+   - `Create New Workspace`
+   - `Load Existing Workspace`
+5. configure:
    - namespace
    - structure name
    - room width
@@ -26,10 +29,11 @@ The tower workspace flow is complete when a designer can:
    - shell margin
    - preview margin
    - floor / wall / ceiling blocks
-5. generate canonical tower scaffold pieces in-world
-6. generate stairs into eligible room pieces
-7. export the workspace pieces and manifest
-8. use that exported data for datagen/runtime tower generation
+6. generate canonical tower scaffold pieces in-world
+7. generate stairs into eligible room pieces
+8. export the workspace pieces and manifest
+9. rehydrate an exported workspace from manifest data
+10. use that exported data for datagen/runtime tower generation within a manually authored mod registration flow
 
 ## Current Canonical Tower Roles
 
@@ -70,7 +74,7 @@ The active tower connector naming scheme is:
 - `basementHeight >= 3`
 - `doorwayHeight >= 2`
 - `shellMargin >= 1`
-- `previewMargin >= 1`
+- `previewMargin >= 2`
 
 ### Relationship Rules
 
@@ -164,6 +168,19 @@ The workspace export also now emits:
 - workspace manifest export
 - metadata export
 - export-driven datagen path for runtime tower assets
+- namespace-scoped exported-pool bootstrap is reusable by other mods
+- `Structure` and `StructureSet` registration remain manually authored per mod
+
+## Current Registration Boundary
+
+The current implementation intentionally keeps a manual/runtime boundary:
+
+- exported manifests can drive runtime pool and metadata generation
+- `MKNpc` only registers exported workspaces in the `mknpc` namespace
+- `MKNpc` still manually registers `test_tower` as a structure and structure set
+- other mods may reuse the exported-workspace pool bootstrap path for their own namespace
+
+This keeps biome tags, structure placement spacing, salt, and related worldgen policy explicit in each mod.
 
 ## Main Files
 

@@ -165,8 +165,18 @@ That means:
 The current tower workflow no longer depends on:
 
 - embedded stair child runtime pools
-- `stair_insert_*` runtime topology
 - dedicated stair piece templates in the runtime tower graph
+
+## Compatibility Note
+
+The current `MKNpc` runtime structure registration may still expose legacy connector names such as `stair_insert_*`
+for compatibility with the existing MK jigsaw structure contract.
+
+That does not change the authoring model:
+
+- the workspace planner emits room-only tower topology
+- stairs are authored directly into room pieces
+- no dedicated stair child templates are part of the tower workspace flow
 
 ## Current Open Areas
 

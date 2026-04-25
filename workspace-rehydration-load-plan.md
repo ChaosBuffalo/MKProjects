@@ -17,6 +17,12 @@ This builds directly on the current canonical export flow:
 - workspace export manifest
 - exported `mk_jigsaw_piece_meta`
 
+This flow is authoring-focused.
+
+It does not depend on automatic structure registration from manifests.
+
+Runtime `Structure` and `StructureSet` registration remain manually owned by the implementing mod.
+
 ## Scope
 
 ### In Scope
@@ -56,6 +62,15 @@ For `test_tower`, the current manifest already contains:
 - stair settings and generated stair metadata
 
 That means rehydration should be manifest-driven, not inferred from structure NBT.
+
+The runtime registration boundary does not affect rehydration.
+
+Import only needs:
+
+- the exported authoring manifest
+- the referenced structure templates
+
+It does not require the workspace to have been auto-registered as a runtime worldgen structure.
 
 ## Core Design Decision
 
