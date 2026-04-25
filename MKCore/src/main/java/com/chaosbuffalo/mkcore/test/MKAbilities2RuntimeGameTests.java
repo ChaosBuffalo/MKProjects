@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities2.AbilityRuntimeService;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityAction;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityConditionDefinition;
+import com.chaosbuffalo.mkcore.abilities2.datagen.AbilityDatagenKeys;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityActivationDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDefinitionData;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDeliveryDefinition;
@@ -471,6 +472,7 @@ public class MKAbilities2RuntimeGameTests {
                                 "critical", new AbilityValue.BoolValue(true),
                                 "phase", new AbilityValue.StringValue("burst"),
                                 "damage_type", new AbilityValue.ResourceLocationValue(CoreDamageTypes.FireDamage.getId()),
+                                "ability_tag_probe", new AbilityValue.ResourceLocationValue(EVENT_PAYLOAD_BRANCH_CONDITION_ABILITY),
                                 "actor_ref", new AbilityValue.EntityRefValue(EVENT_PAYLOAD_ENTITY_REF_PROBE_ID)
                         )
                 ),
@@ -492,6 +494,8 @@ public class MKAbilities2RuntimeGameTests {
                 "event_payload_string should evaluate string payload values");
         helper.assertTrue(stateBool(snapshot, "damage_type_gate"),
                 "event_payload_resource_location should evaluate resource location payload values");
+        helper.assertTrue(stateBool(snapshot, "fire_tag_gate"),
+                "event_payload_tag should evaluate tagged resource-location payload values");
         helper.assertTrue(stateBool(snapshot, "actor_ref_gate"),
                 "event_payload_entity_ref should evaluate entity-ref payload values");
         helper.succeed();
@@ -525,6 +529,7 @@ public class MKAbilities2RuntimeGameTests {
                                 "critical", new AbilityValue.BoolValue(false),
                                 "phase", new AbilityValue.StringValue("fizzle"),
                                 "damage_type", new AbilityValue.ResourceLocationValue(CoreDamageTypes.FrostDamage.getId()),
+                                "ability_tag_probe", new AbilityValue.ResourceLocationValue(INT_BRANCH_CONDITION_ABILITY),
                                 "actor_ref", new AbilityValue.EntityRefValue(UUID.randomUUID())
                         )
                 ),
@@ -546,6 +551,8 @@ public class MKAbilities2RuntimeGameTests {
                 "event_payload_string should be false when the string payload does not match");
         helper.assertFalse(stateBool(snapshot, "damage_type_gate"),
                 "event_payload_resource_location should be false when the resource location does not match");
+        helper.assertFalse(stateBool(snapshot, "fire_tag_gate"),
+                "event_payload_tag should be false when the resource-location payload is missing the tag");
         helper.assertFalse(stateBool(snapshot, "actor_ref_gate"),
                 "event_payload_entity_ref should be false when the entity ref does not match");
         helper.succeed();
@@ -2379,6 +2386,10 @@ public class MKAbilities2RuntimeGameTests {
                         "key", stringConditionValue("damage_type"),
                         "value", stringConditionValue(CoreDamageTypes.FireDamage.getId().toString())
                 )),
+                payloadStateBranch("event_payload_tag", "fire_tag_gate", Map.of(
+                        "key", stringConditionValue("ability_tag_probe"),
+                        "tag", stringConditionValue(AbilityDatagenKeys.TAG_FIRE.toString())
+                )),
                 payloadStateBranch("event_payload_entity_ref", "actor_ref_gate", Map.of(
                         "key", stringConditionValue("actor_ref"),
                         "value", stringConditionValue(EVENT_PAYLOAD_ENTITY_REF_PROBE_ID.toString())
@@ -2390,7 +2401,7 @@ public class MKAbilities2RuntimeGameTests {
                 presentation("Event Payload Branch Condition Test"),
                 MKCore.id("test"),
                 Set.of(),
-                Set.of(),
+                Set.of(AbilityDatagenKeys.TAG_FIRE),
                 Map.of(),
                 activations,
                 entryPoints,

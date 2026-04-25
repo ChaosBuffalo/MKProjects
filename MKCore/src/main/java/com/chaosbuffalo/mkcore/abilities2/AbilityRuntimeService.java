@@ -101,7 +101,8 @@ public class AbilityRuntimeService {
                 reactionBus::emit,
                 new EngineReactionController(),
                 new EngineDeliveryController(),
-                new EngineLifecycleListener()
+                new EngineLifecycleListener(),
+                this::matchesTag
         );
     }
 

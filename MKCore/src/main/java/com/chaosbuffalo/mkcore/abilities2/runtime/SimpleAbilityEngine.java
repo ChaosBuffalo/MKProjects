@@ -28,6 +28,7 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -103,6 +104,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
     private final ReactionController reactionController;
     private final DeliveryController deliveryController;
     private final LifecycleListener lifecycleListener;
+    private final BiPredicate<ResourceLocation, ResourceLocation> tagMatcher;
     private final Map<UUID, List<PendingCast>> pendingCastsByCaster = new HashMap<>();
     private final Map<UUID, List<PendingChannel>> pendingChannelsByCaster = new HashMap<>();
     private final Map<UUID, Float> pendingDamageInterrupts = new HashMap<>();
@@ -146,6 +148,18 @@ public class SimpleAbilityEngine implements AbilityEngine {
                                ReactionController reactionController,
                                DeliveryController deliveryController,
                                LifecycleListener lifecycleListener) {
+        this(definitionResolver, powerResolver, stateStore, eventEmitter, reactionController, deliveryController,
+                lifecycleListener, ResourceLocation::equals);
+    }
+
+    public SimpleAbilityEngine(AbilityDefinitionResolver definitionResolver,
+                               AbilityPowerResolver powerResolver,
+                               AbilityStateStore stateStore,
+                               AbilityEventEmitter eventEmitter,
+                               ReactionController reactionController,
+                               DeliveryController deliveryController,
+                               LifecycleListener lifecycleListener,
+                               BiPredicate<ResourceLocation, ResourceLocation> tagMatcher) {
         this.definitionResolver = Objects.requireNonNull(definitionResolver, "definitionResolver");
         this.powerResolver = Objects.requireNonNull(powerResolver, "powerResolver");
         this.stateStore = Objects.requireNonNull(stateStore, "stateStore");
@@ -153,6 +167,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
         this.reactionController = Objects.requireNonNull(reactionController, "reactionController");
         this.deliveryController = Objects.requireNonNull(deliveryController, "deliveryController");
         this.lifecycleListener = Objects.requireNonNull(lifecycleListener, "lifecycleListener");
+        this.tagMatcher = Objects.requireNonNull(tagMatcher, "tagMatcher");
     }
 
     @Override
@@ -1536,6 +1551,13 @@ public class SimpleAbilityEngine implements AbilityEngine {
                         condition.type());
                 yield payload != null && compareResourceLocations(payload.asResourceLocation(key),
                         conditionOperator(condition), requiredResourceLocation(condition, "value"));
+            }
+            case "event_payload_tag" -> {
+                String key = requiredString(condition, "key");
+                AbilityValue payload = eventPayloadValueOfKind(context, key, AbilityValueKind.RESOURCE_LOCATION,
+                        condition.type());
+                yield payload != null && tagMatcher.test(payload.asResourceLocation(key),
+                        requiredResourceLocation(condition, "tag"));
             }
             case "event_payload_entity_ref" -> {
                 String key = requiredString(condition, "key");
