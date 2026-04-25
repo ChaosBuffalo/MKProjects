@@ -39,6 +39,12 @@ V1 does not include:
 - `DUNGEON` workspace generation
 - `LABYRINTH` workspace generation
 
+Current implementation note:
+
+- `MKNpc` currently supports tower workspaces only
+- `MKWorkspacePieceRole` is intentionally reduced to the active tower role set
+- broader future-family role taxonomies are not part of the active code path
+
 ## Core Authoring Model
 
 The tool creates a logical workspace and then materializes that workspace in-world as a flat preview catalog laid out horizontally in a grid.
@@ -367,6 +373,17 @@ These values describe the logical interior target sizes.
 - `List<BlockPos> generatedStairPositions`
 - `Map<String, String> tags`
 
+Current implementation note:
+
+- `MKWorkspacePieceRole` currently contains only:
+  - `ENTRY`
+  - `FLOOR_MAIN`
+  - `BOSS_APPROACH`
+  - `BOSS_CAP`
+  - `BASEMENT_ENTRY`
+  - `BASEMENT_MAIN`
+  - `BASEMENT_CAP`
+
 ### `MKWorkspaceConnectorDefinition`
 
 - `MKConnectorRole role`
@@ -377,6 +394,20 @@ These values describe the logical interior target sizes.
 - `String jigsawName`
 - `String jigsawTarget`
 - `ResourceLocation targetPool`
+- `ResourceLocation incomingPool`
+
+Current implementation note:
+
+- `MKConnectorRole` is shared by workspace and runtime code
+- active tower connector roles are:
+  - `MAIN_FORWARD`
+  - `MAIN_BACK`
+  - `BRANCH`
+  - `CONNECT_UP`
+  - `CONNECT_DOWN`
+  - `BOSS_FORWARD`
+  - `BOSS_BACK`
+- `ROOM`, `TERMINAL`, and `UNKNOWN` exist only as runtime classifier outcomes, not authored tower connector roles
 
 ## Family Types and Canonical Roles
 
@@ -405,7 +436,9 @@ Characteristics:
 
 `DUNGEON` and `LABYRINTH` remain future planner additions.
 
-The shared workspace model should continue to leave room for them, but `MKNpc` V1 only implements tower generation.
+The shared workspace model should continue to leave room for them, but `MKNpc` currently implements tower generation only.
+
+That means future-family examples in this document are architectural intent, not active enum surface in the current code.
 
 ## Planner Contract
 

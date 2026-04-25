@@ -49,6 +49,8 @@ Tower workspace generation now centers on room pieces:
 
 The old dedicated stair runtime roles are no longer part of the active tower runtime model.
 
+`MKWorkspacePieceRole` is also now reduced to this same tower-specific set.
+
 ## Current Connector Naming
 
 The active tower connector naming scheme is:
@@ -60,6 +62,8 @@ The active tower connector naming scheme is:
 - `connect_down`
 - `boss_forward`
 - `boss_back`
+
+`MKConnectorRole` is now shared between workspace and runtime code, and tower authoring uses only those connector roles.
 
 ## Current Validation Rules
 
@@ -115,6 +119,11 @@ The workspace export also now emits:
 - structure NBT
 - workspace export manifest
 - `mk_jigsaw_piece_meta`
+
+The workspace export manifest also now carries:
+
+- explicit runtime piece metadata derived from authored workspace tags
+- connector `incoming_pool` membership used to derive runtime pools from actual connectors
 
 ## Current Stair System Checklist
 

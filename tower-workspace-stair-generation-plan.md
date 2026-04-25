@@ -167,16 +167,23 @@ The current tower workflow no longer depends on:
 - embedded stair child runtime pools
 - dedicated stair piece templates in the runtime tower graph
 
-## Compatibility Note
+## Connector Contract
 
-The current `MKNpc` runtime structure registration may still expose legacy connector names such as `stair_insert_*`
-for compatibility with the existing MK jigsaw structure contract.
-
-That does not change the authoring model:
+The current tower runtime contract uses the same connector names as the workspace planner:
 
 - the workspace planner emits room-only tower topology
+- runtime structure registration uses the active connector set:
+  - `main_forward`
+  - `main_back`
+  - `branch`
+  - `connect_up`
+  - `connect_down`
+  - `boss_forward`
+  - `boss_back`
 - stairs are authored directly into room pieces
 - no dedicated stair child templates are part of the tower workspace flow
+
+Legacy `stair_insert_*` connector names are no longer part of the active tower path.
 
 ## Current Open Areas
 
