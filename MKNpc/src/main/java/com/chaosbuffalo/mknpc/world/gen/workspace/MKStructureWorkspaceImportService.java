@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace;
 
+import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.data.providers.MKWorkspaceExportManifestLoader;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKConnectorRole;
@@ -27,6 +29,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -39,7 +42,8 @@ public class MKStructureWorkspaceImportService {
     public record MKWorkspaceImportResult(UUID workspaceId, int pieceCount) {
     }
 
-    private final MKWorkspaceImportManifestDiscovery discovery = new MKWorkspaceImportManifestDiscovery();
+    private final MKWorkspaceImportManifestDiscovery discovery = new MKWorkspaceImportManifestDiscovery(
+            MKWorkspaceExportManifestLoader.resolveModuleRoot(MKNpc.MODULE_DIRECTORY_NAME), MKNpc.MODID);
     private final MKWorkspaceScaffoldBuilder scaffoldBuilder = new MKWorkspaceScaffoldBuilder();
 
     public Optional<MKWorkspaceImportResult> importWorkspaceAtAnchor(ServerLevel level, BlockPos anchor,
@@ -60,9 +64,16 @@ public class MKStructureWorkspaceImportService {
         }
 
         List<MKPlannedPiece> plannedPieces = toPlannedPieces(manifestOpt.get());
-        List<MKWorkspacePieceDefinition> scaffoldedPieces = scaffoldBuilder.build(level, workspace, plannedPieces);
         Map<String, MKWorkspaceExportManifest.ExportPiece> exportedByName = manifestOpt.get().pieces().stream()
                 .collect(Collectors.toMap(MKWorkspaceExportManifest.ExportPiece::pieceName, piece -> piece));
+        Optional<Map<String, StructureTemplate>> templatesByPieceNameOpt =
+                preflightImport(level, manifestId, plannedPieces, exportedByName);
+        if (templatesByPieceNameOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        Map<String, StructureTemplate> templatesByPieceName = templatesByPieceNameOpt.get();
+
+        List<MKWorkspacePieceDefinition> scaffoldedPieces = scaffoldBuilder.build(level, workspace, plannedPieces);
 
         List<MKWorkspacePieceDefinition> importedPieces = new ArrayList<>();
         for (MKWorkspacePieceDefinition piece : scaffoldedPieces) {
@@ -70,7 +81,8 @@ public class MKStructureWorkspaceImportService {
             if (exported == null) {
                 continue;
             }
-            if (!placeSavedStructure(level, exported, piece.worldOrigin())) {
+            StructureTemplate template = templatesByPieceName.get(piece.pieceName());
+            if (template == null || !placeSavedStructure(level, template, piece.worldOrigin())) {
                 return Optional.empty();
             }
             importedPieces.add(mergeImportedPiece(piece, exported, workspace.id()));
@@ -85,6 +97,29 @@ public class MKStructureWorkspaceImportService {
         return discovery.discoverCandidates().stream()
                 .map(candidate -> candidate.id().toString())
                 .toList();
+    }
+
+    private Optional<Map<String, StructureTemplate>> preflightImport(ServerLevel level, ResourceLocation manifestId,
+                                                                     List<MKPlannedPiece> plannedPieces,
+                                                                     Map<String, MKWorkspaceExportManifest.ExportPiece> exportedByName) {
+        Map<String, StructureTemplate> templatesByPieceName = new HashMap<>();
+        for (MKPlannedPiece plannedPiece : plannedPieces) {
+            MKWorkspaceExportManifest.ExportPiece exported = exportedByName.get(plannedPiece.pieceName());
+            if (exported == null) {
+                MKNpc.LOGGER.warn("Workspace manifest {} is missing exported piece data for planned piece {}",
+                        manifestId, plannedPiece.pieceName());
+                return Optional.empty();
+            }
+            ResourceLocation structureId = ResourceLocation.parse(exported.structureId());
+            Optional<StructureTemplate> templateOpt = level.getStructureManager().get(structureId);
+            if (templateOpt.isEmpty()) {
+                MKNpc.LOGGER.warn("Workspace manifest {} references missing structure template {} for piece {}",
+                        manifestId, structureId, plannedPiece.pieceName());
+                return Optional.empty();
+            }
+            templatesByPieceName.put(plannedPiece.pieceName(), templateOpt.get());
+        }
+        return Optional.of(templatesByPieceName);
     }
 
     private MKStructureWorkspace fromManifest(BlockPos anchor, MKWorkspaceExportManifest manifest) {
@@ -174,13 +209,7 @@ public class MKStructureWorkspaceImportService {
         );
     }
 
-    private boolean placeSavedStructure(ServerLevel level, MKWorkspaceExportManifest.ExportPiece exportedPiece, BlockPos targetOrigin) {
-        ResourceLocation structureId = ResourceLocation.parse(exportedPiece.structureId());
-        Optional<StructureTemplate> templateOpt = level.getStructureManager().get(structureId);
-        if (templateOpt.isEmpty()) {
-            return false;
-        }
-        StructureTemplate template = templateOpt.get();
+    private boolean placeSavedStructure(ServerLevel level, StructureTemplate template, BlockPos targetOrigin) {
         StructurePlaceSettings settings = new StructurePlaceSettings().setIgnoreEntities(true);
         template.placeInWorld(level, targetOrigin, targetOrigin, settings, level.getRandom(), Block.UPDATE_ALL);
         return true;

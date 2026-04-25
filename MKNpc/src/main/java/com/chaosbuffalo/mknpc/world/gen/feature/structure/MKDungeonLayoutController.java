@@ -42,6 +42,9 @@ public class MKDungeonLayoutController {
         if (nextFloor < 0 || nextFloor >= parentState.targetFloors()) {
             return Optional.of("floor_limit");
         }
+        if (childMetadata.progressionDelta() != 0 && parentState.piecesOnFloor() < settings.minPiecesPerFloor()) {
+            return Optional.of("min_floor_budget");
+        }
         if (connector.role() == MKConnectorRole.CONNECT_UP) {
             if (nextFloor == parentState.targetFloors() - 1 && childMetadata.pieceRole() != MKJigsawPieceRole.BOSS_APPROACH) {
                 return Optional.of("final_upward_step_requires_boss_approach");

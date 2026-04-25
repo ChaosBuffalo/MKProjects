@@ -4,86 +4,100 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.resources.ResourceLocation;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 public class MKWorkspaceExportManifestLoader {
-    private static final List<Path> RELATIVE_ROOTS = List.of(
-            Paths.get("generated"),
-            Paths.get("workspace_exports"),
-            Paths.get("src", "main", "resources", "data"),
-            Paths.get("src", "generated", "resources", "data"),
-            Paths.get("build", "resources", "main", "data"),
-            Paths.get("MKNpc", "src", "main", "resources", "data"),
-            Paths.get("MKNpc", "src", "generated", "resources", "data"),
-            Paths.get("MKNpc", "build", "resources", "main", "data")
-    );
-
     public record LoadedManifest(Path path, MKWorkspaceExportManifest manifest) {
     }
 
-    public static List<LoadedManifest> loadAll() {
-        Map<String, LoadedManifest> manifests = new LinkedHashMap<>();
-        for (Path root : candidateRoots()) {
-            if (!Files.exists(root)) {
-                continue;
-            }
-            scanRoot(root, manifests);
-        }
-        if (manifests.isEmpty()) {
-            scanRoot(Paths.get("."), 8, manifests);
-        }
-        return new ArrayList<>(manifests.values());
-    }
-
-    private static List<Path> candidateRoots() {
-        LinkedHashSet<Path> roots = new LinkedHashSet<>();
+    public static Path resolveModuleRoot(String moduleDirectoryName) {
         Path cwd = Paths.get("").toAbsolutePath().normalize();
-        for (Path base = cwd; base != null; base = base.getParent()) {
-            for (Path relativeRoot : RELATIVE_ROOTS) {
-                roots.add(base.resolve(relativeRoot).normalize());
+        for (Path candidate : candidateModuleRoots(cwd, moduleDirectoryName)) {
+            if (isModuleRoot(candidate)) {
+                return candidate;
             }
         }
-        return new ArrayList<>(roots);
+        throw new IllegalStateException("Unable to resolve module root for " + moduleDirectoryName + " from " + cwd);
     }
 
-    private static void scanRoot(Path root, Map<String, LoadedManifest> manifests) {
-        scanRoot(root, Integer.MAX_VALUE, manifests);
-    }
+    public static List<LoadedManifest> loadAllFromModSource(Path moduleRoot, String namespace) {
+        Path manifestDir = manifestDirectory(moduleRoot, namespace);
+        if (!Files.isDirectory(manifestDir)) {
+            return List.of();
+        }
 
-    private static void scanRoot(Path root, int maxDepth, Map<String, LoadedManifest> manifests) {
-        try (Stream<Path> stream = Files.walk(root, maxDepth)) {
-            stream.filter(Files::isRegularFile)
+        try (Stream<Path> stream = Files.list(manifestDir)) {
+            return stream.filter(Files::isRegularFile)
                     .filter(path -> path.toString().endsWith(".json"))
-                    .filter(path -> path.toString().replace('\\', '/').contains("/mk_workspace_exports/"))
-                    .forEach(path -> loadOne(path).ifPresent(loaded -> manifests.put(manifestKey(loaded.manifest()), loaded)));
+                    .map(path -> loadOne(path, namespace))
+                    .flatMap(java.util.Optional::stream)
+                    .sorted((left, right) -> left.manifest().structureName().compareToIgnoreCase(right.manifest().structureName()))
+                    .toList();
         } catch (IOException e) {
-            MKNpc.LOGGER.warn("Failed to scan workspace export manifests under {}", root, e);
+            MKNpc.LOGGER.warn("Failed to scan workspace export manifests under {}", manifestDir, e);
+            return List.of();
         }
     }
 
-    private static java.util.Optional<LoadedManifest> loadOne(Path path) {
+    public static java.util.Optional<LoadedManifest> loadFromModSource(Path moduleRoot, ResourceLocation id) {
+        Path manifestPath = manifestDirectory(moduleRoot, id.getNamespace()).resolve(id.getPath() + ".json");
+        if (!Files.isRegularFile(manifestPath)) {
+            return java.util.Optional.empty();
+        }
+        return loadOne(manifestPath, id.getNamespace());
+    }
+
+    private static List<Path> candidateModuleRoots(Path cwd, String moduleDirectoryName) {
+        java.util.ArrayList<Path> candidates = new java.util.ArrayList<>();
+        addCandidate(candidates, cwd);
+        addCandidate(candidates, cwd.resolve(moduleDirectoryName));
+        for (Path parent = cwd.getParent(); parent != null; parent = parent.getParent()) {
+            addCandidate(candidates, parent.resolve(moduleDirectoryName));
+        }
+        return candidates;
+    }
+
+    private static void addCandidate(List<Path> candidates, Path path) {
+        Path normalized = path.toAbsolutePath().normalize();
+        if (!candidates.contains(normalized)) {
+            candidates.add(normalized);
+        }
+    }
+
+    private static boolean isModuleRoot(Path path) {
+        return Files.isDirectory(path.resolve(Paths.get("src", "main", "resources")));
+    }
+
+    private static Path manifestDirectory(Path moduleRoot, String namespace) {
+        return moduleRoot.resolve(Paths.get("src", "main", "resources", "data", namespace, "mk_workspace_exports"));
+    }
+
+    private static java.util.Optional<LoadedManifest> loadOne(Path path, String expectedNamespace) {
         try (Reader reader = Files.newBufferedReader(path)) {
             var json = JsonParser.parseReader(reader);
             MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
+            if (!manifest.namespace().equals(expectedNamespace)) {
+                MKNpc.LOGGER.warn("Skipping workspace export manifest {} because namespace {} did not match expected {}",
+                        path, manifest.namespace(), expectedNamespace);
+                return java.util.Optional.empty();
+            }
+            if (!path.getFileName().toString().equals(manifest.structureName() + ".json")) {
+                MKNpc.LOGGER.warn("Skipping workspace export manifest {} because file name did not match structure name {}",
+                        path, manifest.structureName());
+                return java.util.Optional.empty();
+            }
             return java.util.Optional.of(new LoadedManifest(path, manifest));
         } catch (Exception e) {
             MKNpc.LOGGER.warn("Failed to load workspace export manifest {}", path, e);
             return java.util.Optional.empty();
         }
-    }
-
-    private static String manifestKey(MKWorkspaceExportManifest manifest) {
-        return manifest.namespace() + ":" + manifest.structureName();
     }
 }

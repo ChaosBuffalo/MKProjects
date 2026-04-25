@@ -9,21 +9,27 @@ import java.util.List;
 import java.util.Optional;
 
 public class MKWorkspaceImportManifestDiscovery {
+    private final Path moduleRoot;
+    private final String namespace;
+
     public record ImportCandidate(ResourceLocation id, String familyType, int pieceCount, int categoryCount, Path path) {
     }
 
+    public MKWorkspaceImportManifestDiscovery(Path moduleRoot, String namespace) {
+        this.moduleRoot = moduleRoot;
+        this.namespace = namespace;
+    }
+
     public List<ImportCandidate> discoverCandidates() {
-        return MKWorkspaceExportManifestLoader.loadAll().stream()
+        return MKWorkspaceExportManifestLoader.loadAllFromModSource(moduleRoot, namespace).stream()
                 .map(this::toCandidate)
                 .sorted((left, right) -> left.id().toString().compareToIgnoreCase(right.id().toString()))
                 .toList();
     }
 
     public Optional<MKWorkspaceExportManifest> loadManifest(ResourceLocation id) {
-        return MKWorkspaceExportManifestLoader.loadAll().stream()
-                .map(MKWorkspaceExportManifestLoader.LoadedManifest::manifest)
-                .filter(manifest -> matches(id, manifest))
-                .findFirst();
+        return MKWorkspaceExportManifestLoader.loadFromModSource(moduleRoot, id)
+                .map(MKWorkspaceExportManifestLoader.LoadedManifest::manifest);
     }
 
     private ImportCandidate toCandidate(MKWorkspaceExportManifestLoader.LoadedManifest loaded) {
@@ -35,9 +41,5 @@ public class MKWorkspaceImportManifestDiscovery {
                 manifest.categories().size(),
                 loaded.path()
         );
-    }
-
-    private boolean matches(ResourceLocation id, MKWorkspaceExportManifest manifest) {
-        return manifest.namespace().equals(id.getNamespace()) && manifest.structureName().equals(id.getPath());
     }
 }

@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.data.registries;
 
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.data.providers.MKWorkspaceExportManifestLoader;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSinglePoolElement;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
@@ -17,6 +18,8 @@ import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import java.util.function.Function;
 
 public class NpcStructurePools {
+    private static final java.nio.file.Path MODULE_ROOT =
+            MKWorkspaceExportManifestLoader.resolveModuleRoot(MKNpc.MODULE_DIRECTORY_NAME);
     public static final ResourceKey<StructureTemplatePool> DIGGER_CAMP_POOL = createKey("digger/diggercamp");
     public static final ResourceKey<StructureTemplatePool> DIGGER_BASE_POOL = createKey("digger/diggerbase");
     public static final ResourceKey<StructureTemplatePool> DIGGER_ROAD_POOL = createKey("digger/diggerroad");
@@ -59,6 +62,6 @@ public class NpcStructurePools {
                 ),
                 StructureTemplatePool.Projection.TERRAIN_MATCHING));
 
-        ExportedWorkspacePoolBootstrap.bootstrapTowerPoolsForNamespace(pContext, empty, MKNpc.MODID);
+        ExportedWorkspacePoolBootstrap.bootstrapTowerPoolsForNamespace(pContext, empty, MODULE_ROOT, MKNpc.MODID);
     }
 }

@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +25,9 @@ public final class ExportedWorkspacePoolBootstrap {
 
     public static void bootstrapTowerPoolsForNamespace(BootstrapContext<StructureTemplatePool> context,
                                                        Holder<StructureTemplatePool> empty,
+                                                       Path moduleRoot,
                                                        String namespace) {
-        MKWorkspaceExportManifestLoader.loadAll().stream()
+        MKWorkspaceExportManifestLoader.loadAllFromModSource(moduleRoot, namespace).stream()
                 .map(MKWorkspaceExportManifestLoader.LoadedManifest::manifest)
                 .filter(manifest -> manifest.familyType().getSerializedName().equals("tower"))
                 .filter(manifest -> manifest.namespace().equals(namespace))
