@@ -3,6 +3,8 @@
     "start_base_name": "entry",
     "categories": [
       {
+        "base_name": "entry",
+        "role": "entry",
         "piece_metadata": {
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
@@ -11,11 +13,11 @@
           "role": "room",
           "progression_delta": 0,
           "vertical_level_delta": 0
-        },
-        "base_name": "entry",
-        "role": "entry"
+        }
       },
       {
+        "base_name": "floor_main",
+        "role": "floor_main",
         "piece_metadata": {
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
@@ -24,11 +26,11 @@
           "role": "room",
           "progression_delta": 1,
           "vertical_level_delta": 1
-        },
-        "base_name": "floor_main",
-        "role": "floor_main"
+        }
       },
       {
+        "base_name": "boss_approach",
+        "role": "boss_approach",
         "piece_metadata": {
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
@@ -37,11 +39,11 @@
           "role": "boss_approach",
           "progression_delta": 1,
           "vertical_level_delta": 1
-        },
-        "base_name": "boss_approach",
-        "role": "boss_approach"
+        }
       },
       {
+        "base_name": "boss_cap",
+        "role": "boss_cap",
         "piece_metadata": {
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
@@ -50,24 +52,11 @@
           "role": "boss",
           "progression_delta": 0,
           "vertical_level_delta": 0
-        },
-        "base_name": "boss_cap",
-        "role": "boss_cap"
+        }
       },
       {
-        "piece_metadata": {
-          "allow_on_main_path": true,
-          "allow_on_branch_path": false,
-          "terminal": false,
-          "boss_only": false,
-          "role": "room",
-          "progression_delta": 1,
-          "vertical_level_delta": -1
-        },
         "base_name": "basement_entry",
-        "role": "basement_entry"
-      },
-      {
+        "role": "basement_entry",
         "piece_metadata": {
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
@@ -76,11 +65,24 @@
           "role": "room",
           "progression_delta": 1,
           "vertical_level_delta": -1
-        },
-        "base_name": "basement_main",
-        "role": "basement_main"
+        }
       },
       {
+        "base_name": "basement_main",
+        "role": "basement_main",
+        "piece_metadata": {
+          "allow_on_main_path": true,
+          "allow_on_branch_path": false,
+          "terminal": false,
+          "boss_only": false,
+          "role": "room",
+          "progression_delta": 1,
+          "vertical_level_delta": -1
+        }
+      },
+      {
+        "base_name": "basement_cap",
+        "role": "basement_cap",
         "piece_metadata": {
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
@@ -89,9 +91,7 @@
           "role": "terminal",
           "progression_delta": 1,
           "vertical_level_delta": -1
-        },
-        "base_name": "basement_cap",
-        "role": "basement_cap"
+        }
       }
     ],
     "pools": [
@@ -101,6 +101,13 @@
         "child_base_names": [
           "floor_main",
           "boss_approach"
+        ]
+      },
+      {
+        "base_name": "boss_cap",
+        "pool_id": "mknpc:test_tower/boss_cap",
+        "child_base_names": [
+          "boss_cap"
         ]
       },
       {
@@ -116,13 +123,6 @@
         "child_base_names": [
           "basement_main",
           "basement_cap"
-        ]
-      },
-      {
-        "base_name": "boss_cap",
-        "pool_id": "mknpc:test_tower/boss_cap",
-        "child_base_names": [
-          "boss_cap"
         ]
       }
     ]
@@ -1093,30 +1093,30 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777095793685",
-        "vertical_access_direction": "both",
+        "generated_stair_revision": "1777145600779",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_allow_on_main_path": "true",
+        "runtime_boss_only": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_start": "true",
+        "runtime_terminal": "false",
+        "runtime_vertical_level_delta": "0",
         "supports_vertical_access": "true",
         "topology_role": "entry",
         "tower_piece_kind": "room",
+        "vertical_access_direction": "both",
         "vertical_access_placement": "center",
         "workspace_base_name": "entry",
         "workspace_piece_kind": "template",
-        "workspace_variant_index": "0",
-        "runtime_start": "true",
-        "runtime_piece_role": "room",
-        "runtime_progression_delta": "0",
-        "runtime_vertical_level_delta": "0",
-        "runtime_allow_on_main_path": "true",
-        "runtime_allow_on_branch_path": "false",
-        "runtime_terminal": "false",
-        "runtime_boss_only": "false"
+        "workspace_variant_index": "0"
       },
       "connectors": [
         {
-          "opening_height": 3,
-          "jigsaw_name": "mknpc:main_back",
           "jigsaw_target": "mknpc:main_forward",
           "target_pool": "minecraft:empty",
+          "opening_height": 3,
+          "jigsaw_name": "mknpc:main_back",
           "role": "main_back",
           "facing": "south",
           "relative_pos": {
@@ -1124,14 +1124,13 @@
             "y": 1,
             "z": 18
           },
-          "opening_width": 3,
-          "incoming_pool": "minecraft:empty"
+          "opening_width": 3
         },
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_up",
           "jigsaw_target": "mknpc:connect_down",
           "target_pool": "mknpc:test_tower/connect_up",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
           "role": "connect_up",
           "facing": "up",
           "relative_pos": {
@@ -1139,14 +1138,13 @@
             "y": 22,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "minecraft:empty"
+          "opening_width": 5
         },
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_down",
           "jigsaw_target": "mknpc:connect_up",
           "target_pool": "mknpc:test_tower/connect_down_entry",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
           "role": "connect_down",
           "facing": "down",
           "relative_pos": {
@@ -1154,8 +1152,7 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "minecraft:empty"
+          "opening_width": 5
         }
       ],
       "shell_margin": 1,
@@ -1255,7 +1252,7 @@
       "variant_index": 0,
       "workspace_piece_kind": "template",
       "structure_id": "mknpc:test_tower/entry_template",
-      "piece_id": "f19e6e66-0852-415b-bb4c-1b263ee54774",
+      "piece_id": "b55de0de-732b-4659-939d-c10f65d8d5f5",
       "piece_name": "entry_template",
       "base_name": "entry"
     },
@@ -1578,30 +1575,31 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777095793686",
-        "vertical_access_direction": "both",
+        "generated_stair_revision": "1777145600780",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_allow_on_main_path": "true",
+        "runtime_boss_only": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "1",
+        "runtime_start": "false",
+        "runtime_terminal": "false",
+        "runtime_vertical_level_delta": "1",
         "supports_vertical_access": "true",
         "topology_role": "floor",
         "tower_piece_kind": "room",
+        "vertical_access_direction": "both",
         "vertical_access_placement": "center",
         "workspace_base_name": "floor_main",
         "workspace_piece_kind": "template",
-        "workspace_variant_index": "0",
-        "runtime_start": "false",
-        "runtime_piece_role": "room",
-        "runtime_progression_delta": "1",
-        "runtime_vertical_level_delta": "1",
-        "runtime_allow_on_main_path": "true",
-        "runtime_allow_on_branch_path": "false",
-        "runtime_terminal": "false",
-        "runtime_boss_only": "false"
+        "workspace_variant_index": "0"
       },
       "connectors": [
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_down",
           "jigsaw_target": "mknpc:connect_up",
           "target_pool": "minecraft:empty",
+          "incoming_pool": "mknpc:test_tower/connect_up",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
           "role": "connect_down",
           "facing": "down",
           "relative_pos": {
@@ -1609,14 +1607,13 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "mknpc:test_tower/connect_up"
+          "opening_width": 5
         },
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_up",
           "jigsaw_target": "mknpc:connect_down",
           "target_pool": "mknpc:test_tower/connect_up",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
           "role": "connect_up",
           "facing": "up",
           "relative_pos": {
@@ -1624,8 +1621,7 @@
             "y": 6,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "minecraft:empty"
+          "opening_width": 5
         }
       ],
       "shell_margin": 1,
@@ -1725,7 +1721,7 @@
       "variant_index": 0,
       "workspace_piece_kind": "template",
       "structure_id": "mknpc:test_tower/floor_main_template",
-      "piece_id": "e6b71e58-be64-45b4-a251-e2fda216782a",
+      "piece_id": "8f01f16a-b7a0-4ea5-8d52-f9eceaff0c09",
       "piece_name": "floor_main_template",
       "base_name": "floor_main"
     },
@@ -2048,30 +2044,31 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777095793687",
-        "vertical_access_direction": "up",
+        "generated_stair_revision": "1777145600781",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_allow_on_main_path": "true",
+        "runtime_boss_only": "true",
+        "runtime_piece_role": "boss_approach",
+        "runtime_progression_delta": "1",
+        "runtime_start": "false",
+        "runtime_terminal": "false",
+        "runtime_vertical_level_delta": "1",
         "supports_vertical_access": "true",
         "topology_role": "boss_approach",
         "tower_piece_kind": "room",
+        "vertical_access_direction": "up",
         "vertical_access_placement": "center",
         "workspace_base_name": "boss_approach",
         "workspace_piece_kind": "template",
-        "workspace_variant_index": "0",
-        "runtime_start": "false",
-        "runtime_piece_role": "boss_approach",
-        "runtime_progression_delta": "1",
-        "runtime_vertical_level_delta": "1",
-        "runtime_allow_on_main_path": "true",
-        "runtime_allow_on_branch_path": "false",
-        "runtime_terminal": "false",
-        "runtime_boss_only": "true"
+        "workspace_variant_index": "0"
       },
       "connectors": [
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_down",
           "jigsaw_target": "mknpc:connect_up",
           "target_pool": "minecraft:empty",
+          "incoming_pool": "mknpc:test_tower/connect_up",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
           "role": "connect_down",
           "facing": "down",
           "relative_pos": {
@@ -2079,14 +2076,13 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "mknpc:test_tower/connect_up"
+          "opening_width": 5
         },
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:boss_forward",
           "jigsaw_target": "mknpc:boss_back",
           "target_pool": "mknpc:test_tower/boss_cap",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:boss_forward",
           "role": "boss_forward",
           "facing": "up",
           "relative_pos": {
@@ -2094,8 +2090,7 @@
             "y": 6,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "minecraft:empty"
+          "opening_width": 5
         }
       ],
       "shell_margin": 1,
@@ -2195,7 +2190,7 @@
       "variant_index": 0,
       "workspace_piece_kind": "template",
       "structure_id": "mknpc:test_tower/boss_approach_template",
-      "piece_id": "8d0b6252-16b8-4120-ac70-5c10d5c8385a",
+      "piece_id": "711ab241-9c28-4cc3-826b-34f0b6000145",
       "piece_name": "boss_approach_template",
       "base_name": "boss_approach"
     },
@@ -2290,31 +2285,32 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777095793687",
-        "vertical_access_direction": "up",
-        "supports_vertical_access": "true",
-        "vertical_access_top_cap": "true",
-        "topology_role": "boss_cap",
-        "tower_piece_kind": "room",
-        "vertical_access_placement": "center",
-        "workspace_base_name": "boss_cap",
-        "workspace_piece_kind": "template",
-        "workspace_variant_index": "0",
-        "runtime_start": "false",
+        "generated_stair_revision": "1777145600781",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_allow_on_main_path": "true",
+        "runtime_boss_only": "true",
         "runtime_piece_role": "boss",
         "runtime_progression_delta": "0",
-        "runtime_vertical_level_delta": "0",
-        "runtime_allow_on_main_path": "true",
-        "runtime_allow_on_branch_path": "false",
+        "runtime_start": "false",
         "runtime_terminal": "true",
-        "runtime_boss_only": "true"
+        "runtime_vertical_level_delta": "0",
+        "supports_vertical_access": "true",
+        "topology_role": "boss_cap",
+        "tower_piece_kind": "room",
+        "vertical_access_direction": "up",
+        "vertical_access_placement": "center",
+        "vertical_access_top_cap": "true",
+        "workspace_base_name": "boss_cap",
+        "workspace_piece_kind": "template",
+        "workspace_variant_index": "0"
       },
       "connectors": [
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:boss_back",
           "jigsaw_target": "mknpc:boss_forward",
           "target_pool": "minecraft:empty",
+          "incoming_pool": "mknpc:test_tower/boss_cap",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:boss_back",
           "role": "boss_back",
           "facing": "down",
           "relative_pos": {
@@ -2322,8 +2318,7 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "mknpc:test_tower/boss_cap"
+          "opening_width": 5
         }
       ],
       "shell_margin": 1,
@@ -2423,7 +2418,7 @@
       "variant_index": 0,
       "workspace_piece_kind": "template",
       "structure_id": "mknpc:test_tower/boss_cap_template",
-      "piece_id": "d9b454f0-0113-4fc7-a2c1-b8af25e0bc09",
+      "piece_id": "28f791d3-b410-4ea8-8900-dbdaa1d8e882",
       "piece_name": "boss_cap_template",
       "base_name": "boss_cap"
     },
@@ -3034,30 +3029,31 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777095793688",
-        "vertical_access_direction": "down",
+        "generated_stair_revision": "1777145600781",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_allow_on_main_path": "true",
+        "runtime_boss_only": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "1",
+        "runtime_start": "false",
+        "runtime_terminal": "false",
+        "runtime_vertical_level_delta": "-1",
         "supports_vertical_access": "true",
         "topology_role": "basement_entry",
         "tower_piece_kind": "room",
+        "vertical_access_direction": "down",
         "vertical_access_placement": "center",
         "workspace_base_name": "basement_entry",
         "workspace_piece_kind": "template",
-        "workspace_variant_index": "0",
-        "runtime_start": "false",
-        "runtime_piece_role": "room",
-        "runtime_progression_delta": "1",
-        "runtime_vertical_level_delta": "-1",
-        "runtime_allow_on_main_path": "true",
-        "runtime_allow_on_branch_path": "false",
-        "runtime_terminal": "false",
-        "runtime_boss_only": "false"
+        "workspace_variant_index": "0"
       },
       "connectors": [
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_up",
           "jigsaw_target": "mknpc:connect_down",
           "target_pool": "minecraft:empty",
+          "incoming_pool": "mknpc:test_tower/connect_down_entry",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
           "role": "connect_up",
           "facing": "up",
           "relative_pos": {
@@ -3065,14 +3061,13 @@
             "y": 14,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "mknpc:test_tower/connect_down_entry"
+          "opening_width": 5
         },
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_down",
           "jigsaw_target": "mknpc:connect_up",
           "target_pool": "mknpc:test_tower/connect_down",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
           "role": "connect_down",
           "facing": "down",
           "relative_pos": {
@@ -3080,8 +3075,7 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "minecraft:empty"
+          "opening_width": 5
         }
       ],
       "shell_margin": 1,
@@ -3181,7 +3175,7 @@
       "variant_index": 0,
       "workspace_piece_kind": "template",
       "structure_id": "mknpc:test_tower/basement_entry_template",
-      "piece_id": "a4aa07d8-96c8-40eb-917f-da75d9c9b055",
+      "piece_id": "632bc4ff-bdc2-46c6-8995-8a37bf15cd9c",
       "piece_name": "basement_entry_template",
       "base_name": "basement_entry"
     },
@@ -3792,30 +3786,31 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777095793690",
-        "vertical_access_direction": "down",
+        "generated_stair_revision": "1777145600782",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_allow_on_main_path": "true",
+        "runtime_boss_only": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "1",
+        "runtime_start": "false",
+        "runtime_terminal": "false",
+        "runtime_vertical_level_delta": "-1",
         "supports_vertical_access": "true",
         "topology_role": "basement_main",
         "tower_piece_kind": "room",
+        "vertical_access_direction": "down",
         "vertical_access_placement": "center",
         "workspace_base_name": "basement_main",
         "workspace_piece_kind": "template",
-        "workspace_variant_index": "0",
-        "runtime_start": "false",
-        "runtime_piece_role": "room",
-        "runtime_progression_delta": "1",
-        "runtime_vertical_level_delta": "-1",
-        "runtime_allow_on_main_path": "true",
-        "runtime_allow_on_branch_path": "false",
-        "runtime_terminal": "false",
-        "runtime_boss_only": "false"
+        "workspace_variant_index": "0"
       },
       "connectors": [
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_up",
           "jigsaw_target": "mknpc:connect_down",
           "target_pool": "minecraft:empty",
+          "incoming_pool": "mknpc:test_tower/connect_down",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
           "role": "connect_up",
           "facing": "up",
           "relative_pos": {
@@ -3823,14 +3818,13 @@
             "y": 14,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "mknpc:test_tower/connect_down"
+          "opening_width": 5
         },
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_down",
           "jigsaw_target": "mknpc:connect_up",
           "target_pool": "mknpc:test_tower/connect_down",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
           "role": "connect_down",
           "facing": "down",
           "relative_pos": {
@@ -3838,8 +3832,7 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "minecraft:empty"
+          "opening_width": 5
         }
       ],
       "shell_margin": 1,
@@ -3939,7 +3932,7 @@
       "variant_index": 0,
       "workspace_piece_kind": "template",
       "structure_id": "mknpc:test_tower/basement_main_template",
-      "piece_id": "af42de1a-20d3-4b04-9c65-69a198e11102",
+      "piece_id": "165a52e0-e6c7-4ce1-84c6-2085a3045ae1",
       "piece_name": "basement_main_template",
       "base_name": "basement_main"
     },
@@ -4586,31 +4579,32 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777095793691",
-        "vertical_access_direction": "down",
+        "generated_stair_revision": "1777145600783",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_allow_on_main_path": "true",
+        "runtime_boss_only": "false",
+        "runtime_piece_role": "terminal",
+        "runtime_progression_delta": "1",
+        "runtime_start": "false",
+        "runtime_terminal": "true",
+        "runtime_vertical_level_delta": "-1",
         "supports_vertical_access": "true",
-        "vertical_access_bottom_cap": "true",
         "topology_role": "basement_cap",
         "tower_piece_kind": "room",
+        "vertical_access_bottom_cap": "true",
+        "vertical_access_direction": "down",
         "vertical_access_placement": "center",
         "workspace_base_name": "basement_cap",
         "workspace_piece_kind": "template",
-        "workspace_variant_index": "0",
-        "runtime_start": "false",
-        "runtime_piece_role": "terminal",
-        "runtime_progression_delta": "1",
-        "runtime_vertical_level_delta": "-1",
-        "runtime_allow_on_main_path": "true",
-        "runtime_allow_on_branch_path": "false",
-        "runtime_terminal": "true",
-        "runtime_boss_only": "false"
+        "workspace_variant_index": "0"
       },
       "connectors": [
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_up",
           "jigsaw_target": "mknpc:connect_down",
           "target_pool": "minecraft:empty",
+          "incoming_pool": "mknpc:test_tower/connect_down",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
           "role": "connect_up",
           "facing": "up",
           "relative_pos": {
@@ -4618,8 +4612,7 @@
             "y": 14,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "mknpc:test_tower/connect_down"
+          "opening_width": 5
         }
       ],
       "shell_margin": 1,
@@ -4719,7 +4712,7 @@
       "variant_index": 0,
       "workspace_piece_kind": "template",
       "structure_id": "mknpc:test_tower/basement_cap_template",
-      "piece_id": "fc5098ba-5891-4079-9811-e270c2381afb",
+      "piece_id": "c128ffcc-45ed-4098-9525-7db01c7792e8",
       "piece_name": "basement_cap_template",
       "base_name": "basement_cap"
     },
@@ -5630,30 +5623,30 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777095793685",
-        "vertical_access_direction": "both",
+        "generated_stair_revision": "1777145600779",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_allow_on_main_path": "true",
+        "runtime_boss_only": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_start": "true",
+        "runtime_terminal": "false",
+        "runtime_vertical_level_delta": "0",
         "supports_vertical_access": "true",
         "topology_role": "entry",
         "tower_piece_kind": "room",
+        "vertical_access_direction": "both",
         "vertical_access_placement": "center",
         "workspace_base_name": "entry",
         "workspace_piece_kind": "instance",
-        "workspace_variant_index": "1",
-        "runtime_start": "true",
-        "runtime_piece_role": "room",
-        "runtime_progression_delta": "0",
-        "runtime_vertical_level_delta": "0",
-        "runtime_allow_on_main_path": "true",
-        "runtime_allow_on_branch_path": "false",
-        "runtime_terminal": "false",
-        "runtime_boss_only": "false"
+        "workspace_variant_index": "1"
       },
       "connectors": [
         {
-          "opening_height": 3,
-          "jigsaw_name": "mknpc:main_back",
           "jigsaw_target": "mknpc:main_forward",
           "target_pool": "minecraft:empty",
+          "opening_height": 3,
+          "jigsaw_name": "mknpc:main_back",
           "role": "main_back",
           "facing": "south",
           "relative_pos": {
@@ -5661,14 +5654,13 @@
             "y": 1,
             "z": 18
           },
-          "opening_width": 3,
-          "incoming_pool": "minecraft:empty"
+          "opening_width": 3
         },
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_up",
           "jigsaw_target": "mknpc:connect_down",
           "target_pool": "mknpc:test_tower/connect_up",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
           "role": "connect_up",
           "facing": "up",
           "relative_pos": {
@@ -5676,14 +5668,13 @@
             "y": 22,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "minecraft:empty"
+          "opening_width": 5
         },
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_down",
           "jigsaw_target": "mknpc:connect_up",
           "target_pool": "mknpc:test_tower/connect_down_entry",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
           "role": "connect_down",
           "facing": "down",
           "relative_pos": {
@@ -5691,8 +5682,7 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "minecraft:empty"
+          "opening_width": 5
         }
       ],
       "shell_margin": 1,
@@ -5792,7 +5782,7 @@
       "variant_index": 1,
       "workspace_piece_kind": "instance",
       "structure_id": "mknpc:test_tower/entry_1",
-      "piece_id": "8ccfe5b4-4cc0-4af5-96dc-3f80f0472b2a",
+      "piece_id": "c3d2ce5f-d87d-4239-8206-0ac40dbee880",
       "piece_name": "entry_1",
       "base_name": "entry"
     },
@@ -6115,30 +6105,31 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777095793686",
-        "vertical_access_direction": "both",
+        "generated_stair_revision": "1777145600780",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_allow_on_main_path": "true",
+        "runtime_boss_only": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "1",
+        "runtime_start": "false",
+        "runtime_terminal": "false",
+        "runtime_vertical_level_delta": "1",
         "supports_vertical_access": "true",
         "topology_role": "floor",
         "tower_piece_kind": "room",
+        "vertical_access_direction": "both",
         "vertical_access_placement": "center",
         "workspace_base_name": "floor_main",
         "workspace_piece_kind": "instance",
-        "workspace_variant_index": "1",
-        "runtime_start": "false",
-        "runtime_piece_role": "room",
-        "runtime_progression_delta": "1",
-        "runtime_vertical_level_delta": "1",
-        "runtime_allow_on_main_path": "true",
-        "runtime_allow_on_branch_path": "false",
-        "runtime_terminal": "false",
-        "runtime_boss_only": "false"
+        "workspace_variant_index": "1"
       },
       "connectors": [
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_down",
           "jigsaw_target": "mknpc:connect_up",
           "target_pool": "minecraft:empty",
+          "incoming_pool": "mknpc:test_tower/connect_up",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
           "role": "connect_down",
           "facing": "down",
           "relative_pos": {
@@ -6146,14 +6137,13 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "mknpc:test_tower/connect_up"
+          "opening_width": 5
         },
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_up",
           "jigsaw_target": "mknpc:connect_down",
           "target_pool": "mknpc:test_tower/connect_up",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
           "role": "connect_up",
           "facing": "up",
           "relative_pos": {
@@ -6161,8 +6151,7 @@
             "y": 6,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "minecraft:empty"
+          "opening_width": 5
         }
       ],
       "shell_margin": 1,
@@ -6262,7 +6251,7 @@
       "variant_index": 1,
       "workspace_piece_kind": "instance",
       "structure_id": "mknpc:test_tower/floor_main_1",
-      "piece_id": "abe65b80-95f9-4c17-ab80-76689d029da3",
+      "piece_id": "62df601c-b8be-4dd1-a8bc-706df326a9ed",
       "piece_name": "floor_main_1",
       "base_name": "floor_main"
     },
@@ -6585,30 +6574,31 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777095793687",
-        "vertical_access_direction": "up",
+        "generated_stair_revision": "1777145600781",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_allow_on_main_path": "true",
+        "runtime_boss_only": "true",
+        "runtime_piece_role": "boss_approach",
+        "runtime_progression_delta": "1",
+        "runtime_start": "false",
+        "runtime_terminal": "false",
+        "runtime_vertical_level_delta": "1",
         "supports_vertical_access": "true",
         "topology_role": "boss_approach",
         "tower_piece_kind": "room",
+        "vertical_access_direction": "up",
         "vertical_access_placement": "center",
         "workspace_base_name": "boss_approach",
         "workspace_piece_kind": "instance",
-        "workspace_variant_index": "1",
-        "runtime_start": "false",
-        "runtime_piece_role": "boss_approach",
-        "runtime_progression_delta": "1",
-        "runtime_vertical_level_delta": "1",
-        "runtime_allow_on_main_path": "true",
-        "runtime_allow_on_branch_path": "false",
-        "runtime_terminal": "false",
-        "runtime_boss_only": "true"
+        "workspace_variant_index": "1"
       },
       "connectors": [
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_down",
           "jigsaw_target": "mknpc:connect_up",
           "target_pool": "minecraft:empty",
+          "incoming_pool": "mknpc:test_tower/connect_up",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
           "role": "connect_down",
           "facing": "down",
           "relative_pos": {
@@ -6616,14 +6606,13 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "mknpc:test_tower/connect_up"
+          "opening_width": 5
         },
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:boss_forward",
           "jigsaw_target": "mknpc:boss_back",
           "target_pool": "mknpc:test_tower/boss_cap",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:boss_forward",
           "role": "boss_forward",
           "facing": "up",
           "relative_pos": {
@@ -6631,8 +6620,7 @@
             "y": 6,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "minecraft:empty"
+          "opening_width": 5
         }
       ],
       "shell_margin": 1,
@@ -6732,7 +6720,7 @@
       "variant_index": 1,
       "workspace_piece_kind": "instance",
       "structure_id": "mknpc:test_tower/boss_approach_1",
-      "piece_id": "7cb0a5a8-1d95-4ac5-92d3-be311b9ecc4a",
+      "piece_id": "dd3f013a-6c35-4ee6-a09f-d62c91511cc1",
       "piece_name": "boss_approach_1",
       "base_name": "boss_approach"
     },
@@ -6827,31 +6815,32 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777095793687",
-        "vertical_access_direction": "up",
-        "supports_vertical_access": "true",
-        "vertical_access_top_cap": "true",
-        "topology_role": "boss_cap",
-        "tower_piece_kind": "room",
-        "vertical_access_placement": "center",
-        "workspace_base_name": "boss_cap",
-        "workspace_piece_kind": "instance",
-        "workspace_variant_index": "1",
-        "runtime_start": "false",
+        "generated_stair_revision": "1777145600781",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_allow_on_main_path": "true",
+        "runtime_boss_only": "true",
         "runtime_piece_role": "boss",
         "runtime_progression_delta": "0",
-        "runtime_vertical_level_delta": "0",
-        "runtime_allow_on_main_path": "true",
-        "runtime_allow_on_branch_path": "false",
+        "runtime_start": "false",
         "runtime_terminal": "true",
-        "runtime_boss_only": "true"
+        "runtime_vertical_level_delta": "0",
+        "supports_vertical_access": "true",
+        "topology_role": "boss_cap",
+        "tower_piece_kind": "room",
+        "vertical_access_direction": "up",
+        "vertical_access_placement": "center",
+        "vertical_access_top_cap": "true",
+        "workspace_base_name": "boss_cap",
+        "workspace_piece_kind": "instance",
+        "workspace_variant_index": "1"
       },
       "connectors": [
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:boss_back",
           "jigsaw_target": "mknpc:boss_forward",
           "target_pool": "minecraft:empty",
+          "incoming_pool": "mknpc:test_tower/boss_cap",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:boss_back",
           "role": "boss_back",
           "facing": "down",
           "relative_pos": {
@@ -6859,8 +6848,7 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "mknpc:test_tower/boss_cap"
+          "opening_width": 5
         }
       ],
       "shell_margin": 1,
@@ -6960,7 +6948,7 @@
       "variant_index": 1,
       "workspace_piece_kind": "instance",
       "structure_id": "mknpc:test_tower/boss_cap_1",
-      "piece_id": "d98ae9e0-b6e6-4300-902b-20f68e02aec1",
+      "piece_id": "890613fc-10cc-45ce-b207-ce1b4ae3ae55",
       "piece_name": "boss_cap_1",
       "base_name": "boss_cap"
     },
@@ -7571,30 +7559,31 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777095793688",
-        "vertical_access_direction": "down",
+        "generated_stair_revision": "1777145600781",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_allow_on_main_path": "true",
+        "runtime_boss_only": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "1",
+        "runtime_start": "false",
+        "runtime_terminal": "false",
+        "runtime_vertical_level_delta": "-1",
         "supports_vertical_access": "true",
         "topology_role": "basement_entry",
         "tower_piece_kind": "room",
+        "vertical_access_direction": "down",
         "vertical_access_placement": "center",
         "workspace_base_name": "basement_entry",
         "workspace_piece_kind": "instance",
-        "workspace_variant_index": "1",
-        "runtime_start": "false",
-        "runtime_piece_role": "room",
-        "runtime_progression_delta": "1",
-        "runtime_vertical_level_delta": "-1",
-        "runtime_allow_on_main_path": "true",
-        "runtime_allow_on_branch_path": "false",
-        "runtime_terminal": "false",
-        "runtime_boss_only": "false"
+        "workspace_variant_index": "1"
       },
       "connectors": [
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_up",
           "jigsaw_target": "mknpc:connect_down",
           "target_pool": "minecraft:empty",
+          "incoming_pool": "mknpc:test_tower/connect_down_entry",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
           "role": "connect_up",
           "facing": "up",
           "relative_pos": {
@@ -7602,14 +7591,13 @@
             "y": 14,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "mknpc:test_tower/connect_down_entry"
+          "opening_width": 5
         },
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_down",
           "jigsaw_target": "mknpc:connect_up",
           "target_pool": "mknpc:test_tower/connect_down",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
           "role": "connect_down",
           "facing": "down",
           "relative_pos": {
@@ -7617,8 +7605,7 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "minecraft:empty"
+          "opening_width": 5
         }
       ],
       "shell_margin": 1,
@@ -7718,7 +7705,7 @@
       "variant_index": 1,
       "workspace_piece_kind": "instance",
       "structure_id": "mknpc:test_tower/basement_entry_1",
-      "piece_id": "041751ad-8873-4cf6-b04f-90bc825c6694",
+      "piece_id": "e5d886a5-0cd0-471b-bfaf-d8f5bc2778ae",
       "piece_name": "basement_entry_1",
       "base_name": "basement_entry"
     },
@@ -8329,30 +8316,31 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777095793690",
-        "vertical_access_direction": "down",
+        "generated_stair_revision": "1777145600782",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_allow_on_main_path": "true",
+        "runtime_boss_only": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "1",
+        "runtime_start": "false",
+        "runtime_terminal": "false",
+        "runtime_vertical_level_delta": "-1",
         "supports_vertical_access": "true",
         "topology_role": "basement_main",
         "tower_piece_kind": "room",
+        "vertical_access_direction": "down",
         "vertical_access_placement": "center",
         "workspace_base_name": "basement_main",
         "workspace_piece_kind": "instance",
-        "workspace_variant_index": "1",
-        "runtime_start": "false",
-        "runtime_piece_role": "room",
-        "runtime_progression_delta": "1",
-        "runtime_vertical_level_delta": "-1",
-        "runtime_allow_on_main_path": "true",
-        "runtime_allow_on_branch_path": "false",
-        "runtime_terminal": "false",
-        "runtime_boss_only": "false"
+        "workspace_variant_index": "1"
       },
       "connectors": [
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_up",
           "jigsaw_target": "mknpc:connect_down",
           "target_pool": "minecraft:empty",
+          "incoming_pool": "mknpc:test_tower/connect_down",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
           "role": "connect_up",
           "facing": "up",
           "relative_pos": {
@@ -8360,14 +8348,13 @@
             "y": 14,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "mknpc:test_tower/connect_down"
+          "opening_width": 5
         },
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_down",
           "jigsaw_target": "mknpc:connect_up",
           "target_pool": "mknpc:test_tower/connect_down",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
           "role": "connect_down",
           "facing": "down",
           "relative_pos": {
@@ -8375,8 +8362,7 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "minecraft:empty"
+          "opening_width": 5
         }
       ],
       "shell_margin": 1,
@@ -8476,7 +8462,7 @@
       "variant_index": 1,
       "workspace_piece_kind": "instance",
       "structure_id": "mknpc:test_tower/basement_main_1",
-      "piece_id": "0ae90a11-b783-490f-8f55-ce9070f4d07c",
+      "piece_id": "e6d86393-121c-4659-a9b9-01791be6ac3e",
       "piece_name": "basement_main_1",
       "base_name": "basement_main"
     },
@@ -9123,31 +9109,32 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777095793691",
-        "vertical_access_direction": "down",
+        "generated_stair_revision": "1777145600783",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_allow_on_main_path": "true",
+        "runtime_boss_only": "false",
+        "runtime_piece_role": "terminal",
+        "runtime_progression_delta": "1",
+        "runtime_start": "false",
+        "runtime_terminal": "true",
+        "runtime_vertical_level_delta": "-1",
         "supports_vertical_access": "true",
-        "vertical_access_bottom_cap": "true",
         "topology_role": "basement_cap",
         "tower_piece_kind": "room",
+        "vertical_access_bottom_cap": "true",
+        "vertical_access_direction": "down",
         "vertical_access_placement": "center",
         "workspace_base_name": "basement_cap",
         "workspace_piece_kind": "instance",
-        "workspace_variant_index": "1",
-        "runtime_start": "false",
-        "runtime_piece_role": "terminal",
-        "runtime_progression_delta": "1",
-        "runtime_vertical_level_delta": "-1",
-        "runtime_allow_on_main_path": "true",
-        "runtime_allow_on_branch_path": "false",
-        "runtime_terminal": "true",
-        "runtime_boss_only": "false"
+        "workspace_variant_index": "1"
       },
       "connectors": [
         {
-          "opening_height": 5,
-          "jigsaw_name": "mknpc:connect_up",
           "jigsaw_target": "mknpc:connect_down",
           "target_pool": "minecraft:empty",
+          "incoming_pool": "mknpc:test_tower/connect_down",
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
           "role": "connect_up",
           "facing": "up",
           "relative_pos": {
@@ -9155,8 +9142,7 @@
             "y": 14,
             "z": 10
           },
-          "opening_width": 5,
-          "incoming_pool": "mknpc:test_tower/connect_down"
+          "opening_width": 5
         }
       ],
       "shell_margin": 1,
@@ -9256,13 +9242,13 @@
       "variant_index": 1,
       "workspace_piece_kind": "instance",
       "structure_id": "mknpc:test_tower/basement_cap_1",
-      "piece_id": "642a6fe8-26ca-453f-b5c5-69543fb1d176",
+      "piece_id": "2cd7dbe1-03de-42d7-a269-99512c0c5d87",
       "piece_name": "basement_cap_1",
       "base_name": "basement_cap"
     }
   ],
-  "created_at": 1776958468420,
-  "updated_at": 1777095810045,
+  "created_at": 1777144344814,
+  "updated_at": 1777145604679,
   "settings": {
     "vertical_access_placement": "center",
     "dimensions": {
@@ -9300,10 +9286,8 @@
   },
   "structure_name": "test_tower",
   "family_type": "tower",
-  "exported_at": "2026-04-25T05:43:30.735498300Z",
+  "exported_at": "2026-04-25T19:33:49.304148500Z",
   "schema_version": 1,
-  "workspace_id": "2c30b324-335a-4a95-a048-a44fab28f035",
+  "workspace_id": "7ca05cc5-c797-42b5-9718-ce62bcc9aad7",
   "namespace": "mknpc"
 }
-
-
