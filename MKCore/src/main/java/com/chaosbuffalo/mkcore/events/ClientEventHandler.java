@@ -133,15 +133,35 @@ public class ClientEventHandler {
     }
 
     static void handleAbilityBarPressed(MKPlayerData player, AbilityGroupId group, int slot) {
-        if (player.getAbilityExecutor().isOnGlobalCooldown() ||
-                player.getEffects().isEffectActive(CoreEffects.STUN.get()))
+        if (player.getAbilityExecutor().isOnGlobalCooldown()) {
+            player.getAbilityExecutor().showStatusMessage(Component.translatableWithFallback(
+                    "mkcore.ability.feedback.global_cooldown",
+                    "Abilities are not ready yet"
+            ).withStyle(ChatFormatting.RED));
             return;
+        }
+        if (player.getEffects().isEffectActive(CoreEffects.STUN.get())) {
+            player.getAbilityExecutor().showStatusMessage(Component.translatableWithFallback(
+                    "mkcore.ability.feedback.stunned",
+                    "You are stunned"
+            ).withStyle(ChatFormatting.RED));
+            return;
+        }
 
-        if (player.getAbilityExecutor().clientSimulateAbility(group, slot)) {
+        ResourceLocation abilityId = player.getLoadout().getAbilityGroup(group).getSlot(slot);
+        if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
+            return;
+        }
+
+        var previewFailure = player.getAbilityExecutor().previewLoadoutAbilityFailure(group, slot);
+        if (previewFailure == null) {
 //            MKCore.LOGGER.debug("sending execute ability {} {}", group, slot);
             PacketHandler.sendMessageToServer(new ExecuteActiveAbilityPacket(group, slot));
             player.getAbilityExecutor().startGlobalCooldown();
+            return;
         }
+
+        player.getAbilityExecutor().showLoadoutFailure(abilityId, previewFailure);
     }
 
     public static void handleInputEvent() {

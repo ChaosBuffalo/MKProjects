@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDefinitionData;
+import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
 import com.chaosbuffalo.mkcore.client.gui.widgets.OnScreenXpBarWidget;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -21,6 +22,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
@@ -262,39 +264,61 @@ public class MKOverlay implements LayeredDraw.Layer {
 
     private void drawCastBar(GuiGraphics graphics, MKPlayerData data, int winHeight, int winWidth) {
         PlayerAbilityExecutor executor = data.getAbilityExecutor();
-        if (!executor.isCasting()) {
-            float ability2Progress = MKCore.getAbilityRuntimeService().getClientCastProgress(data, mc.getTimer().getGameTimeDeltaPartialTick(true));
-            int ability2CastTicks = MKCore.getAbilityRuntimeService().getClientCastTicks(data);
-            if (ability2Progress <= 0.0f || ability2CastTicks <= 0) {
+        ResourceLocation castAbilityId;
+        float castProgress;
+        int castTime;
+        if (executor.isCasting()) {
+            MKAbility ability = executor.getCastingAbility();
+            if (ability == null) {
                 return;
             }
-            int castStartY = winHeight / 2 + 8;
-            int width = 50;
-            int barSize = Math.max(1, Math.round(width * ability2Progress));
-            int castStartX = winWidth / 2 - barSize / 2;
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-            GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(graphics, GuiTextures.CAST_BAR_REGION, castStartX, castStartY, barSize);
-            return;
+            castTime = executor.getAbilityCastTime(ability);
+            if (castTime <= 0) {
+                return;
+            }
+            castAbilityId = ability.getAbilityId();
+            castProgress = Math.min(Math.max(executor.getCastTicks() / (float) castTime, 0.0f), 1.0f);
+        } else {
+            castAbilityId = MKCore.getAbilityRuntimeService().getClientCastAbilityId(data);
+            castTime = MKCore.getAbilityRuntimeService().getClientCastTicks(data);
+            if (castAbilityId == null || castTime <= 0) {
+                return;
+            }
+            castProgress = MKCore.getAbilityRuntimeService().getClientCastProgress(
+                    data,
+                    mc.getTimer().getGameTimeDeltaPartialTick(true)
+            );
         }
 
-        MKAbility ability = executor.getCastingAbility();
-        if (ability == null) {
-            return;
-        }
-
-        int castTime = executor.getAbilityCastTime(ability);
-        if (castTime == 0) {
-            return;
-        }
         int castStartY = winHeight / 2 + 8;
         int width = 50;
-        int barSize = width * executor.getCastTicks() / castTime;
-        int castStartX = winWidth / 2 - barSize / 2;
+        int barSize = Math.max(1, Math.round(width * castProgress));
+        int castStartX = winWidth / 2 - width / 2;
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-//        GuiTextures.CORE_TEXTURES.bind(mc);
         GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(graphics, GuiTextures.CAST_BAR_REGION, castStartX, castStartY, barSize);
+
+        AbilityDisplayEntry display = AbilityDisplayEntry.resolve(castAbilityId);
+        drawCastBarLabel(graphics, display.displayName(), display.icon(), castStartX, castStartY, width);
+    }
+
+    private void drawCastBarLabel(GuiGraphics graphics,
+                                  Component displayName,
+                                  @Nullable ResourceLocation icon,
+                                  int castStartX,
+                                  int castStartY,
+                                  int barWidth) {
+        int labelSpacing = 4;
+        int iconWidth = icon != null ? ABILITY_ICON_SIZE + labelSpacing : 0;
+        int textWidth = mc.font.width(displayName);
+        int contentWidth = iconWidth + textWidth;
+        int contentStartX = castStartX + (barWidth - contentWidth) / 2;
+        int labelY = castStartY - 12;
+        if (icon != null) {
+            graphics.blit(icon, contentStartX, labelY - 4, 0, 0, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE,
+                    ABILITY_ICON_SIZE, ABILITY_ICON_SIZE);
+        }
+        graphics.drawString(mc.font, displayName, contentStartX + iconWidth, labelY, 0xFFFFFF, true);
     }
 
     private int getBarStartY(int slotCount) {

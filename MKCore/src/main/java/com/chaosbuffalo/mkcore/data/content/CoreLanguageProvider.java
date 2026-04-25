@@ -135,6 +135,13 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mkcore.gui.manage_memory", "Manage");
         add("mkcore.gui.memory_pool", "%d/%d");
         add("mkcore.gui.memory_pool_tooltip", "Memory Pool Slot Usage");
+        add("mkcore.ability.feedback.global_cooldown", "Abilities are not ready yet");
+        add("mkcore.ability.feedback.stunned", "You are stunned");
+        add("mkcore.ability.feedback.busy", "You are already casting");
+        add("mkcore.ability.feedback.invalid_target", "No valid target for %s");
+        add("mkcore.ability.feedback.not_enough_resource", "Not enough mana for %s");
+        add("mkcore.ability.feedback.on_cooldown", "%s is not ready yet");
+        add("mkcore.ability.feedback.unavailable", "%s cannot be used right now");
         add("mkcore.item_tooltip.grants_ability", "Grants Ability: %s");
         add("key.hud.active_ability1", "Ability Slot 1");
         add("key.hud.active_ability2", "Ability Slot 2");

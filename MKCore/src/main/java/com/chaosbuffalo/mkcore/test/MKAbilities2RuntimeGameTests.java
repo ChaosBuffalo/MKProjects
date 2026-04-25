@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.test;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
+import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEntry;
 import com.chaosbuffalo.mkcore.abilities2.AbilityRuntimeService;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityAction;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityConditionDefinition;
@@ -123,6 +124,8 @@ public class MKAbilities2RuntimeGameTests {
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_friendly_heal");
     private static final ResourceLocation SELF_HEAL_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_self_heal");
+    private static final ResourceLocation TARGETED_FIREBOLT_ABILITY =
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_targeted_firebolt");
     private static final UUID EVENT_PAYLOAD_ENTITY_REF_PROBE_ID =
             UUID.fromString("11111111-2222-3333-4444-555555555555");
     private static final ResourceLocation MENDING_CHANNEL_ABILITY =
@@ -1025,6 +1028,85 @@ public class MKAbilities2RuntimeGameTests {
                             "enemy-targeted loadout execution should damage the looked-at enemy target");
                     helper.assertValueEqual(friendly.getHealth(), friendlyStartingHealth,
                             "enemy-targeted loadout execution should not affect a friendly target");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void slottedTargetedFireboltPreviewReportsTargetAndResourceFailures(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        Player friendly = createTestPlayer(helper, new BlockPos(1, 2, 4));
+        Zombie enemy = createTestZombie(helper, new BlockPos(4, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        helper.assertTrue(ownerData.getAbilities().learnAbilityDefinition(TARGETED_FIREBOLT_ABILITY, AbilitySource.ADMIN),
+                "targeted firebolt preview test should learn the definition first");
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlots(1);
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlot(0, TARGETED_FIREBOLT_ABILITY);
+        ownerData.getStats().setMana(ownerData.getStats().getMaxMana());
+
+        lookAtEntity(owner, friendly);
+        helper.assertValueEqual(ownerData.getAbilityExecutor().previewLoadoutAbilityFailure(AbilityGroupId.Basic, 0),
+                FailureReason.INVALID_TARGETS,
+                "targeted firebolt preview should reject a friendly looked-at target");
+
+        lookAtEntity(owner, enemy);
+        helper.assertTrue(ownerData.getAbilityExecutor().previewLoadoutAbilityFailure(AbilityGroupId.Basic, 0) == null,
+                "targeted firebolt preview should allow a looked-at enemy target");
+
+        ownerData.getStats().setMana(0.0f);
+        helper.assertValueEqual(ownerData.getAbilityExecutor().previewLoadoutAbilityFailure(AbilityGroupId.Basic, 0),
+                FailureReason.NOT_ENOUGH_RESOURCE,
+                "targeted firebolt preview should surface the mana failure reason once a valid target is selected");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void trainedTargetedFireboltAutoSlotsAndExecutesWithCastVisuals(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        Zombie enemy = createTestZombie(helper, new BlockPos(4, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        AbilityTrainingEntry entry = new AbilityTrainingEntry(
+                TARGETED_FIREBOLT_ABILITY,
+                List.of(),
+                AbilitySource.TRAINED.usesAbilityPool()
+        );
+        ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).setSlots(1);
+        helper.assertTrue(entry.learn(ownerData, AbilitySource.TRAINED),
+                "trained targeted firebolt should learn through the normal training bridge");
+        helper.assertValueEqual(
+                ownerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic).getSlot(0),
+                TARGETED_FIREBOLT_ABILITY,
+                "trained targeted firebolt should auto-slot into the basic bar"
+        );
+
+        ownerData.getStats().setMana(ownerData.getStats().getMaxMana());
+        lookAtEntity(owner, enemy);
+        float enemyStartingHealth = enemy.getHealth();
+
+        helper.startSequence()
+                .thenExecute(() -> {
+                    helper.assertTrue(ownerData.getAbilityExecutor().previewLoadoutAbilityFailure(AbilityGroupId.Basic, 0) == null,
+                            "trained targeted firebolt should preview as castable against the looked-at enemy");
+                    ownerData.getAbilityExecutor().executeLoadoutAbility(AbilityGroupId.Basic, 0);
+                })
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(MKCore.getAbilityRuntimeService().hasPendingActivation(ownerData),
+                            "targeted firebolt should register as a pending cast after loadout execution begins");
+                    helper.assertTrue(ownerData.getAnimationModule().getCastingAbility() != null,
+                            "targeted firebolt should bridge into the cast visual animation module");
+                    helper.assertValueEqual(ownerData.getAnimationModule().getCastingAbility().getAbilityId(), TARGETED_FIREBOLT_ABILITY,
+                            "targeted firebolt visual bridge should retain the definition id");
+                    helper.assertTrue(ownerData.getAnimationModule().getCastingAbility().hasCastingParticles(),
+                            "targeted firebolt presentation should provide casting particles to the visual bridge");
+                    helper.assertValueEqual(ownerData.getAnimationModule().getVisualCastState(),
+                            EntityAnimationModule.VisualCastState.CASTING,
+                            "targeted firebolt should enter the casting visual state while the cast is pending");
+                })
+                .thenExecuteAfter(35, () -> {
+                    helper.assertTrue(enemy.getHealth() < enemyStartingHealth,
+                            "trained targeted firebolt should damage the looked-at enemy after the cast completes");
                     helper.succeed();
                 });
     }

@@ -27,6 +27,7 @@ import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.events.PersonaEvent;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.network.Ability2CastPacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
@@ -332,38 +333,53 @@ public class AbilityRuntimeService {
                                                   AbilityGroupId groupId,
                                                   AbilityReference ability,
                                                   @Nullable UUID sourceId) {
+        return previewLoadoutAbilityFailure(ownerData, casterData, groupId, ability, sourceId) == null;
+    }
+
+    public @Nullable FailureReason previewLoadoutAbilityFailure(IMKEntityData ownerData,
+                                                                IMKEntityData casterData,
+                                                                AbilityGroupId groupId,
+                                                                AbilityReference ability,
+                                                                @Nullable UUID sourceId) {
         Objects.requireNonNull(ownerData, "ownerData");
         Objects.requireNonNull(casterData, "casterData");
         Objects.requireNonNull(groupId, "groupId");
         Objects.requireNonNull(ability, "ability");
 
         LoadoutExecution execution = resolveLoadoutExecution(groupId, ability.abilityId());
-        if (execution == null || getLoadoutCooldownTicks(ownerData, ability, sourceId) > 0) {
-            return false;
+        if (execution == null) {
+            return definitionResolver.resolvePatched(ability.abilityId()) != null
+                    ? FailureReason.ACTIVATION_NOT_EXTERNALLY_CALLABLE
+                    : FailureReason.UNKNOWN_ABILITY;
+        }
+        if (getLoadoutCooldownTicks(ownerData, ability, sourceId) > 0) {
+            return FailureReason.ON_COOLDOWN;
         }
         if (execution.kind() == LoadoutExecutionKind.DIRECT && isCasterBusyForDirectActivation(casterData)) {
-            return false;
+            return FailureReason.BUSY;
         }
 
         PatchedAbilityDefinition definition = definitionResolver.resolvePatched(ability.abilityId());
         if (definition == null) {
-            return false;
+            return FailureReason.UNKNOWN_ABILITY;
         }
         AbilityActivationDefinition activation = definition.definition().getActivation(execution.activationId());
         if (activation == null) {
-            return false;
+            return FailureReason.UNKNOWN_ACTIVATION;
         }
         if (getLoadoutGcdTicks(ownerData, activation.gcdGroup()) > 0) {
-            return false;
+            return FailureReason.ON_COOLDOWN;
         }
         if ("resolved".equals(activation.targeting().type())
                 && resolveLoadoutDirectTargets(casterData, activation.targeting()) == null) {
-            return false;
+            return FailureReason.INVALID_TARGETS;
         }
 
         AbilityActionContext context = createLoadoutPreviewContext(ownerData, casterData, ability, sourceId,
                 execution.activationId(), definition, Map.of());
-        return activation.costs().stream().allMatch(cost -> canAffordLoadoutPreview(cost, context));
+        return activation.costs().stream().allMatch(cost -> canAffordLoadoutPreview(cost, context))
+                ? null
+                : FailureReason.NOT_ENOUGH_RESOURCE;
     }
 
     public int getLoadoutGcdTicks(IMKEntityData ownerData,
@@ -2234,6 +2250,13 @@ public class AbilityRuntimeService {
             return;
         }
         invocation.casterData().getAnimationModule().endCast(visualAbility);
+        if (!invocation.casterData().isClientSide() && visualAbility.getCompleteParticles() != null) {
+            MKParticles.spawnOffset(
+                    invocation.casterData().getEntity(),
+                    new Vec3(0.0, invocation.casterData().getEntity().getBbHeight() * 0.5, 0.0),
+                    visualAbility.getCompleteParticles()
+            );
+        }
         SoundEvent completeSound = visualAbility.getSpellCompleteSoundEvent();
         if (completeSound != null && !invocation.casterData().isClientSide()) {
             SoundUtils.serverPlaySoundAtEntity(invocation.casterData().getEntity(), completeSound,

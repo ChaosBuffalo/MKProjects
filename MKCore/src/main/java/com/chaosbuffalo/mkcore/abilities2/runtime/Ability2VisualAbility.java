@@ -17,6 +17,8 @@ public class Ability2VisualAbility extends MKAbility {
     private final SoundEvent castingSound;
     @Nullable
     private final SoundEvent completeSound;
+    @Nullable
+    private final ResourceLocation completeParticles;
 
     public Ability2VisualAbility(ResourceLocation abilityId,
                                  AbilityPresentation presentation,
@@ -27,6 +29,7 @@ public class Ability2VisualAbility extends MKAbility {
         if (presentation.castingParticles() != null) {
             castingParticles.setValue(presentation.castingParticles());
         }
+        this.completeParticles = presentation.completeParticles();
         this.castingSound = resolveSoundEvent(presentation.castingSound());
         this.completeSound = resolveSoundEvent(presentation.completeSound());
     }
@@ -49,6 +52,10 @@ public class Ability2VisualAbility extends MKAbility {
     @Override
     public @Nullable SoundEvent getSpellCompleteSoundEvent() {
         return completeSound != null ? completeSound : super.getSpellCompleteSoundEvent();
+    }
+
+    public @Nullable ResourceLocation getCompleteParticles() {
+        return completeParticles;
     }
 
     private static @Nullable SoundEvent resolveSoundEvent(@Nullable ResourceLocation soundId) {

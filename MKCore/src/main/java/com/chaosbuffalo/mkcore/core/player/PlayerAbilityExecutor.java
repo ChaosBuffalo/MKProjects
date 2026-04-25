@@ -3,10 +3,15 @@ package com.chaosbuffalo.mkcore.core.player;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.*;
+import com.chaosbuffalo.mkcore.abilities2.runtime.FailureReason;
+import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
 import com.chaosbuffalo.mkcore.core.AbilityExecutor;
 import com.chaosbuffalo.mkcore.core.MKCombatFormulas;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 
 public class PlayerAbilityExecutor extends AbilityExecutor {
 
@@ -29,23 +34,32 @@ public class PlayerAbilityExecutor extends AbilityExecutor {
             return;
         }
 
-        MKCore.getAbilityRuntimeService().executeLoadoutAbility(getPlayerData(), getPlayerData(), group, abilityId);
+        var result = MKCore.getAbilityRuntimeService().executeLoadoutAbility(getPlayerData(), getPlayerData(), group, abilityId);
+        if (!result.started()) {
+            showLoadoutFailure(abilityId, result.failureReason());
+        }
     }
 
     public boolean clientSimulateAbility(AbilityGroupId executingGroup, int slot) {
+        ResourceLocation abilityId = getPlayerData().getLoadout().getAbilityGroup(executingGroup).getSlot(slot);
+        return !abilityId.equals(MKCoreRegistry.INVALID_ABILITY)
+                && previewLoadoutAbilityFailure(executingGroup, slot) == null;
+    }
+
+    public @javax.annotation.Nullable FailureReason previewLoadoutAbilityFailure(AbilityGroupId executingGroup, int slot) {
         AbilityGroup loadoutGroup = getPlayerData().getLoadout().getAbilityGroup(executingGroup);
         ResourceLocation abilityId = loadoutGroup.getSlot(slot);
         if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
-            return false;
+            return null;
         }
 
         MKAbilityInfo info = loadoutGroup.getAbilityInfo(slot);
         if (info == null) {
             var ability = loadoutGroup.getExecutionAbilityReference(slot);
             if (ability == null) {
-                return false;
+                return FailureReason.UNKNOWN_ABILITY;
             }
-            return MKCore.getAbilityRuntimeService().canClientExecuteLoadoutAbility(
+            return MKCore.getAbilityRuntimeService().previewLoadoutAbilityFailure(
                     getPlayerData(),
                     getPlayerData(),
                     executingGroup,
@@ -54,17 +68,71 @@ public class PlayerAbilityExecutor extends AbilityExecutor {
             );
         }
 
-        MKAbility ability = info.getAbility();
-        if (ability.meetsCastingRequirements(entityData, info)) {
-            AbilityTargetSelector selector = ability.getTargetSelector();
-            AbilityContext context = selector.createContext(entityData, info);
-            if (context != null) {
-                return selector.validateContext(entityData, context);
-            } else {
-                MKCore.LOGGER.warn("CLIENT Entity {} tried to execute ability {} with a null context!", entityData.getEntity(), ability.getAbilityId());
-            }
+        if (isCasting() || entityData.getEntity().isBlocking() || MKCore.getAbilityRuntimeService().hasPendingActivation(entityData)) {
+            return FailureReason.BUSY;
         }
-        return false;
+        if (isOnGlobalCooldown() || getCurrentAbilityCooldown(info.getId()) > 0) {
+            return FailureReason.ON_COOLDOWN;
+        }
+        if (getAbilityManaCost(info) > getPlayerData().getStats().getMana()) {
+            return FailureReason.NOT_ENOUGH_RESOURCE;
+        }
+
+        MKAbility ability = info.getAbility();
+        AbilityTargetSelector selector = ability.getTargetSelector();
+        AbilityContext context = selector.createContext(entityData, info);
+        if (context != null) {
+            return selector.validateContext(entityData, context) ? null : FailureReason.INVALID_TARGETS;
+        }
+        MKCore.LOGGER.warn("CLIENT Entity {} tried to preview ability {} with a null context!", entityData.getEntity(), ability.getAbilityId());
+        return FailureReason.INVALID_TARGETS;
+    }
+
+    public void showLoadoutFailure(ResourceLocation abilityId, @javax.annotation.Nullable FailureReason failureReason) {
+        Player player = getPlayerData().getEntity();
+        Component message = buildLoadoutFailureMessage(abilityId, failureReason);
+        if (message != null) {
+            player.displayClientMessage(message, true);
+        }
+    }
+
+    public void showStatusMessage(Component message) {
+        getPlayerData().getEntity().displayClientMessage(message, true);
+    }
+
+    private @javax.annotation.Nullable Component buildLoadoutFailureMessage(ResourceLocation abilityId,
+                                                                           @javax.annotation.Nullable FailureReason failureReason) {
+        if (failureReason == null) {
+            return null;
+        }
+
+        Component abilityName = AbilityDisplayEntry.resolve(abilityId).displayName();
+        return switch (failureReason) {
+            case INVALID_TARGETS -> Component.translatableWithFallback(
+                    "mkcore.ability.feedback.invalid_target",
+                    "No valid target for %s",
+                    abilityName
+            ).withStyle(ChatFormatting.RED);
+            case NOT_ENOUGH_RESOURCE -> Component.translatableWithFallback(
+                    "mkcore.ability.feedback.not_enough_resource",
+                    "Not enough mana for %s",
+                    abilityName
+            ).withStyle(ChatFormatting.RED);
+            case ON_COOLDOWN -> Component.translatableWithFallback(
+                    "mkcore.ability.feedback.on_cooldown",
+                    "%s is not ready yet",
+                    abilityName
+            ).withStyle(ChatFormatting.RED);
+            case BUSY -> Component.translatableWithFallback(
+                    "mkcore.ability.feedback.busy",
+                    "You are already casting"
+            ).withStyle(ChatFormatting.RED);
+            default -> Component.translatableWithFallback(
+                    "mkcore.ability.feedback.unavailable",
+                    "%s cannot be used right now",
+                    abilityName
+            ).withStyle(ChatFormatting.RED);
+        };
     }
 
     public float getCurrentLoadoutAbilityCooldownPercent(AbilityGroup loadoutGroup, int slot, float partialTicks) {

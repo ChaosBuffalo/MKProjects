@@ -1,4 +1,4 @@
-// 1.21.1	2026-04-22T00:18:03.411611	Abilities2 Definitions: mkcore
+// 1.21.1	2026-04-24T23:45:28.580466	Abilities2 Definitions: mkcore
 c826503a2d05279bbba5930e4fdbe03f8e30c44c data/mkcore/mkcore/ability_definitions/test_abilities2_ai_firebolt.json
 5320f00c5b05ca9fcc2e51645052418460e1e3ec data/mkcore/mkcore/ability_definitions/test_abilities2_ai_friendly_heal.json
 e99778cc88e6b7ff917618c05a47177a64c7f8e7 data/mkcore/mkcore/ability_definitions/test_abilities2_ai_self_heal.json
@@ -18,3 +18,4 @@ ea34f9c9251509fa68ff5739cd92018e0131c5a6 data/mkcore/mkcore/ability_definitions/
 ae0e6e8c46e750963e30c7f0792926085046f9a8 data/mkcore/mkcore/ability_definitions/test_abilities2_restoring_aura.json
 5f5ddb9dbd348430a247fa0314c62910409399a5 data/mkcore/mkcore/ability_definitions/test_abilities2_self_heal.json
 831646c915a894b07d60aed63bedc5c4e4a9e283 data/mkcore/mkcore/ability_definitions/test_abilities2_spell_crit_passive.json
+28f3791dacdb16a99e115210d822fb2cf20116a4 data/mkcore/mkcore/ability_definitions/test_abilities2_targeted_firebolt.json

@@ -52,6 +52,7 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                 Map.of("amount", new AbilityValue.FloatValue(24.0f))
         ));
         add(createFirebolt());
+        add(createTargetedFirebolt());
         add(createProjectileGround());
         add(createAiSelfHeal());
         add(createAiFirebolt());
@@ -145,6 +146,73 @@ public class CoreAbilities2DefinitionProvider extends AbilityDefinitionProvider 
                 null
         ));
 
+        builder.entryPoint(AbilityArchetypes.PROJECTILE_IMPACT_ENTRY_POINT, List.of(
+                new AbilityAction.DamageAction(
+                        AbilityAction.ActionTarget.PRIMARY_ENTITY,
+                        new AbilityScalar.ParameterScalar("impact_damage"),
+                        CoreDamageTypes.FireDamage.getId()
+                )
+        ));
+        return builder.build();
+    }
+
+    private AbilityDefinitionData createTargetedFirebolt() {
+        AbilityDefinitionBuilder builder = AbilityArchetypes.projectileSpell(
+                        MKCore.makeRL("test_abilities2_targeted_firebolt"),
+                        "Abilities2 Targeted Firebolt",
+                        "A cast-time targeted firebolt used to validate the end-to-end player spell flow.",
+                        AbilityDatagenKeys.TARGET_RESOLVED_ENEMY,
+                        AbilityAction.ActionTarget.PRIMARY_ENTITY,
+                        new AbilityScalar.ConstantScalar(1.6),
+                        new AbilityScalar.ConstantScalar(0.0)
+                )
+                .presentation(new AbilityPresentation(
+                        "Abilities2 Targeted Firebolt",
+                        "A cast-time targeted firebolt used to validate the end-to-end player spell flow.",
+                        MKCore.makeRL("textures/abilities/test_ember.png"),
+                        MKCore.makeRL("particle_anim.blue_magic"),
+                        MKCore.makeRL("particle_anim.blue_magic"),
+                        MKCore.makeRL("casting_default"),
+                        MKCore.makeRL("spell_cast_default")
+                ))
+                .school(AbilityDatagenKeys.SCHOOL_EVOCATION)
+                .tag(AbilityDatagenKeys.TAG_FIRE)
+                .parameter(floatParameter("impact_damage", 8.0f, "Projectile impact damage"));
+
+        builder.activation(AbilityArchetypes.CAST_ACTIVATION_ID, new AbilityActivationDefinition(
+                ActivationKind.MANUAL,
+                AbilityArchetypes.CAST_ENTRY_POINT,
+                AbilityDatagenKeys.TARGET_RESOLVED_ENEMY,
+                List.of(new AbilityCostDefinition(
+                        CostKind.MANA,
+                        null,
+                        new AbilityScalar.ConstantScalar(12.0)
+                )),
+                List.of(new AbilityCooldownDefinition(
+                        com.chaosbuffalo.mkcore.abilities2.definition.StateScope.ABILITY_FAMILY,
+                        "ability",
+                        new AbilityScalar.ConstantScalar(40.0)
+                )),
+                null,
+                20,
+                true,
+                AbilityArchetypes.STANDARD_MANUAL_INTERRUPT,
+                InterruptRefundPolicy.NONE,
+                new ActivationBehavior.InstantBehavior()
+        ));
+        builder.delivery(AbilityArchetypes.PROJECTILE_DELIVERY_ID, new AbilityDeliveryDefinition(
+                DeliveryKind.PROJECTILE,
+                CoreEntities.ABILITY_PROJECTILE_TYPE.getId(),
+                Items.FIRE_CHARGE.builtInRegistryHolder().key().location(),
+                List.of(),
+                null,
+                null,
+                null,
+                null,
+                AbilityArchetypes.PROJECTILE_IMPACT_ACTIVATION_ID,
+                null,
+                null
+        ));
         builder.entryPoint(AbilityArchetypes.PROJECTILE_IMPACT_ENTRY_POINT, List.of(
                 new AbilityAction.DamageAction(
                         AbilityAction.ActionTarget.PRIMARY_ENTITY,
