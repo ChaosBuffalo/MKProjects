@@ -43,6 +43,6 @@ public class AddAbilityOption extends BaseRandomizationOption {
 
     @Override
     public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, int slotIndex, double difficulty) {
-        stack.set(CoreItemComponents.ITEM_ABILITY, new ItemGrantedAbility(ability));
+        stack.set(CoreItemComponents.ITEM_ABILITY, new ItemGrantedAbility(ability.value().getAbilityId()));
     }
 }
