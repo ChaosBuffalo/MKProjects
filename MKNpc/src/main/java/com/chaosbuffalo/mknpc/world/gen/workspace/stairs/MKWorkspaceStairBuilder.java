@@ -45,7 +45,7 @@ public class MKWorkspaceStairBuilder {
             return updateGeneratedState(piece, List.of(), MKWorkspaceStairMode.NONE);
         }
 
-        MKTowerWorkspaceShaftGeometry.ShaftGeometry geometry = getGenerationGeometry(workspace, piece);
+        MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry = getGenerationGeometry(workspace, piece);
         MKWorkspaceStairMode resolvedMode = resolveMode(stairConfig, geometry);
         if (resolvedMode == MKWorkspaceStairMode.LADDER) {
             return generateLadder(level, piece, geometry, stairConfig);
@@ -64,11 +64,11 @@ public class MKWorkspaceStairBuilder {
 
     private MKWorkspacePieceDefinition generateLadder(ServerLevel level,
                                                       MKWorkspacePieceDefinition piece,
-                                                      MKTowerWorkspaceShaftGeometry.ShaftGeometry geometry,
+                                                      MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry,
                                                       MKWorkspaceStairAuthoringConfig stairConfig) {
         List<BlockPos> generated = new ArrayList<>();
         BlockState ladderState = resolveLadderState(stairConfig.ladderBlock(),
-                MKTowerWorkspaceShaftGeometry.getPreferredLadderFacing(geometry));
+                MKWorkspaceVerticalAccessGeometry.getPreferredLadderFacing(geometry));
         BlockPos ladderBase = getLadderBase(geometry);
         clearShaftFootprint(level, geometry);
         for (int y = geometry.interiorMinY(); y <= geometry.interiorMaxY(); y++) {
@@ -81,7 +81,7 @@ public class MKWorkspaceStairBuilder {
 
     private MKWorkspacePieceDefinition generateStairSpiral(ServerLevel level, MKStructureWorkspace workspace,
                                                            MKWorkspacePieceDefinition piece,
-                                                           MKTowerWorkspaceShaftGeometry.ShaftGeometry geometry,
+                                                           MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry,
                                                            MKWorkspaceStairAuthoringConfig stairConfig,
                                                            MKVerticalAccessProfile profile) {
         clearShaftFootprint(level, geometry);
@@ -90,8 +90,8 @@ public class MKWorkspaceStairBuilder {
         if (perimeter.isEmpty()) {
             return updateGeneratedState(piece, List.of(), MKWorkspaceStairMode.NONE);
         }
-        int startIndex = MKTowerWorkspaceShaftGeometry.findClosestIndex(perimeter,
-                clampToBounds(MKTowerWorkspaceShaftGeometry.getPreferredStart(geometry), centerlineBounds, geometry.interiorMinY()));
+        int startIndex = MKWorkspaceVerticalAccessGeometry.findClosestIndex(perimeter,
+                clampToBounds(MKWorkspaceVerticalAccessGeometry.getPreferredStart(geometry), centerlineBounds, geometry.interiorMinY()));
         LinkedHashSet<BlockPos> generated = new LinkedHashSet<>();
         LinkedHashMap<BlockPos, BlockState> planned = new LinkedHashMap<>();
         int pathSteps = profile.getPathStepsForHeight(geometry.interiorMaxY() - geometry.interiorMinY() + 1);
@@ -152,7 +152,7 @@ public class MKWorkspaceStairBuilder {
 
     private MKWorkspacePieceDefinition generateSlabSpiral(ServerLevel level, MKStructureWorkspace workspace,
                                                           MKWorkspacePieceDefinition piece,
-                                                          MKTowerWorkspaceShaftGeometry.ShaftGeometry geometry,
+                                                          MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry,
                                                           MKWorkspaceStairAuthoringConfig stairConfig,
                                                           MKVerticalAccessProfile profile) {
         clearShaftFootprint(level, geometry);
@@ -161,8 +161,8 @@ public class MKWorkspaceStairBuilder {
         if (perimeter.isEmpty()) {
             return updateGeneratedState(piece, List.of(), MKWorkspaceStairMode.NONE);
         }
-        int startIndex = MKTowerWorkspaceShaftGeometry.findClosestIndex(perimeter,
-                clampToBounds(MKTowerWorkspaceShaftGeometry.getPreferredStart(geometry), centerlineBounds, geometry.interiorMinY()));
+        int startIndex = MKWorkspaceVerticalAccessGeometry.findClosestIndex(perimeter,
+                clampToBounds(MKWorkspaceVerticalAccessGeometry.getPreferredStart(geometry), centerlineBounds, geometry.interiorMinY()));
         int pathSteps = profile.getPathStepsForHeight(geometry.interiorMaxY() - geometry.interiorMinY() + 1);
         MKVerticalAccessProfile.BoundaryCompatibility compatibility = profile.getBoundaryCompatibilityForHeight(
                 geometry.interiorMaxY() - geometry.interiorMinY() + 1);
@@ -215,7 +215,7 @@ public class MKWorkspaceStairBuilder {
         }
     }
 
-    private void clearShaftFootprint(ServerLevel level, MKTowerWorkspaceShaftGeometry.ShaftGeometry geometry) {
+    private void clearShaftFootprint(ServerLevel level, MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry) {
         for (int x = geometry.shaftBounds().minX(); x <= geometry.shaftBounds().maxX(); x++) {
             for (int y = geometry.interiorMinY(); y <= geometry.interiorMaxY(); y++) {
                 for (int z = geometry.shaftBounds().minZ(); z <= geometry.shaftBounds().maxZ(); z++) {
@@ -231,9 +231,9 @@ public class MKWorkspaceStairBuilder {
                         connector.facing() == Direction.DOWN);
     }
 
-    private MKTowerWorkspaceShaftGeometry.ShaftGeometry getGenerationGeometry(MKStructureWorkspace workspace,
+    private MKWorkspaceVerticalAccessGeometry.ShaftGeometry getGenerationGeometry(MKStructureWorkspace workspace,
                                                                               MKWorkspacePieceDefinition piece) {
-        MKTowerWorkspaceShaftGeometry.ShaftGeometry geometry = MKTowerWorkspaceShaftGeometry.forPiece(workspace, piece);
+        MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry = MKWorkspaceVerticalAccessGeometry.forPiece(workspace, piece);
         BoundingBox bounds = geometry.shaftBounds();
         if (MKWorkspaceVerticalAccessTags.isTopCap(piece.tags())) {
             BoundingBox constrainedBounds = new BoundingBox(
@@ -244,7 +244,7 @@ public class MKWorkspaceStairBuilder {
                     geometry.interiorMinY(),
                     bounds.maxZ()
             );
-            return new MKTowerWorkspaceShaftGeometry.ShaftGeometry(constrainedBounds, geometry.interiorMinY(),
+            return new MKWorkspaceVerticalAccessGeometry.ShaftGeometry(constrainedBounds, geometry.interiorMinY(),
                     geometry.interiorMinY(), geometry.placement());
         }
         if (MKWorkspaceVerticalAccessTags.isBottomCap(piece.tags())) {
@@ -257,14 +257,14 @@ public class MKWorkspaceStairBuilder {
                     geometry.interiorMaxY(),
                     bounds.maxZ()
             );
-            return new MKTowerWorkspaceShaftGeometry.ShaftGeometry(constrainedBounds, floorY,
+            return new MKWorkspaceVerticalAccessGeometry.ShaftGeometry(constrainedBounds, floorY,
                     geometry.interiorMaxY(), geometry.placement());
         }
         return geometry;
     }
 
     private MKWorkspaceStairMode resolveMode(MKWorkspaceStairAuthoringConfig stairConfig,
-                                             MKTowerWorkspaceShaftGeometry.ShaftGeometry geometry) {
+                                             MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry) {
         MKWorkspaceStairMode mode = stairConfig.mode();
         if (mode == MKWorkspaceStairMode.AUTO) {
             return geometry.width() <= 2 || geometry.length() <= 2 ? MKWorkspaceStairMode.LADDER :
@@ -303,11 +303,11 @@ public class MKWorkspaceStairBuilder {
         return piece.withGeneratedStairs(generated, tags);
     }
 
-    private BlockPos getLadderBase(MKTowerWorkspaceShaftGeometry.ShaftGeometry geometry) {
+    private BlockPos getLadderBase(MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry) {
         BoundingBox bounds = geometry.shaftBounds();
         int centerX = (bounds.minX() + bounds.maxX()) / 2;
         int centerZ = (bounds.minZ() + bounds.maxZ()) / 2;
-        return switch (MKTowerWorkspaceShaftGeometry.getPreferredLadderFacing(geometry)) {
+        return switch (MKWorkspaceVerticalAccessGeometry.getPreferredLadderFacing(geometry)) {
             case NORTH -> new BlockPos(centerX, geometry.interiorMinY(), bounds.maxZ());
             case SOUTH -> new BlockPos(centerX, geometry.interiorMinY(), bounds.minZ());
             case EAST -> new BlockPos(bounds.minX(), geometry.interiorMinY(), centerZ);
@@ -657,4 +657,5 @@ public class MKWorkspaceStairBuilder {
         return property.getName(state.getValue(property));
     }
 }
+
 
