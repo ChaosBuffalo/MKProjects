@@ -3,11 +3,6 @@
     "start_base_name": "entry",
     "categories": [
       {
-        "pool_id": "mknpc:test_tower/entry",
-        "child_base_names": [
-          "floor_main",
-          "basement_entry"
-        ],
         "piece_metadata": {
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
@@ -21,11 +16,6 @@
         "role": "entry"
       },
       {
-        "pool_id": "mknpc:test_tower/floor_main",
-        "child_base_names": [
-          "floor_main",
-          "boss_approach"
-        ],
         "piece_metadata": {
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
@@ -39,10 +29,6 @@
         "role": "floor_main"
       },
       {
-        "pool_id": "mknpc:test_tower/boss_approach",
-        "child_base_names": [
-          "boss_cap"
-        ],
         "piece_metadata": {
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
@@ -56,8 +42,6 @@
         "role": "boss_approach"
       },
       {
-        "pool_id": "mknpc:test_tower/boss_cap",
-        "child_base_names": [],
         "piece_metadata": {
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
@@ -71,11 +55,6 @@
         "role": "boss_cap"
       },
       {
-        "pool_id": "mknpc:test_tower/basement_entry",
-        "child_base_names": [
-          "basement_main",
-          "basement_cap"
-        ],
         "piece_metadata": {
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
@@ -89,11 +68,6 @@
         "role": "basement_entry"
       },
       {
-        "pool_id": "mknpc:test_tower/basement_main",
-        "child_base_names": [
-          "basement_main",
-          "basement_cap"
-        ],
         "piece_metadata": {
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
@@ -107,8 +81,6 @@
         "role": "basement_main"
       },
       {
-        "pool_id": "mknpc:test_tower/basement_cap",
-        "child_base_names": [],
         "piece_metadata": {
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
@@ -1129,7 +1101,15 @@
         "tower_stair_placement": "center",
         "workspace_base_name": "entry",
         "workspace_piece_kind": "template",
-        "workspace_variant_index": "0"
+        "workspace_variant_index": "0",
+        "runtime_start": "true",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_vertical_level_delta": "0",
+        "runtime_allow_on_main_path": "true",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_terminal": "false",
+        "runtime_boss_only": "false"
       },
       "connectors": [
         {
@@ -1144,7 +1124,8 @@
             "y": 1,
             "z": 18
           },
-          "opening_width": 3
+          "opening_width": 3,
+          "incoming_pool": "minecraft:empty"
         },
         {
           "opening_height": 5,
@@ -1158,7 +1139,8 @@
             "y": 22,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "minecraft:empty"
         },
         {
           "opening_height": 5,
@@ -1172,7 +1154,8 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "minecraft:empty"
         }
       ],
       "shell_margin": 1,
@@ -1603,7 +1586,15 @@
         "tower_stair_placement": "center",
         "workspace_base_name": "floor_main",
         "workspace_piece_kind": "template",
-        "workspace_variant_index": "0"
+        "workspace_variant_index": "0",
+        "runtime_start": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "1",
+        "runtime_vertical_level_delta": "1",
+        "runtime_allow_on_main_path": "true",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_terminal": "false",
+        "runtime_boss_only": "false"
       },
       "connectors": [
         {
@@ -1618,7 +1609,8 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "mknpc:test_tower/connect_up"
         },
         {
           "opening_height": 5,
@@ -1632,7 +1624,8 @@
             "y": 6,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "minecraft:empty"
         }
       ],
       "shell_margin": 1,
@@ -2063,7 +2056,15 @@
         "tower_stair_placement": "center",
         "workspace_base_name": "boss_approach",
         "workspace_piece_kind": "template",
-        "workspace_variant_index": "0"
+        "workspace_variant_index": "0",
+        "runtime_start": "false",
+        "runtime_piece_role": "boss_approach",
+        "runtime_progression_delta": "1",
+        "runtime_vertical_level_delta": "1",
+        "runtime_allow_on_main_path": "true",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_terminal": "false",
+        "runtime_boss_only": "true"
       },
       "connectors": [
         {
@@ -2078,7 +2079,8 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "mknpc:test_tower/connect_up"
         },
         {
           "opening_height": 5,
@@ -2092,7 +2094,8 @@
             "y": 6,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "minecraft:empty"
         }
       ],
       "shell_margin": 1,
@@ -2295,7 +2298,15 @@
         "tower_stair_placement": "center",
         "workspace_base_name": "boss_cap",
         "workspace_piece_kind": "template",
-        "workspace_variant_index": "0"
+        "workspace_variant_index": "0",
+        "runtime_start": "false",
+        "runtime_piece_role": "boss",
+        "runtime_progression_delta": "0",
+        "runtime_vertical_level_delta": "0",
+        "runtime_allow_on_main_path": "true",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_terminal": "true",
+        "runtime_boss_only": "true"
       },
       "connectors": [
         {
@@ -2310,7 +2321,8 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "mknpc:test_tower/boss_cap"
         }
       ],
       "shell_margin": 1,
@@ -3029,7 +3041,15 @@
         "tower_stair_placement": "center",
         "workspace_base_name": "basement_entry",
         "workspace_piece_kind": "template",
-        "workspace_variant_index": "0"
+        "workspace_variant_index": "0",
+        "runtime_start": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "1",
+        "runtime_vertical_level_delta": "-1",
+        "runtime_allow_on_main_path": "true",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_terminal": "false",
+        "runtime_boss_only": "false"
       },
       "connectors": [
         {
@@ -3044,7 +3064,8 @@
             "y": 14,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "mknpc:test_tower/connect_down_entry"
         },
         {
           "opening_height": 5,
@@ -3058,7 +3079,8 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "minecraft:empty"
         }
       ],
       "shell_margin": 1,
@@ -3777,7 +3799,15 @@
         "tower_stair_placement": "center",
         "workspace_base_name": "basement_main",
         "workspace_piece_kind": "template",
-        "workspace_variant_index": "0"
+        "workspace_variant_index": "0",
+        "runtime_start": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "1",
+        "runtime_vertical_level_delta": "-1",
+        "runtime_allow_on_main_path": "true",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_terminal": "false",
+        "runtime_boss_only": "false"
       },
       "connectors": [
         {
@@ -3792,7 +3822,8 @@
             "y": 14,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "mknpc:test_tower/connect_down"
         },
         {
           "opening_height": 5,
@@ -3806,7 +3837,8 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "minecraft:empty"
         }
       ],
       "shell_margin": 1,
@@ -4561,7 +4593,15 @@
         "tower_stair_placement": "center",
         "workspace_base_name": "basement_cap",
         "workspace_piece_kind": "template",
-        "workspace_variant_index": "0"
+        "workspace_variant_index": "0",
+        "runtime_start": "false",
+        "runtime_piece_role": "terminal",
+        "runtime_progression_delta": "1",
+        "runtime_vertical_level_delta": "-1",
+        "runtime_allow_on_main_path": "true",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_terminal": "true",
+        "runtime_boss_only": "false"
       },
       "connectors": [
         {
@@ -4576,7 +4616,8 @@
             "y": 14,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "mknpc:test_tower/connect_down"
         }
       ],
       "shell_margin": 1,
@@ -5595,7 +5636,15 @@
         "tower_stair_placement": "center",
         "workspace_base_name": "entry",
         "workspace_piece_kind": "instance",
-        "workspace_variant_index": "1"
+        "workspace_variant_index": "1",
+        "runtime_start": "true",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_vertical_level_delta": "0",
+        "runtime_allow_on_main_path": "true",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_terminal": "false",
+        "runtime_boss_only": "false"
       },
       "connectors": [
         {
@@ -5610,7 +5659,8 @@
             "y": 1,
             "z": 18
           },
-          "opening_width": 3
+          "opening_width": 3,
+          "incoming_pool": "minecraft:empty"
         },
         {
           "opening_height": 5,
@@ -5624,7 +5674,8 @@
             "y": 22,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "minecraft:empty"
         },
         {
           "opening_height": 5,
@@ -5638,7 +5689,8 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "minecraft:empty"
         }
       ],
       "shell_margin": 1,
@@ -6069,7 +6121,15 @@
         "tower_stair_placement": "center",
         "workspace_base_name": "floor_main",
         "workspace_piece_kind": "instance",
-        "workspace_variant_index": "1"
+        "workspace_variant_index": "1",
+        "runtime_start": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "1",
+        "runtime_vertical_level_delta": "1",
+        "runtime_allow_on_main_path": "true",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_terminal": "false",
+        "runtime_boss_only": "false"
       },
       "connectors": [
         {
@@ -6084,7 +6144,8 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "mknpc:test_tower/connect_up"
         },
         {
           "opening_height": 5,
@@ -6098,7 +6159,8 @@
             "y": 6,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "minecraft:empty"
         }
       ],
       "shell_margin": 1,
@@ -6529,7 +6591,15 @@
         "tower_stair_placement": "center",
         "workspace_base_name": "boss_approach",
         "workspace_piece_kind": "instance",
-        "workspace_variant_index": "1"
+        "workspace_variant_index": "1",
+        "runtime_start": "false",
+        "runtime_piece_role": "boss_approach",
+        "runtime_progression_delta": "1",
+        "runtime_vertical_level_delta": "1",
+        "runtime_allow_on_main_path": "true",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_terminal": "false",
+        "runtime_boss_only": "true"
       },
       "connectors": [
         {
@@ -6544,7 +6614,8 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "mknpc:test_tower/connect_up"
         },
         {
           "opening_height": 5,
@@ -6558,7 +6629,8 @@
             "y": 6,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "minecraft:empty"
         }
       ],
       "shell_margin": 1,
@@ -6761,7 +6833,15 @@
         "tower_stair_placement": "center",
         "workspace_base_name": "boss_cap",
         "workspace_piece_kind": "instance",
-        "workspace_variant_index": "1"
+        "workspace_variant_index": "1",
+        "runtime_start": "false",
+        "runtime_piece_role": "boss",
+        "runtime_progression_delta": "0",
+        "runtime_vertical_level_delta": "0",
+        "runtime_allow_on_main_path": "true",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_terminal": "true",
+        "runtime_boss_only": "true"
       },
       "connectors": [
         {
@@ -6776,7 +6856,8 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "mknpc:test_tower/boss_cap"
         }
       ],
       "shell_margin": 1,
@@ -7495,7 +7576,15 @@
         "tower_stair_placement": "center",
         "workspace_base_name": "basement_entry",
         "workspace_piece_kind": "instance",
-        "workspace_variant_index": "1"
+        "workspace_variant_index": "1",
+        "runtime_start": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "1",
+        "runtime_vertical_level_delta": "-1",
+        "runtime_allow_on_main_path": "true",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_terminal": "false",
+        "runtime_boss_only": "false"
       },
       "connectors": [
         {
@@ -7510,7 +7599,8 @@
             "y": 14,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "mknpc:test_tower/connect_down_entry"
         },
         {
           "opening_height": 5,
@@ -7524,7 +7614,8 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "minecraft:empty"
         }
       ],
       "shell_margin": 1,
@@ -8243,7 +8334,15 @@
         "tower_stair_placement": "center",
         "workspace_base_name": "basement_main",
         "workspace_piece_kind": "instance",
-        "workspace_variant_index": "1"
+        "workspace_variant_index": "1",
+        "runtime_start": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "1",
+        "runtime_vertical_level_delta": "-1",
+        "runtime_allow_on_main_path": "true",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_terminal": "false",
+        "runtime_boss_only": "false"
       },
       "connectors": [
         {
@@ -8258,7 +8357,8 @@
             "y": 14,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "mknpc:test_tower/connect_down"
         },
         {
           "opening_height": 5,
@@ -8272,7 +8372,8 @@
             "y": 0,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "minecraft:empty"
         }
       ],
       "shell_margin": 1,
@@ -9027,7 +9128,15 @@
         "tower_stair_placement": "center",
         "workspace_base_name": "basement_cap",
         "workspace_piece_kind": "instance",
-        "workspace_variant_index": "1"
+        "workspace_variant_index": "1",
+        "runtime_start": "false",
+        "runtime_piece_role": "terminal",
+        "runtime_progression_delta": "1",
+        "runtime_vertical_level_delta": "-1",
+        "runtime_allow_on_main_path": "true",
+        "runtime_allow_on_branch_path": "false",
+        "runtime_terminal": "true",
+        "runtime_boss_only": "false"
       },
       "connectors": [
         {
@@ -9042,7 +9151,8 @@
             "y": 14,
             "z": 10
           },
-          "opening_width": 5
+          "opening_width": 5,
+          "incoming_pool": "mknpc:test_tower/connect_down"
         }
       ],
       "shell_margin": 1,

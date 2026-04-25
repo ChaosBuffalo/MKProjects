@@ -4,8 +4,13 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKConnectorRole;
 import net.minecraft.core.Direction;
 
 public record MKPlannedConnector(MKConnectorRole role, Direction facing, int openingWidth, int openingHeight,
-                                 String targetBaseName) {
+                                 String targetPoolName, String incomingPoolName) {
     public MKPlannedConnector(MKConnectorRole role, Direction facing, int openingWidth, int openingHeight) {
-        this(role, facing, openingWidth, openingHeight, null);
+        this(role, facing, openingWidth, openingHeight, null, null);
+    }
+
+    public MKPlannedConnector(MKConnectorRole role, Direction facing, int openingWidth, int openingHeight,
+                              String targetPoolName) {
+        this(role, facing, openingWidth, openingHeight, targetPoolName, null);
     }
 }

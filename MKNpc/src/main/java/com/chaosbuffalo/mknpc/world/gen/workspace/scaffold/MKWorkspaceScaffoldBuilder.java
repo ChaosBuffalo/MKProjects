@@ -297,7 +297,8 @@ public class MKWorkspaceScaffoldBuilder {
                     sourceConnector.openingHeight(),
                     sourceConnector.jigsawName(),
                     sourceConnector.jigsawTarget(),
-                    pool
+                    pool,
+                    sourceConnector.incomingPool()
             ));
         }
         return connectors;
@@ -472,7 +473,8 @@ public class MKWorkspaceScaffoldBuilder {
         BlockEntity entity = level.getBlockEntity(connectorPos);
         ResourceLocation name = ResourceLocation.fromNamespaceAndPath(workspace.namespace(), plannedConnector.role().getSerializedName());
         ResourceLocation target = ResourceLocation.fromNamespaceAndPath(workspace.namespace(), getTargetName(plannedConnector.role()));
-        ResourceLocation pool = getConnectorPool(workspace, plannedConnector.targetBaseName(), piece);
+        ResourceLocation pool = getConnectorPool(workspace, plannedConnector.targetPoolName(), piece);
+        ResourceLocation incomingPool = getIncomingConnectorPool(workspace, plannedConnector.incomingPoolName());
         if (entity instanceof JigsawBlockEntity jigsaw) {
             jigsaw.setName(name);
             jigsaw.setTarget(target);
@@ -489,7 +491,8 @@ public class MKWorkspaceScaffoldBuilder {
                 plannedConnector.openingHeight(),
                 name,
                 target,
-                pool
+                pool,
+                incomingPool
         );
     }
 
@@ -686,6 +689,13 @@ public class MKWorkspaceScaffoldBuilder {
             return ResourceLocation.parse(poolName);
         }
         return ResourceLocation.fromNamespaceAndPath(workspace.namespace(), workspace.structureName() + "/" + poolName);
+    }
+
+    private ResourceLocation getIncomingConnectorPool(MKStructureWorkspace workspace, String incomingPoolName) {
+        if (incomingPoolName == null || incomingPoolName.isBlank()) {
+            return ResourceLocation.parse("minecraft:empty");
+        }
+        return parseConnectorPool(workspace, incomingPoolName);
     }
 
     private String deriveBasePoolName(String pieceName) {

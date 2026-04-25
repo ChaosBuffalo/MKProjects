@@ -8,6 +8,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
@@ -18,6 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +41,7 @@ public record MKWorkspaceExportManifest(
         List<ExportPiece> pieces
 ) {
     private static final Codec<UUID> UUID_CODEC = Codec.STRING.xmap(UUID::fromString, UUID::toString);
+    private static final ResourceLocation EMPTY_POOL = ResourceLocation.parse("minecraft:empty");
 
     public static final Codec<MKWorkspaceExportManifest> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.INT.fieldOf("schema_version").forGetter(MKWorkspaceExportManifest::schemaVersion),
@@ -229,14 +232,10 @@ public record MKWorkspaceExportManifest(
 
         public static ExportRuntimeHints forWorkspace(MKStructureWorkspace workspace) {
             List<ExportRuntimeCategory> categories = buildCategories(workspace).stream()
-                    .filter(category -> isRuntimeCategory(category.role()))
                     .map(category -> ExportRuntimeCategory.forCategory(workspace, category))
+                    .flatMap(java.util.Optional::stream)
                     .toList();
-            String startBaseName = categories.stream()
-                    .filter(category -> category.role() == MKWorkspacePieceRole.ENTRY)
-                    .map(ExportRuntimeCategory::baseName)
-                    .findFirst()
-                    .orElse(categories.isEmpty() ? "" : categories.getFirst().baseName());
+            String startBaseName = findStartBaseName(workspace);
             return new ExportRuntimeHints(startBaseName, categories, buildRuntimePools(workspace));
         }
     }
@@ -256,26 +255,29 @@ public record MKWorkspaceExportManifest(
     public record ExportRuntimeCategory(
             String baseName,
             MKWorkspacePieceRole role,
-            ResourceLocation poolId,
-            List<String> childBaseNames,
             ExportRuntimePieceMetadata pieceMetadata
     ) {
         public static final Codec<ExportRuntimeCategory> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("base_name").forGetter(ExportRuntimeCategory::baseName),
                 pieceRoleCodec().fieldOf("role").forGetter(ExportRuntimeCategory::role),
-                ResourceLocation.CODEC.fieldOf("pool_id").forGetter(ExportRuntimeCategory::poolId),
-                Codec.STRING.listOf().fieldOf("child_base_names").forGetter(ExportRuntimeCategory::childBaseNames),
                 ExportRuntimePieceMetadata.CODEC.fieldOf("piece_metadata").forGetter(ExportRuntimeCategory::pieceMetadata)
         ).apply(instance, ExportRuntimeCategory::new));
 
-        public static ExportRuntimeCategory forCategory(MKStructureWorkspace workspace, ExportCategory category) {
-            return new ExportRuntimeCategory(
+        public static java.util.Optional<ExportRuntimeCategory> forCategory(MKStructureWorkspace workspace, ExportCategory category) {
+            java.util.Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = workspace.pieces().stream()
+                    .filter(piece -> category.baseName().equals(piece.tags().getOrDefault("workspace_base_name", piece.pieceName())))
+                    .map(MKWorkspacePieceDefinition::tags)
+                    .map(MKWorkspaceRuntimePieceInfo::fromTags)
+                    .flatMap(java.util.Optional::stream)
+                    .findFirst();
+            if (runtimeInfo.isEmpty()) {
+                return java.util.Optional.empty();
+            }
+            return java.util.Optional.of(new ExportRuntimeCategory(
                     category.baseName(),
                     category.role(),
-                    ResourceLocation.fromNamespaceAndPath(workspace.namespace(), workspace.structureName() + "/" + category.baseName()),
-                    childBaseNamesForRole(category.role()),
-                    runtimeMetadataForRole(category.role())
-            );
+                    ExportRuntimePieceMetadata.from(runtimeInfo.get())
+            ));
         }
     }
 
@@ -297,6 +299,18 @@ public record MKWorkspaceExportManifest(
                 Codec.BOOL.fieldOf("terminal").forGetter(ExportRuntimePieceMetadata::terminal),
                 Codec.BOOL.fieldOf("boss_only").forGetter(ExportRuntimePieceMetadata::bossOnly)
         ).apply(instance, ExportRuntimePieceMetadata::new));
+
+        public static ExportRuntimePieceMetadata from(MKWorkspaceRuntimePieceInfo runtimeInfo) {
+            return new ExportRuntimePieceMetadata(
+                    runtimeInfo.role(),
+                    runtimeInfo.progressionDelta(),
+                    runtimeInfo.verticalLevelDelta(),
+                    runtimeInfo.allowOnMainPath(),
+                    runtimeInfo.allowOnBranchPath(),
+                    runtimeInfo.terminal(),
+                    runtimeInfo.bossOnly()
+            );
+        }
     }
 
     public record ExportStairConfig(MKWorkspaceStairMode mode, MKWorkspaceStairRiseType riseType, int flatRunLength,
@@ -367,7 +381,8 @@ public record MKWorkspaceExportManifest(
             int openingHeight,
             ResourceLocation jigsawName,
             ResourceLocation jigsawTarget,
-            ResourceLocation targetPool
+            ResourceLocation targetPool,
+            ResourceLocation incomingPool
     ) {
         public static final Codec<ExportConnector> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 connectorRoleCodec().fieldOf("role").forGetter(ExportConnector::role),
@@ -377,7 +392,8 @@ public record MKWorkspaceExportManifest(
                 Codec.INT.fieldOf("opening_height").forGetter(ExportConnector::openingHeight),
                 ResourceLocation.CODEC.fieldOf("jigsaw_name").forGetter(ExportConnector::jigsawName),
                 ResourceLocation.CODEC.fieldOf("jigsaw_target").forGetter(ExportConnector::jigsawTarget),
-                ResourceLocation.CODEC.fieldOf("target_pool").forGetter(ExportConnector::targetPool)
+                ResourceLocation.CODEC.fieldOf("target_pool").forGetter(ExportConnector::targetPool),
+                ResourceLocation.CODEC.optionalFieldOf("incoming_pool", EMPTY_POOL).forGetter(ExportConnector::incomingPool)
         ).apply(instance, ExportConnector::new));
 
         public static ExportConnector from(MKWorkspaceConnectorDefinition connector) {
@@ -389,7 +405,8 @@ public record MKWorkspaceExportManifest(
                     connector.openingHeight(),
                     connector.jigsawName(),
                     connector.jigsawTarget(),
-                    connector.targetPool()
+                    connector.targetPool(),
+                    connector.incomingPool()
             );
         }
     }
@@ -480,52 +497,51 @@ public record MKWorkspaceExportManifest(
         ).apply(instance, ExportPiecePlacement::new));
     }
 
-    private static List<String> childBaseNamesForRole(MKWorkspacePieceRole role) {
-        return switch (role) {
-            case ENTRY -> List.of("floor_main", "basement_entry");
-            case FLOOR_MAIN -> List.of("floor_main", "boss_approach");
-            case BOSS_APPROACH -> List.of("boss_cap");
-            case BASEMENT_ENTRY, BASEMENT_MAIN -> List.of("basement_main", "basement_cap");
-            case BASEMENT_CAP, BOSS_CAP -> List.of();
-            default -> List.of();
-        };
-    }
-
-    private static ExportRuntimePieceMetadata runtimeMetadataForRole(MKWorkspacePieceRole role) {
-        return switch (role) {
-            case FLOOR_MAIN -> new ExportRuntimePieceMetadata(MKJigsawPieceRole.ROOM, 1, 1, true, false, false, false);
-            case BOSS_APPROACH -> new ExportRuntimePieceMetadata(MKJigsawPieceRole.BOSS_APPROACH, 1, 1, true, false, false, true);
-            case BASEMENT_ENTRY, BASEMENT_MAIN -> new ExportRuntimePieceMetadata(MKJigsawPieceRole.ROOM, 1, -1, true, false, false, false);
-            case BASEMENT_CAP -> new ExportRuntimePieceMetadata(MKJigsawPieceRole.TERMINAL, 1, -1, true, false, true, false);
-            case BOSS_CAP -> new ExportRuntimePieceMetadata(MKJigsawPieceRole.BOSS, 0, 0, true, false, true, true);
-            default -> new ExportRuntimePieceMetadata(MKJigsawPieceRole.ROOM, 0, 0, true, false, false, false);
-        };
+    private static String findStartBaseName(MKStructureWorkspace workspace) {
+        LinkedHashSet<String> startBaseNames = workspace.pieces().stream()
+                .filter(piece -> !"template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance")))
+                .filter(piece -> MKWorkspaceRuntimePieceInfo.fromTags(piece.tags()).map(MKWorkspaceRuntimePieceInfo::start).orElse(false))
+                .map(piece -> piece.tags().getOrDefault("workspace_base_name", piece.pieceName()))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        if (startBaseNames.isEmpty()) {
+            throw new IllegalStateException("Workspace " + workspace.namespace() + ":" + workspace.structureName() +
+                    " did not define a runtime start piece");
+        }
+        if (startBaseNames.size() > 1) {
+            throw new IllegalStateException("Workspace " + workspace.namespace() + ":" + workspace.structureName() +
+                    " defined multiple runtime start pieces " + startBaseNames);
+        }
+        return startBaseNames.getFirst();
     }
 
     private static List<ExportRuntimePool> buildRuntimePools(MKStructureWorkspace workspace) {
-        if (workspace.familyType() != MKStructureFamilyType.TOWER) {
-            return List.of();
+        LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool = new LinkedHashMap<>();
+        for (MKWorkspacePieceDefinition piece : workspace.pieces()) {
+            if ("template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance"))) {
+                continue;
+            }
+            String baseName = piece.tags().getOrDefault("workspace_base_name", piece.pieceName());
+            for (MKWorkspaceConnectorDefinition connector : piece.connectors()) {
+                if (connector.incomingPool().equals(EMPTY_POOL)) {
+                    continue;
+                }
+                childrenByPool.computeIfAbsent(connector.incomingPool(), key -> new LinkedHashSet<>()).add(baseName);
+            }
         }
-        return List.of(
-                runtimePool(workspace, "connect_up", List.of("floor_main", "boss_approach")),
-                runtimePool(workspace, "connect_down_entry", List.of("basement_entry")),
-                runtimePool(workspace, "connect_down", List.of("basement_main", "basement_cap")),
-                runtimePool(workspace, "boss_cap", List.of("boss_cap"))
-        );
+        return childrenByPool.entrySet().stream()
+                .map(entry -> new ExportRuntimePool(
+                        derivePoolBaseName(workspace, entry.getKey()),
+                        entry.getKey(),
+                        List.copyOf(entry.getValue())
+                ))
+                .toList();
     }
 
-    private static boolean isRuntimeCategory(MKWorkspacePieceRole role) {
-        return switch (role) {
-            case ENTRY_STAIRS_UP, STAIRS_UP, STAIRS_DOWN -> false;
-            default -> true;
-        };
-    }
-
-    private static ExportRuntimePool runtimePool(MKStructureWorkspace workspace, String baseName, List<String> childBaseNames) {
-        return new ExportRuntimePool(
-                baseName,
-                ResourceLocation.fromNamespaceAndPath(workspace.namespace(), workspace.structureName() + "/" + baseName),
-                childBaseNames
-        );
+    private static String derivePoolBaseName(MKStructureWorkspace workspace, ResourceLocation poolId) {
+        String prefix = workspace.structureName() + "/";
+        if (poolId.getNamespace().equals(workspace.namespace()) && poolId.getPath().startsWith(prefix)) {
+            return poolId.getPath().substring(prefix.length());
+        }
+        return poolId.toString();
     }
 }

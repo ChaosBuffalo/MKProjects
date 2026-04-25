@@ -13,7 +13,6 @@ import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -46,22 +45,10 @@ public final class ExportedWorkspacePoolBootstrap {
                 rigidPool(empty, exportedVariants(manifest,
                         piecesByBaseName.getOrDefault(manifest.runtimeHints().startBaseName(), List.of()))));
 
-        Map<String, MKWorkspaceExportManifest.ExportRuntimePool> runtimePools = new LinkedHashMap<>();
-        for (MKWorkspaceExportManifest.ExportRuntimeCategory category : manifest.runtimeHints().categories()) {
-            runtimePools.put(category.baseName(), new MKWorkspaceExportManifest.ExportRuntimePool(
-                    category.baseName(),
-                    category.poolId(),
-                    category.childBaseNames()
-            ));
-        }
         for (MKWorkspaceExportManifest.ExportRuntimePool pool : manifest.runtimeHints().pools()) {
-            runtimePools.put(pool.baseName(), pool);
-        }
-
-        for (MKWorkspaceExportManifest.ExportRuntimePool pool : runtimePools.values()) {
             List<Pair<Function<StructureTemplatePool.Projection, ? extends StructurePoolElement>, Integer>> children = pool.childBaseNames().stream()
                     .flatMap(childBaseName -> exportedVariants(manifest, piecesByBaseName.getOrDefault(childBaseName, List.of())).stream())
-                    .toList();
+                    .collect(Collectors.toList());
             register(context, pool.poolId(), rigidPool(empty, children));
         }
     }

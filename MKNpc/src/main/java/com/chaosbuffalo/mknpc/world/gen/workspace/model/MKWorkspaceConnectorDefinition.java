@@ -6,6 +6,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
 public class MKWorkspaceConnectorDefinition {
+    private static final ResourceLocation EMPTY_POOL = ResourceLocation.parse("minecraft:empty");
+
     private final MKConnectorRole role;
     private final Direction facing;
     private final BlockPos relativePos;
@@ -14,10 +16,11 @@ public class MKWorkspaceConnectorDefinition {
     private final ResourceLocation jigsawName;
     private final ResourceLocation jigsawTarget;
     private final ResourceLocation targetPool;
+    private final ResourceLocation incomingPool;
 
     public MKWorkspaceConnectorDefinition(MKConnectorRole role, Direction facing, BlockPos relativePos, int openingWidth,
                                           int openingHeight, ResourceLocation jigsawName, ResourceLocation jigsawTarget,
-                                          ResourceLocation targetPool) {
+                                          ResourceLocation targetPool, ResourceLocation incomingPool) {
         this.role = role;
         this.facing = facing;
         this.relativePos = relativePos;
@@ -26,6 +29,7 @@ public class MKWorkspaceConnectorDefinition {
         this.jigsawName = jigsawName;
         this.jigsawTarget = jigsawTarget;
         this.targetPool = targetPool;
+        this.incomingPool = incomingPool;
     }
 
     public static MKWorkspaceConnectorDefinition fromTag(CompoundTag tag) {
@@ -37,7 +41,8 @@ public class MKWorkspaceConnectorDefinition {
                 tag.getInt("openingHeight"),
                 ResourceLocation.parse(tag.getString("jigsawName")),
                 ResourceLocation.parse(tag.getString("jigsawTarget")),
-                ResourceLocation.parse(tag.getString("targetPool"))
+                ResourceLocation.parse(tag.getString("targetPool")),
+                tag.contains("incomingPool") ? ResourceLocation.parse(tag.getString("incomingPool")) : EMPTY_POOL
         );
     }
 
@@ -51,6 +56,7 @@ public class MKWorkspaceConnectorDefinition {
         tag.putString("jigsawName", jigsawName.toString());
         tag.putString("jigsawTarget", jigsawTarget.toString());
         tag.putString("targetPool", targetPool.toString());
+        tag.putString("incomingPool", incomingPool.toString());
         return tag;
     }
 
@@ -84,5 +90,9 @@ public class MKWorkspaceConnectorDefinition {
 
     public ResourceLocation targetPool() {
         return targetPool;
+    }
+
+    public ResourceLocation incomingPool() {
+        return incomingPool;
     }
 }

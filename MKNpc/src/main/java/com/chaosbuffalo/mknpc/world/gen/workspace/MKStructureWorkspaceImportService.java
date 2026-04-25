@@ -205,7 +205,8 @@ public class MKStructureWorkspaceImportService {
                 Direction.byName(connector.facing()),
                 connector.openingWidth(),
                 connector.openingHeight(),
-                connector.targetPool().toString()
+                connector.targetPool().toString(),
+                connector.incomingPool().toString()
         );
     }
 
@@ -251,7 +252,8 @@ public class MKStructureWorkspaceImportService {
                 connector.openingHeight(),
                 connector.jigsawName(),
                 connector.jigsawTarget(),
-                connector.targetPool()
+                connector.targetPool(),
+                connector.incomingPool()
         );
     }
 
