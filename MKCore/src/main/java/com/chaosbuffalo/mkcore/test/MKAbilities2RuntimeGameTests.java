@@ -118,6 +118,8 @@ public class MKAbilities2RuntimeGameTests {
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_friendly_heal");
     private static final ResourceLocation SELF_HEAL_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_self_heal");
+    private static final UUID EVENT_PAYLOAD_ENTITY_REF_PROBE_ID =
+            UUID.fromString("11111111-2222-3333-4444-555555555555");
     private static final ResourceLocation MENDING_CHANNEL_ABILITY =
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "test_abilities2_mending_channel");
     private static final ResourceLocation RESTORING_AURA_ABILITY =
@@ -468,7 +470,8 @@ public class MKAbilities2RuntimeGameTests {
                                 "impact_rating", new AbilityValue.FloatValue(2.0f),
                                 "critical", new AbilityValue.BoolValue(true),
                                 "phase", new AbilityValue.StringValue("burst"),
-                                "damage_type", new AbilityValue.ResourceLocationValue(CoreDamageTypes.FireDamage.getId())
+                                "damage_type", new AbilityValue.ResourceLocationValue(CoreDamageTypes.FireDamage.getId()),
+                                "actor_ref", new AbilityValue.EntityRefValue(EVENT_PAYLOAD_ENTITY_REF_PROBE_ID)
                         )
                 ),
                 false,
@@ -489,6 +492,8 @@ public class MKAbilities2RuntimeGameTests {
                 "event_payload_string should evaluate string payload values");
         helper.assertTrue(stateBool(snapshot, "damage_type_gate"),
                 "event_payload_resource_location should evaluate resource location payload values");
+        helper.assertTrue(stateBool(snapshot, "actor_ref_gate"),
+                "event_payload_entity_ref should evaluate entity-ref payload values");
         helper.succeed();
     }
 
@@ -519,7 +524,8 @@ public class MKAbilities2RuntimeGameTests {
                                 "impact_rating", new AbilityValue.FloatValue(0.5f),
                                 "critical", new AbilityValue.BoolValue(false),
                                 "phase", new AbilityValue.StringValue("fizzle"),
-                                "damage_type", new AbilityValue.ResourceLocationValue(CoreDamageTypes.FrostDamage.getId())
+                                "damage_type", new AbilityValue.ResourceLocationValue(CoreDamageTypes.FrostDamage.getId()),
+                                "actor_ref", new AbilityValue.EntityRefValue(UUID.randomUUID())
                         )
                 ),
                 false,
@@ -540,6 +546,8 @@ public class MKAbilities2RuntimeGameTests {
                 "event_payload_string should be false when the string payload does not match");
         helper.assertFalse(stateBool(snapshot, "damage_type_gate"),
                 "event_payload_resource_location should be false when the resource location does not match");
+        helper.assertFalse(stateBool(snapshot, "actor_ref_gate"),
+                "event_payload_entity_ref should be false when the entity ref does not match");
         helper.succeed();
     }
 
@@ -2370,6 +2378,10 @@ public class MKAbilities2RuntimeGameTests {
                 payloadStateBranch("event_payload_resource_location", "damage_type_gate", Map.of(
                         "key", stringConditionValue("damage_type"),
                         "value", stringConditionValue(CoreDamageTypes.FireDamage.getId().toString())
+                )),
+                payloadStateBranch("event_payload_entity_ref", "actor_ref_gate", Map.of(
+                        "key", stringConditionValue("actor_ref"),
+                        "value", stringConditionValue(EVENT_PAYLOAD_ENTITY_REF_PROBE_ID.toString())
                 ))
         ));
 

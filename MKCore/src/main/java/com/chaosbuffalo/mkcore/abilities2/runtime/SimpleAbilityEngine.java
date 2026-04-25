@@ -1537,6 +1537,13 @@ public class SimpleAbilityEngine implements AbilityEngine {
                 yield payload != null && compareResourceLocations(payload.asResourceLocation(key),
                         conditionOperator(condition), requiredResourceLocation(condition, "value"));
             }
+            case "event_payload_entity_ref" -> {
+                String key = requiredString(condition, "key");
+                AbilityValue payload = eventPayloadValueOfKind(context, key, AbilityValueKind.ENTITY_REF,
+                        condition.type());
+                yield payload != null && compareEntityRefs(payload.asEntityRef(key), conditionOperator(condition),
+                        requiredEntityRef(condition, "value"));
+            }
             case "param_bool" -> context.getBoolParam(requiredString(condition, "parameter")) == optionalBoolean(condition, "value", true);
             case "var_bool" -> context.getBoolVar(requiredString(condition, "name")) == optionalBoolean(condition, "value", true);
             case "param_int" -> compareInts(
@@ -1684,6 +1691,15 @@ public class SimpleAbilityEngine implements AbilityEngine {
             case NE -> !actual.equals(expected);
             case GT, GTE, LT, LTE -> throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
                     "Resource location conditions only support eq/ne operators");
+        };
+    }
+
+    private boolean compareEntityRefs(UUID actual, ConditionOperator operator, UUID expected) {
+        return switch (operator) {
+            case EQ -> actual.equals(expected);
+            case NE -> !actual.equals(expected);
+            case GT, GTE, LT, LTE -> throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Entity ref conditions only support eq/ne operators");
         };
     }
 
@@ -1910,6 +1926,15 @@ public class SimpleAbilityEngine implements AbilityEngine {
                     "Condition " + condition.type() + " field " + key + " must be a valid resource location");
         }
         return value;
+    }
+
+    private UUID requiredEntityRef(AbilityConditionDefinition condition, String key) {
+        try {
+            return UUID.fromString(requiredString(condition, key));
+        } catch (IllegalArgumentException ignored) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Condition " + condition.type() + " field " + key + " must be a valid UUID");
+        }
     }
 
     private void emitInvocationStarted(AbilityInvocation invocation) {
