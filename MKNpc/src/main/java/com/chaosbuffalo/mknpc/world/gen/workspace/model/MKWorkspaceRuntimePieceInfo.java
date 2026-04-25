@@ -66,11 +66,6 @@ public record MKWorkspaceRuntimePieceInfo(
     }
 
     private static MKJigsawPieceRole parseRole(String serializedName) {
-        for (MKJigsawPieceRole role : MKJigsawPieceRole.values()) {
-            if (role.getSerializedName().equals(serializedName)) {
-                return role;
-            }
-        }
-        throw new IllegalArgumentException("Unknown runtime piece role: " + serializedName);
+        return MKJigsawPieceRole.fromSerializedName(serializedName);
     }
 }
