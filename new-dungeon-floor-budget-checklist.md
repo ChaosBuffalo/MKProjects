@@ -39,8 +39,10 @@ Recommended model: Style A
     - `mainForward`
     - `mainBack`
     - `branch`
-    - `stairsDown`
-    - `stairsUp`
+    - `connectDown`
+    - `connectUp`
+    - `stairInsertDown`
+    - `stairInsertUp`
     - `bossForward`
     - `bossBack`
 - Add a codec for this type
@@ -76,8 +78,10 @@ Definition of done:
     - `MAIN_FORWARD`
     - `MAIN_BACK`
     - `BRANCH`
-    - `STAIRS_DOWN`
-    - `STAIRS_UP`
+    - `CONNECT_DOWN`
+    - `CONNECT_UP`
+    - `STAIR_INSERT_DOWN`
+    - `STAIR_INSERT_UP`
     - `BOSS_FORWARD`
     - `BOSS_BACK`
     - `ROOM`

@@ -2,7 +2,7 @@
 
 ## Controlling Total Floors and Vertical Progression
 
-Yes. The cleanest way is to stop thinking in raw block height and start treating “floor count” as an explicit generation budget.
+Yes. The cleanest way is to stop thinking in raw block height and start treating "floor count" as an explicit generation budget.
 
 The best model is:
 
@@ -13,7 +13,7 @@ The best model is:
 - enforce progression-floor limits explicitly
 - gate which pools may be used based on progression floor index
 
-So instead of hoping the geometry produces the right number of levels, generation knows “this run is supposed to have 4 floors” and only allows pieces that fit that plan.
+So instead of hoping the geometry produces the right number of levels, generation knows "this run is supposed to have 4 floors" and only allows pieces that fit that plan.
 
 For the recommended Style A model:
 
