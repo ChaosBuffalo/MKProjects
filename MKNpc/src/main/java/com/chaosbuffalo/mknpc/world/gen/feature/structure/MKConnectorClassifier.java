@@ -14,10 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public final class MKConnectorClassifier {
-    private static final Map<String, MKConnectorRole> LEGACY_PATH_ALIASES = Map.of(
-            "stairs_down", MKConnectorRole.CONNECT_DOWN,
-            "stairs_up", MKConnectorRole.CONNECT_UP
-    );
     private static final ConcurrentMap<MKDungeonLayoutSettings, ConnectorClassificationRules> RULES_BY_SETTINGS =
             new ConcurrentHashMap<>();
 
@@ -52,11 +48,6 @@ public final class MKConnectorClassifier {
             MKConnectorRole direct = byName.get(name);
             if (direct != null) {
                 return direct;
-            }
-
-            MKConnectorRole alias = LEGACY_PATH_ALIASES.get(name.getPath());
-            if (alias != null) {
-                return alias;
             }
 
             if (poolKey.equals(Pools.EMPTY)) {
