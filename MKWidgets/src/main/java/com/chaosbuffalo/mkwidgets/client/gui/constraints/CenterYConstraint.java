@@ -3,6 +3,9 @@ package com.chaosbuffalo.mkwidgets.client.gui.constraints;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.IMKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 
+/**
+ * Vertically centers a widget within the layout's usable height.
+ */
 public class CenterYConstraint extends BaseConstraint {
 
     @Override

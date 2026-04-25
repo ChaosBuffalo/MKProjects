@@ -12,6 +12,13 @@ import javax.annotation.Nullable;
 import java.util.LinkedList;
 import java.util.UUID;
 
+/**
+ * Default concrete implementation of {@link IMKWidget}.
+ * <p>
+ * {@code MKWidget} provides the shared state for most MKWidgets controls: parent/child ownership, screen
+ * attachment, bounds, hover timing, visibility and enabled flags, optional focus support, tooltip handling,
+ * and debug rendering.
+ */
 public class MKWidget implements IMKWidget {
     private final UUID id;
     private final LinkedList<IMKWidget> children;
@@ -32,6 +39,14 @@ public class MKWidget implements IMKWidget {
     private boolean canFocus;
     private Component tooltip;
 
+    /**
+     * Creates a widget with explicit bounds and no parent or screen attachment.
+     *
+     * @param x left position
+     * @param y top position
+     * @param width widget width
+     * @param height widget height
+     */
     public MKWidget(int x, int y, int width, int height) {
         id = UUID.randomUUID();
         this.x = x;
@@ -57,6 +72,11 @@ public class MKWidget implements IMKWidget {
         return canFocus;
     }
 
+    /**
+     * Enables or disables participation in screen focus traversal.
+     *
+     * @param canFocus {@code true} if this widget can receive focus
+     */
     public void setCanFocus(boolean canFocus) {
         this.canFocus = canFocus;
     }
@@ -71,17 +91,31 @@ public class MKWidget implements IMKWidget {
         return children;
     }
 
+    /**
+     * Updates this widget's parent reference.
+     *
+     * @param parent parent widget, or {@code null} if detached
+     * @return this widget
+     */
     @Override
     public IMKWidget setParent(IMKWidget parent) {
         this.parent = parent;
         return this;
     }
 
+    /**
+     * Enables or disables debug bounds drawing for this widget.
+     *
+     * @param value {@code true} to render debug bounds
+     */
     @Override
     public void setDrawDebug(boolean value) {
         drawDebug = value;
     }
 
+    /**
+     * Default long-hover behavior that schedules this widget's tooltip for post-render drawing.
+     */
     @Override
     public void longHoverDraw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         IMKScreen screen = getScreen();
@@ -92,6 +126,12 @@ public class MKWidget implements IMKWidget {
         }
     }
 
+    /**
+     * Updates the screen attachment for this widget.
+     *
+     * @param screen owning screen, or {@code null} if detached
+     * @return this widget
+     */
     @Override
     public IMKWidget setScreen(IMKScreen screen) {
         this.screen = screen;
@@ -116,6 +156,11 @@ public class MKWidget implements IMKWidget {
         return this;
     }
 
+    /**
+     * Sets the color used by the default debug bounds renderer.
+     *
+     * @param color packed ARGB color
+     */
     @Override
     public void setDebugColor(int color) {
         debugColor = color;
@@ -126,6 +171,9 @@ public class MKWidget implements IMKWidget {
         return debugColor;
     }
 
+    /**
+     * Default debug bounds renderer that fills the widget rectangle with the configured debug color.
+     */
     @Override
     public void drawDebugBounds(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         graphics.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), getDebugColor());
@@ -245,6 +293,9 @@ public class MKWidget implements IMKWidget {
         return this;
     }
 
+    /**
+     * Clears the tooltip used by the default long-hover implementation.
+     */
     @Override
     public void clearTooltip() {
         tooltip = null;

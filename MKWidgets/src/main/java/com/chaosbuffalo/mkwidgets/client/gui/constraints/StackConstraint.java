@@ -5,6 +5,9 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 
 import java.util.UUID;
 
+/**
+ * Positions widgets sequentially based on the previous child in a layout.
+ */
 public enum StackConstraint implements IConstraint {
     VERTICAL {
         @Override

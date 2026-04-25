@@ -7,6 +7,11 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 
+/**
+ * Widget that draws a textured image region.
+ * <p>
+ * The widget supports both drawing an entire texture and drawing a sub-region from a larger source atlas.
+ */
 public class MKImage extends MKWidget {
     private ResourceLocation imageLoc;
     private int texU;
@@ -17,10 +22,16 @@ public class MKImage extends MKWidget {
     private int sourceHeight;
     protected IntColor color;
 
+    /**
+     * Creates an image widget that uses the entire texture as its source region.
+     */
     public MKImage(int x, int y, int width, int height, ResourceLocation imageLoc) {
         this(x, y, width, height, width, height, 0, 0, width, height, imageLoc);
     }
 
+    /**
+     * Creates an image widget backed by a texture sub-region.
+     */
     public MKImage(int x, int y, int width, int height, int sourceWidth,
                    int sourceHeight, int imageU, int imageV,
                    int imageWidth, int imageHeight,
@@ -45,6 +56,11 @@ public class MKImage extends MKWidget {
         return color;
     }
 
+    /**
+     * Sets the tint color applied while drawing the image.
+     *
+     * @param color tint color
+     */
     public void setColor(IntColor color) {
         this.color = color;
     }

@@ -10,6 +10,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
+/**
+ * Default constraint-based layout widget.
+ * <p>
+ * {@code MKLayout} stores constraints per child and recomputes child geometry lazily before drawing. This
+ * makes it the general-purpose container for absolute-plus-constraint arrangements, while subclasses provide
+ * common specialized policies on top of the same engine.
+ */
 public class MKLayout extends MKWidget implements IMKLayout {
     private int paddingLeft;
     private int paddingRight;
@@ -22,16 +29,30 @@ public class MKLayout extends MKWidget implements IMKLayout {
     private boolean needsRecompute;
     private HashMap<UUID, ArrayList<IConstraint>> constraints;
 
+    /**
+     * Creates a layout with explicit screen-space bounds.
+     *
+     * @param x left position
+     * @param y top position
+     * @param width layout width
+     * @param height layout height
+     */
     public MKLayout(int x, int y, int width, int height) {
         super(x, y, width, height);
         constraints = new HashMap<>();
         needsRecompute = false;
     }
 
+    /**
+     * Marks this layout so it recomputes child geometry before the next draw.
+     */
     public void flagNeedsRecompute() {
         needsRecompute = true;
     }
 
+    /**
+     * Forces nested child layouts to resolve themselves before this layout positions them.
+     */
     public void computeChildLayouts() {
         for (IMKWidget child : getChildren()) {
             if (child instanceof MKLayout) {
@@ -42,6 +63,9 @@ public class MKLayout extends MKWidget implements IMKLayout {
         }
     }
 
+    /**
+     * Runs a full layout pass over child widgets.
+     */
     public void recomputeChildren() {
         computeChildLayouts();
         preLayout();
@@ -61,6 +85,9 @@ public class MKLayout extends MKWidget implements IMKLayout {
         flagNeedsRecompute();
     }
 
+    /**
+     * Removes one registered constraint from a child widget and schedules a relayout.
+     */
     @Override
     public void removeConstraintFromWidget(IConstraint constraint, IMKWidget widget) {
         if (constraints.containsKey(widget.getId())) {
@@ -70,6 +97,12 @@ public class MKLayout extends MKWidget implements IMKLayout {
         }
     }
 
+    /**
+     * Applies all currently registered constraints for one child widget.
+     *
+     * @param widget child widget being updated
+     * @param widgetIndex child index within the layout
+     */
     public void applyConstraints(IMKWidget widget, int widgetIndex) {
         if (constraints.containsKey(widget.getId())) {
             ArrayList<IConstraint> widgetConstraints = constraints.get(widget.getId());
@@ -88,6 +121,9 @@ public class MKLayout extends MKWidget implements IMKLayout {
     }
 
 
+    /**
+     * Clears all child widgets and marks the layout dirty.
+     */
     @Override
     public void clearWidgets() {
         super.clearWidgets();
@@ -124,6 +160,9 @@ public class MKLayout extends MKWidget implements IMKLayout {
     }
 
 
+    /**
+     * Removes a child widget, clears any constraints attached to it, and schedules a relayout.
+     */
     @Override
     public void removeWidget(IMKWidget widget) {
         super.removeWidget(widget);
@@ -131,6 +170,9 @@ public class MKLayout extends MKWidget implements IMKLayout {
         flagNeedsRecompute();
     }
 
+    /**
+     * Removes all constraints registered for the given child widget.
+     */
     @Override
     public void clearWidgetConstraints(IMKWidget widget) {
         if (constraints.containsKey(widget.getId())) {
@@ -139,11 +181,26 @@ public class MKLayout extends MKWidget implements IMKLayout {
         }
     }
 
+    /**
+     * Immediately recomputes child geometry instead of waiting for the next draw call.
+     */
     public void manualRecompute() {
         recomputeChildren();
         needsRecompute = false;
     }
 
+    /**
+     * Draws the layout after ensuring child geometry is up to date.
+     * <p>
+     * This preserves the normal widget draw lifecycle, but inserts a lazy recompute step before any visual
+     * work occurs so child constraints are resolved against the latest layout state.
+     *
+     * @param graphics active GUI graphics context
+     * @param mc active client instance
+     * @param mouseX current mouse x coordinate
+     * @param mouseY current mouse y coordinate
+     * @param partialTicks current partial tick value
+     */
     @Override
     public void drawWidget(GuiGraphics graphics, Minecraft mc, int mouseX, int mouseY, float partialTicks) {
         if (needsRecompute) {
@@ -190,20 +247,39 @@ public class MKLayout extends MKWidget implements IMKLayout {
         return this;
     }
 
+    /**
+     * Default child layout implementation: apply constraints, then run the post-child hook.
+     */
     @Override
     public void layoutWidget(IMKWidget widget, int index) {
         applyConstraints(widget, index);
         postLayoutWidget(widget, index);
     }
 
+    /**
+     * Hook for subclasses to apply additional logic after constraints have been evaluated for one child.
+     *
+     * @param widget the child that was just laid out
+     * @param index the child's index in layout order
+     */
     public void postLayoutWidget(IMKWidget widget, int index) {
 
     }
 
+    /**
+     * Sets layout width without marking the layout dirty.
+     * <p>
+     * Intended for subclasses that compute their own size during layout.
+     */
     protected void skipComputeSetWidth(int newWidth) {
         super.setWidth(newWidth);
     }
 
+    /**
+     * Sets layout height without marking the layout dirty.
+     * <p>
+     * Intended for subclasses that compute their own size during layout.
+     */
     protected void skipComputeSetHeight(int newHeight) {
         super.setHeight(newHeight);
     }

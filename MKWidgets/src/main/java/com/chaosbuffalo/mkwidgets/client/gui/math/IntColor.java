@@ -1,5 +1,8 @@
 package com.chaosbuffalo.mkwidgets.client.gui.math;
 
+/**
+ * Convenience wrapper for an ARGB integer color with pre-split channel accessors.
+ */
 public class IntColor {
     private int colorInt;
     private int a;
@@ -7,6 +10,11 @@ public class IntColor {
     private int g;
     private int b;
 
+    /**
+     * Creates a color from a packed ARGB integer.
+     *
+     * @param color packed ARGB color
+     */
     public IntColor(int color) {
         a = color >> 24 & 255;
         r = color >> 16 & 255;
@@ -15,6 +23,14 @@ public class IntColor {
         colorInt = color;
     }
 
+    /**
+     * Creates a color from explicit channels in red, green, blue, alpha order.
+     *
+     * @param r red component in the range {@code [0, 255]}
+     * @param g green component in the range {@code [0, 255]}
+     * @param b blue component in the range {@code [0, 255]}
+     * @param a alpha component in the range {@code [0, 255]}
+     */
     public IntColor(int r, int g, int b, int a) {
         this.r = r;
         this.g = g;

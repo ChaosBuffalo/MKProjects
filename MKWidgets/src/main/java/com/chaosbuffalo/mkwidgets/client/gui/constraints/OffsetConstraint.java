@@ -4,12 +4,23 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.IMKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 
 
+/**
+ * Applies a fixed pixel offset relative to the owning layout's origin.
+ */
 public class OffsetConstraint extends BaseConstraint {
     private final int x;
     private final int y;
     private final boolean doX;
     private final boolean doY;
 
+    /**
+     * Creates an offset constraint that may affect x, y, or both coordinates.
+     *
+     * @param x horizontal offset from the layout origin
+     * @param y vertical offset from the layout origin
+     * @param doX whether to apply the x offset
+     * @param doY whether to apply the y offset
+     */
     public OffsetConstraint(int x, int y, boolean doX, boolean doY) {
         this.x = x;
         this.y = y;
@@ -17,6 +28,12 @@ public class OffsetConstraint extends BaseConstraint {
         this.doY = doY;
     }
 
+    /**
+     * Creates an offset constraint that applies both coordinates.
+     *
+     * @param x horizontal offset from the layout origin
+     * @param y vertical offset from the layout origin
+     */
     public OffsetConstraint(int x, int y) {
         this(x, y, true, true);
     }

@@ -9,6 +9,12 @@ import net.minecraft.client.gui.GuiGraphics;
 import javax.annotation.Nullable;
 import java.util.Iterator;
 
+/**
+ * Widget that displays a single child inside a scrollable viewport.
+ * <p>
+ * The scroll view transforms draw and input coordinates for its content, optionally clips to its own bounds,
+ * and can clamp scrolling so the content remains inside the viewport with configurable margins.
+ */
 public class MKScrollView extends MKWidget {
 
     private double offsetX;
@@ -26,6 +32,15 @@ public class MKScrollView extends MKWidget {
     private boolean drawScrollBars;
     private static final int SCROLL_BAR_WIDTH = 1;
 
+    /**
+     * Creates a scroll view.
+     *
+     * @param x left position
+     * @param y top position
+     * @param width viewport width
+     * @param height viewport height
+     * @param clipBounds whether to scissor child drawing to the viewport
+     */
     public MKScrollView(int x, int y, int width, int height,
                         boolean clipBounds) {
         super(x, y, width, height);
@@ -42,10 +57,19 @@ public class MKScrollView extends MKWidget {
         drawScrollBars = true;
     }
 
+    /**
+     * Creates a clipped scroll view.
+     */
     public MKScrollView(int x, int y, int width, int height) {
         this(x, y, width, height, true);
     }
 
+    /**
+     * Sets how much vertical offset is applied for each scroll wheel delta unit.
+     *
+     * @param vel scroll velocity multiplier
+     * @return this widget
+     */
     public MKScrollView setScrollVelocity(double vel) {
         scrollVelocity = vel;
         return this;
@@ -164,6 +188,9 @@ public class MKScrollView extends MKWidget {
         return this;
     }
 
+    /**
+     * Centers the child horizontally within the viewport using the current child width.
+     */
     public void centerContentX() {
         if (!getChildren().isEmpty()) {
             IMKWidget child = this.getChildren().getFirst();
@@ -171,6 +198,9 @@ public class MKScrollView extends MKWidget {
         }
     }
 
+    /**
+     * Centers the child vertically within the viewport using the current child height.
+     */
     public void centerContentY() {
         if (!getChildren().isEmpty()) {
             IMKWidget child = this.getChildren().getFirst();
@@ -178,14 +208,23 @@ public class MKScrollView extends MKWidget {
         }
     }
 
+    /**
+     * Resets the viewport to the top-most vertical position.
+     */
     public void setToTop() {
         setOffsetY(0);
     }
 
+    /**
+     * Resets the viewport to the right-most horizontal position.
+     */
     public void setToRight() {
         setOffsetX(0);
     }
 
+    /**
+     * Resets both scroll axes to their default origin.
+     */
     public void resetView() {
         setToTop();
         setToRight();
@@ -338,6 +377,11 @@ public class MKScrollView extends MKWidget {
 
 
     @Nullable
+    /**
+     * Returns the single child currently displayed inside the viewport.
+     *
+     * @return the child widget, or {@code null} if no content is attached
+     */
     public IMKWidget getChild() {
         if (!getChildren().isEmpty()) {
             return this.getChildren().getFirst();
@@ -366,6 +410,13 @@ public class MKScrollView extends MKWidget {
     }
 
 
+    /**
+     * Clamps a proposed horizontal scroll delta so the child remains inside the viewport.
+     *
+     * @param child child content widget
+     * @param dX proposed horizontal scroll delta
+     * @return clamped scroll delta
+     */
     public double lockScrollX(IMKWidget child, double dX) {
         int scrollX = 0;
         int childWidth = child.getWidth();
@@ -394,6 +445,13 @@ public class MKScrollView extends MKWidget {
         return dX;
     }
 
+    /**
+     * Clamps a proposed vertical scroll delta so the child remains inside the viewport.
+     *
+     * @param child child content widget
+     * @param dY proposed vertical scroll delta
+     * @return clamped scroll delta
+     */
     public double lockScrollY(IMKWidget child, double dY) {
         int scrollY = 0;
         int childHeight = child.getHeight();

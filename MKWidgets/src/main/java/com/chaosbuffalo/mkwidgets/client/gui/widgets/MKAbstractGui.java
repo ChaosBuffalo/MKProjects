@@ -5,7 +5,16 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 
+/**
+ * Legacy extension point around {@link GuiGraphics}.
+ * <p>
+ * This type currently only preserves a named MKWidgets-specific abstraction for older helper code.
+ */
 public abstract class MKAbstractGui extends GuiGraphics {
+    /**
+     * @param pMinecraft active client instance
+     * @param pBufferSource buffer source used for GUI rendering
+     */
     public MKAbstractGui(Minecraft pMinecraft, MultiBufferSource.BufferSource pBufferSource) {
         super(pMinecraft, pBufferSource);
     }

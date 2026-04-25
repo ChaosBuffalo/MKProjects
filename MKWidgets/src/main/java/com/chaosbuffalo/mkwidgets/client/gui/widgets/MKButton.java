@@ -17,6 +17,9 @@ import org.lwjgl.glfw.GLFW;
 import java.util.function.BiFunction;
 
 
+/**
+ * Simple focusable push button rendered with vanilla button sprites.
+ */
 public class MKButton extends MKWidget {
     protected static final ResourceLocation BUTTON_TEXTURES = ResourceLocation.fromNamespaceAndPath(MKWidgets.MODID, "textures/gui/widgets.png");
     protected static final WidgetSprites SPRITES = new WidgetSprites(
@@ -80,6 +83,12 @@ public class MKButton extends MKWidget {
         this.buttonText = buttonText;
     }
 
+    /**
+     * Sets the callback invoked when the button is activated by mouse or keyboard.
+     *
+     * @param callback callback receiving the button and logical mouse button
+     * @return this button
+     */
     public MKButton setPressedCallback(BiFunction<MKButton, Integer, Boolean> callback) {
         this.pressedCallback = callback;
         return this;

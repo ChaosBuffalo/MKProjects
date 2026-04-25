@@ -9,11 +9,27 @@ import org.lwjgl.glfw.GLFW;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
+/**
+ * MKWidgets wrapper around vanilla {@link EditBox}.
+ * <p>
+ * The wrapper exposes text change, validation, and submit callbacks while integrating the field with
+ * MKWidgets focus handling.
+ */
 public class MKTextFieldWidget extends MCWidgetContainer {
     private BiConsumer<MKTextFieldWidget, String> callback;
     private Predicate<String> validator;
     private BiConsumer<MKTextFieldWidget, String> onSubmit;
 
+    /**
+     * Creates a text field widget.
+     *
+     * @param font font used by the wrapped edit box
+     * @param x left position
+     * @param y top position
+     * @param width field width
+     * @param height field height
+     * @param title narration/title component
+     */
     public MKTextFieldWidget(Font font, int x, int y, int width, int height, Component title) {
         super(x, y, width, height, new EditBox(font, x, y, width, height, title), true);
         EditBox wid = getContainedWidget();
@@ -21,11 +37,23 @@ public class MKTextFieldWidget extends MCWidgetContainer {
         wid.setFilter(this::validateText);
     }
 
+    /**
+     * Registers a callback invoked whenever the field value changes.
+     *
+     * @param callback text change callback
+     * @return this widget
+     */
     public MKTextFieldWidget setTextChangeCallback(BiConsumer<MKTextFieldWidget, String> callback) {
         this.callback = callback;
         return this;
     }
 
+    /**
+     * Sets a validator used by the wrapped edit box before text is accepted.
+     *
+     * @param validator validation predicate
+     * @return this widget
+     */
     public MKTextFieldWidget setTextValidator(Predicate<String> validator) {
         this.validator = validator;
         return this;
@@ -35,6 +63,12 @@ public class MKTextFieldWidget extends MCWidgetContainer {
         return getContainedWidget().getValue();
     }
 
+    /**
+     * Registers a callback invoked when the field is submitted via enter or focus loss.
+     *
+     * @param cb submit callback
+     * @return this widget
+     */
     public MKTextFieldWidget setSubmitCallback(BiConsumer<MKTextFieldWidget, String> cb) {
         this.onSubmit = cb;
         return this;

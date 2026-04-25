@@ -12,6 +12,12 @@ import org.joml.Matrix4f;
 
 import java.util.function.Supplier;
 
+/**
+ * Widget that renders a text component or lazily supplied text value.
+ * <p>
+ * The widget supports plain, centered, and multiline text and automatically updates its height when the text
+ * or wrapping width changes.
+ */
 public class MKText extends MKWidget {
 
     public Supplier<Component> text;
@@ -20,6 +26,9 @@ public class MKText extends MKWidget {
     public boolean isMultiline;
     public boolean isCentered;
 
+    /**
+     * Creates a text widget with explicit bounds and a lazily supplied component.
+     */
     public MKText(Font renderer, Supplier<Component> text, int x, int y, int width, int height) {
         super(x, y, width, height);
         this.color = 0;
@@ -64,6 +73,12 @@ public class MKText extends MKWidget {
         return color;
     }
 
+    /**
+     * Sets the text color.
+     *
+     * @param i packed text color
+     * @return this widget
+     */
     public MKText setColor(int i) {
         this.color = i;
         return this;
@@ -116,6 +131,12 @@ public class MKText extends MKWidget {
         drawString(fontRenderer, graphics, string, (x - fontRenderer.width(string) / 2), y, color);
     }
 
+    /**
+     * Enables or disables centered text rendering.
+     *
+     * @param isCentered {@code true} to center the text within the widget bounds
+     * @return this widget
+     */
     public MKText setIsCentered(boolean isCentered) {
         this.isCentered = isCentered;
         return this;
@@ -144,6 +165,12 @@ public class MKText extends MKWidget {
         return text.get();
     }
 
+    /**
+     * Enables or disables multiline word-wrapped rendering.
+     *
+     * @param multiline {@code true} to wrap text to widget width
+     * @return this widget
+     */
     public MKText setMultiline(boolean multiline) {
         this.isMultiline = multiline;
         updateLabel();
@@ -162,6 +189,9 @@ public class MKText extends MKWidget {
     }
 
 
+    /**
+     * Recomputes the widget height to match the current text presentation mode.
+     */
     private void updateLabel() {
         if (isMultiline()) {
             setHeight(fontRenderer.wordWrapHeight(getText().getString(), getWidth()));
