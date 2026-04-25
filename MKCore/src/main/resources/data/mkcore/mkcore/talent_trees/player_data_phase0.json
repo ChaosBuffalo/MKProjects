@@ -17,6 +17,18 @@
           "display_info": "mkcore:ability_slot"
         }
       ]
+    },
+    {
+      "line_name": "b",
+      "talents": [
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.max_health",
+          "display_info": "mkcore:max_health",
+          "max_ranks": 1,
+          "per_rank": 1.0
+        }
+      ]
     }
   ],
   "version": 1

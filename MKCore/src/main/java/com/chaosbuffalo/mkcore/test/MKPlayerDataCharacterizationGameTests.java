@@ -38,6 +38,8 @@ public class MKPlayerDataCharacterizationGameTests {
     private static final ResourceKey<com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition> TEST_TREE =
             ResourceKey.create(MKCoreRegistry.TALENT_TREE_REGISTRY_KEY, MKCore.id("player_data_phase0"));
     private static final String TEST_LINE = "a";
+    private static final String TEST_ATTRIBUTE_LINE = "b";
+    private static final float FLOAT_EPSILON = 0.001f;
 
     @GameTest(template = "player_data_phase0")
     public static void deserializedLoadoutResolvesTalentGrantedAbilityDuringActivation(GameTestHelper helper) {
@@ -235,6 +237,31 @@ public class MKPlayerDataCharacterizationGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void spendingChildTalentBeforeParentFailsWithoutChangingState(GameTestHelper helper) {
+        MKServerPlayerData playerData = createPlayerData(helper);
+        playerData.getTalents().grantTalentPoints(1);
+
+        boolean unlocked = playerData.getTalents().unlockTree(TEST_TREE);
+        if (!unlocked) {
+            throw new IllegalStateException("Failed to unlock test talent tree");
+        }
+
+        helper.assertFalse(playerData.getTalents().spendTalentPoint(TEST_TREE, TEST_LINE, 1),
+                "child talent should not unlock before its parent");
+        helper.assertValueEqual(playerData.getTalents().getUnspentTalentPoints(), 1,
+                "failed child spend should not consume a talent point");
+        helper.assertTrue(playerData.getTalents().getRecord(TEST_TREE, TEST_LINE, 0) != null,
+                "parent record should still resolve");
+        helper.assertTrue(playerData.getTalents().getRecord(TEST_TREE, TEST_LINE, 1) != null,
+                "child record should still resolve");
+        helper.assertFalse(playerData.getTalents().getRecord(TEST_TREE, TEST_LINE, 0).isKnown(),
+                "failed child spend should not unlock the parent");
+        helper.assertFalse(playerData.getTalents().getRecord(TEST_TREE, TEST_LINE, 1).isKnown(),
+                "failed child spend should not unlock the child");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void refundingParentTalentFailsWhileChildKnown(GameTestHelper helper) {
         MKServerPlayerData playerData = createPlayerData(helper);
         playerData.getTalents().grantTalentPoints(2);
@@ -261,6 +288,89 @@ public class MKPlayerDataCharacterizationGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void refundingAbilityGrantTalentUnlearnsAbilityAndClearsSlot(GameTestHelper helper) {
+        MKServerPlayerData playerData = createPlayerData(helper);
+        playerData.getTalents().grantTalentPoints(2);
+        boolean unlocked = playerData.getTalents().unlockTree(TEST_TREE);
+        if (!unlocked) {
+            throw new IllegalStateException("Failed to unlock test talent tree");
+        }
+
+        helper.assertTrue(playerData.getTalents().spendTalentPoint(TEST_TREE, TEST_LINE, 0),
+                "slot talent should unlock");
+        helper.assertTrue(playerData.getTalents().spendTalentPoint(TEST_TREE, TEST_LINE, 1),
+                "ability talent should unlock");
+
+        ResourceLocation emberId = MKTestAbilities.TEST_EMBER.get().getAbilityId();
+        AbilityGroup basicGroup = playerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic);
+        basicGroup.setSlot(0, emberId);
+
+        helper.assertTrue(playerData.getAbilities().knowsAbility(emberId),
+                "ability talent should grant its ability");
+        helper.assertValueEqual(basicGroup.getCurrentSlotCount(), 1,
+                "slot-granting parent should unlock one basic slot");
+        helper.assertValueEqual(basicGroup.getSlot(0), emberId,
+                "granted ability should be slotted before refund");
+
+        helper.assertTrue(playerData.getTalents().refundTalentPoint(TEST_TREE, TEST_LINE, 1),
+                "ability talent should refund once its children are gone");
+        helper.assertFalse(playerData.getAbilities().knowsAbility(emberId),
+                "refunding the ability talent should unlearn its ability");
+        helper.assertValueEqual(playerData.getTalents().getUnspentTalentPoints(), 1,
+                "refunding the ability talent should restore one talent point");
+        helper.assertTrue(playerData.getTalents().getRecord(TEST_TREE, TEST_LINE, 1) != null,
+                "ability talent record should still resolve");
+        helper.assertFalse(playerData.getTalents().getRecord(TEST_TREE, TEST_LINE, 1).isKnown(),
+                "ability talent should no longer be known after refund");
+        helper.assertValueEqual(basicGroup.getSlot(0), MKCoreRegistry.INVALID_ABILITY,
+                "refunding the ability talent should clear the slotted granted ability");
+        helper.assertTrue(basicGroup.getAbilityInfo(0) == null,
+                "refunding the ability talent should clear resolved slot info");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void refundingSlotGrantTalentShrinksLoadoutAndClearsSlottedAbility(GameTestHelper helper) {
+        MKServerPlayerData playerData = createPlayerData(helper);
+        playerData.getTalents().grantTalentPoints(2);
+        boolean unlocked = playerData.getTalents().unlockTree(TEST_TREE);
+        if (!unlocked) {
+            throw new IllegalStateException("Failed to unlock test talent tree");
+        }
+
+        ResourceLocation healId = learnAbility(playerData, MKTestAbilities.TEST_HEAL.get());
+        AbilityGroup basicGroup = playerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic);
+
+        helper.assertTrue(playerData.getTalents().spendTalentPoint(TEST_TREE, TEST_LINE, 0),
+                "slot talent should unlock");
+        helper.assertTrue(playerData.getTalents().spendTalentPoint(TEST_TREE, TEST_LINE, 1),
+                "ability talent should unlock");
+        basicGroup.setSlot(0, healId);
+
+        helper.assertValueEqual(basicGroup.getCurrentSlotCount(), 1,
+                "slot talent should unlock one basic slot");
+        helper.assertValueEqual(basicGroup.getSlot(0), healId,
+                "trained ability should occupy the talent-granted slot");
+
+        helper.assertTrue(playerData.getTalents().refundTalentPoint(TEST_TREE, TEST_LINE, 1),
+                "child talent should refund before the parent");
+        helper.assertTrue(playerData.getTalents().refundTalentPoint(TEST_TREE, TEST_LINE, 0),
+                "slot talent should refund after its child is gone");
+
+        helper.assertTrue(playerData.getAbilities().knowsAbility(healId),
+                "trained ability should remain known after slot talent refund");
+        helper.assertValueEqual(playerData.getTalents().getUnspentTalentPoints(), 2,
+                "refunding both talents should restore both points");
+        helper.assertValueEqual(basicGroup.getCurrentSlotCount(), 0,
+                "slot talent refund should remove the granted basic slot");
+        helper.assertValueEqual(basicGroup.getSlot(0), MKCoreRegistry.INVALID_ABILITY,
+                "locking the slot should clear the slotted ability");
+        helper.assertTrue(basicGroup.getAbilityInfo(0) == null,
+                "locking the slot should clear resolved slot info");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void singleXpGrantAwardsMultipleTalentLevels(GameTestHelper helper) {
         int maxPoints = MKConfig.SERVER.maxTalentPoints.get();
         if (maxPoints > 0 && maxPoints < 2) {
@@ -281,6 +391,75 @@ public class MKPlayerDataCharacterizationGameTests {
                 "single xp grant should leave both earned points unspent");
         helper.assertValueEqual(playerData.getTalents().getTalentXp(), 0,
                 "exact multi-level xp grant should fully consume its xp");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void invalidTalentTreeVersionDeserializeResetsTreeAndRefundsPoints(GameTestHelper helper) {
+        MKServerPlayerData sourceData = createPlayerData(helper);
+        sourceData.getTalents().grantTalentPoints(1);
+        if (!sourceData.getTalents().unlockTree(TEST_TREE)) {
+            throw new IllegalStateException("Failed to unlock test talent tree");
+        }
+        if (!sourceData.getTalents().spendTalentPoint(TEST_TREE, TEST_LINE, 0)) {
+            throw new IllegalStateException("Failed to unlock test talent");
+        }
+
+        HolderLookup.Provider provider = sourceData.getEntity().registryAccess();
+        CompoundTag serialized = sourceData.serializeNBT(provider);
+        setTalentTreeVersion(serialized, TEST_TREE, 999);
+
+        MKServerPlayerData restoredData = createPlayerData(helper);
+        restoredData.deserializeNBT(provider, serialized);
+
+        helper.assertTrue(restoredData.getTalents().getTree(TEST_TREE) != null,
+                "invalid tree data should still leave the tree unlocked");
+        helper.assertTrue(restoredData.getTalents().getRecord(TEST_TREE, TEST_LINE, 0) != null,
+                "blank replacement tree should still resolve known records");
+        helper.assertFalse(restoredData.getTalents().getRecord(TEST_TREE, TEST_LINE, 0).isKnown(),
+                "invalid tree version should reset talent progress");
+        helper.assertValueEqual(restoredData.getTalents().getTotalTalentPoints(), 1,
+                "invalid tree version should preserve total earned talent points");
+        helper.assertValueEqual(restoredData.getTalents().getUnspentTalentPoints(), 1,
+                "invalid tree version should refund spent points");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void unaffordableTalentTreeDeserializeResetsTreeWithoutSpendingPoints(GameTestHelper helper) {
+        MKServerPlayerData sourceData = createPlayerData(helper);
+        sourceData.getTalents().grantTalentPoints(2);
+        if (!sourceData.getTalents().unlockTree(TEST_TREE)) {
+            throw new IllegalStateException("Failed to unlock test talent tree");
+        }
+        if (!sourceData.getTalents().spendTalentPoint(TEST_TREE, TEST_LINE, 0)) {
+            throw new IllegalStateException("Failed to unlock slot talent");
+        }
+        if (!sourceData.getTalents().spendTalentPoint(TEST_TREE, TEST_LINE, 1)) {
+            throw new IllegalStateException("Failed to unlock ability talent");
+        }
+
+        HolderLookup.Provider provider = sourceData.getEntity().registryAccess();
+        CompoundTag serialized = sourceData.serializeNBT(provider);
+        setTotalTalentPoints(serialized, 1);
+
+        MKServerPlayerData restoredData = createPlayerData(helper);
+        restoredData.deserializeNBT(provider, serialized);
+
+        helper.assertTrue(restoredData.getTalents().getTree(TEST_TREE) != null,
+                "unaffordable tree data should still leave the tree unlocked");
+        helper.assertTrue(restoredData.getTalents().getRecord(TEST_TREE, TEST_LINE, 0) != null,
+                "replacement tree should still resolve the parent talent");
+        helper.assertTrue(restoredData.getTalents().getRecord(TEST_TREE, TEST_LINE, 1) != null,
+                "replacement tree should still resolve the child talent");
+        helper.assertFalse(restoredData.getTalents().getRecord(TEST_TREE, TEST_LINE, 0).isKnown(),
+                "unaffordable tree data should reset the parent talent");
+        helper.assertFalse(restoredData.getTalents().getRecord(TEST_TREE, TEST_LINE, 1).isKnown(),
+                "unaffordable tree data should reset the child talent");
+        helper.assertValueEqual(restoredData.getTalents().getTotalTalentPoints(), 1,
+                "unaffordable tree data should keep the reduced total talent points");
+        helper.assertValueEqual(restoredData.getTalents().getUnspentTalentPoints(), 1,
+                "unaffordable tree data should not spend unavailable points");
         helper.succeed();
     }
 
@@ -334,6 +513,69 @@ public class MKPlayerDataCharacterizationGameTests {
 
         helper.assertValueEqual(record.getRank(), 1,
                 "invalid sync rank should not mutate the existing rank");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void spendingAttributeTalentAppliesModifierAndRefundRemovesIt(GameTestHelper helper) {
+        MKServerPlayerData playerData = createPlayerData(helper);
+        playerData.getTalents().grantTalentPoints(1);
+        if (!playerData.getTalents().unlockTree(TEST_TREE)) {
+            throw new IllegalStateException("Failed to unlock test talent tree");
+        }
+
+        float baseMaxHealth = playerData.getEntity().getMaxHealth();
+
+        helper.assertTrue(playerData.getTalents().spendTalentPoint(TEST_TREE, TEST_ATTRIBUTE_LINE, 0),
+                "attribute talent should unlock");
+        assertFloatEquals(helper, playerData.getEntity().getMaxHealth(), baseMaxHealth + 1.0f, FLOAT_EPSILON,
+                "attribute talent should immediately increase max health");
+
+        helper.assertTrue(playerData.getTalents().refundTalentPoint(TEST_TREE, TEST_ATTRIBUTE_LINE, 0),
+                "attribute talent should refund");
+        helper.assertValueEqual(playerData.getTalents().getUnspentTalentPoints(), 1,
+                "refunding the attribute talent should restore its point");
+        assertFloatEquals(helper, playerData.getEntity().getMaxHealth(), baseMaxHealth, FLOAT_EPSILON,
+                "refunding the attribute talent should remove the max health bonus");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void deserializedAttributeTalentAppliesOnActivationAndIsRemovedOnPersonaSwitch(GameTestHelper helper) {
+        MKServerPlayerData sourceData = createPlayerData(helper);
+        sourceData.getTalents().grantTalentPoints(1);
+        if (!sourceData.getTalents().unlockTree(TEST_TREE)) {
+            throw new IllegalStateException("Failed to unlock test talent tree");
+        }
+
+        float baseMaxHealth = sourceData.getEntity().getMaxHealth();
+        if (!sourceData.getTalents().spendTalentPoint(TEST_TREE, TEST_ATTRIBUTE_LINE, 0)) {
+            throw new IllegalStateException("Failed to unlock attribute talent");
+        }
+
+        HolderLookup.Provider provider = sourceData.getEntity().registryAccess();
+        CompoundTag serialized = sourceData.serializeNBT(provider);
+
+        MKServerPlayerData restoredData = createPlayerData(helper);
+        restoredData.deserializeNBT(provider, serialized);
+        assertFloatEquals(helper, restoredData.getEntity().getMaxHealth(), baseMaxHealth, FLOAT_EPSILON,
+                "deserialized attribute talent should not apply before activation");
+
+        restoredData.getPersonaManager().onJoinLevel();
+        assertFloatEquals(helper, restoredData.getEntity().getMaxHealth(), baseMaxHealth + 1.0f, FLOAT_EPSILON,
+                "activating the persona should apply the attribute talent");
+
+        helper.assertTrue(restoredData.getPersonaManager().createPersona("other"),
+                "secondary persona should be created for deactivation coverage");
+        helper.assertTrue(restoredData.getPersonaManager().activatePersona("other"),
+                "switching to another persona should deactivate the attribute talent");
+        assertFloatEquals(helper, restoredData.getEntity().getMaxHealth(), baseMaxHealth, FLOAT_EPSILON,
+                "deactivating the persona should remove the attribute talent bonus");
+
+        helper.assertTrue(restoredData.getPersonaManager().activatePersona(PersonaManager.DEFAULT_PERSONA_NAME),
+                "switching back to the default persona should reactivate the attribute talent");
+        assertFloatEquals(helper, restoredData.getEntity().getMaxHealth(), baseMaxHealth + 1.0f, FLOAT_EPSILON,
+                "reactivating the original persona should reapply the attribute talent bonus");
         helper.succeed();
     }
 
@@ -394,6 +636,24 @@ public class MKPlayerDataCharacterizationGameTests {
         personaTag.getCompound("abilities").getCompound("known").remove(abilityId.toString());
     }
 
+    private static CompoundTag getTalentTreeTag(CompoundTag root, ResourceKey<com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition> treeId) {
+        CompoundTag personaTag = getDefaultPersonaTag(root);
+        return personaTag.getCompound("talents")
+                .getCompound("trees")
+                .getCompound(treeId.location().toString());
+    }
+
+    private static void setTalentTreeVersion(CompoundTag root,
+                                             ResourceKey<com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition> treeId,
+                                             int version) {
+        getTalentTreeTag(root, treeId).putInt("version", version);
+    }
+
+    private static void setTotalTalentPoints(CompoundTag root, int totalPoints) {
+        CompoundTag personaTag = getDefaultPersonaTag(root);
+        personaTag.getCompound("talents").putInt("totalPoints", totalPoints);
+    }
+
     private static void setBasicSlots(CompoundTag root, int slotCount) {
         CompoundTag personaTag = getDefaultPersonaTag(root);
         personaTag.getCompound("loadout").getCompound("basic").putInt("slots", slotCount);
@@ -406,5 +666,10 @@ public class MKPlayerDataCharacterizationGameTests {
             list.add(StringTag.valueOf(abilityId.toString()));
         }
         personaTag.getCompound("loadout").getCompound("basic").put("abilities", list);
+    }
+
+    private static void assertFloatEquals(GameTestHelper helper, float actual, float expected, float epsilon, String label) {
+        helper.assertTrue(Math.abs(actual - expected) <= epsilon,
+                label + ": expected " + expected + " but was " + actual);
     }
 }
