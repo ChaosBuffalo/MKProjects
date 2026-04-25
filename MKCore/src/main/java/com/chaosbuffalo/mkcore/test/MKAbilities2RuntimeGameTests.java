@@ -488,6 +488,8 @@ public class MKAbilities2RuntimeGameTests {
                 "event_payload_int should evaluate numeric payload comparisons");
         helper.assertTrue(stateBool(snapshot, "rating_gate"),
                 "event_payload_float should evaluate float payload comparisons");
+        helper.assertTrue(stateBool(snapshot, "source_tag_gate"),
+                "event_source_tag should evaluate tagged source ability ids");
         helper.assertTrue(stateBool(snapshot, "critical_gate"),
                 "event_payload_bool should evaluate boolean payload values");
         helper.assertTrue(stateBool(snapshot, "phase_gate"),
@@ -520,7 +522,7 @@ public class MKAbilities2RuntimeGameTests {
                         UUID.randomUUID(),
                         0,
                         caster.getUUID(),
-                        EVENT_PAYLOAD_BRANCH_CONDITION_ABILITY,
+                        INT_BRANCH_CONDITION_ABILITY,
                         "cast",
                         caster.getUUID(),
                         caster.getUUID(),
@@ -545,6 +547,8 @@ public class MKAbilities2RuntimeGameTests {
                 "event_payload_int should be false when the numeric payload is missing");
         helper.assertFalse(stateBool(snapshot, "rating_gate"),
                 "event_payload_float should be false when the comparison fails");
+        helper.assertFalse(stateBool(snapshot, "source_tag_gate"),
+                "event_source_tag should be false when the source ability id is missing the tag");
         helper.assertFalse(stateBool(snapshot, "critical_gate"),
                 "event_payload_bool should be false when the boolean payload does not match");
         helper.assertFalse(stateBool(snapshot, "phase_gate"),
@@ -2461,6 +2465,9 @@ public class MKAbilities2RuntimeGameTests {
                         "key", stringConditionValue("impact_rating"),
                         "operator", stringConditionValue("gt"),
                         "value", numberConditionValue(1.5f)
+                )),
+                payloadStateBranch("event_source_tag", "source_tag_gate", Map.of(
+                        "tag", stringConditionValue(AbilityDatagenKeys.TAG_FIRE.toString())
                 )),
                 payloadStateBranch("event_payload_bool", "critical_gate", Map.of(
                         "key", stringConditionValue("critical"),

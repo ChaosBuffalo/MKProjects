@@ -1519,6 +1519,12 @@ public class SimpleAbilityEngine implements AbilityEngine {
             case "always" -> true;
             case "event_has_actor" -> context.eventSnapshot() != null && context.eventSnapshot().actorEntityId() != null;
             case "event_has_target" -> context.eventSnapshot() != null && context.eventSnapshot().targetEntityId() != null;
+            case "event_source_tag" -> {
+                AbilityEventSnapshot eventSnapshot = context.eventSnapshot();
+                ResourceLocation sourceAbilityId = eventSnapshot != null ? eventSnapshot.sourceAbilityId() : null;
+                yield sourceAbilityId != null && tagMatcher.test(sourceAbilityId,
+                        requiredResourceLocation(condition, "tag"));
+            }
             case "event_has_payload" -> eventPayloadValue(context, requiredString(condition, "key")) != null;
             case "has_current_target" -> context.currentTarget().isPresent();
             case "has_primary_target" -> context.targets().primaryEntityId() != null;
