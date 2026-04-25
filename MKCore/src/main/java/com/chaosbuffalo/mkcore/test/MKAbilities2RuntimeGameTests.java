@@ -40,6 +40,7 @@ import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
+import com.chaosbuffalo.mkcore.init.CoreEffects;
 import com.chaosbuffalo.mkcore.item.ItemGrantedAbility;
 import com.chaosbuffalo.mkcore.test.MKTestAbilities;
 import com.google.gson.JsonElement;
@@ -68,6 +69,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -1174,6 +1176,76 @@ public class MKAbilities2RuntimeGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void jumpingInterruptsDefinitionCastBeforeCompletion(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        owner.setHealth(owner.getMaxHealth() - 8.0f);
+
+        InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                ownerData,
+                ownerData,
+                new AbilityReference(SELF_HEAL_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "abilities2 cast-time activation should start for the jump interrupt probe");
+
+        helper.startSequence()
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(MKCore.getAbilityRuntimeService().hasPendingActivation(ownerData),
+                            "abilities2 cast should be pending before the jump interrupt starts");
+                    MKCore.getAbilityRuntimeService().onLivingJump(new LivingEvent.LivingJumpEvent(owner));
+                })
+                .thenExecuteAfter(1, () -> helper.assertFalse(MKCore.getAbilityRuntimeService().hasPendingActivation(ownerData),
+                        "jumping should interrupt pending abilities2 casts"))
+                .thenExecuteAfter(25, () -> {
+                    helper.assertTrue(owner.getHealth() < owner.getMaxHealth(),
+                            "jump-interrupted abilities2 cast should not complete its full heal");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void stunInterruptsDefinitionCastBeforeCompletion(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+
+        owner.setHealth(owner.getMaxHealth() - 8.0f);
+
+        InvocationResult result = MKCore.getAbilityRuntimeService().getEngine().activate(new ActivationRequest(
+                ownerData,
+                ownerData,
+                new AbilityReference(SELF_HEAL_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "abilities2 cast-time activation should start for the stun interrupt probe");
+
+        helper.startSequence()
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(MKCore.getAbilityRuntimeService().hasPendingActivation(ownerData),
+                            "abilities2 cast should be pending before the stun interrupt starts");
+                    ownerData.getEffects().addEffect(CoreEffects.STUN.get().builder(owner).infinite());
+                })
+                .thenExecuteAfter(1, () -> helper.assertFalse(MKCore.getAbilityRuntimeService().hasPendingActivation(ownerData),
+                        "stun should interrupt pending abilities2 casts"))
+                .thenExecuteAfter(25, () -> {
+                    helper.assertTrue(owner.getHealth() < owner.getMaxHealth(),
+                            "stun-interrupted abilities2 cast should not complete its full heal");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void deathInterruptsDefinitionCastBeforeCompletion(GameTestHelper helper) {
         Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
         MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
@@ -1295,6 +1367,50 @@ public class MKAbilities2RuntimeGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void jumpInterruptReportsSpecificFailureReason(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+        List<FailureReason> reasons = new ArrayList<>();
+        SimpleAbilityEngine engine = createInterruptReasonTestEngine(new SimpleAbilityEngine.LifecycleListener() {
+            @Override
+            public void onInvocationInterrupted(com.chaosbuffalo.mkcore.abilities2.runtime.AbilityInvocation invocation,
+                                                FailureReason failureReason,
+                                                int castTicksSpent) {
+                reasons.add(failureReason);
+            }
+        });
+
+        InvocationResult result = engine.activate(new ActivationRequest(
+                ownerData,
+                ownerData,
+                new AbilityReference(INTERRUPT_REASON_PROBE_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "interrupt reason probe should start for jump");
+
+        helper.startSequence()
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(engine.hasPendingActivation(ownerData),
+                            "interrupt reason probe should be pending before jump");
+                    engine.interruptPendingActivations(ownerData, FailureReason.INTERRUPTED_BY_JUMP);
+                })
+                .thenExecuteAfter(1, () -> {
+                    helper.assertFalse(engine.hasPendingActivation(ownerData),
+                            "jump should clear the interrupt reason probe");
+                    helper.assertValueEqual(reasons.size(), 1,
+                            "jump interrupt should report exactly one failure reason");
+                    helper.assertValueEqual(reasons.get(0), FailureReason.INTERRUPTED_BY_JUMP,
+                            "jump interrupt should report the jump-specific failure reason");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void damageInterruptReportsSpecificFailureReason(GameTestHelper helper) {
         Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
         MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
@@ -1335,6 +1451,50 @@ public class MKAbilities2RuntimeGameTests {
                             "damage interrupt should report exactly one failure reason");
                     helper.assertValueEqual(reasons.get(0), FailureReason.INTERRUPTED_BY_DAMAGE,
                             "damage interrupt should report the damage-specific failure reason");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void stunInterruptReportsSpecificFailureReason(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+        List<FailureReason> reasons = new ArrayList<>();
+        SimpleAbilityEngine engine = createInterruptReasonTestEngine(new SimpleAbilityEngine.LifecycleListener() {
+            @Override
+            public void onInvocationInterrupted(com.chaosbuffalo.mkcore.abilities2.runtime.AbilityInvocation invocation,
+                                                FailureReason failureReason,
+                                                int castTicksSpent) {
+                reasons.add(failureReason);
+            }
+        });
+
+        InvocationResult result = engine.activate(new ActivationRequest(
+                ownerData,
+                ownerData,
+                new AbilityReference(INTERRUPT_REASON_PROBE_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "interrupt reason probe should start for stun");
+
+        helper.startSequence()
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(engine.hasPendingActivation(ownerData),
+                            "interrupt reason probe should be pending before stun");
+                    engine.interruptPendingActivations(ownerData, FailureReason.INTERRUPTED_BY_STUN);
+                })
+                .thenExecuteAfter(1, () -> {
+                    helper.assertFalse(engine.hasPendingActivation(ownerData),
+                            "stun should clear the interrupt reason probe");
+                    helper.assertValueEqual(reasons.size(), 1,
+                            "stun interrupt should report exactly one failure reason");
+                    helper.assertValueEqual(reasons.get(0), FailureReason.INTERRUPTED_BY_STUN,
+                            "stun interrupt should report the stun-specific failure reason");
                     helper.succeed();
                 });
     }

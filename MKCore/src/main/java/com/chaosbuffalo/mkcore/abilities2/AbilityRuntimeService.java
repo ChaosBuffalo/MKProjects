@@ -53,6 +53,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
@@ -767,6 +768,15 @@ public class AbilityRuntimeService {
             engine.queueDamageInterrupt(MKCore.getEntityDataOrThrow(event.getEntity()), event.getNewDamage());
         }
         emitDamageTaken(event.getSource(), event.getEntity(), event.getNewDamage());
+    }
+
+    @SubscribeEvent
+    public void onLivingJump(LivingEvent.LivingJumpEvent event) {
+        if (event.getEntity().level().isClientSide()) {
+            return;
+        }
+        engine.interruptPendingActivations(MKCore.getEntityDataOrThrow(event.getEntity()),
+                FailureReason.INTERRUPTED_BY_JUMP);
     }
 
     @SubscribeEvent
@@ -2274,8 +2284,10 @@ public class AbilityRuntimeService {
     private CastInterruptReason toCastInterruptReason(FailureReason failureReason) {
         return switch (failureReason) {
             case INTERRUPTED_BY_BLOCK -> CastInterruptReason.StartedBlocking;
+            case INTERRUPTED_BY_JUMP -> CastInterruptReason.Jump;
             case INTERRUPTED_BY_DEATH -> CastInterruptReason.Death;
             case INTERRUPTED_BY_LOGOUT -> CastInterruptReason.Logout;
+            case INTERRUPTED_BY_STUN -> CastInterruptReason.Stun;
             default -> CastInterruptReason.Other;
         };
     }
