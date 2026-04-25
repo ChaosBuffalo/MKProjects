@@ -384,6 +384,7 @@ public class MKDamagePipelineCharacterizationGameTests {
         Player attacker = createMockPlayer(helper, ATTACKER_POS, false);
         Player unresistedTarget = createMockPlayer(helper, TARGET_POS, false);
         Player resistedTarget = createMockPlayer(helper, TARGET_ALT_POS, false);
+        setBaseValue(attacker, MKAttributes.SPELL_CRIT, 0.0);
         setBaseValue(resistedTarget, MKAttributes.FIRE_RESISTANCE, 0.8);
 
         helper.startSequence()
