@@ -33,9 +33,6 @@ public enum MKJigsawPieceRole implements StringRepresentable {
                 return role;
             }
         }
-        if ("stairs_up".equals(serializedName) || "stairs_down".equals(serializedName)) {
-            return ROOM;
-        }
         throw new IllegalArgumentException("Unknown jigsaw piece role: " + serializedName);
     }
 }
