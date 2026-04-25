@@ -15,6 +15,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.StackConstraint;
@@ -1225,7 +1226,7 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     private boolean supportsStairGeneration(MKWorkspacePieceDefinition piece) {
-        return "true".equals(piece.tags().get("supports_stair_generation"));
+        return MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags());
     }
 
     private boolean hasGeneratedStairs(MKWorkspacePieceDefinition piece) {

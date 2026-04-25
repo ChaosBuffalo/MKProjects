@@ -139,9 +139,6 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>();
         tags.put("topology_role", topologyRole);
         tags.put("tower_piece_kind", "room");
-        tags.put("tower_stair_placement", stairPlacement);
-        tags.put("supports_stair_generation", "true");
-        tags.put("stair_direction", stairDirection);
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, "true");
         tags.put(MKWorkspaceVerticalAccessTags.PLACEMENT_TAG, stairPlacement);
         tags.put(MKWorkspaceVerticalAccessTags.DIRECTION_TAG, stairDirection);
