@@ -700,7 +700,7 @@ public class AbilityRuntimeService {
         if (playerData.isClientSide()) {
             return;
         }
-        persistAndClearPersonaRuntime(event.getPersona(), playerData);
+        persistAndClearPersonaRuntime(event.getPersona(), playerData, FailureReason.INTERRUPTED_BY_UNLOAD);
     }
 
     @SubscribeEvent
@@ -709,7 +709,8 @@ public class AbilityRuntimeService {
         if (playerData.isClientSide()) {
             return;
         }
-        persistAndClearPersonaRuntime(playerData.getPersonaManager().getActivePersona(), playerData);
+        persistAndClearPersonaRuntime(playerData.getPersonaManager().getActivePersona(), playerData,
+                FailureReason.INTERRUPTED_BY_LOGOUT);
     }
 
     @SubscribeEvent
@@ -718,7 +719,7 @@ public class AbilityRuntimeService {
         if (oldData.isClientSide()) {
             return;
         }
-        clearLiveRuntime(oldData, true, true);
+        clearLiveRuntime(oldData, FailureReason.INTERRUPTED_BY_UNLOAD, true, true);
     }
 
     @SubscribeEvent
@@ -815,13 +816,15 @@ public class AbilityRuntimeService {
         }
     }
 
-    private void persistAndClearPersonaRuntime(Persona persona, MKPlayerData playerData) {
+    private void persistAndClearPersonaRuntime(Persona persona,
+                                               MKPlayerData playerData,
+                                               FailureReason failureReason) {
         AbilityRuntimePersonaExtension extension = getRuntimeExtension(persona);
         if (extension != null) {
             extension.setSnapshot(captureOwnerRuntime(playerData));
             extension.setCaptureLiveRuntimeOnSerialize(false);
         }
-        clearLiveRuntime(playerData, true, true);
+        clearLiveRuntime(playerData, failureReason, true, true);
     }
 
     private void restorePersonaRuntime(Persona persona) {
@@ -841,7 +844,7 @@ public class AbilityRuntimeService {
             entityData.setAbilityRuntimeSnapshot(PersistedAbilityRuntimeState.EMPTY);
         }
         entityData.setCaptureLiveRuntimeOnSerialize(false);
-        clearLiveRuntime(entityData, true, true);
+        clearLiveRuntime(entityData, FailureReason.INTERRUPTED_BY_UNLOAD, true, true);
     }
 
     private void restoreEntityRuntime(MKEntityData entityData) {
@@ -850,7 +853,7 @@ public class AbilityRuntimeService {
     }
 
     private void restoreOwnedRuntime(IMKEntityData ownerData, PersistedAbilityRuntimeState snapshot) {
-        clearLiveRuntime(ownerData, false, false);
+        clearLiveRuntime(ownerData, FailureReason.INTERRUPTED_BY_UNLOAD, false, false);
         if (!snapshot.isEmpty()) {
             stateStore.restoreOwner(ownerData.getEntity().getUUID(), snapshot, currentGameTick());
             engine.restoreOwnedActivations(ownerData, snapshot.pendingActivations(), this::resolveEntityData);
@@ -861,11 +864,14 @@ public class AbilityRuntimeService {
         }
     }
 
-    private void clearLiveRuntime(IMKEntityData ownerData, boolean clearPassives, boolean gracefulToggleDisable) {
+    private void clearLiveRuntime(IMKEntityData ownerData,
+                                  FailureReason failureReason,
+                                  boolean clearPassives,
+                                  boolean gracefulToggleDisable) {
         UUID ownerEntityId = ownerData.getEntity().getUUID();
         pendingPersonaRestores.remove(ownerEntityId);
         pendingEntityRestores.remove(ownerEntityId);
-        engine.interruptOwnedActivations(ownerEntityId, FailureReason.INTERRUPTED);
+        engine.interruptOwnedActivations(ownerEntityId, failureReason);
         if (clearPassives) {
             clearPassivesForOwner(ownerEntityId);
         }
@@ -2269,6 +2275,7 @@ public class AbilityRuntimeService {
         return switch (failureReason) {
             case INTERRUPTED_BY_BLOCK -> CastInterruptReason.StartedBlocking;
             case INTERRUPTED_BY_DEATH -> CastInterruptReason.Death;
+            case INTERRUPTED_BY_LOGOUT -> CastInterruptReason.Logout;
             default -> CastInterruptReason.Other;
         };
     }

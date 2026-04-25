@@ -1382,6 +1382,94 @@ public class MKAbilities2RuntimeGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void logoutInterruptReportsSpecificFailureReason(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+        List<FailureReason> reasons = new ArrayList<>();
+        SimpleAbilityEngine engine = createInterruptReasonTestEngine(new SimpleAbilityEngine.LifecycleListener() {
+            @Override
+            public void onInvocationInterrupted(com.chaosbuffalo.mkcore.abilities2.runtime.AbilityInvocation invocation,
+                                                FailureReason failureReason,
+                                                int castTicksSpent) {
+                reasons.add(failureReason);
+            }
+        });
+
+        InvocationResult result = engine.activate(new ActivationRequest(
+                ownerData,
+                ownerData,
+                new AbilityReference(INTERRUPT_REASON_PROBE_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "interrupt reason probe should start for logout");
+
+        helper.startSequence()
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(engine.hasPendingActivation(ownerData),
+                            "interrupt reason probe should be pending before logout");
+                    engine.interruptPendingActivations(ownerData, FailureReason.INTERRUPTED_BY_LOGOUT);
+                })
+                .thenExecuteAfter(1, () -> {
+                    helper.assertFalse(engine.hasPendingActivation(ownerData),
+                            "logout should clear the interrupt reason probe");
+                    helper.assertValueEqual(reasons.size(), 1,
+                            "logout interrupt should report exactly one failure reason");
+                    helper.assertValueEqual(reasons.get(0), FailureReason.INTERRUPTED_BY_LOGOUT,
+                            "logout interrupt should report the logout-specific failure reason");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void unloadInterruptReportsSpecificFailureReason(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+        List<FailureReason> reasons = new ArrayList<>();
+        SimpleAbilityEngine engine = createInterruptReasonTestEngine(new SimpleAbilityEngine.LifecycleListener() {
+            @Override
+            public void onInvocationInterrupted(com.chaosbuffalo.mkcore.abilities2.runtime.AbilityInvocation invocation,
+                                                FailureReason failureReason,
+                                                int castTicksSpent) {
+                reasons.add(failureReason);
+            }
+        });
+
+        InvocationResult result = engine.activate(new ActivationRequest(
+                ownerData,
+                ownerData,
+                new AbilityReference(INTERRUPT_REASON_PROBE_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "interrupt reason probe should start for unload");
+
+        helper.startSequence()
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(engine.hasPendingActivation(ownerData),
+                            "interrupt reason probe should be pending before unload");
+                    engine.interruptPendingActivations(ownerData, FailureReason.INTERRUPTED_BY_UNLOAD);
+                })
+                .thenExecuteAfter(1, () -> {
+                    helper.assertFalse(engine.hasPendingActivation(ownerData),
+                            "unload should clear the interrupt reason probe");
+                    helper.assertValueEqual(reasons.size(), 1,
+                            "unload interrupt should report exactly one failure reason");
+                    helper.assertValueEqual(reasons.get(0), FailureReason.INTERRUPTED_BY_UNLOAD,
+                            "unload interrupt should report the unload-specific failure reason");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void slottedBasicToggleDefinitionUsesLoadoutTogglePath(GameTestHelper helper) {
         Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
         MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
