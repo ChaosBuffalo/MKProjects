@@ -4,6 +4,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStairPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -44,7 +45,7 @@ public class MKTowerWorkspaceShaftGeometry {
                 .findFirst()
                 .orElse(workspace.dimensions().hallwayWidth());
         MKTowerStairPlacement placement = MKTowerStairPlacement.fromSerializedName(
-                piece.tags().getOrDefault("tower_stair_placement", workspace.towerStairPlacement().getSerializedName())
+                MKWorkspaceVerticalAccessTags.placement(piece.tags(), workspace.towerStairPlacement().getSerializedName())
         );
 
         int centerX = getCenterX(interiorMinX, interiorWidth, openingWidth, placement);

@@ -6,6 +6,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStairPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import net.minecraft.core.BlockPos;
@@ -574,7 +575,7 @@ public class MKWorkspaceScaffoldBuilder {
 
     private MKTowerStairPlacement getTowerStairPlacement(MKPlannedPiece piece) {
         return MKTowerStairPlacement.fromSerializedName(
-                piece.tags().getOrDefault("tower_stair_placement", MKTowerStairPlacement.CENTER.getSerializedName())
+                MKWorkspaceVerticalAccessTags.placement(piece.tags(), MKTowerStairPlacement.CENTER.getSerializedName())
         );
     }
 

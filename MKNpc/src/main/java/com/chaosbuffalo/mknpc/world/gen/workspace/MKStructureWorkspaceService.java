@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlanner;
@@ -225,7 +226,7 @@ public class MKStructureWorkspaceService {
 
         MKStructureWorkspace workspace = workspaceOpt.get();
         List<MKWorkspacePieceDefinition> updatedPieces = workspace.pieces().stream()
-                .map(piece -> "true".equals(piece.tags().get("supports_stair_generation")) ?
+                .map(piece -> MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags()) ?
                         stairBuilder.generateForPiece(level, workspace, piece) : piece)
                 .toList();
         MKStructureWorkspace updated = workspace.withPieces(updatedPieces);

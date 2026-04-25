@@ -2,9 +2,9 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.stairs;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStairProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -226,7 +226,7 @@ public class MKWorkspaceStairBuilder {
     }
 
     private boolean isEligible(MKWorkspacePieceDefinition piece) {
-        return "true".equals(piece.tags().get("supports_stair_generation")) &&
+        return MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags()) &&
                 piece.connectors().stream().anyMatch(connector -> connector.facing() == Direction.UP ||
                         connector.facing() == Direction.DOWN);
     }
@@ -235,7 +235,7 @@ public class MKWorkspaceStairBuilder {
                                                                               MKWorkspacePieceDefinition piece) {
         MKTowerWorkspaceShaftGeometry.ShaftGeometry geometry = MKTowerWorkspaceShaftGeometry.forPiece(workspace, piece);
         BoundingBox bounds = geometry.shaftBounds();
-        if (piece.role() == MKWorkspacePieceRole.BOSS_CAP) {
+        if (MKWorkspaceVerticalAccessTags.isTopCap(piece.tags())) {
             BoundingBox constrainedBounds = new BoundingBox(
                     bounds.minX(),
                     geometry.interiorMinY(),
@@ -247,7 +247,7 @@ public class MKWorkspaceStairBuilder {
             return new MKTowerWorkspaceShaftGeometry.ShaftGeometry(constrainedBounds, geometry.interiorMinY(),
                     geometry.interiorMinY(), geometry.placement());
         }
-        if (piece.role() == MKWorkspacePieceRole.BASEMENT_CAP) {
+        if (MKWorkspaceVerticalAccessTags.isBottomCap(piece.tags())) {
             int floorY = Math.min(geometry.interiorMaxY(), geometry.interiorMinY() + 1);
             BoundingBox constrainedBounds = new BoundingBox(
                     bounds.minX(),

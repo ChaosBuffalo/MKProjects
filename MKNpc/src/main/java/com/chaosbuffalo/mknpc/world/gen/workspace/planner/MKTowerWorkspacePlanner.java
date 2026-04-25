@@ -6,6 +6,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import net.minecraft.core.Direction;
 
 import java.util.LinkedHashMap;
@@ -109,7 +110,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                 basementHeight,
                 List.of(new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
                         "minecraft:empty", "connect_down")),
-                buildTags("basement_cap", stairPlacement, "down",
+                buildTags("basement_cap", stairPlacement, "down", false, true,
                         new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.TERMINAL, 1, -1,
                                 true, false, true, false))
         );
@@ -121,7 +122,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                 roomHeight,
                 List.of(new MKPlannedConnector(MKConnectorRole.BOSS_BACK, Direction.DOWN, hallWidth, hallWidth,
                         "minecraft:empty", "boss_cap")),
-                buildTags("boss_cap", stairPlacement, "up",
+                buildTags("boss_cap", stairPlacement, "up", true, false,
                         new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.BOSS, 0, 0,
                                 true, false, true, true))
         );
@@ -130,12 +131,26 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
 
     private Map<String, String> buildTags(String topologyRole, String stairPlacement, String stairDirection,
                                           MKWorkspaceRuntimePieceInfo runtimeInfo) {
+        return buildTags(topologyRole, stairPlacement, stairDirection, false, false, runtimeInfo);
+    }
+
+    private Map<String, String> buildTags(String topologyRole, String stairPlacement, String stairDirection,
+                                          boolean topCap, boolean bottomCap, MKWorkspaceRuntimePieceInfo runtimeInfo) {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>();
         tags.put("topology_role", topologyRole);
         tags.put("tower_piece_kind", "room");
         tags.put("tower_stair_placement", stairPlacement);
         tags.put("supports_stair_generation", "true");
         tags.put("stair_direction", stairDirection);
+        tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, "true");
+        tags.put(MKWorkspaceVerticalAccessTags.PLACEMENT_TAG, stairPlacement);
+        tags.put(MKWorkspaceVerticalAccessTags.DIRECTION_TAG, stairDirection);
+        if (topCap) {
+            tags.put(MKWorkspaceVerticalAccessTags.TOP_CAP_TAG, "true");
+        }
+        if (bottomCap) {
+            tags.put(MKWorkspaceVerticalAccessTags.BOTTOM_CAP_TAG, "true");
+        }
         runtimeInfo.applyToTags(tags);
         return tags;
     }
