@@ -1,0 +1,738 @@
+package com.chaosbuffalo.mknpc.world.gen.workspace.scaffold;
+
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKConnectorRole;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStairPlacement;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.FrontAndTop;
+import net.minecraft.core.Vec3i;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.JigsawBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.JigsawBlockEntity;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignText;
+import net.minecraft.world.level.block.entity.StructureBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.StructureMode;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+public class MKWorkspaceScaffoldBuilder {
+    public static final int GRID_COLUMNS = 4;
+    public static final int CELL_PADDING = 4;
+    public static final int CLEAR_MARGIN = 4;
+
+    private final MKWorkspaceGridLayout gridLayout = new MKWorkspaceGridLayout();
+
+    private record PieceBuildContext(
+            BlockPos exportOrigin,
+            BlockPos geometryOrigin,
+            BoundingBox exportBounds,
+            BoundingBox geometryBounds,
+            BoundingBox clearedBounds,
+            int exportWidth,
+            int exportLength,
+            int exportHeight
+    ) {
+    }
+
+    public List<MKWorkspacePieceDefinition> build(ServerLevel level, MKStructureWorkspace workspace,
+                                                  List<MKPlannedPiece> plannedPieces) {
+        List<MKWorkspaceGridLayout.Placement> placements = gridLayout.assignPlacements(workspace.anchor(), plannedPieces,
+                workspace.shellMargin(), workspace.exteriorAirMargin(), workspace.previewMargin(), GRID_COLUMNS,
+                CELL_PADDING);
+        clearWorkspaceArea(level, workspace, placements);
+        List<MKWorkspacePieceDefinition> generatedPieces = new ArrayList<>();
+        for (int i = 0; i < plannedPieces.size(); i++) {
+            generatedPieces.add(buildPiece(level, workspace, plannedPieces.get(i), placements.get(i)));
+        }
+        return generatedPieces;
+    }
+
+    public MKWorkspacePieceDefinition buildSingle(ServerLevel level, MKStructureWorkspace workspace, MKPlannedPiece piece,
+                                                  List<MKPlannedPiece> layoutPieces) {
+        List<MKWorkspaceGridLayout.Placement> placements = gridLayout.assignPlacements(workspace.anchor(), layoutPieces,
+                workspace.shellMargin(), workspace.exteriorAirMargin(), workspace.previewMargin(), GRID_COLUMNS,
+                CELL_PADDING);
+        int index = layoutPieces.indexOf(piece);
+        if (index < 0) {
+            throw new IllegalArgumentException("piece is not present in layout list");
+        }
+        return buildPiece(level, workspace, piece, placements.get(index));
+    }
+
+    public MKWorkspacePieceDefinition cloneFromTemplate(ServerLevel level, MKStructureWorkspace workspace,
+                                                        MKWorkspacePieceDefinition templatePiece, MKPlannedPiece targetPiece,
+                                                        List<MKPlannedPiece> layoutPieces) {
+        List<MKWorkspaceGridLayout.Placement> placements = gridLayout.assignPlacements(workspace.anchor(), layoutPieces,
+                workspace.shellMargin(), workspace.exteriorAirMargin(), workspace.previewMargin(), GRID_COLUMNS,
+                CELL_PADDING);
+        int index = layoutPieces.indexOf(targetPiece);
+        if (index < 0) {
+            throw new IllegalArgumentException("piece is not present in layout list");
+        }
+        PieceBuildContext context = createBuildContext(workspace, targetPiece, placements.get(index));
+        clearBounds(level, context.clearedBounds());
+        copyTemplateContents(level, templatePiece.exportBounds(), context.exportBounds());
+        List<MKWorkspaceConnectorDefinition> connectors = recreateConnectorsFromTemplate(level, workspace, targetPiece,
+                templatePiece.connectors(), context.exportOrigin());
+        List<BlockPos> markerPositions = new ArrayList<>();
+        for (MKWorkspaceConnectorDefinition connector : connectors) {
+            markerPositions.add(placeConnectorMarker(level, connector, context.exportBounds()));
+        }
+        List<BlockPos> generatedStairPositions = remapGeneratedStairPositions(templatePiece, context.exportOrigin());
+        BlockPos structureBlockPos = placeStructureBlock(level, workspace, targetPiece, context.exportOrigin(),
+                context.exportWidth(), context.exportHeight(), context.exportLength());
+        BlockPos signPos = placeSign(level, workspace, targetPiece, structureBlockPos);
+        Map<String, String> pieceTags = new HashMap<>(targetPiece.tags());
+        copyGeneratedStairTags(templatePiece, pieceTags);
+        return createPieceDefinition(workspace, targetPiece, placements.get(index), context, connectors,
+                structureBlockPos, signPos, markerPositions, generatedStairPositions, pieceTags);
+    }
+
+    private MKWorkspacePieceDefinition buildPiece(ServerLevel level, MKStructureWorkspace workspace, MKPlannedPiece plannedPiece,
+                                                  MKWorkspaceGridLayout.Placement placement) {
+        PieceBuildContext context = createBuildContext(workspace, plannedPiece, placement);
+        int effectiveShellMargin = getShellMargin(plannedPiece, workspace.shellMargin());
+
+        BlockState floorState = resolveBlockState(workspace.palette().floorBlock(), Blocks.SMOOTH_STONE.defaultBlockState());
+        BlockState wallState = resolveBlockState(workspace.palette().wallBlock(), Blocks.STONE_BRICKS.defaultBlockState());
+        BlockState ceilingState = resolveBlockState(workspace.palette().ceilingBlock(), Blocks.SMOOTH_STONE.defaultBlockState());
+        boolean emptyScaffold = isEmptyScaffold(plannedPiece);
+
+        clearBounds(level, context.clearedBounds());
+        clearBounds(level, context.exportBounds());
+        if (!emptyScaffold) {
+            placeExteriorMargin(level, context.exportBounds(), context.geometryBounds());
+            int verticalShellThickness = getVerticalShellThickness(plannedPiece);
+            placeShell(level, context.geometryBounds(), effectiveShellMargin, verticalShellThickness, floorState, wallState,
+                    ceilingState);
+            carveInterior(level, context.geometryOrigin(), plannedPiece, effectiveShellMargin, verticalShellThickness);
+        }
+
+        List<MKWorkspaceConnectorDefinition> connectors = new ArrayList<>();
+        List<BlockPos> markerPositions = new ArrayList<>();
+        for (MKPlannedConnector plannedConnector : plannedPiece.connectors()) {
+            MKWorkspaceConnectorDefinition connector = placeConnector(level, workspace, plannedPiece, plannedConnector,
+                    context.exportOrigin(), context.geometryOrigin(), effectiveShellMargin,
+                    context.geometryBounds().getXSpan(), context.geometryBounds().getZSpan(),
+                    context.geometryBounds().getYSpan());
+            connectors.add(connector);
+            BlockPos markerPos = placeConnectorMarker(level, connector, context.exportBounds());
+            markerPositions.add(markerPos);
+        }
+
+        BlockPos structureBlockPos = placeStructureBlock(level, workspace, plannedPiece, context.exportOrigin(),
+                context.exportWidth(), context.exportHeight(), context.exportLength());
+        BlockPos signPos = placeSign(level, workspace, plannedPiece, structureBlockPos);
+        return createPieceDefinition(workspace, plannedPiece, placement, context, connectors, structureBlockPos, signPos,
+                markerPositions, List.of(), new HashMap<>(plannedPiece.tags()));
+    }
+
+    private MKWorkspacePieceDefinition createPieceDefinition(MKStructureWorkspace workspace, MKPlannedPiece plannedPiece,
+                                                             MKWorkspaceGridLayout.Placement placement,
+                                                             PieceBuildContext context,
+                                                             List<MKWorkspaceConnectorDefinition> connectors,
+                                                             BlockPos structureBlockPos, BlockPos signPos,
+                                                             List<BlockPos> markerPositions,
+                                                             List<BlockPos> generatedStairPositions,
+                                                             Map<String, String> pieceTags) {
+        MKWorkspaceDimensions effectiveDimensions = new MKWorkspaceDimensions(
+                plannedPiece.interiorWidth(),
+                plannedPiece.interiorLength(),
+                plannedPiece.interiorHeight(),
+                plannedPiece.interiorHeight(),
+                plannedPiece.interiorHeight(),
+                workspace.dimensions().hallwayWidth(),
+                workspace.dimensions().doorwayWidth(),
+                workspace.dimensions().doorwayHeight()
+        );
+        return new MKWorkspacePieceDefinition(
+                UUID.randomUUID(),
+                workspace.id(),
+                plannedPiece.pieceName(),
+                plannedPiece.role(),
+                getVariantIndex(plannedPiece),
+                effectiveDimensions,
+                getShellMargin(plannedPiece, workspace.shellMargin()),
+                connectors,
+                context.exportOrigin(),
+                context.exportBounds(),
+                placement.previewBounds(),
+                structureBlockPos,
+                signPos,
+                markerPositions,
+                generatedStairPositions,
+                pieceTags
+        );
+    }
+
+    private List<BlockPos> remapGeneratedStairPositions(MKWorkspacePieceDefinition templatePiece, BlockPos exportOrigin) {
+        BlockPos templateOrigin = new BlockPos(templatePiece.exportBounds().minX(), templatePiece.exportBounds().minY(),
+                templatePiece.exportBounds().minZ());
+        List<BlockPos> remapped = new ArrayList<>();
+        for (BlockPos pos : templatePiece.generatedStairPositions()) {
+            remapped.add(exportOrigin.offset(pos.subtract(templateOrigin)));
+        }
+        return remapped;
+    }
+
+    private void copyGeneratedStairTags(MKWorkspacePieceDefinition templatePiece, Map<String, String> targetTags) {
+        for (Map.Entry<String, String> entry : templatePiece.tags().entrySet()) {
+            if (entry.getKey().startsWith("generated_stair_")) {
+                targetTags.put(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
+    private PieceBuildContext createBuildContext(MKStructureWorkspace workspace, MKPlannedPiece plannedPiece,
+                                                 MKWorkspaceGridLayout.Placement placement) {
+        int shellMargin = getShellMargin(plannedPiece, workspace.shellMargin());
+        int verticalShellThickness = getVerticalShellThickness(plannedPiece);
+        boolean emptyScaffold = isEmptyScaffold(plannedPiece);
+        int exteriorAirMargin = emptyScaffold ? 0 : workspace.exteriorAirMargin();
+        int exportWidth = plannedPiece.interiorWidth() + (2 * shellMargin) + (2 * exteriorAirMargin);
+        int exportLength = plannedPiece.interiorLength() + (2 * shellMargin) + (2 * exteriorAirMargin);
+        int exportHeight = plannedPiece.interiorHeight() + (2 * verticalShellThickness);
+        BlockPos exportOrigin = placement.previewOrigin().offset(workspace.previewMargin(), 0, workspace.previewMargin());
+        BlockPos geometryOrigin = exportOrigin.offset(exteriorAirMargin, 0, exteriorAirMargin);
+        BoundingBox exportBounds = new BoundingBox(
+                exportOrigin.getX(),
+                exportOrigin.getY(),
+                exportOrigin.getZ(),
+                exportOrigin.getX() + exportWidth - 1,
+                exportOrigin.getY() + exportHeight - 1,
+                exportOrigin.getZ() + exportLength - 1
+        );
+        BoundingBox geometryBounds = new BoundingBox(
+                geometryOrigin.getX(),
+                geometryOrigin.getY(),
+                geometryOrigin.getZ(),
+                geometryOrigin.getX() + plannedPiece.interiorWidth() + (2 * shellMargin) - 1,
+                geometryOrigin.getY() + exportHeight - 1,
+                geometryOrigin.getZ() + plannedPiece.interiorLength() + (2 * shellMargin) - 1
+        );
+        BoundingBox clearedBounds = new BoundingBox(
+                exportBounds.minX() - CLEAR_MARGIN,
+                exportBounds.minY() - CLEAR_MARGIN,
+                exportBounds.minZ() - CLEAR_MARGIN,
+                exportBounds.maxX() + CLEAR_MARGIN,
+                exportBounds.maxY() + CLEAR_MARGIN,
+                exportBounds.maxZ() + CLEAR_MARGIN
+        );
+        return new PieceBuildContext(exportOrigin, geometryOrigin, exportBounds, geometryBounds, clearedBounds,
+                exportWidth, exportLength, exportHeight);
+    }
+
+    private void copyTemplateContents(ServerLevel level, BoundingBox sourceBounds, BoundingBox destinationBounds) {
+        for (int x = 0; x < sourceBounds.getXSpan(); x++) {
+            for (int y = 0; y < sourceBounds.getYSpan(); y++) {
+                for (int z = 0; z < sourceBounds.getZSpan(); z++) {
+                    BlockPos sourcePos = new BlockPos(sourceBounds.minX() + x, sourceBounds.minY() + y, sourceBounds.minZ() + z);
+                    BlockPos destPos = new BlockPos(destinationBounds.minX() + x, destinationBounds.minY() + y, destinationBounds.minZ() + z);
+                    BlockState state = level.getBlockState(sourcePos);
+                    level.setBlock(destPos, state, Block.UPDATE_ALL);
+                    copyBlockEntity(level, sourcePos, destPos, state);
+                }
+            }
+        }
+    }
+
+    private void copyBlockEntity(ServerLevel level, BlockPos sourcePos, BlockPos destPos, BlockState state) {
+        BlockEntity sourceEntity = level.getBlockEntity(sourcePos);
+        if (sourceEntity == null) {
+            return;
+        }
+        BlockEntity destEntity = level.getBlockEntity(destPos);
+        if (destEntity == null) {
+            return;
+        }
+        CompoundTag tag = sourceEntity.saveWithFullMetadata(level.registryAccess());
+        tag.putInt("x", destPos.getX());
+        tag.putInt("y", destPos.getY());
+        tag.putInt("z", destPos.getZ());
+        destEntity.loadWithComponents(tag, level.registryAccess());
+        destEntity.setChanged();
+        level.sendBlockUpdated(destPos, state, state, Block.UPDATE_ALL);
+    }
+
+    private List<MKWorkspaceConnectorDefinition> recreateConnectorsFromTemplate(ServerLevel level, MKStructureWorkspace workspace,
+                                                                                MKPlannedPiece targetPiece,
+                                                                                List<MKWorkspaceConnectorDefinition> sourceConnectors,
+                                                                                BlockPos exportOrigin) {
+        List<MKWorkspaceConnectorDefinition> connectors = new ArrayList<>();
+        for (MKWorkspaceConnectorDefinition sourceConnector : sourceConnectors) {
+            BlockPos connectorPos = exportOrigin.offset(sourceConnector.relativePos());
+            BlockEntity entity = level.getBlockEntity(connectorPos);
+            ResourceLocation pool = sourceConnector.targetPool();
+            if (entity instanceof JigsawBlockEntity jigsaw) {
+                jigsaw.setPool(ResourceKey.create(Registries.TEMPLATE_POOL, pool));
+                jigsaw.setChanged();
+            }
+            connectors.add(new MKWorkspaceConnectorDefinition(
+                    sourceConnector.role(),
+                    sourceConnector.facing(),
+                    sourceConnector.relativePos(),
+                    sourceConnector.openingWidth(),
+                    sourceConnector.openingHeight(),
+                    sourceConnector.jigsawName(),
+                    sourceConnector.jigsawTarget(),
+                    pool
+            ));
+        }
+        return connectors;
+    }
+
+    private void clearBounds(ServerLevel level, BoundingBox bounds) {
+        for (int x = bounds.minX(); x <= bounds.maxX(); x++) {
+            for (int y = bounds.minY(); y <= bounds.maxY(); y++) {
+                for (int z = bounds.minZ(); z <= bounds.maxZ(); z++) {
+                    level.setBlock(new BlockPos(x, y, z), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                }
+            }
+        }
+    }
+
+    private void clearWorkspaceArea(ServerLevel level, MKStructureWorkspace workspace,
+                                    List<MKWorkspaceGridLayout.Placement> placements) {
+        BoundingBox workspaceBounds = null;
+        for (MKWorkspacePieceDefinition existingPiece : workspace.pieces()) {
+            BoundingBox expanded = expandBounds(existingPiece.previewBounds(), CLEAR_MARGIN);
+            workspaceBounds = workspaceBounds == null ? expanded : mergeBounds(workspaceBounds, expanded);
+        }
+        for (MKWorkspaceGridLayout.Placement placement : placements) {
+            BoundingBox expanded = expandBounds(placement.previewBounds(), CLEAR_MARGIN);
+            workspaceBounds = workspaceBounds == null ? expanded : mergeBounds(workspaceBounds, expanded);
+        }
+        if (workspaceBounds != null) {
+            clearBounds(level, workspaceBounds);
+        }
+    }
+
+    private BoundingBox expandBounds(BoundingBox bounds, int margin) {
+        return new BoundingBox(
+                bounds.minX() - margin,
+                bounds.minY() - margin,
+                bounds.minZ() - margin,
+                bounds.maxX() + margin,
+                bounds.maxY() + margin,
+                bounds.maxZ() + margin
+        );
+    }
+
+    private BoundingBox mergeBounds(BoundingBox left, BoundingBox right) {
+        return new BoundingBox(
+                Math.min(left.minX(), right.minX()),
+                Math.min(left.minY(), right.minY()),
+                Math.min(left.minZ(), right.minZ()),
+                Math.max(left.maxX(), right.maxX()),
+                Math.max(left.maxY(), right.maxY()),
+                Math.max(left.maxZ(), right.maxZ())
+        );
+    }
+
+    private boolean isEmptyScaffold(MKPlannedPiece piece) {
+        return "embedded_stair".equals(piece.tags().get("tower_piece_kind"));
+    }
+
+    private int getShellMargin(MKPlannedPiece piece, int shellMargin) {
+        return isEmptyScaffold(piece) ? 0 : shellMargin;
+    }
+
+    private int getVerticalShellThickness(MKPlannedPiece piece) {
+        return isEmptyScaffold(piece) ? 0 : 1;
+    }
+
+    private int getVariantIndex(MKPlannedPiece piece) {
+        try {
+            return Integer.parseInt(piece.tags().getOrDefault(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "0"));
+        } catch (NumberFormatException ignored) {
+            return 0;
+        }
+    }
+
+    private void placeShell(ServerLevel level, BoundingBox bounds, int shellMargin, int verticalShellThickness,
+                            BlockState floorState, BlockState wallState, BlockState ceilingState) {
+        for (int x = bounds.minX(); x <= bounds.maxX(); x++) {
+            for (int y = bounds.minY(); y <= bounds.maxY(); y++) {
+                for (int z = bounds.minZ(); z <= bounds.maxZ(); z++) {
+                    BlockPos pos = new BlockPos(x, y, z);
+                    boolean bottom = y < bounds.minY() + verticalShellThickness;
+                    boolean top = y > bounds.maxY() - verticalShellThickness;
+                    boolean wall = x < bounds.minX() + shellMargin || x > bounds.maxX() - shellMargin ||
+                            z < bounds.minZ() + shellMargin || z > bounds.maxZ() - shellMargin;
+                    if (bottom) {
+                        level.setBlock(pos, floorState, Block.UPDATE_ALL);
+                    } else if (top) {
+                        level.setBlock(pos, ceilingState, Block.UPDATE_ALL);
+                    } else if (wall) {
+                        level.setBlock(pos, wallState, Block.UPDATE_ALL);
+                    } else {
+                        level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                    }
+                }
+            }
+        }
+    }
+
+    private void placeExteriorMargin(ServerLevel level, BoundingBox exportBounds, BoundingBox geometryBounds) {
+        BlockState structureVoid = Blocks.STRUCTURE_VOID.defaultBlockState();
+        for (int x = exportBounds.minX(); x <= exportBounds.maxX(); x++) {
+            for (int y = exportBounds.minY(); y <= exportBounds.maxY(); y++) {
+                for (int z = exportBounds.minZ(); z <= exportBounds.maxZ(); z++) {
+                    if (x < geometryBounds.minX() || x > geometryBounds.maxX() ||
+                            y < geometryBounds.minY() || y > geometryBounds.maxY() ||
+                            z < geometryBounds.minZ() || z > geometryBounds.maxZ()) {
+                        level.setBlock(new BlockPos(x, y, z), structureVoid, Block.UPDATE_ALL);
+                    }
+                }
+            }
+        }
+    }
+
+    private void carveInterior(ServerLevel level, BlockPos exportOrigin, MKPlannedPiece piece, int shellMargin,
+                               int verticalShellThickness) {
+        BlockPos interiorMin = exportOrigin.offset(shellMargin, verticalShellThickness, shellMargin);
+        for (int x = 0; x < piece.interiorWidth(); x++) {
+            for (int y = 0; y < piece.interiorHeight(); y++) {
+                for (int z = 0; z < piece.interiorLength(); z++) {
+                    level.setBlock(interiorMin.offset(x, y, z), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                }
+            }
+        }
+    }
+
+    private MKWorkspaceConnectorDefinition placeConnector(ServerLevel level, MKStructureWorkspace workspace, MKPlannedPiece piece,
+                                                          MKPlannedConnector plannedConnector, BlockPos exportOrigin,
+                                                          BlockPos geometryOrigin, int shellMargin, int geometryWidth,
+                                                          int geometryLength, int geometryHeight) {
+        Direction facing = plannedConnector.facing();
+        int verticalShellThickness = getVerticalShellThickness(piece);
+        int interiorCenterX = getConnectorCenterX(geometryOrigin, piece, shellMargin, plannedConnector);
+        int interiorCenterZ = getConnectorCenterZ(geometryOrigin, piece, shellMargin, plannedConnector);
+        BlockPos connectorPos;
+        if (isEmptyScaffold(piece) && isEmbeddedStairConnector(plannedConnector.role())) {
+            connectorPos = new BlockPos(interiorCenterX,
+                    geometryOrigin.getY(),
+                    interiorCenterZ);
+        } else if (plannedConnector.role() == MKConnectorRole.STAIR_INSERT_UP) {
+            connectorPos = new BlockPos(interiorCenterX,
+                    geometryOrigin.getY() + Math.max(0, verticalShellThickness - 1),
+                    interiorCenterZ);
+        } else if (plannedConnector.role() == MKConnectorRole.STAIR_INSERT_DOWN) {
+            connectorPos = new BlockPos(interiorCenterX,
+                    geometryOrigin.getY() + geometryHeight - Math.max(1, verticalShellThickness) - 2,
+                    interiorCenterZ);
+        } else if (facing == Direction.NORTH) {
+            connectorPos = new BlockPos(interiorCenterX, geometryOrigin.getY() + verticalShellThickness,
+                    geometryOrigin.getZ() + shellMargin - 1);
+        } else if (facing == Direction.SOUTH) {
+            connectorPos = new BlockPos(interiorCenterX, geometryOrigin.getY() + verticalShellThickness,
+                    geometryOrigin.getZ() + shellMargin + piece.interiorLength());
+        } else if (facing == Direction.WEST) {
+            connectorPos = new BlockPos(geometryOrigin.getX() + shellMargin - 1,
+                    geometryOrigin.getY() + verticalShellThickness, interiorCenterZ);
+        } else if (facing == Direction.EAST) {
+            connectorPos = new BlockPos(geometryOrigin.getX() + shellMargin + piece.interiorWidth(),
+                    geometryOrigin.getY() + verticalShellThickness, interiorCenterZ);
+        } else if (facing == Direction.UP) {
+            connectorPos = new BlockPos(interiorCenterX,
+                    geometryOrigin.getY() + geometryHeight - Math.max(1, verticalShellThickness),
+                    interiorCenterZ);
+        } else {
+            connectorPos = new BlockPos(interiorCenterX,
+                    geometryOrigin.getY() + Math.max(0, verticalShellThickness - 1),
+                    interiorCenterZ);
+        }
+
+        carveConnectorOpening(level, geometryOrigin, piece, plannedConnector, shellMargin, verticalShellThickness,
+                geometryWidth, geometryLength, geometryHeight);
+        level.setBlock(connectorPos, Blocks.JIGSAW.defaultBlockState()
+                .setValue(JigsawBlock.ORIENTATION, getJigsawOrientation(facing)), Block.UPDATE_ALL);
+        BlockEntity entity = level.getBlockEntity(connectorPos);
+        ResourceLocation name = ResourceLocation.fromNamespaceAndPath(workspace.namespace(), plannedConnector.role().getSerializedName());
+        ResourceLocation target = ResourceLocation.fromNamespaceAndPath(workspace.namespace(), getTargetName(plannedConnector.role()));
+        ResourceLocation pool = getConnectorPool(workspace, plannedConnector.targetBaseName(), piece);
+        if (entity instanceof JigsawBlockEntity jigsaw) {
+            jigsaw.setName(name);
+            jigsaw.setTarget(target);
+            jigsaw.setPool(ResourceKey.create(Registries.TEMPLATE_POOL, pool));
+            jigsaw.setFinalState("minecraft:air");
+            jigsaw.setJoint(JigsawBlockEntity.JointType.ALIGNED);
+            jigsaw.setChanged();
+        }
+        return new MKWorkspaceConnectorDefinition(
+                plannedConnector.role(),
+                facing,
+                connectorPos.subtract(exportOrigin),
+                plannedConnector.openingWidth(),
+                plannedConnector.openingHeight(),
+                name,
+                target,
+                pool
+        );
+    }
+
+    private void carveConnectorOpening(ServerLevel level, BlockPos geometryOrigin, MKPlannedPiece piece,
+                                       MKPlannedConnector connector, int shellMargin, int verticalShellThickness,
+                                       int geometryWidth,
+                                       int geometryLength, int geometryHeight) {
+        if (connector.role() == MKConnectorRole.STAIR_INSERT_UP || connector.role() == MKConnectorRole.STAIR_INSERT_DOWN) {
+            return;
+        }
+        int baseY = geometryOrigin.getY() + verticalShellThickness;
+        int centerX;
+        int centerZ;
+        if (connector.facing() == Direction.UP || connector.facing() == Direction.DOWN) {
+            centerX = getVerticalCenterX(geometryOrigin, piece, shellMargin);
+            centerZ = getVerticalCenterZ(geometryOrigin, piece, shellMargin);
+        } else {
+            centerX = getConnectorCenterX(geometryOrigin, piece, shellMargin, connector);
+            centerZ = getConnectorCenterZ(geometryOrigin, piece, shellMargin, connector);
+        }
+        int halfWidth = connector.openingWidth() / 2;
+        int halfDepth = connector.openingHeight() / 2;
+        int carveThickness = connector.facing() == Direction.UP || connector.facing() == Direction.DOWN
+                ? verticalShellThickness
+                : shellMargin;
+        for (int thickness = 0; thickness < carveThickness; thickness++) {
+            if (connector.facing() == Direction.NORTH || connector.facing() == Direction.SOUTH) {
+                for (int height = 0; height < connector.openingHeight(); height++) {
+                    int z = connector.facing() == Direction.NORTH ? geometryOrigin.getZ() + thickness :
+                            geometryOrigin.getZ() + geometryLength - 1 - thickness;
+                    for (int width = -halfWidth; width <= halfWidth; width++) {
+                        level.setBlock(new BlockPos(centerX + width, baseY + height, z), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                    }
+                }
+            } else if (connector.facing() == Direction.WEST || connector.facing() == Direction.EAST) {
+                for (int height = 0; height < connector.openingHeight(); height++) {
+                    int x = connector.facing() == Direction.WEST ? geometryOrigin.getX() + thickness :
+                            geometryOrigin.getX() + geometryWidth - 1 - thickness;
+                    for (int width = -halfWidth; width <= halfWidth; width++) {
+                        level.setBlock(new BlockPos(x, baseY + height, centerZ + width), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                    }
+                }
+            } else {
+                int y = connector.facing() == Direction.UP ? geometryOrigin.getY() + geometryHeight - 1 - thickness :
+                        geometryOrigin.getY() + thickness;
+                for (int xOffset = -halfWidth; xOffset <= halfWidth; xOffset++) {
+                    for (int zOffset = -halfDepth; zOffset <= halfDepth; zOffset++) {
+                        level.setBlock(new BlockPos(centerX + xOffset, y, centerZ + zOffset), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                    }
+                }
+            }
+        }
+    }
+
+    private FrontAndTop getJigsawOrientation(Direction facing) {
+        if (facing == Direction.UP || facing == Direction.DOWN) {
+            return FrontAndTop.fromFrontAndTop(facing, Direction.NORTH);
+        }
+        return FrontAndTop.fromFrontAndTop(facing, Direction.UP);
+    }
+
+    private int getVerticalCenterX(BlockPos geometryOrigin, MKPlannedPiece piece, int shellMargin) {
+        MKTowerStairPlacement placement = getTowerStairPlacement(piece);
+        int interiorMinX = geometryOrigin.getX() + shellMargin;
+        int interiorMaxX = interiorMinX + piece.interiorWidth() - 1;
+        int shaftHalf = getShaftHalfWidth(piece);
+        return switch (placement) {
+            case WEST -> interiorMinX + shaftHalf;
+            case EAST -> interiorMaxX - shaftHalf;
+            default -> interiorMinX + (piece.interiorWidth() / 2);
+        };
+    }
+
+    private int getVerticalCenterZ(BlockPos geometryOrigin, MKPlannedPiece piece, int shellMargin) {
+        MKTowerStairPlacement placement = getTowerStairPlacement(piece);
+        int interiorMinZ = geometryOrigin.getZ() + shellMargin;
+        int interiorMaxZ = interiorMinZ + piece.interiorLength() - 1;
+        int shaftHalf = getShaftHalfWidth(piece);
+        return switch (placement) {
+            case NORTH -> interiorMinZ + shaftHalf;
+            case SOUTH -> interiorMaxZ - shaftHalf;
+            default -> interiorMinZ + (piece.interiorLength() / 2);
+        };
+    }
+
+    private int getShaftHalfWidth(MKPlannedPiece piece) {
+        int openingWidth = piece.connectors().stream()
+                .filter(connector -> connector.facing() == Direction.UP || connector.facing() == Direction.DOWN)
+                .mapToInt(MKPlannedConnector::openingWidth)
+                .findFirst()
+                .orElse(1);
+        return openingWidth / 2;
+    }
+
+    private MKTowerStairPlacement getTowerStairPlacement(MKPlannedPiece piece) {
+        return MKTowerStairPlacement.fromSerializedName(
+                piece.tags().getOrDefault("tower_stair_placement", MKTowerStairPlacement.CENTER.getSerializedName())
+        );
+    }
+
+    private int getConnectorCenterX(BlockPos geometryOrigin, MKPlannedPiece piece, int shellMargin, MKPlannedConnector connector) {
+        if (isEmbeddedStairConnector(connector.role())) {
+            return getVerticalCenterX(geometryOrigin, piece, shellMargin);
+        }
+        if (connector.facing() == Direction.UP || connector.facing() == Direction.DOWN) {
+            return getVerticalCenterX(geometryOrigin, piece, shellMargin);
+        }
+        return geometryOrigin.getX() + shellMargin + (piece.interiorWidth() / 2);
+    }
+
+    private int getConnectorCenterZ(BlockPos geometryOrigin, MKPlannedPiece piece, int shellMargin, MKPlannedConnector connector) {
+        if (isEmbeddedStairConnector(connector.role())) {
+            return getVerticalCenterZ(geometryOrigin, piece, shellMargin);
+        }
+        if (connector.facing() == Direction.UP || connector.facing() == Direction.DOWN) {
+            return getVerticalCenterZ(geometryOrigin, piece, shellMargin);
+        }
+        return geometryOrigin.getZ() + shellMargin + (piece.interiorLength() / 2);
+    }
+
+    private boolean isEmbeddedStairConnector(MKConnectorRole role) {
+        return role == MKConnectorRole.STAIR_INSERT_UP || role == MKConnectorRole.STAIR_INSERT_DOWN;
+    }
+
+    private BlockPos placeStructureBlock(ServerLevel level, MKStructureWorkspace workspace, MKPlannedPiece piece,
+                                         BlockPos exportOrigin, int exportWidth, int exportHeight, int exportLength) {
+        BlockPos structurePos = exportOrigin.offset(-2, 1, exportLength / 2);
+        level.setBlock(structurePos, Blocks.STRUCTURE_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+        BlockEntity entity = level.getBlockEntity(structurePos);
+        if (entity instanceof StructureBlockEntity structureBlock) {
+            structureBlock.setMode(StructureMode.SAVE);
+            structureBlock.setIgnoreEntities(true);
+            structureBlock.setShowBoundingBox(true);
+            structureBlock.setStructureName(ResourceLocation.fromNamespaceAndPath(workspace.namespace(),
+                    workspace.structureName() + "/" + piece.pieceName()));
+            structureBlock.setStructurePos(exportOrigin.subtract(structurePos));
+            structureBlock.setStructureSize(new Vec3i(exportWidth, exportHeight, exportLength));
+            structureBlock.setChanged();
+        }
+        return structurePos;
+    }
+
+    private BlockPos placeSign(ServerLevel level, MKStructureWorkspace workspace, MKPlannedPiece piece, BlockPos structureBlockPos) {
+        BlockPos signPos = structureBlockPos.west();
+        BlockState signState = Blocks.OAK_SIGN.defaultBlockState();
+        level.setBlock(signPos, signState, Block.UPDATE_ALL);
+        BlockEntity entity = level.getBlockEntity(signPos);
+        if (entity instanceof SignBlockEntity sign) {
+            SignText text = sign.getFrontText()
+                    .setMessage(0, Component.literal(workspace.namespace()))
+                    .setMessage(1, Component.literal(workspace.structureName()))
+                    .setMessage(2, Component.literal(piece.role().getSerializedName()))
+                    .setMessage(3, Component.literal(piece.pieceName()));
+            sign.setText(text, true);
+            sign.setText(text, false);
+            sign.setChanged();
+            level.sendBlockUpdated(signPos, signState, signState, Block.UPDATE_ALL);
+        }
+        return signPos;
+    }
+
+    private BlockPos placeConnectorMarker(ServerLevel level, MKWorkspaceConnectorDefinition connector, BoundingBox exportBounds) {
+        BlockPos wallPos = new BlockPos(
+                exportBounds.minX() + connector.relativePos().getX(),
+                exportBounds.minY() + connector.relativePos().getY(),
+                exportBounds.minZ() + connector.relativePos().getZ()
+        );
+        BlockPos markerPos = switch (connector.facing()) {
+            case NORTH -> new BlockPos(wallPos.getX(), wallPos.getY(), exportBounds.minZ() - 1);
+            case SOUTH -> new BlockPos(wallPos.getX(), wallPos.getY(), exportBounds.maxZ() + 1);
+            case WEST -> new BlockPos(exportBounds.minX() - 1, wallPos.getY(), wallPos.getZ());
+            case EAST -> new BlockPos(exportBounds.maxX() + 1, wallPos.getY(), wallPos.getZ());
+            case UP -> new BlockPos(wallPos.getX(), exportBounds.maxY() + 1, wallPos.getZ());
+            case DOWN -> new BlockPos(wallPos.getX(), exportBounds.minY() - 1, wallPos.getZ());
+        };
+        level.setBlock(markerPos, getMarkerState(connector.role()), Block.UPDATE_ALL);
+        return markerPos;
+    }
+
+    private ResourceLocation getConnectorPool(MKStructureWorkspace workspace, String explicitTargetBaseName, MKPlannedPiece piece) {
+        if (explicitTargetBaseName != null) {
+            return parseConnectorPool(workspace, explicitTargetBaseName);
+        }
+        return getConnectorPool(workspace, piece);
+    }
+
+    private ResourceLocation getConnectorPool(MKStructureWorkspace workspace, MKPlannedPiece piece) {
+        String baseName = piece.tags().getOrDefault(MKWorkspaceGridLayout.TAG_BASE_NAME, deriveBasePoolName(piece.pieceName()));
+        return parseConnectorPool(workspace, baseName);
+    }
+
+    private ResourceLocation parseConnectorPool(MKStructureWorkspace workspace, String poolName) {
+        if (poolName.contains(":")) {
+            return ResourceLocation.parse(poolName);
+        }
+        return ResourceLocation.fromNamespaceAndPath(workspace.namespace(), workspace.structureName() + "/" + poolName);
+    }
+
+    private String deriveBasePoolName(String pieceName) {
+        if (pieceName.endsWith("_template")) {
+            return pieceName.substring(0, pieceName.length() - "_template".length());
+        }
+        int suffixIndex = pieceName.lastIndexOf('_');
+        if (suffixIndex > 0) {
+            boolean numericSuffix = true;
+            for (int i = suffixIndex + 1; i < pieceName.length(); i++) {
+                if (!Character.isDigit(pieceName.charAt(i))) {
+                    numericSuffix = false;
+                    break;
+                }
+            }
+            if (numericSuffix) {
+                return pieceName.substring(0, suffixIndex);
+            }
+        }
+        return pieceName;
+    }
+
+    private BlockState getMarkerState(MKConnectorRole role) {
+        return switch (role) {
+            case MAIN_FORWARD, MAIN_BACK -> Blocks.BLUE_WOOL.defaultBlockState();
+            case CONNECT_UP, CONNECT_DOWN, STAIR_INSERT_UP, STAIR_INSERT_DOWN -> Blocks.ORANGE_WOOL.defaultBlockState();
+            case BOSS_FORWARD, BOSS_BACK -> Blocks.RED_WOOL.defaultBlockState();
+            case BRANCH -> Blocks.GREEN_WOOL.defaultBlockState();
+        };
+    }
+
+    private String getTargetName(MKConnectorRole role) {
+        return switch (role) {
+            case MAIN_FORWARD -> MKConnectorRole.MAIN_BACK.getSerializedName();
+            case MAIN_BACK -> MKConnectorRole.MAIN_FORWARD.getSerializedName();
+            case CONNECT_UP -> MKConnectorRole.CONNECT_DOWN.getSerializedName();
+            case CONNECT_DOWN -> MKConnectorRole.CONNECT_UP.getSerializedName();
+            case STAIR_INSERT_UP -> MKConnectorRole.STAIR_INSERT_DOWN.getSerializedName();
+            case STAIR_INSERT_DOWN -> MKConnectorRole.STAIR_INSERT_UP.getSerializedName();
+            case BOSS_FORWARD -> MKConnectorRole.BOSS_BACK.getSerializedName();
+            case BOSS_BACK -> MKConnectorRole.BOSS_FORWARD.getSerializedName();
+            case BRANCH -> MKConnectorRole.BRANCH.getSerializedName();
+        };
+    }
+
+    private BlockState resolveBlockState(ResourceLocation id, BlockState fallback) {
+        Block block = BuiltInRegistries.BLOCK.getOptional(id).orElse(fallback.getBlock());
+        return block.defaultBlockState();
+    }
+}

@@ -31,11 +31,17 @@ public final class MKConnectorClassifier {
         if (name.equals(settings.branch())) {
             return MKConnectorRole.BRANCH;
         }
-        if (name.equals(settings.stairsDown())) {
-            return MKConnectorRole.STAIRS_DOWN;
+        if (name.equals(settings.connectDown()) || "stairs_down".equals(name.getPath())) {
+            return MKConnectorRole.CONNECT_DOWN;
         }
-        if (name.equals(settings.stairsUp())) {
-            return MKConnectorRole.STAIRS_UP;
+        if (name.equals(settings.connectUp()) || "stairs_up".equals(name.getPath())) {
+            return MKConnectorRole.CONNECT_UP;
+        }
+        if (name.equals(settings.stairInsertDown())) {
+            return MKConnectorRole.STAIR_INSERT_DOWN;
+        }
+        if (name.equals(settings.stairInsertUp())) {
+            return MKConnectorRole.STAIR_INSERT_UP;
         }
         if (name.equals(settings.bossForward())) {
             return MKConnectorRole.BOSS_FORWARD;

@@ -28,6 +28,7 @@ public class NpcCommands {
         dispatcher.register(MKSummonCommand.register());
         dispatcher.register(MKQuestCommand.register());
         dispatcher.register(MKStructureCommands.register());
+        dispatcher.register(MKWorkspaceCommands.register());
     }
 
     public static void register(IEventBus modBus) {

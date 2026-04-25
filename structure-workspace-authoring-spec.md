@@ -68,14 +68,14 @@ Examples:
 
 ### Shell Margin
 
-The scaffold generator must add a shell around the logical interior.
+The scaffold generator adds horizontal shell thickness around the logical interior.
 
-The default shell margin is `1` block on all enclosed sides. This means:
+Current tower behavior:
 
-- a `1 x 2` hallway interior becomes a `3 x 4` fully enclosed cross section
-- a `9 x 9 x 5` room interior becomes `11 x 11 x 7` if the shell margin is `1`
+- shell margin expands width and length
+- vertical shell thickness for authored room pieces is effectively fixed by the scaffold contract
 
-V1 must support a configurable shell margin larger than `1` so designers can create thicker outer layers.
+This means shell margin is mainly a wall-thickness control, not a generic full 3D padding value.
 
 ### Export Area
 
@@ -172,9 +172,10 @@ Use `MKWidgets` and a dedicated `MKScreen`.
 - family type
 - room width
 - room length
+- vertical shaft size
+- entrance height
 - room height
-- hallway width
-- hallway height
+- basement height
 - doorway width
 - doorway height
 - shell margin
@@ -197,10 +198,11 @@ All horizontal authored dimensions that need centered connectors must be odd.
 
 - `room_width` odd
 - `room_length` odd
-- `hallway_width` odd
+- `vertical_shaft_size` odd
 - `doorway_width` odd
 - `room_height >= 3`
-- `hallway_height >= 2`
+- `entrance_height >= 3`
+- `basement_height >= 3`
 - `doorway_height >= 2`
 - `shell_margin >= 1`
 
@@ -210,17 +212,18 @@ Claustrophobic authored spaces are valid.
 
 Examples:
 
-- hallway width `1`
+- shaft size `1`
 - doorway width `1`
-- hallway height `2`
 - doorway height `2`
 
 These are valid as long as shell margin rules are respected.
 
 ### Relationship Rules
 
-- `doorway_width <= hallway_width <= room_width`
-- `doorway_height <= hallway_height <= room_height`
+- `doorway_width <= vertical_shaft_size <= min(room_width, room_length)`
+- `entrance_height` must stay in phase with `room_height`
+- `basement_height` must stay in phase with `room_height`
+- `doorway_height <= entrance_height`
 - all relevant centered-width values must be odd
 
 ## Interior Size Versus Exported Piece Size
@@ -233,16 +236,16 @@ The scaffold builder computes total exported bounds as:
 
 - exported width = interior width + `2 * shellMargin`
 - exported length = interior length + `2 * shellMargin`
-- exported height = interior height + `2 * shellMargin`
 
-For hallways this means:
+In the current tower implementation, height is not expanded by shell margin in the same way. Horizontal shell thickness is configurable; vertical shell behavior is handled separately by the scaffold/stair builder contract.
+
+For narrow passages this means:
 
 - desired interior width `1`
-- desired interior height `2`
 - shell margin `1`
-- total enclosed hallway cross section = `3 x 4`
+- total enclosed width = `3`
 
-The same rule applies to rooms and stairs unless a specific family planner overrides it later.
+The same horizontal rule applies to rooms unless a specific family planner overrides it.
 
 ## Connector Placement Rules
 
@@ -280,8 +283,8 @@ Use role-based connector names.
 - `main_forward`
 - `main_back`
 - `branch`
-- `stairs_up`
-- `stairs_down`
+- `connect_up`
+- `connect_down`
 - `boss_forward`
 - `boss_back`
 
@@ -295,7 +298,7 @@ Examples:
 
 - `mkdev:ashen_tower/entry`
 - `mkdev:ashen_tower/floor_main`
-- `mkdev:ashen_tower/stairs_up`
+- `mkdev:ashen_tower/boss_approach`
 - `mkdev:ashen_tower/boss_cap`
 
 ## Core Data Model
@@ -319,9 +322,10 @@ Examples:
 
 - `int roomWidth`
 - `int roomLength`
+- `int verticalShaftSize`
+- `int entranceHeight`
 - `int roomHeight`
-- `int hallwayWidth`
-- `int hallwayHeight`
+- `int basementHeight`
 - `int doorwayWidth`
 - `int doorwayHeight`
 
@@ -369,15 +373,19 @@ Canonical roles:
 
 - `ENTRY`
 - `FLOOR_MAIN`
-- `STAIRS_UP`
-- `STAIRS_DOWN`
+- `BOSS_APPROACH`
 - `BOSS_CAP`
+- `BASEMENT_ENTRY`
+- `BASEMENT_MAIN`
+- `BASEMENT_CAP`
 
 Characteristics:
 
 - one repeated floor footprint
 - surface entrance
 - variable floor count later at runtime
+- room-to-room vertical topology
+- stairs authored directly into room pieces
 - cap room is final boss room
 
 ### `DUNGEON`
@@ -591,4 +599,3 @@ Why:
 - proves save-bound exclusion for signs and markers
 
 Once that pipeline is solid, `DUNGEON` and `LABYRINTH` become planner additions instead of system redesigns.
-

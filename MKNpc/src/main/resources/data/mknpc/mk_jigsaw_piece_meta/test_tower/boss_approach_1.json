@@ -1,0 +1,6 @@
+{
+  "boss_only": true,
+  "role": "boss_approach",
+  "progression_delta": 1,
+  "vertical_level_delta": 1
+}

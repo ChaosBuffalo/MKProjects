@@ -1,0 +1,40 @@
+{
+  "type": "mknpc:mk_jigsaw",
+  "biomes": "#mknpc:has_test_tower",
+  "dungeon_layout": {
+    "connectors": {
+      "boss_back": "mknpc:boss_back",
+      "boss_forward": "mknpc:boss_forward",
+      "branch": "mknpc:branch",
+      "connect_down": "mknpc:connect_down",
+      "connect_up": "mknpc:connect_up",
+      "main_back": "mknpc:main_back",
+      "main_forward": "mknpc:main_forward",
+      "stair_insert_down": "mknpc:stair_insert_down",
+      "stair_insert_up": "mknpc:stair_insert_up"
+    },
+    "max_branch_depth": 0,
+    "max_floors": 3,
+    "max_pieces_per_floor": 2,
+    "min_floors": 3,
+    "min_pieces_per_floor": 1
+  },
+  "fill_floor": false,
+  "max_distance_from_center": 96,
+  "project_start_to_heightmap": "WORLD_SURFACE_WG",
+  "size": 12,
+  "spawn_overrides": {
+    "monster": {
+      "bounding_box": "piece",
+      "spawns": []
+    }
+  },
+  "start_height": {
+    "absolute": 0
+  },
+  "start_pool": "mknpc:test_tower/start",
+  "step": "surface_structures",
+  "structure_events": {},
+  "terrain_adaptation": "beard_thin",
+  "use_expansion_hack": true
+}

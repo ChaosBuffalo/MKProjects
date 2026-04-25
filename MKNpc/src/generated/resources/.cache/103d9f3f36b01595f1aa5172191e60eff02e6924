@@ -1,4 +1,4 @@
-// 1.21.1	2026-04-09T22:02:04.022071	Registries
+// 1.21.1	2026-04-24T07:06:26.6630826	Registries
 1be1c5a6e5b47db3aecda7cf687a9dc6d0a4b26e data/mknpc/mknpc/mknpcs/test_ghost.json
 d35f18dc426304e4178fad5c486179efcfbe7c5f data/mknpc/mknpc/mknpcs/test_golem.json
 2df5da3c656a233fbaeab9ebfa2229dc1cd7dae8 data/mknpc/mknpc/mknpcs/test_golem_battleaxe.json
@@ -32,7 +32,20 @@ b1e1274b6120c375ed92fb113468681ca421a616 data/mknpc/mknpc/mknpcs/test_melee_spea
 a2580cd30a5f1bbe7c118527812144123dc3b10e data/mknpc/mknpc/mknpcs/test_skeleton.json
 5057c77db31f0ca80f2cb9f4857171fe34e22f34 data/mknpc/mknpc/mknpcs/test_skull_multi.json
 dd850fa55950d1374bc2352039833d325c2a1b4a data/mknpc/worldgen/structure/test_jigsaw.json
+ebe9e438a3be284bf79817ff47bcae05b73a9731 data/mknpc/worldgen/structure/test_tower.json
 be18e4bcdd225957d395a67141c44634856fdce8 data/mknpc/worldgen/structure_set/test_structures.json
+df2f0355315209d82caf83463063f5f09706bb5c data/mknpc/worldgen/structure_set/test_tower.json
 c53eb36b2fec0ace9d70097b94825dfde130121f data/mknpc/worldgen/template_pool/digger/diggerbase.json
 3470e006876121c9a39b81056b9c860529499559 data/mknpc/worldgen/template_pool/digger/diggercamp.json
 e8263a0eb65c52f3271d8c9b76e456f03da15d01 data/mknpc/worldgen/template_pool/digger/diggerroad.json
+c740359a3e3b1c0d6438a10c1b4117d878d615e9 data/mknpc/worldgen/template_pool/test_tower/basement_cap.json
+7b6ee55da7468e61fb192fbf35fa8de8ccc798cf data/mknpc/worldgen/template_pool/test_tower/basement_entry.json
+7b6ee55da7468e61fb192fbf35fa8de8ccc798cf data/mknpc/worldgen/template_pool/test_tower/basement_main.json
+977d43a8db9fb913ecfd911d067f8884d7926978 data/mknpc/worldgen/template_pool/test_tower/boss_approach.json
+977d43a8db9fb913ecfd911d067f8884d7926978 data/mknpc/worldgen/template_pool/test_tower/boss_cap.json
+7b6ee55da7468e61fb192fbf35fa8de8ccc798cf data/mknpc/worldgen/template_pool/test_tower/connect_down.json
+2d342a46367ed407a3c9dcb161d83716f9c92074 data/mknpc/worldgen/template_pool/test_tower/connect_down_entry.json
+ef51a39335137f377ff1c93efc44011470a982c9 data/mknpc/worldgen/template_pool/test_tower/connect_up.json
+2e952e6f54fbe11d393d650f841ac17e82ed6297 data/mknpc/worldgen/template_pool/test_tower/entry.json
+ef51a39335137f377ff1c93efc44011470a982c9 data/mknpc/worldgen/template_pool/test_tower/floor_main.json
+535894b8e41bf3219fce368bf855d78bf08ad32a data/mknpc/worldgen/template_pool/test_tower/start.json

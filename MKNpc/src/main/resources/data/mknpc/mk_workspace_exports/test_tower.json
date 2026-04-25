@@ -1,0 +1,9193 @@
+{
+  "runtime_hints": {
+    "start_base_name": "entry",
+    "categories": [
+      {
+        "pool_id": "mknpc:test_tower/entry",
+        "child_base_names": [
+          "floor_main",
+          "basement_entry"
+        ],
+        "piece_metadata": {
+          "allow_on_main_path": true,
+          "allow_on_branch_path": false,
+          "terminal": false,
+          "boss_only": false,
+          "role": "room",
+          "progression_delta": 0,
+          "vertical_level_delta": 0
+        },
+        "base_name": "entry",
+        "role": "entry"
+      },
+      {
+        "pool_id": "mknpc:test_tower/floor_main",
+        "child_base_names": [
+          "floor_main",
+          "boss_approach"
+        ],
+        "piece_metadata": {
+          "allow_on_main_path": true,
+          "allow_on_branch_path": false,
+          "terminal": false,
+          "boss_only": false,
+          "role": "room",
+          "progression_delta": 1,
+          "vertical_level_delta": 1
+        },
+        "base_name": "floor_main",
+        "role": "floor_main"
+      },
+      {
+        "pool_id": "mknpc:test_tower/boss_approach",
+        "child_base_names": [
+          "boss_cap"
+        ],
+        "piece_metadata": {
+          "allow_on_main_path": true,
+          "allow_on_branch_path": false,
+          "terminal": false,
+          "boss_only": true,
+          "role": "boss_approach",
+          "progression_delta": 1,
+          "vertical_level_delta": 1
+        },
+        "base_name": "boss_approach",
+        "role": "boss_approach"
+      },
+      {
+        "pool_id": "mknpc:test_tower/boss_cap",
+        "child_base_names": [],
+        "piece_metadata": {
+          "allow_on_main_path": true,
+          "allow_on_branch_path": false,
+          "terminal": true,
+          "boss_only": true,
+          "role": "boss",
+          "progression_delta": 0,
+          "vertical_level_delta": 0
+        },
+        "base_name": "boss_cap",
+        "role": "boss_cap"
+      },
+      {
+        "pool_id": "mknpc:test_tower/basement_entry",
+        "child_base_names": [
+          "basement_main",
+          "basement_cap"
+        ],
+        "piece_metadata": {
+          "allow_on_main_path": true,
+          "allow_on_branch_path": false,
+          "terminal": false,
+          "boss_only": false,
+          "role": "room",
+          "progression_delta": 1,
+          "vertical_level_delta": -1
+        },
+        "base_name": "basement_entry",
+        "role": "basement_entry"
+      },
+      {
+        "pool_id": "mknpc:test_tower/basement_main",
+        "child_base_names": [
+          "basement_main",
+          "basement_cap"
+        ],
+        "piece_metadata": {
+          "allow_on_main_path": true,
+          "allow_on_branch_path": false,
+          "terminal": false,
+          "boss_only": false,
+          "role": "room",
+          "progression_delta": 1,
+          "vertical_level_delta": -1
+        },
+        "base_name": "basement_main",
+        "role": "basement_main"
+      },
+      {
+        "pool_id": "mknpc:test_tower/basement_cap",
+        "child_base_names": [],
+        "piece_metadata": {
+          "allow_on_main_path": true,
+          "allow_on_branch_path": false,
+          "terminal": true,
+          "boss_only": false,
+          "role": "terminal",
+          "progression_delta": 1,
+          "vertical_level_delta": -1
+        },
+        "base_name": "basement_cap",
+        "role": "basement_cap"
+      }
+    ],
+    "pools": [
+      {
+        "base_name": "connect_up",
+        "pool_id": "mknpc:test_tower/connect_up",
+        "child_base_names": [
+          "floor_main",
+          "boss_approach"
+        ]
+      },
+      {
+        "base_name": "connect_down_entry",
+        "pool_id": "mknpc:test_tower/connect_down_entry",
+        "child_base_names": [
+          "basement_entry"
+        ]
+      },
+      {
+        "base_name": "connect_down",
+        "pool_id": "mknpc:test_tower/connect_down",
+        "child_base_names": [
+          "basement_main",
+          "basement_cap"
+        ]
+      },
+      {
+        "base_name": "boss_cap",
+        "pool_id": "mknpc:test_tower/boss_cap",
+        "child_base_names": [
+          "boss_cap"
+        ]
+      }
+    ]
+  },
+  "categories": [
+    {
+      "base_name": "entry",
+      "role": "entry",
+      "pieces": [
+        "entry_template",
+        "entry_1"
+      ]
+    },
+    {
+      "base_name": "floor_main",
+      "role": "floor_main",
+      "pieces": [
+        "floor_main_template",
+        "floor_main_1"
+      ]
+    },
+    {
+      "base_name": "boss_approach",
+      "role": "boss_approach",
+      "pieces": [
+        "boss_approach_template",
+        "boss_approach_1"
+      ]
+    },
+    {
+      "base_name": "boss_cap",
+      "role": "boss_cap",
+      "pieces": [
+        "boss_cap_template",
+        "boss_cap_1"
+      ]
+    },
+    {
+      "base_name": "basement_entry",
+      "role": "basement_entry",
+      "pieces": [
+        "basement_entry_template",
+        "basement_entry_1"
+      ]
+    },
+    {
+      "base_name": "basement_main",
+      "role": "basement_main",
+      "pieces": [
+        "basement_main_template",
+        "basement_main_1"
+      ]
+    },
+    {
+      "base_name": "basement_cap",
+      "role": "basement_cap",
+      "pieces": [
+        "basement_cap_template",
+        "basement_cap_1"
+      ]
+    }
+  ],
+  "pieces": [
+    {
+      "marker_positions": [
+        {
+          "absolute": {
+            "x": 270,
+            "y": -59,
+            "z": 193
+          },
+          "offset": {
+            "x": 22,
+            "y": 1,
+            "z": 33
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -37,
+            "z": 182
+          },
+          "offset": {
+            "x": 22,
+            "y": 23,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -61,
+            "z": 182
+          },
+          "offset": {
+            "x": 22,
+            "y": -1,
+            "z": 22
+          }
+        }
+      ],
+      "generated_stair_positions": [
+        {
+          "absolute": {
+            "x": 270,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 22,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 22,
+            "y": 0,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 23,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 23,
+            "y": 0,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 24,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 24,
+            "y": 0,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -59,
+            "z": 183
+          },
+          "offset": {
+            "x": 21,
+            "y": 1,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -59,
+            "z": 183
+          },
+          "offset": {
+            "x": 20,
+            "y": 1,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -59,
+            "z": 184
+          },
+          "offset": {
+            "x": 21,
+            "y": 1,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -59,
+            "z": 184
+          },
+          "offset": {
+            "x": 20,
+            "y": 1,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -58,
+            "z": 182
+          },
+          "offset": {
+            "x": 21,
+            "y": 2,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -58,
+            "z": 182
+          },
+          "offset": {
+            "x": 20,
+            "y": 2,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -57,
+            "z": 181
+          },
+          "offset": {
+            "x": 21,
+            "y": 3,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -57,
+            "z": 180
+          },
+          "offset": {
+            "x": 21,
+            "y": 3,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -57,
+            "z": 181
+          },
+          "offset": {
+            "x": 20,
+            "y": 3,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -57,
+            "z": 180
+          },
+          "offset": {
+            "x": 20,
+            "y": 3,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -56,
+            "z": 181
+          },
+          "offset": {
+            "x": 22,
+            "y": 4,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -56,
+            "z": 180
+          },
+          "offset": {
+            "x": 22,
+            "y": 4,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -55,
+            "z": 181
+          },
+          "offset": {
+            "x": 23,
+            "y": 5,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -55,
+            "z": 181
+          },
+          "offset": {
+            "x": 24,
+            "y": 5,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -55,
+            "z": 180
+          },
+          "offset": {
+            "x": 23,
+            "y": 5,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -55,
+            "z": 180
+          },
+          "offset": {
+            "x": 24,
+            "y": 5,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -54,
+            "z": 182
+          },
+          "offset": {
+            "x": 23,
+            "y": 6,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -54,
+            "z": 182
+          },
+          "offset": {
+            "x": 24,
+            "y": 6,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -53,
+            "z": 183
+          },
+          "offset": {
+            "x": 23,
+            "y": 7,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -53,
+            "z": 184
+          },
+          "offset": {
+            "x": 23,
+            "y": 7,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -53,
+            "z": 183
+          },
+          "offset": {
+            "x": 24,
+            "y": 7,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -53,
+            "z": 184
+          },
+          "offset": {
+            "x": 24,
+            "y": 7,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -52,
+            "z": 183
+          },
+          "offset": {
+            "x": 22,
+            "y": 8,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -52,
+            "z": 184
+          },
+          "offset": {
+            "x": 22,
+            "y": 8,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -51,
+            "z": 183
+          },
+          "offset": {
+            "x": 21,
+            "y": 9,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -51,
+            "z": 183
+          },
+          "offset": {
+            "x": 20,
+            "y": 9,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -51,
+            "z": 184
+          },
+          "offset": {
+            "x": 21,
+            "y": 9,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -51,
+            "z": 184
+          },
+          "offset": {
+            "x": 20,
+            "y": 9,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -50,
+            "z": 182
+          },
+          "offset": {
+            "x": 21,
+            "y": 10,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -50,
+            "z": 182
+          },
+          "offset": {
+            "x": 20,
+            "y": 10,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -49,
+            "z": 181
+          },
+          "offset": {
+            "x": 21,
+            "y": 11,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -49,
+            "z": 180
+          },
+          "offset": {
+            "x": 21,
+            "y": 11,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -49,
+            "z": 181
+          },
+          "offset": {
+            "x": 20,
+            "y": 11,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -49,
+            "z": 180
+          },
+          "offset": {
+            "x": 20,
+            "y": 11,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -48,
+            "z": 181
+          },
+          "offset": {
+            "x": 22,
+            "y": 12,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -48,
+            "z": 180
+          },
+          "offset": {
+            "x": 22,
+            "y": 12,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -47,
+            "z": 181
+          },
+          "offset": {
+            "x": 23,
+            "y": 13,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -47,
+            "z": 181
+          },
+          "offset": {
+            "x": 24,
+            "y": 13,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -47,
+            "z": 180
+          },
+          "offset": {
+            "x": 23,
+            "y": 13,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -47,
+            "z": 180
+          },
+          "offset": {
+            "x": 24,
+            "y": 13,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -46,
+            "z": 182
+          },
+          "offset": {
+            "x": 23,
+            "y": 14,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -46,
+            "z": 182
+          },
+          "offset": {
+            "x": 24,
+            "y": 14,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -45,
+            "z": 183
+          },
+          "offset": {
+            "x": 23,
+            "y": 15,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -45,
+            "z": 184
+          },
+          "offset": {
+            "x": 23,
+            "y": 15,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -45,
+            "z": 183
+          },
+          "offset": {
+            "x": 24,
+            "y": 15,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -45,
+            "z": 184
+          },
+          "offset": {
+            "x": 24,
+            "y": 15,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -44,
+            "z": 183
+          },
+          "offset": {
+            "x": 22,
+            "y": 16,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -44,
+            "z": 184
+          },
+          "offset": {
+            "x": 22,
+            "y": 16,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -43,
+            "z": 183
+          },
+          "offset": {
+            "x": 21,
+            "y": 17,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -43,
+            "z": 183
+          },
+          "offset": {
+            "x": 20,
+            "y": 17,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -43,
+            "z": 184
+          },
+          "offset": {
+            "x": 21,
+            "y": 17,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -43,
+            "z": 184
+          },
+          "offset": {
+            "x": 20,
+            "y": 17,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -42,
+            "z": 182
+          },
+          "offset": {
+            "x": 21,
+            "y": 18,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -42,
+            "z": 182
+          },
+          "offset": {
+            "x": 20,
+            "y": 18,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -41,
+            "z": 181
+          },
+          "offset": {
+            "x": 21,
+            "y": 19,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -41,
+            "z": 180
+          },
+          "offset": {
+            "x": 21,
+            "y": 19,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -41,
+            "z": 181
+          },
+          "offset": {
+            "x": 20,
+            "y": 19,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -41,
+            "z": 180
+          },
+          "offset": {
+            "x": 20,
+            "y": 19,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -40,
+            "z": 181
+          },
+          "offset": {
+            "x": 22,
+            "y": 20,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -40,
+            "z": 180
+          },
+          "offset": {
+            "x": 22,
+            "y": 20,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -39,
+            "z": 181
+          },
+          "offset": {
+            "x": 23,
+            "y": 21,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -39,
+            "z": 181
+          },
+          "offset": {
+            "x": 24,
+            "y": 21,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -39,
+            "z": 180
+          },
+          "offset": {
+            "x": 23,
+            "y": 21,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -39,
+            "z": 180
+          },
+          "offset": {
+            "x": 24,
+            "y": 21,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -38,
+            "z": 182
+          },
+          "offset": {
+            "x": 23,
+            "y": 22,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -38,
+            "z": 182
+          },
+          "offset": {
+            "x": 24,
+            "y": 22,
+            "z": 22
+          }
+        }
+      ],
+      "tags": {
+        "generated_stair_mode": "stair_stairs",
+        "generated_stair_revision": "1777095793685",
+        "stair_direction": "both",
+        "supports_stair_generation": "true",
+        "topology_role": "entry",
+        "tower_piece_kind": "room",
+        "tower_stair_placement": "center",
+        "workspace_base_name": "entry",
+        "workspace_piece_kind": "template",
+        "workspace_variant_index": "0"
+      },
+      "connectors": [
+        {
+          "opening_height": 3,
+          "jigsaw_name": "mknpc:main_back",
+          "jigsaw_target": "mknpc:main_forward",
+          "target_pool": "minecraft:empty",
+          "role": "main_back",
+          "facing": "south",
+          "relative_pos": {
+            "x": 10,
+            "y": 1,
+            "z": 18
+          },
+          "opening_width": 3
+        },
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
+          "jigsaw_target": "mknpc:connect_down",
+          "target_pool": "mknpc:test_tower/connect_up",
+          "role": "connect_up",
+          "facing": "up",
+          "relative_pos": {
+            "x": 10,
+            "y": 22,
+            "z": 10
+          },
+          "opening_width": 5
+        },
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
+          "jigsaw_target": "mknpc:connect_up",
+          "target_pool": "mknpc:test_tower/connect_down_entry",
+          "role": "connect_down",
+          "facing": "down",
+          "relative_pos": {
+            "x": 10,
+            "y": 0,
+            "z": 10
+          },
+          "opening_width": 5
+        }
+      ],
+      "shell_margin": 1,
+      "effective_dimensions": {
+        "basement_height": 21,
+        "hallway_width": 5,
+        "doorway_width": 3,
+        "doorway_height": 3,
+        "room_width": 15,
+        "room_length": 15,
+        "entrance_height": 21,
+        "room_height": 21
+      },
+      "placement": {
+        "sign_pos": {
+          "x": 257,
+          "y": -59,
+          "z": 182
+        },
+        "sign_offset": {
+          "x": 9,
+          "y": 1,
+          "z": 22
+        },
+        "export_bounds": {
+          "max_offset": {
+            "x": 32,
+            "y": 22,
+            "z": 32
+          },
+          "size_x": 21,
+          "size_y": 23,
+          "size_z": 21,
+          "min": {
+            "x": 260,
+            "y": -60,
+            "z": 172
+          },
+          "max": {
+            "x": 280,
+            "y": -38,
+            "z": 192
+          },
+          "min_offset": {
+            "x": 12,
+            "y": 0,
+            "z": 12
+          }
+        },
+        "preview_bounds": {
+          "max_offset": {
+            "x": 36,
+            "y": 22,
+            "z": 36
+          },
+          "size_x": 29,
+          "size_y": 23,
+          "size_z": 29,
+          "min": {
+            "x": 256,
+            "y": -60,
+            "z": 168
+          },
+          "max": {
+            "x": 284,
+            "y": -38,
+            "z": 196
+          },
+          "min_offset": {
+            "x": 8,
+            "y": 0,
+            "z": 8
+          }
+        },
+        "world_origin": {
+          "x": 260,
+          "y": -60,
+          "z": 172
+        },
+        "world_origin_offset": {
+          "x": 12,
+          "y": 0,
+          "z": 12
+        },
+        "structure_block_pos": {
+          "x": 258,
+          "y": -59,
+          "z": 182
+        },
+        "structure_block_offset": {
+          "x": 10,
+          "y": 1,
+          "z": 22
+        }
+      },
+      "role": "entry",
+      "variant_index": 0,
+      "workspace_piece_kind": "template",
+      "structure_id": "mknpc:test_tower/entry_template",
+      "piece_id": "f19e6e66-0852-415b-bb4c-1b263ee54774",
+      "piece_name": "entry_template",
+      "base_name": "entry"
+    },
+    {
+      "marker_positions": [
+        {
+          "absolute": {
+            "x": 303,
+            "y": -61,
+            "z": 182
+          },
+          "offset": {
+            "x": 55,
+            "y": -1,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 303,
+            "y": -53,
+            "z": 182
+          },
+          "offset": {
+            "x": 55,
+            "y": 7,
+            "z": 22
+          }
+        }
+      ],
+      "generated_stair_positions": [
+        {
+          "absolute": {
+            "x": 303,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 55,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 303,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 55,
+            "y": 0,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 304,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 56,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 304,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 56,
+            "y": 0,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 305,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 57,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 305,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 57,
+            "y": 0,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 302,
+            "y": -59,
+            "z": 183
+          },
+          "offset": {
+            "x": 54,
+            "y": 1,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 301,
+            "y": -59,
+            "z": 183
+          },
+          "offset": {
+            "x": 53,
+            "y": 1,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 302,
+            "y": -59,
+            "z": 184
+          },
+          "offset": {
+            "x": 54,
+            "y": 1,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 301,
+            "y": -59,
+            "z": 184
+          },
+          "offset": {
+            "x": 53,
+            "y": 1,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 302,
+            "y": -58,
+            "z": 182
+          },
+          "offset": {
+            "x": 54,
+            "y": 2,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 301,
+            "y": -58,
+            "z": 182
+          },
+          "offset": {
+            "x": 53,
+            "y": 2,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 302,
+            "y": -57,
+            "z": 181
+          },
+          "offset": {
+            "x": 54,
+            "y": 3,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 302,
+            "y": -57,
+            "z": 180
+          },
+          "offset": {
+            "x": 54,
+            "y": 3,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 301,
+            "y": -57,
+            "z": 181
+          },
+          "offset": {
+            "x": 53,
+            "y": 3,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 301,
+            "y": -57,
+            "z": 180
+          },
+          "offset": {
+            "x": 53,
+            "y": 3,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 303,
+            "y": -56,
+            "z": 181
+          },
+          "offset": {
+            "x": 55,
+            "y": 4,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 303,
+            "y": -56,
+            "z": 180
+          },
+          "offset": {
+            "x": 55,
+            "y": 4,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 304,
+            "y": -55,
+            "z": 181
+          },
+          "offset": {
+            "x": 56,
+            "y": 5,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 305,
+            "y": -55,
+            "z": 181
+          },
+          "offset": {
+            "x": 57,
+            "y": 5,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 304,
+            "y": -55,
+            "z": 180
+          },
+          "offset": {
+            "x": 56,
+            "y": 5,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 305,
+            "y": -55,
+            "z": 180
+          },
+          "offset": {
+            "x": 57,
+            "y": 5,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 304,
+            "y": -54,
+            "z": 182
+          },
+          "offset": {
+            "x": 56,
+            "y": 6,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 305,
+            "y": -54,
+            "z": 182
+          },
+          "offset": {
+            "x": 57,
+            "y": 6,
+            "z": 22
+          }
+        }
+      ],
+      "tags": {
+        "generated_stair_mode": "stair_stairs",
+        "generated_stair_revision": "1777095793686",
+        "stair_direction": "both",
+        "supports_stair_generation": "true",
+        "topology_role": "floor",
+        "tower_piece_kind": "room",
+        "tower_stair_placement": "center",
+        "workspace_base_name": "floor_main",
+        "workspace_piece_kind": "template",
+        "workspace_variant_index": "0"
+      },
+      "connectors": [
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
+          "jigsaw_target": "mknpc:connect_up",
+          "target_pool": "minecraft:empty",
+          "role": "connect_down",
+          "facing": "down",
+          "relative_pos": {
+            "x": 10,
+            "y": 0,
+            "z": 10
+          },
+          "opening_width": 5
+        },
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
+          "jigsaw_target": "mknpc:connect_down",
+          "target_pool": "mknpc:test_tower/connect_up",
+          "role": "connect_up",
+          "facing": "up",
+          "relative_pos": {
+            "x": 10,
+            "y": 6,
+            "z": 10
+          },
+          "opening_width": 5
+        }
+      ],
+      "shell_margin": 1,
+      "effective_dimensions": {
+        "basement_height": 5,
+        "hallway_width": 5,
+        "doorway_width": 3,
+        "doorway_height": 3,
+        "room_width": 15,
+        "room_length": 15,
+        "entrance_height": 5,
+        "room_height": 5
+      },
+      "placement": {
+        "sign_pos": {
+          "x": 290,
+          "y": -59,
+          "z": 182
+        },
+        "sign_offset": {
+          "x": 42,
+          "y": 1,
+          "z": 22
+        },
+        "export_bounds": {
+          "max_offset": {
+            "x": 65,
+            "y": 6,
+            "z": 32
+          },
+          "size_x": 21,
+          "size_y": 7,
+          "size_z": 21,
+          "min": {
+            "x": 293,
+            "y": -60,
+            "z": 172
+          },
+          "max": {
+            "x": 313,
+            "y": -54,
+            "z": 192
+          },
+          "min_offset": {
+            "x": 45,
+            "y": 0,
+            "z": 12
+          }
+        },
+        "preview_bounds": {
+          "max_offset": {
+            "x": 69,
+            "y": 6,
+            "z": 36
+          },
+          "size_x": 29,
+          "size_y": 7,
+          "size_z": 29,
+          "min": {
+            "x": 289,
+            "y": -60,
+            "z": 168
+          },
+          "max": {
+            "x": 317,
+            "y": -54,
+            "z": 196
+          },
+          "min_offset": {
+            "x": 41,
+            "y": 0,
+            "z": 8
+          }
+        },
+        "world_origin": {
+          "x": 293,
+          "y": -60,
+          "z": 172
+        },
+        "world_origin_offset": {
+          "x": 45,
+          "y": 0,
+          "z": 12
+        },
+        "structure_block_pos": {
+          "x": 291,
+          "y": -59,
+          "z": 182
+        },
+        "structure_block_offset": {
+          "x": 43,
+          "y": 1,
+          "z": 22
+        }
+      },
+      "role": "floor_main",
+      "variant_index": 0,
+      "workspace_piece_kind": "template",
+      "structure_id": "mknpc:test_tower/floor_main_template",
+      "piece_id": "e6b71e58-be64-45b4-a251-e2fda216782a",
+      "piece_name": "floor_main_template",
+      "base_name": "floor_main"
+    },
+    {
+      "marker_positions": [
+        {
+          "absolute": {
+            "x": 336,
+            "y": -61,
+            "z": 182
+          },
+          "offset": {
+            "x": 88,
+            "y": -1,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 336,
+            "y": -53,
+            "z": 182
+          },
+          "offset": {
+            "x": 88,
+            "y": 7,
+            "z": 22
+          }
+        }
+      ],
+      "generated_stair_positions": [
+        {
+          "absolute": {
+            "x": 336,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 88,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 336,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 88,
+            "y": 0,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 337,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 89,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 337,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 89,
+            "y": 0,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 338,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 90,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 338,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 90,
+            "y": 0,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 335,
+            "y": -59,
+            "z": 183
+          },
+          "offset": {
+            "x": 87,
+            "y": 1,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 334,
+            "y": -59,
+            "z": 183
+          },
+          "offset": {
+            "x": 86,
+            "y": 1,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 335,
+            "y": -59,
+            "z": 184
+          },
+          "offset": {
+            "x": 87,
+            "y": 1,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 334,
+            "y": -59,
+            "z": 184
+          },
+          "offset": {
+            "x": 86,
+            "y": 1,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 335,
+            "y": -58,
+            "z": 182
+          },
+          "offset": {
+            "x": 87,
+            "y": 2,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 334,
+            "y": -58,
+            "z": 182
+          },
+          "offset": {
+            "x": 86,
+            "y": 2,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 335,
+            "y": -57,
+            "z": 181
+          },
+          "offset": {
+            "x": 87,
+            "y": 3,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 335,
+            "y": -57,
+            "z": 180
+          },
+          "offset": {
+            "x": 87,
+            "y": 3,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 334,
+            "y": -57,
+            "z": 181
+          },
+          "offset": {
+            "x": 86,
+            "y": 3,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 334,
+            "y": -57,
+            "z": 180
+          },
+          "offset": {
+            "x": 86,
+            "y": 3,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 336,
+            "y": -56,
+            "z": 181
+          },
+          "offset": {
+            "x": 88,
+            "y": 4,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 336,
+            "y": -56,
+            "z": 180
+          },
+          "offset": {
+            "x": 88,
+            "y": 4,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 337,
+            "y": -55,
+            "z": 181
+          },
+          "offset": {
+            "x": 89,
+            "y": 5,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 338,
+            "y": -55,
+            "z": 181
+          },
+          "offset": {
+            "x": 90,
+            "y": 5,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 337,
+            "y": -55,
+            "z": 180
+          },
+          "offset": {
+            "x": 89,
+            "y": 5,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 338,
+            "y": -55,
+            "z": 180
+          },
+          "offset": {
+            "x": 90,
+            "y": 5,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 337,
+            "y": -54,
+            "z": 182
+          },
+          "offset": {
+            "x": 89,
+            "y": 6,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 338,
+            "y": -54,
+            "z": 182
+          },
+          "offset": {
+            "x": 90,
+            "y": 6,
+            "z": 22
+          }
+        }
+      ],
+      "tags": {
+        "generated_stair_mode": "stair_stairs",
+        "generated_stair_revision": "1777095793687",
+        "stair_direction": "up",
+        "supports_stair_generation": "true",
+        "topology_role": "boss_approach",
+        "tower_piece_kind": "room",
+        "tower_stair_placement": "center",
+        "workspace_base_name": "boss_approach",
+        "workspace_piece_kind": "template",
+        "workspace_variant_index": "0"
+      },
+      "connectors": [
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
+          "jigsaw_target": "mknpc:connect_up",
+          "target_pool": "minecraft:empty",
+          "role": "connect_down",
+          "facing": "down",
+          "relative_pos": {
+            "x": 10,
+            "y": 0,
+            "z": 10
+          },
+          "opening_width": 5
+        },
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:boss_forward",
+          "jigsaw_target": "mknpc:boss_back",
+          "target_pool": "mknpc:test_tower/boss_cap",
+          "role": "boss_forward",
+          "facing": "up",
+          "relative_pos": {
+            "x": 10,
+            "y": 6,
+            "z": 10
+          },
+          "opening_width": 5
+        }
+      ],
+      "shell_margin": 1,
+      "effective_dimensions": {
+        "basement_height": 5,
+        "hallway_width": 5,
+        "doorway_width": 3,
+        "doorway_height": 3,
+        "room_width": 15,
+        "room_length": 15,
+        "entrance_height": 5,
+        "room_height": 5
+      },
+      "placement": {
+        "sign_pos": {
+          "x": 323,
+          "y": -59,
+          "z": 182
+        },
+        "sign_offset": {
+          "x": 75,
+          "y": 1,
+          "z": 22
+        },
+        "export_bounds": {
+          "max_offset": {
+            "x": 98,
+            "y": 6,
+            "z": 32
+          },
+          "size_x": 21,
+          "size_y": 7,
+          "size_z": 21,
+          "min": {
+            "x": 326,
+            "y": -60,
+            "z": 172
+          },
+          "max": {
+            "x": 346,
+            "y": -54,
+            "z": 192
+          },
+          "min_offset": {
+            "x": 78,
+            "y": 0,
+            "z": 12
+          }
+        },
+        "preview_bounds": {
+          "max_offset": {
+            "x": 102,
+            "y": 6,
+            "z": 36
+          },
+          "size_x": 29,
+          "size_y": 7,
+          "size_z": 29,
+          "min": {
+            "x": 322,
+            "y": -60,
+            "z": 168
+          },
+          "max": {
+            "x": 350,
+            "y": -54,
+            "z": 196
+          },
+          "min_offset": {
+            "x": 74,
+            "y": 0,
+            "z": 8
+          }
+        },
+        "world_origin": {
+          "x": 326,
+          "y": -60,
+          "z": 172
+        },
+        "world_origin_offset": {
+          "x": 78,
+          "y": 0,
+          "z": 12
+        },
+        "structure_block_pos": {
+          "x": 324,
+          "y": -59,
+          "z": 182
+        },
+        "structure_block_offset": {
+          "x": 76,
+          "y": 1,
+          "z": 22
+        }
+      },
+      "role": "boss_approach",
+      "variant_index": 0,
+      "workspace_piece_kind": "template",
+      "structure_id": "mknpc:test_tower/boss_approach_template",
+      "piece_id": "8d0b6252-16b8-4120-ac70-5c10d5c8385a",
+      "piece_name": "boss_approach_template",
+      "base_name": "boss_approach"
+    },
+    {
+      "marker_positions": [
+        {
+          "absolute": {
+            "x": 369,
+            "y": -61,
+            "z": 182
+          },
+          "offset": {
+            "x": 121,
+            "y": -1,
+            "z": 22
+          }
+        }
+      ],
+      "generated_stair_positions": [
+        {
+          "absolute": {
+            "x": 369,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 121,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 369,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 121,
+            "y": 0,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 370,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 122,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 370,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 122,
+            "y": 0,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 371,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 123,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 371,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 123,
+            "y": 0,
+            "z": 24
+          }
+        }
+      ],
+      "tags": {
+        "generated_stair_mode": "stair_stairs",
+        "generated_stair_revision": "1777095793687",
+        "stair_direction": "up",
+        "supports_stair_generation": "true",
+        "topology_role": "boss_cap",
+        "tower_piece_kind": "room",
+        "tower_stair_placement": "center",
+        "workspace_base_name": "boss_cap",
+        "workspace_piece_kind": "template",
+        "workspace_variant_index": "0"
+      },
+      "connectors": [
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:boss_back",
+          "jigsaw_target": "mknpc:boss_forward",
+          "target_pool": "minecraft:empty",
+          "role": "boss_back",
+          "facing": "down",
+          "relative_pos": {
+            "x": 10,
+            "y": 0,
+            "z": 10
+          },
+          "opening_width": 5
+        }
+      ],
+      "shell_margin": 1,
+      "effective_dimensions": {
+        "basement_height": 5,
+        "hallway_width": 5,
+        "doorway_width": 3,
+        "doorway_height": 3,
+        "room_width": 15,
+        "room_length": 15,
+        "entrance_height": 5,
+        "room_height": 5
+      },
+      "placement": {
+        "sign_pos": {
+          "x": 356,
+          "y": -59,
+          "z": 182
+        },
+        "sign_offset": {
+          "x": 108,
+          "y": 1,
+          "z": 22
+        },
+        "export_bounds": {
+          "max_offset": {
+            "x": 131,
+            "y": 6,
+            "z": 32
+          },
+          "size_x": 21,
+          "size_y": 7,
+          "size_z": 21,
+          "min": {
+            "x": 359,
+            "y": -60,
+            "z": 172
+          },
+          "max": {
+            "x": 379,
+            "y": -54,
+            "z": 192
+          },
+          "min_offset": {
+            "x": 111,
+            "y": 0,
+            "z": 12
+          }
+        },
+        "preview_bounds": {
+          "max_offset": {
+            "x": 135,
+            "y": 6,
+            "z": 36
+          },
+          "size_x": 29,
+          "size_y": 7,
+          "size_z": 29,
+          "min": {
+            "x": 355,
+            "y": -60,
+            "z": 168
+          },
+          "max": {
+            "x": 383,
+            "y": -54,
+            "z": 196
+          },
+          "min_offset": {
+            "x": 107,
+            "y": 0,
+            "z": 8
+          }
+        },
+        "world_origin": {
+          "x": 359,
+          "y": -60,
+          "z": 172
+        },
+        "world_origin_offset": {
+          "x": 111,
+          "y": 0,
+          "z": 12
+        },
+        "structure_block_pos": {
+          "x": 357,
+          "y": -59,
+          "z": 182
+        },
+        "structure_block_offset": {
+          "x": 109,
+          "y": 1,
+          "z": 22
+        }
+      },
+      "role": "boss_cap",
+      "variant_index": 0,
+      "workspace_piece_kind": "template",
+      "structure_id": "mknpc:test_tower/boss_cap_template",
+      "piece_id": "d9b454f0-0113-4fc7-a2c1-b8af25e0bc09",
+      "piece_name": "boss_cap_template",
+      "base_name": "boss_cap"
+    },
+    {
+      "marker_positions": [
+        {
+          "absolute": {
+            "x": 402,
+            "y": -45,
+            "z": 182
+          },
+          "offset": {
+            "x": 154,
+            "y": 15,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 402,
+            "y": -61,
+            "z": 182
+          },
+          "offset": {
+            "x": 154,
+            "y": -1,
+            "z": 22
+          }
+        }
+      ],
+      "generated_stair_positions": [
+        {
+          "absolute": {
+            "x": 402,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 154,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 402,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 154,
+            "y": 0,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 155,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 155,
+            "y": 0,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 156,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 156,
+            "y": 0,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -59,
+            "z": 183
+          },
+          "offset": {
+            "x": 153,
+            "y": 1,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -59,
+            "z": 183
+          },
+          "offset": {
+            "x": 152,
+            "y": 1,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -59,
+            "z": 184
+          },
+          "offset": {
+            "x": 153,
+            "y": 1,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -59,
+            "z": 184
+          },
+          "offset": {
+            "x": 152,
+            "y": 1,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -58,
+            "z": 182
+          },
+          "offset": {
+            "x": 153,
+            "y": 2,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -58,
+            "z": 182
+          },
+          "offset": {
+            "x": 152,
+            "y": 2,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -57,
+            "z": 181
+          },
+          "offset": {
+            "x": 153,
+            "y": 3,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -57,
+            "z": 180
+          },
+          "offset": {
+            "x": 153,
+            "y": 3,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -57,
+            "z": 181
+          },
+          "offset": {
+            "x": 152,
+            "y": 3,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -57,
+            "z": 180
+          },
+          "offset": {
+            "x": 152,
+            "y": 3,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 402,
+            "y": -56,
+            "z": 181
+          },
+          "offset": {
+            "x": 154,
+            "y": 4,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 402,
+            "y": -56,
+            "z": 180
+          },
+          "offset": {
+            "x": 154,
+            "y": 4,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -55,
+            "z": 181
+          },
+          "offset": {
+            "x": 155,
+            "y": 5,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -55,
+            "z": 181
+          },
+          "offset": {
+            "x": 156,
+            "y": 5,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -55,
+            "z": 180
+          },
+          "offset": {
+            "x": 155,
+            "y": 5,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -55,
+            "z": 180
+          },
+          "offset": {
+            "x": 156,
+            "y": 5,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -54,
+            "z": 182
+          },
+          "offset": {
+            "x": 155,
+            "y": 6,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -54,
+            "z": 182
+          },
+          "offset": {
+            "x": 156,
+            "y": 6,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -53,
+            "z": 183
+          },
+          "offset": {
+            "x": 155,
+            "y": 7,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -53,
+            "z": 184
+          },
+          "offset": {
+            "x": 155,
+            "y": 7,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -53,
+            "z": 183
+          },
+          "offset": {
+            "x": 156,
+            "y": 7,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -53,
+            "z": 184
+          },
+          "offset": {
+            "x": 156,
+            "y": 7,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 402,
+            "y": -52,
+            "z": 183
+          },
+          "offset": {
+            "x": 154,
+            "y": 8,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 402,
+            "y": -52,
+            "z": 184
+          },
+          "offset": {
+            "x": 154,
+            "y": 8,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -51,
+            "z": 183
+          },
+          "offset": {
+            "x": 153,
+            "y": 9,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -51,
+            "z": 183
+          },
+          "offset": {
+            "x": 152,
+            "y": 9,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -51,
+            "z": 184
+          },
+          "offset": {
+            "x": 153,
+            "y": 9,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -51,
+            "z": 184
+          },
+          "offset": {
+            "x": 152,
+            "y": 9,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -50,
+            "z": 182
+          },
+          "offset": {
+            "x": 153,
+            "y": 10,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -50,
+            "z": 182
+          },
+          "offset": {
+            "x": 152,
+            "y": 10,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -49,
+            "z": 181
+          },
+          "offset": {
+            "x": 153,
+            "y": 11,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -49,
+            "z": 180
+          },
+          "offset": {
+            "x": 153,
+            "y": 11,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -49,
+            "z": 181
+          },
+          "offset": {
+            "x": 152,
+            "y": 11,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -49,
+            "z": 180
+          },
+          "offset": {
+            "x": 152,
+            "y": 11,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 402,
+            "y": -48,
+            "z": 181
+          },
+          "offset": {
+            "x": 154,
+            "y": 12,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 402,
+            "y": -48,
+            "z": 180
+          },
+          "offset": {
+            "x": 154,
+            "y": 12,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -47,
+            "z": 181
+          },
+          "offset": {
+            "x": 155,
+            "y": 13,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -47,
+            "z": 181
+          },
+          "offset": {
+            "x": 156,
+            "y": 13,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -47,
+            "z": 180
+          },
+          "offset": {
+            "x": 155,
+            "y": 13,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -47,
+            "z": 180
+          },
+          "offset": {
+            "x": 156,
+            "y": 13,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -46,
+            "z": 182
+          },
+          "offset": {
+            "x": 155,
+            "y": 14,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -46,
+            "z": 182
+          },
+          "offset": {
+            "x": 156,
+            "y": 14,
+            "z": 22
+          }
+        }
+      ],
+      "tags": {
+        "generated_stair_mode": "stair_stairs",
+        "generated_stair_revision": "1777095793688",
+        "stair_direction": "down",
+        "supports_stair_generation": "true",
+        "topology_role": "basement_entry",
+        "tower_piece_kind": "room",
+        "tower_stair_placement": "center",
+        "workspace_base_name": "basement_entry",
+        "workspace_piece_kind": "template",
+        "workspace_variant_index": "0"
+      },
+      "connectors": [
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
+          "jigsaw_target": "mknpc:connect_down",
+          "target_pool": "minecraft:empty",
+          "role": "connect_up",
+          "facing": "up",
+          "relative_pos": {
+            "x": 10,
+            "y": 14,
+            "z": 10
+          },
+          "opening_width": 5
+        },
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
+          "jigsaw_target": "mknpc:connect_up",
+          "target_pool": "mknpc:test_tower/connect_down",
+          "role": "connect_down",
+          "facing": "down",
+          "relative_pos": {
+            "x": 10,
+            "y": 0,
+            "z": 10
+          },
+          "opening_width": 5
+        }
+      ],
+      "shell_margin": 1,
+      "effective_dimensions": {
+        "basement_height": 13,
+        "hallway_width": 5,
+        "doorway_width": 3,
+        "doorway_height": 3,
+        "room_width": 15,
+        "room_length": 15,
+        "entrance_height": 13,
+        "room_height": 13
+      },
+      "placement": {
+        "sign_pos": {
+          "x": 389,
+          "y": -59,
+          "z": 182
+        },
+        "sign_offset": {
+          "x": 141,
+          "y": 1,
+          "z": 22
+        },
+        "export_bounds": {
+          "max_offset": {
+            "x": 164,
+            "y": 14,
+            "z": 32
+          },
+          "size_x": 21,
+          "size_y": 15,
+          "size_z": 21,
+          "min": {
+            "x": 392,
+            "y": -60,
+            "z": 172
+          },
+          "max": {
+            "x": 412,
+            "y": -46,
+            "z": 192
+          },
+          "min_offset": {
+            "x": 144,
+            "y": 0,
+            "z": 12
+          }
+        },
+        "preview_bounds": {
+          "max_offset": {
+            "x": 168,
+            "y": 14,
+            "z": 36
+          },
+          "size_x": 29,
+          "size_y": 15,
+          "size_z": 29,
+          "min": {
+            "x": 388,
+            "y": -60,
+            "z": 168
+          },
+          "max": {
+            "x": 416,
+            "y": -46,
+            "z": 196
+          },
+          "min_offset": {
+            "x": 140,
+            "y": 0,
+            "z": 8
+          }
+        },
+        "world_origin": {
+          "x": 392,
+          "y": -60,
+          "z": 172
+        },
+        "world_origin_offset": {
+          "x": 144,
+          "y": 0,
+          "z": 12
+        },
+        "structure_block_pos": {
+          "x": 390,
+          "y": -59,
+          "z": 182
+        },
+        "structure_block_offset": {
+          "x": 142,
+          "y": 1,
+          "z": 22
+        }
+      },
+      "role": "basement_entry",
+      "variant_index": 0,
+      "workspace_piece_kind": "template",
+      "structure_id": "mknpc:test_tower/basement_entry_template",
+      "piece_id": "a4aa07d8-96c8-40eb-917f-da75d9c9b055",
+      "piece_name": "basement_entry_template",
+      "base_name": "basement_entry"
+    },
+    {
+      "marker_positions": [
+        {
+          "absolute": {
+            "x": 435,
+            "y": -45,
+            "z": 182
+          },
+          "offset": {
+            "x": 187,
+            "y": 15,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 435,
+            "y": -61,
+            "z": 182
+          },
+          "offset": {
+            "x": 187,
+            "y": -1,
+            "z": 22
+          }
+        }
+      ],
+      "generated_stair_positions": [
+        {
+          "absolute": {
+            "x": 435,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 187,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 435,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 187,
+            "y": 0,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 188,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 188,
+            "y": 0,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -60,
+            "z": 183
+          },
+          "offset": {
+            "x": 189,
+            "y": 0,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -60,
+            "z": 184
+          },
+          "offset": {
+            "x": 189,
+            "y": 0,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -59,
+            "z": 183
+          },
+          "offset": {
+            "x": 186,
+            "y": 1,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -59,
+            "z": 183
+          },
+          "offset": {
+            "x": 185,
+            "y": 1,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -59,
+            "z": 184
+          },
+          "offset": {
+            "x": 186,
+            "y": 1,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -59,
+            "z": 184
+          },
+          "offset": {
+            "x": 185,
+            "y": 1,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -58,
+            "z": 182
+          },
+          "offset": {
+            "x": 186,
+            "y": 2,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -58,
+            "z": 182
+          },
+          "offset": {
+            "x": 185,
+            "y": 2,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -57,
+            "z": 181
+          },
+          "offset": {
+            "x": 186,
+            "y": 3,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -57,
+            "z": 180
+          },
+          "offset": {
+            "x": 186,
+            "y": 3,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -57,
+            "z": 181
+          },
+          "offset": {
+            "x": 185,
+            "y": 3,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -57,
+            "z": 180
+          },
+          "offset": {
+            "x": 185,
+            "y": 3,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 435,
+            "y": -56,
+            "z": 181
+          },
+          "offset": {
+            "x": 187,
+            "y": 4,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 435,
+            "y": -56,
+            "z": 180
+          },
+          "offset": {
+            "x": 187,
+            "y": 4,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -55,
+            "z": 181
+          },
+          "offset": {
+            "x": 188,
+            "y": 5,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -55,
+            "z": 181
+          },
+          "offset": {
+            "x": 189,
+            "y": 5,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -55,
+            "z": 180
+          },
+          "offset": {
+            "x": 188,
+            "y": 5,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -55,
+            "z": 180
+          },
+          "offset": {
+            "x": 189,
+            "y": 5,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -54,
+            "z": 182
+          },
+          "offset": {
+            "x": 188,
+            "y": 6,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -54,
+            "z": 182
+          },
+          "offset": {
+            "x": 189,
+            "y": 6,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -53,
+            "z": 183
+          },
+          "offset": {
+            "x": 188,
+            "y": 7,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -53,
+            "z": 184
+          },
+          "offset": {
+            "x": 188,
+            "y": 7,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -53,
+            "z": 183
+          },
+          "offset": {
+            "x": 189,
+            "y": 7,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -53,
+            "z": 184
+          },
+          "offset": {
+            "x": 189,
+            "y": 7,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 435,
+            "y": -52,
+            "z": 183
+          },
+          "offset": {
+            "x": 187,
+            "y": 8,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 435,
+            "y": -52,
+            "z": 184
+          },
+          "offset": {
+            "x": 187,
+            "y": 8,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -51,
+            "z": 183
+          },
+          "offset": {
+            "x": 186,
+            "y": 9,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -51,
+            "z": 183
+          },
+          "offset": {
+            "x": 185,
+            "y": 9,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -51,
+            "z": 184
+          },
+          "offset": {
+            "x": 186,
+            "y": 9,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -51,
+            "z": 184
+          },
+          "offset": {
+            "x": 185,
+            "y": 9,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -50,
+            "z": 182
+          },
+          "offset": {
+            "x": 186,
+            "y": 10,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -50,
+            "z": 182
+          },
+          "offset": {
+            "x": 185,
+            "y": 10,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -49,
+            "z": 181
+          },
+          "offset": {
+            "x": 186,
+            "y": 11,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -49,
+            "z": 180
+          },
+          "offset": {
+            "x": 186,
+            "y": 11,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -49,
+            "z": 181
+          },
+          "offset": {
+            "x": 185,
+            "y": 11,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -49,
+            "z": 180
+          },
+          "offset": {
+            "x": 185,
+            "y": 11,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 435,
+            "y": -48,
+            "z": 181
+          },
+          "offset": {
+            "x": 187,
+            "y": 12,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 435,
+            "y": -48,
+            "z": 180
+          },
+          "offset": {
+            "x": 187,
+            "y": 12,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -47,
+            "z": 181
+          },
+          "offset": {
+            "x": 188,
+            "y": 13,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -47,
+            "z": 181
+          },
+          "offset": {
+            "x": 189,
+            "y": 13,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -47,
+            "z": 180
+          },
+          "offset": {
+            "x": 188,
+            "y": 13,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -47,
+            "z": 180
+          },
+          "offset": {
+            "x": 189,
+            "y": 13,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -46,
+            "z": 182
+          },
+          "offset": {
+            "x": 188,
+            "y": 14,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -46,
+            "z": 182
+          },
+          "offset": {
+            "x": 189,
+            "y": 14,
+            "z": 22
+          }
+        }
+      ],
+      "tags": {
+        "generated_stair_mode": "stair_stairs",
+        "generated_stair_revision": "1777095793690",
+        "stair_direction": "down",
+        "supports_stair_generation": "true",
+        "topology_role": "basement_main",
+        "tower_piece_kind": "room",
+        "tower_stair_placement": "center",
+        "workspace_base_name": "basement_main",
+        "workspace_piece_kind": "template",
+        "workspace_variant_index": "0"
+      },
+      "connectors": [
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
+          "jigsaw_target": "mknpc:connect_down",
+          "target_pool": "minecraft:empty",
+          "role": "connect_up",
+          "facing": "up",
+          "relative_pos": {
+            "x": 10,
+            "y": 14,
+            "z": 10
+          },
+          "opening_width": 5
+        },
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
+          "jigsaw_target": "mknpc:connect_up",
+          "target_pool": "mknpc:test_tower/connect_down",
+          "role": "connect_down",
+          "facing": "down",
+          "relative_pos": {
+            "x": 10,
+            "y": 0,
+            "z": 10
+          },
+          "opening_width": 5
+        }
+      ],
+      "shell_margin": 1,
+      "effective_dimensions": {
+        "basement_height": 13,
+        "hallway_width": 5,
+        "doorway_width": 3,
+        "doorway_height": 3,
+        "room_width": 15,
+        "room_length": 15,
+        "entrance_height": 13,
+        "room_height": 13
+      },
+      "placement": {
+        "sign_pos": {
+          "x": 422,
+          "y": -59,
+          "z": 182
+        },
+        "sign_offset": {
+          "x": 174,
+          "y": 1,
+          "z": 22
+        },
+        "export_bounds": {
+          "max_offset": {
+            "x": 197,
+            "y": 14,
+            "z": 32
+          },
+          "size_x": 21,
+          "size_y": 15,
+          "size_z": 21,
+          "min": {
+            "x": 425,
+            "y": -60,
+            "z": 172
+          },
+          "max": {
+            "x": 445,
+            "y": -46,
+            "z": 192
+          },
+          "min_offset": {
+            "x": 177,
+            "y": 0,
+            "z": 12
+          }
+        },
+        "preview_bounds": {
+          "max_offset": {
+            "x": 201,
+            "y": 14,
+            "z": 36
+          },
+          "size_x": 29,
+          "size_y": 15,
+          "size_z": 29,
+          "min": {
+            "x": 421,
+            "y": -60,
+            "z": 168
+          },
+          "max": {
+            "x": 449,
+            "y": -46,
+            "z": 196
+          },
+          "min_offset": {
+            "x": 173,
+            "y": 0,
+            "z": 8
+          }
+        },
+        "world_origin": {
+          "x": 425,
+          "y": -60,
+          "z": 172
+        },
+        "world_origin_offset": {
+          "x": 177,
+          "y": 0,
+          "z": 12
+        },
+        "structure_block_pos": {
+          "x": 423,
+          "y": -59,
+          "z": 182
+        },
+        "structure_block_offset": {
+          "x": 175,
+          "y": 1,
+          "z": 22
+        }
+      },
+      "role": "basement_main",
+      "variant_index": 0,
+      "workspace_piece_kind": "template",
+      "structure_id": "mknpc:test_tower/basement_main_template",
+      "piece_id": "af42de1a-20d3-4b04-9c65-69a198e11102",
+      "piece_name": "basement_main_template",
+      "base_name": "basement_main"
+    },
+    {
+      "marker_positions": [
+        {
+          "absolute": {
+            "x": 468,
+            "y": -45,
+            "z": 182
+          },
+          "offset": {
+            "x": 220,
+            "y": 15,
+            "z": 22
+          }
+        }
+      ],
+      "generated_stair_positions": [
+        {
+          "absolute": {
+            "x": 468,
+            "y": -59,
+            "z": 183
+          },
+          "offset": {
+            "x": 220,
+            "y": 1,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 468,
+            "y": -59,
+            "z": 184
+          },
+          "offset": {
+            "x": 220,
+            "y": 1,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -59,
+            "z": 183
+          },
+          "offset": {
+            "x": 221,
+            "y": 1,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -59,
+            "z": 184
+          },
+          "offset": {
+            "x": 221,
+            "y": 1,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -59,
+            "z": 183
+          },
+          "offset": {
+            "x": 222,
+            "y": 1,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -59,
+            "z": 184
+          },
+          "offset": {
+            "x": 222,
+            "y": 1,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -58,
+            "z": 183
+          },
+          "offset": {
+            "x": 219,
+            "y": 2,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -58,
+            "z": 183
+          },
+          "offset": {
+            "x": 218,
+            "y": 2,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -58,
+            "z": 184
+          },
+          "offset": {
+            "x": 219,
+            "y": 2,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -58,
+            "z": 184
+          },
+          "offset": {
+            "x": 218,
+            "y": 2,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -57,
+            "z": 182
+          },
+          "offset": {
+            "x": 219,
+            "y": 3,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -57,
+            "z": 182
+          },
+          "offset": {
+            "x": 218,
+            "y": 3,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -56,
+            "z": 181
+          },
+          "offset": {
+            "x": 219,
+            "y": 4,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -56,
+            "z": 180
+          },
+          "offset": {
+            "x": 219,
+            "y": 4,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -56,
+            "z": 181
+          },
+          "offset": {
+            "x": 218,
+            "y": 4,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -56,
+            "z": 180
+          },
+          "offset": {
+            "x": 218,
+            "y": 4,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 468,
+            "y": -55,
+            "z": 181
+          },
+          "offset": {
+            "x": 220,
+            "y": 5,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 468,
+            "y": -55,
+            "z": 180
+          },
+          "offset": {
+            "x": 220,
+            "y": 5,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -54,
+            "z": 181
+          },
+          "offset": {
+            "x": 221,
+            "y": 6,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -54,
+            "z": 181
+          },
+          "offset": {
+            "x": 222,
+            "y": 6,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -54,
+            "z": 180
+          },
+          "offset": {
+            "x": 221,
+            "y": 6,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -54,
+            "z": 180
+          },
+          "offset": {
+            "x": 222,
+            "y": 6,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -53,
+            "z": 182
+          },
+          "offset": {
+            "x": 221,
+            "y": 7,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -53,
+            "z": 182
+          },
+          "offset": {
+            "x": 222,
+            "y": 7,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -52,
+            "z": 183
+          },
+          "offset": {
+            "x": 221,
+            "y": 8,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -52,
+            "z": 184
+          },
+          "offset": {
+            "x": 221,
+            "y": 8,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -52,
+            "z": 183
+          },
+          "offset": {
+            "x": 222,
+            "y": 8,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -52,
+            "z": 184
+          },
+          "offset": {
+            "x": 222,
+            "y": 8,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 468,
+            "y": -51,
+            "z": 183
+          },
+          "offset": {
+            "x": 220,
+            "y": 9,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 468,
+            "y": -51,
+            "z": 184
+          },
+          "offset": {
+            "x": 220,
+            "y": 9,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -50,
+            "z": 183
+          },
+          "offset": {
+            "x": 219,
+            "y": 10,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -50,
+            "z": 183
+          },
+          "offset": {
+            "x": 218,
+            "y": 10,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -50,
+            "z": 184
+          },
+          "offset": {
+            "x": 219,
+            "y": 10,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -50,
+            "z": 184
+          },
+          "offset": {
+            "x": 218,
+            "y": 10,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -49,
+            "z": 182
+          },
+          "offset": {
+            "x": 219,
+            "y": 11,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -49,
+            "z": 182
+          },
+          "offset": {
+            "x": 218,
+            "y": 11,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -48,
+            "z": 181
+          },
+          "offset": {
+            "x": 219,
+            "y": 12,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -48,
+            "z": 180
+          },
+          "offset": {
+            "x": 219,
+            "y": 12,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -48,
+            "z": 181
+          },
+          "offset": {
+            "x": 218,
+            "y": 12,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -48,
+            "z": 180
+          },
+          "offset": {
+            "x": 218,
+            "y": 12,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 468,
+            "y": -47,
+            "z": 181
+          },
+          "offset": {
+            "x": 220,
+            "y": 13,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 468,
+            "y": -47,
+            "z": 180
+          },
+          "offset": {
+            "x": 220,
+            "y": 13,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -46,
+            "z": 181
+          },
+          "offset": {
+            "x": 221,
+            "y": 14,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -46,
+            "z": 181
+          },
+          "offset": {
+            "x": 222,
+            "y": 14,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -46,
+            "z": 180
+          },
+          "offset": {
+            "x": 221,
+            "y": 14,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -46,
+            "z": 180
+          },
+          "offset": {
+            "x": 222,
+            "y": 14,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -46,
+            "z": 182
+          },
+          "offset": {
+            "x": 221,
+            "y": 14,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -46,
+            "z": 182
+          },
+          "offset": {
+            "x": 222,
+            "y": 14,
+            "z": 22
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -46,
+            "z": 183
+          },
+          "offset": {
+            "x": 221,
+            "y": 14,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -46,
+            "z": 184
+          },
+          "offset": {
+            "x": 221,
+            "y": 14,
+            "z": 24
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -46,
+            "z": 183
+          },
+          "offset": {
+            "x": 222,
+            "y": 14,
+            "z": 23
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -46,
+            "z": 184
+          },
+          "offset": {
+            "x": 222,
+            "y": 14,
+            "z": 24
+          }
+        }
+      ],
+      "tags": {
+        "generated_stair_mode": "stair_stairs",
+        "generated_stair_revision": "1777095793691",
+        "stair_direction": "down",
+        "supports_stair_generation": "true",
+        "topology_role": "basement_cap",
+        "tower_piece_kind": "room",
+        "tower_stair_placement": "center",
+        "workspace_base_name": "basement_cap",
+        "workspace_piece_kind": "template",
+        "workspace_variant_index": "0"
+      },
+      "connectors": [
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
+          "jigsaw_target": "mknpc:connect_down",
+          "target_pool": "minecraft:empty",
+          "role": "connect_up",
+          "facing": "up",
+          "relative_pos": {
+            "x": 10,
+            "y": 14,
+            "z": 10
+          },
+          "opening_width": 5
+        }
+      ],
+      "shell_margin": 1,
+      "effective_dimensions": {
+        "basement_height": 13,
+        "hallway_width": 5,
+        "doorway_width": 3,
+        "doorway_height": 3,
+        "room_width": 15,
+        "room_length": 15,
+        "entrance_height": 13,
+        "room_height": 13
+      },
+      "placement": {
+        "sign_pos": {
+          "x": 455,
+          "y": -59,
+          "z": 182
+        },
+        "sign_offset": {
+          "x": 207,
+          "y": 1,
+          "z": 22
+        },
+        "export_bounds": {
+          "max_offset": {
+            "x": 230,
+            "y": 14,
+            "z": 32
+          },
+          "size_x": 21,
+          "size_y": 15,
+          "size_z": 21,
+          "min": {
+            "x": 458,
+            "y": -60,
+            "z": 172
+          },
+          "max": {
+            "x": 478,
+            "y": -46,
+            "z": 192
+          },
+          "min_offset": {
+            "x": 210,
+            "y": 0,
+            "z": 12
+          }
+        },
+        "preview_bounds": {
+          "max_offset": {
+            "x": 234,
+            "y": 14,
+            "z": 36
+          },
+          "size_x": 29,
+          "size_y": 15,
+          "size_z": 29,
+          "min": {
+            "x": 454,
+            "y": -60,
+            "z": 168
+          },
+          "max": {
+            "x": 482,
+            "y": -46,
+            "z": 196
+          },
+          "min_offset": {
+            "x": 206,
+            "y": 0,
+            "z": 8
+          }
+        },
+        "world_origin": {
+          "x": 458,
+          "y": -60,
+          "z": 172
+        },
+        "world_origin_offset": {
+          "x": 210,
+          "y": 0,
+          "z": 12
+        },
+        "structure_block_pos": {
+          "x": 456,
+          "y": -59,
+          "z": 182
+        },
+        "structure_block_offset": {
+          "x": 208,
+          "y": 1,
+          "z": 22
+        }
+      },
+      "role": "basement_cap",
+      "variant_index": 0,
+      "workspace_piece_kind": "template",
+      "structure_id": "mknpc:test_tower/basement_cap_template",
+      "piece_id": "fc5098ba-5891-4079-9811-e270c2381afb",
+      "piece_name": "basement_cap_template",
+      "base_name": "basement_cap"
+    },
+    {
+      "marker_positions": [
+        {
+          "absolute": {
+            "x": 270,
+            "y": -59,
+            "z": 226
+          },
+          "offset": {
+            "x": 22,
+            "y": 1,
+            "z": 66
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -37,
+            "z": 215
+          },
+          "offset": {
+            "x": 22,
+            "y": 23,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -61,
+            "z": 215
+          },
+          "offset": {
+            "x": 22,
+            "y": -1,
+            "z": 55
+          }
+        }
+      ],
+      "generated_stair_positions": [
+        {
+          "absolute": {
+            "x": 270,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 22,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 22,
+            "y": 0,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 23,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 23,
+            "y": 0,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 24,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 24,
+            "y": 0,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -59,
+            "z": 216
+          },
+          "offset": {
+            "x": 21,
+            "y": 1,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -59,
+            "z": 216
+          },
+          "offset": {
+            "x": 20,
+            "y": 1,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -59,
+            "z": 217
+          },
+          "offset": {
+            "x": 21,
+            "y": 1,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -59,
+            "z": 217
+          },
+          "offset": {
+            "x": 20,
+            "y": 1,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -58,
+            "z": 215
+          },
+          "offset": {
+            "x": 21,
+            "y": 2,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -58,
+            "z": 215
+          },
+          "offset": {
+            "x": 20,
+            "y": 2,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -57,
+            "z": 214
+          },
+          "offset": {
+            "x": 21,
+            "y": 3,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -57,
+            "z": 213
+          },
+          "offset": {
+            "x": 21,
+            "y": 3,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -57,
+            "z": 214
+          },
+          "offset": {
+            "x": 20,
+            "y": 3,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -57,
+            "z": 213
+          },
+          "offset": {
+            "x": 20,
+            "y": 3,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -56,
+            "z": 214
+          },
+          "offset": {
+            "x": 22,
+            "y": 4,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -56,
+            "z": 213
+          },
+          "offset": {
+            "x": 22,
+            "y": 4,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -55,
+            "z": 214
+          },
+          "offset": {
+            "x": 23,
+            "y": 5,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -55,
+            "z": 214
+          },
+          "offset": {
+            "x": 24,
+            "y": 5,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -55,
+            "z": 213
+          },
+          "offset": {
+            "x": 23,
+            "y": 5,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -55,
+            "z": 213
+          },
+          "offset": {
+            "x": 24,
+            "y": 5,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -54,
+            "z": 215
+          },
+          "offset": {
+            "x": 23,
+            "y": 6,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -54,
+            "z": 215
+          },
+          "offset": {
+            "x": 24,
+            "y": 6,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -53,
+            "z": 216
+          },
+          "offset": {
+            "x": 23,
+            "y": 7,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -53,
+            "z": 217
+          },
+          "offset": {
+            "x": 23,
+            "y": 7,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -53,
+            "z": 216
+          },
+          "offset": {
+            "x": 24,
+            "y": 7,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -53,
+            "z": 217
+          },
+          "offset": {
+            "x": 24,
+            "y": 7,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -52,
+            "z": 216
+          },
+          "offset": {
+            "x": 22,
+            "y": 8,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -52,
+            "z": 217
+          },
+          "offset": {
+            "x": 22,
+            "y": 8,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -51,
+            "z": 216
+          },
+          "offset": {
+            "x": 21,
+            "y": 9,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -51,
+            "z": 216
+          },
+          "offset": {
+            "x": 20,
+            "y": 9,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -51,
+            "z": 217
+          },
+          "offset": {
+            "x": 21,
+            "y": 9,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -51,
+            "z": 217
+          },
+          "offset": {
+            "x": 20,
+            "y": 9,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -50,
+            "z": 215
+          },
+          "offset": {
+            "x": 21,
+            "y": 10,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -50,
+            "z": 215
+          },
+          "offset": {
+            "x": 20,
+            "y": 10,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -49,
+            "z": 214
+          },
+          "offset": {
+            "x": 21,
+            "y": 11,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -49,
+            "z": 213
+          },
+          "offset": {
+            "x": 21,
+            "y": 11,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -49,
+            "z": 214
+          },
+          "offset": {
+            "x": 20,
+            "y": 11,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -49,
+            "z": 213
+          },
+          "offset": {
+            "x": 20,
+            "y": 11,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -48,
+            "z": 214
+          },
+          "offset": {
+            "x": 22,
+            "y": 12,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -48,
+            "z": 213
+          },
+          "offset": {
+            "x": 22,
+            "y": 12,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -47,
+            "z": 214
+          },
+          "offset": {
+            "x": 23,
+            "y": 13,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -47,
+            "z": 214
+          },
+          "offset": {
+            "x": 24,
+            "y": 13,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -47,
+            "z": 213
+          },
+          "offset": {
+            "x": 23,
+            "y": 13,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -47,
+            "z": 213
+          },
+          "offset": {
+            "x": 24,
+            "y": 13,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -46,
+            "z": 215
+          },
+          "offset": {
+            "x": 23,
+            "y": 14,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -46,
+            "z": 215
+          },
+          "offset": {
+            "x": 24,
+            "y": 14,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -45,
+            "z": 216
+          },
+          "offset": {
+            "x": 23,
+            "y": 15,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -45,
+            "z": 217
+          },
+          "offset": {
+            "x": 23,
+            "y": 15,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -45,
+            "z": 216
+          },
+          "offset": {
+            "x": 24,
+            "y": 15,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -45,
+            "z": 217
+          },
+          "offset": {
+            "x": 24,
+            "y": 15,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -44,
+            "z": 216
+          },
+          "offset": {
+            "x": 22,
+            "y": 16,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -44,
+            "z": 217
+          },
+          "offset": {
+            "x": 22,
+            "y": 16,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -43,
+            "z": 216
+          },
+          "offset": {
+            "x": 21,
+            "y": 17,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -43,
+            "z": 216
+          },
+          "offset": {
+            "x": 20,
+            "y": 17,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -43,
+            "z": 217
+          },
+          "offset": {
+            "x": 21,
+            "y": 17,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -43,
+            "z": 217
+          },
+          "offset": {
+            "x": 20,
+            "y": 17,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -42,
+            "z": 215
+          },
+          "offset": {
+            "x": 21,
+            "y": 18,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -42,
+            "z": 215
+          },
+          "offset": {
+            "x": 20,
+            "y": 18,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -41,
+            "z": 214
+          },
+          "offset": {
+            "x": 21,
+            "y": 19,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 269,
+            "y": -41,
+            "z": 213
+          },
+          "offset": {
+            "x": 21,
+            "y": 19,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -41,
+            "z": 214
+          },
+          "offset": {
+            "x": 20,
+            "y": 19,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 268,
+            "y": -41,
+            "z": 213
+          },
+          "offset": {
+            "x": 20,
+            "y": 19,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -40,
+            "z": 214
+          },
+          "offset": {
+            "x": 22,
+            "y": 20,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 270,
+            "y": -40,
+            "z": 213
+          },
+          "offset": {
+            "x": 22,
+            "y": 20,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -39,
+            "z": 214
+          },
+          "offset": {
+            "x": 23,
+            "y": 21,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -39,
+            "z": 214
+          },
+          "offset": {
+            "x": 24,
+            "y": 21,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -39,
+            "z": 213
+          },
+          "offset": {
+            "x": 23,
+            "y": 21,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -39,
+            "z": 213
+          },
+          "offset": {
+            "x": 24,
+            "y": 21,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 271,
+            "y": -38,
+            "z": 215
+          },
+          "offset": {
+            "x": 23,
+            "y": 22,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 272,
+            "y": -38,
+            "z": 215
+          },
+          "offset": {
+            "x": 24,
+            "y": 22,
+            "z": 55
+          }
+        }
+      ],
+      "tags": {
+        "generated_stair_mode": "stair_stairs",
+        "generated_stair_revision": "1777095793685",
+        "stair_direction": "both",
+        "supports_stair_generation": "true",
+        "topology_role": "entry",
+        "tower_piece_kind": "room",
+        "tower_stair_placement": "center",
+        "workspace_base_name": "entry",
+        "workspace_piece_kind": "instance",
+        "workspace_variant_index": "1"
+      },
+      "connectors": [
+        {
+          "opening_height": 3,
+          "jigsaw_name": "mknpc:main_back",
+          "jigsaw_target": "mknpc:main_forward",
+          "target_pool": "minecraft:empty",
+          "role": "main_back",
+          "facing": "south",
+          "relative_pos": {
+            "x": 10,
+            "y": 1,
+            "z": 18
+          },
+          "opening_width": 3
+        },
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
+          "jigsaw_target": "mknpc:connect_down",
+          "target_pool": "mknpc:test_tower/connect_up",
+          "role": "connect_up",
+          "facing": "up",
+          "relative_pos": {
+            "x": 10,
+            "y": 22,
+            "z": 10
+          },
+          "opening_width": 5
+        },
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
+          "jigsaw_target": "mknpc:connect_up",
+          "target_pool": "mknpc:test_tower/connect_down_entry",
+          "role": "connect_down",
+          "facing": "down",
+          "relative_pos": {
+            "x": 10,
+            "y": 0,
+            "z": 10
+          },
+          "opening_width": 5
+        }
+      ],
+      "shell_margin": 1,
+      "effective_dimensions": {
+        "basement_height": 21,
+        "hallway_width": 5,
+        "doorway_width": 3,
+        "doorway_height": 3,
+        "room_width": 15,
+        "room_length": 15,
+        "entrance_height": 21,
+        "room_height": 21
+      },
+      "placement": {
+        "sign_pos": {
+          "x": 257,
+          "y": -59,
+          "z": 215
+        },
+        "sign_offset": {
+          "x": 9,
+          "y": 1,
+          "z": 55
+        },
+        "export_bounds": {
+          "max_offset": {
+            "x": 32,
+            "y": 22,
+            "z": 65
+          },
+          "size_x": 21,
+          "size_y": 23,
+          "size_z": 21,
+          "min": {
+            "x": 260,
+            "y": -60,
+            "z": 205
+          },
+          "max": {
+            "x": 280,
+            "y": -38,
+            "z": 225
+          },
+          "min_offset": {
+            "x": 12,
+            "y": 0,
+            "z": 45
+          }
+        },
+        "preview_bounds": {
+          "max_offset": {
+            "x": 36,
+            "y": 22,
+            "z": 69
+          },
+          "size_x": 29,
+          "size_y": 23,
+          "size_z": 29,
+          "min": {
+            "x": 256,
+            "y": -60,
+            "z": 201
+          },
+          "max": {
+            "x": 284,
+            "y": -38,
+            "z": 229
+          },
+          "min_offset": {
+            "x": 8,
+            "y": 0,
+            "z": 41
+          }
+        },
+        "world_origin": {
+          "x": 260,
+          "y": -60,
+          "z": 205
+        },
+        "world_origin_offset": {
+          "x": 12,
+          "y": 0,
+          "z": 45
+        },
+        "structure_block_pos": {
+          "x": 258,
+          "y": -59,
+          "z": 215
+        },
+        "structure_block_offset": {
+          "x": 10,
+          "y": 1,
+          "z": 55
+        }
+      },
+      "role": "entry",
+      "variant_index": 1,
+      "workspace_piece_kind": "instance",
+      "structure_id": "mknpc:test_tower/entry_1",
+      "piece_id": "8ccfe5b4-4cc0-4af5-96dc-3f80f0472b2a",
+      "piece_name": "entry_1",
+      "base_name": "entry"
+    },
+    {
+      "marker_positions": [
+        {
+          "absolute": {
+            "x": 303,
+            "y": -61,
+            "z": 215
+          },
+          "offset": {
+            "x": 55,
+            "y": -1,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 303,
+            "y": -53,
+            "z": 215
+          },
+          "offset": {
+            "x": 55,
+            "y": 7,
+            "z": 55
+          }
+        }
+      ],
+      "generated_stair_positions": [
+        {
+          "absolute": {
+            "x": 303,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 55,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 303,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 55,
+            "y": 0,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 304,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 56,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 304,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 56,
+            "y": 0,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 305,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 57,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 305,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 57,
+            "y": 0,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 302,
+            "y": -59,
+            "z": 216
+          },
+          "offset": {
+            "x": 54,
+            "y": 1,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 301,
+            "y": -59,
+            "z": 216
+          },
+          "offset": {
+            "x": 53,
+            "y": 1,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 302,
+            "y": -59,
+            "z": 217
+          },
+          "offset": {
+            "x": 54,
+            "y": 1,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 301,
+            "y": -59,
+            "z": 217
+          },
+          "offset": {
+            "x": 53,
+            "y": 1,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 302,
+            "y": -58,
+            "z": 215
+          },
+          "offset": {
+            "x": 54,
+            "y": 2,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 301,
+            "y": -58,
+            "z": 215
+          },
+          "offset": {
+            "x": 53,
+            "y": 2,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 302,
+            "y": -57,
+            "z": 214
+          },
+          "offset": {
+            "x": 54,
+            "y": 3,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 302,
+            "y": -57,
+            "z": 213
+          },
+          "offset": {
+            "x": 54,
+            "y": 3,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 301,
+            "y": -57,
+            "z": 214
+          },
+          "offset": {
+            "x": 53,
+            "y": 3,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 301,
+            "y": -57,
+            "z": 213
+          },
+          "offset": {
+            "x": 53,
+            "y": 3,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 303,
+            "y": -56,
+            "z": 214
+          },
+          "offset": {
+            "x": 55,
+            "y": 4,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 303,
+            "y": -56,
+            "z": 213
+          },
+          "offset": {
+            "x": 55,
+            "y": 4,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 304,
+            "y": -55,
+            "z": 214
+          },
+          "offset": {
+            "x": 56,
+            "y": 5,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 305,
+            "y": -55,
+            "z": 214
+          },
+          "offset": {
+            "x": 57,
+            "y": 5,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 304,
+            "y": -55,
+            "z": 213
+          },
+          "offset": {
+            "x": 56,
+            "y": 5,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 305,
+            "y": -55,
+            "z": 213
+          },
+          "offset": {
+            "x": 57,
+            "y": 5,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 304,
+            "y": -54,
+            "z": 215
+          },
+          "offset": {
+            "x": 56,
+            "y": 6,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 305,
+            "y": -54,
+            "z": 215
+          },
+          "offset": {
+            "x": 57,
+            "y": 6,
+            "z": 55
+          }
+        }
+      ],
+      "tags": {
+        "generated_stair_mode": "stair_stairs",
+        "generated_stair_revision": "1777095793686",
+        "stair_direction": "both",
+        "supports_stair_generation": "true",
+        "topology_role": "floor",
+        "tower_piece_kind": "room",
+        "tower_stair_placement": "center",
+        "workspace_base_name": "floor_main",
+        "workspace_piece_kind": "instance",
+        "workspace_variant_index": "1"
+      },
+      "connectors": [
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
+          "jigsaw_target": "mknpc:connect_up",
+          "target_pool": "minecraft:empty",
+          "role": "connect_down",
+          "facing": "down",
+          "relative_pos": {
+            "x": 10,
+            "y": 0,
+            "z": 10
+          },
+          "opening_width": 5
+        },
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
+          "jigsaw_target": "mknpc:connect_down",
+          "target_pool": "mknpc:test_tower/connect_up",
+          "role": "connect_up",
+          "facing": "up",
+          "relative_pos": {
+            "x": 10,
+            "y": 6,
+            "z": 10
+          },
+          "opening_width": 5
+        }
+      ],
+      "shell_margin": 1,
+      "effective_dimensions": {
+        "basement_height": 5,
+        "hallway_width": 5,
+        "doorway_width": 3,
+        "doorway_height": 3,
+        "room_width": 15,
+        "room_length": 15,
+        "entrance_height": 5,
+        "room_height": 5
+      },
+      "placement": {
+        "sign_pos": {
+          "x": 290,
+          "y": -59,
+          "z": 215
+        },
+        "sign_offset": {
+          "x": 42,
+          "y": 1,
+          "z": 55
+        },
+        "export_bounds": {
+          "max_offset": {
+            "x": 65,
+            "y": 6,
+            "z": 65
+          },
+          "size_x": 21,
+          "size_y": 7,
+          "size_z": 21,
+          "min": {
+            "x": 293,
+            "y": -60,
+            "z": 205
+          },
+          "max": {
+            "x": 313,
+            "y": -54,
+            "z": 225
+          },
+          "min_offset": {
+            "x": 45,
+            "y": 0,
+            "z": 45
+          }
+        },
+        "preview_bounds": {
+          "max_offset": {
+            "x": 69,
+            "y": 6,
+            "z": 69
+          },
+          "size_x": 29,
+          "size_y": 7,
+          "size_z": 29,
+          "min": {
+            "x": 289,
+            "y": -60,
+            "z": 201
+          },
+          "max": {
+            "x": 317,
+            "y": -54,
+            "z": 229
+          },
+          "min_offset": {
+            "x": 41,
+            "y": 0,
+            "z": 41
+          }
+        },
+        "world_origin": {
+          "x": 293,
+          "y": -60,
+          "z": 205
+        },
+        "world_origin_offset": {
+          "x": 45,
+          "y": 0,
+          "z": 45
+        },
+        "structure_block_pos": {
+          "x": 291,
+          "y": -59,
+          "z": 215
+        },
+        "structure_block_offset": {
+          "x": 43,
+          "y": 1,
+          "z": 55
+        }
+      },
+      "role": "floor_main",
+      "variant_index": 1,
+      "workspace_piece_kind": "instance",
+      "structure_id": "mknpc:test_tower/floor_main_1",
+      "piece_id": "abe65b80-95f9-4c17-ab80-76689d029da3",
+      "piece_name": "floor_main_1",
+      "base_name": "floor_main"
+    },
+    {
+      "marker_positions": [
+        {
+          "absolute": {
+            "x": 336,
+            "y": -61,
+            "z": 215
+          },
+          "offset": {
+            "x": 88,
+            "y": -1,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 336,
+            "y": -53,
+            "z": 215
+          },
+          "offset": {
+            "x": 88,
+            "y": 7,
+            "z": 55
+          }
+        }
+      ],
+      "generated_stair_positions": [
+        {
+          "absolute": {
+            "x": 336,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 88,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 336,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 88,
+            "y": 0,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 337,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 89,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 337,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 89,
+            "y": 0,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 338,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 90,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 338,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 90,
+            "y": 0,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 335,
+            "y": -59,
+            "z": 216
+          },
+          "offset": {
+            "x": 87,
+            "y": 1,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 334,
+            "y": -59,
+            "z": 216
+          },
+          "offset": {
+            "x": 86,
+            "y": 1,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 335,
+            "y": -59,
+            "z": 217
+          },
+          "offset": {
+            "x": 87,
+            "y": 1,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 334,
+            "y": -59,
+            "z": 217
+          },
+          "offset": {
+            "x": 86,
+            "y": 1,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 335,
+            "y": -58,
+            "z": 215
+          },
+          "offset": {
+            "x": 87,
+            "y": 2,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 334,
+            "y": -58,
+            "z": 215
+          },
+          "offset": {
+            "x": 86,
+            "y": 2,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 335,
+            "y": -57,
+            "z": 214
+          },
+          "offset": {
+            "x": 87,
+            "y": 3,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 335,
+            "y": -57,
+            "z": 213
+          },
+          "offset": {
+            "x": 87,
+            "y": 3,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 334,
+            "y": -57,
+            "z": 214
+          },
+          "offset": {
+            "x": 86,
+            "y": 3,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 334,
+            "y": -57,
+            "z": 213
+          },
+          "offset": {
+            "x": 86,
+            "y": 3,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 336,
+            "y": -56,
+            "z": 214
+          },
+          "offset": {
+            "x": 88,
+            "y": 4,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 336,
+            "y": -56,
+            "z": 213
+          },
+          "offset": {
+            "x": 88,
+            "y": 4,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 337,
+            "y": -55,
+            "z": 214
+          },
+          "offset": {
+            "x": 89,
+            "y": 5,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 338,
+            "y": -55,
+            "z": 214
+          },
+          "offset": {
+            "x": 90,
+            "y": 5,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 337,
+            "y": -55,
+            "z": 213
+          },
+          "offset": {
+            "x": 89,
+            "y": 5,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 338,
+            "y": -55,
+            "z": 213
+          },
+          "offset": {
+            "x": 90,
+            "y": 5,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 337,
+            "y": -54,
+            "z": 215
+          },
+          "offset": {
+            "x": 89,
+            "y": 6,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 338,
+            "y": -54,
+            "z": 215
+          },
+          "offset": {
+            "x": 90,
+            "y": 6,
+            "z": 55
+          }
+        }
+      ],
+      "tags": {
+        "generated_stair_mode": "stair_stairs",
+        "generated_stair_revision": "1777095793687",
+        "stair_direction": "up",
+        "supports_stair_generation": "true",
+        "topology_role": "boss_approach",
+        "tower_piece_kind": "room",
+        "tower_stair_placement": "center",
+        "workspace_base_name": "boss_approach",
+        "workspace_piece_kind": "instance",
+        "workspace_variant_index": "1"
+      },
+      "connectors": [
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
+          "jigsaw_target": "mknpc:connect_up",
+          "target_pool": "minecraft:empty",
+          "role": "connect_down",
+          "facing": "down",
+          "relative_pos": {
+            "x": 10,
+            "y": 0,
+            "z": 10
+          },
+          "opening_width": 5
+        },
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:boss_forward",
+          "jigsaw_target": "mknpc:boss_back",
+          "target_pool": "mknpc:test_tower/boss_cap",
+          "role": "boss_forward",
+          "facing": "up",
+          "relative_pos": {
+            "x": 10,
+            "y": 6,
+            "z": 10
+          },
+          "opening_width": 5
+        }
+      ],
+      "shell_margin": 1,
+      "effective_dimensions": {
+        "basement_height": 5,
+        "hallway_width": 5,
+        "doorway_width": 3,
+        "doorway_height": 3,
+        "room_width": 15,
+        "room_length": 15,
+        "entrance_height": 5,
+        "room_height": 5
+      },
+      "placement": {
+        "sign_pos": {
+          "x": 323,
+          "y": -59,
+          "z": 215
+        },
+        "sign_offset": {
+          "x": 75,
+          "y": 1,
+          "z": 55
+        },
+        "export_bounds": {
+          "max_offset": {
+            "x": 98,
+            "y": 6,
+            "z": 65
+          },
+          "size_x": 21,
+          "size_y": 7,
+          "size_z": 21,
+          "min": {
+            "x": 326,
+            "y": -60,
+            "z": 205
+          },
+          "max": {
+            "x": 346,
+            "y": -54,
+            "z": 225
+          },
+          "min_offset": {
+            "x": 78,
+            "y": 0,
+            "z": 45
+          }
+        },
+        "preview_bounds": {
+          "max_offset": {
+            "x": 102,
+            "y": 6,
+            "z": 69
+          },
+          "size_x": 29,
+          "size_y": 7,
+          "size_z": 29,
+          "min": {
+            "x": 322,
+            "y": -60,
+            "z": 201
+          },
+          "max": {
+            "x": 350,
+            "y": -54,
+            "z": 229
+          },
+          "min_offset": {
+            "x": 74,
+            "y": 0,
+            "z": 41
+          }
+        },
+        "world_origin": {
+          "x": 326,
+          "y": -60,
+          "z": 205
+        },
+        "world_origin_offset": {
+          "x": 78,
+          "y": 0,
+          "z": 45
+        },
+        "structure_block_pos": {
+          "x": 324,
+          "y": -59,
+          "z": 215
+        },
+        "structure_block_offset": {
+          "x": 76,
+          "y": 1,
+          "z": 55
+        }
+      },
+      "role": "boss_approach",
+      "variant_index": 1,
+      "workspace_piece_kind": "instance",
+      "structure_id": "mknpc:test_tower/boss_approach_1",
+      "piece_id": "7cb0a5a8-1d95-4ac5-92d3-be311b9ecc4a",
+      "piece_name": "boss_approach_1",
+      "base_name": "boss_approach"
+    },
+    {
+      "marker_positions": [
+        {
+          "absolute": {
+            "x": 369,
+            "y": -61,
+            "z": 215
+          },
+          "offset": {
+            "x": 121,
+            "y": -1,
+            "z": 55
+          }
+        }
+      ],
+      "generated_stair_positions": [
+        {
+          "absolute": {
+            "x": 369,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 121,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 369,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 121,
+            "y": 0,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 370,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 122,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 370,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 122,
+            "y": 0,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 371,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 123,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 371,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 123,
+            "y": 0,
+            "z": 57
+          }
+        }
+      ],
+      "tags": {
+        "generated_stair_mode": "stair_stairs",
+        "generated_stair_revision": "1777095793687",
+        "stair_direction": "up",
+        "supports_stair_generation": "true",
+        "topology_role": "boss_cap",
+        "tower_piece_kind": "room",
+        "tower_stair_placement": "center",
+        "workspace_base_name": "boss_cap",
+        "workspace_piece_kind": "instance",
+        "workspace_variant_index": "1"
+      },
+      "connectors": [
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:boss_back",
+          "jigsaw_target": "mknpc:boss_forward",
+          "target_pool": "minecraft:empty",
+          "role": "boss_back",
+          "facing": "down",
+          "relative_pos": {
+            "x": 10,
+            "y": 0,
+            "z": 10
+          },
+          "opening_width": 5
+        }
+      ],
+      "shell_margin": 1,
+      "effective_dimensions": {
+        "basement_height": 5,
+        "hallway_width": 5,
+        "doorway_width": 3,
+        "doorway_height": 3,
+        "room_width": 15,
+        "room_length": 15,
+        "entrance_height": 5,
+        "room_height": 5
+      },
+      "placement": {
+        "sign_pos": {
+          "x": 356,
+          "y": -59,
+          "z": 215
+        },
+        "sign_offset": {
+          "x": 108,
+          "y": 1,
+          "z": 55
+        },
+        "export_bounds": {
+          "max_offset": {
+            "x": 131,
+            "y": 6,
+            "z": 65
+          },
+          "size_x": 21,
+          "size_y": 7,
+          "size_z": 21,
+          "min": {
+            "x": 359,
+            "y": -60,
+            "z": 205
+          },
+          "max": {
+            "x": 379,
+            "y": -54,
+            "z": 225
+          },
+          "min_offset": {
+            "x": 111,
+            "y": 0,
+            "z": 45
+          }
+        },
+        "preview_bounds": {
+          "max_offset": {
+            "x": 135,
+            "y": 6,
+            "z": 69
+          },
+          "size_x": 29,
+          "size_y": 7,
+          "size_z": 29,
+          "min": {
+            "x": 355,
+            "y": -60,
+            "z": 201
+          },
+          "max": {
+            "x": 383,
+            "y": -54,
+            "z": 229
+          },
+          "min_offset": {
+            "x": 107,
+            "y": 0,
+            "z": 41
+          }
+        },
+        "world_origin": {
+          "x": 359,
+          "y": -60,
+          "z": 205
+        },
+        "world_origin_offset": {
+          "x": 111,
+          "y": 0,
+          "z": 45
+        },
+        "structure_block_pos": {
+          "x": 357,
+          "y": -59,
+          "z": 215
+        },
+        "structure_block_offset": {
+          "x": 109,
+          "y": 1,
+          "z": 55
+        }
+      },
+      "role": "boss_cap",
+      "variant_index": 1,
+      "workspace_piece_kind": "instance",
+      "structure_id": "mknpc:test_tower/boss_cap_1",
+      "piece_id": "d98ae9e0-b6e6-4300-902b-20f68e02aec1",
+      "piece_name": "boss_cap_1",
+      "base_name": "boss_cap"
+    },
+    {
+      "marker_positions": [
+        {
+          "absolute": {
+            "x": 402,
+            "y": -45,
+            "z": 215
+          },
+          "offset": {
+            "x": 154,
+            "y": 15,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 402,
+            "y": -61,
+            "z": 215
+          },
+          "offset": {
+            "x": 154,
+            "y": -1,
+            "z": 55
+          }
+        }
+      ],
+      "generated_stair_positions": [
+        {
+          "absolute": {
+            "x": 402,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 154,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 402,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 154,
+            "y": 0,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 155,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 155,
+            "y": 0,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 156,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 156,
+            "y": 0,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -59,
+            "z": 216
+          },
+          "offset": {
+            "x": 153,
+            "y": 1,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -59,
+            "z": 216
+          },
+          "offset": {
+            "x": 152,
+            "y": 1,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -59,
+            "z": 217
+          },
+          "offset": {
+            "x": 153,
+            "y": 1,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -59,
+            "z": 217
+          },
+          "offset": {
+            "x": 152,
+            "y": 1,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -58,
+            "z": 215
+          },
+          "offset": {
+            "x": 153,
+            "y": 2,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -58,
+            "z": 215
+          },
+          "offset": {
+            "x": 152,
+            "y": 2,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -57,
+            "z": 214
+          },
+          "offset": {
+            "x": 153,
+            "y": 3,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -57,
+            "z": 213
+          },
+          "offset": {
+            "x": 153,
+            "y": 3,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -57,
+            "z": 214
+          },
+          "offset": {
+            "x": 152,
+            "y": 3,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -57,
+            "z": 213
+          },
+          "offset": {
+            "x": 152,
+            "y": 3,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 402,
+            "y": -56,
+            "z": 214
+          },
+          "offset": {
+            "x": 154,
+            "y": 4,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 402,
+            "y": -56,
+            "z": 213
+          },
+          "offset": {
+            "x": 154,
+            "y": 4,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -55,
+            "z": 214
+          },
+          "offset": {
+            "x": 155,
+            "y": 5,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -55,
+            "z": 214
+          },
+          "offset": {
+            "x": 156,
+            "y": 5,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -55,
+            "z": 213
+          },
+          "offset": {
+            "x": 155,
+            "y": 5,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -55,
+            "z": 213
+          },
+          "offset": {
+            "x": 156,
+            "y": 5,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -54,
+            "z": 215
+          },
+          "offset": {
+            "x": 155,
+            "y": 6,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -54,
+            "z": 215
+          },
+          "offset": {
+            "x": 156,
+            "y": 6,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -53,
+            "z": 216
+          },
+          "offset": {
+            "x": 155,
+            "y": 7,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -53,
+            "z": 217
+          },
+          "offset": {
+            "x": 155,
+            "y": 7,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -53,
+            "z": 216
+          },
+          "offset": {
+            "x": 156,
+            "y": 7,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -53,
+            "z": 217
+          },
+          "offset": {
+            "x": 156,
+            "y": 7,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 402,
+            "y": -52,
+            "z": 216
+          },
+          "offset": {
+            "x": 154,
+            "y": 8,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 402,
+            "y": -52,
+            "z": 217
+          },
+          "offset": {
+            "x": 154,
+            "y": 8,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -51,
+            "z": 216
+          },
+          "offset": {
+            "x": 153,
+            "y": 9,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -51,
+            "z": 216
+          },
+          "offset": {
+            "x": 152,
+            "y": 9,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -51,
+            "z": 217
+          },
+          "offset": {
+            "x": 153,
+            "y": 9,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -51,
+            "z": 217
+          },
+          "offset": {
+            "x": 152,
+            "y": 9,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -50,
+            "z": 215
+          },
+          "offset": {
+            "x": 153,
+            "y": 10,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -50,
+            "z": 215
+          },
+          "offset": {
+            "x": 152,
+            "y": 10,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -49,
+            "z": 214
+          },
+          "offset": {
+            "x": 153,
+            "y": 11,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 401,
+            "y": -49,
+            "z": 213
+          },
+          "offset": {
+            "x": 153,
+            "y": 11,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -49,
+            "z": 214
+          },
+          "offset": {
+            "x": 152,
+            "y": 11,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 400,
+            "y": -49,
+            "z": 213
+          },
+          "offset": {
+            "x": 152,
+            "y": 11,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 402,
+            "y": -48,
+            "z": 214
+          },
+          "offset": {
+            "x": 154,
+            "y": 12,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 402,
+            "y": -48,
+            "z": 213
+          },
+          "offset": {
+            "x": 154,
+            "y": 12,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -47,
+            "z": 214
+          },
+          "offset": {
+            "x": 155,
+            "y": 13,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -47,
+            "z": 214
+          },
+          "offset": {
+            "x": 156,
+            "y": 13,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -47,
+            "z": 213
+          },
+          "offset": {
+            "x": 155,
+            "y": 13,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -47,
+            "z": 213
+          },
+          "offset": {
+            "x": 156,
+            "y": 13,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 403,
+            "y": -46,
+            "z": 215
+          },
+          "offset": {
+            "x": 155,
+            "y": 14,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 404,
+            "y": -46,
+            "z": 215
+          },
+          "offset": {
+            "x": 156,
+            "y": 14,
+            "z": 55
+          }
+        }
+      ],
+      "tags": {
+        "generated_stair_mode": "stair_stairs",
+        "generated_stair_revision": "1777095793688",
+        "stair_direction": "down",
+        "supports_stair_generation": "true",
+        "topology_role": "basement_entry",
+        "tower_piece_kind": "room",
+        "tower_stair_placement": "center",
+        "workspace_base_name": "basement_entry",
+        "workspace_piece_kind": "instance",
+        "workspace_variant_index": "1"
+      },
+      "connectors": [
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
+          "jigsaw_target": "mknpc:connect_down",
+          "target_pool": "minecraft:empty",
+          "role": "connect_up",
+          "facing": "up",
+          "relative_pos": {
+            "x": 10,
+            "y": 14,
+            "z": 10
+          },
+          "opening_width": 5
+        },
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
+          "jigsaw_target": "mknpc:connect_up",
+          "target_pool": "mknpc:test_tower/connect_down",
+          "role": "connect_down",
+          "facing": "down",
+          "relative_pos": {
+            "x": 10,
+            "y": 0,
+            "z": 10
+          },
+          "opening_width": 5
+        }
+      ],
+      "shell_margin": 1,
+      "effective_dimensions": {
+        "basement_height": 13,
+        "hallway_width": 5,
+        "doorway_width": 3,
+        "doorway_height": 3,
+        "room_width": 15,
+        "room_length": 15,
+        "entrance_height": 13,
+        "room_height": 13
+      },
+      "placement": {
+        "sign_pos": {
+          "x": 389,
+          "y": -59,
+          "z": 215
+        },
+        "sign_offset": {
+          "x": 141,
+          "y": 1,
+          "z": 55
+        },
+        "export_bounds": {
+          "max_offset": {
+            "x": 164,
+            "y": 14,
+            "z": 65
+          },
+          "size_x": 21,
+          "size_y": 15,
+          "size_z": 21,
+          "min": {
+            "x": 392,
+            "y": -60,
+            "z": 205
+          },
+          "max": {
+            "x": 412,
+            "y": -46,
+            "z": 225
+          },
+          "min_offset": {
+            "x": 144,
+            "y": 0,
+            "z": 45
+          }
+        },
+        "preview_bounds": {
+          "max_offset": {
+            "x": 168,
+            "y": 14,
+            "z": 69
+          },
+          "size_x": 29,
+          "size_y": 15,
+          "size_z": 29,
+          "min": {
+            "x": 388,
+            "y": -60,
+            "z": 201
+          },
+          "max": {
+            "x": 416,
+            "y": -46,
+            "z": 229
+          },
+          "min_offset": {
+            "x": 140,
+            "y": 0,
+            "z": 41
+          }
+        },
+        "world_origin": {
+          "x": 392,
+          "y": -60,
+          "z": 205
+        },
+        "world_origin_offset": {
+          "x": 144,
+          "y": 0,
+          "z": 45
+        },
+        "structure_block_pos": {
+          "x": 390,
+          "y": -59,
+          "z": 215
+        },
+        "structure_block_offset": {
+          "x": 142,
+          "y": 1,
+          "z": 55
+        }
+      },
+      "role": "basement_entry",
+      "variant_index": 1,
+      "workspace_piece_kind": "instance",
+      "structure_id": "mknpc:test_tower/basement_entry_1",
+      "piece_id": "041751ad-8873-4cf6-b04f-90bc825c6694",
+      "piece_name": "basement_entry_1",
+      "base_name": "basement_entry"
+    },
+    {
+      "marker_positions": [
+        {
+          "absolute": {
+            "x": 435,
+            "y": -45,
+            "z": 215
+          },
+          "offset": {
+            "x": 187,
+            "y": 15,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 435,
+            "y": -61,
+            "z": 215
+          },
+          "offset": {
+            "x": 187,
+            "y": -1,
+            "z": 55
+          }
+        }
+      ],
+      "generated_stair_positions": [
+        {
+          "absolute": {
+            "x": 435,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 187,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 435,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 187,
+            "y": 0,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 188,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 188,
+            "y": 0,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -60,
+            "z": 216
+          },
+          "offset": {
+            "x": 189,
+            "y": 0,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -60,
+            "z": 217
+          },
+          "offset": {
+            "x": 189,
+            "y": 0,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -59,
+            "z": 216
+          },
+          "offset": {
+            "x": 186,
+            "y": 1,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -59,
+            "z": 216
+          },
+          "offset": {
+            "x": 185,
+            "y": 1,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -59,
+            "z": 217
+          },
+          "offset": {
+            "x": 186,
+            "y": 1,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -59,
+            "z": 217
+          },
+          "offset": {
+            "x": 185,
+            "y": 1,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -58,
+            "z": 215
+          },
+          "offset": {
+            "x": 186,
+            "y": 2,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -58,
+            "z": 215
+          },
+          "offset": {
+            "x": 185,
+            "y": 2,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -57,
+            "z": 214
+          },
+          "offset": {
+            "x": 186,
+            "y": 3,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -57,
+            "z": 213
+          },
+          "offset": {
+            "x": 186,
+            "y": 3,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -57,
+            "z": 214
+          },
+          "offset": {
+            "x": 185,
+            "y": 3,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -57,
+            "z": 213
+          },
+          "offset": {
+            "x": 185,
+            "y": 3,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 435,
+            "y": -56,
+            "z": 214
+          },
+          "offset": {
+            "x": 187,
+            "y": 4,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 435,
+            "y": -56,
+            "z": 213
+          },
+          "offset": {
+            "x": 187,
+            "y": 4,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -55,
+            "z": 214
+          },
+          "offset": {
+            "x": 188,
+            "y": 5,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -55,
+            "z": 214
+          },
+          "offset": {
+            "x": 189,
+            "y": 5,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -55,
+            "z": 213
+          },
+          "offset": {
+            "x": 188,
+            "y": 5,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -55,
+            "z": 213
+          },
+          "offset": {
+            "x": 189,
+            "y": 5,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -54,
+            "z": 215
+          },
+          "offset": {
+            "x": 188,
+            "y": 6,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -54,
+            "z": 215
+          },
+          "offset": {
+            "x": 189,
+            "y": 6,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -53,
+            "z": 216
+          },
+          "offset": {
+            "x": 188,
+            "y": 7,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -53,
+            "z": 217
+          },
+          "offset": {
+            "x": 188,
+            "y": 7,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -53,
+            "z": 216
+          },
+          "offset": {
+            "x": 189,
+            "y": 7,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -53,
+            "z": 217
+          },
+          "offset": {
+            "x": 189,
+            "y": 7,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 435,
+            "y": -52,
+            "z": 216
+          },
+          "offset": {
+            "x": 187,
+            "y": 8,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 435,
+            "y": -52,
+            "z": 217
+          },
+          "offset": {
+            "x": 187,
+            "y": 8,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -51,
+            "z": 216
+          },
+          "offset": {
+            "x": 186,
+            "y": 9,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -51,
+            "z": 216
+          },
+          "offset": {
+            "x": 185,
+            "y": 9,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -51,
+            "z": 217
+          },
+          "offset": {
+            "x": 186,
+            "y": 9,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -51,
+            "z": 217
+          },
+          "offset": {
+            "x": 185,
+            "y": 9,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -50,
+            "z": 215
+          },
+          "offset": {
+            "x": 186,
+            "y": 10,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -50,
+            "z": 215
+          },
+          "offset": {
+            "x": 185,
+            "y": 10,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -49,
+            "z": 214
+          },
+          "offset": {
+            "x": 186,
+            "y": 11,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 434,
+            "y": -49,
+            "z": 213
+          },
+          "offset": {
+            "x": 186,
+            "y": 11,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -49,
+            "z": 214
+          },
+          "offset": {
+            "x": 185,
+            "y": 11,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 433,
+            "y": -49,
+            "z": 213
+          },
+          "offset": {
+            "x": 185,
+            "y": 11,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 435,
+            "y": -48,
+            "z": 214
+          },
+          "offset": {
+            "x": 187,
+            "y": 12,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 435,
+            "y": -48,
+            "z": 213
+          },
+          "offset": {
+            "x": 187,
+            "y": 12,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -47,
+            "z": 214
+          },
+          "offset": {
+            "x": 188,
+            "y": 13,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -47,
+            "z": 214
+          },
+          "offset": {
+            "x": 189,
+            "y": 13,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -47,
+            "z": 213
+          },
+          "offset": {
+            "x": 188,
+            "y": 13,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -47,
+            "z": 213
+          },
+          "offset": {
+            "x": 189,
+            "y": 13,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 436,
+            "y": -46,
+            "z": 215
+          },
+          "offset": {
+            "x": 188,
+            "y": 14,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 437,
+            "y": -46,
+            "z": 215
+          },
+          "offset": {
+            "x": 189,
+            "y": 14,
+            "z": 55
+          }
+        }
+      ],
+      "tags": {
+        "generated_stair_mode": "stair_stairs",
+        "generated_stair_revision": "1777095793690",
+        "stair_direction": "down",
+        "supports_stair_generation": "true",
+        "topology_role": "basement_main",
+        "tower_piece_kind": "room",
+        "tower_stair_placement": "center",
+        "workspace_base_name": "basement_main",
+        "workspace_piece_kind": "instance",
+        "workspace_variant_index": "1"
+      },
+      "connectors": [
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
+          "jigsaw_target": "mknpc:connect_down",
+          "target_pool": "minecraft:empty",
+          "role": "connect_up",
+          "facing": "up",
+          "relative_pos": {
+            "x": 10,
+            "y": 14,
+            "z": 10
+          },
+          "opening_width": 5
+        },
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_down",
+          "jigsaw_target": "mknpc:connect_up",
+          "target_pool": "mknpc:test_tower/connect_down",
+          "role": "connect_down",
+          "facing": "down",
+          "relative_pos": {
+            "x": 10,
+            "y": 0,
+            "z": 10
+          },
+          "opening_width": 5
+        }
+      ],
+      "shell_margin": 1,
+      "effective_dimensions": {
+        "basement_height": 13,
+        "hallway_width": 5,
+        "doorway_width": 3,
+        "doorway_height": 3,
+        "room_width": 15,
+        "room_length": 15,
+        "entrance_height": 13,
+        "room_height": 13
+      },
+      "placement": {
+        "sign_pos": {
+          "x": 422,
+          "y": -59,
+          "z": 215
+        },
+        "sign_offset": {
+          "x": 174,
+          "y": 1,
+          "z": 55
+        },
+        "export_bounds": {
+          "max_offset": {
+            "x": 197,
+            "y": 14,
+            "z": 65
+          },
+          "size_x": 21,
+          "size_y": 15,
+          "size_z": 21,
+          "min": {
+            "x": 425,
+            "y": -60,
+            "z": 205
+          },
+          "max": {
+            "x": 445,
+            "y": -46,
+            "z": 225
+          },
+          "min_offset": {
+            "x": 177,
+            "y": 0,
+            "z": 45
+          }
+        },
+        "preview_bounds": {
+          "max_offset": {
+            "x": 201,
+            "y": 14,
+            "z": 69
+          },
+          "size_x": 29,
+          "size_y": 15,
+          "size_z": 29,
+          "min": {
+            "x": 421,
+            "y": -60,
+            "z": 201
+          },
+          "max": {
+            "x": 449,
+            "y": -46,
+            "z": 229
+          },
+          "min_offset": {
+            "x": 173,
+            "y": 0,
+            "z": 41
+          }
+        },
+        "world_origin": {
+          "x": 425,
+          "y": -60,
+          "z": 205
+        },
+        "world_origin_offset": {
+          "x": 177,
+          "y": 0,
+          "z": 45
+        },
+        "structure_block_pos": {
+          "x": 423,
+          "y": -59,
+          "z": 215
+        },
+        "structure_block_offset": {
+          "x": 175,
+          "y": 1,
+          "z": 55
+        }
+      },
+      "role": "basement_main",
+      "variant_index": 1,
+      "workspace_piece_kind": "instance",
+      "structure_id": "mknpc:test_tower/basement_main_1",
+      "piece_id": "0ae90a11-b783-490f-8f55-ce9070f4d07c",
+      "piece_name": "basement_main_1",
+      "base_name": "basement_main"
+    },
+    {
+      "marker_positions": [
+        {
+          "absolute": {
+            "x": 468,
+            "y": -45,
+            "z": 215
+          },
+          "offset": {
+            "x": 220,
+            "y": 15,
+            "z": 55
+          }
+        }
+      ],
+      "generated_stair_positions": [
+        {
+          "absolute": {
+            "x": 468,
+            "y": -59,
+            "z": 216
+          },
+          "offset": {
+            "x": 220,
+            "y": 1,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 468,
+            "y": -59,
+            "z": 217
+          },
+          "offset": {
+            "x": 220,
+            "y": 1,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -59,
+            "z": 216
+          },
+          "offset": {
+            "x": 221,
+            "y": 1,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -59,
+            "z": 217
+          },
+          "offset": {
+            "x": 221,
+            "y": 1,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -59,
+            "z": 216
+          },
+          "offset": {
+            "x": 222,
+            "y": 1,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -59,
+            "z": 217
+          },
+          "offset": {
+            "x": 222,
+            "y": 1,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -58,
+            "z": 216
+          },
+          "offset": {
+            "x": 219,
+            "y": 2,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -58,
+            "z": 216
+          },
+          "offset": {
+            "x": 218,
+            "y": 2,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -58,
+            "z": 217
+          },
+          "offset": {
+            "x": 219,
+            "y": 2,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -58,
+            "z": 217
+          },
+          "offset": {
+            "x": 218,
+            "y": 2,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -57,
+            "z": 215
+          },
+          "offset": {
+            "x": 219,
+            "y": 3,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -57,
+            "z": 215
+          },
+          "offset": {
+            "x": 218,
+            "y": 3,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -56,
+            "z": 214
+          },
+          "offset": {
+            "x": 219,
+            "y": 4,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -56,
+            "z": 213
+          },
+          "offset": {
+            "x": 219,
+            "y": 4,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -56,
+            "z": 214
+          },
+          "offset": {
+            "x": 218,
+            "y": 4,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -56,
+            "z": 213
+          },
+          "offset": {
+            "x": 218,
+            "y": 4,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 468,
+            "y": -55,
+            "z": 214
+          },
+          "offset": {
+            "x": 220,
+            "y": 5,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 468,
+            "y": -55,
+            "z": 213
+          },
+          "offset": {
+            "x": 220,
+            "y": 5,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -54,
+            "z": 214
+          },
+          "offset": {
+            "x": 221,
+            "y": 6,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -54,
+            "z": 214
+          },
+          "offset": {
+            "x": 222,
+            "y": 6,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -54,
+            "z": 213
+          },
+          "offset": {
+            "x": 221,
+            "y": 6,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -54,
+            "z": 213
+          },
+          "offset": {
+            "x": 222,
+            "y": 6,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -53,
+            "z": 215
+          },
+          "offset": {
+            "x": 221,
+            "y": 7,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -53,
+            "z": 215
+          },
+          "offset": {
+            "x": 222,
+            "y": 7,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -52,
+            "z": 216
+          },
+          "offset": {
+            "x": 221,
+            "y": 8,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -52,
+            "z": 217
+          },
+          "offset": {
+            "x": 221,
+            "y": 8,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -52,
+            "z": 216
+          },
+          "offset": {
+            "x": 222,
+            "y": 8,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -52,
+            "z": 217
+          },
+          "offset": {
+            "x": 222,
+            "y": 8,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 468,
+            "y": -51,
+            "z": 216
+          },
+          "offset": {
+            "x": 220,
+            "y": 9,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 468,
+            "y": -51,
+            "z": 217
+          },
+          "offset": {
+            "x": 220,
+            "y": 9,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -50,
+            "z": 216
+          },
+          "offset": {
+            "x": 219,
+            "y": 10,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -50,
+            "z": 216
+          },
+          "offset": {
+            "x": 218,
+            "y": 10,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -50,
+            "z": 217
+          },
+          "offset": {
+            "x": 219,
+            "y": 10,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -50,
+            "z": 217
+          },
+          "offset": {
+            "x": 218,
+            "y": 10,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -49,
+            "z": 215
+          },
+          "offset": {
+            "x": 219,
+            "y": 11,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -49,
+            "z": 215
+          },
+          "offset": {
+            "x": 218,
+            "y": 11,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -48,
+            "z": 214
+          },
+          "offset": {
+            "x": 219,
+            "y": 12,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 467,
+            "y": -48,
+            "z": 213
+          },
+          "offset": {
+            "x": 219,
+            "y": 12,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -48,
+            "z": 214
+          },
+          "offset": {
+            "x": 218,
+            "y": 12,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 466,
+            "y": -48,
+            "z": 213
+          },
+          "offset": {
+            "x": 218,
+            "y": 12,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 468,
+            "y": -47,
+            "z": 214
+          },
+          "offset": {
+            "x": 220,
+            "y": 13,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 468,
+            "y": -47,
+            "z": 213
+          },
+          "offset": {
+            "x": 220,
+            "y": 13,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -46,
+            "z": 214
+          },
+          "offset": {
+            "x": 221,
+            "y": 14,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -46,
+            "z": 214
+          },
+          "offset": {
+            "x": 222,
+            "y": 14,
+            "z": 54
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -46,
+            "z": 213
+          },
+          "offset": {
+            "x": 221,
+            "y": 14,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -46,
+            "z": 213
+          },
+          "offset": {
+            "x": 222,
+            "y": 14,
+            "z": 53
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -46,
+            "z": 215
+          },
+          "offset": {
+            "x": 221,
+            "y": 14,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -46,
+            "z": 215
+          },
+          "offset": {
+            "x": 222,
+            "y": 14,
+            "z": 55
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -46,
+            "z": 216
+          },
+          "offset": {
+            "x": 221,
+            "y": 14,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 469,
+            "y": -46,
+            "z": 217
+          },
+          "offset": {
+            "x": 221,
+            "y": 14,
+            "z": 57
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -46,
+            "z": 216
+          },
+          "offset": {
+            "x": 222,
+            "y": 14,
+            "z": 56
+          }
+        },
+        {
+          "absolute": {
+            "x": 470,
+            "y": -46,
+            "z": 217
+          },
+          "offset": {
+            "x": 222,
+            "y": 14,
+            "z": 57
+          }
+        }
+      ],
+      "tags": {
+        "generated_stair_mode": "stair_stairs",
+        "generated_stair_revision": "1777095793691",
+        "stair_direction": "down",
+        "supports_stair_generation": "true",
+        "topology_role": "basement_cap",
+        "tower_piece_kind": "room",
+        "tower_stair_placement": "center",
+        "workspace_base_name": "basement_cap",
+        "workspace_piece_kind": "instance",
+        "workspace_variant_index": "1"
+      },
+      "connectors": [
+        {
+          "opening_height": 5,
+          "jigsaw_name": "mknpc:connect_up",
+          "jigsaw_target": "mknpc:connect_down",
+          "target_pool": "minecraft:empty",
+          "role": "connect_up",
+          "facing": "up",
+          "relative_pos": {
+            "x": 10,
+            "y": 14,
+            "z": 10
+          },
+          "opening_width": 5
+        }
+      ],
+      "shell_margin": 1,
+      "effective_dimensions": {
+        "basement_height": 13,
+        "hallway_width": 5,
+        "doorway_width": 3,
+        "doorway_height": 3,
+        "room_width": 15,
+        "room_length": 15,
+        "entrance_height": 13,
+        "room_height": 13
+      },
+      "placement": {
+        "sign_pos": {
+          "x": 455,
+          "y": -59,
+          "z": 215
+        },
+        "sign_offset": {
+          "x": 207,
+          "y": 1,
+          "z": 55
+        },
+        "export_bounds": {
+          "max_offset": {
+            "x": 230,
+            "y": 14,
+            "z": 65
+          },
+          "size_x": 21,
+          "size_y": 15,
+          "size_z": 21,
+          "min": {
+            "x": 458,
+            "y": -60,
+            "z": 205
+          },
+          "max": {
+            "x": 478,
+            "y": -46,
+            "z": 225
+          },
+          "min_offset": {
+            "x": 210,
+            "y": 0,
+            "z": 45
+          }
+        },
+        "preview_bounds": {
+          "max_offset": {
+            "x": 234,
+            "y": 14,
+            "z": 69
+          },
+          "size_x": 29,
+          "size_y": 15,
+          "size_z": 29,
+          "min": {
+            "x": 454,
+            "y": -60,
+            "z": 201
+          },
+          "max": {
+            "x": 482,
+            "y": -46,
+            "z": 229
+          },
+          "min_offset": {
+            "x": 206,
+            "y": 0,
+            "z": 41
+          }
+        },
+        "world_origin": {
+          "x": 458,
+          "y": -60,
+          "z": 205
+        },
+        "world_origin_offset": {
+          "x": 210,
+          "y": 0,
+          "z": 45
+        },
+        "structure_block_pos": {
+          "x": 456,
+          "y": -59,
+          "z": 215
+        },
+        "structure_block_offset": {
+          "x": 208,
+          "y": 1,
+          "z": 55
+        }
+      },
+      "role": "basement_cap",
+      "variant_index": 1,
+      "workspace_piece_kind": "instance",
+      "structure_id": "mknpc:test_tower/basement_cap_1",
+      "piece_id": "642a6fe8-26ca-453f-b5c5-69543fb1d176",
+      "piece_name": "basement_cap_1",
+      "base_name": "basement_cap"
+    }
+  ],
+  "created_at": 1776958468420,
+  "updated_at": 1777095810045,
+  "settings": {
+    "tower_stair_placement": "center",
+    "dimensions": {
+      "basement_height": 13,
+      "hallway_width": 5,
+      "doorway_width": 3,
+      "doorway_height": 3,
+      "room_width": 15,
+      "room_length": 15,
+      "entrance_height": 21,
+      "room_height": 5
+    },
+    "palette": {
+      "floor_block": "minecraft:smooth_stone",
+      "wall_block": "minecraft:stone_bricks",
+      "ceiling_block": "minecraft:smooth_stone"
+    },
+    "stair_config": {
+      "stair_width": 2,
+      "stair_block": "minecraft:stone_brick_stairs",
+      "slab_block": "minecraft:stone_brick_slab",
+      "ladder_block": "minecraft:ladder",
+      "mode": "run_profile",
+      "rise_type": "stair",
+      "flat_run_length": 0
+    },
+    "anchor": {
+      "x": 248,
+      "y": -60,
+      "z": 160
+    },
+    "shell_margin": 1,
+    "exterior_air_margin": 2,
+    "preview_margin": 4
+  },
+  "structure_name": "test_tower",
+  "family_type": "tower",
+  "exported_at": "2026-04-25T05:43:30.735498300Z",
+  "schema_version": 1,
+  "workspace_id": "2c30b324-335a-4a95-a048-a44fab28f035",
+  "namespace": "mknpc"
+}

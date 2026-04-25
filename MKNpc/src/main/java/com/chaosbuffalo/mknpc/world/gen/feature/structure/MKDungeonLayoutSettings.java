@@ -48,12 +48,20 @@ public record MKDungeonLayoutSettings(
         return connectors.branch();
     }
 
-    public ResourceLocation stairsDown() {
-        return connectors.stairsDown();
+    public ResourceLocation connectDown() {
+        return connectors.connectDown();
     }
 
-    public ResourceLocation stairsUp() {
-        return connectors.stairsUp();
+    public ResourceLocation connectUp() {
+        return connectors.connectUp();
+    }
+
+    public ResourceLocation stairInsertDown() {
+        return connectors.stairInsertDown();
+    }
+
+    public ResourceLocation stairInsertUp() {
+        return connectors.stairInsertUp();
     }
 
     public ResourceLocation bossForward() {

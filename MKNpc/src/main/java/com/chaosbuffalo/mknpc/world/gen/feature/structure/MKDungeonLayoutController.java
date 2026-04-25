@@ -23,6 +23,9 @@ public class MKDungeonLayoutController {
     }
 
     public Optional<String> getRejectionReason(MKDungeonPieceState parentState, MKConnectorInfo connector, MKJigsawPieceMetadata childMetadata) {
+        if (isEmbeddedConnector(connector.role())) {
+            return Optional.empty();
+        }
         if (!isVerticalDeltaAllowed(childMetadata.verticalLevelDelta())) {
             return Optional.of("illegal_vertical_transition");
         }
@@ -38,6 +41,22 @@ public class MKDungeonLayoutController {
         int nextFloor = parentState.progressionFloorIndex() + childMetadata.progressionDelta();
         if (nextFloor < 0 || nextFloor >= parentState.targetFloors()) {
             return Optional.of("floor_limit");
+        }
+        if (connector.role() == MKConnectorRole.CONNECT_UP) {
+            if (nextFloor == parentState.targetFloors() - 1 && childMetadata.pieceRole() != MKJigsawPieceRole.BOSS_APPROACH) {
+                return Optional.of("final_upward_step_requires_boss_approach");
+            }
+            if (nextFloor < parentState.targetFloors() - 1 && childMetadata.pieceRole() == MKJigsawPieceRole.BOSS_APPROACH) {
+                return Optional.of("boss_approach_early");
+            }
+        }
+        if (connector.role() == MKConnectorRole.CONNECT_DOWN) {
+            if (nextFloor == parentState.targetFloors() - 1 && !childMetadata.terminal()) {
+                return Optional.of("final_downward_step_requires_terminal");
+            }
+            if (nextFloor < parentState.targetFloors() - 1 && childMetadata.terminal()) {
+                return Optional.of("downward_terminal_early");
+            }
         }
 
         boolean finalFloor = parentState.progressionFloorIndex() >= parentState.targetFloors() - 1;
@@ -65,6 +84,9 @@ public class MKDungeonLayoutController {
     }
 
     public MKDungeonPieceState nextState(MKDungeonPieceState parentState, MKConnectorInfo connector, MKJigsawPieceMetadata childMetadata) {
+        if (isEmbeddedConnector(connector.role())) {
+            return parentState;
+        }
         boolean nextOnMainPath = isMainPathContinuation(parentState, connector, childMetadata);
         int nextFloor = parentState.progressionFloorIndex() + childMetadata.progressionDelta();
         int nextVertical = parentState.verticalLevelIndex() + childMetadata.verticalLevelDelta();
@@ -84,7 +106,7 @@ public class MKDungeonLayoutController {
         if (!parentState.onMainPath()) {
             return false;
         }
-        if (connector.role() == MKConnectorRole.BRANCH) {
+        if (connector.role() == MKConnectorRole.BRANCH || isEmbeddedConnector(connector.role())) {
             return false;
         }
         return childMetadata.pieceRole() != MKJigsawPieceRole.BRANCH;
@@ -100,5 +122,9 @@ public class MKDungeonLayoutController {
 
     private boolean isBossConnector(MKConnectorRole role) {
         return role == MKConnectorRole.BOSS_FORWARD || role == MKConnectorRole.BOSS_BACK;
+    }
+
+    private boolean isEmbeddedConnector(MKConnectorRole role) {
+        return role == MKConnectorRole.STAIR_INSERT_UP || role == MKConnectorRole.STAIR_INSERT_DOWN;
     }
 }

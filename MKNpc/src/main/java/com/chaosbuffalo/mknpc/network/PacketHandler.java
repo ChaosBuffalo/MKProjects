@@ -2,9 +2,19 @@ package com.chaosbuffalo.mknpc.network;
 
 
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantPacket;
+import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantsForAllPacket;
+import com.chaosbuffalo.mknpc.network.packets.ClearWorkspaceStairsPacket;
+import com.chaosbuffalo.mknpc.network.packets.ExportWorkspacePiecesPacket;
 import com.chaosbuffalo.mknpc.network.packets.FinalizeMKSpawnerPacket;
+import com.chaosbuffalo.mknpc.network.packets.GenerateAllWorkspaceStairsPacket;
+import com.chaosbuffalo.mknpc.network.packets.GenerateWorkspacePacket;
+import com.chaosbuffalo.mknpc.network.packets.GenerateWorkspaceStairsPacket;
+import com.chaosbuffalo.mknpc.network.packets.LoadWorkspaceFromManifestPacket;
 import com.chaosbuffalo.mknpc.network.packets.NpcDefinitionClientUpdatePacket;
+import com.chaosbuffalo.mknpc.network.packets.OpenWorkspaceScreenPacket;
 import com.chaosbuffalo.mknpc.network.packets.OpenMKSpawnerPacket;
+import com.chaosbuffalo.mknpc.network.packets.CreateWorkspacePacket;
 import com.chaosbuffalo.mknpc.network.packets.SetSpawnListPacket;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -39,6 +49,56 @@ public class PacketHandler {
                 FinalizeMKSpawnerPacket.TYPE,
                 FinalizeMKSpawnerPacket.STREAM_CODEC,
                 FinalizeMKSpawnerPacket::handle
+        );
+        registrar.playToClient(
+                OpenWorkspaceScreenPacket.TYPE,
+                OpenWorkspaceScreenPacket.STREAM_CODEC,
+                OpenWorkspaceScreenPacket::handle
+        );
+        registrar.playToServer(
+                CreateWorkspacePacket.TYPE,
+                CreateWorkspacePacket.STREAM_CODEC,
+                CreateWorkspacePacket::handle
+        );
+        registrar.playToServer(
+                GenerateWorkspacePacket.TYPE,
+                GenerateWorkspacePacket.STREAM_CODEC,
+                GenerateWorkspacePacket::handle
+        );
+        registrar.playToServer(
+                GenerateAllWorkspaceStairsPacket.TYPE,
+                GenerateAllWorkspaceStairsPacket.STREAM_CODEC,
+                GenerateAllWorkspaceStairsPacket::handle
+        );
+        registrar.playToServer(
+                GenerateWorkspaceStairsPacket.TYPE,
+                GenerateWorkspaceStairsPacket.STREAM_CODEC,
+                GenerateWorkspaceStairsPacket::handle
+        );
+        registrar.playToServer(
+                ClearWorkspaceStairsPacket.TYPE,
+                ClearWorkspaceStairsPacket.STREAM_CODEC,
+                ClearWorkspaceStairsPacket::handle
+        );
+        registrar.playToServer(
+                AddWorkspaceVariantPacket.TYPE,
+                AddWorkspaceVariantPacket.STREAM_CODEC,
+                AddWorkspaceVariantPacket::handle
+        );
+        registrar.playToServer(
+                AddWorkspaceVariantsForAllPacket.TYPE,
+                AddWorkspaceVariantsForAllPacket.STREAM_CODEC,
+                AddWorkspaceVariantsForAllPacket::handle
+        );
+        registrar.playToServer(
+                ExportWorkspacePiecesPacket.TYPE,
+                ExportWorkspacePiecesPacket.STREAM_CODEC,
+                ExportWorkspacePiecesPacket::handle
+        );
+        registrar.playToServer(
+                LoadWorkspaceFromManifestPacket.TYPE,
+                LoadWorkspaceFromManifestPacket.STREAM_CODEC,
+                LoadWorkspaceFromManifestPacket::handle
         );
     }
 }

@@ -8,8 +8,10 @@ public record MKDungeonConnectorSettings(
         ResourceLocation mainForward,
         ResourceLocation mainBack,
         ResourceLocation branch,
-        ResourceLocation stairsDown,
-        ResourceLocation stairsUp,
+        ResourceLocation connectDown,
+        ResourceLocation connectUp,
+        ResourceLocation stairInsertDown,
+        ResourceLocation stairInsertUp,
         ResourceLocation bossForward,
         ResourceLocation bossBack
 ) {
@@ -17,9 +19,24 @@ public record MKDungeonConnectorSettings(
             ResourceLocation.CODEC.fieldOf("main_forward").forGetter(MKDungeonConnectorSettings::mainForward),
             ResourceLocation.CODEC.fieldOf("main_back").forGetter(MKDungeonConnectorSettings::mainBack),
             ResourceLocation.CODEC.fieldOf("branch").forGetter(MKDungeonConnectorSettings::branch),
-            ResourceLocation.CODEC.fieldOf("stairs_down").forGetter(MKDungeonConnectorSettings::stairsDown),
-            ResourceLocation.CODEC.fieldOf("stairs_up").forGetter(MKDungeonConnectorSettings::stairsUp),
+            ResourceLocation.CODEC.fieldOf("connect_down").forGetter(MKDungeonConnectorSettings::connectDown),
+            ResourceLocation.CODEC.fieldOf("connect_up").forGetter(MKDungeonConnectorSettings::connectUp),
+            ResourceLocation.CODEC.optionalFieldOf("stair_insert_down").forGetter(settings ->
+                    settings.stairInsertDown().equals(settings.connectDown()) ? java.util.Optional.empty() : java.util.Optional.of(settings.stairInsertDown())),
+            ResourceLocation.CODEC.optionalFieldOf("stair_insert_up").forGetter(settings ->
+                    settings.stairInsertUp().equals(settings.connectUp()) ? java.util.Optional.empty() : java.util.Optional.of(settings.stairInsertUp())),
             ResourceLocation.CODEC.fieldOf("boss_forward").forGetter(MKDungeonConnectorSettings::bossForward),
             ResourceLocation.CODEC.fieldOf("boss_back").forGetter(MKDungeonConnectorSettings::bossBack)
-    ).apply(instance, MKDungeonConnectorSettings::new));
+    ).apply(instance, (mainForward, mainBack, branch, connectDown, connectUp, stairInsertDown, stairInsertUp, bossForward, bossBack) ->
+            new MKDungeonConnectorSettings(
+                    mainForward,
+                    mainBack,
+                    branch,
+                    connectDown,
+                    connectUp,
+                    stairInsertDown.orElse(connectDown),
+                    stairInsertUp.orElse(connectUp),
+                    bossForward,
+                    bossBack
+            )));
 }

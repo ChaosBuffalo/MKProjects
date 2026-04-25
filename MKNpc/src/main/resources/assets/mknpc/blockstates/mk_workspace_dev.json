@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "mknpc:block/mk_workspace_dev"
+    }
+  }
+}
