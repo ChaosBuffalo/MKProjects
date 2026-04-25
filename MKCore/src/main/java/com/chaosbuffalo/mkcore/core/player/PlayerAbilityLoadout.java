@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities2.runtime.PatchedAbilityDefinition;
 import com.chaosbuffalo.mkcore.core.AbilityDisplayEntry;
+import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.player.loadout.ItemAbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.loadout.PassiveAbilityGroup;
@@ -20,6 +21,9 @@ import java.util.EnumMap;
 import java.util.Map;
 
 public class PlayerAbilityLoadout implements ISyncGroupProvider {
+    public record SlottedAbilityLocation(AbilityGroupId groupId, int slotIndex) {
+    }
+
     private final SyncGroup syncGroup = new SyncGroup();
 
     private final Map<AbilityGroupId, AbilityGroup> abilityGroups = new EnumMap<>(AbilityGroupId.class);
@@ -66,6 +70,50 @@ public class PlayerAbilityLoadout implements ISyncGroupProvider {
         return itemAbilityGroup;
     }
 
+    public @Nullable SlottedAbilityLocation findEquippedAbilityLocation(ResourceLocation abilityId) {
+        for (Map.Entry<AbilityGroupId, AbilityGroup> entry : abilityGroups.entrySet()) {
+            int slotIndex = entry.getValue().getAbilitySlot(abilityId);
+            if (slotIndex != -1) {
+                return new SlottedAbilityLocation(entry.getKey(), slotIndex);
+            }
+        }
+        return null;
+    }
+
+    public @Nullable SlottedAbilityLocation previewAutoEquipLocation(ResourceLocation abilityId) {
+        SlottedAbilityLocation existing = findEquippedAbilityLocation(abilityId);
+        if (existing != null) {
+            return existing;
+        }
+
+        AbilityGroupId targetGroup = resolveLearnedAbilityGroup(abilityId);
+        if (targetGroup == null) {
+            return null;
+        }
+
+        AbilityGroup group = abilityGroups.get(targetGroup);
+        if (group == null) {
+            return null;
+        }
+
+        int freeSlot = group.findFirstFreeAbilitySlot();
+        return freeSlot != -1 ? new SlottedAbilityLocation(targetGroup, freeSlot) : null;
+    }
+
+    public @Nullable AbilityGroupId resolveLearnedAbilityGroup(ResourceLocation abilityId) {
+        AbilityType abilityType = AbilityDisplayEntry.resolve(abilityId).abilityType();
+        if (abilityType == null) {
+            return getAbilityDefinitionGroup(abilityId);
+        }
+
+        return switch (abilityType) {
+            case Basic -> AbilityGroupId.Basic;
+            case Passive -> AbilityGroupId.Passive;
+            case Ultimate -> AbilityGroupId.Ultimate;
+            case Npc, Structure -> null;
+        };
+    }
+
     void onAbilityLearned(MKAbilityInfo abilityInfo, AbilitySource source) {
         if (source.placeOnBarWhenLearned()) {
             for (Map.Entry<AbilityGroupId, AbilityGroup> entry : abilityGroups.entrySet()) {
@@ -82,7 +130,7 @@ public class PlayerAbilityLoadout implements ISyncGroupProvider {
             return;
         }
 
-        AbilityGroupId targetGroup = getAbilityDefinitionGroup(abilityId);
+        AbilityGroupId targetGroup = resolveLearnedAbilityGroup(abilityId);
         if (targetGroup == null) {
             return;
         }

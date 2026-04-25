@@ -127,6 +127,10 @@ public class AbilityGroup implements ISyncGroupProvider {
         return -1;
     }
 
+    public int findFirstFreeAbilitySlot() {
+        return getFirstFreeAbilitySlot();
+    }
+
     public boolean tryEquip(ResourceLocation abilityId) {
         return tryEquip(abilityId, false);
     }

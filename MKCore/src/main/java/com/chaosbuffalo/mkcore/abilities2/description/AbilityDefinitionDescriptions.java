@@ -2,11 +2,14 @@ package com.chaosbuffalo.mkcore.abilities2.description;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities2.AbilityTargeting;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityActivationDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityCooldownDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityCostDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityParameterDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityScalar;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityTargetRelation;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityTargetResolverDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValue;
 import com.chaosbuffalo.mkcore.abilities2.definition.ActivationBehavior;
 import com.chaosbuffalo.mkcore.abilities2.definition.ActivationKind;
@@ -64,8 +67,14 @@ public final class AbilityDefinitionDescriptions {
                         .comparingInt((Map.Entry<String, AbilityActivationDefinition> entry) ->
                                 activationOrder(entry.getValue().kind()))
                         .thenComparing(Map.Entry::getKey))
-                .map(entry -> describeActivation(entry.getValue(), definition))
-                .forEach(consumer);
+                .forEach(entry -> {
+                    AbilityActivationDefinition activation = entry.getValue();
+                    consumer.accept(describeActivation(activation, definition));
+                    Component targeting = describeActivationTargeting(activation);
+                    if (targeting != null) {
+                        consumer.accept(targeting);
+                    }
+                });
     }
 
     private static Component describeActivation(AbilityActivationDefinition activation,
@@ -109,6 +118,16 @@ public final class AbilityDefinitionDescriptions {
         }
 
         return Component.literal(displayActivationKind(activation.kind()) + ": " + String.join(", ", parts))
+                .withStyle(ChatFormatting.DARK_GRAY);
+    }
+
+    private static @Nullable Component describeActivationTargeting(AbilityActivationDefinition activation) {
+        String targetSummary = describeTargeting(activation.targeting());
+        if (targetSummary == null) {
+            return null;
+        }
+
+        return Component.literal(displayActivationKind(activation.kind()) + " Target: " + targetSummary)
                 .withStyle(ChatFormatting.DARK_GRAY);
     }
 
@@ -165,6 +184,33 @@ public final class AbilityDefinitionDescriptions {
             case PROC -> "Proc";
             case TOGGLE_ENABLE -> "Toggle On";
             case TOGGLE_DISABLE -> "Toggle Off";
+        };
+    }
+
+    private static @Nullable String describeTargeting(AbilityTargetResolverDefinition targeting) {
+        return switch (targeting.type()) {
+            case "self" -> "self";
+            case "none" -> "none";
+            case "resolved" -> describeResolvedTargeting(AbilityTargeting.relation(targeting));
+            case "event_target" -> describeEventTargeting("event target", AbilityTargeting.relation(targeting));
+            case "event_actor" -> describeEventTargeting("event actor", AbilityTargeting.relation(targeting));
+            default -> null;
+        };
+    }
+
+    private static String describeResolvedTargeting(AbilityTargetRelation relation) {
+        return switch (relation) {
+            case ALL -> "looked-at target";
+            case FRIENDLY -> "looked-at ally";
+            case ENEMY -> "looked-at enemy";
+        };
+    }
+
+    private static String describeEventTargeting(String base, AbilityTargetRelation relation) {
+        return switch (relation) {
+            case ALL -> base;
+            case FRIENDLY -> "friendly " + base;
+            case ENEMY -> "enemy " + base;
         };
     }
 

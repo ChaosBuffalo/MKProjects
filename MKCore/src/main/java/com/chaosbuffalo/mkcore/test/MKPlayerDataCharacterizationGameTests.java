@@ -290,6 +290,29 @@ public class MKPlayerDataCharacterizationGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void trainedAbilities2DefinitionStaysKnownWhenMatchingBarIsFull(GameTestHelper helper) {
+        ResourceLocation firstAbilityId = MKCore.id("test_abilities2_self_heal");
+        ResourceLocation secondAbilityId = MKCore.id("test_abilities2_targeted_firebolt");
+        MKServerPlayerData playerData = createPlayerData(helper);
+        AbilityGroup basicGroup = playerData.getLoadout().getAbilityGroup(AbilityGroupId.Basic);
+        basicGroup.setSlots(1);
+
+        helper.assertTrue(playerData.getAbilities().learnAbilityDefinition(firstAbilityId, AbilitySource.TRAINED),
+                "first trained abilities2 definition should learn successfully");
+        helper.assertTrue(playerData.getAbilities().learnAbilityDefinition(secondAbilityId, AbilitySource.TRAINED),
+                "second trained abilities2 definition should still learn even when the basic bar is full");
+        helper.assertTrue(playerData.getAbilities().knowsAbility(secondAbilityId),
+                "second trained abilities2 definition should remain known");
+        helper.assertValueEqual(basicGroup.getSlot(0), firstAbilityId,
+                "full basic bar should keep the original slotted definition");
+        helper.assertTrue(playerData.getLoadout().findEquippedAbilityLocation(secondAbilityId) == null,
+                "full basic bar should leave the second trained definition unslotted");
+        helper.assertTrue(playerData.getLoadout().previewAutoEquipLocation(secondAbilityId) == null,
+                "preview auto-equip should report no free basic slot once the bar is full");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void abilities2DescriptionFormatterShowsPoolUsageForKnownPoolDefinition(GameTestHelper helper) {
         ResourceLocation abilityId = MKCore.id("test_abilities2_self_heal");
         MKServerPlayerData playerData = createPlayerData(helper);
@@ -306,6 +329,19 @@ public class MKPlayerDataCharacterizationGameTests {
         helper.assertFalse(lines.isEmpty(), "description lines should not be empty");
         helper.assertTrue(lines.getFirst() instanceof IconTextComponent,
                 "trained definitions should start with the uses-pool indicator");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void abilities2DescriptionFormatterSummarizesResolvedEnemyTargeting(GameTestHelper helper) {
+        ResourceLocation abilityId = MKCore.id("test_abilities2_targeted_firebolt");
+        PatchedAbilityDefinition definition = MKCore.getAbilityDefinitionService().getResolver().resolvePatched(abilityId);
+
+        helper.assertTrue(definition != null, "targeted firebolt definition should resolve a patched description");
+
+        List<Component> lines = AbilityDefinitionDescriptions.collectDescription(null, definition);
+        helper.assertTrue(containsLine(lines, "Cast Target: looked-at enemy"),
+                "resolved enemy definitions should describe their player-facing target expectation");
         helper.succeed();
     }
 

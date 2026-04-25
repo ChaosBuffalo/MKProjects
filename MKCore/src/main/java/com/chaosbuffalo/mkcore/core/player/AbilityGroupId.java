@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.core.player;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.mojang.serialization.Codec;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
 
 import java.util.EnumSet;
@@ -38,6 +39,15 @@ public enum AbilityGroupId implements StringRepresentable {
 
     public int getMaxSlots() {
         return maxSlots;
+    }
+
+    public Component getDisplayName() {
+        return switch (this) {
+            case Basic -> Component.translatableWithFallback("mkcore.ability.group.basic", "Basic");
+            case Passive -> Component.translatableWithFallback("mkcore.ability.group.passive", "Passive");
+            case Ultimate -> Component.translatableWithFallback("mkcore.ability.group.ultimate", "Ultimate");
+            case Item -> Component.translatableWithFallback("mkcore.ability.group.item", "Item");
+        };
     }
 
     @Override

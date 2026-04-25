@@ -3,6 +3,8 @@ package com.chaosbuffalo.mkcore.client.gui.widgets;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEvaluation;
 import com.chaosbuffalo.mkcore.client.gui.AbilityUiEntry;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
+import com.chaosbuffalo.mkcore.core.player.PlayerAbilityLoadout;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.LayoutRelativeWidthConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutHorizontal;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
@@ -12,6 +14,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,6 +71,7 @@ public class LearnAbilityTray extends MKStackLayoutVertical {
             MKText doesKnowWid = new MKText(font, knowText);
             doesKnowWid.setWidth(font.width(knowText));
             addWidget(doesKnowWid);
+            addStatusDetail(isKnown, canLearn);
 
             MKScrollView reqScrollView = new MKScrollView(0, 0, getWidth(), 36, true);
             addWidget(reqScrollView);
@@ -102,6 +106,58 @@ public class LearnAbilityTray extends MKStackLayoutVertical {
 
     public AbilityUiEntry getAbility() {
         return ability;
+    }
+
+    private void addStatusDetail(boolean isKnown, boolean canLearn) {
+        ResourceLocation abilityId = getAbility().getAbilityId();
+        PlayerAbilityLoadout loadout = playerData.getLoadout();
+        PlayerAbilityLoadout.SlottedAbilityLocation equippedLocation = loadout.findEquippedAbilityLocation(abilityId);
+        if (equippedLocation != null) {
+            addDetailText(Component.translatable(
+                    "mkcore.gui.character.learn_slot.current",
+                    equippedLocation.groupId().getDisplayName(),
+                    equippedLocation.slotIndex() + 1
+            ));
+            return;
+        }
+
+        if (!canLearn) {
+            return;
+        }
+
+        if (evaluation.usesAbilityPool() && playerData.getAbilities().isAbilityPoolFull()) {
+            addDetailText(Component.translatable(
+                    "mkcore.gui.character.learn_slot.pool_full",
+                    playerData.getAbilities().getSlotDeficitToLearnAnAbility()
+            ));
+            return;
+        }
+
+        AbilityGroupId targetGroup = loadout.resolveLearnedAbilityGroup(abilityId);
+        if (targetGroup == null) {
+            return;
+        }
+
+        PlayerAbilityLoadout.SlottedAbilityLocation previewLocation = loadout.previewAutoEquipLocation(abilityId);
+        if (!isKnown && previewLocation != null) {
+            addDetailText(Component.translatable(
+                    "mkcore.gui.character.learn_slot.auto",
+                    previewLocation.groupId().getDisplayName(),
+                    previewLocation.slotIndex() + 1
+            ));
+            return;
+        }
+
+        addDetailText(Component.translatable(
+                "mkcore.gui.character.learn_slot.manual",
+                targetGroup.getDisplayName()
+        ));
+    }
+
+    private void addDetailText(Component text) {
+        MKText detailText = new MKText(font, text);
+        detailText.setColor(0xff555555);
+        addWidget(detailText);
     }
 
 }
