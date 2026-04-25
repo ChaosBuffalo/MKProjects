@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.export;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStairPlacement;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
@@ -73,7 +73,7 @@ public record MKWorkspaceExportManifest(
                         workspace.shellMargin(),
                         workspace.exteriorAirMargin(),
                         workspace.previewMargin(),
-                        workspace.towerStairPlacement(),
+                        workspace.verticalAccessPlacement(),
                         ExportDimensions.from(workspace.dimensions()),
                         new ExportPalette(
                                 workspace.palette().floorBlock(),
@@ -118,8 +118,8 @@ public record MKWorkspaceExportManifest(
         return Codec.STRING.xmap(MKStructureFamilyType::fromSerializedName, MKStructureFamilyType::getSerializedName);
     }
 
-    private static Codec<MKTowerStairPlacement> towerStairPlacementCodec() {
-        return Codec.STRING.xmap(MKTowerStairPlacement::fromSerializedName, MKTowerStairPlacement::getSerializedName);
+    private static Codec<MKVerticalAccessPlacement> verticalAccessPlacementCodec() {
+        return Codec.STRING.xmap(MKVerticalAccessPlacement::fromSerializedName, MKVerticalAccessPlacement::getSerializedName);
     }
 
     private static Codec<MKWorkspacePieceRole> pieceRoleCodec() {
@@ -202,7 +202,7 @@ public record MKWorkspaceExportManifest(
             int shellMargin,
             int exteriorAirMargin,
             int previewMargin,
-            MKTowerStairPlacement towerStairPlacement,
+            MKVerticalAccessPlacement verticalAccessPlacement,
             ExportDimensions dimensions,
             ExportPalette palette,
             ExportStairConfig stairConfig
@@ -212,7 +212,7 @@ public record MKWorkspaceExportManifest(
                 Codec.INT.fieldOf("shell_margin").forGetter(ExportWorkspaceSettings::shellMargin),
                 Codec.INT.fieldOf("exterior_air_margin").forGetter(ExportWorkspaceSettings::exteriorAirMargin),
                 Codec.INT.fieldOf("preview_margin").forGetter(ExportWorkspaceSettings::previewMargin),
-                towerStairPlacementCodec().fieldOf("tower_stair_placement").forGetter(ExportWorkspaceSettings::towerStairPlacement),
+                verticalAccessPlacementCodec().fieldOf("vertical_access_placement").forGetter(ExportWorkspaceSettings::verticalAccessPlacement),
                 ExportDimensions.CODEC.fieldOf("dimensions").forGetter(ExportWorkspaceSettings::dimensions),
                 ExportPalette.CODEC.fieldOf("palette").forGetter(ExportWorkspaceSettings::palette),
                 ExportStairConfig.CODEC.fieldOf("stair_config").forGetter(ExportWorkspaceSettings::stairConfig)
@@ -545,3 +545,4 @@ public record MKWorkspaceExportManifest(
         return poolId.toString();
     }
 }
+

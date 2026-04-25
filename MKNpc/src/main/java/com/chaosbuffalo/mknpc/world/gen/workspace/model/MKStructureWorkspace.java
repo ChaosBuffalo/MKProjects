@@ -18,7 +18,7 @@ public class MKStructureWorkspace {
     private final MKWorkspaceDimensions dimensions;
     private final MKWorkspaceMaterialPalette palette;
     private final MKWorkspaceStairAuthoringConfig stairConfig;
-    private final MKTowerStairPlacement towerStairPlacement;
+    private final MKVerticalAccessPlacement verticalAccessPlacement;
     private final int shellMargin;
     private final int exteriorAirMargin;
     private final int previewMargin;
@@ -29,7 +29,7 @@ public class MKStructureWorkspace {
     public MKStructureWorkspace(UUID id, BlockPos anchor, String namespace, String structureName,
                                 MKStructureFamilyType familyType, MKWorkspaceDimensions dimensions,
                                 MKWorkspaceMaterialPalette palette, MKWorkspaceStairAuthoringConfig stairConfig,
-                                MKTowerStairPlacement towerStairPlacement,
+                                MKVerticalAccessPlacement verticalAccessPlacement,
                                 int shellMargin, int exteriorAirMargin,
                                 int previewMargin,
                                 long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces) {
@@ -41,7 +41,7 @@ public class MKStructureWorkspace {
         this.dimensions = dimensions;
         this.palette = palette;
         this.stairConfig = stairConfig;
-        this.towerStairPlacement = towerStairPlacement;
+        this.verticalAccessPlacement = verticalAccessPlacement;
         this.shellMargin = shellMargin;
         this.exteriorAirMargin = exteriorAirMargin;
         this.previewMargin = previewMargin;
@@ -61,7 +61,7 @@ public class MKStructureWorkspace {
                 MKWorkspaceDimensions.defaultDimensions(),
                 MKWorkspaceMaterialPalette.defaultPalette(),
                 MKWorkspaceStairAuthoringConfig.defaultConfig(),
-                MKTowerStairPlacement.CENTER,
+                MKVerticalAccessPlacement.CENTER,
                 1,
                 2,
                 4,
@@ -86,7 +86,7 @@ public class MKStructureWorkspace {
                 MKWorkspaceMaterialPalette.fromTag(tag.getCompound("palette")),
                 tag.contains("stairConfig") ? MKWorkspaceStairAuthoringConfig.fromTag(tag.getCompound("stairConfig"))
                         : MKWorkspaceStairAuthoringConfig.defaultConfig(),
-                MKTowerStairPlacement.fromSerializedName(tag.getString("towerStairPlacement")),
+                MKVerticalAccessPlacement.fromSerializedName(tag.getString("verticalAccessPlacement")),
                 tag.getInt("shellMargin"),
                 tag.contains("exteriorAirMargin") ? tag.getInt("exteriorAirMargin") : 2,
                 tag.getInt("previewMargin"),
@@ -106,7 +106,7 @@ public class MKStructureWorkspace {
         tag.put("dimensions", dimensions.toTag());
         tag.put("palette", palette.toTag());
         tag.put("stairConfig", stairConfig.toTag());
-        tag.putString("towerStairPlacement", towerStairPlacement.getSerializedName());
+        tag.putString("verticalAccessPlacement", verticalAccessPlacement.getSerializedName());
         tag.putInt("shellMargin", shellMargin);
         tag.putInt("exteriorAirMargin", exteriorAirMargin);
         tag.putInt("previewMargin", previewMargin);
@@ -126,7 +126,7 @@ public class MKStructureWorkspace {
                 dimensions.hallwayWidth(), 3, 4);
         if (!allowedTowerHeights.contains(dimensions.roomHeight())) {
             errors.add("room height must be one of " + allowedTowerHeights + " for stair mode " +
-                    MKTowerStairProfile.normalizeMode(stairConfig.mode()).getSerializedName());
+                    MKVerticalAccessProfile.normalizeMode(stairConfig.mode()).getSerializedName());
         }
         List<Integer> allowedFlatRunLengths = MKWorkspaceDimensions.getAllowedFlatRunLengths(stairConfig,
                 dimensions.hallwayWidth(), dimensions.roomHeight(), 4);
@@ -171,7 +171,7 @@ public class MKStructureWorkspace {
 
     public MKStructureWorkspace withPieces(List<MKWorkspacePieceDefinition> newPieces) {
         return new MKStructureWorkspace(id, anchor, namespace, structureName, familyType, dimensions, palette,
-                stairConfig, towerStairPlacement, shellMargin, exteriorAirMargin, previewMargin, createdAt,
+                stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, createdAt,
                 System.currentTimeMillis(), newPieces);
     }
 
@@ -207,8 +207,8 @@ public class MKStructureWorkspace {
         return stairConfig;
     }
 
-    public MKTowerStairPlacement towerStairPlacement() {
-        return towerStairPlacement;
+    public MKVerticalAccessPlacement verticalAccessPlacement() {
+        return verticalAccessPlacement;
     }
 
     public int shellMargin() {
@@ -235,3 +235,4 @@ public class MKStructureWorkspace {
         return pieces;
     }
 }
+

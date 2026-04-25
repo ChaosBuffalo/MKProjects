@@ -5,7 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefiniti
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStairProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -51,7 +51,7 @@ public class MKWorkspaceStairBuilder {
             return generateLadder(level, piece, geometry, stairConfig);
         }
         MKWorkspaceStairAuthoringConfig resolvedConfig = normalizeConfigForMode(stairConfig, resolvedMode);
-        MKTowerStairProfile profile = MKTowerStairProfile.forTemplateReuse(resolvedConfig, geometry.width(), geometry.length());
+        MKVerticalAccessProfile profile = MKVerticalAccessProfile.forTemplateReuse(resolvedConfig, geometry.width(), geometry.length());
         return resolvedConfig.riseType() == com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType.SLAB
                 ? generateSlabSpiral(level, workspace, piece, geometry, stairConfig, profile)
                 : generateStairSpiral(level, workspace, piece, geometry, stairConfig, profile);
@@ -83,7 +83,7 @@ public class MKWorkspaceStairBuilder {
                                                            MKWorkspacePieceDefinition piece,
                                                            MKTowerWorkspaceShaftGeometry.ShaftGeometry geometry,
                                                            MKWorkspaceStairAuthoringConfig stairConfig,
-                                                           MKTowerStairProfile profile) {
+                                                           MKVerticalAccessProfile profile) {
         clearShaftFootprint(level, geometry);
         BoundingBox centerlineBounds = getCenterlineBounds(geometry.shaftBounds(), profile.stairWidth());
         List<BlockPos> perimeter = getPerimeterClockwise(centerlineBounds, geometry.interiorMinY());
@@ -95,7 +95,7 @@ public class MKWorkspaceStairBuilder {
         LinkedHashSet<BlockPos> generated = new LinkedHashSet<>();
         LinkedHashMap<BlockPos, BlockState> planned = new LinkedHashMap<>();
         int pathSteps = profile.getPathStepsForHeight(geometry.interiorMaxY() - geometry.interiorMinY() + 1);
-        MKTowerStairProfile.BoundaryCompatibility compatibility = profile.getBoundaryCompatibilityForHeight(
+        MKVerticalAccessProfile.BoundaryCompatibility compatibility = profile.getBoundaryCompatibilityForHeight(
                 geometry.interiorMaxY() - geometry.interiorMinY() + 1);
         Direction previousMovement = null;
         for (int step = 0; step < pathSteps; step++) {
@@ -141,7 +141,7 @@ public class MKWorkspaceStairBuilder {
         }
         fillCornerGapsWithTopSlabs(planned, geometry.shaftBounds(), geometry.interiorMinY(), geometry.interiorMaxY(),
                 resolveSlabState(stairConfig.slabBlock(), SlabType.BOTTOM), generated);
-        if (compatibility.status() == MKTowerStairProfile.BoundaryStatus.BRIDGEABLE) {
+        if (compatibility.status() == MKVerticalAccessProfile.BoundaryStatus.BRIDGEABLE) {
             planBoundaryBridge(planned, perimeter, startIndex, pathSteps, geometry.interiorMaxY(), centerlineBounds,
                     geometry.shaftBounds(), profile.stairWidth(),
                     resolveSlabState(stairConfig.slabBlock(), SlabType.TOP), generated);
@@ -154,7 +154,7 @@ public class MKWorkspaceStairBuilder {
                                                           MKWorkspacePieceDefinition piece,
                                                           MKTowerWorkspaceShaftGeometry.ShaftGeometry geometry,
                                                           MKWorkspaceStairAuthoringConfig stairConfig,
-                                                          MKTowerStairProfile profile) {
+                                                          MKVerticalAccessProfile profile) {
         clearShaftFootprint(level, geometry);
         BoundingBox centerlineBounds = getCenterlineBounds(geometry.shaftBounds(), profile.stairWidth());
         List<BlockPos> perimeter = getPerimeterClockwise(centerlineBounds, geometry.interiorMinY());
@@ -164,7 +164,7 @@ public class MKWorkspaceStairBuilder {
         int startIndex = MKTowerWorkspaceShaftGeometry.findClosestIndex(perimeter,
                 clampToBounds(MKTowerWorkspaceShaftGeometry.getPreferredStart(geometry), centerlineBounds, geometry.interiorMinY()));
         int pathSteps = profile.getPathStepsForHeight(geometry.interiorMaxY() - geometry.interiorMinY() + 1);
-        MKTowerStairProfile.BoundaryCompatibility compatibility = profile.getBoundaryCompatibilityForHeight(
+        MKVerticalAccessProfile.BoundaryCompatibility compatibility = profile.getBoundaryCompatibilityForHeight(
                 geometry.interiorMaxY() - geometry.interiorMinY() + 1);
         LinkedHashSet<BlockPos> generated = new LinkedHashSet<>();
         LinkedHashMap<BlockPos, BlockState> planned = new LinkedHashMap<>();
@@ -200,7 +200,7 @@ public class MKWorkspaceStairBuilder {
             }
             previousMovement = movement;
         }
-        if (compatibility.status() == MKTowerStairProfile.BoundaryStatus.BRIDGEABLE) {
+        if (compatibility.status() == MKVerticalAccessProfile.BoundaryStatus.BRIDGEABLE) {
             planBoundaryBridge(planned, perimeter, startIndex, pathSteps, geometry.interiorMaxY(), centerlineBounds,
                     geometry.shaftBounds(), profile.stairWidth(),
                     resolveSlabState(stairConfig.slabBlock(), SlabType.TOP), generated);
@@ -657,3 +657,4 @@ public class MKWorkspaceStairBuilder {
         return property.getName(state.getValue(property));
     }
 }
+

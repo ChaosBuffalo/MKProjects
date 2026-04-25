@@ -4,7 +4,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.world.gen.workspace.MKStructureWorkspaceService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStairPlacement;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
@@ -39,7 +39,7 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
     private final int hallwayWidth;
     private final int doorwayWidth;
     private final int doorwayHeight;
-    private final MKTowerStairPlacement towerStairPlacement;
+    private final MKVerticalAccessPlacement verticalAccessPlacement;
     private final int shellMargin;
     private final int exteriorAirMargin;
     private final int previewMargin;
@@ -56,7 +56,7 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
 
     public CreateWorkspacePacket(BlockPos anchor, String namespace, String structureName, int roomWidth, int roomLength,
                                  int entranceHeight, int roomHeight, int basementHeight, int hallwayWidth, int doorwayWidth,
-                                 int doorwayHeight, MKTowerStairPlacement towerStairPlacement, int shellMargin,
+                                 int doorwayHeight, MKVerticalAccessPlacement verticalAccessPlacement, int shellMargin,
                                  int exteriorAirMargin, int previewMargin, MKWorkspaceStairMode stairMode,
                                  MKWorkspaceStairRiseType stairRiseType, int stairFlatRunLength, int stairWidth,
                                  ResourceLocation floorBlock,
@@ -73,7 +73,7 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
         this.hallwayWidth = hallwayWidth;
         this.doorwayWidth = doorwayWidth;
         this.doorwayHeight = doorwayHeight;
-        this.towerStairPlacement = towerStairPlacement;
+        this.verticalAccessPlacement = verticalAccessPlacement;
         this.shellMargin = shellMargin;
         this.exteriorAirMargin = exteriorAirMargin;
         this.previewMargin = previewMargin;
@@ -101,7 +101,7 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
         this.hallwayWidth = buffer.readInt();
         this.doorwayWidth = buffer.readInt();
         this.doorwayHeight = buffer.readInt();
-        this.towerStairPlacement = MKTowerStairPlacement.fromSerializedName(buffer.readUtf());
+        this.verticalAccessPlacement = MKVerticalAccessPlacement.fromSerializedName(buffer.readUtf());
         this.shellMargin = buffer.readInt();
         this.exteriorAirMargin = buffer.readInt();
         this.previewMargin = buffer.readInt();
@@ -134,7 +134,7 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
         buffer.writeInt(hallwayWidth);
         buffer.writeInt(doorwayWidth);
         buffer.writeInt(doorwayHeight);
-        buffer.writeUtf(towerStairPlacement.getSerializedName());
+        buffer.writeUtf(verticalAccessPlacement.getSerializedName());
         buffer.writeInt(shellMargin);
         buffer.writeInt(exteriorAirMargin);
         buffer.writeInt(previewMargin);
@@ -166,7 +166,7 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
                 new MKWorkspaceMaterialPalette(packet.floorBlock, packet.wallBlock, packet.ceilingBlock),
                 new MKWorkspaceStairAuthoringConfig(packet.stairMode, packet.stairRiseType, packet.stairFlatRunLength,
                         packet.stairWidth, packet.stairBlock, packet.slabBlock, packet.ladderBlock),
-                packet.towerStairPlacement,
+                packet.verticalAccessPlacement,
                 packet.shellMargin,
                 packet.exteriorAirMargin,
                 packet.previewMargin,
@@ -177,3 +177,4 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
         new MKStructureWorkspaceService().createOrUpdateTowerWorkspace(player.serverLevel(), workspace);
     }
 }
+

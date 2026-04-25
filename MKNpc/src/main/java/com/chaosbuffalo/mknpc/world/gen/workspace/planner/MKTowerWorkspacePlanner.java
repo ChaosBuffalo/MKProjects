@@ -17,7 +17,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     @Override
     public List<MKPlannedPiece> createCanonicalPieces(MKStructureWorkspace workspace) {
         MKWorkspaceDimensions dimensions = workspace.dimensions();
-        String stairPlacement = workspace.towerStairPlacement().getSerializedName();
+        String stairPlacement = workspace.verticalAccessPlacement().getSerializedName();
         int roomWidth = dimensions.roomWidth();
         int roomLength = dimensions.roomLength();
         int entranceHeight = dimensions.entranceHeight();
@@ -152,3 +152,4 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         return tags;
     }
 }
+

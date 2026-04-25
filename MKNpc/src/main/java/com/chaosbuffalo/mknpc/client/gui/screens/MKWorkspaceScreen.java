@@ -10,7 +10,7 @@ import com.chaosbuffalo.mknpc.network.packets.GenerateWorkspacePacket;
 import com.chaosbuffalo.mknpc.network.packets.GenerateWorkspaceStairsPacket;
 import com.chaosbuffalo.mknpc.network.packets.LoadWorkspaceFromManifestPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStairPlacement;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
@@ -308,8 +308,8 @@ public class MKWorkspaceScreen extends MKScreen {
         MKText exteriorAirMarginLabel = makeLabel("mknpc.workspace.field.exterior_air_margin");
         MKTextFieldWidget exteriorAirMarginField = makeField("Exterior Air Margin", Integer.toString(workspace != null ? workspace.exteriorAirMargin() : 2));
         MKText stairPlacementLabel = makeLabel("mknpc.workspace.field.stair_placement");
-        final MKTowerStairPlacement[] selectedPlacement = {
-                workspace != null ? workspace.towerStairPlacement() : MKTowerStairPlacement.CENTER
+        final MKVerticalAccessPlacement[] selectedPlacement = {
+                workspace != null ? workspace.verticalAccessPlacement() : MKVerticalAccessPlacement.CENTER
         };
         MKButton stairPlacementButton = new MKButton(getStairPlacementComponent(selectedPlacement[0]), 180, 20);
         MKText stairModeLabel = makeLabel("mknpc.workspace.field.stair_mode");
@@ -1209,7 +1209,7 @@ public class MKWorkspaceScreen extends MKScreen {
         return builder.toString();
     }
 
-    private Component getStairPlacementComponent(MKTowerStairPlacement placement) {
+    private Component getStairPlacementComponent(MKVerticalAccessPlacement placement) {
         return Component.translatable("mknpc.workspace.stair_placement." + placement.getSerializedName());
     }
 
@@ -1322,3 +1322,4 @@ public class MKWorkspaceScreen extends MKScreen {
         return handled;
     }
 }
+

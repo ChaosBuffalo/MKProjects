@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.scaffold;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStairPlacement;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
@@ -541,7 +541,7 @@ public class MKWorkspaceScaffoldBuilder {
     }
 
     private int getVerticalCenterX(BlockPos geometryOrigin, MKPlannedPiece piece, int shellMargin) {
-        MKTowerStairPlacement placement = getTowerStairPlacement(piece);
+        MKVerticalAccessPlacement placement = getTowerStairPlacement(piece);
         int interiorMinX = geometryOrigin.getX() + shellMargin;
         int interiorMaxX = interiorMinX + piece.interiorWidth() - 1;
         int shaftHalf = getShaftHalfWidth(piece);
@@ -553,7 +553,7 @@ public class MKWorkspaceScaffoldBuilder {
     }
 
     private int getVerticalCenterZ(BlockPos geometryOrigin, MKPlannedPiece piece, int shellMargin) {
-        MKTowerStairPlacement placement = getTowerStairPlacement(piece);
+        MKVerticalAccessPlacement placement = getTowerStairPlacement(piece);
         int interiorMinZ = geometryOrigin.getZ() + shellMargin;
         int interiorMaxZ = interiorMinZ + piece.interiorLength() - 1;
         int shaftHalf = getShaftHalfWidth(piece);
@@ -573,9 +573,9 @@ public class MKWorkspaceScaffoldBuilder {
         return openingWidth / 2;
     }
 
-    private MKTowerStairPlacement getTowerStairPlacement(MKPlannedPiece piece) {
-        return MKTowerStairPlacement.fromSerializedName(
-                MKWorkspaceVerticalAccessTags.placement(piece.tags(), MKTowerStairPlacement.CENTER.getSerializedName())
+    private MKVerticalAccessPlacement getTowerStairPlacement(MKPlannedPiece piece) {
+        return MKVerticalAccessPlacement.fromSerializedName(
+                MKWorkspaceVerticalAccessTags.placement(piece.tags(), MKVerticalAccessPlacement.CENTER.getSerializedName())
         );
     }
 
@@ -722,3 +722,4 @@ public class MKWorkspaceScaffoldBuilder {
         return block.defaultBlockState();
     }
 }
+

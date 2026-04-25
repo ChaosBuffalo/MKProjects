@@ -28,7 +28,7 @@ public class MKWorkspaceDimensions {
 
     public static MKWorkspaceDimensions defaultDimensions() {
         int defaultHallwayWidth = 3;
-        int defaultHeight = MKTowerStairProfile.getAllowedHeights(MKWorkspaceStairMode.AUTO, defaultHallwayWidth, 3, 4)
+        int defaultHeight = MKVerticalAccessProfile.getAllowedHeights(MKWorkspaceStairMode.AUTO, defaultHallwayWidth, 3, 4)
                 .getFirst();
         return new MKWorkspaceDimensions(9, 9, defaultHeight, defaultHeight, defaultHeight, defaultHallwayWidth, 3, 3);
     }
@@ -114,19 +114,19 @@ public class MKWorkspaceDimensions {
     }
 
     public static int getTowerShaftPerimeter(int hallwayWidth) {
-        return MKTowerStairProfile.getPerimeterStepCount(hallwayWidth, hallwayWidth);
+        return MKVerticalAccessProfile.getPerimeterStepCount(hallwayWidth, hallwayWidth);
     }
 
     public static List<Integer> getAllowedTowerHeights(MKWorkspaceStairMode stairMode, int hallwayWidth, int minimumHeight,
                                                         int count) {
-        return MKTowerStairProfile.getAllowedHeights(stairMode, hallwayWidth, minimumHeight, count);
+        return MKVerticalAccessProfile.getAllowedHeights(stairMode, hallwayWidth, minimumHeight, count);
     }
 
     public static List<Integer> getAllowedTowerHeights(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
                                                        int minimumHeight, int count) {
-        MKTowerStairProfile profile = MKTowerStairProfile.forTemplateReuse(stairConfig, hallwayWidth, hallwayWidth);
+        MKVerticalAccessProfile profile = MKVerticalAccessProfile.forTemplateReuse(stairConfig, hallwayWidth, hallwayWidth);
         if (profile.mode() == MKWorkspaceStairMode.LADDER || profile.mode() == MKWorkspaceStairMode.NONE) {
-            return MKTowerStairProfile.getAllowedHeights(MKWorkspaceStairMode.LADDER, hallwayWidth, minimumHeight, count);
+            return MKVerticalAccessProfile.getAllowedHeights(MKWorkspaceStairMode.LADDER, hallwayWidth, minimumHeight, count);
         }
         java.util.List<Integer> values = new java.util.ArrayList<>();
         int candidate = Math.max(1, minimumHeight);
@@ -148,7 +148,7 @@ public class MKWorkspaceDimensions {
 
     public static int snapToNearestAllowedTowerHeight(MKWorkspaceStairMode stairMode, int hallwayWidth, int requestedHeight,
                                                       int minimumHeight, int count) {
-        return MKTowerStairProfile.snapToNearestAllowedHeight(stairMode, hallwayWidth, requestedHeight, minimumHeight,
+        return MKVerticalAccessProfile.snapToNearestAllowedHeight(stairMode, hallwayWidth, requestedHeight, minimumHeight,
                 count);
     }
 
@@ -162,7 +162,7 @@ public class MKWorkspaceDimensions {
 
     public static List<Integer> getAllowedEntranceHeights(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
                                                           int referenceRoomHeight, int minimumHeight, int count) {
-        MKTowerStairProfile profile = MKTowerStairProfile.forTemplateReuse(stairConfig, hallwayWidth, hallwayWidth);
+        MKVerticalAccessProfile profile = MKVerticalAccessProfile.forTemplateReuse(stairConfig, hallwayWidth, hallwayWidth);
         List<Integer> allowedHeights = getAllowedTowerHeights(stairConfig, hallwayWidth, minimumHeight, Math.max(count * 3, count));
         List<Integer> aligned = new java.util.ArrayList<>();
         for (int height : allowedHeights) {
@@ -191,7 +191,7 @@ public class MKWorkspaceDimensions {
 
     public static List<Integer> getAllowedFlatRunLengths(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
                                                          int referenceRoomHeight, int count) {
-        return MKTowerStairProfile.getAllowedFlatRunLengths(stairConfig, hallwayWidth, hallwayWidth,
+        return MKVerticalAccessProfile.getAllowedFlatRunLengths(stairConfig, hallwayWidth, hallwayWidth,
                 referenceRoomHeight, count);
     }
 
@@ -260,3 +260,4 @@ public class MKWorkspaceDimensions {
         return doorwayHeight;
     }
 }
+

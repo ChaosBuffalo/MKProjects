@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.stairs;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStairPlacement;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
@@ -15,7 +15,7 @@ import java.util.List;
 
 public class MKTowerWorkspaceShaftGeometry {
     public record ShaftGeometry(BoundingBox shaftBounds, int interiorMinY, int interiorMaxY,
-                                MKTowerStairPlacement placement) {
+                                MKVerticalAccessPlacement placement) {
         public int width() {
             return shaftBounds.getXSpan();
         }
@@ -44,8 +44,8 @@ public class MKTowerWorkspaceShaftGeometry {
                 .mapToInt(MKWorkspaceConnectorDefinition::openingHeight)
                 .findFirst()
                 .orElse(workspace.dimensions().hallwayWidth());
-        MKTowerStairPlacement placement = MKTowerStairPlacement.fromSerializedName(
-                MKWorkspaceVerticalAccessTags.placement(piece.tags(), workspace.towerStairPlacement().getSerializedName())
+        MKVerticalAccessPlacement placement = MKVerticalAccessPlacement.fromSerializedName(
+                MKWorkspaceVerticalAccessTags.placement(piece.tags(), workspace.verticalAccessPlacement().getSerializedName())
         );
 
         int centerX = getCenterX(interiorMinX, interiorWidth, openingWidth, placement);
@@ -115,7 +115,7 @@ public class MKTowerWorkspaceShaftGeometry {
                 .orElse(0);
     }
 
-    private static int getCenterX(int interiorMinX, int interiorWidth, int openingWidth, MKTowerStairPlacement placement) {
+    private static int getCenterX(int interiorMinX, int interiorWidth, int openingWidth, MKVerticalAccessPlacement placement) {
         int interiorMaxX = interiorMinX + interiorWidth - 1;
         int halfWidth = openingWidth / 2;
         return switch (placement) {
@@ -125,7 +125,7 @@ public class MKTowerWorkspaceShaftGeometry {
         };
     }
 
-    private static int getCenterZ(int interiorMinZ, int interiorLength, int openingLength, MKTowerStairPlacement placement) {
+    private static int getCenterZ(int interiorMinZ, int interiorLength, int openingLength, MKVerticalAccessPlacement placement) {
         int interiorMaxZ = interiorMinZ + interiorLength - 1;
         int halfLength = openingLength / 2;
         return switch (placement) {
@@ -140,3 +140,4 @@ public class MKTowerWorkspaceShaftGeometry {
                 Math.abs(left.getZ() - right.getZ());
     }
 }
+

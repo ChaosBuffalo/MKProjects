@@ -7,7 +7,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspa
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStairPlacement;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
@@ -158,7 +158,7 @@ public class MKStructureWorkspaceImportService {
                         stairConfig.slabBlock(),
                         stairConfig.ladderBlock()
                 ),
-                settings.towerStairPlacement(),
+                settings.verticalAccessPlacement(),
                 settings.shellMargin(),
                 settings.exteriorAirMargin(),
                 settings.previewMargin(),
@@ -271,3 +271,4 @@ public class MKStructureWorkspaceImportService {
         return result;
     }
 }
+

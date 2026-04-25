@@ -54,7 +54,7 @@ public class MKStructureWorkspaceService {
                     workspace.dimensions(),
                     workspace.palette(),
                     workspace.stairConfig(),
-                    workspace.towerStairPlacement(),
+                    workspace.verticalAccessPlacement(),
                     workspace.shellMargin(),
                     workspace.exteriorAirMargin(),
                     workspace.previewMargin(),
@@ -331,3 +331,4 @@ public class MKStructureWorkspaceService {
         return piece.tags().getOrDefault(MKWorkspaceGridLayout.TAG_BASE_NAME, piece.pieceName());
     }
 }
+
