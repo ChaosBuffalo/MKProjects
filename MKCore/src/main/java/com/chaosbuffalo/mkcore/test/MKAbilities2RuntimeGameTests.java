@@ -1232,6 +1232,50 @@ public class MKAbilities2RuntimeGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void blockingInterruptReportsSpecificFailureReason(GameTestHelper helper) {
+        Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
+        MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);
+        List<FailureReason> reasons = new ArrayList<>();
+        SimpleAbilityEngine engine = createInterruptReasonTestEngine(new SimpleAbilityEngine.LifecycleListener() {
+            @Override
+            public void onInvocationInterrupted(com.chaosbuffalo.mkcore.abilities2.runtime.AbilityInvocation invocation,
+                                                FailureReason failureReason,
+                                                int castTicksSpent) {
+                reasons.add(failureReason);
+            }
+        });
+
+        InvocationResult result = engine.activate(new ActivationRequest(
+                ownerData,
+                ownerData,
+                new AbilityReference(INTERRUPT_REASON_PROBE_ABILITY, null),
+                "cast",
+                null,
+                null,
+                null,
+                false,
+                false
+        ));
+        helper.assertTrue(result.started(), "interrupt reason probe should start for blocking");
+
+        helper.startSequence()
+                .thenExecuteAfter(1, () -> {
+                    helper.assertTrue(engine.hasPendingActivation(ownerData),
+                            "interrupt reason probe should be pending before blocking");
+                    engine.interruptPendingActivations(ownerData, FailureReason.INTERRUPTED_BY_BLOCK);
+                })
+                .thenExecuteAfter(1, () -> {
+                    helper.assertFalse(engine.hasPendingActivation(ownerData),
+                            "blocking should clear the interrupt reason probe");
+                    helper.assertValueEqual(reasons.size(), 1,
+                            "blocking interrupt should report exactly one failure reason");
+                    helper.assertValueEqual(reasons.get(0), FailureReason.INTERRUPTED_BY_BLOCK,
+                            "blocking interrupt should report the block-specific failure reason");
+                    helper.succeed();
+                });
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void damageInterruptReportsSpecificFailureReason(GameTestHelper helper) {
         Player owner = createTestPlayer(helper, new BlockPos(1, 2, 1));
         MKPlayerData ownerData = MKCore.getPlayerOrThrow(owner);

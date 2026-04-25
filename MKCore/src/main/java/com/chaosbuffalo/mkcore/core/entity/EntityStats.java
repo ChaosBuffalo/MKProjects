@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.core.entity;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.abilities2.runtime.FailureReason;
 import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.sync.types.SyncFloat;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
@@ -123,7 +124,8 @@ public abstract class EntityStats implements IMKEntityStats, ISyncGroupProvider 
                 entityData.getAbilityExecutor().interruptCast(CastInterruptReason.StartedBlocking);
             }
             if (MKCore.getAbilityRuntimeService().hasPendingActivation(entityData)) {
-                MKCore.getAbilityRuntimeService().interruptPendingActivations(entityData);
+                MKCore.getAbilityRuntimeService().interruptPendingActivations(entityData,
+                        FailureReason.INTERRUPTED_BY_BLOCK);
             }
             if (isBroken) {
                 getEntity().releaseUsingItem();

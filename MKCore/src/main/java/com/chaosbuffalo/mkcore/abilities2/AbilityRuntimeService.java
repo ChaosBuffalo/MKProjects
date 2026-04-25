@@ -2223,7 +2223,7 @@ public class AbilityRuntimeService {
         }
     }
 
-    private void syncDirectCastVisualInterrupt(AbilityInvocation invocation) {
+    private void syncDirectCastVisualInterrupt(AbilityInvocation invocation, FailureReason failureReason) {
         if (invocation.reason() != ActivationReason.DIRECT_REQUEST) {
             return;
         }
@@ -2231,7 +2231,8 @@ public class AbilityRuntimeService {
         if (visualAbility == null) {
             return;
         }
-        invocation.casterData().getAnimationModule().interruptCast(visualAbility, CastInterruptReason.Other);
+        invocation.casterData().getAnimationModule().interruptCast(visualAbility,
+                toCastInterruptReason(failureReason));
     }
 
     private void teardownToggle(ToggleRuntime runtime) {
@@ -2260,7 +2261,15 @@ public class AbilityRuntimeService {
     private void handleInvocationCompleted(AbilityInvocation invocation) {
     }
 
-    private void handleInvocationInterrupted(AbilityInvocation invocation) {
+    private void handleInvocationInterrupted(AbilityInvocation invocation, FailureReason failureReason) {
+    }
+
+    private CastInterruptReason toCastInterruptReason(FailureReason failureReason) {
+        return switch (failureReason) {
+            case INTERRUPTED_BY_BLOCK -> CastInterruptReason.StartedBlocking;
+            case INTERRUPTED_BY_DEATH -> CastInterruptReason.Death;
+            default -> CastInterruptReason.Other;
+        };
     }
 
     private boolean evaluateRelation(UUID ownerEntityId, UUID participantEntityId, ParticipantRelation relation) {
@@ -2585,8 +2594,8 @@ public class AbilityRuntimeService {
                                             FailureReason failureReason,
                                             int castTicksSpent) {
             syncCastState(invocation, 0, false);
-            syncDirectCastVisualInterrupt(invocation);
-            handleInvocationInterrupted(invocation);
+            syncDirectCastVisualInterrupt(invocation, failureReason);
+            handleInvocationInterrupted(invocation, failureReason);
         }
     }
 
