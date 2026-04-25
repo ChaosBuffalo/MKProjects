@@ -205,6 +205,53 @@ public class MKPlayerDataCharacterizationGameTests {
         helper.succeed();
     }
 
+    @GameTest(template = "player_data_phase0")
+    public static void spendingNegativeTalentIndexFailsWithoutChangingState(GameTestHelper helper) {
+        MKServerPlayerData playerData = createPlayerData(helper);
+        playerData.getTalents().grantTalentPoints(1);
+
+        boolean unlocked = playerData.getTalents().unlockTree(TEST_TREE);
+        if (!unlocked) {
+            throw new IllegalStateException("Failed to unlock test talent tree");
+        }
+
+        helper.assertFalse(playerData.getTalents().spendTalentPoint(TEST_TREE, TEST_LINE, -1),
+                "negative talent index should be rejected");
+        helper.assertValueEqual(playerData.getTalents().getUnspentTalentPoints(), 1,
+                "failed spend should not consume talent points");
+        helper.assertTrue(playerData.getTalents().getRecord(TEST_TREE, TEST_LINE, 0) != null,
+                "known test record should still resolve");
+        helper.assertFalse(playerData.getTalents().getRecord(TEST_TREE, TEST_LINE, 0).isKnown(),
+                "failed spend should not unlock any talent");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void refundingParentTalentFailsWhileChildKnown(GameTestHelper helper) {
+        MKServerPlayerData playerData = createPlayerData(helper);
+        playerData.getTalents().grantTalentPoints(2);
+
+        boolean unlocked = playerData.getTalents().unlockTree(TEST_TREE);
+        if (!unlocked) {
+            throw new IllegalStateException("Failed to unlock test talent tree");
+        }
+
+        helper.assertTrue(playerData.getTalents().spendTalentPoint(TEST_TREE, TEST_LINE, 0),
+                "parent talent should unlock");
+        helper.assertTrue(playerData.getTalents().spendTalentPoint(TEST_TREE, TEST_LINE, 1),
+                "child talent should unlock after parent");
+
+        helper.assertFalse(playerData.getTalents().refundTalentPoint(TEST_TREE, TEST_LINE, 0),
+                "parent talent should not refund while child is known");
+        helper.assertValueEqual(playerData.getTalents().getUnspentTalentPoints(), 0,
+                "failed refund should not restore a talent point");
+        helper.assertTrue(playerData.getTalents().getRecord(TEST_TREE, TEST_LINE, 0) != null,
+                "parent record should still resolve");
+        helper.assertTrue(playerData.getTalents().getRecord(TEST_TREE, TEST_LINE, 0).isKnown(),
+                "failed refund should leave the parent talent known");
+        helper.succeed();
+    }
+
     private static MKServerPlayerData createPlayerData(GameTestHelper helper) {
         var cookie = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "phase0-test-player"), false);
         ServerPlayer player = new ServerPlayer(

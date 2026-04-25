@@ -8,7 +8,6 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.IntStream;
 
 public class TalentLineDefinition {
     public static final Codec<TalentLineDefinition> CODEC = RecordCodecBuilder.<TalentLineDefinition>create(builder -> builder.group(
@@ -23,24 +22,14 @@ public class TalentLineDefinition {
 
     private final String name;
     private final List<TalentNode> nodes;
-    private TalentTreeDefinition tree;
 
     private TalentLineDefinition(String name, List<TalentNode> nodes) {
         this.name = name;
         this.nodes = nodes;
-        IntStream.range(0, nodes.size()).forEach(i -> this.nodes.get(i).link(this, i));
-    }
-
-    void link(TalentTreeDefinition tree) {
-        this.tree = tree;
     }
 
     public String getName() {
         return name;
-    }
-
-    public TalentTreeDefinition getTree() {
-        return tree;
     }
 
     public int getLength() {

@@ -10,12 +10,16 @@ import net.minecraft.resources.ResourceLocation;
 public class TalentRecord implements IRecordInstance<TalentRecord> {
 
     private final TalentNode node;
-    private final TalentTreeRecord treeRecord;
+    private final ResourceLocation uniqueId;
+    private final String lineName;
+    private final int index;
     private int currentRank;
 
-    public TalentRecord(TalentNode node, TalentTreeRecord treeRecord) {
+    public TalentRecord(TalentNode node, ResourceLocation treeId, String lineName, int index) {
         this.node = node;
-        this.treeRecord = treeRecord;
+        this.uniqueId = treeId.withSuffix("/%s/%d".formatted(lineName, index));
+        this.lineName = lineName;
+        this.index = index;
         currentRank = 0;
     }
 
@@ -23,13 +27,16 @@ public class TalentRecord implements IRecordInstance<TalentRecord> {
         return node;
     }
 
-    public ResourceLocation getTreeId() {
-        return treeRecord.getTreeId().location();
+    public String getLineName() {
+        return lineName;
+    }
+
+    public int getIndex() {
+        return index;
     }
 
     public ResourceLocation getUniqueId() {
-        return getTreeId()
-                .withSuffix("/%s/%d".formatted(node.getLine().getName(), node.getIndex()));
+        return uniqueId;
     }
 
     public boolean isKnown() {
@@ -69,7 +76,7 @@ public class TalentRecord implements IRecordInstance<TalentRecord> {
     }
 
     public String toString() {
-        return String.format("TalentRecord{node=%s, rank=%d}", node, currentRank);
+        return String.format("TalentRecord{line=%s, index=%d, node=%s, rank=%d}", lineName, index, node, currentRank);
     }
 
     @Override

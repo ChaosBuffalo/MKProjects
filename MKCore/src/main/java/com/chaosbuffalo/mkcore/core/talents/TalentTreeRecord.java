@@ -11,12 +11,14 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class TalentTreeRecord {
@@ -70,57 +72,45 @@ public class TalentTreeRecord {
         return lines.computeIfAbsent(lineName, this::createLineRecord);
     }
 
-    private boolean validatePointModification(TalentRecord record, int amount) {
-        TalentNode node = record.getNode();
-        String lineName = node.getLine().getName();
-        int index = node.getIndex();
-
+    private boolean modifyPoint(TalentRecord record, int points) {
+        String lineName = record.getLineName();
+        int index = record.getIndex();
         TalentLineRecord lineRecord = getLineRecord(lineName);
         if (lineRecord == null) {
-            MKCore.LOGGER.error("validatePointModification({}, {}, {}) - line does not exist", lineName, index, amount);
+            MKCore.LOGGER.error("modifyPoint({}, {}, {}) - line does not exist", lineName, index, points);
             return false;
         }
 
-        if (index >= lineRecord.getLength()) {
-            MKCore.LOGGER.error("validatePointModification({}, {}, {}) - index out of range (max {})", lineName, index, amount, lineRecord.getLength());
+        if (points != 1 && points != -1) {
+            MKCore.LOGGER.error("modifyPoint({}, {}, {}) - only single-point spend/refund is supported", lineName, index, points);
             return false;
         }
 
-        if (amount > 0) {
-            // trying to add
-            if (index != 0) {
-                TalentRecord previous = lineRecord.getRecord(index - 1);
-                if (previous == null || !previous.isKnown()) {
-                    MKCore.LOGGER.error("validatePointModification({}, {}, {}) - cannot learn talent if the previous is unknown", lineName, index, amount);
-                    return false;
-                }
-            }
+        TalentNode node = record.getNode();
+        int nextRank = record.getRank() + points;
+        if (nextRank < 0 || nextRank > node.getMaxRanks()) {
+            return false;
+        }
 
-            return record.getRank() < node.getMaxRanks();
-        } else if (amount < 0) {
-            // trying to remove
-            TalentRecord next = lineRecord.getRecord(index + 1);
-            if (next != null && next.isKnown() && record.getRank() <= 1) {
-                MKCore.LOGGER.error("validatePointModification({}, {}, {}) - cannot unlearn talent if children have points", lineName, index, amount);
+        if (points > 0 && index > 0) {
+            TalentRecord previous = lineRecord.getRecord(index - 1);
+            if (previous == null || !previous.isKnown()) {
+                MKCore.LOGGER.error("modifyPoint({}, {}, {}) - cannot learn talent if the previous is unknown", lineName, index, points);
                 return false;
             }
-
-            return record.getRank() > 0;
         }
 
-        return false;
-    }
-
-    private boolean modifyPoint(TalentRecord record, int points) {
-        if (!validatePointModification(record, points))
-            return false;
-
-        if (record.modifyRank(points)) {
-            TalentNode node = record.getNode();
-            updater.markUpdated(node.getLine().getName(), node.getIndex());
-            return true;
+        if (points < 0 && nextRank == 0) {
+            TalentRecord next = lineRecord.getRecord(index + 1);
+            if (next != null && next.isKnown()) {
+                MKCore.LOGGER.error("modifyPoint({}, {}, {}) - cannot unlearn talent if children have points", lineName, index, points);
+                return false;
+            }
         }
-        return false;
+
+        record.setRank(nextRank);
+        updater.markUpdated(lineName, index);
+        return true;
     }
 
     public boolean trySpendPoint(String line, int index) {
@@ -194,7 +184,7 @@ public class TalentTreeRecord {
     private TalentLineRecord createLineRecord(String name) {
         TalentLineDefinition lineDef = tree.getLine(name);
         if (lineDef != null) {
-            return new TalentLineRecord(lineDef, this);
+            return new TalentLineRecord(lineDef, treeId.location());
         }
         return null;
     }
@@ -202,15 +192,18 @@ public class TalentTreeRecord {
     private static class TalentLineRecord {
         private final List<TalentRecord> lineRecords;
 
-        public TalentLineRecord(TalentLineDefinition lineDefinition, TalentTreeRecord treeRecord) {
-            this.lineRecords = lineDefinition.getNodes()
-                    .stream()
-                    .map(node -> new TalentRecord(node, treeRecord))
+        public TalentLineRecord(TalentLineDefinition lineDefinition, ResourceLocation treeId) {
+            this.lineRecords = IntStream.range(0, lineDefinition.getLength())
+                    .mapToObj(i -> new TalentRecord(
+                            lineDefinition.getNodes().get(i),
+                            treeId,
+                            lineDefinition.getName(),
+                            i))
                     .collect(Collectors.toList());
         }
 
         public TalentRecord getRecord(int index) {
-            if (index < lineRecords.size()) {
+            if (index >= 0 && index < lineRecords.size()) {
                 return lineRecords.get(index);
             }
             return null;
@@ -291,7 +284,7 @@ public class TalentTreeRecord {
         private IntArrayTag compressRecords(Stream<TalentRecord> recordStream) {
             int[] nodeInfo = recordStream
                     .mapMultiToInt((record, mapper) -> {
-                        mapper.accept(record.getNode().getIndex());
+                        mapper.accept(record.getIndex());
                         mapper.accept(record.getRank());
                     })
                     .toArray();

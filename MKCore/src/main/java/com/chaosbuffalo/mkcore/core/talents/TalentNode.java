@@ -10,8 +10,6 @@ public abstract class TalentNode {
 
     protected final int maxRanks;
     protected final Holder<TalentNodeDisplay> displayHolder;
-    protected TalentLineDefinition line;
-    protected int index;
 
     public TalentNode(Holder<TalentNodeDisplay> displayHolder, int maxRanks) {
         this.maxRanks = maxRanks;
@@ -24,23 +22,6 @@ public abstract class TalentNode {
 
     public abstract TalentType<?> getType();
 
-    void link(TalentLineDefinition line, int index) {
-        this.index = index;
-        this.line = line;
-    }
-
-    public TalentTreeDefinition getTree() {
-        return line.getTree();
-    }
-
-    public TalentLineDefinition getLine() {
-        return line;
-    }
-
-    public int getIndex() {
-        return index;
-    }
-
     public int getMaxRanks() {
         return maxRanks;
     }
@@ -48,8 +29,7 @@ public abstract class TalentNode {
     @Override
     public String toString() {
         return "TalentNode{" +
-                "index=" + index +
-                ", maxRanks=" + maxRanks +
+                "maxRanks=" + maxRanks +
                 '}';
     }
 }

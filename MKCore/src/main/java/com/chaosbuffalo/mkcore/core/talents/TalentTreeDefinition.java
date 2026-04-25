@@ -37,7 +37,6 @@ public class TalentTreeDefinition {
         this.version = version;
         this.isDefault = isDefault;
         this.talentLineList = talentLineList;
-        talentLineList.forEach(line -> line.link(this));
     }
 
     public boolean isDefault() {
