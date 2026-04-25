@@ -56,14 +56,6 @@ public record MKDungeonLayoutSettings(
         return connectors.connectUp();
     }
 
-    public ResourceLocation stairInsertDown() {
-        return connectors.stairInsertDown();
-    }
-
-    public ResourceLocation stairInsertUp() {
-        return connectors.stairInsertUp();
-    }
-
     public ResourceLocation bossForward() {
         return connectors.bossForward();
     }

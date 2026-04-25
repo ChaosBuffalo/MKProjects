@@ -62,8 +62,6 @@ public class NpcStructures {
                                         connector("branch"),
                                         connector("connect_down"),
                                         connector("connect_up"),
-                                        connector("stair_insert_down"),
-                                        connector("stair_insert_up"),
                                         connector("boss_forward"),
                                         connector("boss_back")
                                 )

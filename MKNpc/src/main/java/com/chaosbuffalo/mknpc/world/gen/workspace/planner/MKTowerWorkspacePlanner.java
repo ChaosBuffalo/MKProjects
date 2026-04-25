@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKConnectorRole;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;

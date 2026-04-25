@@ -9,9 +9,7 @@
       "connect_down": "mknpc:connect_down",
       "connect_up": "mknpc:connect_up",
       "main_back": "mknpc:main_back",
-      "main_forward": "mknpc:main_forward",
-      "stair_insert_down": "mknpc:stair_insert_down",
-      "stair_insert_up": "mknpc:stair_insert_up"
+      "main_forward": "mknpc:main_forward"
     },
     "max_branch_depth": 0,
     "max_floors": 3,

@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.scaffold;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKConnectorRole;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStairPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
@@ -430,21 +430,9 @@ public class MKWorkspaceScaffoldBuilder {
         Direction facing = plannedConnector.facing();
         int verticalShellThickness = getVerticalShellThickness(piece);
         int interiorCenterX = getConnectorCenterX(geometryOrigin, piece, shellMargin, plannedConnector);
-        int interiorCenterZ = getConnectorCenterZ(geometryOrigin, piece, shellMargin, plannedConnector);
+       int interiorCenterZ = getConnectorCenterZ(geometryOrigin, piece, shellMargin, plannedConnector);
         BlockPos connectorPos;
-        if (isEmptyScaffold(piece) && isEmbeddedStairConnector(plannedConnector.role())) {
-            connectorPos = new BlockPos(interiorCenterX,
-                    geometryOrigin.getY(),
-                    interiorCenterZ);
-        } else if (plannedConnector.role() == MKConnectorRole.STAIR_INSERT_UP) {
-            connectorPos = new BlockPos(interiorCenterX,
-                    geometryOrigin.getY() + Math.max(0, verticalShellThickness - 1),
-                    interiorCenterZ);
-        } else if (plannedConnector.role() == MKConnectorRole.STAIR_INSERT_DOWN) {
-            connectorPos = new BlockPos(interiorCenterX,
-                    geometryOrigin.getY() + geometryHeight - Math.max(1, verticalShellThickness) - 2,
-                    interiorCenterZ);
-        } else if (facing == Direction.NORTH) {
+        if (facing == Direction.NORTH) {
             connectorPos = new BlockPos(interiorCenterX, geometryOrigin.getY() + verticalShellThickness,
                     geometryOrigin.getZ() + shellMargin - 1);
         } else if (facing == Direction.SOUTH) {
@@ -500,9 +488,6 @@ public class MKWorkspaceScaffoldBuilder {
                                        MKPlannedConnector connector, int shellMargin, int verticalShellThickness,
                                        int geometryWidth,
                                        int geometryLength, int geometryHeight) {
-        if (connector.role() == MKConnectorRole.STAIR_INSERT_UP || connector.role() == MKConnectorRole.STAIR_INSERT_DOWN) {
-            return;
-        }
         int baseY = geometryOrigin.getY() + verticalShellThickness;
         int centerX;
         int centerZ;
@@ -594,9 +579,6 @@ public class MKWorkspaceScaffoldBuilder {
     }
 
     private int getConnectorCenterX(BlockPos geometryOrigin, MKPlannedPiece piece, int shellMargin, MKPlannedConnector connector) {
-        if (isEmbeddedStairConnector(connector.role())) {
-            return getVerticalCenterX(geometryOrigin, piece, shellMargin);
-        }
         if (connector.facing() == Direction.UP || connector.facing() == Direction.DOWN) {
             return getVerticalCenterX(geometryOrigin, piece, shellMargin);
         }
@@ -604,17 +586,10 @@ public class MKWorkspaceScaffoldBuilder {
     }
 
     private int getConnectorCenterZ(BlockPos geometryOrigin, MKPlannedPiece piece, int shellMargin, MKPlannedConnector connector) {
-        if (isEmbeddedStairConnector(connector.role())) {
-            return getVerticalCenterZ(geometryOrigin, piece, shellMargin);
-        }
         if (connector.facing() == Direction.UP || connector.facing() == Direction.DOWN) {
             return getVerticalCenterZ(geometryOrigin, piece, shellMargin);
         }
         return geometryOrigin.getZ() + shellMargin + (piece.interiorLength() / 2);
-    }
-
-    private boolean isEmbeddedStairConnector(MKConnectorRole role) {
-        return role == MKConnectorRole.STAIR_INSERT_UP || role == MKConnectorRole.STAIR_INSERT_DOWN;
     }
 
     private BlockPos placeStructureBlock(ServerLevel level, MKStructureWorkspace workspace, MKPlannedPiece piece,
@@ -721,9 +696,10 @@ public class MKWorkspaceScaffoldBuilder {
     private BlockState getMarkerState(MKConnectorRole role) {
         return switch (role) {
             case MAIN_FORWARD, MAIN_BACK -> Blocks.BLUE_WOOL.defaultBlockState();
-            case CONNECT_UP, CONNECT_DOWN, STAIR_INSERT_UP, STAIR_INSERT_DOWN -> Blocks.ORANGE_WOOL.defaultBlockState();
+            case CONNECT_UP, CONNECT_DOWN -> Blocks.ORANGE_WOOL.defaultBlockState();
             case BOSS_FORWARD, BOSS_BACK -> Blocks.RED_WOOL.defaultBlockState();
             case BRANCH -> Blocks.GREEN_WOOL.defaultBlockState();
+            default -> Blocks.WHITE_WOOL.defaultBlockState();
         };
     }
 
@@ -733,11 +709,10 @@ public class MKWorkspaceScaffoldBuilder {
             case MAIN_BACK -> MKConnectorRole.MAIN_FORWARD.getSerializedName();
             case CONNECT_UP -> MKConnectorRole.CONNECT_DOWN.getSerializedName();
             case CONNECT_DOWN -> MKConnectorRole.CONNECT_UP.getSerializedName();
-            case STAIR_INSERT_UP -> MKConnectorRole.STAIR_INSERT_DOWN.getSerializedName();
-            case STAIR_INSERT_DOWN -> MKConnectorRole.STAIR_INSERT_UP.getSerializedName();
             case BOSS_FORWARD -> MKConnectorRole.BOSS_BACK.getSerializedName();
             case BOSS_BACK -> MKConnectorRole.BOSS_FORWARD.getSerializedName();
             case BRANCH -> MKConnectorRole.BRANCH.getSerializedName();
+            default -> throw new IllegalStateException("Unsupported workspace connector role " + role);
         };
     }
 

@@ -37,12 +37,6 @@ public final class MKConnectorClassifier {
         if (name.equals(settings.connectUp()) || "stairs_up".equals(name.getPath())) {
             return MKConnectorRole.CONNECT_UP;
         }
-        if (name.equals(settings.stairInsertDown())) {
-            return MKConnectorRole.STAIR_INSERT_DOWN;
-        }
-        if (name.equals(settings.stairInsertUp())) {
-            return MKConnectorRole.STAIR_INSERT_UP;
-        }
         if (name.equals(settings.bossForward())) {
             return MKConnectorRole.BOSS_FORWARD;
         }

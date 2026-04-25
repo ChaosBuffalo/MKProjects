@@ -1,4 +1,4 @@
-// 1.21.1	2026-04-25T08:12:26.4150613	Registries
+// 1.21.1	2026-04-25T11:47:30.2549961	Registries
 1be1c5a6e5b47db3aecda7cf687a9dc6d0a4b26e data/mknpc/mknpc/mknpcs/test_ghost.json
 d35f18dc426304e4178fad5c486179efcfbe7c5f data/mknpc/mknpc/mknpcs/test_golem.json
 2df5da3c656a233fbaeab9ebfa2229dc1cd7dae8 data/mknpc/mknpc/mknpcs/test_golem_battleaxe.json
@@ -32,7 +32,7 @@ b1e1274b6120c375ed92fb113468681ca421a616 data/mknpc/mknpc/mknpcs/test_melee_spea
 a2580cd30a5f1bbe7c118527812144123dc3b10e data/mknpc/mknpc/mknpcs/test_skeleton.json
 5057c77db31f0ca80f2cb9f4857171fe34e22f34 data/mknpc/mknpc/mknpcs/test_skull_multi.json
 dd850fa55950d1374bc2352039833d325c2a1b4a data/mknpc/worldgen/structure/test_jigsaw.json
-ebe9e438a3be284bf79817ff47bcae05b73a9731 data/mknpc/worldgen/structure/test_tower.json
+955885aec860d1a96f6df3de6ab0c98e593d4437 data/mknpc/worldgen/structure/test_tower.json
 be18e4bcdd225957d395a67141c44634856fdce8 data/mknpc/worldgen/structure_set/test_structures.json
 df2f0355315209d82caf83463063f5f09706bb5c data/mknpc/worldgen/structure_set/test_tower.json
 c53eb36b2fec0ace9d70097b94825dfde130121f data/mknpc/worldgen/template_pool/digger/diggerbase.json

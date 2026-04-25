@@ -8,8 +8,6 @@ public enum MKConnectorRole implements StringRepresentable {
     BRANCH("branch"),
     CONNECT_DOWN("connect_down"),
     CONNECT_UP("connect_up"),
-    STAIR_INSERT_DOWN("stair_insert_down"),
-    STAIR_INSERT_UP("stair_insert_up"),
     BOSS_FORWARD("boss_forward"),
     BOSS_BACK("boss_back"),
     ROOM("room"),
@@ -27,5 +25,14 @@ public enum MKConnectorRole implements StringRepresentable {
     @Override
     public String getSerializedName() {
         return serializedName;
+    }
+
+    public static MKConnectorRole fromSerializedName(String name) {
+        for (MKConnectorRole value : values()) {
+            if (value.serializedName.equals(name)) {
+                return value;
+            }
+        }
+        throw new IllegalArgumentException("Unknown connector role: " + name);
     }
 }

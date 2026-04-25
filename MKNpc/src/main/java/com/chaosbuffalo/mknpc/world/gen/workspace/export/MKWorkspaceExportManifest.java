@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.export;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKConnectorRole;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStairPlacement;

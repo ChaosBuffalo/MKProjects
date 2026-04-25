@@ -23,9 +23,6 @@ public class MKDungeonLayoutController {
     }
 
     public Optional<String> getRejectionReason(MKDungeonPieceState parentState, MKConnectorInfo connector, MKJigsawPieceMetadata childMetadata) {
-        if (isEmbeddedConnector(connector.role())) {
-            return Optional.empty();
-        }
         if (!isVerticalDeltaAllowed(childMetadata.verticalLevelDelta())) {
             return Optional.of("illegal_vertical_transition");
         }
@@ -87,9 +84,6 @@ public class MKDungeonLayoutController {
     }
 
     public MKDungeonPieceState nextState(MKDungeonPieceState parentState, MKConnectorInfo connector, MKJigsawPieceMetadata childMetadata) {
-        if (isEmbeddedConnector(connector.role())) {
-            return parentState;
-        }
         boolean nextOnMainPath = isMainPathContinuation(parentState, connector, childMetadata);
         int nextFloor = parentState.progressionFloorIndex() + childMetadata.progressionDelta();
         int nextVertical = parentState.verticalLevelIndex() + childMetadata.verticalLevelDelta();
@@ -109,7 +103,7 @@ public class MKDungeonLayoutController {
         if (!parentState.onMainPath()) {
             return false;
         }
-        if (connector.role() == MKConnectorRole.BRANCH || isEmbeddedConnector(connector.role())) {
+        if (connector.role() == MKConnectorRole.BRANCH) {
             return false;
         }
         return childMetadata.pieceRole() != MKJigsawPieceRole.BRANCH;
@@ -125,9 +119,5 @@ public class MKDungeonLayoutController {
 
     private boolean isBossConnector(MKConnectorRole role) {
         return role == MKConnectorRole.BOSS_FORWARD || role == MKConnectorRole.BOSS_BACK;
-    }
-
-    private boolean isEmbeddedConnector(MKConnectorRole role) {
-        return role == MKConnectorRole.STAIR_INSERT_UP || role == MKConnectorRole.STAIR_INSERT_DOWN;
     }
 }

@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
