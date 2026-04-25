@@ -4,21 +4,12 @@ import net.minecraft.util.StringRepresentable;
 
 public enum MKWorkspacePieceRole implements StringRepresentable {
     ENTRY("entry"),
-    ENTRY_STAIRS_UP("entry_stairs_up"),
     FLOOR_MAIN("floor_main"),
-    STAIRS_UP("stairs_up"),
-    STAIRS_DOWN("stairs_down"),
+    BOSS_APPROACH("boss_approach"),
     BOSS_CAP("boss_cap"),
     BASEMENT_ENTRY("basement_entry"),
     BASEMENT_MAIN("basement_main"),
-    BASEMENT_CAP("basement_cap"),
-    SURFACE_ENTRY("surface_entry"),
-    MAIN_HALL("main_hall"),
-    MAIN_ROOM("main_room"),
-    BOSS_APPROACH("boss_approach"),
-    BOSS_ROOM("boss_room"),
-    MAZE_HALL("maze_hall"),
-    MAZE_ROOM("maze_room");
+    BASEMENT_CAP("basement_cap");
 
     private final String serializedName;
 
@@ -32,7 +23,7 @@ public enum MKWorkspacePieceRole implements StringRepresentable {
                 return value;
             }
         }
-        return ENTRY;
+        throw new IllegalArgumentException("Unknown workspace piece role: " + name);
     }
 
     @Override
