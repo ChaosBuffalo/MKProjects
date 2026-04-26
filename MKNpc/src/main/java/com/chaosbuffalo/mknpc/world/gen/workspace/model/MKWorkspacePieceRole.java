@@ -5,8 +5,8 @@ import net.minecraft.util.StringRepresentable;
 public enum MKWorkspacePieceRole implements StringRepresentable {
     ENTRY("entry"),
     FLOOR_MAIN("floor_main"),
-    BOSS_APPROACH("boss_approach"),
-    BOSS_CAP("boss_cap"),
+    TOP_CAP_APPROACH("top_cap_approach"),
+    TOP_CAP("top_cap"),
     BASEMENT_ENTRY("basement_entry"),
     BASEMENT_MAIN("basement_main"),
     BASEMENT_CAP("basement_cap"),
@@ -32,3 +32,4 @@ public enum MKWorkspacePieceRole implements StringRepresentable {
         return serializedName;
     }
 }
+

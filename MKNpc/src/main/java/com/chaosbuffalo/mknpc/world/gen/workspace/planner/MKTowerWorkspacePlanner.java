@@ -107,7 +107,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 1, 1,
                                     true, false, false, false))
             );
-            case BOSS_APPROACH -> new MKPlannedPiece(
+            case TOP_CAP_APPROACH -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
                     family.roomWidth(),
@@ -118,16 +118,16 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                                     List.of(
                                             new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
                                                     EMPTY_POOL, "connect_up"),
-                                            new MKPlannedConnector(MKConnectorRole.BOSS_FORWARD, Direction.UP, hallWidth, hallWidth, "boss_cap")
+                                            new MKPlannedConnector(MKConnectorRole.TOP_CAP_FORWARD, Direction.UP, hallWidth, hallWidth, "top_cap")
                                     ) : List.of(),
                             family,
                             workspace
                     ),
-                    buildRoomTags("boss_approach", family, stairPlacement, "up",
-                            new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.BOSS_APPROACH, 1, 1,
+                    buildRoomTags("top_cap_approach", family, stairPlacement, "up",
+                            new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.TOP_CAP_APPROACH, 1, 1,
                                     true, false, false, true))
             );
-            case BOSS_CAP -> new MKPlannedPiece(
+            case TOP_CAP -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
                     family.roomWidth(),
@@ -135,13 +135,13 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                     family.roomHeight(),
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
-                                    List.of(new MKPlannedConnector(MKConnectorRole.BOSS_BACK, Direction.DOWN, hallWidth, hallWidth,
-                                            EMPTY_POOL, "boss_cap")) : List.of(),
+                                    List.of(new MKPlannedConnector(MKConnectorRole.TOP_CAP_BACK, Direction.DOWN, hallWidth, hallWidth,
+                                            EMPTY_POOL, "top_cap")) : List.of(),
                             family,
                             workspace
                     ),
-                    buildRoomTags("boss_cap", family, stairPlacement, "up", true, false,
-                            new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.BOSS, 0, 0,
+                    buildRoomTags("top_cap", family, stairPlacement, "up", true, false,
+                            new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.TOP_CAP, 0, 0,
                                     true, false, true, true))
             );
             case BASEMENT_ENTRY -> new MKPlannedPiece(
@@ -331,3 +331,4 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         return tags;
     }
 }
+

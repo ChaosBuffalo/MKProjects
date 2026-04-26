@@ -1,6 +1,6 @@
 {
-  "boss_only": true,
-  "role": "boss_approach",
+  "top_cap_only": true,
+  "role": "top_cap_approach",
   "progression_delta": 1,
   "vertical_level_delta": 1
 }

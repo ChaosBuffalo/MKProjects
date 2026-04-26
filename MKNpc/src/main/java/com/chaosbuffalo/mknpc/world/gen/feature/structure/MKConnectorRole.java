@@ -8,8 +8,8 @@ public enum MKConnectorRole implements StringRepresentable {
     BRANCH("branch"),
     CONNECT_DOWN("connect_down"),
     CONNECT_UP("connect_up"),
-    BOSS_FORWARD("boss_forward"),
-    BOSS_BACK("boss_back"),
+    TOP_CAP_FORWARD("top_cap_forward"),
+    TOP_CAP_BACK("top_cap_back"),
     ROOM("room"),
     TERMINAL("terminal"),
     UNKNOWN("unknown");
@@ -36,3 +36,4 @@ public enum MKConnectorRole implements StringRepresentable {
         throw new IllegalArgumentException("Unknown connector role: " + name);
     }
 }
+

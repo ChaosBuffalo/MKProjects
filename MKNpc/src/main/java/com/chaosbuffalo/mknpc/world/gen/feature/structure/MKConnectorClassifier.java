@@ -39,8 +39,8 @@ public final class MKConnectorClassifier {
             register(byName, settings.branch(), MKConnectorRole.BRANCH);
             register(byName, settings.connectDown(), MKConnectorRole.CONNECT_DOWN);
             register(byName, settings.connectUp(), MKConnectorRole.CONNECT_UP);
-            register(byName, settings.bossForward(), MKConnectorRole.BOSS_FORWARD);
-            register(byName, settings.bossBack(), MKConnectorRole.BOSS_BACK);
+            register(byName, settings.topCapForward(), MKConnectorRole.TOP_CAP_FORWARD);
+            register(byName, settings.topCapBack(), MKConnectorRole.TOP_CAP_BACK);
             return new ConnectorClassificationRules(Map.copyOf(byName));
         }
 
@@ -65,3 +65,4 @@ public final class MKConnectorClassifier {
         }
     }
 }
+

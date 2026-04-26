@@ -10,7 +10,7 @@ public record MKJigsawPieceMetadata(
         boolean allowOnMainPath,
         boolean allowOnBranchPath,
         boolean terminal,
-        boolean bossOnly
+        boolean topCapOnly
 ) {
     public static final Codec<MKJigsawPieceMetadata> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             MKJigsawPieceRole.CODEC.fieldOf("role").forGetter(MKJigsawPieceMetadata::pieceRole),
@@ -19,6 +19,7 @@ public record MKJigsawPieceMetadata(
             Codec.BOOL.optionalFieldOf("allow_on_main_path", true).forGetter(MKJigsawPieceMetadata::allowOnMainPath),
             Codec.BOOL.optionalFieldOf("allow_on_branch_path", false).forGetter(MKJigsawPieceMetadata::allowOnBranchPath),
             Codec.BOOL.optionalFieldOf("terminal", false).forGetter(MKJigsawPieceMetadata::terminal),
-            Codec.BOOL.optionalFieldOf("boss_only", false).forGetter(MKJigsawPieceMetadata::bossOnly)
+            Codec.BOOL.optionalFieldOf("top_cap_only", false).forGetter(MKJigsawPieceMetadata::topCapOnly)
     ).apply(instance, MKJigsawPieceMetadata::new));
 }
+

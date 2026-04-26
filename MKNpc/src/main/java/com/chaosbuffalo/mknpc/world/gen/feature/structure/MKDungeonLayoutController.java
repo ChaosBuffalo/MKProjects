@@ -43,11 +43,11 @@ public class MKDungeonLayoutController {
             return Optional.of("min_floor_budget");
         }
         if (connector.role() == MKConnectorRole.CONNECT_UP) {
-            if (nextFloor == parentState.targetFloors() - 1 && childMetadata.pieceRole() != MKJigsawPieceRole.BOSS_APPROACH) {
-                return Optional.of("final_upward_step_requires_boss_approach");
+            if (nextFloor == parentState.targetFloors() - 1 && childMetadata.pieceRole() != MKJigsawPieceRole.TOP_CAP_APPROACH) {
+                return Optional.of("final_upward_step_requires_top_cap_approach");
             }
-            if (nextFloor < parentState.targetFloors() - 1 && childMetadata.pieceRole() == MKJigsawPieceRole.BOSS_APPROACH) {
-                return Optional.of("boss_approach_early");
+            if (nextFloor < parentState.targetFloors() - 1 && childMetadata.pieceRole() == MKJigsawPieceRole.TOP_CAP_APPROACH) {
+                return Optional.of("top_cap_approach_early");
             }
         }
         if (connector.role() == MKConnectorRole.CONNECT_DOWN) {
@@ -66,11 +66,11 @@ public class MKDungeonLayoutController {
         if (finalFloor && !settings.allowBranchesOnFinalFloor() && connector.role() == MKConnectorRole.BRANCH) {
             return Optional.of("final_floor_branch_blocked");
         }
-        if (childMetadata.bossOnly() && nextFloor != parentState.targetFloors() - 1) {
-            return Optional.of("boss_only_restricted");
+        if (childMetadata.topCapOnly() && nextFloor != parentState.targetFloors() - 1) {
+            return Optional.of("top_cap_only_restricted");
         }
-        if (isBossConnector(connector.role()) && nextFloor != parentState.targetFloors() - 1) {
-            return Optional.of("boss_connector_restricted");
+        if (isTopCapConnector(connector.role()) && nextFloor != parentState.targetFloors() - 1) {
+            return Optional.of("top_cap_connector_restricted");
         }
         if (childMetadata.progressionDelta() == 0 && parentState.piecesOnFloor() >= settings.maxPiecesPerFloor()) {
             return Optional.of("per_floor_budget");
@@ -117,7 +117,8 @@ public class MKDungeonLayoutController {
         };
     }
 
-    private boolean isBossConnector(MKConnectorRole role) {
-        return role == MKConnectorRole.BOSS_FORWARD || role == MKConnectorRole.BOSS_BACK;
+    private boolean isTopCapConnector(MKConnectorRole role) {
+        return role == MKConnectorRole.TOP_CAP_FORWARD || role == MKConnectorRole.TOP_CAP_BACK;
     }
 }
+

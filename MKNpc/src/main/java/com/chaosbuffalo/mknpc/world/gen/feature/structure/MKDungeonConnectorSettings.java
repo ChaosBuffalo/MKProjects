@@ -10,8 +10,8 @@ public record MKDungeonConnectorSettings(
         ResourceLocation branch,
         ResourceLocation connectDown,
         ResourceLocation connectUp,
-        ResourceLocation bossForward,
-        ResourceLocation bossBack
+        ResourceLocation topCapForward,
+        ResourceLocation topCapBack
 ) {
     public static final Codec<MKDungeonConnectorSettings> CODEC = RecordCodecBuilder.<MKDungeonConnectorSettings>create(instance -> instance.group(
             ResourceLocation.CODEC.fieldOf("main_forward").forGetter(MKDungeonConnectorSettings::mainForward),
@@ -19,16 +19,17 @@ public record MKDungeonConnectorSettings(
             ResourceLocation.CODEC.fieldOf("branch").forGetter(MKDungeonConnectorSettings::branch),
             ResourceLocation.CODEC.fieldOf("connect_down").forGetter(MKDungeonConnectorSettings::connectDown),
             ResourceLocation.CODEC.fieldOf("connect_up").forGetter(MKDungeonConnectorSettings::connectUp),
-            ResourceLocation.CODEC.fieldOf("boss_forward").forGetter(MKDungeonConnectorSettings::bossForward),
-            ResourceLocation.CODEC.fieldOf("boss_back").forGetter(MKDungeonConnectorSettings::bossBack)
-    ).apply(instance, (mainForward, mainBack, branch, connectDown, connectUp, bossForward, bossBack) ->
+            ResourceLocation.CODEC.fieldOf("top_cap_forward").forGetter(MKDungeonConnectorSettings::topCapForward),
+            ResourceLocation.CODEC.fieldOf("top_cap_back").forGetter(MKDungeonConnectorSettings::topCapBack)
+    ).apply(instance, (mainForward, mainBack, branch, connectDown, connectUp, topCapForward, topCapBack) ->
             new MKDungeonConnectorSettings(
                     mainForward,
                     mainBack,
                     branch,
                     connectDown,
                     connectUp,
-                    bossForward,
-                    bossBack
+                    topCapForward,
+                    topCapBack
             )));
 }
+

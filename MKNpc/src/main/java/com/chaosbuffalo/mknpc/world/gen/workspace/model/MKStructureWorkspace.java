@@ -316,7 +316,7 @@ public class MKStructureWorkspace {
                     MKTowerWorkspaceCategory.MAIN,
                     MKTowerWorkspaceCategory.ENTRY,
                     MKTowerWorkspaceCategory.BASEMENT,
-                    MKTowerWorkspaceCategory.BOSS,
+                    MKTowerWorkspaceCategory.TOP_CAP,
                     MKTowerWorkspaceCategory.BASEMENT_CAP)) {
                 Optional<MKTowerWorkspaceCategoryProfile> profile = categoryProfile(category);
                 if (profile.isPresent() && !allowedBandHeights.contains(profile.get().fullHeight())) {
@@ -443,4 +443,5 @@ public class MKStructureWorkspace {
         return pieces;
     }
 }
+
 

@@ -519,7 +519,7 @@ public record MKWorkspaceExportManifest(
             boolean allowOnMainPath,
             boolean allowOnBranchPath,
             boolean terminal,
-            boolean bossOnly
+            boolean topCapOnly
     ) {
         public static final Codec<ExportRuntimePieceMetadata> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 jigsawPieceRoleCodec().fieldOf("role").forGetter(ExportRuntimePieceMetadata::role),
@@ -528,7 +528,7 @@ public record MKWorkspaceExportManifest(
                 Codec.BOOL.fieldOf("allow_on_main_path").forGetter(ExportRuntimePieceMetadata::allowOnMainPath),
                 Codec.BOOL.fieldOf("allow_on_branch_path").forGetter(ExportRuntimePieceMetadata::allowOnBranchPath),
                 Codec.BOOL.fieldOf("terminal").forGetter(ExportRuntimePieceMetadata::terminal),
-                Codec.BOOL.fieldOf("boss_only").forGetter(ExportRuntimePieceMetadata::bossOnly)
+                Codec.BOOL.fieldOf("top_cap_only").forGetter(ExportRuntimePieceMetadata::topCapOnly)
         ).apply(instance, ExportRuntimePieceMetadata::new));
 
         public static ExportRuntimePieceMetadata from(MKWorkspaceRuntimePieceInfo runtimeInfo) {
@@ -539,7 +539,7 @@ public record MKWorkspaceExportManifest(
                     runtimeInfo.allowOnMainPath(),
                     runtimeInfo.allowOnBranchPath(),
                     runtimeInfo.terminal(),
-                    runtimeInfo.bossOnly()
+                    runtimeInfo.topCapOnly()
             );
         }
     }
@@ -782,4 +782,5 @@ public record MKWorkspaceExportManifest(
         return poolId.toString();
     }
 }
+
 

@@ -673,14 +673,6 @@ public class MKWorkspaceScreen extends MKScreen {
         content.setMargins(4, 4, 4, 4);
         content.setPaddingTop(4).setPaddingBot(4);
 
-        List<Integer> allowedHeights = currentDraftVerticalAccessSpec().getAllowedReusableHeights(3, 6);
-        MKText allowedHeightsText = makeWhiteText(Component.literal(
-                "Reusable shaft heights: " + (allowedHeights.isEmpty() ? "none" : allowedHeights.toString())));
-        allowedHeightsText.setWidth(CONTENT_WIDTH);
-        allowedHeightsText.setMultiline(true);
-        content.addWidget(allowedHeightsText);
-        content.addConstraintToWidget(MarginConstraint.LEFT, allowedHeightsText);
-
         MKButton shaftSizeButton = new MKButton(Component.literal(Integer.toString(formDraft.shaftSize)), 180, 20);
         shaftSizeButton.setPressedCallback((button, mouseButton) -> {
             formDraft.shaftSize = cycleAllowedDraftShaftSize(formDraft.shaftSize);
@@ -699,6 +691,18 @@ public class MKWorkspaceScreen extends MKScreen {
         });
         addRow(content, makeWhiteText(Component.literal("Stair Width")), stairWidthButton);
 
+        List<Integer> allowedHeights = allowedFullHeightsForCategory(MKTowerWorkspaceCategory.MAIN);
+        MKText allowedHeightsText = makeWhiteText(Component.literal(
+                "Allowed band heights: " + (allowedHeights.isEmpty() ? "none" : allowedHeights.toString())));
+        allowedHeightsText.setWidth(CONTENT_WIDTH);
+        allowedHeightsText.setMultiline(true);
+        content.addWidget(allowedHeightsText);
+        content.addConstraintToWidget(MarginConstraint.LEFT, allowedHeightsText);
+
+        for (MKTowerWorkspaceCategory category : MKTowerWorkspaceCategory.values()) {
+            addCategoryHeightRow(content, category);
+        }
+
         for (MKTowerWorkspaceCategory category : MKTowerWorkspaceCategory.values()) {
             addCategoryProfileSection(content, category);
         }
@@ -706,7 +710,7 @@ public class MKWorkspaceScreen extends MKScreen {
         content.manualRecompute();
         scrollView.addWidget(content);
         scrollView.centerContentX();
-        finalizeScrollView(scrollView, "form_vertical");
+        finalizeScrollView(scrollView, "form_categories");
 
         MKButton back = new MKButton(Component.literal("Back"), 120, 20);
         root.addWidget(back);
@@ -2251,8 +2255,7 @@ public class MKWorkspaceScreen extends MKScreen {
         content.addConstraintToWidget(MarginConstraint.LEFT, header);
 
         MKText summary = makeWhiteText(Component.literal(
-                profile.roomWidth() + "x" + profile.roomLength() + "  |  full " + profile.fullHeight() +
-                        "  |  min " + profile.minHeight() + "  |  allowed " + allowedFullHeightsForCategory(category)));
+                profile.roomWidth() + "x" + profile.roomLength() + "  |  min " + profile.minHeight()));
         summary.setWidth(CONTENT_WIDTH);
         summary.setMultiline(true);
         content.addWidget(summary);
@@ -2266,14 +2269,6 @@ public class MKWorkspaceScreen extends MKScreen {
         roomLengthField.setTextChangeCallback((field, text) -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                 profile.category(), profile.roomWidth(), parseInt(text, profile.roomLength()),
                 profile.fullHeight(), profile.minHeight())));
-        MKButton fullHeightButton = new MKButton(Component.literal(Integer.toString(profile.fullHeight())), 180, 20);
-        fullHeightButton.setPressedCallback((button, mouseButton) -> {
-            replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
-                    profile.category(), profile.roomWidth(), profile.roomLength(),
-                    nextAllowedCategoryFullHeight(profile.category(), profile.fullHeight()), profile.minHeight()));
-            flagNeedSetup();
-            return true;
-        });
         MKTextFieldWidget minHeightField = makeField("Min Height", Integer.toString(profile.minHeight()));
         minHeightField.setTextChangeCallback((field, text) -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                 profile.category(), profile.roomWidth(), profile.roomLength(),
@@ -2281,8 +2276,22 @@ public class MKWorkspaceScreen extends MKScreen {
 
         addRow(content, makeWhiteText(Component.literal("Room Width")), roomWidthField);
         addRow(content, makeWhiteText(Component.literal("Room Length")), roomLengthField);
-        addRow(content, makeWhiteText(Component.literal("Full Height")), fullHeightButton);
         addRow(content, makeWhiteText(Component.literal("Min Height")), minHeightField);
+    }
+
+    private void addCategoryHeightRow(MKStackLayoutVertical content, MKTowerWorkspaceCategory category) {
+        MKTowerWorkspaceCategoryProfile profile = getDraftCategoryProfile(category);
+        MKButton heightButton = new MKButton(Component.literal(Integer.toString(profile.fullHeight())), 180, 20);
+        heightButton.setPressedCallback((button, mouseButton) -> {
+            replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                    profile.category(), profile.roomWidth(), profile.roomLength(),
+                    nextAllowedCategoryFullHeight(profile.category(), profile.fullHeight()), profile.minHeight()));
+            flagNeedSetup();
+            return true;
+        });
+        addRow(content,
+                makeWhiteText(Component.literal(formatTopologyLabel(category.getSerializedName()) + " Height")),
+                heightButton);
     }
 
     private void addInlineFamilyExitEditor(MKStackLayoutVertical content, int familyIndex, int exitIndex,
@@ -2414,7 +2423,7 @@ public class MKWorkspaceScreen extends MKScreen {
             case ENTRY -> MKWorkspacePieceRole.ENTRY;
             case MAIN -> MKWorkspacePieceRole.FLOOR_MAIN;
             case BASEMENT -> MKWorkspacePieceRole.BASEMENT_MAIN;
-            case BOSS -> MKWorkspacePieceRole.BOSS_APPROACH;
+            case TOP_CAP -> MKWorkspacePieceRole.TOP_CAP_APPROACH;
             case BASEMENT_CAP -> MKWorkspacePieceRole.BASEMENT_CAP;
         };
     }
@@ -2555,8 +2564,8 @@ public class MKWorkspaceScreen extends MKScreen {
         List<MKWorkspacePieceRole> roles = List.of(
                 MKWorkspacePieceRole.ENTRY,
                 MKWorkspacePieceRole.FLOOR_MAIN,
-                MKWorkspacePieceRole.BOSS_APPROACH,
-                MKWorkspacePieceRole.BOSS_CAP,
+                MKWorkspacePieceRole.TOP_CAP_APPROACH,
+                MKWorkspacePieceRole.TOP_CAP,
                 MKWorkspacePieceRole.BASEMENT_ENTRY,
                 MKWorkspacePieceRole.BASEMENT_MAIN,
                 MKWorkspacePieceRole.BASEMENT_CAP
@@ -2901,4 +2910,5 @@ public class MKWorkspaceScreen extends MKScreen {
         return handled;
     }
 }
+
 

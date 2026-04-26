@@ -68,8 +68,8 @@ public class MKTowerWorkspaceFamilyDefinition {
                 .filter(profile -> profile.category() == MKTowerWorkspaceCategory.BASEMENT)
                 .findFirst()
                 .orElseThrow();
-        MKTowerWorkspaceCategoryProfile boss = MKTowerWorkspaceCategoryProfile.createDefaults(dimensions).stream()
-                .filter(profile -> profile.category() == MKTowerWorkspaceCategory.BOSS)
+        MKTowerWorkspaceCategoryProfile top_cap = MKTowerWorkspaceCategoryProfile.createDefaults(dimensions).stream()
+                .filter(profile -> profile.category() == MKTowerWorkspaceCategory.TOP_CAP)
                 .findFirst()
                 .orElseThrow();
         MKTowerWorkspaceCategoryProfile basementCap = MKTowerWorkspaceCategoryProfile.createDefaults(dimensions).stream()
@@ -85,12 +85,12 @@ public class MKTowerWorkspaceFamilyDefinition {
                 new MKTowerWorkspaceFamilyDefinition("floor_main", MKTowerWorkspaceCategory.MAIN,
                         MKWorkspacePieceRole.FLOOR_MAIN, true,
                         main.roomWidth(), main.roomLength(), main.fullHeight(), List.of()),
-                new MKTowerWorkspaceFamilyDefinition("boss_approach", MKTowerWorkspaceCategory.BOSS,
-                        MKWorkspacePieceRole.BOSS_APPROACH, true,
-                        boss.roomWidth(), boss.roomLength(), boss.fullHeight(), List.of()),
-                new MKTowerWorkspaceFamilyDefinition("boss_cap", MKTowerWorkspaceCategory.BOSS,
-                        MKWorkspacePieceRole.BOSS_CAP, true,
-                        boss.roomWidth(), boss.roomLength(), boss.fullHeight(), List.of()),
+                new MKTowerWorkspaceFamilyDefinition("top_cap_approach", MKTowerWorkspaceCategory.TOP_CAP,
+                        MKWorkspacePieceRole.TOP_CAP_APPROACH, true,
+                        top_cap.roomWidth(), top_cap.roomLength(), top_cap.fullHeight(), List.of()),
+                new MKTowerWorkspaceFamilyDefinition("top_cap", MKTowerWorkspaceCategory.TOP_CAP,
+                        MKWorkspacePieceRole.TOP_CAP, true,
+                        top_cap.roomWidth(), top_cap.roomLength(), top_cap.fullHeight(), List.of()),
                 new MKTowerWorkspaceFamilyDefinition("basement_entry", MKTowerWorkspaceCategory.BASEMENT,
                         MKWorkspacePieceRole.BASEMENT_ENTRY, true,
                         basement.roomWidth(), basement.roomLength(), basement.fullHeight(), List.of()),
@@ -174,7 +174,7 @@ public class MKTowerWorkspaceFamilyDefinition {
 
     public static boolean defaultSupportsVerticalAccess(MKWorkspacePieceRole pieceRole) {
         return switch (pieceRole) {
-            case ENTRY, FLOOR_MAIN, BOSS_APPROACH, BOSS_CAP, BASEMENT_ENTRY, BASEMENT_MAIN, BASEMENT_CAP -> true;
+            case ENTRY, FLOOR_MAIN, TOP_CAP_APPROACH, TOP_CAP, BASEMENT_ENTRY, BASEMENT_MAIN, BASEMENT_CAP -> true;
             case HALLWAY -> false;
         };
     }
@@ -354,3 +354,4 @@ public class MKTowerWorkspaceFamilyDefinition {
         }
     }
 }
+

@@ -53,7 +53,7 @@ public class MKTowerWorkspaceCategoryProfile {
                 new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BASEMENT,
                         dimensions.roomWidth(), dimensions.roomLength(), dimensions.basementHeight(),
                         3),
-                new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BOSS,
+                new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.TOP_CAP,
                         dimensions.roomWidth(), dimensions.roomLength(), dimensions.roomHeight(),
                         3),
                 new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BASEMENT_CAP,
@@ -121,3 +121,4 @@ public class MKTowerWorkspaceCategoryProfile {
         return minHeight;
     }
 }
+

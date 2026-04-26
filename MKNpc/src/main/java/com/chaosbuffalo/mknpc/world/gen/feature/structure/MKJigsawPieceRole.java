@@ -7,8 +7,8 @@ public enum MKJigsawPieceRole implements StringRepresentable {
     MAIN("main"),
     BRANCH("branch"),
     ROOM("room"),
-    BOSS_APPROACH("boss_approach"),
-    BOSS("boss"),
+    TOP_CAP_APPROACH("top_cap_approach"),
+    TOP_CAP("top_cap"),
     TERMINAL("terminal");
 
     public static final Codec<MKJigsawPieceRole> CODEC = Codec.STRING.xmap(
@@ -36,3 +36,4 @@ public enum MKJigsawPieceRole implements StringRepresentable {
         throw new IllegalArgumentException("Unknown jigsaw piece role: " + serializedName);
     }
 }
+

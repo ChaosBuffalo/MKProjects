@@ -45,8 +45,8 @@ class TowerWorkspaceV2Test {
                         new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true),
                         new MKHorizontalOpeningProfile("basement_main", 3, 3, true, false),
                         new MKHorizontalOpeningProfile("basement_branch", 3, 3, false, true),
-                        new MKHorizontalOpeningProfile("boss_main", 3, 3, true, false),
-                        new MKHorizontalOpeningProfile("boss_branch", 3, 3, false, true)
+                        new MKHorizontalOpeningProfile("top_cap_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("top_cap_branch", 3, 3, false, true)
                 ),
                 List.of(
                         new MKHallwayFamilyDefinition("surface", "entry_main", 5, 3, 3, 0,
@@ -136,7 +136,7 @@ class TowerWorkspaceV2Test {
                 List.of()
         );
         List<MKTowerWorkspaceCategoryProfile> categoryProfiles = workspace.categoryProfiles().stream()
-                .map(profile -> profile.category() == MKTowerWorkspaceCategory.BOSS
+                .map(profile -> profile.category() == MKTowerWorkspaceCategory.TOP_CAP
                         ? new MKTowerWorkspaceCategoryProfile(
                         profile.category(),
                         profile.roomWidth(),
@@ -170,7 +170,7 @@ class TowerWorkspaceV2Test {
         );
 
         List<String> errors = workspace.validate();
-        assertTrue(errors.stream().anyMatch(error -> error.contains("boss full height must be one of")));
+        assertTrue(errors.stream().anyMatch(error -> error.contains("top_cap full height must be one of")));
     }
 
     @Test
@@ -267,7 +267,7 @@ class TowerWorkspaceV2Test {
                         new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.ENTRY, 9, 9, dimensions.entranceHeight(), 3),
                         new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.MAIN, 9, 9, dimensions.roomHeight(), 3),
                         new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BASEMENT, 9, 9, dimensions.basementHeight(), 3),
-                        new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BOSS, 9, 9, dimensions.roomHeight(), 3),
+                        new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.TOP_CAP, 9, 9, dimensions.roomHeight(), 3),
                         new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BASEMENT_CAP, 9, 9, dimensions.basementHeight(), 3)
                 ),
                 List.of(
@@ -279,10 +279,10 @@ class TowerWorkspaceV2Test {
                                 9, 9, dimensions.roomHeight(),
                                 List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
                                         MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch"))),
-                        new MKTowerWorkspaceFamilyDefinition("boss_approach", MKTowerWorkspaceCategory.BOSS, MKWorkspacePieceRole.BOSS_APPROACH, true,
+                        new MKTowerWorkspaceFamilyDefinition("top_cap_approach", MKTowerWorkspaceCategory.TOP_CAP, MKWorkspacePieceRole.TOP_CAP_APPROACH, true,
                                 9, 9, dimensions.roomHeight(),
                                 List.of()),
-                        new MKTowerWorkspaceFamilyDefinition("boss_cap", MKTowerWorkspaceCategory.BOSS, MKWorkspacePieceRole.BOSS_CAP, true,
+                        new MKTowerWorkspaceFamilyDefinition("top_cap", MKTowerWorkspaceCategory.TOP_CAP, MKWorkspacePieceRole.TOP_CAP, true,
                                 9, 9, dimensions.roomHeight(),
                                 List.of()),
                         new MKTowerWorkspaceFamilyDefinition("basement_entry", MKTowerWorkspaceCategory.BASEMENT, MKWorkspacePieceRole.BASEMENT_ENTRY, true,
@@ -307,3 +307,4 @@ class TowerWorkspaceV2Test {
         return MKWorkspaceMaterialPalette.defaultPalette();
     }
 }
+

@@ -9,7 +9,7 @@
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
           "terminal": false,
-          "boss_only": false,
+          "top_cap_only": false,
           "role": "room",
           "progression_delta": 0,
           "vertical_level_delta": 0
@@ -22,34 +22,34 @@
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
           "terminal": false,
-          "boss_only": false,
+          "top_cap_only": false,
           "role": "room",
           "progression_delta": 1,
           "vertical_level_delta": 1
         }
       },
       {
-        "base_name": "boss_approach",
-        "role": "boss_approach",
+        "base_name": "top_cap_approach",
+        "role": "top_cap_approach",
         "piece_metadata": {
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
           "terminal": false,
-          "boss_only": true,
-          "role": "boss_approach",
+          "top_cap_only": true,
+          "role": "top_cap_approach",
           "progression_delta": 1,
           "vertical_level_delta": 1
         }
       },
       {
-        "base_name": "boss_cap",
-        "role": "boss_cap",
+        "base_name": "top_cap",
+        "role": "top_cap",
         "piece_metadata": {
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
           "terminal": true,
-          "boss_only": true,
-          "role": "boss",
+          "top_cap_only": true,
+          "role": "top_cap",
           "progression_delta": 0,
           "vertical_level_delta": 0
         }
@@ -61,7 +61,7 @@
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
           "terminal": false,
-          "boss_only": false,
+          "top_cap_only": false,
           "role": "room",
           "progression_delta": 1,
           "vertical_level_delta": -1
@@ -74,7 +74,7 @@
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
           "terminal": false,
-          "boss_only": false,
+          "top_cap_only": false,
           "role": "room",
           "progression_delta": 1,
           "vertical_level_delta": -1
@@ -87,7 +87,7 @@
           "allow_on_main_path": true,
           "allow_on_branch_path": false,
           "terminal": true,
-          "boss_only": false,
+          "top_cap_only": false,
           "role": "terminal",
           "progression_delta": 1,
           "vertical_level_delta": -1
@@ -100,14 +100,14 @@
         "pool_id": "mknpc:test_tower/connect_up",
         "child_base_names": [
           "floor_main",
-          "boss_approach"
+          "top_cap_approach"
         ]
       },
       {
-        "base_name": "boss_cap",
-        "pool_id": "mknpc:test_tower/boss_cap",
+        "base_name": "top_cap",
+        "pool_id": "mknpc:test_tower/top_cap",
         "child_base_names": [
-          "boss_cap"
+          "top_cap"
         ]
       },
       {
@@ -145,19 +145,19 @@
       ]
     },
     {
-      "base_name": "boss_approach",
-      "role": "boss_approach",
+      "base_name": "top_cap_approach",
+      "role": "top_cap_approach",
       "pieces": [
-        "boss_approach_template",
-        "boss_approach_1"
+        "top_cap_approach_template",
+        "top_cap_approach_1"
       ]
     },
     {
-      "base_name": "boss_cap",
-      "role": "boss_cap",
+      "base_name": "top_cap",
+      "role": "top_cap",
       "pieces": [
-        "boss_cap_template",
-        "boss_cap_1"
+        "top_cap_template",
+        "top_cap_1"
       ]
     },
     {
@@ -1096,7 +1096,7 @@
         "generated_stair_revision": "1777145600779",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
-        "runtime_boss_only": "false",
+        "runtime_top_cap_only": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "0",
         "runtime_start": "true",
@@ -1578,7 +1578,7 @@
         "generated_stair_revision": "1777145600780",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
-        "runtime_boss_only": "false",
+        "runtime_top_cap_only": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
@@ -2047,18 +2047,18 @@
         "generated_stair_revision": "1777145600781",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
-        "runtime_boss_only": "true",
-        "runtime_piece_role": "boss_approach",
+        "runtime_top_cap_only": "true",
+        "runtime_piece_role": "top_cap_approach",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
         "runtime_terminal": "false",
         "runtime_vertical_level_delta": "1",
         "supports_vertical_access": "true",
-        "topology_role": "boss_approach",
+        "topology_role": "top_cap_approach",
         "tower_piece_kind": "room",
         "vertical_access_direction": "up",
         "vertical_access_placement": "center",
-        "workspace_base_name": "boss_approach",
+        "workspace_base_name": "top_cap_approach",
         "workspace_piece_kind": "template",
         "workspace_variant_index": "0"
       },
@@ -2079,11 +2079,11 @@
           "opening_width": 5
         },
         {
-          "jigsaw_target": "mknpc:boss_back",
-          "target_pool": "mknpc:test_tower/boss_cap",
+          "jigsaw_target": "mknpc:top_cap_back",
+          "target_pool": "mknpc:test_tower/top_cap",
           "opening_height": 5,
-          "jigsaw_name": "mknpc:boss_forward",
-          "role": "boss_forward",
+          "jigsaw_name": "mknpc:top_cap_forward",
+          "role": "top_cap_forward",
           "facing": "up",
           "relative_pos": {
             "x": 10,
@@ -2186,13 +2186,13 @@
           "z": 22
         }
       },
-      "role": "boss_approach",
+      "role": "top_cap_approach",
       "variant_index": 0,
       "workspace_piece_kind": "template",
-      "structure_id": "mknpc:test_tower/boss_approach_template",
+      "structure_id": "mknpc:test_tower/top_cap_approach_template",
       "piece_id": "711ab241-9c28-4cc3-826b-34f0b6000145",
-      "piece_name": "boss_approach_template",
-      "base_name": "boss_approach"
+      "piece_name": "top_cap_approach_template",
+      "base_name": "top_cap_approach"
     },
     {
       "marker_positions": [
@@ -2288,30 +2288,30 @@
         "generated_stair_revision": "1777145600781",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
-        "runtime_boss_only": "true",
-        "runtime_piece_role": "boss",
+        "runtime_top_cap_only": "true",
+        "runtime_piece_role": "top_cap",
         "runtime_progression_delta": "0",
         "runtime_start": "false",
         "runtime_terminal": "true",
         "runtime_vertical_level_delta": "0",
         "supports_vertical_access": "true",
-        "topology_role": "boss_cap",
+        "topology_role": "top_cap",
         "tower_piece_kind": "room",
         "vertical_access_direction": "up",
         "vertical_access_placement": "center",
         "vertical_access_top_cap": "true",
-        "workspace_base_name": "boss_cap",
+        "workspace_base_name": "top_cap",
         "workspace_piece_kind": "template",
         "workspace_variant_index": "0"
       },
       "connectors": [
         {
-          "jigsaw_target": "mknpc:boss_forward",
+          "jigsaw_target": "mknpc:top_cap_forward",
           "target_pool": "minecraft:empty",
-          "incoming_pool": "mknpc:test_tower/boss_cap",
+          "incoming_pool": "mknpc:test_tower/top_cap",
           "opening_height": 5,
-          "jigsaw_name": "mknpc:boss_back",
-          "role": "boss_back",
+          "jigsaw_name": "mknpc:top_cap_back",
+          "role": "top_cap_back",
           "facing": "down",
           "relative_pos": {
             "x": 10,
@@ -2414,13 +2414,13 @@
           "z": 22
         }
       },
-      "role": "boss_cap",
+      "role": "top_cap",
       "variant_index": 0,
       "workspace_piece_kind": "template",
-      "structure_id": "mknpc:test_tower/boss_cap_template",
+      "structure_id": "mknpc:test_tower/top_cap_template",
       "piece_id": "28f791d3-b410-4ea8-8900-dbdaa1d8e882",
-      "piece_name": "boss_cap_template",
-      "base_name": "boss_cap"
+      "piece_name": "top_cap_template",
+      "base_name": "top_cap"
     },
     {
       "marker_positions": [
@@ -3032,7 +3032,7 @@
         "generated_stair_revision": "1777145600781",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
-        "runtime_boss_only": "false",
+        "runtime_top_cap_only": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
@@ -3789,7 +3789,7 @@
         "generated_stair_revision": "1777145600782",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
-        "runtime_boss_only": "false",
+        "runtime_top_cap_only": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
@@ -4582,7 +4582,7 @@
         "generated_stair_revision": "1777145600783",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
-        "runtime_boss_only": "false",
+        "runtime_top_cap_only": "false",
         "runtime_piece_role": "terminal",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
@@ -5626,7 +5626,7 @@
         "generated_stair_revision": "1777145600779",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
-        "runtime_boss_only": "false",
+        "runtime_top_cap_only": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "0",
         "runtime_start": "true",
@@ -6108,7 +6108,7 @@
         "generated_stair_revision": "1777145600780",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
-        "runtime_boss_only": "false",
+        "runtime_top_cap_only": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
@@ -6577,18 +6577,18 @@
         "generated_stair_revision": "1777145600781",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
-        "runtime_boss_only": "true",
-        "runtime_piece_role": "boss_approach",
+        "runtime_top_cap_only": "true",
+        "runtime_piece_role": "top_cap_approach",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
         "runtime_terminal": "false",
         "runtime_vertical_level_delta": "1",
         "supports_vertical_access": "true",
-        "topology_role": "boss_approach",
+        "topology_role": "top_cap_approach",
         "tower_piece_kind": "room",
         "vertical_access_direction": "up",
         "vertical_access_placement": "center",
-        "workspace_base_name": "boss_approach",
+        "workspace_base_name": "top_cap_approach",
         "workspace_piece_kind": "instance",
         "workspace_variant_index": "1"
       },
@@ -6609,11 +6609,11 @@
           "opening_width": 5
         },
         {
-          "jigsaw_target": "mknpc:boss_back",
-          "target_pool": "mknpc:test_tower/boss_cap",
+          "jigsaw_target": "mknpc:top_cap_back",
+          "target_pool": "mknpc:test_tower/top_cap",
           "opening_height": 5,
-          "jigsaw_name": "mknpc:boss_forward",
-          "role": "boss_forward",
+          "jigsaw_name": "mknpc:top_cap_forward",
+          "role": "top_cap_forward",
           "facing": "up",
           "relative_pos": {
             "x": 10,
@@ -6716,13 +6716,13 @@
           "z": 55
         }
       },
-      "role": "boss_approach",
+      "role": "top_cap_approach",
       "variant_index": 1,
       "workspace_piece_kind": "instance",
-      "structure_id": "mknpc:test_tower/boss_approach_1",
+      "structure_id": "mknpc:test_tower/top_cap_approach_1",
       "piece_id": "dd3f013a-6c35-4ee6-a09f-d62c91511cc1",
-      "piece_name": "boss_approach_1",
-      "base_name": "boss_approach"
+      "piece_name": "top_cap_approach_1",
+      "base_name": "top_cap_approach"
     },
     {
       "marker_positions": [
@@ -6818,30 +6818,30 @@
         "generated_stair_revision": "1777145600781",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
-        "runtime_boss_only": "true",
-        "runtime_piece_role": "boss",
+        "runtime_top_cap_only": "true",
+        "runtime_piece_role": "top_cap",
         "runtime_progression_delta": "0",
         "runtime_start": "false",
         "runtime_terminal": "true",
         "runtime_vertical_level_delta": "0",
         "supports_vertical_access": "true",
-        "topology_role": "boss_cap",
+        "topology_role": "top_cap",
         "tower_piece_kind": "room",
         "vertical_access_direction": "up",
         "vertical_access_placement": "center",
         "vertical_access_top_cap": "true",
-        "workspace_base_name": "boss_cap",
+        "workspace_base_name": "top_cap",
         "workspace_piece_kind": "instance",
         "workspace_variant_index": "1"
       },
       "connectors": [
         {
-          "jigsaw_target": "mknpc:boss_forward",
+          "jigsaw_target": "mknpc:top_cap_forward",
           "target_pool": "minecraft:empty",
-          "incoming_pool": "mknpc:test_tower/boss_cap",
+          "incoming_pool": "mknpc:test_tower/top_cap",
           "opening_height": 5,
-          "jigsaw_name": "mknpc:boss_back",
-          "role": "boss_back",
+          "jigsaw_name": "mknpc:top_cap_back",
+          "role": "top_cap_back",
           "facing": "down",
           "relative_pos": {
             "x": 10,
@@ -6944,13 +6944,13 @@
           "z": 55
         }
       },
-      "role": "boss_cap",
+      "role": "top_cap",
       "variant_index": 1,
       "workspace_piece_kind": "instance",
-      "structure_id": "mknpc:test_tower/boss_cap_1",
+      "structure_id": "mknpc:test_tower/top_cap_1",
       "piece_id": "890613fc-10cc-45ce-b207-ce1b4ae3ae55",
-      "piece_name": "boss_cap_1",
-      "base_name": "boss_cap"
+      "piece_name": "top_cap_1",
+      "base_name": "top_cap"
     },
     {
       "marker_positions": [
@@ -7562,7 +7562,7 @@
         "generated_stair_revision": "1777145600781",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
-        "runtime_boss_only": "false",
+        "runtime_top_cap_only": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
@@ -8319,7 +8319,7 @@
         "generated_stair_revision": "1777145600782",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
-        "runtime_boss_only": "false",
+        "runtime_top_cap_only": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
@@ -9112,7 +9112,7 @@
         "generated_stair_revision": "1777145600783",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
-        "runtime_boss_only": "false",
+        "runtime_top_cap_only": "false",
         "runtime_piece_role": "terminal",
         "runtime_progression_delta": "1",
         "runtime_start": "false",

@@ -761,7 +761,7 @@ public class MKWorkspaceScaffoldBuilder {
         return switch (role) {
             case MAIN_FORWARD, MAIN_BACK -> Blocks.BLUE_WOOL.defaultBlockState();
             case CONNECT_UP, CONNECT_DOWN -> Blocks.ORANGE_WOOL.defaultBlockState();
-            case BOSS_FORWARD, BOSS_BACK -> Blocks.RED_WOOL.defaultBlockState();
+            case TOP_CAP_FORWARD, TOP_CAP_BACK -> Blocks.RED_WOOL.defaultBlockState();
             case BRANCH -> Blocks.GREEN_WOOL.defaultBlockState();
             default -> Blocks.WHITE_WOOL.defaultBlockState();
         };
@@ -773,8 +773,8 @@ public class MKWorkspaceScaffoldBuilder {
             case MAIN_BACK -> MKConnectorRole.MAIN_FORWARD.getSerializedName();
             case CONNECT_UP -> MKConnectorRole.CONNECT_DOWN.getSerializedName();
             case CONNECT_DOWN -> MKConnectorRole.CONNECT_UP.getSerializedName();
-            case BOSS_FORWARD -> MKConnectorRole.BOSS_BACK.getSerializedName();
-            case BOSS_BACK -> MKConnectorRole.BOSS_FORWARD.getSerializedName();
+            case TOP_CAP_FORWARD -> MKConnectorRole.TOP_CAP_BACK.getSerializedName();
+            case TOP_CAP_BACK -> MKConnectorRole.TOP_CAP_FORWARD.getSerializedName();
             case BRANCH -> MKConnectorRole.BRANCH.getSerializedName();
             default -> throw new IllegalStateException("Unsupported workspace connector role " + role);
         };
@@ -814,4 +814,5 @@ public class MKWorkspaceScaffoldBuilder {
         return rise;
     }
 }
+
 

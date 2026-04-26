@@ -56,11 +56,12 @@ public record MKDungeonLayoutSettings(
         return connectors.connectUp();
     }
 
-    public ResourceLocation bossForward() {
-        return connectors.bossForward();
+    public ResourceLocation topCapForward() {
+        return connectors.topCapForward();
     }
 
-    public ResourceLocation bossBack() {
-        return connectors.bossBack();
+    public ResourceLocation topCapBack() {
+        return connectors.topCapBack();
     }
 }
+

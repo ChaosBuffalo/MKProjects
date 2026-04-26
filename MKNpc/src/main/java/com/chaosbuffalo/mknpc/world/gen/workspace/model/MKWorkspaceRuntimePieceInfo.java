@@ -13,7 +13,7 @@ public record MKWorkspaceRuntimePieceInfo(
         boolean allowOnMainPath,
         boolean allowOnBranchPath,
         boolean terminal,
-        boolean bossOnly
+        boolean topCapOnly
 ) {
     public static final String START_TAG = "runtime_start";
     public static final String ROLE_TAG = "runtime_piece_role";
@@ -22,7 +22,7 @@ public record MKWorkspaceRuntimePieceInfo(
     public static final String ALLOW_ON_MAIN_PATH_TAG = "runtime_allow_on_main_path";
     public static final String ALLOW_ON_BRANCH_PATH_TAG = "runtime_allow_on_branch_path";
     public static final String TERMINAL_TAG = "runtime_terminal";
-    public static final String BOSS_ONLY_TAG = "runtime_boss_only";
+    public static final String TOP_CAP_ONLY_TAG = "runtime_top_cap_only";
 
     public void applyToTags(Map<String, String> tags) {
         tags.put(START_TAG, Boolean.toString(start));
@@ -32,7 +32,7 @@ public record MKWorkspaceRuntimePieceInfo(
         tags.put(ALLOW_ON_MAIN_PATH_TAG, Boolean.toString(allowOnMainPath));
         tags.put(ALLOW_ON_BRANCH_PATH_TAG, Boolean.toString(allowOnBranchPath));
         tags.put(TERMINAL_TAG, Boolean.toString(terminal));
-        tags.put(BOSS_ONLY_TAG, Boolean.toString(bossOnly));
+        tags.put(TOP_CAP_ONLY_TAG, Boolean.toString(topCapOnly));
     }
 
     public static Optional<MKWorkspaceRuntimePieceInfo> fromTags(Map<String, String> tags) {
@@ -48,7 +48,7 @@ public record MKWorkspaceRuntimePieceInfo(
                 parseBoolean(tags, ALLOW_ON_MAIN_PATH_TAG, true),
                 parseBoolean(tags, ALLOW_ON_BRANCH_PATH_TAG, false),
                 parseBoolean(tags, TERMINAL_TAG, false),
-                parseBoolean(tags, BOSS_ONLY_TAG, false)
+                parseBoolean(tags, TOP_CAP_ONLY_TAG, false)
         ));
     }
 
@@ -69,3 +69,4 @@ public record MKWorkspaceRuntimePieceInfo(
         return MKJigsawPieceRole.fromSerializedName(serializedName);
     }
 }
+
