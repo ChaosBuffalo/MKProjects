@@ -42,6 +42,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKTextFieldWidget;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -84,6 +85,7 @@ public class MKWorkspaceScreen extends MKScreen {
     private ResourceLocation detailSlabBlock;
     private ResourceLocation detailLadderBlock;
     private WorkspaceFormDraft formDraft;
+    private boolean wasResized;
 
     private record ScrollViewState(double offsetX, double offsetY) {
     }
@@ -157,12 +159,6 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     @Override
-    public void flagNeedSetup() {
-        persistScrollViews(false);
-        super.flagNeedSetup();
-    }
-
-    @Override
     public void setupScreen() {
         super.setupScreen();
         addState("home", this::buildHomeState);
@@ -187,6 +183,24 @@ public class MKWorkspaceScreen extends MKScreen {
         for (String state : statesToPush) {
             pushState(state);
         }
+    }
+
+    @Override
+    public void addRestoreStateCallbacks() {
+        ScrollViewState scrollState = getActiveScrollViewState();
+        String state = popState();
+        boolean resetScrollView = wasResized;
+        addPostSetupCallback(() -> {
+            pushState(state);
+            restoreActiveScrollViewState(scrollState, resetScrollView);
+            wasResized = false;
+        });
+    }
+
+    @Override
+    public void resize(Minecraft minecraft, int width, int height) {
+        super.resize(minecraft, width, height);
+        wasResized = true;
     }
 
     private MKLayout buildHomeState() {
@@ -2630,48 +2644,6 @@ public class MKWorkspaceScreen extends MKScreen {
         return (int) pieces.stream().filter(piece -> piece.variantIndex() > 0).count();
     }
 
-    private void persistScrollViews(boolean wasResized) {
-        if (NO_STATE.equals(getState()) || children.isEmpty()) {
-            return;
-        }
-        ArrayList<MKScrollView> scrollViews = new ArrayList<>();
-        for (IMKWidget child : children) {
-            collectScrollViews(child, scrollViews);
-        }
-        if (scrollViews.isEmpty()) {
-            return;
-        }
-        List<ScrollViewState> savedStates = scrollViews.stream()
-                .map(scrollView -> new ScrollViewState(scrollView.getOffsetX(), scrollView.getOffsetY()))
-                .toList();
-        addPostSetupCallback(() -> {
-            ArrayList<MKScrollView> restoredViews = new ArrayList<>();
-            for (IMKWidget child : children) {
-                collectScrollViews(child, restoredViews);
-            }
-            for (int i = 0; i < Math.min(restoredViews.size(), savedStates.size()); i++) {
-                MKScrollView scrollView = restoredViews.get(i);
-                if (wasResized) {
-                    scrollView.resetView();
-                    continue;
-                }
-                ScrollViewState savedState = savedStates.get(i);
-                scrollView.setOffsetX(savedState.offsetX());
-                scrollView.setOffsetY(savedState.offsetY());
-                clampScrollViewOffsets(scrollView);
-            }
-        });
-    }
-
-    private void collectScrollViews(IMKWidget widget, List<MKScrollView> scrollViews) {
-        if (widget instanceof MKScrollView scrollView) {
-            scrollViews.add(scrollView);
-        }
-        for (IMKWidget child : widget.getChildren()) {
-            collectScrollViews(child, scrollViews);
-        }
-    }
-
     private void finalizeScrollView(MKScrollView scrollView, String stateName) {
         finalizeScrollView(scrollView, stateName, true);
     }
@@ -2700,6 +2672,51 @@ public class MKWorkspaceScreen extends MKScreen {
         double minOffsetY = scrollView.getHeight() - child.getHeight() - scrollView.getScrollMarginY();
         double maxOffsetY = scrollView.getScrollMarginY();
         scrollView.setOffsetY(Math.max(minOffsetY, Math.min(scrollView.getOffsetY(), maxOffsetY)));
+    }
+
+    private ScrollViewState getActiveScrollViewState() {
+        MKScrollView scrollView = getActiveScrollView();
+        if (scrollView == null) {
+            return null;
+        }
+        return new ScrollViewState(scrollView.getOffsetX(), scrollView.getOffsetY());
+    }
+
+    private void restoreActiveScrollViewState(ScrollViewState scrollState, boolean resetScrollView) {
+        MKScrollView scrollView = getActiveScrollView();
+        if (scrollView == null) {
+            return;
+        }
+        if (resetScrollView) {
+            scrollView.resetView();
+            return;
+        }
+        if (scrollState == null) {
+            return;
+        }
+        scrollView.setOffsetX(scrollState.offsetX());
+        scrollView.setOffsetY(scrollState.offsetY());
+        clampScrollViewOffsets(scrollView);
+    }
+
+    private MKScrollView getActiveScrollView() {
+        if (children.isEmpty()) {
+            return null;
+        }
+        return findFirstScrollView(children.peekLast());
+    }
+
+    private MKScrollView findFirstScrollView(IMKWidget widget) {
+        if (widget instanceof MKScrollView scrollView) {
+            return scrollView;
+        }
+        for (IMKWidget child : widget.getChildren()) {
+            MKScrollView nested = findFirstScrollView(child);
+            if (nested != null) {
+                return nested;
+            }
+        }
+        return null;
     }
 
     private Map<String, List<MKWorkspacePieceDefinition>> groupPiecesByTopology() {
