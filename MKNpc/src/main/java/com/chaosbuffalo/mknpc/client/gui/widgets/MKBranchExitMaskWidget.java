@@ -29,13 +29,13 @@ public class MKBranchExitMaskWidget extends MKWidget {
 
     private List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits;
     private Consumer<Direction> editCallback;
-    private Consumer<Direction> removeCallback;
+    private Consumer<Direction> toggleCallback;
     private Direction selectedDirection;
 
     public MKBranchExitMaskWidget(List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits) {
         super(0, 0, WIDGET_SIZE, WIDGET_SIZE);
         this.horizontalExits = List.copyOf(horizontalExits);
-        setTooltip(Component.literal("Left click a direction to edit it. Right click to remove that exit."));
+        setTooltip(Component.literal("Left click an active exit to edit it. Right click to toggle exits on or off."));
     }
 
     public MKBranchExitMaskWidget setEditCallback(Consumer<Direction> editCallback) {
@@ -43,8 +43,8 @@ public class MKBranchExitMaskWidget extends MKWidget {
         return this;
     }
 
-    public MKBranchExitMaskWidget setRemoveCallback(Consumer<Direction> removeCallback) {
-        this.removeCallback = removeCallback;
+    public MKBranchExitMaskWidget setToggleCallback(Consumer<Direction> toggleCallback) {
+        this.toggleCallback = toggleCallback;
         return this;
     }
 
@@ -63,12 +63,12 @@ public class MKBranchExitMaskWidget extends MKWidget {
         if (direction == null) {
             return false;
         }
-        if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT && editCallback != null) {
+        if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT && editCallback != null && exitKind(direction) != ExitKind.NONE) {
             editCallback.accept(direction);
             return true;
         }
-        if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT && removeCallback != null) {
-            removeCallback.accept(direction);
+        if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT && toggleCallback != null) {
+            toggleCallback.accept(direction);
             return true;
         }
         return false;

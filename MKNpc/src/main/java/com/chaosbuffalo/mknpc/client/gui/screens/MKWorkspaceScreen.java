@@ -1043,14 +1043,11 @@ public class MKWorkspaceScreen extends MKScreen {
                     if (exitIndex == selectedFamilyExitIndex) {
                         selectedFamilyExitIndex = -1;
                     } else {
-                        if (exitIndex < 0) {
-                            exitIndex = addFamilyExitAtDirection(index, direction);
-                        }
                         selectedFamilyExitIndex = exitIndex;
                     }
-                    flagNeedSetup();
+                    refreshPreservingActiveScroll();
                 })
-                .setRemoveCallback(direction -> {
+                .setToggleCallback(direction -> {
                     int exitIndex = findFamilyExitIndexByDirection(index, direction);
                     if (exitIndex >= 0) {
                         removeFamilyExit(index, exitIndex);
@@ -1059,8 +1056,10 @@ public class MKWorkspaceScreen extends MKScreen {
                         } else if (selectedFamilyExitIndex > exitIndex) {
                             selectedFamilyExitIndex--;
                         }
+                    } else {
+                        addFamilyExitAtDirection(index, direction);
                     }
-                    flagNeedSetup();
+                    refreshPreservingActiveScroll();
                 });
         content.addWidget(exitWidget);
         content.addConstraintToWidget(new CenterXConstraint(), exitWidget);
@@ -2793,6 +2792,13 @@ public class MKWorkspaceScreen extends MKScreen {
         scrollView.setOffsetX(scrollState.offsetX());
         scrollView.setOffsetY(scrollState.offsetY());
         clampScrollViewOffsets(scrollView);
+    }
+
+    private void refreshPreservingActiveScroll() {
+        ScrollViewState scrollState = getActiveScrollViewState();
+        boolean resetScrollView = wasResized;
+        addPostSetupCallback(() -> restoreActiveScrollViewState(scrollState, resetScrollView));
+        flagNeedSetup();
     }
 
     private MKScrollView getActiveScrollView() {
