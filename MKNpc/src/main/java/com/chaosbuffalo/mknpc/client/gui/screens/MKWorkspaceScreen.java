@@ -61,6 +61,34 @@ public class MKWorkspaceScreen extends MKScreen {
     private ResourceLocation detailStairBlock;
     private ResourceLocation detailSlabBlock;
     private ResourceLocation detailLadderBlock;
+    private WorkspaceFormDraft formDraft;
+
+    private static class WorkspaceFormDraft {
+        private String namespace;
+        private String structureName;
+        private int roomWidth;
+        private int roomLength;
+        private int entranceHeight;
+        private int roomHeight;
+        private int basementHeight;
+        private int hallwayWidth;
+        private int doorwayWidth;
+        private int doorwayHeight;
+        private MKVerticalAccessPlacement verticalAccessPlacement;
+        private int shellMargin;
+        private int exteriorAirMargin;
+        private int previewMargin;
+        private MKWorkspaceStairMode stairMode;
+        private MKWorkspaceStairRiseType stairRiseType;
+        private int stairFlatRunLength;
+        private int stairWidth;
+        private ResourceLocation floorBlock;
+        private ResourceLocation wallBlock;
+        private ResourceLocation ceilingBlock;
+        private ResourceLocation stairBlock;
+        private ResourceLocation slabBlock;
+        private ResourceLocation ladderBlock;
+    }
 
     public MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace, List<String> importManifestIds) {
         this(anchor, workspace, importManifestIds, List.of(), null, null, null, 0, 1, null, null, null);
@@ -99,6 +127,9 @@ public class MKWorkspaceScreen extends MKScreen {
         addState("home", this::buildHomeState);
         addState("import", this::buildImportState);
         addState("form", this::buildFormState);
+        addState("form_identity", this::buildFormIdentityState);
+        addState("form_vertical", this::buildFormVerticalState);
+        addState("form_materials", this::buildFormMaterialsState);
         addState("workspace", this::buildWorkspaceState);
         addState("category", this::buildCategoryState);
         List<String> statesToPush = initialStates.isEmpty() ? getDefaultInitialStates() : initialStates;
@@ -208,6 +239,373 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     private MKLayout buildFormState() {
+        ensureFormDraftInitialized();
+        int xPos = width / 2 - PANEL_WIDTH / 2;
+        int yPos = height / 2 - PANEL_HEIGHT / 2;
+        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
+        root.setMargins(8, 8, 8, 8);
+        root.setPaddingTop(8).setPaddingBot(8);
+
+        MKText title = makeWhiteText(Component.literal("Workspace Configuration"));
+        root.addWidget(title);
+        root.addConstraintToWidget(MarginConstraint.TOP, title);
+        root.addConstraintToWidget(new CenterXConstraint(), title);
+
+        MKText helpText = makeWhiteText(Component.literal(
+                "Split the workspace setup into smaller sections. Identity covers naming and margins, vertical access covers shaft sizing and height bands, and materials covers block palette choices."));
+        helpText.setWidth(CONTENT_WIDTH);
+        helpText.setMultiline(true);
+        root.addWidget(helpText);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
+        root.addConstraintToWidget(new CenterXConstraint(), helpText);
+
+        MKText summary = makeWhiteText(Component.literal(
+                formDraft.namespace + ":" + formDraft.structureName + "  |  " +
+                        formDraft.roomWidth + "x" + formDraft.roomLength + " rooms  |  shaft " + formDraft.hallwayWidth +
+                        "  |  heights " + formDraft.roomHeight + "/" + formDraft.entranceHeight + "/" + formDraft.basementHeight));
+        summary.setWidth(CONTENT_WIDTH);
+        summary.setMultiline(true);
+        root.addWidget(summary);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, summary);
+        root.addConstraintToWidget(new CenterXConstraint(), summary);
+
+        int firstButtonY = yPos + 130;
+        MKButton identity = new MKButton(Component.literal("Identity & Bounds"), 220, 20);
+        root.addWidget(identity);
+        root.addConstraintToWidget(new CenterXConstraint(), identity);
+        identity.setY(firstButtonY);
+        identity.setPressedCallback((button, mouseButton) -> {
+            pushState("form_identity");
+            flagNeedSetup();
+            return true;
+        });
+
+        MKButton vertical = new MKButton(Component.literal("Vertical Access"), 220, 20);
+        root.addWidget(vertical);
+        root.addConstraintToWidget(new CenterXConstraint(), vertical);
+        vertical.setY(firstButtonY + BUTTON_HEIGHT + BUTTON_GAP);
+        vertical.setPressedCallback((button, mouseButton) -> {
+            pushState("form_vertical");
+            flagNeedSetup();
+            return true;
+        });
+
+        MKButton materials = new MKButton(Component.literal("Materials"), 220, 20);
+        root.addWidget(materials);
+        root.addConstraintToWidget(new CenterXConstraint(), materials);
+        materials.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 2));
+        materials.setPressedCallback((button, mouseButton) -> {
+            pushState("form_materials");
+            flagNeedSetup();
+            return true;
+        });
+
+        if (workspace != null && !workspace.pieces().isEmpty()) {
+            MKButton backToWorkspace = new MKButton(Component.translatable("mknpc.workspace.button.back_to_workspace"), 180, 20);
+            root.addWidget(backToWorkspace);
+            root.addConstraintToWidget(new CenterXConstraint(), backToWorkspace);
+            backToWorkspace.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT);
+            backToWorkspace.setPressedCallback((button, mouseButton) -> {
+                switchToExistingState("workspace");
+                return true;
+            });
+        }
+
+        MKButton generate = new MKButton(Component.translatable("mknpc.workspace.screen.generate"), 200, 20);
+        root.addWidget(generate);
+        root.addConstraintToWidget(new CenterXConstraint(), generate);
+        generate.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
+        generate.setPressedCallback((button, mouseButton) -> {
+            submitWorkspaceDraft();
+            return true;
+        });
+
+        return root;
+    }
+
+    private MKLayout buildFormIdentityState() {
+        ensureFormDraftInitialized();
+        int xPos = width / 2 - PANEL_WIDTH / 2;
+        int yPos = height / 2 - PANEL_HEIGHT / 2;
+        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
+        root.setMargins(8, 8, 8, 8);
+        root.setPaddingTop(8).setPaddingBot(8);
+
+        MKText title = makeWhiteText(Component.literal("Identity & Bounds"));
+        root.addWidget(title);
+        root.addConstraintToWidget(MarginConstraint.TOP, title);
+        root.addConstraintToWidget(new CenterXConstraint(), title);
+
+        MKText helpText = makeWhiteText(Component.literal(
+                "Configure workspace naming, room footprint, doorway sizing, and export margins."));
+        helpText.setWidth(CONTENT_WIDTH);
+        helpText.setMultiline(true);
+        root.addWidget(helpText);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
+        root.addConstraintToWidget(new CenterXConstraint(), helpText);
+
+        int buttonAreaHeight = BUTTON_HEIGHT + BOTTOM_PADDING;
+        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
+        root.addWidget(scrollView);
+
+        MKStackLayoutVertical content = new MKStackLayoutVertical(0, 0, CONTENT_WIDTH);
+        content.setMargins(4, 4, 4, 4);
+        content.setPaddingTop(4).setPaddingBot(4);
+
+        MKTextFieldWidget namespaceField = makeField("Namespace", formDraft.namespace);
+        namespaceField.setTextChangeCallback((field, text) -> formDraft.namespace = text.trim().isBlank() ? "mkdev" : text.trim());
+        MKTextFieldWidget structureNameField = makeField("Structure Name", formDraft.structureName);
+        structureNameField.setTextChangeCallback((field, text) -> formDraft.structureName = text.trim().isBlank() ? "tower_workspace" : text.trim());
+        MKTextFieldWidget roomWidthField = makeField("Room Width", Integer.toString(formDraft.roomWidth));
+        roomWidthField.setTextChangeCallback((field, text) -> {
+            formDraft.roomWidth = parseInt(text, formDraft.roomWidth);
+            rebaseDraftForFootprintChange();
+        });
+        MKTextFieldWidget roomLengthField = makeField("Room Length", Integer.toString(formDraft.roomLength));
+        roomLengthField.setTextChangeCallback((field, text) -> {
+            formDraft.roomLength = parseInt(text, formDraft.roomLength);
+            rebaseDraftForFootprintChange();
+        });
+        MKTextFieldWidget doorWidthField = makeField("Door Width", Integer.toString(formDraft.doorwayWidth));
+        doorWidthField.setTextChangeCallback((field, text) -> formDraft.doorwayWidth = parseInt(text, formDraft.doorwayWidth));
+        MKTextFieldWidget doorHeightField = makeField("Door Height", Integer.toString(formDraft.doorwayHeight));
+        doorHeightField.setTextChangeCallback((field, text) -> formDraft.doorwayHeight = parseInt(text, formDraft.doorwayHeight));
+        MKTextFieldWidget shellMarginField = makeField("Shell Margin", Integer.toString(formDraft.shellMargin));
+        shellMarginField.setTextChangeCallback((field, text) -> formDraft.shellMargin = parseInt(text, formDraft.shellMargin));
+        MKTextFieldWidget exteriorAirMarginField = makeField("Exterior Air Margin", Integer.toString(formDraft.exteriorAirMargin));
+        exteriorAirMarginField.setTextChangeCallback((field, text) -> formDraft.exteriorAirMargin = parseInt(text, formDraft.exteriorAirMargin));
+        MKTextFieldWidget previewMarginField = makeField("Preview Margin", Integer.toString(formDraft.previewMargin));
+        previewMarginField.setTextChangeCallback((field, text) -> formDraft.previewMargin = parseInt(text, formDraft.previewMargin));
+
+        addRow(content, makeLabel("mknpc.workspace.field.namespace"), namespaceField);
+        addRow(content, makeLabel("mknpc.workspace.field.structure_name"), structureNameField);
+        addRow(content, makeLabel("mknpc.workspace.field.room_width"), roomWidthField);
+        addRow(content, makeLabel("mknpc.workspace.field.room_length"), roomLengthField);
+        addRow(content, makeLabel("mknpc.workspace.field.door_width"), doorWidthField);
+        addRow(content, makeLabel("mknpc.workspace.field.door_height"), doorHeightField);
+        addRow(content, makeLabel("mknpc.workspace.field.shell_margin"), shellMarginField);
+        addRow(content, makeLabel("mknpc.workspace.field.exterior_air_margin"), exteriorAirMarginField);
+        addRow(content, makeLabel("mknpc.workspace.field.preview_margin"), previewMarginField);
+
+        content.manualRecompute();
+        scrollView.addWidget(content);
+        scrollView.centerContentX();
+        scrollView.setToTop();
+
+        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
+        root.addWidget(back);
+        root.addConstraintToWidget(new CenterXConstraint(), back);
+        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
+        back.setPressedCallback((button, mouseButton) -> {
+            switchToExistingState("form");
+            return true;
+        });
+        return root;
+    }
+
+    private MKLayout buildFormVerticalState() {
+        ensureFormDraftInitialized();
+        int xPos = width / 2 - PANEL_WIDTH / 2;
+        int yPos = height / 2 - PANEL_HEIGHT / 2;
+        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
+        root.setMargins(8, 8, 8, 8);
+        root.setPaddingTop(8).setPaddingBot(8);
+
+        MKText title = makeWhiteText(Component.literal("Vertical Access"));
+        root.addWidget(title);
+        root.addConstraintToWidget(MarginConstraint.TOP, title);
+        root.addConstraintToWidget(new CenterXConstraint(), title);
+
+        MKText helpText = makeWhiteText(Component.literal(
+                "Adjust the shared shaft size, valid room heights, and stair authoring profile without scanning the rest of the form."));
+        helpText.setWidth(CONTENT_WIDTH);
+        helpText.setMultiline(true);
+        root.addWidget(helpText);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
+        root.addConstraintToWidget(new CenterXConstraint(), helpText);
+
+        int buttonAreaHeight = BUTTON_HEIGHT + BOTTOM_PADDING;
+        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
+        root.addWidget(scrollView);
+
+        MKStackLayoutVertical content = new MKStackLayoutVertical(0, 0, CONTENT_WIDTH);
+        content.setMargins(4, 4, 4, 4);
+        content.setPaddingTop(4).setPaddingBot(4);
+
+        MKButton hallWidthButton = new MKButton(Component.literal(Integer.toString(formDraft.hallwayWidth)), 180, 20);
+        MKButton roomHeightButton = new MKButton(Component.literal(Integer.toString(formDraft.roomHeight)), 180, 20);
+        MKButton entranceHeightButton = new MKButton(Component.literal(Integer.toString(formDraft.entranceHeight)), 180, 20);
+        MKButton basementHeightButton = new MKButton(Component.literal(Integer.toString(formDraft.basementHeight)), 180, 20);
+        MKButton stairPlacementButton = new MKButton(getStairPlacementComponent(formDraft.verticalAccessPlacement), 180, 20);
+        MKButton stairModeButton = new MKButton(getStairModeComponent(formDraft.stairMode), 180, 20);
+        MKButton stairRiseTypeButton = new MKButton(getStairRiseTypeComponent(formDraft.stairRiseType), 180, 20);
+        MKButton flatRunButton = new MKButton(Component.literal(Integer.toString(formDraft.stairFlatRunLength)), 180, 20);
+        MKButton stairWidthButton = new MKButton(Component.literal(Integer.toString(formDraft.stairWidth)), 180, 20);
+
+        addRow(content, makeLabel("mknpc.workspace.field.hall_width"), hallWidthButton);
+        addRow(content, makeLabel("mknpc.workspace.field.room_height"), roomHeightButton);
+        addRow(content, makeLabel("mknpc.workspace.field.entrance_height"), entranceHeightButton);
+        addRow(content, makeWhiteText(Component.literal("Basement Height")), basementHeightButton);
+        addRow(content, makeLabel("mknpc.workspace.field.stair_placement"), stairPlacementButton);
+        addRow(content, makeLabel("mknpc.workspace.field.stair_mode"), stairModeButton);
+        addRow(content, makeWhiteText(Component.literal("Rise Type")), stairRiseTypeButton);
+        addRow(content, makeWhiteText(Component.literal("Flat Run Length")), flatRunButton);
+        addRow(content, makeWhiteText(Component.literal("Stair Width")), stairWidthButton);
+
+        hallWidthButton.setPressedCallback((button, mouseButton) -> {
+            formDraft.hallwayWidth = cycleAllowedShaftSize(formDraft.roomWidth, formDraft.roomLength, formDraft.hallwayWidth);
+            formDraft.stairWidth = MKWorkspaceDimensions.snapToNearestAllowedStairWidth(formDraft.hallwayWidth, formDraft.stairWidth);
+            rebaseDraftVerticalHeights();
+            hallWidthButton.buttonText = Component.literal(Integer.toString(formDraft.hallwayWidth));
+            stairWidthButton.buttonText = Component.literal(Integer.toString(formDraft.stairWidth));
+            roomHeightButton.buttonText = Component.literal(Integer.toString(formDraft.roomHeight));
+            entranceHeightButton.buttonText = Component.literal(Integer.toString(formDraft.entranceHeight));
+            basementHeightButton.buttonText = Component.literal(Integer.toString(formDraft.basementHeight));
+            flatRunButton.buttonText = Component.literal(Integer.toString(formDraft.stairFlatRunLength));
+            return true;
+        });
+        stairPlacementButton.setPressedCallback((button, mouseButton) -> {
+            formDraft.verticalAccessPlacement = formDraft.verticalAccessPlacement.next();
+            button.buttonText = getStairPlacementComponent(formDraft.verticalAccessPlacement);
+            return true;
+        });
+        stairModeButton.setPressedCallback((button, mouseButton) -> {
+            formDraft.stairMode = formDraft.stairMode.next();
+            snapDraftVerticalHeights();
+            button.buttonText = getStairModeComponent(formDraft.stairMode);
+            roomHeightButton.buttonText = Component.literal(Integer.toString(formDraft.roomHeight));
+            entranceHeightButton.buttonText = Component.literal(Integer.toString(formDraft.entranceHeight));
+            basementHeightButton.buttonText = Component.literal(Integer.toString(formDraft.basementHeight));
+            flatRunButton.buttonText = Component.literal(Integer.toString(formDraft.stairFlatRunLength));
+            return true;
+        });
+        stairRiseTypeButton.setPressedCallback((button, mouseButton) -> {
+            formDraft.stairRiseType = formDraft.stairRiseType.next();
+            snapDraftVerticalHeights();
+            button.buttonText = getStairRiseTypeComponent(formDraft.stairRiseType);
+            roomHeightButton.buttonText = Component.literal(Integer.toString(formDraft.roomHeight));
+            entranceHeightButton.buttonText = Component.literal(Integer.toString(formDraft.entranceHeight));
+            basementHeightButton.buttonText = Component.literal(Integer.toString(formDraft.basementHeight));
+            flatRunButton.buttonText = Component.literal(Integer.toString(formDraft.stairFlatRunLength));
+            return true;
+        });
+        flatRunButton.setPressedCallback((button, mouseButton) -> {
+            formDraft.stairFlatRunLength = cycleAllowedFlatRunLength(makeDraftStairConfig(), formDraft.hallwayWidth,
+                    formDraft.roomHeight, formDraft.stairFlatRunLength);
+            snapDraftVerticalHeights();
+            button.buttonText = Component.literal(Integer.toString(formDraft.stairFlatRunLength));
+            roomHeightButton.buttonText = Component.literal(Integer.toString(formDraft.roomHeight));
+            entranceHeightButton.buttonText = Component.literal(Integer.toString(formDraft.entranceHeight));
+            basementHeightButton.buttonText = Component.literal(Integer.toString(formDraft.basementHeight));
+            return true;
+        });
+        stairWidthButton.setPressedCallback((button, mouseButton) -> {
+            formDraft.stairWidth = cycleAllowedStairWidth(formDraft.hallwayWidth, formDraft.stairWidth);
+            snapDraftVerticalHeights();
+            button.buttonText = Component.literal(Integer.toString(formDraft.stairWidth));
+            roomHeightButton.buttonText = Component.literal(Integer.toString(formDraft.roomHeight));
+            entranceHeightButton.buttonText = Component.literal(Integer.toString(formDraft.entranceHeight));
+            basementHeightButton.buttonText = Component.literal(Integer.toString(formDraft.basementHeight));
+            flatRunButton.buttonText = Component.literal(Integer.toString(formDraft.stairFlatRunLength));
+            return true;
+        });
+        roomHeightButton.setPressedCallback((button, mouseButton) -> {
+            formDraft.roomHeight = cycleAllowedTowerHeight(makeDraftStairConfig(), formDraft.hallwayWidth, formDraft.roomHeight);
+            snapDraftVerticalHeights();
+            button.buttonText = Component.literal(Integer.toString(formDraft.roomHeight));
+            entranceHeightButton.buttonText = Component.literal(Integer.toString(formDraft.entranceHeight));
+            basementHeightButton.buttonText = Component.literal(Integer.toString(formDraft.basementHeight));
+            flatRunButton.buttonText = Component.literal(Integer.toString(formDraft.stairFlatRunLength));
+            return true;
+        });
+        entranceHeightButton.setPressedCallback((button, mouseButton) -> {
+            formDraft.entranceHeight = cycleAllowedEntranceHeight(makeDraftStairConfig(), formDraft.hallwayWidth,
+                    formDraft.roomHeight, formDraft.entranceHeight);
+            button.buttonText = Component.literal(Integer.toString(formDraft.entranceHeight));
+            return true;
+        });
+        basementHeightButton.setPressedCallback((button, mouseButton) -> {
+            formDraft.basementHeight = cycleAllowedEntranceHeight(makeDraftStairConfig(), formDraft.hallwayWidth,
+                    formDraft.roomHeight, formDraft.basementHeight);
+            button.buttonText = Component.literal(Integer.toString(formDraft.basementHeight));
+            return true;
+        });
+
+        content.manualRecompute();
+        scrollView.addWidget(content);
+        scrollView.centerContentX();
+        scrollView.setToTop();
+
+        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
+        root.addWidget(back);
+        root.addConstraintToWidget(new CenterXConstraint(), back);
+        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
+        back.setPressedCallback((button, mouseButton) -> {
+            switchToExistingState("form");
+            return true;
+        });
+        return root;
+    }
+
+    private MKLayout buildFormMaterialsState() {
+        ensureFormDraftInitialized();
+        int xPos = width / 2 - PANEL_WIDTH / 2;
+        int yPos = height / 2 - PANEL_HEIGHT / 2;
+        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
+        root.setMargins(8, 8, 8, 8);
+        root.setPaddingTop(8).setPaddingBot(8);
+
+        MKText title = makeWhiteText(Component.literal("Materials"));
+        root.addWidget(title);
+        root.addConstraintToWidget(MarginConstraint.TOP, title);
+        root.addConstraintToWidget(new CenterXConstraint(), title);
+
+        MKText helpText = makeWhiteText(Component.literal(
+                "Edit the room shell and stair palette without the rest of the layout controls in view."));
+        helpText.setWidth(CONTENT_WIDTH);
+        helpText.setMultiline(true);
+        root.addWidget(helpText);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
+        root.addConstraintToWidget(new CenterXConstraint(), helpText);
+
+        MKBlockSlot floorSlot = new MKBlockSlot();
+        floorSlot.setBlock(formDraft.floorBlock);
+        MKBlockSlot wallSlot = new MKBlockSlot();
+        wallSlot.setBlock(formDraft.wallBlock);
+        MKBlockSlot ceilingSlot = new MKBlockSlot();
+        ceilingSlot.setBlock(formDraft.ceilingBlock);
+        MKBlockSlot stairBlockSlot = new MKBlockSlot();
+        stairBlockSlot.setBlock(formDraft.stairBlock);
+        MKBlockSlot slabBlockSlot = new MKBlockSlot();
+        slabBlockSlot.setBlock(formDraft.slabBlock);
+        MKBlockSlot ladderBlockSlot = new MKBlockSlot();
+        ladderBlockSlot.setBlock(formDraft.ladderBlock);
+        MKPlayerHotbar hotbar = new MKPlayerHotbar();
+        addPaletteSection(root, xPos, yPos + 120, hotbar, floorSlot, wallSlot, ceilingSlot, stairBlockSlot, slabBlockSlot,
+                ladderBlockSlot);
+
+        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
+        root.addWidget(back);
+        root.addConstraintToWidget(new CenterXConstraint(), back);
+        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
+        back.setPressedCallback((button, mouseButton) -> {
+            formDraft.floorBlock = floorSlot.getBlockId();
+            formDraft.wallBlock = wallSlot.getBlockId();
+            formDraft.ceilingBlock = ceilingSlot.getBlockId();
+            formDraft.stairBlock = stairBlockSlot.getBlockId();
+            formDraft.slabBlock = slabBlockSlot.getBlockId();
+            formDraft.ladderBlock = ladderBlockSlot.getBlockId();
+            switchToExistingState("form");
+            return true;
+        });
+        return root;
+    }
+
+    private MKLayout buildLegacyFormState() {
         int xPos = width / 2 - PANEL_WIDTH / 2;
         int yPos = height / 2 - PANEL_HEIGHT / 2;
         MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
@@ -1060,6 +1458,120 @@ public class MKWorkspaceScreen extends MKScreen {
         }
     }
 
+    private int parseInt(String value, int fallback) {
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
+    }
+
+    private void ensureFormDraftInitialized() {
+        if (formDraft != null) {
+            return;
+        }
+        formDraft = new WorkspaceFormDraft();
+        formDraft.namespace = valueOrDefault(workspace != null ? workspace.namespace() : null, "mkdev");
+        formDraft.structureName = valueOrDefault(workspace != null ? workspace.structureName() : null, "tower_workspace");
+        formDraft.roomWidth = workspace != null ? workspace.dimensions().roomWidth() : 9;
+        formDraft.roomLength = workspace != null ? workspace.dimensions().roomLength() : 9;
+        formDraft.stairMode = workspace != null ? workspace.stairConfig().mode() : MKWorkspaceStairMode.AUTO;
+        formDraft.stairRiseType = workspace != null ? workspace.stairConfig().riseType() : MKWorkspaceStairRiseType.STAIR;
+        formDraft.stairFlatRunLength = workspace != null ? workspace.stairConfig().flatRunLength() : 0;
+        formDraft.stairWidth = workspace != null ? workspace.stairConfig().stairWidth() : 1;
+        formDraft.stairBlock = workspace != null ? workspace.stairConfig().stairBlock() : ResourceLocation.parse("minecraft:stone_brick_stairs");
+        formDraft.slabBlock = workspace != null ? workspace.stairConfig().slabBlock() : ResourceLocation.parse("minecraft:stone_brick_slab");
+        formDraft.ladderBlock = workspace != null ? workspace.stairConfig().ladderBlock() : ResourceLocation.parse("minecraft:ladder");
+        formDraft.hallwayWidth = MKWorkspaceDimensions.snapToNearestAllowedShaftSize(formDraft.roomWidth, formDraft.roomLength,
+                workspace != null ? workspace.dimensions().hallwayWidth() : 3);
+        formDraft.roomHeight = MKWorkspaceDimensions.snapToNearestAllowedTowerHeight(makeDraftStairConfig(), formDraft.hallwayWidth,
+                workspace != null ? workspace.dimensions().roomHeight() : 5, 3, 4);
+        formDraft.entranceHeight = MKWorkspaceDimensions.snapToNearestAllowedEntranceHeight(makeDraftStairConfig(),
+                formDraft.hallwayWidth, formDraft.roomHeight, workspace != null ? workspace.dimensions().entranceHeight() : 7,
+                3, 4);
+        formDraft.basementHeight = MKWorkspaceDimensions.snapToNearestAllowedEntranceHeight(makeDraftStairConfig(),
+                formDraft.hallwayWidth, formDraft.roomHeight, workspace != null ? workspace.dimensions().basementHeight() : 5,
+                3, 4);
+        formDraft.doorwayWidth = workspace != null ? workspace.dimensions().doorwayWidth() : 3;
+        formDraft.doorwayHeight = workspace != null ? workspace.dimensions().doorwayHeight() : 3;
+        formDraft.verticalAccessPlacement = workspace != null ? workspace.verticalAccessPlacement() : MKVerticalAccessPlacement.CENTER;
+        formDraft.shellMargin = workspace != null ? workspace.shellMargin() : 1;
+        formDraft.exteriorAirMargin = workspace != null ? workspace.exteriorAirMargin() : 2;
+        formDraft.previewMargin = workspace != null ? workspace.previewMargin() : 4;
+        formDraft.floorBlock = workspace != null ? workspace.palette().floorBlock() : ResourceLocation.parse("minecraft:smooth_stone");
+        formDraft.wallBlock = workspace != null ? workspace.palette().wallBlock() : ResourceLocation.parse("minecraft:stone_bricks");
+        formDraft.ceilingBlock = workspace != null ? workspace.palette().ceilingBlock() : ResourceLocation.parse("minecraft:smooth_stone");
+        snapDraftVerticalHeights();
+    }
+
+    private void rebaseDraftForFootprintChange() {
+        formDraft.hallwayWidth = MKWorkspaceDimensions.getAllowedShaftSizes(formDraft.roomWidth, formDraft.roomLength).getFirst();
+        formDraft.stairWidth = MKWorkspaceDimensions.getAllowedStairWidths(formDraft.hallwayWidth).getFirst();
+        rebaseDraftVerticalHeights();
+    }
+
+    private void rebaseDraftVerticalHeights() {
+        var baseConfig = makeDraftStairConfig();
+        formDraft.roomHeight = MKWorkspaceDimensions.getAllowedTowerHeights(baseConfig, formDraft.hallwayWidth, 3, 4).getFirst();
+        formDraft.stairFlatRunLength = MKWorkspaceDimensions.getAllowedFlatRunLengths(baseConfig, formDraft.hallwayWidth,
+                formDraft.roomHeight, 4).getFirst();
+        snapDraftVerticalHeights();
+        formDraft.entranceHeight = MKWorkspaceDimensions.getAllowedEntranceHeights(makeDraftStairConfig(),
+                formDraft.hallwayWidth, formDraft.roomHeight, 3, 4).getFirst();
+        formDraft.basementHeight = MKWorkspaceDimensions.getAllowedEntranceHeights(makeDraftStairConfig(),
+                formDraft.hallwayWidth, formDraft.roomHeight, 3, 4).getFirst();
+    }
+
+    private void snapDraftVerticalHeights() {
+        var config = makeDraftStairConfig();
+        formDraft.roomHeight = snapTowerHeight(config, formDraft.hallwayWidth, formDraft.roomHeight);
+        formDraft.stairFlatRunLength = snapAllowedFlatRunLength(config, formDraft.hallwayWidth, formDraft.roomHeight,
+                formDraft.stairFlatRunLength);
+        config = makeDraftStairConfig();
+        formDraft.roomHeight = snapTowerHeight(config, formDraft.hallwayWidth, formDraft.roomHeight);
+        formDraft.entranceHeight = snapEntranceHeight(config, formDraft.hallwayWidth, formDraft.roomHeight, formDraft.entranceHeight);
+        formDraft.basementHeight = snapEntranceHeight(config, formDraft.hallwayWidth, formDraft.roomHeight, formDraft.basementHeight);
+    }
+
+    private com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig makeDraftStairConfig() {
+        ensureFormDraftInitialized();
+        return makeStairConfig(formDraft.stairMode, formDraft.stairRiseType, formDraft.stairFlatRunLength, formDraft.stairWidth,
+                formDraft.stairBlock, formDraft.slabBlock, formDraft.ladderBlock);
+    }
+
+    private void submitWorkspaceDraft() {
+        ensureFormDraftInitialized();
+        snapDraftVerticalHeights();
+        PacketDistributor.sendToServer(new CreateWorkspacePacket(
+                anchor,
+                formDraft.namespace.trim(),
+                formDraft.structureName.trim(),
+                formDraft.roomWidth,
+                formDraft.roomLength,
+                formDraft.entranceHeight,
+                formDraft.roomHeight,
+                formDraft.basementHeight,
+                formDraft.hallwayWidth,
+                formDraft.doorwayWidth,
+                formDraft.doorwayHeight,
+                formDraft.verticalAccessPlacement,
+                formDraft.shellMargin,
+                formDraft.exteriorAirMargin,
+                formDraft.previewMargin,
+                formDraft.stairMode,
+                formDraft.stairRiseType,
+                formDraft.stairFlatRunLength,
+                formDraft.stairWidth,
+                formDraft.floorBlock,
+                formDraft.wallBlock,
+                formDraft.ceilingBlock,
+                formDraft.stairBlock,
+                formDraft.slabBlock,
+                formDraft.ladderBlock
+        ));
+        PacketDistributor.sendToServer(new GenerateWorkspacePacket(anchor));
+    }
+
     private int cycleAllowedTowerHeight(com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig stairConfig,
                                         int hallwayWidth, int currentHeight) {
         List<Integer> allowedHeights = MKWorkspaceDimensions.getAllowedTowerHeights(stairConfig, hallwayWidth, 3, 4);
@@ -1250,6 +1762,11 @@ public class MKWorkspaceScreen extends MKScreen {
             return updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()
                     ? List.of("workspace", "form")
                     : List.of("form");
+        }
+        if (currentState.startsWith("form_")) {
+            return updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()
+                    ? List.of("workspace", "form", currentState)
+                    : List.of("form", currentState);
         }
         return updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()
                 ? List.of("workspace")
