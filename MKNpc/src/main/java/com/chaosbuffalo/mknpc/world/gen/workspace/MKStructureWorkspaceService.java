@@ -58,6 +58,9 @@ public class MKStructureWorkspaceService {
                     workspace.shellMargin(),
                     workspace.exteriorAirMargin(),
                     workspace.previewMargin(),
+                    workspace.verticalAccessSpec(),
+                    workspace.categoryProfiles(),
+                    workspace.familyDefinitions(),
                     existing.createdAt(),
                     System.currentTimeMillis(),
                     existing.pieces()

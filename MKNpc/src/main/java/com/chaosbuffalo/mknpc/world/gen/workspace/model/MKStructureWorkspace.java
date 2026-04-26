@@ -22,6 +22,7 @@ public class MKStructureWorkspace {
     private final MKVerticalAccessPlacement verticalAccessPlacement;
     private final MKWorkspaceVerticalAccessSpec verticalAccessSpec;
     private final List<MKTowerWorkspaceCategoryProfile> categoryProfiles;
+    private final List<MKTowerWorkspaceFamilyDefinition> familyDefinitions;
     private final int shellMargin;
     private final int exteriorAirMargin;
     private final int previewMargin;
@@ -37,6 +38,7 @@ public class MKStructureWorkspace {
                                 int previewMargin,
                                 MKWorkspaceVerticalAccessSpec verticalAccessSpec,
                                 List<MKTowerWorkspaceCategoryProfile> categoryProfiles,
+                                List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
                                 long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces) {
         this.id = id;
         this.anchor = anchor;
@@ -49,6 +51,7 @@ public class MKStructureWorkspace {
         this.verticalAccessPlacement = verticalAccessPlacement;
         this.verticalAccessSpec = verticalAccessSpec;
         this.categoryProfiles = List.copyOf(categoryProfiles);
+        this.familyDefinitions = List.copyOf(familyDefinitions);
         this.shellMargin = shellMargin;
         this.exteriorAirMargin = exteriorAirMargin;
         this.previewMargin = previewMargin;
@@ -69,6 +72,7 @@ public class MKStructureWorkspace {
                 MKWorkspaceVerticalAccessSpec.fromLegacy(dimensions, verticalAccessPlacement, stairConfig),
                 MKTowerWorkspaceCategoryProfile.createDefaults(dimensions,
                         MKWorkspaceVerticalAccessSpec.fromLegacy(dimensions, verticalAccessPlacement, stairConfig)),
+                MKTowerWorkspaceFamilyDefinition.createDefaults(),
                 createdAt, updatedAt, pieces);
     }
 
@@ -90,6 +94,7 @@ public class MKStructureWorkspace {
                 MKWorkspaceVerticalAccessSpec.defaultSpec(),
                 MKTowerWorkspaceCategoryProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions(),
                         MKWorkspaceVerticalAccessSpec.defaultSpec()),
+                MKTowerWorkspaceFamilyDefinition.createDefaults(),
                 now,
                 now,
                 List.of()
@@ -118,6 +123,13 @@ public class MKStructureWorkspace {
         if (categoryProfiles.isEmpty()) {
             categoryProfiles = MKTowerWorkspaceCategoryProfile.createDefaults(dimensions, verticalAccessSpec);
         }
+        List<MKTowerWorkspaceFamilyDefinition> familyDefinitions = new ArrayList<>();
+        if (tag.contains("familyDefinitions", Tag.TAG_LIST)) {
+            for (Tag familyTag : tag.getList("familyDefinitions", Tag.TAG_COMPOUND)) {
+                familyDefinitions.add(MKTowerWorkspaceFamilyDefinition.fromTag((CompoundTag) familyTag));
+            }
+        }
+        familyDefinitions = MKTowerWorkspaceFamilyDefinition.normalize(familyDefinitions);
         return new MKStructureWorkspace(
                 tag.getUUID("id"),
                 MKWorkspaceNbtUtil.blockPosFromTag(tag.getCompound("anchor")),
@@ -133,6 +145,7 @@ public class MKStructureWorkspace {
                 tag.getInt("previewMargin"),
                 verticalAccessSpec,
                 categoryProfiles,
+                familyDefinitions,
                 tag.getLong("createdAt"),
                 tag.getLong("updatedAt"),
                 pieces
@@ -161,6 +174,11 @@ public class MKStructureWorkspace {
             categoryProfilesTag.add(categoryProfile.toTag());
         }
         tag.put("categoryProfiles", categoryProfilesTag);
+        ListTag familyDefinitionsTag = new ListTag();
+        for (MKTowerWorkspaceFamilyDefinition familyDefinition : familyDefinitions) {
+            familyDefinitionsTag.add(familyDefinition.toTag());
+        }
+        tag.put("familyDefinitions", familyDefinitionsTag);
         ListTag piecesTag = new ListTag();
         for (MKWorkspacePieceDefinition piece : pieces) {
             piecesTag.add(piece.toTag());
@@ -173,6 +191,9 @@ public class MKStructureWorkspace {
         List<String> errors = new ArrayList<>(verticalAccessSpec.validate());
         for (MKTowerWorkspaceCategoryProfile categoryProfile : categoryProfiles) {
             errors.addAll(categoryProfile.validate(verticalAccessSpec));
+        }
+        for (MKTowerWorkspaceFamilyDefinition familyDefinition : familyDefinitions) {
+            errors.addAll(familyDefinition.validate(familyDefinitions));
         }
         Optional<MKTowerWorkspaceCategoryProfile> mainProfile = categoryProfile(MKTowerWorkspaceCategory.MAIN);
         if (mainProfile.isPresent()) {
@@ -217,7 +238,7 @@ public class MKStructureWorkspace {
     public MKStructureWorkspace withPieces(List<MKWorkspacePieceDefinition> newPieces) {
         return new MKStructureWorkspace(id, anchor, namespace, structureName, familyType, dimensions, palette,
                 stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
-                categoryProfiles, createdAt, System.currentTimeMillis(), newPieces);
+                categoryProfiles, familyDefinitions, createdAt, System.currentTimeMillis(), newPieces);
     }
 
     public UUID id() {
@@ -266,6 +287,10 @@ public class MKStructureWorkspace {
 
     public Optional<MKTowerWorkspaceCategoryProfile> categoryProfile(MKTowerWorkspaceCategory category) {
         return categoryProfiles.stream().filter(profile -> profile.category() == category).findFirst();
+    }
+
+    public List<MKTowerWorkspaceFamilyDefinition> familyDefinitions() {
+        return familyDefinitions;
     }
 
     public int shellMargin() {

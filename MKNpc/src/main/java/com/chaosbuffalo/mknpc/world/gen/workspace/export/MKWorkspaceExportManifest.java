@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
@@ -94,7 +95,8 @@ public record MKWorkspaceExportManifest(
                                 workspace.stairConfig().ladderBlock()
                         ),
                         Optional.of(ExportVerticalAccessSpec.from(workspace.verticalAccessSpec())),
-                        workspace.categoryProfiles().stream().map(ExportCategoryProfile::from).toList()
+                        workspace.categoryProfiles().stream().map(ExportCategoryProfile::from).toList(),
+                        workspace.familyDefinitions().stream().map(ExportFamilyDefinition::from).toList()
                 ),
                 ExportRuntimeHints.forWorkspace(workspace),
                 buildCategories(workspace),
@@ -217,7 +219,8 @@ public record MKWorkspaceExportManifest(
             ExportPalette palette,
             ExportStairConfig stairConfig,
             Optional<ExportVerticalAccessSpec> verticalAccessSpec,
-            List<ExportCategoryProfile> categoryProfiles
+            List<ExportCategoryProfile> categoryProfiles,
+            List<ExportFamilyDefinition> familyDefinitions
     ) {
         public static final Codec<ExportWorkspaceSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ExportBlockPos.CODEC.fieldOf("anchor").forGetter(ExportWorkspaceSettings::anchor),
@@ -229,7 +232,8 @@ public record MKWorkspaceExportManifest(
                 ExportPalette.CODEC.fieldOf("palette").forGetter(ExportWorkspaceSettings::palette),
                 ExportStairConfig.CODEC.fieldOf("stair_config").forGetter(ExportWorkspaceSettings::stairConfig),
                 ExportVerticalAccessSpec.CODEC.optionalFieldOf("vertical_access_spec").forGetter(ExportWorkspaceSettings::verticalAccessSpec),
-                ExportCategoryProfile.CODEC.listOf().optionalFieldOf("category_profiles", List.of()).forGetter(ExportWorkspaceSettings::categoryProfiles)
+                ExportCategoryProfile.CODEC.listOf().optionalFieldOf("category_profiles", List.of()).forGetter(ExportWorkspaceSettings::categoryProfiles),
+                ExportFamilyDefinition.CODEC.listOf().optionalFieldOf("family_definitions", List.of()).forGetter(ExportWorkspaceSettings::familyDefinitions)
         ).apply(instance, ExportWorkspaceSettings::new));
     }
 
@@ -301,6 +305,32 @@ public record MKWorkspaceExportManifest(
                     profile.mainOpeningHeight(),
                     profile.branchOpeningWidth(),
                     profile.branchOpeningHeight()
+            );
+        }
+    }
+
+    public record ExportFamilyDefinition(
+            String baseName,
+            MKTowerWorkspaceCategory category,
+            MKWorkspacePieceRole pieceRole,
+            boolean supportsVerticalAccess,
+            String branchExitMask
+    ) {
+        public static final Codec<ExportFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.STRING.fieldOf("base_name").forGetter(ExportFamilyDefinition::baseName),
+                towerCategoryCodec().fieldOf("category").forGetter(ExportFamilyDefinition::category),
+                pieceRoleCodec().fieldOf("piece_role").forGetter(ExportFamilyDefinition::pieceRole),
+                Codec.BOOL.fieldOf("supports_vertical_access").forGetter(ExportFamilyDefinition::supportsVerticalAccess),
+                Codec.STRING.fieldOf("branch_exit_mask").forGetter(ExportFamilyDefinition::branchExitMask)
+        ).apply(instance, ExportFamilyDefinition::new));
+
+        public static ExportFamilyDefinition from(MKTowerWorkspaceFamilyDefinition familyDefinition) {
+            return new ExportFamilyDefinition(
+                    familyDefinition.baseName(),
+                    familyDefinition.category(),
+                    familyDefinition.pieceRole(),
+                    familyDefinition.supportsVerticalAccess(),
+                    familyDefinition.branchExitMask().getSerializedName()
             );
         }
     }

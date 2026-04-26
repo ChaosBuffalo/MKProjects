@@ -7,6 +7,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspa
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerBranchExitMask;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
@@ -185,6 +187,16 @@ public class MKStructureWorkspaceImportService {
         if (categoryProfiles.isEmpty()) {
             categoryProfiles = MKTowerWorkspaceCategoryProfile.createDefaults(workspaceDimensions, verticalAccessSpec);
         }
+        List<MKTowerWorkspaceFamilyDefinition> familyDefinitions = settings.familyDefinitions().stream()
+                .map(family -> new MKTowerWorkspaceFamilyDefinition(
+                        family.baseName(),
+                        family.category(),
+                        family.pieceRole(),
+                        family.supportsVerticalAccess(),
+                        MKTowerBranchExitMask.fromSerializedName(family.branchExitMask())
+                ))
+                .toList();
+        familyDefinitions = MKTowerWorkspaceFamilyDefinition.normalize(familyDefinitions);
         long now = System.currentTimeMillis();
         return new MKStructureWorkspace(
                 UUID.randomUUID(),
@@ -205,6 +217,7 @@ public class MKStructureWorkspaceImportService {
                 settings.previewMargin(),
                 verticalAccessSpec,
                 categoryProfiles,
+                familyDefinitions,
                 now,
                 now,
                 List.of()
