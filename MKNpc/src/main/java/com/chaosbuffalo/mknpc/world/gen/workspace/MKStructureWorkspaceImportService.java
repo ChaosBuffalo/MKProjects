@@ -11,6 +11,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerBranchExitMask;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
@@ -197,6 +199,33 @@ public class MKStructureWorkspaceImportService {
                 ))
                 .toList();
         familyDefinitions = MKTowerWorkspaceFamilyDefinition.normalize(familyDefinitions);
+        List<MKHorizontalOpeningProfile> openingProfiles = settings.openingProfiles().stream()
+                .map(profile -> new MKHorizontalOpeningProfile(
+                        profile.profileId(),
+                        profile.openingWidth(),
+                        profile.openingHeight(),
+                        profile.allowOnMainPath(),
+                        profile.allowOnBranchPath()
+                ))
+                .toList();
+        if (openingProfiles.isEmpty()) {
+            openingProfiles = MKHorizontalOpeningProfile.createDefaults(categoryProfiles);
+        }
+        List<MKHallwayFamilyDefinition> hallwayFamilies = settings.hallwayFamilies().stream()
+                .map(hallway -> new MKHallwayFamilyDefinition(
+                        hallway.hallwayId(),
+                        hallway.openingProfileId(),
+                        hallway.length(),
+                        hallway.interiorWidth(),
+                        hallway.interiorHeight(),
+                        hallway.slopeDelta(),
+                        hallway.allowOnMainPath(),
+                        hallway.allowOnBranchPath(),
+                        hallway.floorBlock(),
+                        hallway.wallBlock(),
+                        hallway.ceilingBlock()
+                ))
+                .toList();
         long now = System.currentTimeMillis();
         return new MKStructureWorkspace(
                 UUID.randomUUID(),
@@ -218,6 +247,8 @@ public class MKStructureWorkspaceImportService {
                 verticalAccessSpec,
                 categoryProfiles,
                 familyDefinitions,
+                openingProfiles,
+                hallwayFamilies,
                 now,
                 now,
                 List.of()

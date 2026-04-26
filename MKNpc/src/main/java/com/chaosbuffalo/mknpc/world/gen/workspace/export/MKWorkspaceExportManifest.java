@@ -6,6 +6,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
@@ -96,7 +98,9 @@ public record MKWorkspaceExportManifest(
                         ),
                         Optional.of(ExportVerticalAccessSpec.from(workspace.verticalAccessSpec())),
                         workspace.categoryProfiles().stream().map(ExportCategoryProfile::from).toList(),
-                        workspace.familyDefinitions().stream().map(ExportFamilyDefinition::from).toList()
+                        workspace.familyDefinitions().stream().map(ExportFamilyDefinition::from).toList(),
+                        workspace.openingProfiles().stream().map(ExportOpeningProfile::from).toList(),
+                        workspace.hallwayFamilies().stream().map(ExportHallwayFamily::from).toList()
                 ),
                 ExportRuntimeHints.forWorkspace(workspace),
                 buildCategories(workspace),
@@ -220,7 +224,9 @@ public record MKWorkspaceExportManifest(
             ExportStairConfig stairConfig,
             Optional<ExportVerticalAccessSpec> verticalAccessSpec,
             List<ExportCategoryProfile> categoryProfiles,
-            List<ExportFamilyDefinition> familyDefinitions
+            List<ExportFamilyDefinition> familyDefinitions,
+            List<ExportOpeningProfile> openingProfiles,
+            List<ExportHallwayFamily> hallwayFamilies
     ) {
         public static final Codec<ExportWorkspaceSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ExportBlockPos.CODEC.fieldOf("anchor").forGetter(ExportWorkspaceSettings::anchor),
@@ -233,7 +239,9 @@ public record MKWorkspaceExportManifest(
                 ExportStairConfig.CODEC.fieldOf("stair_config").forGetter(ExportWorkspaceSettings::stairConfig),
                 ExportVerticalAccessSpec.CODEC.optionalFieldOf("vertical_access_spec").forGetter(ExportWorkspaceSettings::verticalAccessSpec),
                 ExportCategoryProfile.CODEC.listOf().optionalFieldOf("category_profiles", List.of()).forGetter(ExportWorkspaceSettings::categoryProfiles),
-                ExportFamilyDefinition.CODEC.listOf().optionalFieldOf("family_definitions", List.of()).forGetter(ExportWorkspaceSettings::familyDefinitions)
+                ExportFamilyDefinition.CODEC.listOf().optionalFieldOf("family_definitions", List.of()).forGetter(ExportWorkspaceSettings::familyDefinitions),
+                ExportOpeningProfile.CODEC.listOf().optionalFieldOf("opening_profiles", List.of()).forGetter(ExportWorkspaceSettings::openingProfiles),
+                ExportHallwayFamily.CODEC.listOf().optionalFieldOf("hallway_families", List.of()).forGetter(ExportWorkspaceSettings::hallwayFamilies)
         ).apply(instance, ExportWorkspaceSettings::new));
     }
 
@@ -331,6 +339,76 @@ public record MKWorkspaceExportManifest(
                     familyDefinition.pieceRole(),
                     familyDefinition.supportsVerticalAccess(),
                     familyDefinition.branchExitMask().getSerializedName()
+            );
+        }
+    }
+
+    public record ExportOpeningProfile(
+            String profileId,
+            int openingWidth,
+            int openingHeight,
+            boolean allowOnMainPath,
+            boolean allowOnBranchPath
+    ) {
+        public static final Codec<ExportOpeningProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.STRING.fieldOf("profile_id").forGetter(ExportOpeningProfile::profileId),
+                Codec.INT.fieldOf("opening_width").forGetter(ExportOpeningProfile::openingWidth),
+                Codec.INT.fieldOf("opening_height").forGetter(ExportOpeningProfile::openingHeight),
+                Codec.BOOL.fieldOf("allow_on_main_path").forGetter(ExportOpeningProfile::allowOnMainPath),
+                Codec.BOOL.fieldOf("allow_on_branch_path").forGetter(ExportOpeningProfile::allowOnBranchPath)
+        ).apply(instance, ExportOpeningProfile::new));
+
+        public static ExportOpeningProfile from(MKHorizontalOpeningProfile profile) {
+            return new ExportOpeningProfile(
+                    profile.profileId(),
+                    profile.openingWidth(),
+                    profile.openingHeight(),
+                    profile.allowOnMainPath(),
+                    profile.allowOnBranchPath()
+            );
+        }
+    }
+
+    public record ExportHallwayFamily(
+            String hallwayId,
+            String openingProfileId,
+            int length,
+            int interiorWidth,
+            int interiorHeight,
+            int slopeDelta,
+            boolean allowOnMainPath,
+            boolean allowOnBranchPath,
+            ResourceLocation floorBlock,
+            ResourceLocation wallBlock,
+            ResourceLocation ceilingBlock
+    ) {
+        public static final Codec<ExportHallwayFamily> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.STRING.fieldOf("hallway_id").forGetter(ExportHallwayFamily::hallwayId),
+                Codec.STRING.fieldOf("opening_profile_id").forGetter(ExportHallwayFamily::openingProfileId),
+                Codec.INT.fieldOf("length").forGetter(ExportHallwayFamily::length),
+                Codec.INT.fieldOf("interior_width").forGetter(ExportHallwayFamily::interiorWidth),
+                Codec.INT.fieldOf("interior_height").forGetter(ExportHallwayFamily::interiorHeight),
+                Codec.INT.fieldOf("slope_delta").forGetter(ExportHallwayFamily::slopeDelta),
+                Codec.BOOL.fieldOf("allow_on_main_path").forGetter(ExportHallwayFamily::allowOnMainPath),
+                Codec.BOOL.fieldOf("allow_on_branch_path").forGetter(ExportHallwayFamily::allowOnBranchPath),
+                ResourceLocation.CODEC.fieldOf("floor_block").forGetter(ExportHallwayFamily::floorBlock),
+                ResourceLocation.CODEC.fieldOf("wall_block").forGetter(ExportHallwayFamily::wallBlock),
+                ResourceLocation.CODEC.fieldOf("ceiling_block").forGetter(ExportHallwayFamily::ceilingBlock)
+        ).apply(instance, ExportHallwayFamily::new));
+
+        public static ExportHallwayFamily from(MKHallwayFamilyDefinition hallwayFamily) {
+            return new ExportHallwayFamily(
+                    hallwayFamily.hallwayId(),
+                    hallwayFamily.openingProfileId(),
+                    hallwayFamily.length(),
+                    hallwayFamily.interiorWidth(),
+                    hallwayFamily.interiorHeight(),
+                    hallwayFamily.slopeDelta(),
+                    hallwayFamily.allowOnMainPath(),
+                    hallwayFamily.allowOnBranchPath(),
+                    hallwayFamily.floorBlock(),
+                    hallwayFamily.wallBlock(),
+                    hallwayFamily.ceilingBlock()
             );
         }
     }

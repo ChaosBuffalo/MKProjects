@@ -61,6 +61,8 @@ public class MKStructureWorkspaceService {
                     workspace.verticalAccessSpec(),
                     workspace.categoryProfiles(),
                     workspace.familyDefinitions(),
+                    workspace.openingProfiles(),
+                    workspace.hallwayFamilies(),
                     existing.createdAt(),
                     System.currentTimeMillis(),
                     existing.pieces()
