@@ -92,12 +92,14 @@ public class MKTowerWorkspaceFamilyDefinition {
     public static boolean defaultSupportsVerticalAccess(MKWorkspacePieceRole pieceRole) {
         return switch (pieceRole) {
             case ENTRY, FLOOR_MAIN, BOSS_APPROACH, BOSS_CAP, BASEMENT_ENTRY, BASEMENT_MAIN, BASEMENT_CAP -> true;
+            case HALLWAY -> false;
         };
     }
 
     public static Set<Direction> reservedHorizontalDirections(MKWorkspacePieceRole pieceRole) {
         return switch (pieceRole) {
             case ENTRY -> EnumSet.of(Direction.SOUTH);
+            case HALLWAY -> EnumSet.noneOf(Direction.class);
             default -> EnumSet.noneOf(Direction.class);
         };
     }

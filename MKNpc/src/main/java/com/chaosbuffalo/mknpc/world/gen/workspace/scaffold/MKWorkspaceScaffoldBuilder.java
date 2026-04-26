@@ -42,6 +42,10 @@ public class MKWorkspaceScaffoldBuilder {
     public static final int GRID_COLUMNS = 4;
     public static final int CELL_PADDING = 4;
     public static final int CLEAR_MARGIN = 4;
+    private static final String FLOOR_BLOCK_TAG = "workspace_palette_floor";
+    private static final String WALL_BLOCK_TAG = "workspace_palette_wall";
+    private static final String CEILING_BLOCK_TAG = "workspace_palette_ceiling";
+    private static final String HALLWAY_SLOPE_DELTA_TAG = "workspace_hallway_slope_delta";
 
     private final MKWorkspaceGridLayout gridLayout = new MKWorkspaceGridLayout();
 
@@ -116,9 +120,12 @@ public class MKWorkspaceScaffoldBuilder {
         PieceBuildContext context = createBuildContext(workspace, plannedPiece, placement);
         int effectiveShellMargin = getShellMargin(plannedPiece, workspace.shellMargin());
 
-        BlockState floorState = resolveBlockState(workspace.palette().floorBlock(), Blocks.SMOOTH_STONE.defaultBlockState());
-        BlockState wallState = resolveBlockState(workspace.palette().wallBlock(), Blocks.STONE_BRICKS.defaultBlockState());
-        BlockState ceilingState = resolveBlockState(workspace.palette().ceilingBlock(), Blocks.SMOOTH_STONE.defaultBlockState());
+        BlockState floorState = resolvePaletteState(workspace, plannedPiece, FLOOR_BLOCK_TAG,
+                workspace.palette().floorBlock(), Blocks.SMOOTH_STONE.defaultBlockState());
+        BlockState wallState = resolvePaletteState(workspace, plannedPiece, WALL_BLOCK_TAG,
+                workspace.palette().wallBlock(), Blocks.STONE_BRICKS.defaultBlockState());
+        BlockState ceilingState = resolvePaletteState(workspace, plannedPiece, CEILING_BLOCK_TAG,
+                workspace.palette().ceilingBlock(), Blocks.SMOOTH_STONE.defaultBlockState());
         boolean emptyScaffold = isEmptyScaffold(plannedPiece);
 
         clearBounds(level, context.clearedBounds());
@@ -129,6 +136,8 @@ public class MKWorkspaceScaffoldBuilder {
             placeShell(level, context.geometryBounds(), effectiveShellMargin, verticalShellThickness, floorState, wallState,
                     ceilingState);
             carveInterior(level, context.geometryOrigin(), plannedPiece, effectiveShellMargin, verticalShellThickness);
+            decoratePieceInterior(level, context.geometryOrigin(), plannedPiece, effectiveShellMargin,
+                    verticalShellThickness, floorState);
         }
 
         List<MKWorkspaceConnectorDefinition> connectors = new ArrayList<>();
@@ -421,6 +430,28 @@ public class MKWorkspaceScaffoldBuilder {
             for (int y = 0; y < piece.interiorHeight(); y++) {
                 for (int z = 0; z < piece.interiorLength(); z++) {
                     level.setBlock(interiorMin.offset(x, y, z), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                }
+            }
+        }
+    }
+
+    private void decoratePieceInterior(ServerLevel level, BlockPos geometryOrigin, MKPlannedPiece piece, int shellMargin,
+                                       int verticalShellThickness, BlockState floorState) {
+        if (!"hallway".equals(piece.tags().get("tower_piece_kind"))) {
+            return;
+        }
+        int slopeDelta = parseIntTag(piece.tags(), HALLWAY_SLOPE_DELTA_TAG, 0);
+        if (slopeDelta == 0) {
+            return;
+        }
+        int interiorMinX = geometryOrigin.getX() + shellMargin;
+        int interiorMinZ = geometryOrigin.getZ() + shellMargin;
+        for (int x = 0; x < piece.interiorWidth(); x++) {
+            int rise = getHallwayRiseForColumn(slopeDelta, x, piece.interiorWidth());
+            for (int y = 1; y <= rise; y++) {
+                for (int z = 0; z < piece.interiorLength(); z++) {
+                    level.setBlock(new BlockPos(interiorMinX + x, geometryOrigin.getY() + verticalShellThickness - 1 + y,
+                            interiorMinZ + z), floorState, Block.UPDATE_ALL);
                 }
             }
         }
@@ -752,6 +783,35 @@ public class MKWorkspaceScaffoldBuilder {
     private BlockState resolveBlockState(ResourceLocation id, BlockState fallback) {
         Block block = BuiltInRegistries.BLOCK.getOptional(id).orElse(fallback.getBlock());
         return block.defaultBlockState();
+    }
+
+    private BlockState resolvePaletteState(MKStructureWorkspace workspace, MKPlannedPiece piece, String tagName,
+                                           ResourceLocation fallbackId, BlockState fallbackState) {
+        String overrideId = piece.tags().get(tagName);
+        if (overrideId == null || overrideId.isBlank()) {
+            return resolveBlockState(fallbackId, fallbackState);
+        }
+        return resolveBlockState(ResourceLocation.parse(overrideId), fallbackState);
+    }
+
+    private int parseIntTag(Map<String, String> tags, String tagName, int fallback) {
+        try {
+            return Integer.parseInt(tags.getOrDefault(tagName, Integer.toString(fallback)));
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
+    }
+
+    private int getHallwayRiseForColumn(int slopeDelta, int columnIndex, int hallwayLength) {
+        int absoluteSlope = Math.abs(slopeDelta);
+        if (absoluteSlope == 0 || hallwayLength <= 1) {
+            return Math.max(0, slopeDelta);
+        }
+        int rise = (columnIndex * absoluteSlope) / (hallwayLength - 1);
+        if (slopeDelta < 0) {
+            return absoluteSlope - rise;
+        }
+        return rise;
     }
 }
 
