@@ -9,6 +9,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDe
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
@@ -322,14 +324,17 @@ public record MKWorkspaceExportManifest(
             MKTowerWorkspaceCategory category,
             MKWorkspacePieceRole pieceRole,
             boolean supportsVerticalAccess,
-            String branchExitMask
+            List<ExportFamilyHorizontalExit> horizontalExits,
+            Optional<String> legacyBranchExitMask
     ) {
         public static final Codec<ExportFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("base_name").forGetter(ExportFamilyDefinition::baseName),
                 towerCategoryCodec().fieldOf("category").forGetter(ExportFamilyDefinition::category),
                 pieceRoleCodec().fieldOf("piece_role").forGetter(ExportFamilyDefinition::pieceRole),
                 Codec.BOOL.fieldOf("supports_vertical_access").forGetter(ExportFamilyDefinition::supportsVerticalAccess),
-                Codec.STRING.fieldOf("branch_exit_mask").forGetter(ExportFamilyDefinition::branchExitMask)
+                ExportFamilyHorizontalExit.CODEC.listOf().optionalFieldOf("horizontal_exits", List.of())
+                        .forGetter(ExportFamilyDefinition::horizontalExits),
+                Codec.STRING.optionalFieldOf("branch_exit_mask").forGetter(ExportFamilyDefinition::legacyBranchExitMask)
         ).apply(instance, ExportFamilyDefinition::new));
 
         public static ExportFamilyDefinition from(MKTowerWorkspaceFamilyDefinition familyDefinition) {
@@ -338,7 +343,30 @@ public record MKWorkspaceExportManifest(
                     familyDefinition.category(),
                     familyDefinition.pieceRole(),
                     familyDefinition.supportsVerticalAccess(),
-                    familyDefinition.branchExitMask().getSerializedName()
+                    familyDefinition.horizontalExits().stream().map(ExportFamilyHorizontalExit::from).toList(),
+                    Optional.of(familyDefinition.legacyBranchExitMask().getSerializedName())
+            );
+        }
+    }
+
+    public record ExportFamilyHorizontalExit(
+            String direction,
+            MKWorkspaceHorizontalExitPathKind pathKind,
+            String openingProfileId
+    ) {
+        public static final Codec<ExportFamilyHorizontalExit> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.STRING.fieldOf("direction").forGetter(ExportFamilyHorizontalExit::direction),
+                Codec.STRING.xmap(MKWorkspaceHorizontalExitPathKind::fromSerializedName,
+                        MKWorkspaceHorizontalExitPathKind::getSerializedName)
+                        .fieldOf("path_kind").forGetter(ExportFamilyHorizontalExit::pathKind),
+                Codec.STRING.fieldOf("opening_profile_id").forGetter(ExportFamilyHorizontalExit::openingProfileId)
+        ).apply(instance, ExportFamilyHorizontalExit::new));
+
+        public static ExportFamilyHorizontalExit from(MKWorkspaceFamilyHorizontalExitDefinition exit) {
+            return new ExportFamilyHorizontalExit(
+                    exit.direction().getSerializedName(),
+                    exit.pathKind(),
+                    exit.openingProfileId()
             );
         }
     }

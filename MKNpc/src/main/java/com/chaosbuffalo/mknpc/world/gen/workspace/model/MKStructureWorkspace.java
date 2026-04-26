@@ -267,14 +267,22 @@ public class MKStructureWorkspace {
             }
             openingProfileById.put(openingProfile.profileId(), openingProfile);
         }
-        for (MKTowerWorkspaceCategoryProfile categoryProfile : categoryProfiles) {
-            String mainProfileId = categoryProfile.category().getSerializedName() + "_main";
-            if (!openingProfileById.containsKey(mainProfileId)) {
-                errors.add("missing required main opening profile " + mainProfileId);
-            }
-            String branchProfileId = categoryProfile.category().getSerializedName() + "_branch";
-            if (!openingProfileById.containsKey(branchProfileId)) {
-                errors.add("missing required branch opening profile " + branchProfileId);
+        for (MKTowerWorkspaceFamilyDefinition familyDefinition : familyDefinitions) {
+            for (MKWorkspaceFamilyHorizontalExitDefinition exit : familyDefinition.horizontalExits()) {
+                MKHorizontalOpeningProfile openingProfile = openingProfileById.get(exit.openingProfileId());
+                if (openingProfile == null) {
+                    errors.add("family " + familyDefinition.baseName() + " references missing opening profile " +
+                            exit.openingProfileId());
+                    continue;
+                }
+                if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN && !openingProfile.allowOnMainPath()) {
+                    errors.add("family " + familyDefinition.baseName() + " cannot use opening profile " +
+                            exit.openingProfileId() + " for a main exit because it is not main-path compatible");
+                }
+                if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH && !openingProfile.allowOnBranchPath()) {
+                    errors.add("family " + familyDefinition.baseName() + " cannot use opening profile " +
+                            exit.openingProfileId() + " for a branch exit because it is not branch-path compatible");
+                }
             }
         }
         for (MKHallwayFamilyDefinition hallwayFamily : hallwayFamilies) {

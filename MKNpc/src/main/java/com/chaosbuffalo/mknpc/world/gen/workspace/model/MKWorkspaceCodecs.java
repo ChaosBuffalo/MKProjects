@@ -67,6 +67,9 @@ public final class MKWorkspaceCodecs {
     public static final Codec<MKWorkspaceStairRiseType> STAIR_RISE_TYPE_CODEC = Codec.STRING.xmap(
             MKWorkspaceStairRiseType::fromSerializedName, MKWorkspaceStairRiseType::getSerializedName
     );
+    public static final Codec<MKWorkspaceHorizontalExitPathKind> HORIZONTAL_EXIT_PATH_KIND_CODEC = Codec.STRING.xmap(
+            MKWorkspaceHorizontalExitPathKind::fromSerializedName, MKWorkspaceHorizontalExitPathKind::getSerializedName
+    );
     public static final Codec<MKConnectorRole> CONNECTOR_ROLE_CODEC = Codec.STRING.xmap(
             MKConnectorRole::fromSerializedName, MKConnectorRole::getSerializedName
     );

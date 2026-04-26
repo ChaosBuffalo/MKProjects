@@ -10,6 +10,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
@@ -113,15 +115,15 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void validationRequiresPerCategoryOpeningProfiles() {
+    void validationRequiresReferencedFamilyExitOpeningProfiles() {
         MKStructureWorkspace workspace = baseWorkspace(
                 List.of(new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false)),
                 List.of()
         );
 
         List<String> errors = workspace.validate();
-        assertTrue(errors.stream().anyMatch(error -> error.contains("missing required branch opening profile entry_branch")));
-        assertTrue(errors.stream().anyMatch(error -> error.contains("missing required main opening profile main_main")));
+        assertTrue(errors.stream().anyMatch(error -> error.contains("floor_main")));
+        assertTrue(errors.stream().anyMatch(error -> error.contains("main_branch")));
     }
 
     @Test
@@ -188,8 +190,8 @@ class TowerWorkspaceV2Test {
         assertEquals(workspace.id(), decoded.id());
         assertEquals(workspace.anchor(), decoded.anchor());
         assertEquals(workspace.verticalAccessSpec().shaftSize(), decoded.verticalAccessSpec().shaftSize());
-        assertEquals(workspace.familyDefinitions().get(0).branchExitMask(),
-                decoded.familyDefinitions().get(0).branchExitMask());
+        assertEquals(workspace.familyDefinitions().get(0).horizontalExits(),
+                decoded.familyDefinitions().get(0).horizontalExits());
         assertEquals(workspace.pieces().get(0).pieceId(), decoded.pieces().get(0).pieceId());
         assertEquals(workspace.pieces().get(0).connectors().get(0).incomingPool(),
                 decoded.pieces().get(0).connectors().get(0).incomingPool());
@@ -226,19 +228,21 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of(
                         new MKTowerWorkspaceFamilyDefinition("entry", MKTowerWorkspaceCategory.ENTRY, MKWorkspacePieceRole.ENTRY, true,
-                                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerBranchExitMask.NONE),
+                                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
+                                        MKWorkspaceHorizontalExitPathKind.MAIN, "entry_main"))),
                         new MKTowerWorkspaceFamilyDefinition("floor_main", MKTowerWorkspaceCategory.MAIN, MKWorkspacePieceRole.FLOOR_MAIN, true,
-                                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerBranchExitMask.fromSerializedName("n")),
+                                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                                        MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch"))),
                         new MKTowerWorkspaceFamilyDefinition("boss_approach", MKTowerWorkspaceCategory.BOSS, MKWorkspacePieceRole.BOSS_APPROACH, true,
-                                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerBranchExitMask.NONE),
+                                List.of()),
                         new MKTowerWorkspaceFamilyDefinition("boss_cap", MKTowerWorkspaceCategory.BOSS, MKWorkspacePieceRole.BOSS_CAP, true,
-                                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerBranchExitMask.NONE),
+                                List.of()),
                         new MKTowerWorkspaceFamilyDefinition("basement_entry", MKTowerWorkspaceCategory.BASEMENT, MKWorkspacePieceRole.BASEMENT_ENTRY, true,
-                                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerBranchExitMask.NONE),
+                                List.of()),
                         new MKTowerWorkspaceFamilyDefinition("basement_main", MKTowerWorkspaceCategory.BASEMENT, MKWorkspacePieceRole.BASEMENT_MAIN, true,
-                                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerBranchExitMask.NONE),
+                                List.of()),
                         new MKTowerWorkspaceFamilyDefinition("basement_cap", MKTowerWorkspaceCategory.BASEMENT, MKWorkspacePieceRole.BASEMENT_CAP, true,
-                                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerBranchExitMask.NONE)
+                                List.of())
                 ),
                 openingProfiles,
                 hallwayFamilies,

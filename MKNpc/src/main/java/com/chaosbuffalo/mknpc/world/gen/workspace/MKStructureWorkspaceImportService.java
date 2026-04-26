@@ -7,8 +7,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspa
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerBranchExitMask;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
@@ -191,7 +191,13 @@ public class MKStructureWorkspaceImportService {
                         family.category(),
                         family.pieceRole(),
                         family.supportsVerticalAccess(),
-                        MKTowerBranchExitMask.fromSerializedName(family.branchExitMask())
+                        family.horizontalExits().stream()
+                                .map(exit -> new MKWorkspaceFamilyHorizontalExitDefinition(
+                                        Direction.byName(exit.direction()),
+                                        exit.pathKind(),
+                                        exit.openingProfileId()
+                                ))
+                                .toList()
                 ))
                 .toList();
         familyDefinitions = MKTowerWorkspaceFamilyDefinition.normalize(familyDefinitions);

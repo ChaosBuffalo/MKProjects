@@ -8,6 +8,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
@@ -68,8 +70,6 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                 .orElseGet(() -> fallbackProfile(family.category(), dimensions));
         String stairPlacement = workspace.verticalAccessSpec().placement().getSerializedName();
         int hallWidth = workspace.verticalAccessSpec().shaftSize();
-        ResolvedOpeningProfile mainOpening = resolveMainOpening(workspace, family.category(), profile);
-        ResolvedOpeningProfile branchOpening = resolveBranchOpening(workspace, family.category(), profile);
         return switch (family.pieceRole()) {
             case ENTRY -> new MKPlannedPiece(
                     family.pieceRole(),
@@ -77,16 +77,12 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                     profile.roomWidth(),
                     profile.roomLength(),
                     profile.defaultHeight(),
-                    connectorsWithBranches(
+                    connectorsWithHorizontalExits(
                             List.of(
-                                    new MKPlannedConnector(MKConnectorRole.MAIN_BACK, Direction.SOUTH,
-                                            mainOpening.openingWidth(), mainOpening.openingHeight(),
-                                            resolveHallwayPool(workspace, mainOpening.profileId(), HallwayPathKind.MAIN)),
                                     new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth, "connect_up"),
                                     new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth, "connect_down_entry")
                             ),
                             family,
-                            branchOpening,
                             workspace
                     ),
                     buildRoomTags("entry", family, stairPlacement, "both",
@@ -99,14 +95,13 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                     profile.roomWidth(),
                     profile.roomLength(),
                     profile.defaultHeight(),
-                    connectorsWithBranches(
+                    connectorsWithHorizontalExits(
                             List.of(
                                     new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
                                             EMPTY_POOL, "connect_up"),
                                     new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth, "connect_up")
                             ),
                             family,
-                            branchOpening,
                             workspace
                     ),
                     buildRoomTags("floor", family, stairPlacement, "both",
@@ -119,14 +114,13 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                     profile.roomWidth(),
                     profile.roomLength(),
                     profile.defaultHeight(),
-                    connectorsWithBranches(
+                    connectorsWithHorizontalExits(
                             List.of(
                                     new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
                                             EMPTY_POOL, "connect_up"),
                                     new MKPlannedConnector(MKConnectorRole.BOSS_FORWARD, Direction.UP, hallWidth, hallWidth, "boss_cap")
                             ),
                             family,
-                            branchOpening,
                             workspace
                     ),
                     buildRoomTags("boss_approach", family, stairPlacement, "up",
@@ -139,11 +133,10 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                     profile.roomWidth(),
                     profile.roomLength(),
                     profile.defaultHeight(),
-                    connectorsWithBranches(
+                    connectorsWithHorizontalExits(
                             List.of(new MKPlannedConnector(MKConnectorRole.BOSS_BACK, Direction.DOWN, hallWidth, hallWidth,
                                     EMPTY_POOL, "boss_cap")),
                             family,
-                            branchOpening,
                             workspace
                     ),
                     buildRoomTags("boss_cap", family, stairPlacement, "up", true, false,
@@ -156,14 +149,13 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                     profile.roomWidth(),
                     profile.roomLength(),
                     profile.defaultHeight(),
-                    connectorsWithBranches(
+                    connectorsWithHorizontalExits(
                             List.of(
                                     new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
                                             EMPTY_POOL, "connect_down_entry"),
                                     new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth, "connect_down")
                             ),
                             family,
-                            branchOpening,
                             workspace
                     ),
                     buildRoomTags("basement_entry", family, stairPlacement, "down",
@@ -176,14 +168,13 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                     profile.roomWidth(),
                     profile.roomLength(),
                     profile.defaultHeight(),
-                    connectorsWithBranches(
+                    connectorsWithHorizontalExits(
                             List.of(
                                     new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
                                             EMPTY_POOL, "connect_down"),
                                     new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth, "connect_down")
                             ),
                             family,
-                            branchOpening,
                             workspace
                     ),
                     buildRoomTags("basement_main", family, stairPlacement, "down",
@@ -196,11 +187,10 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                     profile.roomWidth(),
                     profile.roomLength(),
                     profile.defaultHeight(),
-                    connectorsWithBranches(
+                    connectorsWithHorizontalExits(
                             List.of(new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
                                     EMPTY_POOL, "connect_down")),
                             family,
-                            branchOpening,
                             workspace
                     ),
                     buildRoomTags("basement_cap", family, stairPlacement, "down", false, true,
@@ -270,31 +260,23 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         );
     }
 
-    private List<MKPlannedConnector> connectorsWithBranches(List<MKPlannedConnector> baseConnectors,
-                                                            MKTowerWorkspaceFamilyDefinition family,
-                                                            ResolvedOpeningProfile branchOpening,
-                                                            MKStructureWorkspace workspace) {
+    private List<MKPlannedConnector> connectorsWithHorizontalExits(List<MKPlannedConnector> baseConnectors,
+                                                                   MKTowerWorkspaceFamilyDefinition family,
+                                                                   MKStructureWorkspace workspace) {
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>(baseConnectors);
-        String hallwayPool = resolveHallwayPool(workspace, branchOpening.profileId(), HallwayPathKind.BRANCH);
-        for (Direction direction : family.branchExitMask().directions()) {
-            connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, direction,
-                    branchOpening.openingWidth(), branchOpening.openingHeight(), hallwayPool));
+        for (MKWorkspaceFamilyHorizontalExitDefinition exit : family.horizontalExits()) {
+            ResolvedOpeningProfile opening = resolveOpeningProfile(workspace, exit.openingProfileId())
+                    .orElseThrow(() -> new IllegalStateException("missing opening profile " + exit.openingProfileId() +
+                            " for family " + family.baseName()));
+            HallwayPathKind hallwayPathKind = exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN ?
+                    HallwayPathKind.MAIN : HallwayPathKind.BRANCH;
+            MKConnectorRole role = exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN ?
+                    MKConnectorRole.MAIN_BACK : MKConnectorRole.BRANCH;
+            String hallwayPool = resolveHallwayPool(workspace, opening.profileId(), hallwayPathKind);
+            connectors.add(new MKPlannedConnector(role, exit.direction(),
+                    opening.openingWidth(), opening.openingHeight(), hallwayPool));
         }
         return List.copyOf(connectors);
-    }
-
-    private ResolvedOpeningProfile resolveMainOpening(MKStructureWorkspace workspace, MKTowerWorkspaceCategory category,
-                                                      MKTowerWorkspaceCategoryProfile profile) {
-        return resolveOpeningProfile(workspace, category.getSerializedName() + "_main")
-                .orElseThrow(() -> new IllegalStateException("missing main opening profile for category " +
-                        category.getSerializedName()));
-    }
-
-    private ResolvedOpeningProfile resolveBranchOpening(MKStructureWorkspace workspace, MKTowerWorkspaceCategory category,
-                                                        MKTowerWorkspaceCategoryProfile profile) {
-        return resolveOpeningProfile(workspace, category.getSerializedName() + "_branch")
-                .orElseThrow(() -> new IllegalStateException("missing branch opening profile for category " +
-                        category.getSerializedName()));
     }
 
     private Optional<ResolvedOpeningProfile> resolveOpeningProfile(MKStructureWorkspace workspace, String profileId) {
@@ -327,7 +309,8 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         tags.put("topology_role", topologyRole);
         tags.put("tower_piece_kind", "room");
         tags.put("workspace_family_id", family.baseName());
-        tags.put("workspace_branch_exit_mask", family.branchExitMask().getSerializedName());
+        tags.put("workspace_branch_exit_mask", family.legacyBranchExitMask().getSerializedName());
+        tags.put("workspace_horizontal_exits", family.horizontalExitSummary());
         tags.put("workspace_category", family.category().getSerializedName());
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, "true");
         tags.put(MKWorkspaceVerticalAccessTags.PLACEMENT_TAG, stairPlacement);

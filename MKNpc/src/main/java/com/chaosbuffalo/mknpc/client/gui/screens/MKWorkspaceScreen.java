@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc.client.gui.screens;
 
-import com.chaosbuffalo.mknpc.client.gui.widgets.MKBranchExitMaskWidget;
 import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantPacket;
 import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantsForAllPacket;
 import com.chaosbuffalo.mknpc.network.packets.ClearWorkspaceStairsPacket;
@@ -13,11 +12,12 @@ import com.chaosbuffalo.mknpc.network.packets.LoadWorkspaceFromManifestPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerBranchExitMask;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
@@ -70,6 +70,7 @@ public class MKWorkspaceScreen extends MKScreen {
     private String selectedTopologyKey;
     private MKTowerWorkspaceCategory selectedFormCategory;
     private int selectedFamilyIndex;
+    private int selectedFamilyExitIndex;
     private int selectedOpeningIndex;
     private int selectedHallwayIndex;
     private MKWorkspaceStairMode detailStairMode;
@@ -106,7 +107,7 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     public MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace, List<String> importManifestIds) {
-        this(anchor, workspace, importManifestIds, List.of(), null, null, -1, -1, -1, null, null, 0, 1, null, null, null);
+        this(anchor, workspace, importManifestIds, List.of(), null, null, -1, -1, -1, -1, null, null, 0, 1, null, null, null);
     }
 
     private MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace, List<String> importManifestIds,
@@ -114,6 +115,7 @@ public class MKWorkspaceScreen extends MKScreen {
                               MKTowerWorkspaceCategory selectedFormCategory,
                               String selectedTopologyKey,
                               int selectedFamilyIndex,
+                              int selectedFamilyExitIndex,
                               int selectedOpeningIndex,
                               int selectedHallwayIndex,
                               MKWorkspaceStairMode detailStairMode,
@@ -128,6 +130,7 @@ public class MKWorkspaceScreen extends MKScreen {
         this.selectedFormCategory = selectedFormCategory;
         this.selectedTopologyKey = selectedTopologyKey;
         this.selectedFamilyIndex = selectedFamilyIndex;
+        this.selectedFamilyExitIndex = selectedFamilyExitIndex;
         this.selectedOpeningIndex = selectedOpeningIndex;
         this.selectedHallwayIndex = selectedHallwayIndex;
         this.detailStairMode = detailStairMode;
@@ -141,7 +144,8 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public MKWorkspaceScreen copyWithWorkspace(MKStructureWorkspace updatedWorkspace, List<String> updatedImportManifestIds) {
         return new MKWorkspaceScreen(anchor, updatedWorkspace, updatedImportManifestIds, getInitialStatesForRefresh(updatedWorkspace),
-                selectedFormCategory, selectedTopologyKey, selectedFamilyIndex, selectedOpeningIndex, selectedHallwayIndex,
+                selectedFormCategory, selectedTopologyKey, selectedFamilyIndex, selectedFamilyExitIndex,
+                selectedOpeningIndex, selectedHallwayIndex,
                 detailStairMode, detailStairRiseType, detailFlatRunLength, detailStairWidth,
                 detailStairBlock, detailSlabBlock, detailLadderBlock);
     }
@@ -159,6 +163,7 @@ public class MKWorkspaceScreen extends MKScreen {
         addState("form_category_detail", this::buildFormCategoryDetailState);
         addState("form_families", this::buildFormFamiliesState);
         addState("form_family_detail", this::buildFormFamilyDetailState);
+        addState("form_family_exit_detail", this::buildFormFamilyExitDetailState);
         addState("form_openings", this::buildFormOpeningsState);
         addState("form_opening_detail", this::buildFormOpeningDetailState);
         addState("form_hallways", this::buildFormHallwaysState);
@@ -834,7 +839,7 @@ public class MKWorkspaceScreen extends MKScreen {
             MKText summary = makeWhiteText(Component.literal(
                     formatTopologyLabel(family.category().getSerializedName()) + "  |  " +
                             formatTopologyLabel(family.pieceRole().getSerializedName()) + "  |  exits " +
-                            formatExitMask(family.branchExitMask()) + "  |  shaft " +
+                            summarizeFamilyExits(family) + "  |  shaft " +
                             (family.supportsVerticalAccess() ? "yes" : "no")));
             summary.setWidth(CONTENT_WIDTH);
             summary.setMultiline(true);
@@ -901,7 +906,7 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), title);
 
         MKText helpText = makeWhiteText(Component.literal(
-                "Edit one family at a time. Branch exits define which cardinal templates should be generated for this family."));
+                "Edit one family at a time. Horizontal exits are authored per family, and each exit chooses a direction, path kind, and opening profile."));
         helpText.setWidth(CONTENT_WIDTH);
         helpText.setMultiline(true);
         root.addWidget(helpText);
@@ -921,12 +926,12 @@ public class MKWorkspaceScreen extends MKScreen {
         MKTextFieldWidget baseNameField = makeField("Base Name", family.baseName());
         baseNameField.setTextChangeCallback((field, text) -> replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
                 text.trim().isBlank() ? family.baseName() : text.trim(),
-                family.category(), family.pieceRole(), family.supportsVerticalAccess(), family.branchExitMask())));
+                family.category(), family.pieceRole(), family.supportsVerticalAccess(), family.horizontalExits())));
         MKButton categoryButton = new MKButton(Component.literal(formatTopologyLabel(family.category().getSerializedName())), 180, 20);
         categoryButton.setPressedCallback((button, mouseButton) -> {
             replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
                     family.baseName(), cycleCategory(family.category()), family.pieceRole(),
-                    family.supportsVerticalAccess(), family.branchExitMask()));
+                    family.supportsVerticalAccess(), family.horizontalExits()));
             flagNeedSetup();
             return true;
         });
@@ -934,7 +939,7 @@ public class MKWorkspaceScreen extends MKScreen {
         roleButton.setPressedCallback((button, mouseButton) -> {
             replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
                     family.baseName(), family.category(), cycleFamilyRole(family.pieceRole()),
-                    family.supportsVerticalAccess(), family.branchExitMask()));
+                    family.supportsVerticalAccess(), family.horizontalExits()));
             flagNeedSetup();
             return true;
         });
@@ -942,28 +947,54 @@ public class MKWorkspaceScreen extends MKScreen {
         supportsVerticalButton.setPressedCallback((button, mouseButton) -> {
             replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
                     family.baseName(), family.category(), family.pieceRole(),
-                    !family.supportsVerticalAccess(), family.branchExitMask()));
+                    !family.supportsVerticalAccess(), family.horizontalExits()));
             flagNeedSetup();
             return true;
         });
-        MKBranchExitMaskWidget exitMaskWidget = new MKBranchExitMaskWidget(family.branchExitMask())
-                .setToggleCallback(direction -> {
-                    toggleFamilyDirection(index, direction);
-                    flagNeedSetup();
-                });
 
         addRow(content, makeWhiteText(Component.literal("Base Name")), baseNameField);
         addRow(content, makeWhiteText(Component.literal("Category")), categoryButton);
         addRow(content, makeWhiteText(Component.literal("Role")), roleButton);
         addRow(content, makeWhiteText(Component.literal("Vertical Access")), supportsVerticalButton);
-        MKText exitMaskLabel = makeWhiteText(Component.literal("Branch Exit Mask"));
-        content.addWidget(exitMaskLabel);
-        content.addConstraintToWidget(MarginConstraint.LEFT, exitMaskLabel);
-        content.addWidget(exitMaskWidget);
-        content.addConstraintToWidget(new CenterXConstraint(), exitMaskWidget);
-        MKText exitMaskSummary = makeWhiteText(Component.literal("Current exits: " + formatExitMask(family.branchExitMask())));
-        content.addWidget(exitMaskSummary);
-        content.addConstraintToWidget(new CenterXConstraint(), exitMaskSummary);
+        MKText exitLabel = makeWhiteText(Component.literal("Horizontal Exits"));
+        content.addWidget(exitLabel);
+        content.addConstraintToWidget(MarginConstraint.LEFT, exitLabel);
+        if (family.horizontalExits().isEmpty()) {
+            MKText emptyText = makeWhiteText(Component.literal("No exits defined."));
+            content.addWidget(emptyText);
+            content.addConstraintToWidget(MarginConstraint.LEFT, emptyText);
+        } else {
+            for (int exitIndex = 0; exitIndex < family.horizontalExits().size(); exitIndex++) {
+                int currentExitIndex = exitIndex;
+                MKWorkspaceFamilyHorizontalExitDefinition exit = family.horizontalExits().get(exitIndex);
+                MKText exitSummary = makeWhiteText(Component.literal(describeFamilyExit(exit)));
+                exitSummary.setWidth(CONTENT_WIDTH);
+                exitSummary.setMultiline(true);
+                content.addWidget(exitSummary);
+                content.addConstraintToWidget(MarginConstraint.LEFT, exitSummary);
+
+                MKButton editExit = new MKButton(Component.literal("Edit Exit"), 180, 20);
+                content.addWidget(editExit);
+                content.addConstraintToWidget(new CenterXConstraint(), editExit);
+                editExit.setPressedCallback((button, mouseButton) -> {
+                    selectedFamilyExitIndex = currentExitIndex;
+                    pushState("form_family_exit_detail");
+                    flagNeedSetup();
+                    return true;
+                });
+            }
+        }
+
+        MKButton addExit = new MKButton(Component.literal("Add Exit"), 180, 20);
+        content.addWidget(addExit);
+        content.addConstraintToWidget(new CenterXConstraint(), addExit);
+        addExit.setPressedCallback((button, mouseButton) -> {
+            addFamilyExit(index);
+            selectedFamilyExitIndex = formDraft.familyDefinitions.get(index).horizontalExits().size() - 1;
+            pushState("form_family_exit_detail");
+            flagNeedSetup();
+            return true;
+        });
 
         content.manualRecompute();
         scrollView.addWidget(content);
@@ -977,6 +1008,7 @@ public class MKWorkspaceScreen extends MKScreen {
         remove.setPressedCallback((button, mouseButton) -> {
             removeFamilyDefinition(index);
             selectedFamilyIndex = -1;
+            selectedFamilyExitIndex = -1;
             switchToExistingState("form_families");
             return true;
         });
@@ -987,6 +1019,116 @@ public class MKWorkspaceScreen extends MKScreen {
         back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
         back.setPressedCallback((button, mouseButton) -> {
             switchToExistingState("form_families");
+            return true;
+        });
+        return root;
+    }
+
+    private MKLayout buildFormFamilyExitDetailState() {
+        ensureFormDraftInitialized();
+        if (selectedFamilyIndex < 0 || selectedFamilyIndex >= formDraft.familyDefinitions.size()) {
+            switchToExistingState("form_families");
+            return buildFormFamiliesState();
+        }
+        MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(selectedFamilyIndex);
+        if (selectedFamilyExitIndex < 0 || selectedFamilyExitIndex >= family.horizontalExits().size()) {
+            switchToExistingState("form_family_detail");
+            return buildFormFamilyDetailState();
+        }
+
+        int xPos = width / 2 - PANEL_WIDTH / 2;
+        int yPos = height / 2 - PANEL_HEIGHT / 2;
+        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
+        root.setMargins(8, 8, 8, 8);
+        root.setPaddingTop(8).setPaddingBot(8);
+
+        int familyIndex = selectedFamilyIndex;
+        int exitIndex = selectedFamilyExitIndex;
+        MKWorkspaceFamilyHorizontalExitDefinition exit = family.horizontalExits().get(exitIndex);
+
+        MKText title = makeWhiteText(Component.literal("Exit: " + describeFamilyExit(exit)));
+        root.addWidget(title);
+        root.addConstraintToWidget(MarginConstraint.TOP, title);
+        root.addConstraintToWidget(new CenterXConstraint(), title);
+
+        MKText helpText = makeWhiteText(Component.literal(
+                "Edit one family exit at a time. Each exit chooses a cardinal direction, whether it is main or branch path, and which opening profile it uses."));
+        helpText.setWidth(CONTENT_WIDTH);
+        helpText.setMultiline(true);
+        root.addWidget(helpText);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
+        root.addConstraintToWidget(new CenterXConstraint(), helpText);
+
+        int buttonAreaHeight = (2 * BUTTON_HEIGHT) + BUTTON_GAP + BOTTOM_PADDING;
+        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
+        root.addWidget(scrollView);
+
+        MKStackLayoutVertical content = new MKStackLayoutVertical(0, 0, CONTENT_WIDTH);
+        content.setMargins(4, 4, 4, 4);
+        content.setPaddingTop(4).setPaddingBot(4);
+
+        MKButton directionButton = new MKButton(Component.literal(formatDirection(exit.direction())), 180, 20);
+        directionButton.setPressedCallback((button, mouseButton) -> {
+            replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
+                    cycleCardinalDirection(exit.direction()),
+                    exit.pathKind(),
+                    exit.openingProfileId()
+            ));
+            flagNeedSetup();
+            return true;
+        });
+        MKButton pathKindButton = new MKButton(Component.literal(formatTopologyLabel(exit.pathKind().getSerializedName())), 180, 20);
+        pathKindButton.setPressedCallback((button, mouseButton) -> {
+            MKWorkspaceHorizontalExitPathKind nextPathKind = exit.pathKind().next();
+            String nextOpeningProfileId = ensureCompatibleOpeningProfile(nextPathKind, exit.openingProfileId());
+            replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
+                    exit.direction(),
+                    nextPathKind,
+                    nextOpeningProfileId
+            ));
+            flagNeedSetup();
+            return true;
+        });
+        MKButton openingProfileButton = new MKButton(Component.literal(exit.openingProfileId()), 180, 20);
+        openingProfileButton.setPressedCallback((button, mouseButton) -> {
+            replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
+                    exit.direction(),
+                    exit.pathKind(),
+                    nextOpeningProfileId(exit.pathKind(), exit.openingProfileId())
+            ));
+            flagNeedSetup();
+            return true;
+        });
+
+        addRow(content, makeWhiteText(Component.literal("Direction")), directionButton);
+        addRow(content, makeWhiteText(Component.literal("Path Kind")), pathKindButton);
+        addRow(content, makeWhiteText(Component.literal("Opening Profile")), openingProfileButton);
+
+        content.manualRecompute();
+        scrollView.addWidget(content);
+        scrollView.centerContentX();
+        scrollView.setToTop();
+
+        MKButton remove = new MKButton(Component.literal("Remove Exit"), 180, 20);
+        root.addWidget(remove);
+        root.addConstraintToWidget(new CenterXConstraint(), remove);
+        remove.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT);
+        remove.setPressedCallback((button, mouseButton) -> {
+            removeFamilyExit(familyIndex, exitIndex);
+            selectedFamilyExitIndex = -1;
+            switchToExistingState("form_family_detail");
+            return true;
+        });
+
+        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
+        root.addWidget(back);
+        root.addConstraintToWidget(new CenterXConstraint(), back);
+        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
+        back.setPressedCallback((button, mouseButton) -> {
+            selectedFamilyExitIndex = -1;
+            switchToExistingState("form_family_detail");
             return true;
         });
         return root;
@@ -2056,22 +2198,53 @@ public class MKWorkspaceScreen extends MKScreen {
                 MKTowerWorkspaceCategory.MAIN,
                 MKWorkspacePieceRole.FLOOR_MAIN,
                 true,
-                MKTowerBranchExitMask.NONE
+                defaultHorizontalExitsForNewFamily()
         ));
         formDraft.familyDefinitions = List.copyOf(updated);
     }
 
-    private void toggleFamilyDirection(int index, Direction direction) {
-        MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(index);
-        java.util.ArrayList<Direction> directions = new java.util.ArrayList<>(family.branchExitMask().directions());
-        if (family.branchExitMask().has(direction)) {
-            directions.remove(direction);
-        } else {
-            directions.add(direction);
-        }
-        replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
-                family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
-                MKTowerBranchExitMask.fromDirections(directions)
+    private List<MKWorkspaceFamilyHorizontalExitDefinition> defaultHorizontalExitsForNewFamily() {
+        String openingProfileId = firstCompatibleOpeningProfileId(MKWorkspaceHorizontalExitPathKind.MAIN)
+                .orElseGet(() -> formDraft.openingProfiles.isEmpty() ? "opening_1" : formDraft.openingProfiles.getFirst().profileId());
+        return List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
+                Direction.SOUTH,
+                MKWorkspaceHorizontalExitPathKind.MAIN,
+                openingProfileId
+        ));
+    }
+
+    private void replaceFamilyExit(int familyIndex, int exitIndex, MKWorkspaceFamilyHorizontalExitDefinition updatedExit) {
+        MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(familyIndex);
+        java.util.ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
+        exits.set(exitIndex, updatedExit);
+        replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
+                family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(), exits
+        ));
+    }
+
+    private void removeFamilyExit(int familyIndex, int exitIndex) {
+        MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(familyIndex);
+        java.util.ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
+        exits.remove(exitIndex);
+        replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
+                family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(), exits
+        ));
+    }
+
+    private void addFamilyExit(int familyIndex) {
+        MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(familyIndex);
+        java.util.ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
+        MKWorkspaceHorizontalExitPathKind pathKind = family.mainExit().isPresent() ?
+                MKWorkspaceHorizontalExitPathKind.BRANCH : MKWorkspaceHorizontalExitPathKind.MAIN;
+        Direction direction = firstUnusedCardinalDirection(exits).orElse(Direction.NORTH);
+        exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(
+                direction,
+                pathKind,
+                firstCompatibleOpeningProfileId(pathKind)
+                        .orElseGet(() -> formDraft.openingProfiles.isEmpty() ? "opening_1" : formDraft.openingProfiles.getFirst().profileId())
+        ));
+        replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
+                family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(), exits
         ));
     }
 
@@ -2160,24 +2333,13 @@ public class MKWorkspaceScreen extends MKScreen {
         }
     }
 
-    private String formatExitMask(MKTowerBranchExitMask mask) {
-        if (mask.directions().isEmpty()) {
+    private String summarizeFamilyExits(MKTowerWorkspaceFamilyDefinition family) {
+        if (family.horizontalExits().isEmpty()) {
             return "none";
         }
-        StringBuilder builder = new StringBuilder();
-        if (mask.has(Direction.NORTH)) {
-            builder.append('N');
-        }
-        if (mask.has(Direction.EAST)) {
-            builder.append('E');
-        }
-        if (mask.has(Direction.SOUTH)) {
-            builder.append('S');
-        }
-        if (mask.has(Direction.WEST)) {
-            builder.append('W');
-        }
-        return builder.toString();
+        return family.horizontalExits().stream()
+                .map(this::describeFamilyExit)
+                .collect(java.util.stream.Collectors.joining(", "));
     }
 
     private String describePathAccess(boolean allowOnMainPath, boolean allowOnBranchPath) {
@@ -2191,6 +2353,71 @@ public class MKWorkspaceScreen extends MKScreen {
             return "branch only";
         }
         return "disabled";
+    }
+
+    private String describeFamilyExit(MKWorkspaceFamilyHorizontalExitDefinition exit) {
+        return formatDirection(exit.direction()) + " / " + formatTopologyLabel(exit.pathKind().getSerializedName()) +
+                " / " + exit.openingProfileId();
+    }
+
+    private String formatDirection(Direction direction) {
+        return formatTopologyLabel(direction.getSerializedName());
+    }
+
+    private Direction cycleCardinalDirection(Direction direction) {
+        return switch (direction) {
+            case NORTH -> Direction.EAST;
+            case EAST -> Direction.SOUTH;
+            case SOUTH -> Direction.WEST;
+            case WEST -> Direction.NORTH;
+            default -> Direction.NORTH;
+        };
+    }
+
+    private java.util.Optional<Direction> firstUnusedCardinalDirection(List<MKWorkspaceFamilyHorizontalExitDefinition> exits) {
+        for (Direction direction : List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)) {
+            boolean used = exits.stream().anyMatch(exit -> exit.direction() == direction);
+            if (!used) {
+                return java.util.Optional.of(direction);
+            }
+        }
+        return java.util.Optional.empty();
+    }
+
+    private java.util.Optional<String> firstCompatibleOpeningProfileId(MKWorkspaceHorizontalExitPathKind pathKind) {
+        return formDraft.openingProfiles.stream()
+                .map(MKHorizontalOpeningProfile::profileId)
+                .filter(profileId -> isCompatibleOpeningProfile(pathKind, profileId))
+                .findFirst();
+    }
+
+    private String nextOpeningProfileId(MKWorkspaceHorizontalExitPathKind pathKind, String currentProfileId) {
+        List<String> compatibleProfiles = formDraft.openingProfiles.stream()
+                .map(MKHorizontalOpeningProfile::profileId)
+                .filter(profileId -> isCompatibleOpeningProfile(pathKind, profileId))
+                .toList();
+        if (compatibleProfiles.isEmpty()) {
+            return currentProfileId;
+        }
+        int currentIndex = compatibleProfiles.indexOf(currentProfileId);
+        if (currentIndex < 0) {
+            return compatibleProfiles.getFirst();
+        }
+        return compatibleProfiles.get((currentIndex + 1) % compatibleProfiles.size());
+    }
+
+    private String ensureCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind pathKind, String currentProfileId) {
+        return isCompatibleOpeningProfile(pathKind, currentProfileId) ? currentProfileId :
+                firstCompatibleOpeningProfileId(pathKind).orElse(currentProfileId);
+    }
+
+    private boolean isCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind pathKind, String profileId) {
+        return formDraft.openingProfiles.stream()
+                .filter(profile -> profile.profileId().equals(profileId))
+                .findFirst()
+                .map(profile -> pathKind == MKWorkspaceHorizontalExitPathKind.MAIN ?
+                        profile.allowOnMainPath() : profile.allowOnBranchPath())
+                .orElse(false);
     }
 
     private MKTowerWorkspaceCategory cycleCategory(MKTowerWorkspaceCategory current) {
@@ -2307,7 +2534,8 @@ public class MKWorkspaceScreen extends MKScreen {
         String familyId = piece.tags().get("workspace_family_id");
         if (familyId != null) {
             return "room:" + piece.tags().getOrDefault("workspace_category", "main") + ":" +
-                    familyId + ":" + piece.tags().getOrDefault("workspace_branch_exit_mask", "none");
+                    familyId + ":" + piece.tags().getOrDefault("workspace_horizontal_exits",
+                    piece.tags().getOrDefault("workspace_branch_exit_mask", "none"));
         }
         return "legacy:" + piece.tags().getOrDefault("topology_role", piece.role().getSerializedName());
     }
@@ -2322,7 +2550,8 @@ public class MKWorkspaceScreen extends MKScreen {
         if (familyId != null) {
             return formatTopologyLabel(piece.tags().getOrDefault("workspace_category", "main")) +
                     " / " + familyId +
-                    " / exits " + formatTopologyLabel(piece.tags().getOrDefault("workspace_branch_exit_mask", "none"));
+                    " / exits " + piece.tags().getOrDefault("workspace_horizontal_exits",
+                    piece.tags().getOrDefault("workspace_branch_exit_mask", "none"));
         }
         return formatTopologyLabel(piece.tags().getOrDefault("topology_role", piece.role().getSerializedName()));
     }
