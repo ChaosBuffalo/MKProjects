@@ -296,6 +296,8 @@ public class MKWorkspaceScaffoldBuilder {
                     sourceConnector.relativePos(),
                     sourceConnector.openingWidth(),
                     sourceConnector.openingHeight(),
+                    sourceConnector.lateralOffset(),
+                    sourceConnector.verticalOffset(),
                     sourceConnector.jigsawName(),
                     sourceConnector.jigsawTarget(),
                     pool,
@@ -431,20 +433,22 @@ public class MKWorkspaceScaffoldBuilder {
         Direction facing = plannedConnector.facing();
         int verticalShellThickness = getVerticalShellThickness(piece);
         int interiorCenterX = getConnectorCenterX(geometryOrigin, piece, shellMargin, plannedConnector);
-       int interiorCenterZ = getConnectorCenterZ(geometryOrigin, piece, shellMargin, plannedConnector);
+        int interiorCenterZ = getConnectorCenterZ(geometryOrigin, piece, shellMargin, plannedConnector);
+        int openingBaseY = getOpeningBaseY(geometryOrigin, verticalShellThickness, plannedConnector);
+        validateConnectorBounds(piece, plannedConnector, shellMargin, openingBaseY - geometryOrigin.getY());
         BlockPos connectorPos;
         if (facing == Direction.NORTH) {
-            connectorPos = new BlockPos(interiorCenterX, geometryOrigin.getY() + verticalShellThickness,
+            connectorPos = new BlockPos(interiorCenterX, openingBaseY,
                     geometryOrigin.getZ() + shellMargin - 1);
         } else if (facing == Direction.SOUTH) {
-            connectorPos = new BlockPos(interiorCenterX, geometryOrigin.getY() + verticalShellThickness,
+            connectorPos = new BlockPos(interiorCenterX, openingBaseY,
                     geometryOrigin.getZ() + shellMargin + piece.interiorLength());
         } else if (facing == Direction.WEST) {
             connectorPos = new BlockPos(geometryOrigin.getX() + shellMargin - 1,
-                    geometryOrigin.getY() + verticalShellThickness, interiorCenterZ);
+                    openingBaseY, interiorCenterZ);
         } else if (facing == Direction.EAST) {
             connectorPos = new BlockPos(geometryOrigin.getX() + shellMargin + piece.interiorWidth(),
-                    geometryOrigin.getY() + verticalShellThickness, interiorCenterZ);
+                    openingBaseY, interiorCenterZ);
         } else if (facing == Direction.UP) {
             connectorPos = new BlockPos(interiorCenterX,
                     geometryOrigin.getY() + geometryHeight - Math.max(1, verticalShellThickness),
@@ -478,6 +482,8 @@ public class MKWorkspaceScaffoldBuilder {
                 connectorPos.subtract(exportOrigin),
                 plannedConnector.openingWidth(),
                 plannedConnector.openingHeight(),
+                plannedConnector.lateralOffset(),
+                plannedConnector.verticalOffset(),
                 name,
                 target,
                 pool,
@@ -489,7 +495,7 @@ public class MKWorkspaceScaffoldBuilder {
                                        MKPlannedConnector connector, int shellMargin, int verticalShellThickness,
                                        int geometryWidth,
                                        int geometryLength, int geometryHeight) {
-        int baseY = geometryOrigin.getY() + verticalShellThickness;
+        int baseY = getOpeningBaseY(geometryOrigin, verticalShellThickness, connector);
         int centerX;
         int centerZ;
         if (connector.facing() == Direction.UP || connector.facing() == Direction.DOWN) {
@@ -583,14 +589,40 @@ public class MKWorkspaceScaffoldBuilder {
         if (connector.facing() == Direction.UP || connector.facing() == Direction.DOWN) {
             return getVerticalCenterX(geometryOrigin, piece, shellMargin);
         }
-        return geometryOrigin.getX() + shellMargin + (piece.interiorWidth() / 2);
+        return geometryOrigin.getX() + shellMargin + (piece.interiorWidth() / 2) + connector.lateralOffset();
     }
 
     private int getConnectorCenterZ(BlockPos geometryOrigin, MKPlannedPiece piece, int shellMargin, MKPlannedConnector connector) {
         if (connector.facing() == Direction.UP || connector.facing() == Direction.DOWN) {
             return getVerticalCenterZ(geometryOrigin, piece, shellMargin);
         }
-        return geometryOrigin.getZ() + shellMargin + (piece.interiorLength() / 2);
+        return geometryOrigin.getZ() + shellMargin + (piece.interiorLength() / 2) + connector.lateralOffset();
+    }
+
+    private int getOpeningBaseY(BlockPos geometryOrigin, int verticalShellThickness, MKPlannedConnector connector) {
+        return geometryOrigin.getY() + verticalShellThickness + connector.verticalOffset();
+    }
+
+    private void validateConnectorBounds(MKPlannedPiece piece, MKPlannedConnector connector, int shellMargin,
+                                         int localBaseY) {
+        if (connector.facing() == Direction.UP || connector.facing() == Direction.DOWN) {
+            return;
+        }
+        int halfWidth = connector.openingWidth() / 2;
+        int centeredHalfSpan = connector.facing() == Direction.NORTH || connector.facing() == Direction.SOUTH ?
+                piece.interiorWidth() / 2 : piece.interiorLength() / 2;
+        if (Math.abs(connector.lateralOffset()) + halfWidth > centeredHalfSpan) {
+            throw new IllegalStateException("connector " + connector.role().getSerializedName() +
+                    " opening exceeds the available wall span for piece " + piece.pieceName());
+        }
+        if (localBaseY < Math.max(1, 0 + 1)) {
+            throw new IllegalStateException("connector " + connector.role().getSerializedName() +
+                    " opening base is below the room interior for piece " + piece.pieceName());
+        }
+        if ((localBaseY - 1) + connector.openingHeight() > piece.interiorHeight()) {
+            throw new IllegalStateException("connector " + connector.role().getSerializedName() +
+                    " opening exceeds the room height for piece " + piece.pieceName());
+        }
     }
 
     private BlockPos placeStructureBlock(ServerLevel level, MKStructureWorkspace workspace, MKPlannedPiece piece,

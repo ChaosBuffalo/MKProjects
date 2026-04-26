@@ -14,19 +14,24 @@ public class MKWorkspaceConnectorDefinition {
     private final BlockPos relativePos;
     private final int openingWidth;
     private final int openingHeight;
+    private final int lateralOffset;
+    private final int verticalOffset;
     private final ResourceLocation jigsawName;
     private final ResourceLocation jigsawTarget;
     private final ResourceLocation targetPool;
     private final ResourceLocation incomingPool;
 
     public MKWorkspaceConnectorDefinition(MKConnectorRole role, Direction facing, BlockPos relativePos, int openingWidth,
-                                          int openingHeight, ResourceLocation jigsawName, ResourceLocation jigsawTarget,
+                                          int openingHeight, int lateralOffset, int verticalOffset,
+                                          ResourceLocation jigsawName, ResourceLocation jigsawTarget,
                                           ResourceLocation targetPool, ResourceLocation incomingPool) {
         this.role = role;
         this.facing = facing;
         this.relativePos = relativePos;
         this.openingWidth = openingWidth;
         this.openingHeight = openingHeight;
+        this.lateralOffset = lateralOffset;
+        this.verticalOffset = verticalOffset;
         this.jigsawName = jigsawName;
         this.jigsawTarget = jigsawTarget;
         this.targetPool = targetPool;
@@ -40,6 +45,8 @@ public class MKWorkspaceConnectorDefinition {
                 MKWorkspaceNbtUtil.blockPosFromTag(tag.getCompound("relativePos")),
                 tag.getInt("openingWidth"),
                 tag.getInt("openingHeight"),
+                tag.contains("lateralOffset") ? tag.getInt("lateralOffset") : 0,
+                tag.contains("verticalOffset") ? tag.getInt("verticalOffset") : 0,
                 ResourceLocation.parse(tag.getString("jigsawName")),
                 ResourceLocation.parse(tag.getString("jigsawTarget")),
                 ResourceLocation.parse(tag.getString("targetPool")),
@@ -54,6 +61,8 @@ public class MKWorkspaceConnectorDefinition {
         tag.put("relativePos", MKWorkspaceNbtUtil.blockPosToTag(relativePos));
         tag.putInt("openingWidth", openingWidth);
         tag.putInt("openingHeight", openingHeight);
+        tag.putInt("lateralOffset", lateralOffset);
+        tag.putInt("verticalOffset", verticalOffset);
         tag.putString("jigsawName", jigsawName.toString());
         tag.putString("jigsawTarget", jigsawTarget.toString());
         tag.putString("targetPool", targetPool.toString());
@@ -79,6 +88,14 @@ public class MKWorkspaceConnectorDefinition {
 
     public int openingHeight() {
         return openingHeight;
+    }
+
+    public int lateralOffset() {
+        return lateralOffset;
+    }
+
+    public int verticalOffset() {
+        return verticalOffset;
     }
 
     public ResourceLocation jigsawName() {

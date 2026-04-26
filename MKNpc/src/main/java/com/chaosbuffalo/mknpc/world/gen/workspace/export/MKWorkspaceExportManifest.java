@@ -3,6 +3,8 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.export;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
@@ -11,6 +13,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -23,6 +26,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -88,7 +92,9 @@ public record MKWorkspaceExportManifest(
                                 workspace.stairConfig().stairBlock(),
                                 workspace.stairConfig().slabBlock(),
                                 workspace.stairConfig().ladderBlock()
-                        )
+                        ),
+                        Optional.of(ExportVerticalAccessSpec.from(workspace.verticalAccessSpec())),
+                        workspace.categoryProfiles().stream().map(ExportCategoryProfile::from).toList()
                 ),
                 ExportRuntimeHints.forWorkspace(workspace),
                 buildCategories(workspace),
@@ -120,6 +126,10 @@ public record MKWorkspaceExportManifest(
 
     private static Codec<MKVerticalAccessPlacement> verticalAccessPlacementCodec() {
         return Codec.STRING.xmap(MKVerticalAccessPlacement::fromSerializedName, MKVerticalAccessPlacement::getSerializedName);
+    }
+
+    private static Codec<MKTowerWorkspaceCategory> towerCategoryCodec() {
+        return Codec.STRING.xmap(MKTowerWorkspaceCategory::fromSerializedName, MKTowerWorkspaceCategory::getSerializedName);
     }
 
     private static Codec<MKWorkspacePieceRole> pieceRoleCodec() {
@@ -205,7 +215,9 @@ public record MKWorkspaceExportManifest(
             MKVerticalAccessPlacement verticalAccessPlacement,
             ExportDimensions dimensions,
             ExportPalette palette,
-            ExportStairConfig stairConfig
+            ExportStairConfig stairConfig,
+            Optional<ExportVerticalAccessSpec> verticalAccessSpec,
+            List<ExportCategoryProfile> categoryProfiles
     ) {
         public static final Codec<ExportWorkspaceSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ExportBlockPos.CODEC.fieldOf("anchor").forGetter(ExportWorkspaceSettings::anchor),
@@ -215,8 +227,82 @@ public record MKWorkspaceExportManifest(
                 verticalAccessPlacementCodec().fieldOf("vertical_access_placement").forGetter(ExportWorkspaceSettings::verticalAccessPlacement),
                 ExportDimensions.CODEC.fieldOf("dimensions").forGetter(ExportWorkspaceSettings::dimensions),
                 ExportPalette.CODEC.fieldOf("palette").forGetter(ExportWorkspaceSettings::palette),
-                ExportStairConfig.CODEC.fieldOf("stair_config").forGetter(ExportWorkspaceSettings::stairConfig)
+                ExportStairConfig.CODEC.fieldOf("stair_config").forGetter(ExportWorkspaceSettings::stairConfig),
+                ExportVerticalAccessSpec.CODEC.optionalFieldOf("vertical_access_spec").forGetter(ExportWorkspaceSettings::verticalAccessSpec),
+                ExportCategoryProfile.CODEC.listOf().optionalFieldOf("category_profiles", List.of()).forGetter(ExportWorkspaceSettings::categoryProfiles)
         ).apply(instance, ExportWorkspaceSettings::new));
+    }
+
+    public record ExportVerticalAccessSpec(
+            int shaftSize,
+            MKVerticalAccessPlacement placement,
+            ExportStairConfig stairConfig
+    ) {
+        public static final Codec<ExportVerticalAccessSpec> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.INT.fieldOf("shaft_size").forGetter(ExportVerticalAccessSpec::shaftSize),
+                verticalAccessPlacementCodec().fieldOf("placement").forGetter(ExportVerticalAccessSpec::placement),
+                ExportStairConfig.CODEC.fieldOf("stair_config").forGetter(ExportVerticalAccessSpec::stairConfig)
+        ).apply(instance, ExportVerticalAccessSpec::new));
+
+        public static ExportVerticalAccessSpec from(MKWorkspaceVerticalAccessSpec spec) {
+            return new ExportVerticalAccessSpec(
+                    spec.shaftSize(),
+                    spec.placement(),
+                    new ExportStairConfig(
+                            spec.stairConfig().mode(),
+                            spec.stairConfig().riseType(),
+                            spec.stairConfig().flatRunLength(),
+                            spec.stairConfig().stairWidth(),
+                            spec.stairConfig().stairBlock(),
+                            spec.stairConfig().slabBlock(),
+                            spec.stairConfig().ladderBlock()
+                    )
+            );
+        }
+    }
+
+    public record ExportCategoryProfile(
+            MKTowerWorkspaceCategory category,
+            int roomWidth,
+            int roomLength,
+            int defaultHeight,
+            int minHeight,
+            int maxHeight,
+            boolean supportsVerticalAccess,
+            int mainOpeningWidth,
+            int mainOpeningHeight,
+            int branchOpeningWidth,
+            int branchOpeningHeight
+    ) {
+        public static final Codec<ExportCategoryProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                towerCategoryCodec().fieldOf("category").forGetter(ExportCategoryProfile::category),
+                Codec.INT.fieldOf("room_width").forGetter(ExportCategoryProfile::roomWidth),
+                Codec.INT.fieldOf("room_length").forGetter(ExportCategoryProfile::roomLength),
+                Codec.INT.fieldOf("default_height").forGetter(ExportCategoryProfile::defaultHeight),
+                Codec.INT.fieldOf("min_height").forGetter(ExportCategoryProfile::minHeight),
+                Codec.INT.fieldOf("max_height").forGetter(ExportCategoryProfile::maxHeight),
+                Codec.BOOL.fieldOf("supports_vertical_access").forGetter(ExportCategoryProfile::supportsVerticalAccess),
+                Codec.INT.fieldOf("main_opening_width").forGetter(ExportCategoryProfile::mainOpeningWidth),
+                Codec.INT.fieldOf("main_opening_height").forGetter(ExportCategoryProfile::mainOpeningHeight),
+                Codec.INT.fieldOf("branch_opening_width").forGetter(ExportCategoryProfile::branchOpeningWidth),
+                Codec.INT.fieldOf("branch_opening_height").forGetter(ExportCategoryProfile::branchOpeningHeight)
+        ).apply(instance, ExportCategoryProfile::new));
+
+        public static ExportCategoryProfile from(MKTowerWorkspaceCategoryProfile profile) {
+            return new ExportCategoryProfile(
+                    profile.category(),
+                    profile.roomWidth(),
+                    profile.roomLength(),
+                    profile.defaultHeight(),
+                    profile.minHeight(),
+                    profile.maxHeight(),
+                    profile.supportsVerticalAccess(),
+                    profile.mainOpeningWidth(),
+                    profile.mainOpeningHeight(),
+                    profile.branchOpeningWidth(),
+                    profile.branchOpeningHeight()
+            );
+        }
     }
 
     public record ExportRuntimeHints(
@@ -379,6 +465,8 @@ public record MKWorkspaceExportManifest(
             ExportBlockPos relativePos,
             int openingWidth,
             int openingHeight,
+            int lateralOffset,
+            int verticalOffset,
             ResourceLocation jigsawName,
             ResourceLocation jigsawTarget,
             ResourceLocation targetPool,
@@ -390,6 +478,8 @@ public record MKWorkspaceExportManifest(
                 ExportBlockPos.CODEC.fieldOf("relative_pos").forGetter(ExportConnector::relativePos),
                 Codec.INT.fieldOf("opening_width").forGetter(ExportConnector::openingWidth),
                 Codec.INT.fieldOf("opening_height").forGetter(ExportConnector::openingHeight),
+                Codec.INT.optionalFieldOf("lateral_offset", 0).forGetter(ExportConnector::lateralOffset),
+                Codec.INT.optionalFieldOf("vertical_offset", 0).forGetter(ExportConnector::verticalOffset),
                 ResourceLocation.CODEC.fieldOf("jigsaw_name").forGetter(ExportConnector::jigsawName),
                 ResourceLocation.CODEC.fieldOf("jigsaw_target").forGetter(ExportConnector::jigsawTarget),
                 ResourceLocation.CODEC.fieldOf("target_pool").forGetter(ExportConnector::targetPool),
@@ -403,6 +493,8 @@ public record MKWorkspaceExportManifest(
                     ExportBlockPos.from(connector.relativePos()),
                     connector.openingWidth(),
                     connector.openingHeight(),
+                    connector.lateralOffset(),
+                    connector.verticalOffset(),
                     connector.jigsawName(),
                     connector.jigsawTarget(),
                     connector.targetPool(),

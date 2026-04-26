@@ -2,7 +2,12 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
@@ -17,24 +22,26 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     @Override
     public List<MKPlannedPiece> createCanonicalPieces(MKStructureWorkspace workspace) {
         MKWorkspaceDimensions dimensions = workspace.dimensions();
-        String stairPlacement = workspace.verticalAccessPlacement().getSerializedName();
-        int roomWidth = dimensions.roomWidth();
-        int roomLength = dimensions.roomLength();
-        int entranceHeight = dimensions.entranceHeight();
-        int roomHeight = dimensions.roomHeight();
-        int basementHeight = dimensions.basementHeight();
-        int hallWidth = dimensions.hallwayWidth();
-        int doorwayWidth = dimensions.doorwayWidth();
-        int doorwayHeight = dimensions.doorwayHeight();
+        String stairPlacement = workspace.verticalAccessSpec().placement().getSerializedName();
+        MKTowerWorkspaceCategoryProfile entryProfile = workspace.categoryProfile(MKTowerWorkspaceCategory.ENTRY)
+                .orElseGet(() -> fallbackProfile(MKTowerWorkspaceCategory.ENTRY, dimensions));
+        MKTowerWorkspaceCategoryProfile mainProfile = workspace.categoryProfile(MKTowerWorkspaceCategory.MAIN)
+                .orElseGet(() -> fallbackProfile(MKTowerWorkspaceCategory.MAIN, dimensions));
+        MKTowerWorkspaceCategoryProfile basementProfile = workspace.categoryProfile(MKTowerWorkspaceCategory.BASEMENT)
+                .orElseGet(() -> fallbackProfile(MKTowerWorkspaceCategory.BASEMENT, dimensions));
+        MKTowerWorkspaceCategoryProfile bossProfile = workspace.categoryProfile(MKTowerWorkspaceCategory.BOSS)
+                .orElseGet(() -> fallbackProfile(MKTowerWorkspaceCategory.BOSS, dimensions));
+        int hallWidth = workspace.verticalAccessSpec().shaftSize();
 
         MKPlannedPiece entry = new MKPlannedPiece(
                 MKWorkspacePieceRole.ENTRY,
                 "entry",
-                roomWidth,
-                roomLength,
-                entranceHeight,
+                entryProfile.roomWidth(),
+                entryProfile.roomLength(),
+                entryProfile.defaultHeight(),
                 List.of(
-                        new MKPlannedConnector(MKConnectorRole.MAIN_BACK, Direction.SOUTH, doorwayWidth, doorwayHeight, "minecraft:empty"),
+                        new MKPlannedConnector(MKConnectorRole.MAIN_BACK, Direction.SOUTH,
+                                entryProfile.mainOpeningWidth(), entryProfile.mainOpeningHeight(), "minecraft:empty"),
                         new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth, "connect_up"),
                         new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth, "connect_down_entry")
                 ),
@@ -45,9 +52,9 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         MKPlannedPiece floorMain = new MKPlannedPiece(
                 MKWorkspacePieceRole.FLOOR_MAIN,
                 "floor_main",
-                roomWidth,
-                roomLength,
-                roomHeight,
+                mainProfile.roomWidth(),
+                mainProfile.roomLength(),
+                mainProfile.defaultHeight(),
                 List.of(
                         new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
                                 "minecraft:empty", "connect_up"),
@@ -60,9 +67,9 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         MKPlannedPiece bossApproach = new MKPlannedPiece(
                 MKWorkspacePieceRole.BOSS_APPROACH,
                 "boss_approach",
-                roomWidth,
-                roomLength,
-                roomHeight,
+                bossProfile.roomWidth(),
+                bossProfile.roomLength(),
+                bossProfile.defaultHeight(),
                 List.of(
                         new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
                                 "minecraft:empty", "connect_up"),
@@ -75,9 +82,9 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         MKPlannedPiece basementEntry = new MKPlannedPiece(
                 MKWorkspacePieceRole.BASEMENT_ENTRY,
                 "basement_entry",
-                roomWidth,
-                roomLength,
-                basementHeight,
+                basementProfile.roomWidth(),
+                basementProfile.roomLength(),
+                basementProfile.defaultHeight(),
                 List.of(
                         new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
                                 "minecraft:empty", "connect_down_entry"),
@@ -90,9 +97,9 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         MKPlannedPiece basementMain = new MKPlannedPiece(
                 MKWorkspacePieceRole.BASEMENT_MAIN,
                 "basement_main",
-                roomWidth,
-                roomLength,
-                basementHeight,
+                basementProfile.roomWidth(),
+                basementProfile.roomLength(),
+                basementProfile.defaultHeight(),
                 List.of(
                         new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
                                 "minecraft:empty", "connect_down"),
@@ -105,9 +112,9 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         MKPlannedPiece basementCap = new MKPlannedPiece(
                 MKWorkspacePieceRole.BASEMENT_CAP,
                 "basement_cap",
-                roomWidth,
-                roomLength,
-                basementHeight,
+                basementProfile.roomWidth(),
+                basementProfile.roomLength(),
+                basementProfile.defaultHeight(),
                 List.of(new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
                         "minecraft:empty", "connect_down")),
                 buildTags("basement_cap", stairPlacement, "down", false, true,
@@ -117,9 +124,9 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         MKPlannedPiece bossCap = new MKPlannedPiece(
                 MKWorkspacePieceRole.BOSS_CAP,
                 "boss_cap",
-                roomWidth,
-                roomLength,
-                roomHeight,
+                bossProfile.roomWidth(),
+                bossProfile.roomLength(),
+                bossProfile.defaultHeight(),
                 List.of(new MKPlannedConnector(MKConnectorRole.BOSS_BACK, Direction.DOWN, hallWidth, hallWidth,
                         "minecraft:empty", "boss_cap")),
                 buildTags("boss_cap", stairPlacement, "up", true, false,
@@ -127,6 +134,17 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                                 true, false, true, true))
         );
         return List.of(entry, floorMain, bossApproach, bossCap, basementEntry, basementMain, basementCap);
+    }
+
+    private MKTowerWorkspaceCategoryProfile fallbackProfile(MKTowerWorkspaceCategory category,
+                                                            MKWorkspaceDimensions dimensions) {
+        return MKTowerWorkspaceCategoryProfile.createDefaults(dimensions,
+                MKWorkspaceVerticalAccessSpec.fromLegacy(dimensions, MKVerticalAccessPlacement.CENTER,
+                        MKWorkspaceStairAuthoringConfig.defaultConfig()))
+                .stream()
+                .filter(profile -> profile.category() == category)
+                .findFirst()
+                .orElseThrow();
     }
 
     private Map<String, String> buildTags(String topologyRole, String stairPlacement, String stairDirection,

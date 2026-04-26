@@ -6,6 +6,7 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
@@ -16,6 +17,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceScaffoldBuilder;
@@ -127,6 +129,62 @@ public class MKStructureWorkspaceImportService {
         MKWorkspaceExportManifest.ExportDimensions dimensions = settings.dimensions();
         MKWorkspaceExportManifest.ExportPalette palette = settings.palette();
         MKWorkspaceExportManifest.ExportStairConfig stairConfig = settings.stairConfig();
+        MKWorkspaceDimensions workspaceDimensions = new MKWorkspaceDimensions(
+                dimensions.roomWidth(),
+                dimensions.roomLength(),
+                dimensions.entranceHeight(),
+                dimensions.roomHeight(),
+                dimensions.basementHeight(),
+                dimensions.hallwayWidth(),
+                dimensions.doorwayWidth(),
+                dimensions.doorwayHeight()
+        );
+        MKWorkspaceStairAuthoringConfig workspaceStairConfig = new MKWorkspaceStairAuthoringConfig(
+                stairConfig.mode(),
+                stairConfig.riseType(),
+                stairConfig.flatRunLength(),
+                stairConfig.stairWidth(),
+                stairConfig.stairBlock(),
+                stairConfig.slabBlock(),
+                stairConfig.ladderBlock()
+        );
+        MKWorkspaceVerticalAccessSpec verticalAccessSpec = settings.verticalAccessSpec()
+                .map(spec -> new MKWorkspaceVerticalAccessSpec(
+                        spec.shaftSize(),
+                        spec.placement(),
+                        new MKWorkspaceStairAuthoringConfig(
+                                spec.stairConfig().mode(),
+                                spec.stairConfig().riseType(),
+                                spec.stairConfig().flatRunLength(),
+                                spec.stairConfig().stairWidth(),
+                                spec.stairConfig().stairBlock(),
+                                spec.stairConfig().slabBlock(),
+                                spec.stairConfig().ladderBlock()
+                        )
+                ))
+                .orElseGet(() -> MKWorkspaceVerticalAccessSpec.fromLegacy(
+                        workspaceDimensions,
+                        settings.verticalAccessPlacement(),
+                        workspaceStairConfig
+                ));
+        List<MKTowerWorkspaceCategoryProfile> categoryProfiles = settings.categoryProfiles().stream()
+                .map(profile -> new MKTowerWorkspaceCategoryProfile(
+                        profile.category(),
+                        profile.roomWidth(),
+                        profile.roomLength(),
+                        profile.defaultHeight(),
+                        profile.minHeight(),
+                        profile.maxHeight(),
+                        profile.supportsVerticalAccess(),
+                        profile.mainOpeningWidth(),
+                        profile.mainOpeningHeight(),
+                        profile.branchOpeningWidth(),
+                        profile.branchOpeningHeight()
+                ))
+                .toList();
+        if (categoryProfiles.isEmpty()) {
+            categoryProfiles = MKTowerWorkspaceCategoryProfile.createDefaults(workspaceDimensions, verticalAccessSpec);
+        }
         long now = System.currentTimeMillis();
         return new MKStructureWorkspace(
                 UUID.randomUUID(),
@@ -134,34 +192,19 @@ public class MKStructureWorkspaceImportService {
                 manifest.namespace(),
                 manifest.structureName(),
                 manifest.familyType(),
-                new MKWorkspaceDimensions(
-                        dimensions.roomWidth(),
-                        dimensions.roomLength(),
-                        dimensions.entranceHeight(),
-                        dimensions.roomHeight(),
-                        dimensions.basementHeight(),
-                        dimensions.hallwayWidth(),
-                        dimensions.doorwayWidth(),
-                        dimensions.doorwayHeight()
-                ),
+                workspaceDimensions,
                 new MKWorkspaceMaterialPalette(
                         palette.floorBlock(),
                         palette.wallBlock(),
                         palette.ceilingBlock()
                 ),
-                new MKWorkspaceStairAuthoringConfig(
-                        stairConfig.mode(),
-                        stairConfig.riseType(),
-                        stairConfig.flatRunLength(),
-                        stairConfig.stairWidth(),
-                        stairConfig.stairBlock(),
-                        stairConfig.slabBlock(),
-                        stairConfig.ladderBlock()
-                ),
+                workspaceStairConfig,
                 settings.verticalAccessPlacement(),
                 settings.shellMargin(),
                 settings.exteriorAirMargin(),
                 settings.previewMargin(),
+                verticalAccessSpec,
+                categoryProfiles,
                 now,
                 now,
                 List.of()
@@ -205,6 +248,8 @@ public class MKStructureWorkspaceImportService {
                 Direction.byName(connector.facing()),
                 connector.openingWidth(),
                 connector.openingHeight(),
+                connector.lateralOffset(),
+                connector.verticalOffset(),
                 connector.targetPool().toString(),
                 connector.incomingPool().toString()
         );
@@ -250,6 +295,8 @@ public class MKStructureWorkspaceImportService {
                 new BlockPos(connector.relativePos().x(), connector.relativePos().y(), connector.relativePos().z()),
                 connector.openingWidth(),
                 connector.openingHeight(),
+                connector.lateralOffset(),
+                connector.verticalOffset(),
                 connector.jigsawName(),
                 connector.jigsawTarget(),
                 connector.targetPool(),

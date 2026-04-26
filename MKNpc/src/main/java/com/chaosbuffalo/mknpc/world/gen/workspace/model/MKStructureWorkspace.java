@@ -7,6 +7,7 @@ import net.minecraft.nbt.Tag;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class MKStructureWorkspace {
@@ -19,6 +20,8 @@ public class MKStructureWorkspace {
     private final MKWorkspaceMaterialPalette palette;
     private final MKWorkspaceStairAuthoringConfig stairConfig;
     private final MKVerticalAccessPlacement verticalAccessPlacement;
+    private final MKWorkspaceVerticalAccessSpec verticalAccessSpec;
+    private final List<MKTowerWorkspaceCategoryProfile> categoryProfiles;
     private final int shellMargin;
     private final int exteriorAirMargin;
     private final int previewMargin;
@@ -32,6 +35,8 @@ public class MKStructureWorkspace {
                                 MKVerticalAccessPlacement verticalAccessPlacement,
                                 int shellMargin, int exteriorAirMargin,
                                 int previewMargin,
+                                MKWorkspaceVerticalAccessSpec verticalAccessSpec,
+                                List<MKTowerWorkspaceCategoryProfile> categoryProfiles,
                                 long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces) {
         this.id = id;
         this.anchor = anchor;
@@ -42,12 +47,29 @@ public class MKStructureWorkspace {
         this.palette = palette;
         this.stairConfig = stairConfig;
         this.verticalAccessPlacement = verticalAccessPlacement;
+        this.verticalAccessSpec = verticalAccessSpec;
+        this.categoryProfiles = List.copyOf(categoryProfiles);
         this.shellMargin = shellMargin;
         this.exteriorAirMargin = exteriorAirMargin;
         this.previewMargin = previewMargin;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.pieces = List.copyOf(pieces);
+    }
+
+    public MKStructureWorkspace(UUID id, BlockPos anchor, String namespace, String structureName,
+                                MKStructureFamilyType familyType, MKWorkspaceDimensions dimensions,
+                                MKWorkspaceMaterialPalette palette, MKWorkspaceStairAuthoringConfig stairConfig,
+                                MKVerticalAccessPlacement verticalAccessPlacement,
+                                int shellMargin, int exteriorAirMargin,
+                                int previewMargin,
+                                long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces) {
+        this(id, anchor, namespace, structureName, familyType, dimensions, palette, stairConfig, verticalAccessPlacement,
+                shellMargin, exteriorAirMargin, previewMargin,
+                MKWorkspaceVerticalAccessSpec.fromLegacy(dimensions, verticalAccessPlacement, stairConfig),
+                MKTowerWorkspaceCategoryProfile.createDefaults(dimensions,
+                        MKWorkspaceVerticalAccessSpec.fromLegacy(dimensions, verticalAccessPlacement, stairConfig)),
+                createdAt, updatedAt, pieces);
     }
 
     public static MKStructureWorkspace createDraft(BlockPos anchor) {
@@ -65,6 +87,9 @@ public class MKStructureWorkspace {
                 1,
                 2,
                 4,
+                MKWorkspaceVerticalAccessSpec.defaultSpec(),
+                MKTowerWorkspaceCategoryProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions(),
+                        MKWorkspaceVerticalAccessSpec.defaultSpec()),
                 now,
                 now,
                 List.of()
@@ -76,20 +101,38 @@ public class MKStructureWorkspace {
         for (Tag pieceTag : tag.getList("pieces", Tag.TAG_COMPOUND)) {
             pieces.add(MKWorkspacePieceDefinition.fromTag((CompoundTag) pieceTag));
         }
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.fromTag(tag.getCompound("dimensions"));
+        MKWorkspaceStairAuthoringConfig stairConfig = tag.contains("stairConfig") ?
+                MKWorkspaceStairAuthoringConfig.fromTag(tag.getCompound("stairConfig")) :
+                MKWorkspaceStairAuthoringConfig.defaultConfig();
+        MKVerticalAccessPlacement placement = MKVerticalAccessPlacement.fromSerializedName(tag.getString("verticalAccessPlacement"));
+        MKWorkspaceVerticalAccessSpec verticalAccessSpec = tag.contains("verticalAccessSpec") ?
+                MKWorkspaceVerticalAccessSpec.fromTag(tag.getCompound("verticalAccessSpec")) :
+                MKWorkspaceVerticalAccessSpec.fromLegacy(dimensions, placement, stairConfig);
+        List<MKTowerWorkspaceCategoryProfile> categoryProfiles = new ArrayList<>();
+        if (tag.contains("categoryProfiles", Tag.TAG_LIST)) {
+            for (Tag profileTag : tag.getList("categoryProfiles", Tag.TAG_COMPOUND)) {
+                categoryProfiles.add(MKTowerWorkspaceCategoryProfile.fromTag((CompoundTag) profileTag));
+            }
+        }
+        if (categoryProfiles.isEmpty()) {
+            categoryProfiles = MKTowerWorkspaceCategoryProfile.createDefaults(dimensions, verticalAccessSpec);
+        }
         return new MKStructureWorkspace(
                 tag.getUUID("id"),
                 MKWorkspaceNbtUtil.blockPosFromTag(tag.getCompound("anchor")),
                 tag.getString("namespace"),
                 tag.getString("structureName"),
                 MKStructureFamilyType.fromSerializedName(tag.getString("familyType")),
-                MKWorkspaceDimensions.fromTag(tag.getCompound("dimensions")),
+                dimensions,
                 MKWorkspaceMaterialPalette.fromTag(tag.getCompound("palette")),
-                tag.contains("stairConfig") ? MKWorkspaceStairAuthoringConfig.fromTag(tag.getCompound("stairConfig"))
-                        : MKWorkspaceStairAuthoringConfig.defaultConfig(),
-                MKVerticalAccessPlacement.fromSerializedName(tag.getString("verticalAccessPlacement")),
+                stairConfig,
+                placement,
                 tag.getInt("shellMargin"),
                 tag.contains("exteriorAirMargin") ? tag.getInt("exteriorAirMargin") : 2,
                 tag.getInt("previewMargin"),
+                verticalAccessSpec,
+                categoryProfiles,
                 tag.getLong("createdAt"),
                 tag.getLong("updatedAt"),
                 pieces
@@ -107,11 +150,17 @@ public class MKStructureWorkspace {
         tag.put("palette", palette.toTag());
         tag.put("stairConfig", stairConfig.toTag());
         tag.putString("verticalAccessPlacement", verticalAccessPlacement.getSerializedName());
+        tag.put("verticalAccessSpec", verticalAccessSpec.toTag());
         tag.putInt("shellMargin", shellMargin);
         tag.putInt("exteriorAirMargin", exteriorAirMargin);
         tag.putInt("previewMargin", previewMargin);
         tag.putLong("createdAt", createdAt);
         tag.putLong("updatedAt", updatedAt);
+        ListTag categoryProfilesTag = new ListTag();
+        for (MKTowerWorkspaceCategoryProfile categoryProfile : categoryProfiles) {
+            categoryProfilesTag.add(categoryProfile.toTag());
+        }
+        tag.put("categoryProfiles", categoryProfilesTag);
         ListTag piecesTag = new ListTag();
         for (MKWorkspacePieceDefinition piece : pieces) {
             piecesTag.add(piece.toTag());
@@ -121,35 +170,31 @@ public class MKStructureWorkspace {
     }
 
     public List<String> validate() {
-        List<String> errors = new ArrayList<>(dimensions.validate());
-        List<Integer> allowedTowerHeights = MKWorkspaceDimensions.getAllowedTowerHeights(stairConfig,
-                dimensions.hallwayWidth(), 3, 4);
-        if (!allowedTowerHeights.contains(dimensions.roomHeight())) {
-            errors.add("room height must be one of " + allowedTowerHeights + " for stair mode " +
-                    MKVerticalAccessProfile.normalizeMode(stairConfig.mode()).getSerializedName());
+        List<String> errors = new ArrayList<>(verticalAccessSpec.validate());
+        for (MKTowerWorkspaceCategoryProfile categoryProfile : categoryProfiles) {
+            errors.addAll(categoryProfile.validate(verticalAccessSpec));
         }
-        List<Integer> allowedFlatRunLengths = MKWorkspaceDimensions.getAllowedFlatRunLengths(stairConfig,
-                dimensions.hallwayWidth(), dimensions.roomHeight(), 4);
-        if (!allowedFlatRunLengths.contains(stairConfig.flatRunLength())) {
-            errors.add("flat run length must be one of " + allowedFlatRunLengths + " for room height " +
-                    dimensions.roomHeight());
-        }
-        List<Integer> allowedStairWidths = MKWorkspaceDimensions.getAllowedStairWidths(dimensions.hallwayWidth());
-        if (!allowedStairWidths.contains(stairConfig.stairWidth())) {
-            errors.add("stair width must be one of " + allowedStairWidths + " for shaft size " +
-                    dimensions.hallwayWidth());
-        }
-        List<Integer> allowedEntranceHeights = MKWorkspaceDimensions.getAllowedEntranceHeights(stairConfig,
-                dimensions.hallwayWidth(), dimensions.roomHeight(), 3, 4);
-        if (!allowedEntranceHeights.contains(dimensions.entranceHeight())) {
-            errors.add("entrance height must be one of " + allowedEntranceHeights + " to stay in phase with room height " +
-                    dimensions.roomHeight());
-        }
-        List<Integer> allowedBasementHeights = MKWorkspaceDimensions.getAllowedEntranceHeights(stairConfig,
-                dimensions.hallwayWidth(), dimensions.roomHeight(), 3, 4);
-        if (!allowedBasementHeights.contains(dimensions.basementHeight())) {
-            errors.add("basement height must be one of " + allowedBasementHeights + " to stay in phase with room height " +
-                    dimensions.roomHeight());
+        Optional<MKTowerWorkspaceCategoryProfile> mainProfile = categoryProfile(MKTowerWorkspaceCategory.MAIN);
+        if (mainProfile.isPresent()) {
+            List<Integer> allowedEntranceHeights = MKWorkspaceDimensions.getAllowedEntranceHeights(
+                    verticalAccessSpec.stairConfig(),
+                    verticalAccessSpec.shaftSize(),
+                    mainProfile.get().defaultHeight(),
+                    3,
+                    4
+            );
+            Optional<MKTowerWorkspaceCategoryProfile> entryProfile = categoryProfile(MKTowerWorkspaceCategory.ENTRY);
+            if (entryProfile.isPresent() && entryProfile.get().supportsVerticalAccess() &&
+                    !allowedEntranceHeights.contains(entryProfile.get().defaultHeight())) {
+                errors.add("entry default height must be one of " + allowedEntranceHeights +
+                        " to stay in phase with main room height " + mainProfile.get().defaultHeight());
+            }
+            Optional<MKTowerWorkspaceCategoryProfile> basementProfile = categoryProfile(MKTowerWorkspaceCategory.BASEMENT);
+            if (basementProfile.isPresent() && basementProfile.get().supportsVerticalAccess() &&
+                    !allowedEntranceHeights.contains(basementProfile.get().defaultHeight())) {
+                errors.add("basement default height must be one of " + allowedEntranceHeights +
+                        " to stay in phase with main room height " + mainProfile.get().defaultHeight());
+            }
         }
         if (namespace.isBlank()) {
             errors.add("namespace cannot be blank");
@@ -171,8 +216,8 @@ public class MKStructureWorkspace {
 
     public MKStructureWorkspace withPieces(List<MKWorkspacePieceDefinition> newPieces) {
         return new MKStructureWorkspace(id, anchor, namespace, structureName, familyType, dimensions, palette,
-                stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, createdAt,
-                System.currentTimeMillis(), newPieces);
+                stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
+                categoryProfiles, createdAt, System.currentTimeMillis(), newPieces);
     }
 
     public UUID id() {
@@ -209,6 +254,18 @@ public class MKStructureWorkspace {
 
     public MKVerticalAccessPlacement verticalAccessPlacement() {
         return verticalAccessPlacement;
+    }
+
+    public MKWorkspaceVerticalAccessSpec verticalAccessSpec() {
+        return verticalAccessSpec;
+    }
+
+    public List<MKTowerWorkspaceCategoryProfile> categoryProfiles() {
+        return categoryProfiles;
+    }
+
+    public Optional<MKTowerWorkspaceCategoryProfile> categoryProfile(MKTowerWorkspaceCategory category) {
+        return categoryProfiles.stream().filter(profile -> profile.category() == category).findFirst();
     }
 
     public int shellMargin() {
