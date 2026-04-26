@@ -9,8 +9,19 @@ import com.chaosbuffalo.mknpc.network.packets.GenerateAllWorkspaceStairsPacket;
 import com.chaosbuffalo.mknpc.network.packets.GenerateWorkspacePacket;
 import com.chaosbuffalo.mknpc.network.packets.GenerateWorkspaceStairsPacket;
 import com.chaosbuffalo.mknpc.network.packets.LoadWorkspaceFromManifestPacket;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerBranchExitMask;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
@@ -29,6 +40,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKTextFieldWidget;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -37,6 +49,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class MKWorkspaceScreen extends MKScreen {
     private static final int PANEL_WIDTH = 380;
@@ -88,6 +101,10 @@ public class MKWorkspaceScreen extends MKScreen {
         private ResourceLocation stairBlock;
         private ResourceLocation slabBlock;
         private ResourceLocation ladderBlock;
+        private List<MKTowerWorkspaceCategoryProfile> categoryProfiles;
+        private List<MKTowerWorkspaceFamilyDefinition> familyDefinitions;
+        private List<MKHorizontalOpeningProfile> openingProfiles;
+        private List<MKHallwayFamilyDefinition> hallwayFamilies;
     }
 
     public MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace, List<String> importManifestIds) {
@@ -130,6 +147,10 @@ public class MKWorkspaceScreen extends MKScreen {
         addState("form_identity", this::buildFormIdentityState);
         addState("form_vertical", this::buildFormVerticalState);
         addState("form_materials", this::buildFormMaterialsState);
+        addState("form_categories", this::buildFormCategoriesState);
+        addState("form_families", this::buildFormFamiliesState);
+        addState("form_openings", this::buildFormOpeningsState);
+        addState("form_hallways", this::buildFormHallwaysState);
         addState("workspace", this::buildWorkspaceState);
         addState("category", this::buildCategoryState);
         List<String> statesToPush = initialStates.isEmpty() ? getDefaultInitialStates() : initialStates;
@@ -262,7 +283,10 @@ public class MKWorkspaceScreen extends MKScreen {
         MKText summary = makeWhiteText(Component.literal(
                 formDraft.namespace + ":" + formDraft.structureName + "  |  " +
                         formDraft.roomWidth + "x" + formDraft.roomLength + " rooms  |  shaft " + formDraft.hallwayWidth +
-                        "  |  heights " + formDraft.roomHeight + "/" + formDraft.entranceHeight + "/" + formDraft.basementHeight));
+                        "  |  heights " + formDraft.roomHeight + "/" + formDraft.entranceHeight + "/" + formDraft.basementHeight +
+                        "  |  families " + formDraft.familyDefinitions.size() +
+                        "  |  openings " + formDraft.openingProfiles.size() +
+                        "  |  hallways " + formDraft.hallwayFamilies.size()));
         summary.setWidth(CONTENT_WIDTH);
         summary.setMultiline(true);
         root.addWidget(summary);
@@ -296,6 +320,46 @@ public class MKWorkspaceScreen extends MKScreen {
         materials.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 2));
         materials.setPressedCallback((button, mouseButton) -> {
             pushState("form_materials");
+            flagNeedSetup();
+            return true;
+        });
+
+        MKButton categories = new MKButton(Component.literal("Category Profiles"), 220, 20);
+        root.addWidget(categories);
+        root.addConstraintToWidget(new CenterXConstraint(), categories);
+        categories.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 3));
+        categories.setPressedCallback((button, mouseButton) -> {
+            pushState("form_categories");
+            flagNeedSetup();
+            return true;
+        });
+
+        MKButton families = new MKButton(Component.literal("Branch Variants"), 220, 20);
+        root.addWidget(families);
+        root.addConstraintToWidget(new CenterXConstraint(), families);
+        families.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 4));
+        families.setPressedCallback((button, mouseButton) -> {
+            pushState("form_families");
+            flagNeedSetup();
+            return true;
+        });
+
+        MKButton openings = new MKButton(Component.literal("Opening Profiles"), 220, 20);
+        root.addWidget(openings);
+        root.addConstraintToWidget(new CenterXConstraint(), openings);
+        openings.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 5));
+        openings.setPressedCallback((button, mouseButton) -> {
+            pushState("form_openings");
+            flagNeedSetup();
+            return true;
+        });
+
+        MKButton hallways = new MKButton(Component.literal("Hallway Families"), 220, 20);
+        root.addWidget(hallways);
+        root.addConstraintToWidget(new CenterXConstraint(), hallways);
+        hallways.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 6));
+        hallways.setPressedCallback((button, mouseButton) -> {
+            pushState("form_hallways");
             flagNeedSetup();
             return true;
         });
@@ -361,17 +425,25 @@ public class MKWorkspaceScreen extends MKScreen {
         MKTextFieldWidget roomWidthField = makeField("Room Width", Integer.toString(formDraft.roomWidth));
         roomWidthField.setTextChangeCallback((field, text) -> {
             formDraft.roomWidth = parseInt(text, formDraft.roomWidth);
+            syncLegacyFootprintToCategoryProfiles();
             rebaseDraftForFootprintChange();
         });
         MKTextFieldWidget roomLengthField = makeField("Room Length", Integer.toString(formDraft.roomLength));
         roomLengthField.setTextChangeCallback((field, text) -> {
             formDraft.roomLength = parseInt(text, formDraft.roomLength);
+            syncLegacyFootprintToCategoryProfiles();
             rebaseDraftForFootprintChange();
         });
         MKTextFieldWidget doorWidthField = makeField("Door Width", Integer.toString(formDraft.doorwayWidth));
-        doorWidthField.setTextChangeCallback((field, text) -> formDraft.doorwayWidth = parseInt(text, formDraft.doorwayWidth));
+        doorWidthField.setTextChangeCallback((field, text) -> {
+            formDraft.doorwayWidth = parseInt(text, formDraft.doorwayWidth);
+            syncLegacyDoorwayToCategoryProfiles();
+        });
         MKTextFieldWidget doorHeightField = makeField("Door Height", Integer.toString(formDraft.doorwayHeight));
-        doorHeightField.setTextChangeCallback((field, text) -> formDraft.doorwayHeight = parseInt(text, formDraft.doorwayHeight));
+        doorHeightField.setTextChangeCallback((field, text) -> {
+            formDraft.doorwayHeight = parseInt(text, formDraft.doorwayHeight);
+            syncLegacyDoorwayToCategoryProfiles();
+        });
         MKTextFieldWidget shellMarginField = makeField("Shell Margin", Integer.toString(formDraft.shellMargin));
         shellMarginField.setTextChangeCallback((field, text) -> formDraft.shellMargin = parseInt(text, formDraft.shellMargin));
         MKTextFieldWidget exteriorAirMarginField = makeField("Exterior Air Margin", Integer.toString(formDraft.exteriorAirMargin));
@@ -460,6 +532,7 @@ public class MKWorkspaceScreen extends MKScreen {
             formDraft.hallwayWidth = cycleAllowedShaftSize(formDraft.roomWidth, formDraft.roomLength, formDraft.hallwayWidth);
             formDraft.stairWidth = MKWorkspaceDimensions.snapToNearestAllowedStairWidth(formDraft.hallwayWidth, formDraft.stairWidth);
             rebaseDraftVerticalHeights();
+            syncLegacyHeightsToCategoryProfiles();
             hallWidthButton.buttonText = Component.literal(Integer.toString(formDraft.hallwayWidth));
             stairWidthButton.buttonText = Component.literal(Integer.toString(formDraft.stairWidth));
             roomHeightButton.buttonText = Component.literal(Integer.toString(formDraft.roomHeight));
@@ -476,6 +549,7 @@ public class MKWorkspaceScreen extends MKScreen {
         stairModeButton.setPressedCallback((button, mouseButton) -> {
             formDraft.stairMode = formDraft.stairMode.next();
             snapDraftVerticalHeights();
+            syncLegacyHeightsToCategoryProfiles();
             button.buttonText = getStairModeComponent(formDraft.stairMode);
             roomHeightButton.buttonText = Component.literal(Integer.toString(formDraft.roomHeight));
             entranceHeightButton.buttonText = Component.literal(Integer.toString(formDraft.entranceHeight));
@@ -486,6 +560,7 @@ public class MKWorkspaceScreen extends MKScreen {
         stairRiseTypeButton.setPressedCallback((button, mouseButton) -> {
             formDraft.stairRiseType = formDraft.stairRiseType.next();
             snapDraftVerticalHeights();
+            syncLegacyHeightsToCategoryProfiles();
             button.buttonText = getStairRiseTypeComponent(formDraft.stairRiseType);
             roomHeightButton.buttonText = Component.literal(Integer.toString(formDraft.roomHeight));
             entranceHeightButton.buttonText = Component.literal(Integer.toString(formDraft.entranceHeight));
@@ -497,6 +572,7 @@ public class MKWorkspaceScreen extends MKScreen {
             formDraft.stairFlatRunLength = cycleAllowedFlatRunLength(makeDraftStairConfig(), formDraft.hallwayWidth,
                     formDraft.roomHeight, formDraft.stairFlatRunLength);
             snapDraftVerticalHeights();
+            syncLegacyHeightsToCategoryProfiles();
             button.buttonText = Component.literal(Integer.toString(formDraft.stairFlatRunLength));
             roomHeightButton.buttonText = Component.literal(Integer.toString(formDraft.roomHeight));
             entranceHeightButton.buttonText = Component.literal(Integer.toString(formDraft.entranceHeight));
@@ -506,6 +582,7 @@ public class MKWorkspaceScreen extends MKScreen {
         stairWidthButton.setPressedCallback((button, mouseButton) -> {
             formDraft.stairWidth = cycleAllowedStairWidth(formDraft.hallwayWidth, formDraft.stairWidth);
             snapDraftVerticalHeights();
+            syncLegacyHeightsToCategoryProfiles();
             button.buttonText = Component.literal(Integer.toString(formDraft.stairWidth));
             roomHeightButton.buttonText = Component.literal(Integer.toString(formDraft.roomHeight));
             entranceHeightButton.buttonText = Component.literal(Integer.toString(formDraft.entranceHeight));
@@ -516,6 +593,7 @@ public class MKWorkspaceScreen extends MKScreen {
         roomHeightButton.setPressedCallback((button, mouseButton) -> {
             formDraft.roomHeight = cycleAllowedTowerHeight(makeDraftStairConfig(), formDraft.hallwayWidth, formDraft.roomHeight);
             snapDraftVerticalHeights();
+            syncLegacyHeightsToCategoryProfiles();
             button.buttonText = Component.literal(Integer.toString(formDraft.roomHeight));
             entranceHeightButton.buttonText = Component.literal(Integer.toString(formDraft.entranceHeight));
             basementHeightButton.buttonText = Component.literal(Integer.toString(formDraft.basementHeight));
@@ -525,12 +603,14 @@ public class MKWorkspaceScreen extends MKScreen {
         entranceHeightButton.setPressedCallback((button, mouseButton) -> {
             formDraft.entranceHeight = cycleAllowedEntranceHeight(makeDraftStairConfig(), formDraft.hallwayWidth,
                     formDraft.roomHeight, formDraft.entranceHeight);
+            syncLegacyHeightsToCategoryProfiles();
             button.buttonText = Component.literal(Integer.toString(formDraft.entranceHeight));
             return true;
         });
         basementHeightButton.setPressedCallback((button, mouseButton) -> {
             formDraft.basementHeight = cycleAllowedEntranceHeight(makeDraftStairConfig(), formDraft.hallwayWidth,
                     formDraft.roomHeight, formDraft.basementHeight);
+            syncLegacyHeightsToCategoryProfiles();
             button.buttonText = Component.literal(Integer.toString(formDraft.basementHeight));
             return true;
         });
@@ -599,6 +679,505 @@ public class MKWorkspaceScreen extends MKScreen {
             formDraft.stairBlock = stairBlockSlot.getBlockId();
             formDraft.slabBlock = slabBlockSlot.getBlockId();
             formDraft.ladderBlock = ladderBlockSlot.getBlockId();
+            switchToExistingState("form");
+            return true;
+        });
+        return root;
+    }
+
+    private MKLayout buildFormCategoriesState() {
+        ensureFormDraftInitialized();
+        int xPos = width / 2 - PANEL_WIDTH / 2;
+        int yPos = height / 2 - PANEL_HEIGHT / 2;
+        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
+        root.setMargins(8, 8, 8, 8);
+        root.setPaddingTop(8).setPaddingBot(8);
+
+        MKText title = makeWhiteText(Component.literal("Category Profiles"));
+        root.addWidget(title);
+        root.addConstraintToWidget(MarginConstraint.TOP, title);
+        root.addConstraintToWidget(new CenterXConstraint(), title);
+
+        MKText helpText = makeWhiteText(Component.literal(
+                "Edit per-category footprints, height bands, and horizontal opening sizes for entry, basement, main, and boss rooms."));
+        helpText.setWidth(CONTENT_WIDTH);
+        helpText.setMultiline(true);
+        root.addWidget(helpText);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
+        root.addConstraintToWidget(new CenterXConstraint(), helpText);
+
+        int buttonAreaHeight = BUTTON_HEIGHT + BOTTOM_PADDING;
+        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
+        root.addWidget(scrollView);
+
+        MKStackLayoutVertical content = new MKStackLayoutVertical(0, 0, CONTENT_WIDTH);
+        content.setMargins(4, 4, 4, 4);
+        content.setPaddingTop(4).setPaddingBot(4);
+
+        for (MKTowerWorkspaceCategory category : MKTowerWorkspaceCategory.values()) {
+            MKTowerWorkspaceCategoryProfile profile = getDraftCategoryProfile(category);
+            MKText header = makeWhiteText(Component.literal(formatTopologyLabel(category.getSerializedName())));
+            content.addWidget(header);
+            content.addConstraintToWidget(MarginConstraint.LEFT, header);
+
+            MKTextFieldWidget roomWidthField = makeField("Room Width", Integer.toString(profile.roomWidth()));
+            roomWidthField.setTextChangeCallback((field, text) -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                    category, parseInt(text, profile.roomWidth()), profile.roomLength(), profile.defaultHeight(),
+                    profile.minHeight(), profile.maxHeight(), profile.supportsVerticalAccess(),
+                    profile.mainOpeningWidth(), profile.mainOpeningHeight(), profile.branchOpeningWidth(),
+                    profile.branchOpeningHeight())));
+            MKTextFieldWidget roomLengthField = makeField("Room Length", Integer.toString(profile.roomLength()));
+            roomLengthField.setTextChangeCallback((field, text) -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                    category, profile.roomWidth(), parseInt(text, profile.roomLength()), profile.defaultHeight(),
+                    profile.minHeight(), profile.maxHeight(), profile.supportsVerticalAccess(),
+                    profile.mainOpeningWidth(), profile.mainOpeningHeight(), profile.branchOpeningWidth(),
+                    profile.branchOpeningHeight())));
+            MKTextFieldWidget defaultHeightField = makeField("Default Height", Integer.toString(profile.defaultHeight()));
+            defaultHeightField.setTextChangeCallback((field, text) -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                    category, profile.roomWidth(), profile.roomLength(), parseInt(text, profile.defaultHeight()),
+                    profile.minHeight(), profile.maxHeight(), profile.supportsVerticalAccess(),
+                    profile.mainOpeningWidth(), profile.mainOpeningHeight(), profile.branchOpeningWidth(),
+                    profile.branchOpeningHeight())));
+            MKTextFieldWidget minHeightField = makeField("Min Height", Integer.toString(profile.minHeight()));
+            minHeightField.setTextChangeCallback((field, text) -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                    category, profile.roomWidth(), profile.roomLength(), profile.defaultHeight(),
+                    parseInt(text, profile.minHeight()), profile.maxHeight(), profile.supportsVerticalAccess(),
+                    profile.mainOpeningWidth(), profile.mainOpeningHeight(), profile.branchOpeningWidth(),
+                    profile.branchOpeningHeight())));
+            MKTextFieldWidget maxHeightField = makeField("Max Height", Integer.toString(profile.maxHeight()));
+            maxHeightField.setTextChangeCallback((field, text) -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                    category, profile.roomWidth(), profile.roomLength(), profile.defaultHeight(),
+                    profile.minHeight(), parseInt(text, profile.maxHeight()), profile.supportsVerticalAccess(),
+                    profile.mainOpeningWidth(), profile.mainOpeningHeight(), profile.branchOpeningWidth(),
+                    profile.branchOpeningHeight())));
+            MKButton verticalAccessButton = new MKButton(Component.literal(profile.supportsVerticalAccess() ? "Enabled" : "Disabled"), 180, 20);
+            verticalAccessButton.setPressedCallback((button, mouseButton) -> {
+                replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                        category, profile.roomWidth(), profile.roomLength(), profile.defaultHeight(),
+                        profile.minHeight(), profile.maxHeight(), !profile.supportsVerticalAccess(),
+                        profile.mainOpeningWidth(), profile.mainOpeningHeight(), profile.branchOpeningWidth(),
+                        profile.branchOpeningHeight()));
+                flagNeedSetup();
+                return true;
+            });
+            MKTextFieldWidget mainWidthField = makeField("Main Opening Width", Integer.toString(profile.mainOpeningWidth()));
+            mainWidthField.setTextChangeCallback((field, text) -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                    category, profile.roomWidth(), profile.roomLength(), profile.defaultHeight(),
+                    profile.minHeight(), profile.maxHeight(), profile.supportsVerticalAccess(),
+                    parseInt(text, profile.mainOpeningWidth()), profile.mainOpeningHeight(),
+                    profile.branchOpeningWidth(), profile.branchOpeningHeight())));
+            MKTextFieldWidget mainHeightField = makeField("Main Opening Height", Integer.toString(profile.mainOpeningHeight()));
+            mainHeightField.setTextChangeCallback((field, text) -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                    category, profile.roomWidth(), profile.roomLength(), profile.defaultHeight(),
+                    profile.minHeight(), profile.maxHeight(), profile.supportsVerticalAccess(),
+                    profile.mainOpeningWidth(), parseInt(text, profile.mainOpeningHeight()),
+                    profile.branchOpeningWidth(), profile.branchOpeningHeight())));
+            MKTextFieldWidget branchWidthField = makeField("Branch Opening Width", Integer.toString(profile.branchOpeningWidth()));
+            branchWidthField.setTextChangeCallback((field, text) -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                    category, profile.roomWidth(), profile.roomLength(), profile.defaultHeight(),
+                    profile.minHeight(), profile.maxHeight(), profile.supportsVerticalAccess(),
+                    profile.mainOpeningWidth(), profile.mainOpeningHeight(),
+                    parseInt(text, profile.branchOpeningWidth()), profile.branchOpeningHeight())));
+            MKTextFieldWidget branchHeightField = makeField("Branch Opening Height", Integer.toString(profile.branchOpeningHeight()));
+            branchHeightField.setTextChangeCallback((field, text) -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                    category, profile.roomWidth(), profile.roomLength(), profile.defaultHeight(),
+                    profile.minHeight(), profile.maxHeight(), profile.supportsVerticalAccess(),
+                    profile.mainOpeningWidth(), profile.mainOpeningHeight(),
+                    profile.branchOpeningWidth(), parseInt(text, profile.branchOpeningHeight()))));
+
+            addRow(content, makeWhiteText(Component.literal("Room Width")), roomWidthField);
+            addRow(content, makeWhiteText(Component.literal("Room Length")), roomLengthField);
+            addRow(content, makeWhiteText(Component.literal("Default Height")), defaultHeightField);
+            addRow(content, makeWhiteText(Component.literal("Min Height")), minHeightField);
+            addRow(content, makeWhiteText(Component.literal("Max Height")), maxHeightField);
+            addRow(content, makeWhiteText(Component.literal("Vertical Access")), verticalAccessButton);
+            addRow(content, makeWhiteText(Component.literal("Main Opening Width")), mainWidthField);
+            addRow(content, makeWhiteText(Component.literal("Main Opening Height")), mainHeightField);
+            addRow(content, makeWhiteText(Component.literal("Branch Opening Width")), branchWidthField);
+            addRow(content, makeWhiteText(Component.literal("Branch Opening Height")), branchHeightField);
+        }
+
+        content.manualRecompute();
+        scrollView.addWidget(content);
+        scrollView.centerContentX();
+        scrollView.setToTop();
+
+        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
+        root.addWidget(back);
+        root.addConstraintToWidget(new CenterXConstraint(), back);
+        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
+        back.setPressedCallback((button, mouseButton) -> {
+            switchToExistingState("form");
+            return true;
+        });
+        return root;
+    }
+
+    private MKLayout buildFormFamiliesState() {
+        ensureFormDraftInitialized();
+        int xPos = width / 2 - PANEL_WIDTH / 2;
+        int yPos = height / 2 - PANEL_HEIGHT / 2;
+        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
+        root.setMargins(8, 8, 8, 8);
+        root.setPaddingTop(8).setPaddingBot(8);
+
+        MKText title = makeWhiteText(Component.literal("Branch Variants"));
+        root.addWidget(title);
+        root.addConstraintToWidget(MarginConstraint.TOP, title);
+        root.addConstraintToWidget(new CenterXConstraint(), title);
+
+        MKText helpText = makeWhiteText(Component.literal(
+                "Choose which room families exist, set their category/role, and toggle the cardinal branch exits each family should generate."));
+        helpText.setWidth(CONTENT_WIDTH);
+        helpText.setMultiline(true);
+        root.addWidget(helpText);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
+        root.addConstraintToWidget(new CenterXConstraint(), helpText);
+
+        int buttonAreaHeight = (2 * BUTTON_HEIGHT) + BUTTON_GAP + BOTTOM_PADDING;
+        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
+        root.addWidget(scrollView);
+
+        MKStackLayoutVertical content = new MKStackLayoutVertical(0, 0, CONTENT_WIDTH);
+        content.setMargins(4, 4, 4, 4);
+        content.setPaddingTop(4).setPaddingBot(4);
+
+        for (int i = 0; i < formDraft.familyDefinitions.size(); i++) {
+            int index = i;
+            MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(index);
+            MKText header = makeWhiteText(Component.literal(family.baseName()));
+            content.addWidget(header);
+            content.addConstraintToWidget(MarginConstraint.LEFT, header);
+
+            MKTextFieldWidget baseNameField = makeField("Base Name", family.baseName());
+            baseNameField.setTextChangeCallback((field, text) -> replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
+                    text.trim().isBlank() ? family.baseName() : text.trim(),
+                    family.category(), family.pieceRole(), family.supportsVerticalAccess(), family.branchExitMask())));
+            MKButton categoryButton = new MKButton(Component.literal(formatTopologyLabel(family.category().getSerializedName())), 180, 20);
+            categoryButton.setPressedCallback((button, mouseButton) -> {
+                replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
+                        family.baseName(), cycleCategory(family.category()), family.pieceRole(),
+                        family.supportsVerticalAccess(), family.branchExitMask()));
+                flagNeedSetup();
+                return true;
+            });
+            MKButton roleButton = new MKButton(Component.literal(formatTopologyLabel(family.pieceRole().getSerializedName())), 180, 20);
+            roleButton.setPressedCallback((button, mouseButton) -> {
+                replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
+                        family.baseName(), family.category(), cycleFamilyRole(family.pieceRole()),
+                        family.supportsVerticalAccess(), family.branchExitMask()));
+                flagNeedSetup();
+                return true;
+            });
+            MKButton supportsVerticalButton = new MKButton(Component.literal(family.supportsVerticalAccess() ? "Enabled" : "Disabled"), 180, 20);
+            supportsVerticalButton.setPressedCallback((button, mouseButton) -> {
+                replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
+                        family.baseName(), family.category(), family.pieceRole(),
+                        !family.supportsVerticalAccess(), family.branchExitMask()));
+                flagNeedSetup();
+                return true;
+            });
+            addRow(content, makeWhiteText(Component.literal("Base Name")), baseNameField);
+            addRow(content, makeWhiteText(Component.literal("Category")), categoryButton);
+            addRow(content, makeWhiteText(Component.literal("Role")), roleButton);
+            addRow(content, makeWhiteText(Component.literal("Vertical Access")), supportsVerticalButton);
+
+            addDirectionToggleRow(content, "North Exit", family.branchExitMask().has(Direction.NORTH),
+                    () -> toggleFamilyDirection(index, Direction.NORTH));
+            addDirectionToggleRow(content, "East Exit", family.branchExitMask().has(Direction.EAST),
+                    () -> toggleFamilyDirection(index, Direction.EAST));
+            addDirectionToggleRow(content, "South Exit", family.branchExitMask().has(Direction.SOUTH),
+                    () -> toggleFamilyDirection(index, Direction.SOUTH));
+            addDirectionToggleRow(content, "West Exit", family.branchExitMask().has(Direction.WEST),
+                    () -> toggleFamilyDirection(index, Direction.WEST));
+
+            MKButton removeButton = new MKButton(Component.literal("Remove Family"), 180, 20);
+            content.addWidget(removeButton);
+            content.addConstraintToWidget(new CenterXConstraint(), removeButton);
+            removeButton.setPressedCallback((button, mouseButton) -> {
+                removeFamilyDefinition(index);
+                flagNeedSetup();
+                return true;
+            });
+        }
+
+        content.manualRecompute();
+        scrollView.addWidget(content);
+        scrollView.centerContentX();
+        scrollView.setToTop();
+
+        MKButton addFamily = new MKButton(Component.literal("Add Family"), 180, 20);
+        root.addWidget(addFamily);
+        root.addConstraintToWidget(new CenterXConstraint(), addFamily);
+        addFamily.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT);
+        addFamily.setPressedCallback((button, mouseButton) -> {
+            addFamilyDefinition();
+            flagNeedSetup();
+            return true;
+        });
+
+        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
+        root.addWidget(back);
+        root.addConstraintToWidget(new CenterXConstraint(), back);
+        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
+        back.setPressedCallback((button, mouseButton) -> {
+            switchToExistingState("form");
+            return true;
+        });
+        return root;
+    }
+
+    private MKLayout buildFormOpeningsState() {
+        ensureFormDraftInitialized();
+        int xPos = width / 2 - PANEL_WIDTH / 2;
+        int yPos = height / 2 - PANEL_HEIGHT / 2;
+        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
+        root.setMargins(8, 8, 8, 8);
+        root.setPaddingTop(8).setPaddingBot(8);
+
+        MKText title = makeWhiteText(Component.literal("Opening Profiles"));
+        root.addWidget(title);
+        root.addConstraintToWidget(MarginConstraint.TOP, title);
+        root.addConstraintToWidget(new CenterXConstraint(), title);
+
+        MKText helpText = makeWhiteText(Component.literal(
+                "Define reusable opening sizes and whether each profile is valid on the main path, branch path, or both."));
+        helpText.setWidth(CONTENT_WIDTH);
+        helpText.setMultiline(true);
+        root.addWidget(helpText);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
+        root.addConstraintToWidget(new CenterXConstraint(), helpText);
+
+        int buttonAreaHeight = (2 * BUTTON_HEIGHT) + BUTTON_GAP + BOTTOM_PADDING;
+        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
+        root.addWidget(scrollView);
+
+        MKStackLayoutVertical content = new MKStackLayoutVertical(0, 0, CONTENT_WIDTH);
+        content.setMargins(4, 4, 4, 4);
+        content.setPaddingTop(4).setPaddingBot(4);
+
+        for (int i = 0; i < formDraft.openingProfiles.size(); i++) {
+            int index = i;
+            MKHorizontalOpeningProfile opening = formDraft.openingProfiles.get(index);
+            MKText header = makeWhiteText(Component.literal(opening.profileId()));
+            content.addWidget(header);
+            content.addConstraintToWidget(MarginConstraint.LEFT, header);
+
+            MKTextFieldWidget idField = makeField("Profile Id", opening.profileId());
+            idField.setTextChangeCallback((field, text) -> replaceOpeningProfile(index, new MKHorizontalOpeningProfile(
+                    text.trim().isBlank() ? opening.profileId() : text.trim(),
+                    opening.openingWidth(), opening.openingHeight(), opening.allowOnMainPath(), opening.allowOnBranchPath())));
+            MKTextFieldWidget widthField = makeField("Opening Width", Integer.toString(opening.openingWidth()));
+            widthField.setTextChangeCallback((field, text) -> replaceOpeningProfile(index, new MKHorizontalOpeningProfile(
+                    opening.profileId(), parseInt(text, opening.openingWidth()), opening.openingHeight(),
+                    opening.allowOnMainPath(), opening.allowOnBranchPath())));
+            MKTextFieldWidget heightField = makeField("Opening Height", Integer.toString(opening.openingHeight()));
+            heightField.setTextChangeCallback((field, text) -> replaceOpeningProfile(index, new MKHorizontalOpeningProfile(
+                    opening.profileId(), opening.openingWidth(), parseInt(text, opening.openingHeight()),
+                    opening.allowOnMainPath(), opening.allowOnBranchPath())));
+            MKButton mainButton = new MKButton(Component.literal(opening.allowOnMainPath() ? "Enabled" : "Disabled"), 180, 20);
+            mainButton.setPressedCallback((button, mouseButton) -> {
+                replaceOpeningProfile(index, new MKHorizontalOpeningProfile(opening.profileId(), opening.openingWidth(),
+                        opening.openingHeight(), !opening.allowOnMainPath(), opening.allowOnBranchPath()));
+                flagNeedSetup();
+                return true;
+            });
+            MKButton branchButton = new MKButton(Component.literal(opening.allowOnBranchPath() ? "Enabled" : "Disabled"), 180, 20);
+            branchButton.setPressedCallback((button, mouseButton) -> {
+                replaceOpeningProfile(index, new MKHorizontalOpeningProfile(opening.profileId(), opening.openingWidth(),
+                        opening.openingHeight(), opening.allowOnMainPath(), !opening.allowOnBranchPath()));
+                flagNeedSetup();
+                return true;
+            });
+
+            addRow(content, makeWhiteText(Component.literal("Profile Id")), idField);
+            addRow(content, makeWhiteText(Component.literal("Opening Width")), widthField);
+            addRow(content, makeWhiteText(Component.literal("Opening Height")), heightField);
+            addRow(content, makeWhiteText(Component.literal("Allow On Main Path")), mainButton);
+            addRow(content, makeWhiteText(Component.literal("Allow On Branch Path")), branchButton);
+
+            MKButton removeButton = new MKButton(Component.literal("Remove Profile"), 180, 20);
+            content.addWidget(removeButton);
+            content.addConstraintToWidget(new CenterXConstraint(), removeButton);
+            removeButton.setPressedCallback((button, mouseButton) -> {
+                removeOpeningProfile(index);
+                flagNeedSetup();
+                return true;
+            });
+        }
+
+        content.manualRecompute();
+        scrollView.addWidget(content);
+        scrollView.centerContentX();
+        scrollView.setToTop();
+
+        MKButton addProfile = new MKButton(Component.literal("Add Opening"), 180, 20);
+        root.addWidget(addProfile);
+        root.addConstraintToWidget(new CenterXConstraint(), addProfile);
+        addProfile.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT);
+        addProfile.setPressedCallback((button, mouseButton) -> {
+            addOpeningProfile();
+            flagNeedSetup();
+            return true;
+        });
+
+        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
+        root.addWidget(back);
+        root.addConstraintToWidget(new CenterXConstraint(), back);
+        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
+        back.setPressedCallback((button, mouseButton) -> {
+            switchToExistingState("form");
+            return true;
+        });
+        return root;
+    }
+
+    private MKLayout buildFormHallwaysState() {
+        ensureFormDraftInitialized();
+        int xPos = width / 2 - PANEL_WIDTH / 2;
+        int yPos = height / 2 - PANEL_HEIGHT / 2;
+        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
+        root.setMargins(8, 8, 8, 8);
+        root.setPaddingTop(8).setPaddingBot(8);
+
+        MKText title = makeWhiteText(Component.literal("Hallway Families"));
+        root.addWidget(title);
+        root.addConstraintToWidget(MarginConstraint.TOP, title);
+        root.addConstraintToWidget(new CenterXConstraint(), title);
+
+        MKText helpText = makeWhiteText(Component.literal(
+                "Author hallway kits by opening profile, dimensions, slope, path usage, and palette overrides."));
+        helpText.setWidth(CONTENT_WIDTH);
+        helpText.setMultiline(true);
+        root.addWidget(helpText);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
+        root.addConstraintToWidget(new CenterXConstraint(), helpText);
+
+        int buttonAreaHeight = (2 * BUTTON_HEIGHT) + BUTTON_GAP + BOTTOM_PADDING;
+        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
+        root.addWidget(scrollView);
+
+        MKStackLayoutVertical content = new MKStackLayoutVertical(0, 0, CONTENT_WIDTH);
+        content.setMargins(4, 4, 4, 4);
+        content.setPaddingTop(4).setPaddingBot(4);
+
+        for (int i = 0; i < formDraft.hallwayFamilies.size(); i++) {
+            int index = i;
+            MKHallwayFamilyDefinition hallway = formDraft.hallwayFamilies.get(index);
+            MKText header = makeWhiteText(Component.literal(hallway.hallwayId()));
+            content.addWidget(header);
+            content.addConstraintToWidget(MarginConstraint.LEFT, header);
+
+            addHallwayFieldRow(content, "Hallway Id", hallway.hallwayId(),
+                    text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
+                            text.trim().isBlank() ? hallway.hallwayId() : text.trim(), hallway.openingProfileId(),
+                            hallway.length(), hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
+                            hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.floorBlock(),
+                            hallway.wallBlock(), hallway.ceilingBlock())));
+            addHallwayFieldRow(content, "Opening Profile Id", hallway.openingProfileId(),
+                    text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
+                            hallway.hallwayId(), text.trim().isBlank() ? hallway.openingProfileId() : text.trim(),
+                            hallway.length(), hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
+                            hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.floorBlock(),
+                            hallway.wallBlock(), hallway.ceilingBlock())));
+            addHallwayFieldRow(content, "Length", Integer.toString(hallway.length()),
+                    text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
+                            hallway.hallwayId(), hallway.openingProfileId(), parseInt(text, hallway.length()),
+                            hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
+                            hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.floorBlock(),
+                            hallway.wallBlock(), hallway.ceilingBlock())));
+            addHallwayFieldRow(content, "Interior Width", Integer.toString(hallway.interiorWidth()),
+                    text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
+                            hallway.hallwayId(), hallway.openingProfileId(), hallway.length(),
+                            parseInt(text, hallway.interiorWidth()), hallway.interiorHeight(), hallway.slopeDelta(),
+                            hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.floorBlock(),
+                            hallway.wallBlock(), hallway.ceilingBlock())));
+            addHallwayFieldRow(content, "Interior Height", Integer.toString(hallway.interiorHeight()),
+                    text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
+                            hallway.hallwayId(), hallway.openingProfileId(), hallway.length(),
+                            hallway.interiorWidth(), parseInt(text, hallway.interiorHeight()), hallway.slopeDelta(),
+                            hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.floorBlock(),
+                            hallway.wallBlock(), hallway.ceilingBlock())));
+            addHallwayFieldRow(content, "Slope Delta", Integer.toString(hallway.slopeDelta()),
+                    text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
+                            hallway.hallwayId(), hallway.openingProfileId(), hallway.length(),
+                            hallway.interiorWidth(), hallway.interiorHeight(), parseInt(text, hallway.slopeDelta()),
+                            hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.floorBlock(),
+                            hallway.wallBlock(), hallway.ceilingBlock())));
+            addHallwayFieldRow(content, "Floor Block", hallway.floorBlock().toString(),
+                    text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
+                            hallway.hallwayId(), hallway.openingProfileId(), hallway.length(),
+                            hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
+                            hallway.allowOnMainPath(), hallway.allowOnBranchPath(),
+                            parseResourceLocation(text, hallway.floorBlock()), hallway.wallBlock(), hallway.ceilingBlock())));
+            addHallwayFieldRow(content, "Wall Block", hallway.wallBlock().toString(),
+                    text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
+                            hallway.hallwayId(), hallway.openingProfileId(), hallway.length(),
+                            hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
+                            hallway.allowOnMainPath(), hallway.allowOnBranchPath(),
+                            hallway.floorBlock(), parseResourceLocation(text, hallway.wallBlock()), hallway.ceilingBlock())));
+            addHallwayFieldRow(content, "Ceiling Block", hallway.ceilingBlock().toString(),
+                    text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
+                            hallway.hallwayId(), hallway.openingProfileId(), hallway.length(),
+                            hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
+                            hallway.allowOnMainPath(), hallway.allowOnBranchPath(),
+                            hallway.floorBlock(), hallway.wallBlock(), parseResourceLocation(text, hallway.ceilingBlock()))));
+
+            addToggleRow(content, "Allow On Main Path", hallway.allowOnMainPath(), () -> {
+                replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
+                        hallway.hallwayId(), hallway.openingProfileId(), hallway.length(),
+                        hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
+                        !hallway.allowOnMainPath(), hallway.allowOnBranchPath(),
+                        hallway.floorBlock(), hallway.wallBlock(), hallway.ceilingBlock()));
+                flagNeedSetup();
+            });
+            addToggleRow(content, "Allow On Branch Path", hallway.allowOnBranchPath(), () -> {
+                replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
+                        hallway.hallwayId(), hallway.openingProfileId(), hallway.length(),
+                        hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
+                        hallway.allowOnMainPath(), !hallway.allowOnBranchPath(),
+                        hallway.floorBlock(), hallway.wallBlock(), hallway.ceilingBlock()));
+                flagNeedSetup();
+            });
+
+            MKButton removeButton = new MKButton(Component.literal("Remove Hallway"), 180, 20);
+            content.addWidget(removeButton);
+            content.addConstraintToWidget(new CenterXConstraint(), removeButton);
+            removeButton.setPressedCallback((button, mouseButton) -> {
+                removeHallwayFamily(index);
+                flagNeedSetup();
+                return true;
+            });
+        }
+
+        content.manualRecompute();
+        scrollView.addWidget(content);
+        scrollView.centerContentX();
+        scrollView.setToTop();
+
+        MKButton addHallway = new MKButton(Component.literal("Add Hallway"), 180, 20);
+        root.addWidget(addHallway);
+        root.addConstraintToWidget(new CenterXConstraint(), addHallway);
+        addHallway.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT);
+        addHallway.setPressedCallback((button, mouseButton) -> {
+            addHallwayFamily();
+            flagNeedSetup();
+            return true;
+        });
+
+        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
+        root.addWidget(back);
+        root.addConstraintToWidget(new CenterXConstraint(), back);
+        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
+        back.setPressedCallback((button, mouseButton) -> {
             switchToExistingState("form");
             return true;
         });
@@ -980,43 +1559,7 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), generate);
         generate.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
         generate.setPressedCallback((button, mouseButton) -> {
-            PacketDistributor.sendToServer(new CreateWorkspacePacket(
-                    anchor,
-                    namespaceField.getText().trim(),
-                    structureNameField.getText().trim(),
-                    parseInt(roomWidthField, 9),
-                    parseInt(roomLengthField, 9),
-                    snapEntranceHeight(makeStairConfig(selectedStairMode[0], selectedRiseType[0], selectedFlatRunLength[0],
-                                    selectedStairWidth[0], stairBlockSlot.getBlockId(), slabBlockSlot.getBlockId(),
-                                    ladderBlockSlot.getBlockId()),
-                            selectedShaftSize[0], selectedRoomHeight[0], selectedEntranceHeight[0]),
-                    snapTowerHeight(makeStairConfig(selectedStairMode[0], selectedRiseType[0], selectedFlatRunLength[0],
-                                    selectedStairWidth[0], stairBlockSlot.getBlockId(), slabBlockSlot.getBlockId(),
-                                    ladderBlockSlot.getBlockId()),
-                            selectedShaftSize[0], selectedRoomHeight[0]),
-                    snapEntranceHeight(makeStairConfig(selectedStairMode[0], selectedRiseType[0], selectedFlatRunLength[0],
-                                    selectedStairWidth[0], stairBlockSlot.getBlockId(), slabBlockSlot.getBlockId(),
-                                    ladderBlockSlot.getBlockId()),
-                            selectedShaftSize[0], selectedRoomHeight[0], selectedBasementHeight[0]),
-                    selectedShaftSize[0],
-                    parseInt(doorWidthField, 3),
-                    parseInt(doorHeightField, 3),
-                    selectedPlacement[0],
-                    parseInt(shellMarginField, 1),
-                    parseInt(exteriorAirMarginField, 2),
-                    parseInt(previewMarginField, 4),
-                    selectedStairMode[0],
-                    selectedRiseType[0],
-                    selectedFlatRunLength[0],
-                    selectedStairWidth[0],
-                    floorSlot.getBlockId(),
-                    wallSlot.getBlockId(),
-                    ceilingSlot.getBlockId(),
-                    stairBlockSlot.getBlockId(),
-                    slabBlockSlot.getBlockId(),
-                    ladderBlockSlot.getBlockId()
-            ));
-            PacketDistributor.sendToServer(new GenerateWorkspacePacket(anchor));
+            switchToExistingState("form");
             return true;
         });
 
@@ -1501,6 +2044,14 @@ public class MKWorkspaceScreen extends MKScreen {
         formDraft.floorBlock = workspace != null ? workspace.palette().floorBlock() : ResourceLocation.parse("minecraft:smooth_stone");
         formDraft.wallBlock = workspace != null ? workspace.palette().wallBlock() : ResourceLocation.parse("minecraft:stone_bricks");
         formDraft.ceilingBlock = workspace != null ? workspace.palette().ceilingBlock() : ResourceLocation.parse("minecraft:smooth_stone");
+        formDraft.categoryProfiles = List.copyOf(workspace != null ? workspace.categoryProfiles() :
+                MKTowerWorkspaceCategoryProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions(),
+                        MKWorkspaceVerticalAccessSpec.defaultSpec()));
+        formDraft.familyDefinitions = List.copyOf(workspace != null ? workspace.familyDefinitions() :
+                MKTowerWorkspaceFamilyDefinition.createDefaults());
+        formDraft.openingProfiles = List.copyOf(workspace != null ? workspace.openingProfiles() :
+                MKHorizontalOpeningProfile.createDefaults(formDraft.categoryProfiles));
+        formDraft.hallwayFamilies = List.copyOf(workspace != null ? workspace.hallwayFamilies() : List.of());
         snapDraftVerticalHeights();
     }
 
@@ -1508,6 +2059,7 @@ public class MKWorkspaceScreen extends MKScreen {
         formDraft.hallwayWidth = MKWorkspaceDimensions.getAllowedShaftSizes(formDraft.roomWidth, formDraft.roomLength).getFirst();
         formDraft.stairWidth = MKWorkspaceDimensions.getAllowedStairWidths(formDraft.hallwayWidth).getFirst();
         rebaseDraftVerticalHeights();
+        syncLegacyFootprintToCategoryProfiles();
     }
 
     private void rebaseDraftVerticalHeights() {
@@ -1533,6 +2085,64 @@ public class MKWorkspaceScreen extends MKScreen {
         formDraft.basementHeight = snapEntranceHeight(config, formDraft.hallwayWidth, formDraft.roomHeight, formDraft.basementHeight);
     }
 
+    private void syncLegacyFootprintToCategoryProfiles() {
+        formDraft.categoryProfiles = formDraft.categoryProfiles.stream()
+                .map(profile -> new MKTowerWorkspaceCategoryProfile(
+                        profile.category(),
+                        formDraft.roomWidth,
+                        formDraft.roomLength,
+                        profile.defaultHeight(),
+                        profile.minHeight(),
+                        profile.maxHeight(),
+                        profile.supportsVerticalAccess(),
+                        profile.mainOpeningWidth(),
+                        profile.mainOpeningHeight(),
+                        profile.branchOpeningWidth(),
+                        profile.branchOpeningHeight()))
+                .toList();
+    }
+
+    private void syncLegacyDoorwayToCategoryProfiles() {
+        formDraft.categoryProfiles = formDraft.categoryProfiles.stream()
+                .map(profile -> new MKTowerWorkspaceCategoryProfile(
+                        profile.category(),
+                        profile.roomWidth(),
+                        profile.roomLength(),
+                        profile.defaultHeight(),
+                        profile.minHeight(),
+                        profile.maxHeight(),
+                        profile.supportsVerticalAccess(),
+                        formDraft.doorwayWidth,
+                        formDraft.doorwayHeight,
+                        formDraft.doorwayWidth,
+                        formDraft.doorwayHeight))
+                .toList();
+    }
+
+    private void syncLegacyHeightsToCategoryProfiles() {
+        formDraft.categoryProfiles = formDraft.categoryProfiles.stream()
+                .map(profile -> {
+                    int defaultHeight = switch (profile.category()) {
+                        case ENTRY -> formDraft.entranceHeight;
+                        case MAIN, BOSS -> formDraft.roomHeight;
+                        case BASEMENT -> formDraft.basementHeight;
+                    };
+                    return new MKTowerWorkspaceCategoryProfile(
+                            profile.category(),
+                            profile.roomWidth(),
+                            profile.roomLength(),
+                            defaultHeight,
+                            profile.minHeight(),
+                            Math.max(profile.maxHeight(), defaultHeight),
+                            profile.supportsVerticalAccess(),
+                            profile.mainOpeningWidth(),
+                            profile.mainOpeningHeight(),
+                            profile.branchOpeningWidth(),
+                            profile.branchOpeningHeight());
+                })
+                .toList();
+    }
+
     private com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig makeDraftStairConfig() {
         ensureFormDraftInitialized();
         return makeStairConfig(formDraft.stairMode, formDraft.stairRiseType, formDraft.stairFlatRunLength, formDraft.stairWidth,
@@ -1542,34 +2152,238 @@ public class MKWorkspaceScreen extends MKScreen {
     private void submitWorkspaceDraft() {
         ensureFormDraftInitialized();
         snapDraftVerticalHeights();
-        PacketDistributor.sendToServer(new CreateWorkspacePacket(
+        PacketDistributor.sendToServer(new CreateWorkspacePacket(buildWorkspaceDraft()));
+        PacketDistributor.sendToServer(new GenerateWorkspacePacket(anchor));
+    }
+
+    private MKStructureWorkspace buildWorkspaceDraft() {
+        ensureFormDraftInitialized();
+        MKTowerWorkspaceCategoryProfile entryProfile = getDraftCategoryProfile(MKTowerWorkspaceCategory.ENTRY);
+        MKTowerWorkspaceCategoryProfile mainProfile = getDraftCategoryProfile(MKTowerWorkspaceCategory.MAIN);
+        MKTowerWorkspaceCategoryProfile basementProfile = getDraftCategoryProfile(MKTowerWorkspaceCategory.BASEMENT);
+        MKWorkspaceDimensions dimensions = new MKWorkspaceDimensions(
+                mainProfile.roomWidth(),
+                mainProfile.roomLength(),
+                entryProfile.defaultHeight(),
+                mainProfile.defaultHeight(),
+                basementProfile.defaultHeight(),
+                formDraft.hallwayWidth,
+                formDraft.doorwayWidth,
+                formDraft.doorwayHeight
+        );
+        MKWorkspaceMaterialPalette palette = new MKWorkspaceMaterialPalette(formDraft.floorBlock, formDraft.wallBlock, formDraft.ceilingBlock);
+        MKWorkspaceStairAuthoringConfig stairConfig = makeDraftStairConfig();
+        MKWorkspaceVerticalAccessSpec verticalAccessSpec = new MKWorkspaceVerticalAccessSpec(formDraft.hallwayWidth,
+                formDraft.verticalAccessPlacement, stairConfig);
+        long now = System.currentTimeMillis();
+        return new MKStructureWorkspace(
+                UUID.randomUUID(),
                 anchor,
                 formDraft.namespace.trim(),
                 formDraft.structureName.trim(),
-                formDraft.roomWidth,
-                formDraft.roomLength,
-                formDraft.entranceHeight,
-                formDraft.roomHeight,
-                formDraft.basementHeight,
-                formDraft.hallwayWidth,
-                formDraft.doorwayWidth,
-                formDraft.doorwayHeight,
+                MKStructureFamilyType.TOWER,
+                dimensions,
+                palette,
+                stairConfig,
                 formDraft.verticalAccessPlacement,
                 formDraft.shellMargin,
                 formDraft.exteriorAirMargin,
                 formDraft.previewMargin,
-                formDraft.stairMode,
-                formDraft.stairRiseType,
-                formDraft.stairFlatRunLength,
-                formDraft.stairWidth,
+                verticalAccessSpec,
+                formDraft.categoryProfiles,
+                formDraft.familyDefinitions,
+                formDraft.openingProfiles,
+                formDraft.hallwayFamilies,
+                now,
+                now,
+                List.of()
+        );
+    }
+
+    private MKTowerWorkspaceCategoryProfile getDraftCategoryProfile(MKTowerWorkspaceCategory category) {
+        return formDraft.categoryProfiles.stream()
+                .filter(profile -> profile.category() == category)
+                .findFirst()
+                .orElseThrow();
+    }
+
+    private void replaceCategoryProfile(MKTowerWorkspaceCategoryProfile updatedProfile) {
+        formDraft.categoryProfiles = formDraft.categoryProfiles.stream()
+                .map(profile -> profile.category() == updatedProfile.category() ? updatedProfile : profile)
+                .toList();
+    }
+
+    private void replaceFamilyDefinition(int index, MKTowerWorkspaceFamilyDefinition updatedFamily) {
+        java.util.ArrayList<MKTowerWorkspaceFamilyDefinition> updated = new java.util.ArrayList<>(formDraft.familyDefinitions);
+        updated.set(index, updatedFamily);
+        formDraft.familyDefinitions = List.copyOf(updated);
+    }
+
+    private void removeFamilyDefinition(int index) {
+        java.util.ArrayList<MKTowerWorkspaceFamilyDefinition> updated = new java.util.ArrayList<>(formDraft.familyDefinitions);
+        updated.remove(index);
+        formDraft.familyDefinitions = List.copyOf(updated);
+    }
+
+    private void addFamilyDefinition() {
+        java.util.ArrayList<MKTowerWorkspaceFamilyDefinition> updated = new java.util.ArrayList<>(formDraft.familyDefinitions);
+        updated.add(new MKTowerWorkspaceFamilyDefinition(
+                nextUniqueFamilyBaseName(),
+                MKTowerWorkspaceCategory.MAIN,
+                MKWorkspacePieceRole.FLOOR_MAIN,
+                true,
+                MKTowerBranchExitMask.NONE
+        ));
+        formDraft.familyDefinitions = List.copyOf(updated);
+    }
+
+    private void toggleFamilyDirection(int index, Direction direction) {
+        MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(index);
+        java.util.ArrayList<Direction> directions = new java.util.ArrayList<>(family.branchExitMask().directions());
+        if (family.branchExitMask().has(direction)) {
+            directions.remove(direction);
+        } else {
+            directions.add(direction);
+        }
+        replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
+                family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
+                MKTowerBranchExitMask.fromDirections(directions)
+        ));
+    }
+
+    private void replaceOpeningProfile(int index, MKHorizontalOpeningProfile updatedProfile) {
+        java.util.ArrayList<MKHorizontalOpeningProfile> updated = new java.util.ArrayList<>(formDraft.openingProfiles);
+        updated.set(index, updatedProfile);
+        formDraft.openingProfiles = List.copyOf(updated);
+    }
+
+    private void removeOpeningProfile(int index) {
+        java.util.ArrayList<MKHorizontalOpeningProfile> updated = new java.util.ArrayList<>(formDraft.openingProfiles);
+        updated.remove(index);
+        formDraft.openingProfiles = List.copyOf(updated);
+    }
+
+    private void addOpeningProfile() {
+        java.util.ArrayList<MKHorizontalOpeningProfile> updated = new java.util.ArrayList<>(formDraft.openingProfiles);
+        updated.add(new MKHorizontalOpeningProfile(nextUniqueOpeningProfileId(), 3, 3, false, true));
+        formDraft.openingProfiles = List.copyOf(updated);
+    }
+
+    private void replaceHallwayFamily(int index, MKHallwayFamilyDefinition updatedFamily) {
+        java.util.ArrayList<MKHallwayFamilyDefinition> updated = new java.util.ArrayList<>(formDraft.hallwayFamilies);
+        updated.set(index, updatedFamily);
+        formDraft.hallwayFamilies = List.copyOf(updated);
+    }
+
+    private void removeHallwayFamily(int index) {
+        java.util.ArrayList<MKHallwayFamilyDefinition> updated = new java.util.ArrayList<>(formDraft.hallwayFamilies);
+        updated.remove(index);
+        formDraft.hallwayFamilies = List.copyOf(updated);
+    }
+
+    private void addHallwayFamily() {
+        String openingProfileId = formDraft.openingProfiles.isEmpty() ? "main_branch" : formDraft.openingProfiles.getFirst().profileId();
+        java.util.ArrayList<MKHallwayFamilyDefinition> updated = new java.util.ArrayList<>(formDraft.hallwayFamilies);
+        updated.add(new MKHallwayFamilyDefinition(
+                nextUniqueHallwayFamilyId(),
+                openingProfileId,
+                5,
+                3,
+                3,
+                0,
+                false,
+                true,
                 formDraft.floorBlock,
                 formDraft.wallBlock,
-                formDraft.ceilingBlock,
-                formDraft.stairBlock,
-                formDraft.slabBlock,
-                formDraft.ladderBlock
+                formDraft.ceilingBlock
         ));
-        PacketDistributor.sendToServer(new GenerateWorkspacePacket(anchor));
+        formDraft.hallwayFamilies = List.copyOf(updated);
+    }
+
+    private String nextUniqueFamilyBaseName() {
+        int index = 1;
+        while (true) {
+            String candidate = "family_" + index;
+            boolean used = formDraft.familyDefinitions.stream().anyMatch(family -> family.baseName().equals(candidate));
+            if (!used) {
+                return candidate;
+            }
+            index++;
+        }
+    }
+
+    private String nextUniqueOpeningProfileId() {
+        int index = 1;
+        while (true) {
+            String candidate = "opening_" + index;
+            boolean used = formDraft.openingProfiles.stream().anyMatch(profile -> profile.profileId().equals(candidate));
+            if (!used) {
+                return candidate;
+            }
+            index++;
+        }
+    }
+
+    private String nextUniqueHallwayFamilyId() {
+        int index = 1;
+        while (true) {
+            String candidate = "hallway_" + index;
+            boolean used = formDraft.hallwayFamilies.stream().anyMatch(hallway -> hallway.hallwayId().equals(candidate));
+            if (!used) {
+                return candidate;
+            }
+            index++;
+        }
+    }
+
+    private MKTowerWorkspaceCategory cycleCategory(MKTowerWorkspaceCategory current) {
+        MKTowerWorkspaceCategory[] values = MKTowerWorkspaceCategory.values();
+        return values[(current.ordinal() + 1) % values.length];
+    }
+
+    private MKWorkspacePieceRole cycleFamilyRole(MKWorkspacePieceRole current) {
+        List<MKWorkspacePieceRole> roles = List.of(
+                MKWorkspacePieceRole.ENTRY,
+                MKWorkspacePieceRole.FLOOR_MAIN,
+                MKWorkspacePieceRole.BOSS_APPROACH,
+                MKWorkspacePieceRole.BOSS_CAP,
+                MKWorkspacePieceRole.BASEMENT_ENTRY,
+                MKWorkspacePieceRole.BASEMENT_MAIN,
+                MKWorkspacePieceRole.BASEMENT_CAP
+        );
+        int index = roles.indexOf(current);
+        if (index < 0) {
+            return roles.getFirst();
+        }
+        return roles.get((index + 1) % roles.size());
+    }
+
+    private ResourceLocation parseResourceLocation(String text, ResourceLocation fallback) {
+        try {
+            return ResourceLocation.parse(text.trim());
+        } catch (Exception ignored) {
+            return fallback;
+        }
+    }
+
+    private void addToggleRow(MKStackLayoutVertical root, String label, boolean enabled, Runnable onToggle) {
+        MKButton button = new MKButton(Component.literal(enabled ? "Enabled" : "Disabled"), 180, 20);
+        button.setPressedCallback((pressed, mouseButton) -> {
+            onToggle.run();
+            return true;
+        });
+        addRow(root, makeWhiteText(Component.literal(label)), button);
+    }
+
+    private void addDirectionToggleRow(MKStackLayoutVertical root, String label, boolean enabled, Runnable onToggle) {
+        addToggleRow(root, label, enabled, onToggle);
+    }
+
+    private void addHallwayFieldRow(MKStackLayoutVertical root, String label, String value,
+                                    java.util.function.Consumer<String> onChange) {
+        MKTextFieldWidget field = makeField(label, value);
+        field.setTextChangeCallback((widget, text) -> onChange.accept(text));
+        addRow(root, makeWhiteText(Component.literal(label)), field);
     }
 
     private int cycleAllowedTowerHeight(com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig stairConfig,
