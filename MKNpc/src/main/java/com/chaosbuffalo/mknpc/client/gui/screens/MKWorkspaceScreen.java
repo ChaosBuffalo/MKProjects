@@ -41,6 +41,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKPlayerHotbar;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKTextFieldWidget;
+import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -48,6 +49,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +84,10 @@ public class MKWorkspaceScreen extends MKScreen {
     private ResourceLocation detailSlabBlock;
     private ResourceLocation detailLadderBlock;
     private WorkspaceFormDraft formDraft;
+    private final Map<String, List<ScrollViewState>> scrollStates = new LinkedHashMap<>();
+
+    private record ScrollViewState(double offsetX, double offsetY) {
+    }
 
     private static class WorkspaceFormDraft {
         private String namespace;
@@ -149,6 +155,12 @@ public class MKWorkspaceScreen extends MKScreen {
                 selectedOpeningIndex, selectedHallwayIndex,
                 detailStairMode, detailStairRiseType, detailFlatRunLength, detailStairWidth,
                 detailStairBlock, detailSlabBlock, detailLadderBlock);
+    }
+
+    @Override
+    public void flagNeedSetup() {
+        captureCurrentScrollState();
+        super.flagNeedSetup();
     }
 
     @Override
@@ -457,7 +469,7 @@ public class MKWorkspaceScreen extends MKScreen {
         content.manualRecompute();
         scrollView.addWidget(content);
         scrollView.centerContentX();
-        scrollView.setToTop();
+        finalizeScrollView(scrollView, "import");
 
         MKButton back = new MKButton(Component.literal("Back"), 120, 20);
         root.addWidget(back);
@@ -550,7 +562,7 @@ public class MKWorkspaceScreen extends MKScreen {
         content.manualRecompute();
         scrollView.addWidget(content);
         scrollView.centerContentX();
-        scrollView.setToTop();
+        finalizeScrollView(scrollView, "form_identity");
 
         MKButton back = new MKButton(Component.literal("Back"), 120, 20);
         root.addWidget(back);
@@ -681,7 +693,7 @@ public class MKWorkspaceScreen extends MKScreen {
         content.manualRecompute();
         scrollView.addWidget(content);
         scrollView.centerContentX();
-        scrollView.setToTop();
+        finalizeScrollView(scrollView, "form_vertical");
 
         MKButton back = new MKButton(Component.literal("Back"), 120, 20);
         root.addWidget(back);
@@ -753,7 +765,7 @@ public class MKWorkspaceScreen extends MKScreen {
         content.manualRecompute();
         scrollView.addWidget(content);
         scrollView.centerContentX();
-        scrollView.setToTop();
+        finalizeScrollView(scrollView, "form_categories");
 
         MKButton back = new MKButton(Component.literal("Back"), 120, 20);
         root.addWidget(back);
@@ -834,7 +846,7 @@ public class MKWorkspaceScreen extends MKScreen {
         content.manualRecompute();
         scrollView.addWidget(content);
         scrollView.centerContentX();
-        scrollView.setToTop();
+        finalizeScrollView(scrollView, "form_families");
 
         MKButton addFamily = new MKButton(Component.literal("Add Family"), 180, 20);
         root.addWidget(addFamily);
@@ -1018,7 +1030,7 @@ public class MKWorkspaceScreen extends MKScreen {
         content.manualRecompute();
         scrollView.addWidget(content);
         scrollView.centerContentX();
-        scrollView.setToTop();
+        finalizeScrollView(scrollView, "form_family_category");
 
         MKButton remove = new MKButton(Component.literal("Remove Family"), 180, 20);
         root.addWidget(remove);
@@ -1107,7 +1119,7 @@ public class MKWorkspaceScreen extends MKScreen {
         content.manualRecompute();
         scrollView.addWidget(content);
         scrollView.centerContentX();
-        scrollView.setToTop();
+        finalizeScrollView(scrollView, "form_family_detail");
 
         MKButton addProfile = new MKButton(Component.literal("Add Opening"), 180, 20);
         root.addWidget(addProfile);
@@ -1206,7 +1218,7 @@ public class MKWorkspaceScreen extends MKScreen {
         content.manualRecompute();
         scrollView.addWidget(content);
         scrollView.centerContentX();
-        scrollView.setToTop();
+        finalizeScrollView(scrollView, "form_openings");
 
         MKButton remove = new MKButton(Component.literal("Remove Profile"), 180, 20);
         root.addWidget(remove);
@@ -1290,7 +1302,7 @@ public class MKWorkspaceScreen extends MKScreen {
         content.manualRecompute();
         scrollView.addWidget(content);
         scrollView.centerContentX();
-        scrollView.setToTop();
+        finalizeScrollView(scrollView, "form_opening_detail");
 
         MKButton addHallway = new MKButton(Component.literal("Add Hallway"), 180, 20);
         root.addWidget(addHallway);
@@ -1428,7 +1440,7 @@ public class MKWorkspaceScreen extends MKScreen {
         content.manualRecompute();
         scrollView.addWidget(content);
         scrollView.centerContentX();
-        scrollView.setToTop();
+        finalizeScrollView(scrollView, "form_hallways");
 
         MKButton remove = new MKButton(Component.literal("Remove Hallway"), 180, 20);
         root.addWidget(remove);
@@ -1532,7 +1544,7 @@ public class MKWorkspaceScreen extends MKScreen {
         content.manualRecompute();
         scrollView.addWidget(content);
         scrollView.centerContentX();
-        scrollView.setToTop();
+        finalizeScrollView(scrollView, "form_hallway_detail");
 
         MKButton close = new MKButton(Component.translatable("mknpc.workspace.button.close"), 120, 20);
         root.addWidget(close);
@@ -1735,7 +1747,7 @@ public class MKWorkspaceScreen extends MKScreen {
         content.manualRecompute();
         scrollView.addWidget(content);
         scrollView.centerContentX();
-        scrollView.setToTop();
+        finalizeScrollView(scrollView, "workspace");
 
         if (stairCategory) {
             String baseName = getBaseName(templatePiece);
@@ -2617,6 +2629,71 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private int countVariants(List<MKWorkspacePieceDefinition> pieces) {
         return (int) pieces.stream().filter(piece -> piece.variantIndex() > 0).count();
+    }
+
+    private void captureCurrentScrollState() {
+        String state = getState();
+        if (NO_STATE.equals(state) || children.isEmpty()) {
+            return;
+        }
+        ArrayList<MKScrollView> scrollViews = new ArrayList<>();
+        for (IMKWidget child : children) {
+            collectScrollViews(child, scrollViews);
+        }
+        if (scrollViews.isEmpty()) {
+            scrollStates.remove(state);
+            return;
+        }
+        scrollStates.put(state, scrollViews.stream()
+                .map(scrollView -> new ScrollViewState(scrollView.getOffsetX(), scrollView.getOffsetY()))
+                .toList());
+    }
+
+    private void collectScrollViews(IMKWidget widget, List<MKScrollView> scrollViews) {
+        if (widget instanceof MKScrollView scrollView) {
+            scrollViews.add(scrollView);
+        }
+        for (IMKWidget child : widget.getChildren()) {
+            collectScrollViews(child, scrollViews);
+        }
+    }
+
+    private void finalizeScrollView(MKScrollView scrollView, String stateName) {
+        finalizeScrollView(scrollView, stateName, true);
+    }
+
+    private void finalizeScrollView(MKScrollView scrollView, String stateName, boolean centerX) {
+        if (centerX) {
+            scrollView.centerContentX();
+        }
+        List<ScrollViewState> savedStates = scrollStates.get(stateName);
+        if (savedStates == null || savedStates.isEmpty()) {
+            scrollView.setToTop();
+            return;
+        }
+        ScrollViewState savedState = savedStates.getFirst();
+        scrollView.setOffsetX(savedState.offsetX());
+        scrollView.setOffsetY(savedState.offsetY());
+        clampScrollViewOffsets(scrollView);
+    }
+
+    private void clampScrollViewOffsets(MKScrollView scrollView) {
+        IMKWidget child = scrollView.getChild();
+        if (child == null) {
+            return;
+        }
+        if (scrollView.shouldScrollX() && scrollView.isContentWider()) {
+            double minOffsetX = scrollView.getWidth() - child.getWidth() - scrollView.getScrollMarginX();
+            double maxOffsetX = scrollView.getScrollMarginX();
+            scrollView.setOffsetX(Math.max(minOffsetX, Math.min(scrollView.getOffsetX(), maxOffsetX)));
+        }
+        if (!scrollView.shouldScrollY() || !scrollView.isContentTaller()) {
+            scrollView.setOffsetY(Math.min(scrollView.getOffsetY(), scrollView.getScrollMarginY()));
+            return;
+        }
+        double minOffsetY = scrollView.getHeight() - child.getHeight() - scrollView.getScrollMarginY();
+        double maxOffsetY = scrollView.getScrollMarginY();
+        scrollView.setOffsetY(Math.max(minOffsetY, Math.min(scrollView.getOffsetY(), maxOffsetY)));
     }
 
     private Map<String, List<MKWorkspacePieceDefinition>> groupPiecesByTopology() {
