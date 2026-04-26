@@ -83,6 +83,26 @@ public class MKWorkspaceVerticalAccessSpec {
         return MKWorkspaceDimensions.getAllowedTowerHeights(stairConfig, shaftSize, minimumHeight, count);
     }
 
+    public int getBandCapForReusableHeight(int reusableHeight) {
+        List<Integer> allowedHeights = getAllowedReusableHeights(3, 16);
+        for (int allowedHeight : allowedHeights) {
+            if (allowedHeight > reusableHeight) {
+                return allowedHeight - 1;
+            }
+        }
+        return reusableHeight;
+    }
+
+    public int getBandCapForRequestedHeight(int requestedHeight) {
+        List<Integer> allowedHeights = getAllowedReusableHeights(3, 16);
+        for (int allowedHeight : allowedHeights) {
+            if (requestedHeight <= allowedHeight) {
+                return getBandCapForReusableHeight(allowedHeight);
+            }
+        }
+        return allowedHeights.isEmpty() ? requestedHeight : getBandCapForReusableHeight(allowedHeights.getLast());
+    }
+
     public int shaftSize() {
         return shaftSize;
     }

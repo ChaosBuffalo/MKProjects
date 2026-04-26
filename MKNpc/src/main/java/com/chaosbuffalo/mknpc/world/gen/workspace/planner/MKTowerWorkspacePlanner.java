@@ -25,12 +25,23 @@ import java.util.Optional;
 
 public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     private static final String EMPTY_POOL = "minecraft:empty";
-    private static final String HALLWAY_POOL_PREFIX = "hallways/";
+    private static final String HALLWAY_POOL_PREFIX = "hallways";
     private static final String FLOOR_BLOCK_TAG = "workspace_palette_floor";
     private static final String WALL_BLOCK_TAG = "workspace_palette_wall";
     private static final String CEILING_BLOCK_TAG = "workspace_palette_ceiling";
 
     private record ResolvedOpeningProfile(String profileId, int openingWidth, int openingHeight) {
+    }
+
+    private enum HallwayPathKind {
+        MAIN("main"),
+        BRANCH("branch");
+
+        private final String serializedName;
+
+        HallwayPathKind(String serializedName) {
+            this.serializedName = serializedName;
+        }
     }
 
     @Override
@@ -72,7 +83,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             List.of(
                                     new MKPlannedConnector(MKConnectorRole.MAIN_BACK, Direction.SOUTH,
                                             mainOpening.openingWidth(), mainOpening.openingHeight(),
-                                            resolveHallwayPool(workspace, mainOpening.profileId(), true, false)),
+                                            resolveHallwayPool(workspace, mainOpening.profileId(), HallwayPathKind.MAIN)),
                                     new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth, "connect_up"),
                                     new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth, "connect_down_entry")
                             ),
@@ -204,42 +215,58 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
 
     private List<MKPlannedPiece> createHallwayPieces(MKStructureWorkspace workspace) {
         return workspace.hallwayFamilies().stream()
-                .map(hallway -> createHallwayPiece(workspace, hallway))
+                .flatMap(hallway -> createHallwayPieces(workspace, hallway).stream())
                 .toList();
     }
 
-    private MKPlannedPiece createHallwayPiece(MKStructureWorkspace workspace, MKHallwayFamilyDefinition hallway) {
+    private List<MKPlannedPiece> createHallwayPieces(MKStructureWorkspace workspace, MKHallwayFamilyDefinition hallway) {
         ResolvedOpeningProfile opening = workspace.openingProfiles().stream()
                 .filter(profile -> profile.profileId().equals(hallway.openingProfileId()))
                 .findFirst()
                 .map(profile -> new ResolvedOpeningProfile(profile.profileId(), profile.openingWidth(), profile.openingHeight()))
                 .orElseThrow(() -> new IllegalStateException("missing hallway opening profile " + hallway.openingProfileId()));
+        ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
+        if (hallway.allowOnMainPath()) {
+            pieces.add(createHallwayPiece(workspace, hallway, opening, HallwayPathKind.MAIN));
+        }
+        if (hallway.allowOnBranchPath()) {
+            pieces.add(createHallwayPiece(workspace, hallway, opening, HallwayPathKind.BRANCH));
+        }
+        return List.copyOf(pieces);
+    }
+
+    private MKPlannedPiece createHallwayPiece(MKStructureWorkspace workspace, MKHallwayFamilyDefinition hallway,
+                                              ResolvedOpeningProfile opening, HallwayPathKind pathKind) {
         int westOffset = Math.max(0, -hallway.slopeDelta());
         int eastOffset = Math.max(0, hallway.slopeDelta());
         LinkedHashMap<String, String> tags = new LinkedHashMap<>();
-        tags.put("topology_role", "hallway_" + hallway.hallwayId());
+        tags.put("topology_role", "hallway_" + hallway.hallwayId() + "_" + pathKind.serializedName);
         tags.put("tower_piece_kind", "hallway");
         tags.put("workspace_opening_profile_id", hallway.openingProfileId());
         tags.put("workspace_hallway_family_id", hallway.hallwayId());
+        tags.put("workspace_hallway_path_kind", pathKind.serializedName);
         tags.put("workspace_hallway_slope_delta", Integer.toString(hallway.slopeDelta()));
         tags.put(FLOOR_BLOCK_TAG, hallway.floorBlock().toString());
         tags.put(WALL_BLOCK_TAG, hallway.wallBlock().toString());
         tags.put(CEILING_BLOCK_TAG, hallway.ceilingBlock().toString());
-        new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.BRANCH, 0, 0,
-                hallway.allowOnMainPath(), hallway.allowOnBranchPath(), false, false).applyToTags(tags);
+        new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
+                pathKind == HallwayPathKind.MAIN, pathKind == HallwayPathKind.BRANCH, false, false).applyToTags(tags);
+        String hallwayPool = hallwayPoolName(hallway.openingProfileId(), pathKind);
+        MKConnectorRole westRole = pathKind == HallwayPathKind.MAIN ? MKConnectorRole.MAIN_FORWARD : MKConnectorRole.BRANCH;
+        MKConnectorRole eastRole = pathKind == HallwayPathKind.MAIN ? MKConnectorRole.MAIN_BACK : MKConnectorRole.BRANCH;
         return new MKPlannedPiece(
                 MKWorkspacePieceRole.HALLWAY,
-                "hallway_" + hallway.hallwayId(),
+                "hallway_" + hallway.hallwayId() + "_" + pathKind.serializedName,
                 hallway.length(),
                 hallway.interiorWidth(),
                 hallway.interiorHeight() + Math.abs(hallway.slopeDelta()),
                 List.of(
-                        new MKPlannedConnector(MKConnectorRole.BRANCH, Direction.WEST,
+                        new MKPlannedConnector(westRole, Direction.WEST,
                                 opening.openingWidth(), opening.openingHeight(), 0, westOffset,
-                                EMPTY_POOL, hallwayPoolName(hallway.openingProfileId())),
-                        new MKPlannedConnector(MKConnectorRole.BRANCH, Direction.EAST,
+                                EMPTY_POOL, hallwayPool),
+                        new MKPlannedConnector(eastRole, Direction.EAST,
                                 opening.openingWidth(), opening.openingHeight(), 0, eastOffset,
-                                EMPTY_POOL, hallwayPoolName(hallway.openingProfileId()))
+                                EMPTY_POOL, hallwayPool)
                 ),
                 tags
         );
@@ -250,7 +277,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                                                             ResolvedOpeningProfile branchOpening,
                                                             MKStructureWorkspace workspace) {
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>(baseConnectors);
-        String hallwayPool = resolveHallwayPool(workspace, branchOpening.profileId(), false, true);
+        String hallwayPool = resolveHallwayPool(workspace, branchOpening.profileId(), HallwayPathKind.BRANCH);
         for (Direction direction : family.branchExitMask().directions()) {
             connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, direction,
                     branchOpening.openingWidth(), branchOpening.openingHeight(), hallwayPool));
@@ -279,17 +306,15 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                 .map(profile -> new ResolvedOpeningProfile(profile.profileId(), profile.openingWidth(), profile.openingHeight()));
     }
 
-    private String resolveHallwayPool(MKStructureWorkspace workspace, String openingProfileId,
-                                      boolean requireMainPath, boolean requireBranchPath) {
+    private String resolveHallwayPool(MKStructureWorkspace workspace, String openingProfileId, HallwayPathKind pathKind) {
         boolean hasCompatibleHallway = workspace.hallwayFamilies().stream().anyMatch(hallway ->
                 hallway.openingProfileId().equals(openingProfileId) &&
-                        (!requireMainPath || hallway.allowOnMainPath()) &&
-                        (!requireBranchPath || hallway.allowOnBranchPath()));
-        return hasCompatibleHallway ? hallwayPoolName(openingProfileId) : EMPTY_POOL;
+                        (pathKind == HallwayPathKind.MAIN ? hallway.allowOnMainPath() : hallway.allowOnBranchPath()));
+        return hasCompatibleHallway ? hallwayPoolName(openingProfileId, pathKind) : EMPTY_POOL;
     }
 
-    private String hallwayPoolName(String openingProfileId) {
-        return HALLWAY_POOL_PREFIX + openingProfileId;
+    private String hallwayPoolName(String openingProfileId, HallwayPathKind pathKind) {
+        return HALLWAY_POOL_PREFIX + "/" + pathKind.serializedName + "/" + openingProfileId;
     }
 
     private Map<String, String> buildRoomTags(String topologyRole, MKTowerWorkspaceFamilyDefinition family, String stairPlacement,

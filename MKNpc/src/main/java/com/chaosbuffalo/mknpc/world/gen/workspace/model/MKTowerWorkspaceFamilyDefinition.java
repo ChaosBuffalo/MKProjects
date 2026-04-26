@@ -75,9 +75,8 @@ public class MKTowerWorkspaceFamilyDefinition {
         if (duplicates > 1) {
             errors.add("tower workspace family base name must be unique: " + baseName);
         }
-        if (supportsVerticalAccess != defaultSupportsVerticalAccess(pieceRole)) {
-            errors.add("family " + baseName + " currently requires supportsVerticalAccess=" +
-                    defaultSupportsVerticalAccess(pieceRole) + " for role " + pieceRole.getSerializedName());
+        if (pieceRole == MKWorkspacePieceRole.HALLWAY) {
+            errors.add("tower workspace room families cannot use hallway role");
         }
         Set<Direction> reserved = reservedHorizontalDirections(pieceRole);
         for (Direction direction : branchExitMask.directions()) {

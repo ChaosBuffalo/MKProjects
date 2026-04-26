@@ -228,24 +228,48 @@ public class MKStructureWorkspace {
 
     public List<String> validate() {
         List<String> errors = new ArrayList<>(verticalAccessSpec.validate());
+        java.util.Set<MKTowerWorkspaceCategory> categoriesWithProfiles = new java.util.LinkedHashSet<>();
         for (MKTowerWorkspaceCategoryProfile categoryProfile : categoryProfiles) {
+            if (!categoriesWithProfiles.add(categoryProfile.category())) {
+                errors.add("tower workspace category profile must be unique: " + categoryProfile.category().getSerializedName());
+            }
             errors.addAll(categoryProfile.validate(verticalAccessSpec));
         }
         for (MKTowerWorkspaceFamilyDefinition familyDefinition : familyDefinitions) {
             errors.addAll(familyDefinition.validate(familyDefinitions));
+            if (categoryProfile(familyDefinition.category()).isEmpty()) {
+                errors.add("family " + familyDefinition.baseName() + " references missing category profile " +
+                        familyDefinition.category().getSerializedName());
+            }
         }
         java.util.Set<String> openingProfileIds = new java.util.LinkedHashSet<>();
+        java.util.Map<String, MKHorizontalOpeningProfile> openingProfileById = new java.util.LinkedHashMap<>();
         for (MKHorizontalOpeningProfile openingProfile : openingProfiles) {
             errors.addAll(openingProfile.validate());
             if (!openingProfileIds.add(openingProfile.profileId())) {
                 errors.add("horizontal opening profile id must be unique: " + openingProfile.profileId());
             }
+            openingProfileById.put(openingProfile.profileId(), openingProfile);
         }
         for (MKHallwayFamilyDefinition hallwayFamily : hallwayFamilies) {
             errors.addAll(hallwayFamily.validate(openingProfileIds));
+            MKHorizontalOpeningProfile openingProfile = openingProfileById.get(hallwayFamily.openingProfileId());
+            if (openingProfile != null) {
+                if (hallwayFamily.allowOnMainPath() && !openingProfile.allowOnMainPath()) {
+                    errors.add("hallway family " + hallwayFamily.hallwayId() +
+                            " cannot allow main path when opening profile " + hallwayFamily.openingProfileId() +
+                            " is branch-only");
+                }
+                if (hallwayFamily.allowOnBranchPath() && !openingProfile.allowOnBranchPath()) {
+                    errors.add("hallway family " + hallwayFamily.hallwayId() +
+                            " cannot allow branch path when opening profile " + hallwayFamily.openingProfileId() +
+                            " is main-only");
+                }
+            }
         }
         Optional<MKTowerWorkspaceCategoryProfile> mainProfile = categoryProfile(MKTowerWorkspaceCategory.MAIN);
         if (mainProfile.isPresent()) {
+            int bandCap = verticalAccessSpec.getBandCapForReusableHeight(mainProfile.get().defaultHeight());
             List<Integer> allowedEntranceHeights = MKWorkspaceDimensions.getAllowedEntranceHeights(
                     verticalAccessSpec.stairConfig(),
                     verticalAccessSpec.shaftSize(),
@@ -264,6 +288,13 @@ public class MKStructureWorkspace {
                     !allowedEntranceHeights.contains(basementProfile.get().defaultHeight())) {
                 errors.add("basement default height must be one of " + allowedEntranceHeights +
                         " to stay in phase with main room height " + mainProfile.get().defaultHeight());
+            }
+            for (MKHallwayFamilyDefinition hallwayFamily : hallwayFamilies) {
+                int hallwayTopHeight = hallwayFamily.interiorHeight() + Math.abs(hallwayFamily.slopeDelta());
+                if (hallwayTopHeight > bandCap) {
+                    errors.add("hallway family " + hallwayFamily.hallwayId() + " height " + hallwayTopHeight +
+                            " exceeds main vertical band cap " + bandCap);
+                }
             }
         }
         if (namespace.isBlank()) {

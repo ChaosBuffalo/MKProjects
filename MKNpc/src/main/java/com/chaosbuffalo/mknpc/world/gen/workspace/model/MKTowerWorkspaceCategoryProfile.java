@@ -126,8 +126,10 @@ public class MKTowerWorkspaceCategoryProfile {
                 errors.add(category.getSerializedName() + " default height " + defaultHeight +
                         " is not reusable for shaft size " + verticalAccessSpec.shaftSize());
             }
-            if (maxHeight > defaultHeight) {
-                errors.add(category.getSerializedName() + " shaft rooms cannot exceed their default reusable band height");
+            int bandCap = verticalAccessSpec.getBandCapForReusableHeight(defaultHeight);
+            if (maxHeight > bandCap) {
+                errors.add(category.getSerializedName() + " shaft rooms cannot exceed band cap " + bandCap +
+                        " for reusable height " + defaultHeight);
             }
         } else if (maxHeight < defaultHeight) {
             errors.add(category.getSerializedName() + " non-shaft rooms must allow their default height");
