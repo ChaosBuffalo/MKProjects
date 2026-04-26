@@ -1,9 +1,10 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,16 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class MKStructureWorkspace {
+    public static final Codec<MKStructureWorkspace> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            MKWorkspaceCodecs.UUID_CODEC.fieldOf("id").forGetter(MKStructureWorkspace::id),
+            MKWorkspaceCodecs.BLOCK_POS_CODEC.fieldOf("anchor").forGetter(MKStructureWorkspace::anchor),
+            Codec.STRING.fieldOf("namespace").forGetter(MKStructureWorkspace::namespace),
+            Codec.STRING.fieldOf("structureName").forGetter(MKStructureWorkspace::structureName),
+            SerializedWorkspaceCore.CODEC.forGetter(MKStructureWorkspace::serializedCore),
+            SerializedWorkspaceContent.CODEC.forGetter(MKStructureWorkspace::serializedContent)
+    ).apply(instance, MKStructureWorkspace::fromSerializedData));
+    public static final Codec<List<MKStructureWorkspace>> LIST_CODEC = CODEC.listOf();
+
     private final UUID id;
     private final BlockPos anchor;
     private final String namespace;
@@ -110,116 +121,125 @@ public class MKStructureWorkspace {
     }
 
     public static MKStructureWorkspace fromTag(CompoundTag tag) {
-        List<MKWorkspacePieceDefinition> pieces = new ArrayList<>();
-        for (Tag pieceTag : tag.getList("pieces", Tag.TAG_COMPOUND)) {
-            pieces.add(MKWorkspacePieceDefinition.fromTag((CompoundTag) pieceTag));
-        }
-        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.fromTag(tag.getCompound("dimensions"));
-        MKWorkspaceStairAuthoringConfig stairConfig = tag.contains("stairConfig") ?
-                MKWorkspaceStairAuthoringConfig.fromTag(tag.getCompound("stairConfig")) :
-                MKWorkspaceStairAuthoringConfig.defaultConfig();
-        MKVerticalAccessPlacement placement = MKVerticalAccessPlacement.fromSerializedName(tag.getString("verticalAccessPlacement"));
-        MKWorkspaceVerticalAccessSpec verticalAccessSpec = tag.contains("verticalAccessSpec") ?
-                MKWorkspaceVerticalAccessSpec.fromTag(tag.getCompound("verticalAccessSpec")) :
-                MKWorkspaceVerticalAccessSpec.fromLegacy(dimensions, placement, stairConfig);
-        List<MKTowerWorkspaceCategoryProfile> categoryProfiles = new ArrayList<>();
-        if (tag.contains("categoryProfiles", Tag.TAG_LIST)) {
-            for (Tag profileTag : tag.getList("categoryProfiles", Tag.TAG_COMPOUND)) {
-                categoryProfiles.add(MKTowerWorkspaceCategoryProfile.fromTag((CompoundTag) profileTag));
-            }
-        }
-        if (categoryProfiles.isEmpty()) {
-            categoryProfiles = MKTowerWorkspaceCategoryProfile.createDefaults(dimensions);
-        }
-        List<MKTowerWorkspaceFamilyDefinition> familyDefinitions = new ArrayList<>();
-        if (tag.contains("familyDefinitions", Tag.TAG_LIST)) {
-            for (Tag familyTag : tag.getList("familyDefinitions", Tag.TAG_COMPOUND)) {
-                familyDefinitions.add(MKTowerWorkspaceFamilyDefinition.fromTag((CompoundTag) familyTag));
-            }
-        }
-        familyDefinitions = MKTowerWorkspaceFamilyDefinition.normalize(familyDefinitions);
-        List<MKHorizontalOpeningProfile> openingProfiles = new ArrayList<>();
-        if (tag.contains("openingProfiles", Tag.TAG_LIST)) {
-            for (Tag openingTag : tag.getList("openingProfiles", Tag.TAG_COMPOUND)) {
-                openingProfiles.add(MKHorizontalOpeningProfile.fromTag((CompoundTag) openingTag));
-            }
-        }
-        if (openingProfiles.isEmpty()) {
-            openingProfiles = MKHorizontalOpeningProfile.createDefaults(dimensions);
-        }
-        List<MKHallwayFamilyDefinition> hallwayFamilies = new ArrayList<>();
-        if (tag.contains("hallwayFamilies", Tag.TAG_LIST)) {
-            for (Tag hallwayTag : tag.getList("hallwayFamilies", Tag.TAG_COMPOUND)) {
-                hallwayFamilies.add(MKHallwayFamilyDefinition.fromTag((CompoundTag) hallwayTag));
-            }
-        }
+        return MKWorkspaceCodecs.parseNbt(CODEC, tag, "structure workspace");
+    }
+
+    public CompoundTag toTag() {
+        return MKWorkspaceCodecs.encodeNbt(CODEC, this, "structure workspace");
+    }
+
+    private static MKStructureWorkspace fromSerializedData(UUID id, BlockPos anchor, String namespace, String structureName,
+                                                           SerializedWorkspaceCore core,
+                                                           SerializedWorkspaceContent content) {
+        MKWorkspaceVerticalAccessSpec resolvedVerticalAccessSpec = core.verticalAccessSpec().orElseGet(() ->
+                MKWorkspaceVerticalAccessSpec.fromLegacy(core.dimensions(), core.verticalAccessPlacement(), core.stairConfig()));
+        List<MKTowerWorkspaceCategoryProfile> resolvedCategoryProfiles = content.categoryProfiles().isEmpty() ?
+                MKTowerWorkspaceCategoryProfile.createDefaults(core.dimensions()) : List.copyOf(content.categoryProfiles());
+        List<MKTowerWorkspaceFamilyDefinition> resolvedFamilyDefinitions =
+                MKTowerWorkspaceFamilyDefinition.normalize(content.familyDefinitions());
+        List<MKHorizontalOpeningProfile> resolvedOpeningProfiles = content.openingProfiles().isEmpty() ?
+                MKHorizontalOpeningProfile.createDefaults(core.dimensions()) : List.copyOf(content.openingProfiles());
         return new MKStructureWorkspace(
-                tag.getUUID("id"),
-                MKWorkspaceNbtUtil.blockPosFromTag(tag.getCompound("anchor")),
-                tag.getString("namespace"),
-                tag.getString("structureName"),
-                MKStructureFamilyType.fromSerializedName(tag.getString("familyType")),
+                id,
+                anchor,
+                namespace,
+                structureName,
+                core.familyType(),
+                core.dimensions(),
+                core.palette(),
+                core.stairConfig(),
+                core.verticalAccessPlacement(),
+                core.shellMargin(),
+                core.exteriorAirMargin(),
+                core.previewMargin(),
+                resolvedVerticalAccessSpec,
+                resolvedCategoryProfiles,
+                resolvedFamilyDefinitions,
+                resolvedOpeningProfiles,
+                List.copyOf(content.hallwayFamilies()),
+                content.createdAt(),
+                content.updatedAt(),
+                List.copyOf(content.pieces())
+        );
+    }
+
+    private SerializedWorkspaceCore serializedCore() {
+        return new SerializedWorkspaceCore(
+                familyType,
                 dimensions,
-                MKWorkspaceMaterialPalette.fromTag(tag.getCompound("palette")),
+                palette,
                 stairConfig,
-                placement,
-                tag.getInt("shellMargin"),
-                tag.contains("exteriorAirMargin") ? tag.getInt("exteriorAirMargin") : 2,
-                tag.getInt("previewMargin"),
-                verticalAccessSpec,
+                verticalAccessPlacement,
+                shellMargin,
+                exteriorAirMargin,
+                previewMargin,
+                Optional.of(verticalAccessSpec)
+        );
+    }
+
+    private SerializedWorkspaceContent serializedContent() {
+        return new SerializedWorkspaceContent(
                 categoryProfiles,
                 familyDefinitions,
                 openingProfiles,
                 hallwayFamilies,
-                tag.getLong("createdAt"),
-                tag.getLong("updatedAt"),
+                createdAt,
+                updatedAt,
                 pieces
         );
     }
 
-    public CompoundTag toTag() {
-        CompoundTag tag = new CompoundTag();
-        tag.putUUID("id", id);
-        tag.put("anchor", MKWorkspaceNbtUtil.blockPosToTag(anchor));
-        tag.putString("namespace", namespace);
-        tag.putString("structureName", structureName);
-        tag.putString("familyType", familyType.getSerializedName());
-        tag.put("dimensions", dimensions.toTag());
-        tag.put("palette", palette.toTag());
-        tag.put("stairConfig", stairConfig.toTag());
-        tag.putString("verticalAccessPlacement", verticalAccessPlacement.getSerializedName());
-        tag.put("verticalAccessSpec", verticalAccessSpec.toTag());
-        tag.putInt("shellMargin", shellMargin);
-        tag.putInt("exteriorAirMargin", exteriorAirMargin);
-        tag.putInt("previewMargin", previewMargin);
-        tag.putLong("createdAt", createdAt);
-        tag.putLong("updatedAt", updatedAt);
-        ListTag categoryProfilesTag = new ListTag();
-        for (MKTowerWorkspaceCategoryProfile categoryProfile : categoryProfiles) {
-            categoryProfilesTag.add(categoryProfile.toTag());
-        }
-        tag.put("categoryProfiles", categoryProfilesTag);
-        ListTag familyDefinitionsTag = new ListTag();
-        for (MKTowerWorkspaceFamilyDefinition familyDefinition : familyDefinitions) {
-            familyDefinitionsTag.add(familyDefinition.toTag());
-        }
-        tag.put("familyDefinitions", familyDefinitionsTag);
-        ListTag openingProfilesTag = new ListTag();
-        for (MKHorizontalOpeningProfile openingProfile : openingProfiles) {
-            openingProfilesTag.add(openingProfile.toTag());
-        }
-        tag.put("openingProfiles", openingProfilesTag);
-        ListTag hallwayFamiliesTag = new ListTag();
-        for (MKHallwayFamilyDefinition hallwayFamily : hallwayFamilies) {
-            hallwayFamiliesTag.add(hallwayFamily.toTag());
-        }
-        tag.put("hallwayFamilies", hallwayFamiliesTag);
-        ListTag piecesTag = new ListTag();
-        for (MKWorkspacePieceDefinition piece : pieces) {
-            piecesTag.add(piece.toTag());
-        }
-        tag.put("pieces", piecesTag);
-        return tag;
+    private record SerializedWorkspaceCore(
+            MKStructureFamilyType familyType,
+            MKWorkspaceDimensions dimensions,
+            MKWorkspaceMaterialPalette palette,
+            MKWorkspaceStairAuthoringConfig stairConfig,
+            MKVerticalAccessPlacement verticalAccessPlacement,
+            int shellMargin,
+            int exteriorAirMargin,
+            int previewMargin,
+            Optional<MKWorkspaceVerticalAccessSpec> verticalAccessSpec
+    ) {
+        private static final MapCodec<SerializedWorkspaceCore> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                MKWorkspaceCodecs.FAMILY_TYPE_CODEC.optionalFieldOf("familyType", MKStructureFamilyType.TOWER)
+                        .forGetter(SerializedWorkspaceCore::familyType),
+                MKWorkspaceDimensions.CODEC.fieldOf("dimensions").forGetter(SerializedWorkspaceCore::dimensions),
+                MKWorkspaceMaterialPalette.CODEC.optionalFieldOf("palette", MKWorkspaceMaterialPalette.defaultPalette())
+                        .forGetter(SerializedWorkspaceCore::palette),
+                MKWorkspaceStairAuthoringConfig.CODEC.optionalFieldOf("stairConfig", MKWorkspaceStairAuthoringConfig.defaultConfig())
+                        .forGetter(SerializedWorkspaceCore::stairConfig),
+                MKWorkspaceCodecs.VERTICAL_ACCESS_PLACEMENT_CODEC.optionalFieldOf("verticalAccessPlacement", MKVerticalAccessPlacement.CENTER)
+                        .forGetter(SerializedWorkspaceCore::verticalAccessPlacement),
+                Codec.INT.optionalFieldOf("shellMargin", 1).forGetter(SerializedWorkspaceCore::shellMargin),
+                Codec.INT.optionalFieldOf("exteriorAirMargin", 2).forGetter(SerializedWorkspaceCore::exteriorAirMargin),
+                Codec.INT.optionalFieldOf("previewMargin", 4).forGetter(SerializedWorkspaceCore::previewMargin),
+                MKWorkspaceVerticalAccessSpec.CODEC.optionalFieldOf("verticalAccessSpec").forGetter(SerializedWorkspaceCore::verticalAccessSpec)
+        ).apply(instance, SerializedWorkspaceCore::new));
+    }
+
+    private record SerializedWorkspaceContent(
+            List<MKTowerWorkspaceCategoryProfile> categoryProfiles,
+            List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
+            List<MKHorizontalOpeningProfile> openingProfiles,
+            List<MKHallwayFamilyDefinition> hallwayFamilies,
+            long createdAt,
+            long updatedAt,
+            List<MKWorkspacePieceDefinition> pieces
+    ) {
+        private static final MapCodec<SerializedWorkspaceContent> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                MKTowerWorkspaceCategoryProfile.CODEC.listOf().optionalFieldOf("categoryProfiles", List.of())
+                        .forGetter(SerializedWorkspaceContent::categoryProfiles),
+                MKTowerWorkspaceFamilyDefinition.CODEC.listOf().optionalFieldOf("familyDefinitions", List.of())
+                        .forGetter(SerializedWorkspaceContent::familyDefinitions),
+                MKHorizontalOpeningProfile.CODEC.listOf().optionalFieldOf("openingProfiles", List.of())
+                        .forGetter(SerializedWorkspaceContent::openingProfiles),
+                MKHallwayFamilyDefinition.CODEC.listOf().optionalFieldOf("hallwayFamilies", List.of())
+                        .forGetter(SerializedWorkspaceContent::hallwayFamilies),
+                Codec.LONG.optionalFieldOf("createdAt", 0L).forGetter(SerializedWorkspaceContent::createdAt),
+                Codec.LONG.optionalFieldOf("updatedAt", 0L).forGetter(SerializedWorkspaceContent::updatedAt),
+                MKWorkspacePieceDefinition.CODEC.listOf().optionalFieldOf("pieces", List.of())
+                        .forGetter(SerializedWorkspaceContent::pieces)
+        ).apply(instance, SerializedWorkspaceContent::new));
     }
 
     public List<String> validate() {

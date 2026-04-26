@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 
@@ -10,6 +12,16 @@ import java.util.List;
 import java.util.Set;
 
 public class MKTowerWorkspaceFamilyDefinition {
+    public static final Codec<MKTowerWorkspaceFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.STRING.fieldOf("baseName").forGetter(MKTowerWorkspaceFamilyDefinition::baseName),
+            MKWorkspaceCodecs.TOWER_CATEGORY_CODEC.fieldOf("category").forGetter(MKTowerWorkspaceFamilyDefinition::category),
+            MKWorkspaceCodecs.PIECE_ROLE_CODEC.fieldOf("pieceRole").forGetter(MKTowerWorkspaceFamilyDefinition::pieceRole),
+            Codec.BOOL.optionalFieldOf("supportsVerticalAccess", true)
+                    .forGetter(MKTowerWorkspaceFamilyDefinition::supportsVerticalAccess),
+            MKWorkspaceCodecs.BRANCH_EXIT_MASK_CODEC.optionalFieldOf("branchExitMask", MKTowerBranchExitMask.NONE)
+                    .forGetter(MKTowerWorkspaceFamilyDefinition::branchExitMask)
+    ).apply(instance, MKTowerWorkspaceFamilyDefinition::new));
+
     private final String baseName;
     private final MKTowerWorkspaceCategory category;
     private final MKWorkspacePieceRole pieceRole;
@@ -46,24 +58,11 @@ public class MKTowerWorkspaceFamilyDefinition {
     }
 
     public static MKTowerWorkspaceFamilyDefinition fromTag(CompoundTag tag) {
-        return new MKTowerWorkspaceFamilyDefinition(
-                tag.getString("baseName"),
-                MKTowerWorkspaceCategory.fromSerializedName(tag.getString("category")),
-                MKWorkspacePieceRole.fromSerializedName(tag.getString("pieceRole")),
-                tag.contains("supportsVerticalAccess") ? tag.getBoolean("supportsVerticalAccess") : true,
-                tag.contains("branchExitMask") ? MKTowerBranchExitMask.fromSerializedName(tag.getString("branchExitMask")) :
-                        MKTowerBranchExitMask.NONE
-        );
+        return MKWorkspaceCodecs.parseNbt(CODEC, tag, "tower workspace family definition");
     }
 
     public CompoundTag toTag() {
-        CompoundTag tag = new CompoundTag();
-        tag.putString("baseName", baseName);
-        tag.putString("category", category.getSerializedName());
-        tag.putString("pieceRole", pieceRole.getSerializedName());
-        tag.putBoolean("supportsVerticalAccess", supportsVerticalAccess);
-        tag.putString("branchExitMask", branchExitMask.getSerializedName());
-        return tag;
+        return MKWorkspaceCodecs.encodeNbt(CODEC, this, "tower workspace family definition");
     }
 
     public List<String> validate(List<MKTowerWorkspaceFamilyDefinition> allFamilies) {

@@ -1,11 +1,21 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MKHorizontalOpeningProfile {
+    public static final Codec<MKHorizontalOpeningProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.STRING.fieldOf("profileId").forGetter(MKHorizontalOpeningProfile::profileId),
+            Codec.INT.fieldOf("openingWidth").forGetter(MKHorizontalOpeningProfile::openingWidth),
+            Codec.INT.fieldOf("openingHeight").forGetter(MKHorizontalOpeningProfile::openingHeight),
+            Codec.BOOL.optionalFieldOf("allowOnMainPath", false).forGetter(MKHorizontalOpeningProfile::allowOnMainPath),
+            Codec.BOOL.optionalFieldOf("allowOnBranchPath", true).forGetter(MKHorizontalOpeningProfile::allowOnBranchPath)
+    ).apply(instance, MKHorizontalOpeningProfile::new));
+
     private final String profileId;
     private final int openingWidth;
     private final int openingHeight;
@@ -43,23 +53,11 @@ public class MKHorizontalOpeningProfile {
     }
 
     public static MKHorizontalOpeningProfile fromTag(CompoundTag tag) {
-        return new MKHorizontalOpeningProfile(
-                tag.getString("profileId"),
-                tag.getInt("openingWidth"),
-                tag.getInt("openingHeight"),
-                tag.contains("allowOnMainPath") && tag.getBoolean("allowOnMainPath"),
-                !tag.contains("allowOnBranchPath") || tag.getBoolean("allowOnBranchPath")
-        );
+        return MKWorkspaceCodecs.parseNbt(CODEC, tag, "horizontal opening profile");
     }
 
     public CompoundTag toTag() {
-        CompoundTag tag = new CompoundTag();
-        tag.putString("profileId", profileId);
-        tag.putInt("openingWidth", openingWidth);
-        tag.putInt("openingHeight", openingHeight);
-        tag.putBoolean("allowOnMainPath", allowOnMainPath);
-        tag.putBoolean("allowOnBranchPath", allowOnBranchPath);
-        return tag;
+        return MKWorkspaceCodecs.encodeNbt(CODEC, this, "horizontal opening profile");
     }
 
     public List<String> validate() {

@@ -1,18 +1,39 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class MKWorkspacePieceDefinition {
+    public static final Codec<MKWorkspacePieceDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            MKWorkspaceCodecs.UUID_CODEC.fieldOf("pieceId").forGetter(MKWorkspacePieceDefinition::pieceId),
+            MKWorkspaceCodecs.UUID_CODEC.fieldOf("workspaceId").forGetter(MKWorkspacePieceDefinition::workspaceId),
+            Codec.STRING.fieldOf("pieceName").forGetter(MKWorkspacePieceDefinition::pieceName),
+            MKWorkspaceCodecs.PIECE_ROLE_CODEC.fieldOf("role").forGetter(MKWorkspacePieceDefinition::role),
+            Codec.INT.fieldOf("variantIndex").forGetter(MKWorkspacePieceDefinition::variantIndex),
+            MKWorkspaceDimensions.CODEC.fieldOf("effectiveDimensions").forGetter(MKWorkspacePieceDefinition::effectiveDimensions),
+            Codec.INT.fieldOf("shellMargin").forGetter(MKWorkspacePieceDefinition::shellMargin),
+            MKWorkspaceConnectorDefinition.CODEC.listOf().optionalFieldOf("connectors", List.of())
+                    .forGetter(MKWorkspacePieceDefinition::connectors),
+            MKWorkspaceCodecs.BLOCK_POS_CODEC.fieldOf("worldOrigin").forGetter(MKWorkspacePieceDefinition::worldOrigin),
+            MKWorkspaceCodecs.BOUNDING_BOX_CODEC.fieldOf("exportBounds").forGetter(MKWorkspacePieceDefinition::exportBounds),
+            MKWorkspaceCodecs.BOUNDING_BOX_CODEC.fieldOf("previewBounds").forGetter(MKWorkspacePieceDefinition::previewBounds),
+            MKWorkspaceCodecs.BLOCK_POS_CODEC.fieldOf("structureBlockPos").forGetter(MKWorkspacePieceDefinition::structureBlockPos),
+            MKWorkspaceCodecs.BLOCK_POS_CODEC.fieldOf("signPos").forGetter(MKWorkspacePieceDefinition::signPos),
+            MKWorkspaceCodecs.BLOCK_POS_CODEC.listOf().optionalFieldOf("markerPositions", List.of())
+                    .forGetter(MKWorkspacePieceDefinition::markerPositions),
+            MKWorkspaceCodecs.BLOCK_POS_CODEC.listOf().optionalFieldOf("generatedStairPositions", List.of())
+                    .forGetter(MKWorkspacePieceDefinition::generatedStairPositions),
+            Codec.unboundedMap(Codec.STRING, Codec.STRING).optionalFieldOf("tags", Map.of())
+                    .forGetter(MKWorkspacePieceDefinition::tags)
+    ).apply(instance, MKWorkspacePieceDefinition::new));
+
     private final UUID pieceId;
     private final UUID workspaceId;
     private final String pieceName;
@@ -55,78 +76,11 @@ public class MKWorkspacePieceDefinition {
     }
 
     public static MKWorkspacePieceDefinition fromTag(CompoundTag tag) {
-        List<MKWorkspaceConnectorDefinition> connectors = new ArrayList<>();
-        for (Tag entry : tag.getList("connectors", Tag.TAG_COMPOUND)) {
-            connectors.add(MKWorkspaceConnectorDefinition.fromTag((CompoundTag) entry));
-        }
-        List<BlockPos> markerPositions = new ArrayList<>();
-        for (Tag entry : tag.getList("markerPositions", Tag.TAG_COMPOUND)) {
-            markerPositions.add(MKWorkspaceNbtUtil.blockPosFromTag((CompoundTag) entry));
-        }
-        List<BlockPos> generatedStairPositions = new ArrayList<>();
-        for (Tag entry : tag.getList("generatedStairPositions", Tag.TAG_COMPOUND)) {
-            generatedStairPositions.add(MKWorkspaceNbtUtil.blockPosFromTag((CompoundTag) entry));
-        }
-        Map<String, String> tags = new HashMap<>();
-        CompoundTag tagsTag = tag.getCompound("tags");
-        for (String key : tagsTag.getAllKeys()) {
-            tags.put(key, tagsTag.getString(key));
-        }
-        return new MKWorkspacePieceDefinition(
-                tag.getUUID("pieceId"),
-                tag.getUUID("workspaceId"),
-                tag.getString("pieceName"),
-                MKWorkspacePieceRole.fromSerializedName(tag.getString("role")),
-                tag.getInt("variantIndex"),
-                MKWorkspaceDimensions.fromTag(tag.getCompound("effectiveDimensions")),
-                tag.getInt("shellMargin"),
-                connectors,
-                MKWorkspaceNbtUtil.blockPosFromTag(tag.getCompound("worldOrigin")),
-                MKWorkspaceNbtUtil.boundingBoxFromTag(tag.getCompound("exportBounds")),
-                MKWorkspaceNbtUtil.boundingBoxFromTag(tag.getCompound("previewBounds")),
-                MKWorkspaceNbtUtil.blockPosFromTag(tag.getCompound("structureBlockPos")),
-                MKWorkspaceNbtUtil.blockPosFromTag(tag.getCompound("signPos")),
-                markerPositions,
-                generatedStairPositions,
-                tags
-        );
+        return MKWorkspaceCodecs.parseNbt(CODEC, tag, "workspace piece definition");
     }
 
     public CompoundTag toTag() {
-        CompoundTag tag = new CompoundTag();
-        tag.putUUID("pieceId", pieceId);
-        tag.putUUID("workspaceId", workspaceId);
-        tag.putString("pieceName", pieceName);
-        tag.putString("role", role.getSerializedName());
-        tag.putInt("variantIndex", variantIndex);
-        tag.put("effectiveDimensions", effectiveDimensions.toTag());
-        tag.putInt("shellMargin", shellMargin);
-        ListTag connectorTags = new ListTag();
-        for (MKWorkspaceConnectorDefinition connector : connectors) {
-            connectorTags.add(connector.toTag());
-        }
-        tag.put("connectors", connectorTags);
-        tag.put("worldOrigin", MKWorkspaceNbtUtil.blockPosToTag(worldOrigin));
-        tag.put("exportBounds", MKWorkspaceNbtUtil.boundingBoxToTag(exportBounds));
-        tag.put("previewBounds", MKWorkspaceNbtUtil.boundingBoxToTag(previewBounds));
-        tag.put("structureBlockPos", MKWorkspaceNbtUtil.blockPosToTag(structureBlockPos));
-        tag.put("signPos", MKWorkspaceNbtUtil.blockPosToTag(signPos));
-        ListTag markersTag = new ListTag();
-        for (BlockPos markerPos : markerPositions) {
-            markersTag.add(MKWorkspaceNbtUtil.blockPosToTag(markerPos));
-        }
-        tag.put("markerPositions", markersTag);
-        ListTag generatedStairsTag = new ListTag();
-        for (BlockPos stairPos : generatedStairPositions) {
-            generatedStairsTag.add(MKWorkspaceNbtUtil.blockPosToTag(stairPos));
-        }
-        tag.put("generatedStairPositions", generatedStairsTag);
-        CompoundTag tagsTag = new CompoundTag();
-        for (Map.Entry<String, String> entry : tags.entrySet()) {
-            tagsTag.putString(entry.getKey(), entry.getValue());
-        }
-        tag.put("tags", tagsTag);
-        return tag;
+        return MKWorkspaceCodecs.encodeNbt(CODEC, this, "workspace piece definition");
     }
 
     public UUID pieceId() {

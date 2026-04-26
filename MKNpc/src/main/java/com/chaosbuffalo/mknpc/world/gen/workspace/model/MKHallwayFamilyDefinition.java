@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
@@ -8,6 +10,20 @@ import java.util.List;
 import java.util.Set;
 
 public class MKHallwayFamilyDefinition {
+    public static final Codec<MKHallwayFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.STRING.fieldOf("hallwayId").forGetter(MKHallwayFamilyDefinition::hallwayId),
+            Codec.STRING.fieldOf("openingProfileId").forGetter(MKHallwayFamilyDefinition::openingProfileId),
+            Codec.INT.fieldOf("length").forGetter(MKHallwayFamilyDefinition::length),
+            Codec.INT.fieldOf("interiorWidth").forGetter(MKHallwayFamilyDefinition::interiorWidth),
+            Codec.INT.fieldOf("interiorHeight").forGetter(MKHallwayFamilyDefinition::interiorHeight),
+            Codec.INT.optionalFieldOf("slopeDelta", 0).forGetter(MKHallwayFamilyDefinition::slopeDelta),
+            Codec.BOOL.optionalFieldOf("allowOnMainPath", false).forGetter(MKHallwayFamilyDefinition::allowOnMainPath),
+            Codec.BOOL.optionalFieldOf("allowOnBranchPath", true).forGetter(MKHallwayFamilyDefinition::allowOnBranchPath),
+            ResourceLocation.CODEC.fieldOf("floorBlock").forGetter(MKHallwayFamilyDefinition::floorBlock),
+            ResourceLocation.CODEC.fieldOf("wallBlock").forGetter(MKHallwayFamilyDefinition::wallBlock),
+            ResourceLocation.CODEC.fieldOf("ceilingBlock").forGetter(MKHallwayFamilyDefinition::ceilingBlock)
+    ).apply(instance, MKHallwayFamilyDefinition::new));
+
     private final String hallwayId;
     private final String openingProfileId;
     private final int length;
@@ -38,35 +54,11 @@ public class MKHallwayFamilyDefinition {
     }
 
     public static MKHallwayFamilyDefinition fromTag(CompoundTag tag) {
-        return new MKHallwayFamilyDefinition(
-                tag.getString("hallwayId"),
-                tag.getString("openingProfileId"),
-                tag.getInt("length"),
-                tag.getInt("interiorWidth"),
-                tag.getInt("interiorHeight"),
-                tag.contains("slopeDelta") ? tag.getInt("slopeDelta") : 0,
-                tag.contains("allowOnMainPath") && tag.getBoolean("allowOnMainPath"),
-                !tag.contains("allowOnBranchPath") || tag.getBoolean("allowOnBranchPath"),
-                ResourceLocation.parse(tag.getString("floorBlock")),
-                ResourceLocation.parse(tag.getString("wallBlock")),
-                ResourceLocation.parse(tag.getString("ceilingBlock"))
-        );
+        return MKWorkspaceCodecs.parseNbt(CODEC, tag, "hallway family definition");
     }
 
     public CompoundTag toTag() {
-        CompoundTag tag = new CompoundTag();
-        tag.putString("hallwayId", hallwayId);
-        tag.putString("openingProfileId", openingProfileId);
-        tag.putInt("length", length);
-        tag.putInt("interiorWidth", interiorWidth);
-        tag.putInt("interiorHeight", interiorHeight);
-        tag.putInt("slopeDelta", slopeDelta);
-        tag.putBoolean("allowOnMainPath", allowOnMainPath);
-        tag.putBoolean("allowOnBranchPath", allowOnBranchPath);
-        tag.putString("floorBlock", floorBlock.toString());
-        tag.putString("wallBlock", wallBlock.toString());
-        tag.putString("ceilingBlock", ceilingBlock.toString());
-        return tag;
+        return MKWorkspaceCodecs.encodeNbt(CODEC, this, "hallway family definition");
     }
 
     public List<String> validate(Set<String> openingProfileIds) {

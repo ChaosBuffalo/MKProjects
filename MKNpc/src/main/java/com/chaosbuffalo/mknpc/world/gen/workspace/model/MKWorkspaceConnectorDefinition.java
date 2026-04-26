@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -8,6 +10,19 @@ import net.minecraft.resources.ResourceLocation;
 
 public class MKWorkspaceConnectorDefinition {
     private static final ResourceLocation EMPTY_POOL = ResourceLocation.parse("minecraft:empty");
+    public static final Codec<MKWorkspaceConnectorDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            MKWorkspaceCodecs.CONNECTOR_ROLE_CODEC.fieldOf("role").forGetter(MKWorkspaceConnectorDefinition::role),
+            MKWorkspaceCodecs.DIRECTION_CODEC.fieldOf("facing").forGetter(MKWorkspaceConnectorDefinition::facing),
+            MKWorkspaceCodecs.BLOCK_POS_CODEC.fieldOf("relativePos").forGetter(MKWorkspaceConnectorDefinition::relativePos),
+            Codec.INT.fieldOf("openingWidth").forGetter(MKWorkspaceConnectorDefinition::openingWidth),
+            Codec.INT.fieldOf("openingHeight").forGetter(MKWorkspaceConnectorDefinition::openingHeight),
+            Codec.INT.optionalFieldOf("lateralOffset", 0).forGetter(MKWorkspaceConnectorDefinition::lateralOffset),
+            Codec.INT.optionalFieldOf("verticalOffset", 0).forGetter(MKWorkspaceConnectorDefinition::verticalOffset),
+            ResourceLocation.CODEC.fieldOf("jigsawName").forGetter(MKWorkspaceConnectorDefinition::jigsawName),
+            ResourceLocation.CODEC.fieldOf("jigsawTarget").forGetter(MKWorkspaceConnectorDefinition::jigsawTarget),
+            ResourceLocation.CODEC.fieldOf("targetPool").forGetter(MKWorkspaceConnectorDefinition::targetPool),
+            ResourceLocation.CODEC.optionalFieldOf("incomingPool", EMPTY_POOL).forGetter(MKWorkspaceConnectorDefinition::incomingPool)
+    ).apply(instance, MKWorkspaceConnectorDefinition::new));
 
     private final MKConnectorRole role;
     private final Direction facing;
@@ -39,35 +54,11 @@ public class MKWorkspaceConnectorDefinition {
     }
 
     public static MKWorkspaceConnectorDefinition fromTag(CompoundTag tag) {
-        return new MKWorkspaceConnectorDefinition(
-                MKConnectorRole.fromSerializedName(tag.getString("role")),
-                Direction.byName(tag.getString("facing")),
-                MKWorkspaceNbtUtil.blockPosFromTag(tag.getCompound("relativePos")),
-                tag.getInt("openingWidth"),
-                tag.getInt("openingHeight"),
-                tag.contains("lateralOffset") ? tag.getInt("lateralOffset") : 0,
-                tag.contains("verticalOffset") ? tag.getInt("verticalOffset") : 0,
-                ResourceLocation.parse(tag.getString("jigsawName")),
-                ResourceLocation.parse(tag.getString("jigsawTarget")),
-                ResourceLocation.parse(tag.getString("targetPool")),
-                tag.contains("incomingPool") ? ResourceLocation.parse(tag.getString("incomingPool")) : EMPTY_POOL
-        );
+        return MKWorkspaceCodecs.parseNbt(CODEC, tag, "workspace connector definition");
     }
 
     public CompoundTag toTag() {
-        CompoundTag tag = new CompoundTag();
-        tag.putString("role", role.getSerializedName());
-        tag.putString("facing", facing.getSerializedName());
-        tag.put("relativePos", MKWorkspaceNbtUtil.blockPosToTag(relativePos));
-        tag.putInt("openingWidth", openingWidth);
-        tag.putInt("openingHeight", openingHeight);
-        tag.putInt("lateralOffset", lateralOffset);
-        tag.putInt("verticalOffset", verticalOffset);
-        tag.putString("jigsawName", jigsawName.toString());
-        tag.putString("jigsawTarget", jigsawTarget.toString());
-        tag.putString("targetPool", targetPool.toString());
-        tag.putString("incomingPool", incomingPool.toString());
-        return tag;
+        return MKWorkspaceCodecs.encodeNbt(CODEC, this, "workspace connector definition");
     }
 
     public MKConnectorRole role() {

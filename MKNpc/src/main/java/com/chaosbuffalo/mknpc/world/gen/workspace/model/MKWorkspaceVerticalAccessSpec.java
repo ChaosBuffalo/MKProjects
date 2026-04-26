@@ -1,11 +1,21 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MKWorkspaceVerticalAccessSpec {
+    public static final Codec<MKWorkspaceVerticalAccessSpec> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.INT.fieldOf("shaftSize").forGetter(MKWorkspaceVerticalAccessSpec::shaftSize),
+            MKWorkspaceCodecs.VERTICAL_ACCESS_PLACEMENT_CODEC.fieldOf("placement")
+                    .forGetter(MKWorkspaceVerticalAccessSpec::placement),
+            MKWorkspaceStairAuthoringConfig.CODEC.optionalFieldOf("stairConfig", MKWorkspaceStairAuthoringConfig.defaultConfig())
+                    .forGetter(MKWorkspaceVerticalAccessSpec::stairConfig)
+    ).apply(instance, MKWorkspaceVerticalAccessSpec::new));
+
     private final int shaftSize;
     private final MKVerticalAccessPlacement placement;
     private final MKWorkspaceStairAuthoringConfig stairConfig;
@@ -30,20 +40,11 @@ public class MKWorkspaceVerticalAccessSpec {
     }
 
     public static MKWorkspaceVerticalAccessSpec fromTag(CompoundTag tag) {
-        return new MKWorkspaceVerticalAccessSpec(
-                tag.getInt("shaftSize"),
-                MKVerticalAccessPlacement.fromSerializedName(tag.getString("placement")),
-                tag.contains("stairConfig") ? MKWorkspaceStairAuthoringConfig.fromTag(tag.getCompound("stairConfig")) :
-                        MKWorkspaceStairAuthoringConfig.defaultConfig()
-        );
+        return MKWorkspaceCodecs.parseNbt(CODEC, tag, "workspace vertical access spec");
     }
 
     public CompoundTag toTag() {
-        CompoundTag tag = new CompoundTag();
-        tag.putInt("shaftSize", shaftSize);
-        tag.putString("placement", placement.getSerializedName());
-        tag.put("stairConfig", stairConfig.toTag());
-        return tag;
+        return MKWorkspaceCodecs.encodeNbt(CODEC, this, "workspace vertical access spec");
     }
 
     public List<String> validate() {

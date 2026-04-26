@@ -1,10 +1,33 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
 
 import java.util.ArrayList;
 import java.util.List;
 public class MKWorkspaceDimensions {
+    public static final Codec<MKWorkspaceDimensions> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.INT.fieldOf("roomWidth").forGetter(MKWorkspaceDimensions::roomWidth),
+            Codec.INT.fieldOf("roomLength").forGetter(MKWorkspaceDimensions::roomLength),
+            Codec.INT.optionalFieldOf("entranceHeight").forGetter(dimensions -> java.util.Optional.of(dimensions.entranceHeight())),
+            Codec.INT.fieldOf("roomHeight").forGetter(MKWorkspaceDimensions::roomHeight),
+            Codec.INT.optionalFieldOf("basementHeight").forGetter(dimensions -> java.util.Optional.of(dimensions.basementHeight())),
+            Codec.INT.fieldOf("hallwayWidth").forGetter(MKWorkspaceDimensions::hallwayWidth),
+            Codec.INT.fieldOf("doorwayWidth").forGetter(MKWorkspaceDimensions::doorwayWidth),
+            Codec.INT.fieldOf("doorwayHeight").forGetter(MKWorkspaceDimensions::doorwayHeight)
+    ).apply(instance, (roomWidth, roomLength, entranceHeight, roomHeight, basementHeight, hallwayWidth,
+                       doorwayWidth, doorwayHeight) -> new MKWorkspaceDimensions(
+            roomWidth,
+            roomLength,
+            entranceHeight.orElse(roomHeight),
+            roomHeight,
+            basementHeight.orElse(roomHeight),
+            hallwayWidth,
+            doorwayWidth,
+            doorwayHeight
+    )));
+
     private final int roomWidth;
     private final int roomLength;
     private final int entranceHeight;
@@ -34,29 +57,11 @@ public class MKWorkspaceDimensions {
     }
 
     public static MKWorkspaceDimensions fromTag(CompoundTag tag) {
-        return new MKWorkspaceDimensions(
-                tag.getInt("roomWidth"),
-                tag.getInt("roomLength"),
-                tag.contains("entranceHeight") ? tag.getInt("entranceHeight") : tag.getInt("roomHeight"),
-                tag.getInt("roomHeight"),
-                tag.contains("basementHeight") ? tag.getInt("basementHeight") : tag.getInt("roomHeight"),
-                tag.getInt("hallwayWidth"),
-                tag.getInt("doorwayWidth"),
-                tag.getInt("doorwayHeight")
-        );
+        return MKWorkspaceCodecs.parseNbt(CODEC, tag, "workspace dimensions");
     }
 
     public CompoundTag toTag() {
-        CompoundTag tag = new CompoundTag();
-        tag.putInt("roomWidth", roomWidth);
-        tag.putInt("roomLength", roomLength);
-        tag.putInt("entranceHeight", entranceHeight);
-        tag.putInt("roomHeight", roomHeight);
-        tag.putInt("basementHeight", basementHeight);
-        tag.putInt("hallwayWidth", hallwayWidth);
-        tag.putInt("doorwayWidth", doorwayWidth);
-        tag.putInt("doorwayHeight", doorwayHeight);
-        return tag;
+        return MKWorkspaceCodecs.encodeNbt(CODEC, this, "workspace dimensions");
     }
 
     public List<String> validate() {

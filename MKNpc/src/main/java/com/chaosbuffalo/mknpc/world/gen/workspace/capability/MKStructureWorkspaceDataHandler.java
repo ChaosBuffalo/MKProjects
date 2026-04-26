@@ -4,12 +4,13 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.Level;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -66,10 +67,10 @@ public class MKStructureWorkspaceDataHandler implements IMKStructureWorkspaceDat
     @Override
     public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
-        ListTag workspacesTag = new ListTag();
-        for (MKStructureWorkspace workspace : workspacesById.values()) {
-            workspacesTag.add(workspace.toTag());
-        }
+        Tag workspacesTag = MKStructureWorkspace.LIST_CODEC.encodeStart(NbtOps.INSTANCE, List.copyOf(workspacesById.values()))
+                .resultOrPartial(error -> com.chaosbuffalo.mknpc.MKNpc.LOGGER.error(
+                        "Failed to encode workspace capability data: {}", error))
+                .orElseThrow(() -> new IllegalStateException("Failed to encode workspace capability data"));
         tag.put("workspaces", workspacesTag);
         return tag;
     }
@@ -78,8 +79,15 @@ public class MKStructureWorkspaceDataHandler implements IMKStructureWorkspaceDat
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         workspacesById.clear();
         workspaceByAnchor.clear();
-        for (Tag workspaceTag : nbt.getList("workspaces", Tag.TAG_COMPOUND)) {
-            MKStructureWorkspace workspace = MKStructureWorkspace.fromTag((CompoundTag) workspaceTag);
+        Tag workspacesTag = nbt.get("workspaces");
+        if (workspacesTag == null) {
+            return;
+        }
+        List<MKStructureWorkspace> workspaces = MKStructureWorkspace.LIST_CODEC.parse(NbtOps.INSTANCE, workspacesTag)
+                .resultOrPartial(error -> com.chaosbuffalo.mknpc.MKNpc.LOGGER.error(
+                        "Failed to parse workspace capability data: {}", error))
+                .orElseThrow(() -> new IllegalStateException("Failed to parse workspace capability data"));
+        for (MKStructureWorkspace workspace : workspaces) {
             workspacesById.put(workspace.id(), workspace);
             workspaceByAnchor.put(workspace.anchor(), workspace.id());
         }

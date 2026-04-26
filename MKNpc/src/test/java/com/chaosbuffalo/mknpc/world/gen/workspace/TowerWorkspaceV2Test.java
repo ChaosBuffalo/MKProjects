@@ -11,15 +11,22 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDe
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -115,6 +122,78 @@ class TowerWorkspaceV2Test {
         List<String> errors = workspace.validate();
         assertTrue(errors.stream().anyMatch(error -> error.contains("missing required branch opening profile entry_branch")));
         assertTrue(errors.stream().anyMatch(error -> error.contains("missing required main opening profile main_main")));
+    }
+
+    @Test
+    void workspaceCodecRoundTripPreservesNestedWorkspaceData() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKStructureWorkspace workspace = new MKStructureWorkspace(
+                UUID.randomUUID(),
+                new BlockPos(32, 80, 32),
+                "mkdev",
+                "codec_round_trip",
+                MKStructureFamilyType.TOWER,
+                dimensions,
+                workspacePalette(),
+                MKWorkspaceStairAuthoringConfig.defaultConfig(),
+                MKVerticalAccessPlacement.CENTER,
+                1,
+                2,
+                4,
+                MKWorkspaceVerticalAccessSpec.defaultSpec(),
+                MKTowerWorkspaceCategoryProfile.createDefaults(dimensions),
+                MKTowerWorkspaceFamilyDefinition.createDefaults(),
+                MKHorizontalOpeningProfile.createDefaults(dimensions),
+                List.of(new MKHallwayFamilyDefinition("surface", "entry_main", 5, 3, 3, 0,
+                        true, false, workspacePalette().floorBlock(), workspacePalette().wallBlock(),
+                        workspacePalette().ceilingBlock())),
+                100L,
+                200L,
+                List.of(new MKWorkspacePieceDefinition(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        "entry_template",
+                        MKWorkspacePieceRole.ENTRY,
+                        2,
+                        dimensions,
+                        1,
+                        List.of(new MKWorkspaceConnectorDefinition(
+                                MKConnectorRole.MAIN_FORWARD,
+                                net.minecraft.core.Direction.NORTH,
+                                new BlockPos(0, 1, -4),
+                                3,
+                                3,
+                                1,
+                                2,
+                                ResourceLocation.parse("mkdev:entry"),
+                                ResourceLocation.parse("mkdev:hallway"),
+                                ResourceLocation.parse("mkdev:pool/target"),
+                                ResourceLocation.parse("mkdev:pool/incoming")
+                        )),
+                        new BlockPos(40, 80, 40),
+                        new BoundingBox(40, 80, 40, 48, 87, 48),
+                        new BoundingBox(38, 78, 38, 50, 89, 50),
+                        new BlockPos(41, 80, 41),
+                        new BlockPos(42, 80, 42),
+                        List.of(new BlockPos(43, 81, 43)),
+                        List.of(new BlockPos(44, 82, 44)),
+                        Map.of("workspace_base_name", "entry", "workspace_piece_kind", "template")
+                ))
+        );
+
+        CompoundTag tag = workspace.toTag();
+        MKStructureWorkspace decoded = MKStructureWorkspace.fromTag(tag);
+
+        assertEquals(Tag.TAG_INT_ARRAY, tag.get("id").getId());
+        assertEquals(workspace.id(), decoded.id());
+        assertEquals(workspace.anchor(), decoded.anchor());
+        assertEquals(workspace.verticalAccessSpec().shaftSize(), decoded.verticalAccessSpec().shaftSize());
+        assertEquals(workspace.familyDefinitions().get(0).branchExitMask(),
+                decoded.familyDefinitions().get(0).branchExitMask());
+        assertEquals(workspace.pieces().get(0).pieceId(), decoded.pieces().get(0).pieceId());
+        assertEquals(workspace.pieces().get(0).connectors().get(0).incomingPool(),
+                decoded.pieces().get(0).connectors().get(0).incomingPool());
+        assertEquals(workspace.pieces().get(0).tags(), decoded.pieces().get(0).tags());
     }
 
     private static MKStructureWorkspace baseWorkspace(List<MKHorizontalOpeningProfile> openingProfiles,

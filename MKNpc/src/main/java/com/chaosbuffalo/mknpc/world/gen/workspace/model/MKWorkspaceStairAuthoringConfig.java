@@ -1,9 +1,38 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
 public class MKWorkspaceStairAuthoringConfig {
+    private static final ResourceLocation DEFAULT_STAIR_BLOCK = ResourceLocation.parse("minecraft:stone_brick_stairs");
+    private static final ResourceLocation DEFAULT_SLAB_BLOCK = ResourceLocation.parse("minecraft:stone_brick_slab");
+    private static final ResourceLocation DEFAULT_LADDER_BLOCK = ResourceLocation.parse("minecraft:ladder");
+    public static final Codec<MKWorkspaceStairAuthoringConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            MKWorkspaceCodecs.STAIR_MODE_CODEC.optionalFieldOf("mode", MKWorkspaceStairMode.AUTO)
+                    .forGetter(MKWorkspaceStairAuthoringConfig::mode),
+            MKWorkspaceCodecs.STAIR_RISE_TYPE_CODEC.optionalFieldOf("riseType")
+                    .forGetter(config -> java.util.Optional.of(config.riseType())),
+            Codec.INT.optionalFieldOf("flatRunLength", 0).forGetter(MKWorkspaceStairAuthoringConfig::flatRunLength),
+            Codec.INT.optionalFieldOf("stairWidth", 1).forGetter(MKWorkspaceStairAuthoringConfig::stairWidth),
+            ResourceLocation.CODEC.optionalFieldOf("stairBlock", DEFAULT_STAIR_BLOCK)
+                    .forGetter(MKWorkspaceStairAuthoringConfig::stairBlock),
+            ResourceLocation.CODEC.optionalFieldOf("slabBlock", DEFAULT_SLAB_BLOCK)
+                    .forGetter(MKWorkspaceStairAuthoringConfig::slabBlock),
+            ResourceLocation.CODEC.optionalFieldOf("ladderBlock", DEFAULT_LADDER_BLOCK)
+                    .forGetter(MKWorkspaceStairAuthoringConfig::ladderBlock)
+    ).apply(instance, (mode, riseType, flatRunLength, stairWidth, stairBlock, slabBlock, ladderBlock) ->
+            new MKWorkspaceStairAuthoringConfig(
+                    mode,
+                    riseType.orElse(inferLegacyRiseType(mode)),
+                    flatRunLength,
+                    Math.max(1, stairWidth),
+                    stairBlock,
+                    slabBlock,
+                    ladderBlock
+            )));
+
     private final MKWorkspaceStairMode mode;
     private final MKWorkspaceStairRiseType riseType;
     private final int flatRunLength;
@@ -30,41 +59,18 @@ public class MKWorkspaceStairAuthoringConfig {
                 MKWorkspaceStairRiseType.STAIR,
                 0,
                 1,
-                ResourceLocation.parse("minecraft:stone_brick_stairs"),
-                ResourceLocation.parse("minecraft:stone_brick_slab"),
-                ResourceLocation.parse("minecraft:ladder")
+                DEFAULT_STAIR_BLOCK,
+                DEFAULT_SLAB_BLOCK,
+                DEFAULT_LADDER_BLOCK
         );
     }
 
     public static MKWorkspaceStairAuthoringConfig fromTag(CompoundTag tag) {
-        if (tag.isEmpty()) {
-            return defaultConfig();
-        }
-        MKWorkspaceStairMode mode = MKWorkspaceStairMode.fromSerializedName(tag.getString("mode"));
-        MKWorkspaceStairRiseType riseType = tag.contains("riseType")
-                ? MKWorkspaceStairRiseType.fromSerializedName(tag.getString("riseType"))
-                : inferLegacyRiseType(mode);
-        return new MKWorkspaceStairAuthoringConfig(
-                mode,
-                riseType,
-                tag.contains("flatRunLength") ? tag.getInt("flatRunLength") : 0,
-                tag.contains("stairWidth") ? Math.max(1, tag.getInt("stairWidth")) : 1,
-                ResourceLocation.parse(tag.getString("stairBlock")),
-                ResourceLocation.parse(tag.getString("slabBlock")),
-                ResourceLocation.parse(tag.getString("ladderBlock"))
-        );
+        return MKWorkspaceCodecs.parseNbt(CODEC, tag, "workspace stair authoring config");
     }
 
     public CompoundTag toTag() {
-        CompoundTag tag = new CompoundTag();
-        tag.putString("mode", mode.getSerializedName());
-        tag.putString("riseType", riseType.getSerializedName());
-        tag.putInt("flatRunLength", flatRunLength);
-        tag.putInt("stairWidth", stairWidth);
-        tag.putString("stairBlock", stairBlock.toString());
-        tag.putString("slabBlock", slabBlock.toString());
-        tag.putString("ladderBlock", ladderBlock.toString());
-        return tag;
+        return MKWorkspaceCodecs.encodeNbt(CODEC, this, "workspace stair authoring config");
     }
 
     private static MKWorkspaceStairRiseType inferLegacyRiseType(MKWorkspaceStairMode mode) {

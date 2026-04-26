@@ -1,11 +1,33 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MKTowerWorkspaceCategoryProfile {
+    public static final Codec<MKTowerWorkspaceCategoryProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            MKWorkspaceCodecs.TOWER_CATEGORY_CODEC.fieldOf("category").forGetter(MKTowerWorkspaceCategoryProfile::category),
+            Codec.INT.fieldOf("roomWidth").forGetter(MKTowerWorkspaceCategoryProfile::roomWidth),
+            Codec.INT.fieldOf("roomLength").forGetter(MKTowerWorkspaceCategoryProfile::roomLength),
+            Codec.INT.fieldOf("defaultHeight").forGetter(MKTowerWorkspaceCategoryProfile::defaultHeight),
+            Codec.INT.optionalFieldOf("minHeight", 3).forGetter(MKTowerWorkspaceCategoryProfile::minHeight),
+            Codec.INT.optionalFieldOf("maxHeight").forGetter(profile -> java.util.Optional.of(profile.maxHeight())),
+            Codec.BOOL.optionalFieldOf("supportsVerticalAccess", true)
+                    .forGetter(MKTowerWorkspaceCategoryProfile::supportsVerticalAccess)
+    ).apply(instance, (category, roomWidth, roomLength, defaultHeight, minHeight, maxHeight, supportsVerticalAccess) ->
+            new MKTowerWorkspaceCategoryProfile(
+                    category,
+                    roomWidth,
+                    roomLength,
+                    defaultHeight,
+                    minHeight,
+                    maxHeight.orElse(defaultHeight),
+                    supportsVerticalAccess
+            )));
+
     private final MKTowerWorkspaceCategory category;
     private final int roomWidth;
     private final int roomLength;
@@ -44,27 +66,11 @@ public class MKTowerWorkspaceCategoryProfile {
     }
 
     public static MKTowerWorkspaceCategoryProfile fromTag(CompoundTag tag) {
-        return new MKTowerWorkspaceCategoryProfile(
-                MKTowerWorkspaceCategory.fromSerializedName(tag.getString("category")),
-                tag.getInt("roomWidth"),
-                tag.getInt("roomLength"),
-                tag.getInt("defaultHeight"),
-                tag.contains("minHeight") ? tag.getInt("minHeight") : 3,
-                tag.contains("maxHeight") ? tag.getInt("maxHeight") : tag.getInt("defaultHeight"),
-                tag.contains("supportsVerticalAccess") ? tag.getBoolean("supportsVerticalAccess") : true
-        );
+        return MKWorkspaceCodecs.parseNbt(CODEC, tag, "tower workspace category profile");
     }
 
     public CompoundTag toTag() {
-        CompoundTag tag = new CompoundTag();
-        tag.putString("category", category.getSerializedName());
-        tag.putInt("roomWidth", roomWidth);
-        tag.putInt("roomLength", roomLength);
-        tag.putInt("defaultHeight", defaultHeight);
-        tag.putInt("minHeight", minHeight);
-        tag.putInt("maxHeight", maxHeight);
-        tag.putBoolean("supportsVerticalAccess", supportsVerticalAccess);
-        return tag;
+        return MKWorkspaceCodecs.encodeNbt(CODEC, this, "tower workspace category profile");
     }
 
     public List<String> validate(MKWorkspaceVerticalAccessSpec verticalAccessSpec) {
