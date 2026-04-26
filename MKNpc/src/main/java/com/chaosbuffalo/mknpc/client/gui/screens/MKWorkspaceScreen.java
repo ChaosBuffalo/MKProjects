@@ -84,7 +84,8 @@ public class MKWorkspaceScreen extends MKScreen {
     private ResourceLocation detailSlabBlock;
     private ResourceLocation detailLadderBlock;
     private WorkspaceFormDraft formDraft;
-    private final Map<String, List<ScrollViewState>> scrollStates = new LinkedHashMap<>();
+    private String pendingScrollRestoreState;
+    private List<ScrollViewState> pendingScrollRestoreValues = List.of();
 
     private record ScrollViewState(double offsetX, double offsetY) {
     }
@@ -159,7 +160,7 @@ public class MKWorkspaceScreen extends MKScreen {
 
     @Override
     public void flagNeedSetup() {
-        captureCurrentScrollState();
+        capturePendingScrollState();
         super.flagNeedSetup();
     }
 
@@ -188,6 +189,7 @@ public class MKWorkspaceScreen extends MKScreen {
         for (String state : statesToPush) {
             pushState(state);
         }
+        restorePendingScrollState();
     }
 
     private MKLayout buildHomeState() {
@@ -2631,9 +2633,10 @@ public class MKWorkspaceScreen extends MKScreen {
         return (int) pieces.stream().filter(piece -> piece.variantIndex() > 0).count();
     }
 
-    private void captureCurrentScrollState() {
-        String state = getState();
-        if (NO_STATE.equals(state) || children.isEmpty()) {
+    private void capturePendingScrollState() {
+        pendingScrollRestoreState = getState();
+        if (NO_STATE.equals(pendingScrollRestoreState) || children.isEmpty()) {
+            pendingScrollRestoreValues = List.of();
             return;
         }
         ArrayList<MKScrollView> scrollViews = new ArrayList<>();
@@ -2641,12 +2644,12 @@ public class MKWorkspaceScreen extends MKScreen {
             collectScrollViews(child, scrollViews);
         }
         if (scrollViews.isEmpty()) {
-            scrollStates.remove(state);
+            pendingScrollRestoreValues = List.of();
             return;
         }
-        scrollStates.put(state, scrollViews.stream()
+        pendingScrollRestoreValues = scrollViews.stream()
                 .map(scrollView -> new ScrollViewState(scrollView.getOffsetX(), scrollView.getOffsetY()))
-                .toList());
+                .toList();
     }
 
     private void collectScrollViews(IMKWidget widget, List<MKScrollView> scrollViews) {
@@ -2658,6 +2661,28 @@ public class MKWorkspaceScreen extends MKScreen {
         }
     }
 
+    private void restorePendingScrollState() {
+        if (pendingScrollRestoreState == null || !pendingScrollRestoreState.equals(getState()) ||
+                pendingScrollRestoreValues.isEmpty() || children.isEmpty()) {
+            pendingScrollRestoreState = null;
+            pendingScrollRestoreValues = List.of();
+            return;
+        }
+        ArrayList<MKScrollView> scrollViews = new ArrayList<>();
+        for (IMKWidget child : children) {
+            collectScrollViews(child, scrollViews);
+        }
+        for (int i = 0; i < Math.min(scrollViews.size(), pendingScrollRestoreValues.size()); i++) {
+            ScrollViewState savedState = pendingScrollRestoreValues.get(i);
+            MKScrollView scrollView = scrollViews.get(i);
+            scrollView.setOffsetX(savedState.offsetX());
+            scrollView.setOffsetY(savedState.offsetY());
+            clampScrollViewOffsets(scrollView);
+        }
+        pendingScrollRestoreState = null;
+        pendingScrollRestoreValues = List.of();
+    }
+
     private void finalizeScrollView(MKScrollView scrollView, String stateName) {
         finalizeScrollView(scrollView, stateName, true);
     }
@@ -2666,15 +2691,7 @@ public class MKWorkspaceScreen extends MKScreen {
         if (centerX) {
             scrollView.centerContentX();
         }
-        List<ScrollViewState> savedStates = scrollStates.get(stateName);
-        if (savedStates == null || savedStates.isEmpty()) {
-            scrollView.setToTop();
-            return;
-        }
-        ScrollViewState savedState = savedStates.getFirst();
-        scrollView.setOffsetX(savedState.offsetX());
-        scrollView.setOffsetY(savedState.offsetY());
-        clampScrollViewOffsets(scrollView);
+        scrollView.setToTop();
     }
 
     private void clampScrollViewOffsets(MKScrollView scrollView) {
