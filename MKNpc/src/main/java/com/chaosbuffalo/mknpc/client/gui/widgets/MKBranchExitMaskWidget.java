@@ -23,20 +23,33 @@ public class MKBranchExitMaskWidget extends MKWidget {
     private static final int MAIN_EXIT = 0xFF60A5FA;
     private static final int BRANCH_EXIT = 0xFF74C69D;
     private static final int INACTIVE_EXIT = 0xFF4B5563;
+    private static final int SELECTED_OVERLAY = 0x66F59E0B;
     private static final int LABEL_ACTIVE = 0xFFF8FAFC;
     private static final int LABEL_INACTIVE = 0xFF9CA3AF;
 
     private List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits;
-    private Consumer<Direction> selectCallback;
+    private Consumer<Direction> editCallback;
+    private Consumer<Direction> removeCallback;
+    private Direction selectedDirection;
 
     public MKBranchExitMaskWidget(List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits) {
         super(0, 0, WIDGET_SIZE, WIDGET_SIZE);
         this.horizontalExits = List.copyOf(horizontalExits);
-        setTooltip(Component.literal("Click a cardinal direction to add or edit that horizontal exit."));
+        setTooltip(Component.literal("Left click a direction to edit it. Right click to remove that exit."));
     }
 
-    public MKBranchExitMaskWidget setSelectCallback(Consumer<Direction> selectCallback) {
-        this.selectCallback = selectCallback;
+    public MKBranchExitMaskWidget setEditCallback(Consumer<Direction> editCallback) {
+        this.editCallback = editCallback;
+        return this;
+    }
+
+    public MKBranchExitMaskWidget setRemoveCallback(Consumer<Direction> removeCallback) {
+        this.removeCallback = removeCallback;
+        return this;
+    }
+
+    public MKBranchExitMaskWidget setSelectedDirection(Direction selectedDirection) {
+        this.selectedDirection = selectedDirection;
         return this;
     }
 
@@ -46,15 +59,19 @@ public class MKBranchExitMaskWidget extends MKWidget {
 
     @Override
     public boolean onMousePressed(Minecraft minecraft, double mouseX, double mouseY, int mouseButton) {
-        if (mouseButton != GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-            return false;
-        }
         Direction direction = hitDirection((int) mouseX, (int) mouseY);
-        if (direction == null || selectCallback == null) {
+        if (direction == null) {
             return false;
         }
-        selectCallback.accept(direction);
-        return true;
+        if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT && editCallback != null) {
+            editCallback.accept(direction);
+            return true;
+        }
+        if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT && removeCallback != null) {
+            removeCallback.accept(direction);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -99,14 +116,38 @@ public class MKBranchExitMaskWidget extends MKWidget {
             case NONE -> INACTIVE_EXIT;
         };
         switch (direction) {
-            case NORTH -> graphics.fill(centerX - (ARM_THICKNESS / 2), roomTop - ARM_LENGTH,
-                    centerX + (ARM_THICKNESS / 2), roomTop, color);
-            case EAST -> graphics.fill(roomRight, centerY - (ARM_THICKNESS / 2),
-                    roomRight + ARM_LENGTH, centerY + (ARM_THICKNESS / 2), color);
-            case SOUTH -> graphics.fill(centerX - (ARM_THICKNESS / 2), roomBottom,
-                    centerX + (ARM_THICKNESS / 2), roomBottom + ARM_LENGTH, color);
-            case WEST -> graphics.fill(roomLeft - ARM_LENGTH, centerY - (ARM_THICKNESS / 2),
-                    roomLeft, centerY + (ARM_THICKNESS / 2), color);
+            case NORTH -> {
+                graphics.fill(centerX - (ARM_THICKNESS / 2), roomTop - ARM_LENGTH,
+                        centerX + (ARM_THICKNESS / 2), roomTop, color);
+                if (selectedDirection == Direction.NORTH) {
+                    graphics.fill(centerX - (ARM_THICKNESS / 2), roomTop - ARM_LENGTH,
+                            centerX + (ARM_THICKNESS / 2), roomTop, SELECTED_OVERLAY);
+                }
+            }
+            case EAST -> {
+                graphics.fill(roomRight, centerY - (ARM_THICKNESS / 2),
+                        roomRight + ARM_LENGTH, centerY + (ARM_THICKNESS / 2), color);
+                if (selectedDirection == Direction.EAST) {
+                    graphics.fill(roomRight, centerY - (ARM_THICKNESS / 2),
+                            roomRight + ARM_LENGTH, centerY + (ARM_THICKNESS / 2), SELECTED_OVERLAY);
+                }
+            }
+            case SOUTH -> {
+                graphics.fill(centerX - (ARM_THICKNESS / 2), roomBottom,
+                        centerX + (ARM_THICKNESS / 2), roomBottom + ARM_LENGTH, color);
+                if (selectedDirection == Direction.SOUTH) {
+                    graphics.fill(centerX - (ARM_THICKNESS / 2), roomBottom,
+                            centerX + (ARM_THICKNESS / 2), roomBottom + ARM_LENGTH, SELECTED_OVERLAY);
+                }
+            }
+            case WEST -> {
+                graphics.fill(roomLeft - ARM_LENGTH, centerY - (ARM_THICKNESS / 2),
+                        roomLeft, centerY + (ARM_THICKNESS / 2), color);
+                if (selectedDirection == Direction.WEST) {
+                    graphics.fill(roomLeft - ARM_LENGTH, centerY - (ARM_THICKNESS / 2),
+                            roomLeft, centerY + (ARM_THICKNESS / 2), SELECTED_OVERLAY);
+                }
+            }
             default -> {
             }
         }

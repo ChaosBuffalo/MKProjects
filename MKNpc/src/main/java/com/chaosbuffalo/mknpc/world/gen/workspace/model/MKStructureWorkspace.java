@@ -88,7 +88,7 @@ public class MKStructureWorkspace {
                 shellMargin, exteriorAirMargin, previewMargin,
                 MKWorkspaceVerticalAccessSpec.fromLegacy(dimensions, verticalAccessPlacement, stairConfig),
                 MKTowerWorkspaceCategoryProfile.createDefaults(dimensions),
-                MKTowerWorkspaceFamilyDefinition.createDefaults(),
+                MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions),
                 MKHorizontalOpeningProfile.createDefaults(dimensions),
                 List.of(),
                 createdAt, updatedAt, pieces);
@@ -111,7 +111,7 @@ public class MKStructureWorkspace {
                 4,
                 MKWorkspaceVerticalAccessSpec.defaultSpec(),
                 MKTowerWorkspaceCategoryProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
-                MKTowerWorkspaceFamilyDefinition.createDefaults(),
+                MKTowerWorkspaceFamilyDefinition.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
                 MKHorizontalOpeningProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
                 List.of(),
                 now,
@@ -136,7 +136,7 @@ public class MKStructureWorkspace {
         List<MKTowerWorkspaceCategoryProfile> resolvedCategoryProfiles = content.categoryProfiles().isEmpty() ?
                 MKTowerWorkspaceCategoryProfile.createDefaults(core.dimensions()) : List.copyOf(content.categoryProfiles());
         List<MKTowerWorkspaceFamilyDefinition> resolvedFamilyDefinitions =
-                MKTowerWorkspaceFamilyDefinition.normalize(content.familyDefinitions());
+                MKTowerWorkspaceFamilyDefinition.normalize(content.familyDefinitions(), resolvedCategoryProfiles);
         List<MKHorizontalOpeningProfile> resolvedOpeningProfiles = content.openingProfiles().isEmpty() ?
                 MKHorizontalOpeningProfile.createDefaults(core.dimensions()) : List.copyOf(content.openingProfiles());
         return new MKStructureWorkspace(
@@ -252,11 +252,13 @@ public class MKStructureWorkspace {
             errors.addAll(categoryProfile.validate(verticalAccessSpec));
         }
         for (MKTowerWorkspaceFamilyDefinition familyDefinition : familyDefinitions) {
-            errors.addAll(familyDefinition.validate(familyDefinitions));
-            if (categoryProfile(familyDefinition.category()).isEmpty()) {
+            Optional<MKTowerWorkspaceCategoryProfile> familyCategory = categoryProfile(familyDefinition.category());
+            if (familyCategory.isEmpty()) {
                 errors.add("family " + familyDefinition.baseName() + " references missing category profile " +
                         familyDefinition.category().getSerializedName());
+                continue;
             }
+            errors.addAll(familyDefinition.validate(familyDefinitions, familyCategory.get(), verticalAccessSpec));
         }
         java.util.Set<String> openingProfileIds = new java.util.LinkedHashSet<>();
         java.util.Map<String, MKHorizontalOpeningProfile> openingProfileById = new java.util.LinkedHashMap<>();
@@ -303,25 +305,33 @@ public class MKStructureWorkspace {
         }
         Optional<MKTowerWorkspaceCategoryProfile> mainProfile = categoryProfile(MKTowerWorkspaceCategory.MAIN);
         if (mainProfile.isPresent()) {
-            int bandCap = verticalAccessSpec.getBandCapForReusableHeight(mainProfile.get().defaultHeight());
+            if (!verticalAccessSpec.supportsReusableHeight(mainProfile.get().fullHeight())) {
+                errors.add("main full height " + mainProfile.get().fullHeight() +
+                        " is not reusable for shaft size " + verticalAccessSpec.shaftSize());
+            }
+            int bandCap = verticalAccessSpec.getBandCapForReusableHeight(mainProfile.get().fullHeight());
             List<Integer> allowedEntranceHeights = MKWorkspaceDimensions.getAllowedEntranceHeights(
                     verticalAccessSpec.stairConfig(),
                     verticalAccessSpec.shaftSize(),
-                    mainProfile.get().defaultHeight(),
+                    mainProfile.get().fullHeight(),
                     3,
                     4
             );
-            Optional<MKTowerWorkspaceCategoryProfile> entryProfile = categoryProfile(MKTowerWorkspaceCategory.ENTRY);
-            if (entryProfile.isPresent() && entryProfile.get().supportsVerticalAccess() &&
-                    !allowedEntranceHeights.contains(entryProfile.get().defaultHeight())) {
-                errors.add("entry default height must be one of " + allowedEntranceHeights +
-                        " to stay in phase with main room height " + mainProfile.get().defaultHeight());
+            for (MKTowerWorkspaceCategory alignedCategory : List.of(
+                    MKTowerWorkspaceCategory.ENTRY,
+                    MKTowerWorkspaceCategory.BASEMENT,
+                    MKTowerWorkspaceCategory.BASEMENT_CAP)) {
+                Optional<MKTowerWorkspaceCategoryProfile> profile = categoryProfile(alignedCategory);
+                if (profile.isPresent() && !allowedEntranceHeights.contains(profile.get().fullHeight())) {
+                    errors.add(alignedCategory.getSerializedName() + " full height must be one of " +
+                            allowedEntranceHeights + " to stay in phase with main room height " +
+                            mainProfile.get().fullHeight());
+                }
             }
-            Optional<MKTowerWorkspaceCategoryProfile> basementProfile = categoryProfile(MKTowerWorkspaceCategory.BASEMENT);
-            if (basementProfile.isPresent() && basementProfile.get().supportsVerticalAccess() &&
-                    !allowedEntranceHeights.contains(basementProfile.get().defaultHeight())) {
-                errors.add("basement default height must be one of " + allowedEntranceHeights +
-                        " to stay in phase with main room height " + mainProfile.get().defaultHeight());
+            Optional<MKTowerWorkspaceCategoryProfile> bossProfile = categoryProfile(MKTowerWorkspaceCategory.BOSS);
+            if (bossProfile.isPresent() && !verticalAccessSpec.supportsReusableHeight(bossProfile.get().fullHeight())) {
+                errors.add("boss full height " + bossProfile.get().fullHeight() +
+                        " is not reusable for shaft size " + verticalAccessSpec.shaftSize());
             }
             for (MKHallwayFamilyDefinition hallwayFamily : hallwayFamilies) {
                 int hallwayTopHeight = hallwayFamily.interiorHeight() + Math.abs(hallwayFamily.slopeDelta());

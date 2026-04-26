@@ -82,7 +82,7 @@ class TowerWorkspaceV2Test {
                 .filter(profile -> profile.category() == MKTowerWorkspaceCategory.MAIN)
                 .findFirst()
                 .orElseThrow();
-        int bandCap = verticalAccessSpec.getBandCapForReusableHeight(mainProfile.defaultHeight());
+        int bandCap = verticalAccessSpec.getBandCapForReusableHeight(mainProfile.fullHeight());
 
         MKStructureWorkspace workspace = new MKStructureWorkspace(
                 UUID.randomUUID(),
@@ -217,31 +217,35 @@ class TowerWorkspaceV2Test {
                 4,
                 verticalAccessSpec,
                 List.of(
-                        new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.ENTRY, 9, 9, dimensions.entranceHeight(), 3,
-                                dimensions.entranceHeight(), true),
-                        new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.MAIN, 9, 9, dimensions.roomHeight(), 3,
-                                dimensions.roomHeight(), true),
-                        new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BASEMENT, 9, 9, dimensions.basementHeight(), 3,
-                                dimensions.basementHeight(), true),
-                        new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BOSS, 9, 9, dimensions.roomHeight(), 3,
-                                dimensions.roomHeight(), true)
+                        new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.ENTRY, 9, 9, dimensions.entranceHeight(), 3),
+                        new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.MAIN, 9, 9, dimensions.roomHeight(), 3),
+                        new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BASEMENT, 9, 9, dimensions.basementHeight(), 3),
+                        new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BOSS, 9, 9, dimensions.roomHeight(), 3),
+                        new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BASEMENT_CAP, 9, 9, dimensions.basementHeight(), 3)
                 ),
                 List.of(
                         new MKTowerWorkspaceFamilyDefinition("entry", MKTowerWorkspaceCategory.ENTRY, MKWorkspacePieceRole.ENTRY, true,
+                                9, 9, dimensions.entranceHeight(),
                                 List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
                                         MKWorkspaceHorizontalExitPathKind.MAIN, "entry_main"))),
                         new MKTowerWorkspaceFamilyDefinition("floor_main", MKTowerWorkspaceCategory.MAIN, MKWorkspacePieceRole.FLOOR_MAIN, true,
+                                9, 9, dimensions.roomHeight(),
                                 List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
                                         MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch"))),
                         new MKTowerWorkspaceFamilyDefinition("boss_approach", MKTowerWorkspaceCategory.BOSS, MKWorkspacePieceRole.BOSS_APPROACH, true,
+                                9, 9, dimensions.roomHeight(),
                                 List.of()),
                         new MKTowerWorkspaceFamilyDefinition("boss_cap", MKTowerWorkspaceCategory.BOSS, MKWorkspacePieceRole.BOSS_CAP, true,
+                                9, 9, dimensions.roomHeight(),
                                 List.of()),
                         new MKTowerWorkspaceFamilyDefinition("basement_entry", MKTowerWorkspaceCategory.BASEMENT, MKWorkspacePieceRole.BASEMENT_ENTRY, true,
+                                9, 9, dimensions.basementHeight(),
                                 List.of()),
                         new MKTowerWorkspaceFamilyDefinition("basement_main", MKTowerWorkspaceCategory.BASEMENT, MKWorkspacePieceRole.BASEMENT_MAIN, true,
+                                9, 9, dimensions.basementHeight(),
                                 List.of()),
-                        new MKTowerWorkspaceFamilyDefinition("basement_cap", MKTowerWorkspaceCategory.BASEMENT, MKWorkspacePieceRole.BASEMENT_CAP, true,
+                        new MKTowerWorkspaceFamilyDefinition("basement_cap", MKTowerWorkspaceCategory.BASEMENT_CAP, MKWorkspacePieceRole.BASEMENT_CAP, true,
+                                9, 9, dimensions.basementHeight(),
                                 List.of())
                 ),
                 openingProfiles,

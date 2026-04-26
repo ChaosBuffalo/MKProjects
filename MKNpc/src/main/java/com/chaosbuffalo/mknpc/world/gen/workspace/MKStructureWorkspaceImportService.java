@@ -176,10 +176,8 @@ public class MKStructureWorkspaceImportService {
                         profile.category(),
                         profile.roomWidth(),
                         profile.roomLength(),
-                        profile.defaultHeight(),
-                        profile.minHeight(),
-                        profile.maxHeight(),
-                        profile.supportsVerticalAccess()
+                        profile.fullHeight().orElse(profile.defaultHeight().orElse(profile.maxHeight().orElse(3))),
+                        profile.minHeight()
                 ))
                 .toList();
         if (categoryProfiles.isEmpty()) {
@@ -191,6 +189,9 @@ public class MKStructureWorkspaceImportService {
                         family.category(),
                         family.pieceRole(),
                         family.supportsVerticalAccess(),
+                        family.roomWidth().orElse(0),
+                        family.roomLength().orElse(0),
+                        family.roomHeight().orElse(0),
                         family.horizontalExits().stream()
                                 .map(exit -> new MKWorkspaceFamilyHorizontalExitDefinition(
                                         Direction.byName(exit.direction()),
@@ -200,7 +201,7 @@ public class MKStructureWorkspaceImportService {
                                 .toList()
                 ))
                 .toList();
-        familyDefinitions = MKTowerWorkspaceFamilyDefinition.normalize(familyDefinitions);
+        familyDefinitions = MKTowerWorkspaceFamilyDefinition.normalize(familyDefinitions, categoryProfiles);
         List<MKHorizontalOpeningProfile> openingProfiles = settings.openingProfiles().stream()
                 .map(profile -> new MKHorizontalOpeningProfile(
                         profile.profileId(),

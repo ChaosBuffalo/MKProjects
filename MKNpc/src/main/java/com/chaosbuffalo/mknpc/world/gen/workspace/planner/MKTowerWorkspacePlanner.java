@@ -65,23 +65,21 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     }
 
     private MKPlannedPiece createPieceForFamily(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family) {
-        MKWorkspaceDimensions dimensions = workspace.dimensions();
-        MKTowerWorkspaceCategoryProfile profile = workspace.categoryProfile(family.category())
-                .orElseGet(() -> fallbackProfile(family.category(), dimensions));
         String stairPlacement = workspace.verticalAccessSpec().placement().getSerializedName();
         int hallWidth = workspace.verticalAccessSpec().shaftSize();
         return switch (family.pieceRole()) {
             case ENTRY -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
-                    profile.roomWidth(),
-                    profile.roomLength(),
-                    profile.defaultHeight(),
+                    family.roomWidth(),
+                    family.roomLength(),
+                    family.roomHeight(),
                     connectorsWithHorizontalExits(
-                            List.of(
-                                    new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth, "connect_up"),
-                                    new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth, "connect_down_entry")
-                            ),
+                            family.supportsVerticalAccess() ?
+                                    List.of(
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth, "connect_up"),
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth, "connect_down_entry")
+                                    ) : List.of(),
                             family,
                             workspace
                     ),
@@ -92,15 +90,16 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
             case FLOOR_MAIN -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
-                    profile.roomWidth(),
-                    profile.roomLength(),
-                    profile.defaultHeight(),
+                    family.roomWidth(),
+                    family.roomLength(),
+                    family.roomHeight(),
                     connectorsWithHorizontalExits(
-                            List.of(
-                                    new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
-                                            EMPTY_POOL, "connect_up"),
-                                    new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth, "connect_up")
-                            ),
+                            family.supportsVerticalAccess() ?
+                                    List.of(
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
+                                                    EMPTY_POOL, "connect_up"),
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth, "connect_up")
+                                    ) : List.of(),
                             family,
                             workspace
                     ),
@@ -111,15 +110,16 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
             case BOSS_APPROACH -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
-                    profile.roomWidth(),
-                    profile.roomLength(),
-                    profile.defaultHeight(),
+                    family.roomWidth(),
+                    family.roomLength(),
+                    family.roomHeight(),
                     connectorsWithHorizontalExits(
-                            List.of(
-                                    new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
-                                            EMPTY_POOL, "connect_up"),
-                                    new MKPlannedConnector(MKConnectorRole.BOSS_FORWARD, Direction.UP, hallWidth, hallWidth, "boss_cap")
-                            ),
+                            family.supportsVerticalAccess() ?
+                                    List.of(
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
+                                                    EMPTY_POOL, "connect_up"),
+                                            new MKPlannedConnector(MKConnectorRole.BOSS_FORWARD, Direction.UP, hallWidth, hallWidth, "boss_cap")
+                                    ) : List.of(),
                             family,
                             workspace
                     ),
@@ -130,12 +130,13 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
             case BOSS_CAP -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
-                    profile.roomWidth(),
-                    profile.roomLength(),
-                    profile.defaultHeight(),
+                    family.roomWidth(),
+                    family.roomLength(),
+                    family.roomHeight(),
                     connectorsWithHorizontalExits(
-                            List.of(new MKPlannedConnector(MKConnectorRole.BOSS_BACK, Direction.DOWN, hallWidth, hallWidth,
-                                    EMPTY_POOL, "boss_cap")),
+                            family.supportsVerticalAccess() ?
+                                    List.of(new MKPlannedConnector(MKConnectorRole.BOSS_BACK, Direction.DOWN, hallWidth, hallWidth,
+                                            EMPTY_POOL, "boss_cap")) : List.of(),
                             family,
                             workspace
                     ),
@@ -146,15 +147,16 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
             case BASEMENT_ENTRY -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
-                    profile.roomWidth(),
-                    profile.roomLength(),
-                    profile.defaultHeight(),
+                    family.roomWidth(),
+                    family.roomLength(),
+                    family.roomHeight(),
                     connectorsWithHorizontalExits(
-                            List.of(
-                                    new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
-                                            EMPTY_POOL, "connect_down_entry"),
-                                    new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth, "connect_down")
-                            ),
+                            family.supportsVerticalAccess() ?
+                                    List.of(
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
+                                                    EMPTY_POOL, "connect_down_entry"),
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth, "connect_down")
+                                    ) : List.of(),
                             family,
                             workspace
                     ),
@@ -165,15 +167,16 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
             case BASEMENT_MAIN -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
-                    profile.roomWidth(),
-                    profile.roomLength(),
-                    profile.defaultHeight(),
+                    family.roomWidth(),
+                    family.roomLength(),
+                    family.roomHeight(),
                     connectorsWithHorizontalExits(
-                            List.of(
-                                    new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
-                                            EMPTY_POOL, "connect_down"),
-                                    new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth, "connect_down")
-                            ),
+                            family.supportsVerticalAccess() ?
+                                    List.of(
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
+                                                    EMPTY_POOL, "connect_down"),
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth, "connect_down")
+                                    ) : List.of(),
                             family,
                             workspace
                     ),
@@ -184,12 +187,13 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
             case BASEMENT_CAP -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
-                    profile.roomWidth(),
-                    profile.roomLength(),
-                    profile.defaultHeight(),
+                    family.roomWidth(),
+                    family.roomLength(),
+                    family.roomHeight(),
                     connectorsWithHorizontalExits(
-                            List.of(new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
-                                    EMPTY_POOL, "connect_down")),
+                            family.supportsVerticalAccess() ?
+                                    List.of(new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
+                                            EMPTY_POOL, "connect_down")) : List.of(),
                             family,
                             workspace
                     ),
@@ -312,13 +316,15 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         tags.put("workspace_branch_exit_mask", family.legacyBranchExitMask().getSerializedName());
         tags.put("workspace_horizontal_exits", family.horizontalExitSummary());
         tags.put("workspace_category", family.category().getSerializedName());
-        tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, "true");
-        tags.put(MKWorkspaceVerticalAccessTags.PLACEMENT_TAG, stairPlacement);
-        tags.put(MKWorkspaceVerticalAccessTags.DIRECTION_TAG, stairDirection);
-        if (topCap) {
+        tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, Boolean.toString(family.supportsVerticalAccess()));
+        if (family.supportsVerticalAccess()) {
+            tags.put(MKWorkspaceVerticalAccessTags.PLACEMENT_TAG, stairPlacement);
+            tags.put(MKWorkspaceVerticalAccessTags.DIRECTION_TAG, stairDirection);
+        }
+        if (family.supportsVerticalAccess() && topCap) {
             tags.put(MKWorkspaceVerticalAccessTags.TOP_CAP_TAG, "true");
         }
-        if (bottomCap) {
+        if (family.supportsVerticalAccess() && bottomCap) {
             tags.put(MKWorkspaceVerticalAccessTags.BOTTOM_CAP_TAG, "true");
         }
         runtimeInfo.applyToTags(tags);
