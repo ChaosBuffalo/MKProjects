@@ -179,15 +179,11 @@ public class MKStructureWorkspaceImportService {
                         profile.defaultHeight(),
                         profile.minHeight(),
                         profile.maxHeight(),
-                        profile.supportsVerticalAccess(),
-                        profile.mainOpeningWidth(),
-                        profile.mainOpeningHeight(),
-                        profile.branchOpeningWidth(),
-                        profile.branchOpeningHeight()
+                        profile.supportsVerticalAccess()
                 ))
                 .toList();
         if (categoryProfiles.isEmpty()) {
-            categoryProfiles = MKTowerWorkspaceCategoryProfile.createDefaults(workspaceDimensions, verticalAccessSpec);
+            categoryProfiles = MKTowerWorkspaceCategoryProfile.createDefaults(workspaceDimensions);
         }
         List<MKTowerWorkspaceFamilyDefinition> familyDefinitions = settings.familyDefinitions().stream()
                 .map(family -> new MKTowerWorkspaceFamilyDefinition(
@@ -209,7 +205,7 @@ public class MKStructureWorkspaceImportService {
                 ))
                 .toList();
         if (openingProfiles.isEmpty()) {
-            openingProfiles = MKHorizontalOpeningProfile.createDefaults(categoryProfiles);
+            openingProfiles = MKHorizontalOpeningProfile.createDefaults(workspaceDimensions);
         }
         List<MKHallwayFamilyDefinition> hallwayFamilies = settings.hallwayFamilies().stream()
                 .map(hallway -> new MKHallwayFamilyDefinition(

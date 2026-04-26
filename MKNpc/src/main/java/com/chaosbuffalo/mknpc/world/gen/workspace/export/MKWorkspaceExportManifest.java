@@ -281,10 +281,10 @@ public record MKWorkspaceExportManifest(
             int minHeight,
             int maxHeight,
             boolean supportsVerticalAccess,
-            int mainOpeningWidth,
-            int mainOpeningHeight,
-            int branchOpeningWidth,
-            int branchOpeningHeight
+            Optional<Integer> legacyMainOpeningWidth,
+            Optional<Integer> legacyMainOpeningHeight,
+            Optional<Integer> legacyBranchOpeningWidth,
+            Optional<Integer> legacyBranchOpeningHeight
     ) {
         public static final Codec<ExportCategoryProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 towerCategoryCodec().fieldOf("category").forGetter(ExportCategoryProfile::category),
@@ -294,10 +294,10 @@ public record MKWorkspaceExportManifest(
                 Codec.INT.fieldOf("min_height").forGetter(ExportCategoryProfile::minHeight),
                 Codec.INT.fieldOf("max_height").forGetter(ExportCategoryProfile::maxHeight),
                 Codec.BOOL.fieldOf("supports_vertical_access").forGetter(ExportCategoryProfile::supportsVerticalAccess),
-                Codec.INT.fieldOf("main_opening_width").forGetter(ExportCategoryProfile::mainOpeningWidth),
-                Codec.INT.fieldOf("main_opening_height").forGetter(ExportCategoryProfile::mainOpeningHeight),
-                Codec.INT.fieldOf("branch_opening_width").forGetter(ExportCategoryProfile::branchOpeningWidth),
-                Codec.INT.fieldOf("branch_opening_height").forGetter(ExportCategoryProfile::branchOpeningHeight)
+                Codec.INT.optionalFieldOf("main_opening_width").forGetter(ExportCategoryProfile::legacyMainOpeningWidth),
+                Codec.INT.optionalFieldOf("main_opening_height").forGetter(ExportCategoryProfile::legacyMainOpeningHeight),
+                Codec.INT.optionalFieldOf("branch_opening_width").forGetter(ExportCategoryProfile::legacyBranchOpeningWidth),
+                Codec.INT.optionalFieldOf("branch_opening_height").forGetter(ExportCategoryProfile::legacyBranchOpeningHeight)
         ).apply(instance, ExportCategoryProfile::new));
 
         public static ExportCategoryProfile from(MKTowerWorkspaceCategoryProfile profile) {
@@ -309,10 +309,10 @@ public record MKWorkspaceExportManifest(
                     profile.minHeight(),
                     profile.maxHeight(),
                     profile.supportsVerticalAccess(),
-                    profile.mainOpeningWidth(),
-                    profile.mainOpeningHeight(),
-                    profile.branchOpeningWidth(),
-                    profile.branchOpeningHeight()
+                    Optional.empty(),
+                    Optional.empty(),
+                    Optional.empty(),
+                    Optional.empty()
             );
         }
     }

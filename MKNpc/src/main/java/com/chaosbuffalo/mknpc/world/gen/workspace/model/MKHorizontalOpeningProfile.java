@@ -21,20 +21,20 @@ public class MKHorizontalOpeningProfile {
         this.allowOnBranchPath = allowOnBranchPath;
     }
 
-    public static List<MKHorizontalOpeningProfile> createDefaults(List<MKTowerWorkspaceCategoryProfile> categoryProfiles) {
+    public static List<MKHorizontalOpeningProfile> createDefaults(MKWorkspaceDimensions dimensions) {
         List<MKHorizontalOpeningProfile> defaults = new ArrayList<>();
-        for (MKTowerWorkspaceCategoryProfile profile : categoryProfiles) {
+        for (MKTowerWorkspaceCategory category : MKTowerWorkspaceCategory.values()) {
             defaults.add(new MKHorizontalOpeningProfile(
-                    profile.category().getSerializedName() + "_main",
-                    profile.mainOpeningWidth(),
-                    profile.mainOpeningHeight(),
+                    category.getSerializedName() + "_main",
+                    dimensions.doorwayWidth(),
+                    dimensions.doorwayHeight(),
                     true,
                     false
             ));
             defaults.add(new MKHorizontalOpeningProfile(
-                    profile.category().getSerializedName() + "_branch",
-                    profile.branchOpeningWidth(),
-                    profile.branchOpeningHeight(),
+                    category.getSerializedName() + "_branch",
+                    dimensions.doorwayWidth(),
+                    dimensions.doorwayHeight(),
                     false,
                     true
             ));

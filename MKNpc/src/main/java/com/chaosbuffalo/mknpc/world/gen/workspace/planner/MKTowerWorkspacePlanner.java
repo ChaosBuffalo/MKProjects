@@ -55,9 +55,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
 
     private MKTowerWorkspaceCategoryProfile fallbackProfile(MKTowerWorkspaceCategory category,
                                                             MKWorkspaceDimensions dimensions) {
-        return MKTowerWorkspaceCategoryProfile.createDefaults(dimensions,
-                MKWorkspaceVerticalAccessSpec.fromLegacy(dimensions, MKVerticalAccessPlacement.CENTER,
-                        MKWorkspaceStairAuthoringConfig.defaultConfig()))
+        return MKTowerWorkspaceCategoryProfile.createDefaults(dimensions)
                 .stream()
                 .filter(profile -> profile.category() == category)
                 .findFirst()
@@ -288,15 +286,15 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     private ResolvedOpeningProfile resolveMainOpening(MKStructureWorkspace workspace, MKTowerWorkspaceCategory category,
                                                       MKTowerWorkspaceCategoryProfile profile) {
         return resolveOpeningProfile(workspace, category.getSerializedName() + "_main")
-                .orElseGet(() -> new ResolvedOpeningProfile(category.getSerializedName() + "_main",
-                        profile.mainOpeningWidth(), profile.mainOpeningHeight()));
+                .orElseThrow(() -> new IllegalStateException("missing main opening profile for category " +
+                        category.getSerializedName()));
     }
 
     private ResolvedOpeningProfile resolveBranchOpening(MKStructureWorkspace workspace, MKTowerWorkspaceCategory category,
                                                         MKTowerWorkspaceCategoryProfile profile) {
         return resolveOpeningProfile(workspace, category.getSerializedName() + "_branch")
-                .orElseGet(() -> new ResolvedOpeningProfile(category.getSerializedName() + "_branch",
-                        profile.branchOpeningWidth(), profile.branchOpeningHeight()));
+                .orElseThrow(() -> new IllegalStateException("missing branch opening profile for category " +
+                        category.getSerializedName()));
     }
 
     private Optional<ResolvedOpeningProfile> resolveOpeningProfile(MKStructureWorkspace workspace, String profileId) {

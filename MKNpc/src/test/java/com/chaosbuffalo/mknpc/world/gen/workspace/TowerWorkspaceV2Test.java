@@ -31,7 +31,13 @@ class TowerWorkspaceV2Test {
     void plannerCreatesSeparateMainAndBranchHallwayPools() {
         MKStructureWorkspace workspace = baseWorkspace(List.of(
                         new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
-                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                        new MKHorizontalOpeningProfile("entry_branch", 3, 3, false, true),
+                        new MKHorizontalOpeningProfile("main_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true),
+                        new MKHorizontalOpeningProfile("basement_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("basement_branch", 3, 3, false, true),
+                        new MKHorizontalOpeningProfile("boss_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("boss_branch", 3, 3, false, true)
                 ),
                 List.of(
                         new MKHallwayFamilyDefinition("surface", "entry_main", 5, 3, 3, 0,
@@ -63,7 +69,7 @@ class TowerWorkspaceV2Test {
     void validationRejectsHallwayPathMismatchAndBandOverflow() {
         MKWorkspaceVerticalAccessSpec verticalAccessSpec = MKWorkspaceVerticalAccessSpec.defaultSpec();
         MKTowerWorkspaceCategoryProfile mainProfile = MKTowerWorkspaceCategoryProfile.createDefaults(
-                MKWorkspaceDimensions.defaultDimensions(), verticalAccessSpec).stream()
+                MKWorkspaceDimensions.defaultDimensions()).stream()
                 .filter(profile -> profile.category() == MKTowerWorkspaceCategory.MAIN)
                 .findFirst()
                 .orElseThrow();
@@ -83,7 +89,7 @@ class TowerWorkspaceV2Test {
                 2,
                 4,
                 verticalAccessSpec,
-                MKTowerWorkspaceCategoryProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions(), verticalAccessSpec),
+                MKTowerWorkspaceCategoryProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
                 MKTowerWorkspaceFamilyDefinition.createDefaults(),
                 List.of(new MKHorizontalOpeningProfile("branch_only", 3, 3, false, true)),
                 List.of(new MKHallwayFamilyDefinition("bad_hallway", "branch_only", 5, 3, bandCap, 1,
@@ -97,6 +103,18 @@ class TowerWorkspaceV2Test {
         List<String> errors = workspace.validate();
         assertTrue(errors.stream().anyMatch(error -> error.contains("branch-only")));
         assertTrue(errors.stream().anyMatch(error -> error.contains("exceeds main vertical band cap")));
+    }
+
+    @Test
+    void validationRequiresPerCategoryOpeningProfiles() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false)),
+                List.of()
+        );
+
+        List<String> errors = workspace.validate();
+        assertTrue(errors.stream().anyMatch(error -> error.contains("missing required branch opening profile entry_branch")));
+        assertTrue(errors.stream().anyMatch(error -> error.contains("missing required main opening profile main_main")));
     }
 
     private static MKStructureWorkspace baseWorkspace(List<MKHorizontalOpeningProfile> openingProfiles,
@@ -119,13 +137,13 @@ class TowerWorkspaceV2Test {
                 verticalAccessSpec,
                 List.of(
                         new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.ENTRY, 9, 9, dimensions.entranceHeight(), 3,
-                                dimensions.entranceHeight(), true, 3, 3, 3, 3),
+                                dimensions.entranceHeight(), true),
                         new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.MAIN, 9, 9, dimensions.roomHeight(), 3,
-                                dimensions.roomHeight(), true, 3, 3, 3, 3),
+                                dimensions.roomHeight(), true),
                         new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BASEMENT, 9, 9, dimensions.basementHeight(), 3,
-                                dimensions.basementHeight(), true, 3, 3, 3, 3),
+                                dimensions.basementHeight(), true),
                         new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BOSS, 9, 9, dimensions.roomHeight(), 3,
-                                dimensions.roomHeight(), true, 3, 3, 3, 3)
+                                dimensions.roomHeight(), true)
                 ),
                 List.of(
                         new MKTowerWorkspaceFamilyDefinition("entry", MKTowerWorkspaceCategory.ENTRY, MKWorkspacePieceRole.ENTRY, true,

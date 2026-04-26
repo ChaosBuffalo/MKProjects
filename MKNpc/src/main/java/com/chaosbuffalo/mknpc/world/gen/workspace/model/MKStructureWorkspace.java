@@ -76,11 +76,9 @@ public class MKStructureWorkspace {
         this(id, anchor, namespace, structureName, familyType, dimensions, palette, stairConfig, verticalAccessPlacement,
                 shellMargin, exteriorAirMargin, previewMargin,
                 MKWorkspaceVerticalAccessSpec.fromLegacy(dimensions, verticalAccessPlacement, stairConfig),
-                MKTowerWorkspaceCategoryProfile.createDefaults(dimensions,
-                        MKWorkspaceVerticalAccessSpec.fromLegacy(dimensions, verticalAccessPlacement, stairConfig)),
+                MKTowerWorkspaceCategoryProfile.createDefaults(dimensions),
                 MKTowerWorkspaceFamilyDefinition.createDefaults(),
-                MKHorizontalOpeningProfile.createDefaults(MKTowerWorkspaceCategoryProfile.createDefaults(dimensions,
-                        MKWorkspaceVerticalAccessSpec.fromLegacy(dimensions, verticalAccessPlacement, stairConfig))),
+                MKHorizontalOpeningProfile.createDefaults(dimensions),
                 List.of(),
                 createdAt, updatedAt, pieces);
     }
@@ -101,11 +99,9 @@ public class MKStructureWorkspace {
                 2,
                 4,
                 MKWorkspaceVerticalAccessSpec.defaultSpec(),
-                MKTowerWorkspaceCategoryProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions(),
-                        MKWorkspaceVerticalAccessSpec.defaultSpec()),
+                MKTowerWorkspaceCategoryProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
                 MKTowerWorkspaceFamilyDefinition.createDefaults(),
-                MKHorizontalOpeningProfile.createDefaults(MKTowerWorkspaceCategoryProfile.createDefaults(
-                        MKWorkspaceDimensions.defaultDimensions(), MKWorkspaceVerticalAccessSpec.defaultSpec())),
+                MKHorizontalOpeningProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
                 List.of(),
                 now,
                 now,
@@ -133,7 +129,7 @@ public class MKStructureWorkspace {
             }
         }
         if (categoryProfiles.isEmpty()) {
-            categoryProfiles = MKTowerWorkspaceCategoryProfile.createDefaults(dimensions, verticalAccessSpec);
+            categoryProfiles = MKTowerWorkspaceCategoryProfile.createDefaults(dimensions);
         }
         List<MKTowerWorkspaceFamilyDefinition> familyDefinitions = new ArrayList<>();
         if (tag.contains("familyDefinitions", Tag.TAG_LIST)) {
@@ -149,7 +145,7 @@ public class MKStructureWorkspace {
             }
         }
         if (openingProfiles.isEmpty()) {
-            openingProfiles = MKHorizontalOpeningProfile.createDefaults(categoryProfiles);
+            openingProfiles = MKHorizontalOpeningProfile.createDefaults(dimensions);
         }
         List<MKHallwayFamilyDefinition> hallwayFamilies = new ArrayList<>();
         if (tag.contains("hallwayFamilies", Tag.TAG_LIST)) {
@@ -250,6 +246,16 @@ public class MKStructureWorkspace {
                 errors.add("horizontal opening profile id must be unique: " + openingProfile.profileId());
             }
             openingProfileById.put(openingProfile.profileId(), openingProfile);
+        }
+        for (MKTowerWorkspaceCategoryProfile categoryProfile : categoryProfiles) {
+            String mainProfileId = categoryProfile.category().getSerializedName() + "_main";
+            if (!openingProfileById.containsKey(mainProfileId)) {
+                errors.add("missing required main opening profile " + mainProfileId);
+            }
+            String branchProfileId = categoryProfile.category().getSerializedName() + "_branch";
+            if (!openingProfileById.containsKey(branchProfileId)) {
+                errors.add("missing required branch opening profile " + branchProfileId);
+            }
         }
         for (MKHallwayFamilyDefinition hallwayFamily : hallwayFamilies) {
             errors.addAll(hallwayFamily.validate(openingProfileIds));

@@ -13,15 +13,10 @@ public class MKTowerWorkspaceCategoryProfile {
     private final int minHeight;
     private final int maxHeight;
     private final boolean supportsVerticalAccess;
-    private final int mainOpeningWidth;
-    private final int mainOpeningHeight;
-    private final int branchOpeningWidth;
-    private final int branchOpeningHeight;
 
     public MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory category, int roomWidth, int roomLength,
                                            int defaultHeight, int minHeight, int maxHeight,
-                                           boolean supportsVerticalAccess, int mainOpeningWidth, int mainOpeningHeight,
-                                           int branchOpeningWidth, int branchOpeningHeight) {
+                                           boolean supportsVerticalAccess) {
         this.category = category;
         this.roomWidth = roomWidth;
         this.roomLength = roomLength;
@@ -29,31 +24,22 @@ public class MKTowerWorkspaceCategoryProfile {
         this.minHeight = minHeight;
         this.maxHeight = maxHeight;
         this.supportsVerticalAccess = supportsVerticalAccess;
-        this.mainOpeningWidth = mainOpeningWidth;
-        this.mainOpeningHeight = mainOpeningHeight;
-        this.branchOpeningWidth = branchOpeningWidth;
-        this.branchOpeningHeight = branchOpeningHeight;
     }
 
-    public static List<MKTowerWorkspaceCategoryProfile> createDefaults(MKWorkspaceDimensions dimensions,
-                                                                       MKWorkspaceVerticalAccessSpec verticalAccessSpec) {
+    public static List<MKTowerWorkspaceCategoryProfile> createDefaults(MKWorkspaceDimensions dimensions) {
         return List.of(
                 new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.ENTRY,
                         dimensions.roomWidth(), dimensions.roomLength(), dimensions.entranceHeight(),
-                        3, dimensions.entranceHeight(), true, dimensions.doorwayWidth(), dimensions.doorwayHeight(),
-                        dimensions.doorwayWidth(), dimensions.doorwayHeight()),
+                        3, dimensions.entranceHeight(), true),
                 new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.MAIN,
                         dimensions.roomWidth(), dimensions.roomLength(), dimensions.roomHeight(),
-                        3, dimensions.roomHeight(), true, dimensions.doorwayWidth(), dimensions.doorwayHeight(),
-                        dimensions.doorwayWidth(), dimensions.doorwayHeight()),
+                        3, dimensions.roomHeight(), true),
                 new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BASEMENT,
                         dimensions.roomWidth(), dimensions.roomLength(), dimensions.basementHeight(),
-                        3, dimensions.basementHeight(), true, dimensions.doorwayWidth(), dimensions.doorwayHeight(),
-                        dimensions.doorwayWidth(), dimensions.doorwayHeight()),
+                        3, dimensions.basementHeight(), true),
                 new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BOSS,
                         dimensions.roomWidth(), dimensions.roomLength(), dimensions.roomHeight(),
-                        3, dimensions.roomHeight(), true, dimensions.doorwayWidth(), dimensions.doorwayHeight(),
-                        dimensions.doorwayWidth(), dimensions.doorwayHeight())
+                        3, dimensions.roomHeight(), true)
         );
     }
 
@@ -65,13 +51,7 @@ public class MKTowerWorkspaceCategoryProfile {
                 tag.getInt("defaultHeight"),
                 tag.contains("minHeight") ? tag.getInt("minHeight") : 3,
                 tag.contains("maxHeight") ? tag.getInt("maxHeight") : tag.getInt("defaultHeight"),
-                tag.contains("supportsVerticalAccess") ? tag.getBoolean("supportsVerticalAccess") : true,
-                tag.contains("mainOpeningWidth") ? tag.getInt("mainOpeningWidth") : 3,
-                tag.contains("mainOpeningHeight") ? tag.getInt("mainOpeningHeight") : 3,
-                tag.contains("branchOpeningWidth") ? tag.getInt("branchOpeningWidth") :
-                        (tag.contains("mainOpeningWidth") ? tag.getInt("mainOpeningWidth") : 3),
-                tag.contains("branchOpeningHeight") ? tag.getInt("branchOpeningHeight") :
-                        (tag.contains("mainOpeningHeight") ? tag.getInt("mainOpeningHeight") : 3)
+                tag.contains("supportsVerticalAccess") ? tag.getBoolean("supportsVerticalAccess") : true
         );
     }
 
@@ -84,10 +64,6 @@ public class MKTowerWorkspaceCategoryProfile {
         tag.putInt("minHeight", minHeight);
         tag.putInt("maxHeight", maxHeight);
         tag.putBoolean("supportsVerticalAccess", supportsVerticalAccess);
-        tag.putInt("mainOpeningWidth", mainOpeningWidth);
-        tag.putInt("mainOpeningHeight", mainOpeningHeight);
-        tag.putInt("branchOpeningWidth", branchOpeningWidth);
-        tag.putInt("branchOpeningHeight", branchOpeningHeight);
         return tag;
     }
 
@@ -95,8 +71,6 @@ public class MKTowerWorkspaceCategoryProfile {
         List<String> errors = new ArrayList<>();
         validateOdd(errors, category.getSerializedName() + " room width", roomWidth, 3);
         validateOdd(errors, category.getSerializedName() + " room length", roomLength, 3);
-        validateOdd(errors, category.getSerializedName() + " main opening width", mainOpeningWidth, 1);
-        validateOdd(errors, category.getSerializedName() + " branch opening width", branchOpeningWidth, 1);
         if (defaultHeight < 3) {
             errors.add(category.getSerializedName() + " default height must be at least 3");
         }
@@ -108,12 +82,6 @@ public class MKTowerWorkspaceCategoryProfile {
         }
         if (defaultHeight < minHeight || defaultHeight > maxHeight) {
             errors.add(category.getSerializedName() + " default height must be within min/max height");
-        }
-        if (mainOpeningHeight < 2) {
-            errors.add(category.getSerializedName() + " main opening height must be at least 2");
-        }
-        if (branchOpeningHeight < 2) {
-            errors.add(category.getSerializedName() + " branch opening height must be at least 2");
         }
         if (supportsVerticalAccess) {
             if (verticalAccessSpec.shaftSize() > roomWidth) {
@@ -133,18 +101,6 @@ public class MKTowerWorkspaceCategoryProfile {
             }
         } else if (maxHeight < defaultHeight) {
             errors.add(category.getSerializedName() + " non-shaft rooms must allow their default height");
-        }
-        if (mainOpeningWidth > roomWidth || mainOpeningWidth > roomLength) {
-            errors.add(category.getSerializedName() + " main opening width must fit inside the room footprint");
-        }
-        if (branchOpeningWidth > roomWidth || branchOpeningWidth > roomLength) {
-            errors.add(category.getSerializedName() + " branch opening width must fit inside the room footprint");
-        }
-        if (mainOpeningHeight > maxHeight) {
-            errors.add(category.getSerializedName() + " main opening height must fit inside the room height band");
-        }
-        if (branchOpeningHeight > maxHeight) {
-            errors.add(category.getSerializedName() + " branch opening height must fit inside the room height band");
         }
         return errors;
     }
@@ -184,21 +140,5 @@ public class MKTowerWorkspaceCategoryProfile {
 
     public boolean supportsVerticalAccess() {
         return supportsVerticalAccess;
-    }
-
-    public int mainOpeningWidth() {
-        return mainOpeningWidth;
-    }
-
-    public int mainOpeningHeight() {
-        return mainOpeningHeight;
-    }
-
-    public int branchOpeningWidth() {
-        return branchOpeningWidth;
-    }
-
-    public int branchOpeningHeight() {
-        return branchOpeningHeight;
     }
 }
