@@ -8,6 +8,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManife
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
@@ -183,6 +184,9 @@ public class MKStructureWorkspaceImportService {
         if (categoryProfiles.isEmpty()) {
             categoryProfiles = MKTowerWorkspaceCategoryProfile.createDefaults(workspaceDimensions);
         }
+        MKTowerWorkspaceFloorSettings floorSettings = settings.floorSettings()
+                .map(floor -> new MKTowerWorkspaceFloorSettings(floor.mainFloors(), floor.basementFloors()))
+                .orElseGet(MKTowerWorkspaceFloorSettings::defaultSettings);
         List<MKTowerWorkspaceFamilyDefinition> familyDefinitions = settings.familyDefinitions().stream()
                 .map(family -> new MKTowerWorkspaceFamilyDefinition(
                         family.baseName(),
@@ -248,6 +252,7 @@ public class MKStructureWorkspaceImportService {
                 settings.exteriorAirMargin(),
                 settings.previewMargin(),
                 verticalAccessSpec,
+                floorSettings,
                 categoryProfiles,
                 familyDefinitions,
                 openingProfiles,

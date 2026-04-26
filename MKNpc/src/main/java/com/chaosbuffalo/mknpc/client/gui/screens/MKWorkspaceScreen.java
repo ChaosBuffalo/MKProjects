@@ -16,6 +16,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
@@ -108,6 +109,8 @@ public class MKWorkspaceScreen extends MKScreen {
         private ResourceLocation stairBlock;
         private ResourceLocation slabBlock;
         private ResourceLocation ladderBlock;
+        private int mainFloors;
+        private int basementFloors;
         private List<MKTowerWorkspaceCategoryProfile> categoryProfiles;
         private List<MKTowerWorkspaceFamilyDefinition> familyDefinitions;
         private List<MKHorizontalOpeningProfile> openingProfiles;
@@ -702,6 +705,32 @@ public class MKWorkspaceScreen extends MKScreen {
         for (MKTowerWorkspaceCategory category : MKTowerWorkspaceCategory.values()) {
             addCategoryHeightRow(content, category);
         }
+
+        MKButton mainFloorsButton = new MKButton(Component.literal(Integer.toString(formDraft.mainFloors)), 180, 20);
+        mainFloorsButton.setPressedCallback((button, mouseButton) -> {
+            formDraft.mainFloors = nextAllowedMainFloorCount(formDraft.mainFloors, formDraft.basementFloors);
+            formDraft.basementFloors = normalizeBasementFloorCount(formDraft.basementFloors, formDraft.mainFloors);
+            flagNeedSetup();
+            return true;
+        });
+        addRow(content, makeWhiteText(Component.literal("Main Floors")), mainFloorsButton);
+
+        MKButton basementFloorsButton = new MKButton(Component.literal(Integer.toString(formDraft.basementFloors)), 180, 20);
+        basementFloorsButton.setPressedCallback((button, mouseButton) -> {
+            formDraft.basementFloors = nextAllowedBasementFloorCount(formDraft.basementFloors, formDraft.mainFloors);
+            formDraft.mainFloors = normalizeMainFloorCount(formDraft.mainFloors, formDraft.basementFloors);
+            flagNeedSetup();
+            return true;
+        });
+        addRow(content, makeWhiteText(Component.literal("Basement Floors")), basementFloorsButton);
+
+        MKText allowedFloorsText = makeWhiteText(Component.literal(
+                "Allowed floor counts: main " + allowedMainFloorCountsLabel(formDraft.basementFloors) +
+                        "  |  basement " + allowedBasementFloorCountsLabel(formDraft.mainFloors)));
+        allowedFloorsText.setWidth(CONTENT_WIDTH);
+        allowedFloorsText.setMultiline(true);
+        content.addWidget(allowedFloorsText);
+        content.addConstraintToWidget(MarginConstraint.LEFT, allowedFloorsText);
 
         for (MKTowerWorkspaceCategory category : MKTowerWorkspaceCategory.values()) {
             addCategoryProfileSection(content, category);
@@ -1945,6 +1974,8 @@ public class MKWorkspaceScreen extends MKScreen {
         formDraft.floorBlock = workspace != null ? workspace.palette().floorBlock() : ResourceLocation.parse("minecraft:smooth_stone");
         formDraft.wallBlock = workspace != null ? workspace.palette().wallBlock() : ResourceLocation.parse("minecraft:stone_bricks");
         formDraft.ceilingBlock = workspace != null ? workspace.palette().ceilingBlock() : ResourceLocation.parse("minecraft:smooth_stone");
+        formDraft.mainFloors = workspace != null ? workspace.floorSettings().mainFloors() : MKTowerWorkspaceFloorSettings.defaultSettings().mainFloors();
+        formDraft.basementFloors = workspace != null ? workspace.floorSettings().basementFloors() : MKTowerWorkspaceFloorSettings.defaultSettings().basementFloors();
         formDraft.categoryProfiles = List.copyOf(workspace != null ? workspace.categoryProfiles() :
                 MKTowerWorkspaceCategoryProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()));
         formDraft.familyDefinitions = List.copyOf(workspace != null ? workspace.familyDefinitions() :
@@ -2009,6 +2040,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 formDraft.exteriorAirMargin,
                 formDraft.previewMargin,
                 verticalAccessSpec,
+                new MKTowerWorkspaceFloorSettings(formDraft.mainFloors, formDraft.basementFloors),
                 formDraft.categoryProfiles,
                 formDraft.familyDefinitions,
                 formDraft.openingProfiles,
@@ -2071,6 +2103,9 @@ public class MKWorkspaceScreen extends MKScreen {
         formDraft.categoryProfiles = formDraft.categoryProfiles.stream()
                 .map(profile -> normalizeCategoryProfile(profile, verticalAccessSpec, normalizedMainHeight))
                 .toList();
+        formDraft.mainFloors = normalizeMainFloorCount(formDraft.mainFloors, formDraft.basementFloors);
+        formDraft.basementFloors = normalizeBasementFloorCount(formDraft.basementFloors, formDraft.mainFloors);
+        formDraft.mainFloors = normalizeMainFloorCount(formDraft.mainFloors, formDraft.basementFloors);
         formDraft.familyDefinitions = formDraft.familyDefinitions.stream()
                 .map(this::normalizeFamilyDefinition)
                 .toList();
@@ -2350,6 +2385,64 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private String allowedFullHeightsForCategoryLabel(MKTowerWorkspaceCategory category) {
         return allowedFullHeightsForCategory(category).toString();
+    }
+
+    private List<Integer> allowedMainFloorCounts(int basementFloors) {
+        ensureFormDraftInitialized();
+        return MKTowerWorkspaceFloorSettings.allowedMainFloorCounts(formDraft.categoryProfiles, basementFloors);
+    }
+
+    private String allowedMainFloorCountsLabel(int basementFloors) {
+        return allowedMainFloorCounts(basementFloors).toString();
+    }
+
+    private List<Integer> allowedBasementFloorCounts(int mainFloors) {
+        ensureFormDraftInitialized();
+        return MKTowerWorkspaceFloorSettings.allowedBasementFloorCounts(formDraft.categoryProfiles, mainFloors);
+    }
+
+    private String allowedBasementFloorCountsLabel(int mainFloors) {
+        return allowedBasementFloorCounts(mainFloors).toString();
+    }
+
+    private int nextAllowedMainFloorCount(int currentCount, int basementFloors) {
+        List<Integer> allowedCounts = allowedMainFloorCounts(basementFloors);
+        if (allowedCounts.isEmpty()) {
+            return currentCount;
+        }
+        int normalized = normalizeMainFloorCount(currentCount, basementFloors);
+        int currentIndex = allowedCounts.indexOf(normalized);
+        if (currentIndex < 0) {
+            return allowedCounts.getFirst();
+        }
+        return allowedCounts.get((currentIndex + 1) % allowedCounts.size());
+    }
+
+    private int nextAllowedBasementFloorCount(int currentCount, int mainFloors) {
+        List<Integer> allowedCounts = allowedBasementFloorCounts(mainFloors);
+        if (allowedCounts.isEmpty()) {
+            return currentCount;
+        }
+        int normalized = normalizeBasementFloorCount(currentCount, mainFloors);
+        int currentIndex = allowedCounts.indexOf(normalized);
+        if (currentIndex < 0) {
+            return allowedCounts.getFirst();
+        }
+        return allowedCounts.get((currentIndex + 1) % allowedCounts.size());
+    }
+
+    private int normalizeMainFloorCount(int requestedCount, int basementFloors) {
+        List<Integer> allowedCounts = allowedMainFloorCounts(basementFloors);
+        return allowedCounts.stream()
+                .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedCount)))
+                .orElse(0);
+    }
+
+    private int normalizeBasementFloorCount(int requestedCount, int mainFloors) {
+        List<Integer> allowedCounts = allowedBasementFloorCounts(mainFloors);
+        return allowedCounts.stream()
+                .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedCount)))
+                .orElse(0);
     }
 
     private int nextAllowedCategoryFullHeight(MKTowerWorkspaceCategory category, int currentHeight) {

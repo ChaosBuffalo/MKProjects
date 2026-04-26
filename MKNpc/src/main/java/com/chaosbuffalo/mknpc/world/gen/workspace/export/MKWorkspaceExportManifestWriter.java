@@ -13,7 +13,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 
 public class MKWorkspaceExportManifestWriter {
-    public static final int SCHEMA_VERSION = 3;
+    public static final int SCHEMA_VERSION = 4;
 
     public record WrittenManifest(Path path, MKWorkspaceExportManifest manifest) {
     }

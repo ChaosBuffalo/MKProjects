@@ -8,6 +8,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
@@ -98,6 +99,7 @@ class TowerWorkspaceV2Test {
                 2,
                 4,
                 verticalAccessSpec,
+                MKTowerWorkspaceFloorSettings.defaultSettings(),
                 MKTowerWorkspaceCategoryProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
                 MKTowerWorkspaceFamilyDefinition.createDefaults(),
                 List.of(new MKHorizontalOpeningProfile("branch_only", 3, 3, false, true)),
@@ -160,6 +162,7 @@ class TowerWorkspaceV2Test {
                 workspace.exteriorAirMargin(),
                 workspace.previewMargin(),
                 workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
                 categoryProfiles,
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
@@ -171,6 +174,45 @@ class TowerWorkspaceV2Test {
 
         List<String> errors = workspace.validate();
         assertTrue(errors.stream().anyMatch(error -> error.contains("top_cap full height must be one of")));
+    }
+
+    @Test
+    void validationRejectsFloorCountsThatExceedTowerBudget() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                ),
+                List.of()
+        );
+
+        workspace = new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                new MKTowerWorkspaceFloorSettings(11, 11),
+                workspace.categoryProfiles(),
+                workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.hallwayFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces()
+        );
+
+        List<String> errors = workspace.validate();
+        assertTrue(errors.stream().anyMatch(error -> error.contains("main floor count must be one of")));
+        assertTrue(errors.stream().anyMatch(error -> error.contains("basement floor count must be one of")));
     }
 
     @Test
@@ -190,6 +232,7 @@ class TowerWorkspaceV2Test {
                 2,
                 4,
                 MKWorkspaceVerticalAccessSpec.defaultSpec(),
+                MKTowerWorkspaceFloorSettings.defaultSettings(),
                 MKTowerWorkspaceCategoryProfile.createDefaults(dimensions),
                 MKTowerWorkspaceFamilyDefinition.createDefaults(),
                 MKHorizontalOpeningProfile.createDefaults(dimensions),
@@ -237,6 +280,8 @@ class TowerWorkspaceV2Test {
         assertEquals(workspace.id(), decoded.id());
         assertEquals(workspace.anchor(), decoded.anchor());
         assertEquals(workspace.verticalAccessSpec().shaftSize(), decoded.verticalAccessSpec().shaftSize());
+        assertEquals(workspace.floorSettings().mainFloors(), decoded.floorSettings().mainFloors());
+        assertEquals(workspace.floorSettings().basementFloors(), decoded.floorSettings().basementFloors());
         assertEquals(workspace.familyDefinitions().get(0).horizontalExits(),
                 decoded.familyDefinitions().get(0).horizontalExits());
         assertEquals(workspace.pieces().get(0).pieceId(), decoded.pieces().get(0).pieceId());
@@ -263,6 +308,7 @@ class TowerWorkspaceV2Test {
                 2,
                 4,
                 verticalAccessSpec,
+                MKTowerWorkspaceFloorSettings.defaultSettings(),
                 List.of(
                         new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.ENTRY, 9, 9, dimensions.entranceHeight(), 3),
                         new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.MAIN, 9, 9, dimensions.roomHeight(), 3),

@@ -59,6 +59,7 @@ public class MKStructureWorkspaceService {
                     workspace.exteriorAirMargin(),
                     workspace.previewMargin(),
                     workspace.verticalAccessSpec(),
+                    workspace.floorSettings(),
                     workspace.categoryProfiles(),
                     workspace.familyDefinitions(),
                     workspace.openingProfiles(),
