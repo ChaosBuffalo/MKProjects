@@ -32,24 +32,22 @@ public class MKHorizontalOpeningProfile {
     }
 
     public static List<MKHorizontalOpeningProfile> createDefaults(MKWorkspaceDimensions dimensions) {
-        List<MKHorizontalOpeningProfile> defaults = new ArrayList<>();
-        for (MKTowerWorkspaceCategory category : MKTowerWorkspaceCategory.values()) {
-            defaults.add(new MKHorizontalOpeningProfile(
-                    category.getSerializedName() + "_main",
-                    dimensions.doorwayWidth(),
-                    dimensions.doorwayHeight(),
-                    true,
-                    false
-            ));
-            defaults.add(new MKHorizontalOpeningProfile(
-                    category.getSerializedName() + "_branch",
-                    dimensions.doorwayWidth(),
-                    dimensions.doorwayHeight(),
-                    false,
-                    true
-            ));
-        }
-        return List.copyOf(defaults);
+        return List.of(
+                new MKHorizontalOpeningProfile(
+                        "main_opening",
+                        dimensions.doorwayWidth(),
+                        dimensions.doorwayHeight(),
+                        true,
+                        false
+                ),
+                new MKHorizontalOpeningProfile(
+                        "branch_opening",
+                        dimensions.doorwayWidth(),
+                        dimensions.doorwayHeight(),
+                        false,
+                        true
+                )
+        );
     }
 
     public static MKHorizontalOpeningProfile fromTag(CompoundTag tag) {

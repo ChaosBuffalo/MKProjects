@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.client.gui.screens;
 
+import com.chaosbuffalo.mknpc.client.gui.widgets.MKBranchExitMaskWidget;
 import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantPacket;
 import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantsForAllPacket;
 import com.chaosbuffalo.mknpc.network.packets.ClearWorkspaceStairsPacket;
@@ -906,7 +907,7 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), title);
 
         MKText helpText = makeWhiteText(Component.literal(
-                "Edit one family at a time. Horizontal exits are authored per family, and each exit chooses a direction, path kind, and opening profile."));
+                "Edit one family at a time. Click a side of the room diagram to add or edit the exit there, with explicit main or branch opening profiles."));
         helpText.setWidth(CONTENT_WIDTH);
         helpText.setMultiline(true);
         root.addWidget(helpText);
@@ -959,42 +960,23 @@ public class MKWorkspaceScreen extends MKScreen {
         MKText exitLabel = makeWhiteText(Component.literal("Horizontal Exits"));
         content.addWidget(exitLabel);
         content.addConstraintToWidget(MarginConstraint.LEFT, exitLabel);
-        if (family.horizontalExits().isEmpty()) {
-            MKText emptyText = makeWhiteText(Component.literal("No exits defined."));
-            content.addWidget(emptyText);
-            content.addConstraintToWidget(MarginConstraint.LEFT, emptyText);
-        } else {
-            for (int exitIndex = 0; exitIndex < family.horizontalExits().size(); exitIndex++) {
-                int currentExitIndex = exitIndex;
-                MKWorkspaceFamilyHorizontalExitDefinition exit = family.horizontalExits().get(exitIndex);
-                MKText exitSummary = makeWhiteText(Component.literal(describeFamilyExit(exit)));
-                exitSummary.setWidth(CONTENT_WIDTH);
-                exitSummary.setMultiline(true);
-                content.addWidget(exitSummary);
-                content.addConstraintToWidget(MarginConstraint.LEFT, exitSummary);
-
-                MKButton editExit = new MKButton(Component.literal("Edit Exit"), 180, 20);
-                content.addWidget(editExit);
-                content.addConstraintToWidget(new CenterXConstraint(), editExit);
-                editExit.setPressedCallback((button, mouseButton) -> {
-                    selectedFamilyExitIndex = currentExitIndex;
+        MKBranchExitMaskWidget exitWidget = new MKBranchExitMaskWidget(family.horizontalExits())
+                .setSelectCallback(direction -> {
+                    int exitIndex = findFamilyExitIndexByDirection(index, direction);
+                    if (exitIndex < 0) {
+                        exitIndex = addFamilyExitAtDirection(index, direction);
+                    }
+                    selectedFamilyExitIndex = exitIndex;
                     pushState("form_family_exit_detail");
                     flagNeedSetup();
-                    return true;
                 });
-            }
-        }
-
-        MKButton addExit = new MKButton(Component.literal("Add Exit"), 180, 20);
-        content.addWidget(addExit);
-        content.addConstraintToWidget(new CenterXConstraint(), addExit);
-        addExit.setPressedCallback((button, mouseButton) -> {
-            addFamilyExit(index);
-            selectedFamilyExitIndex = formDraft.familyDefinitions.get(index).horizontalExits().size() - 1;
-            pushState("form_family_exit_detail");
-            flagNeedSetup();
-            return true;
-        });
+        content.addWidget(exitWidget);
+        content.addConstraintToWidget(new CenterXConstraint(), exitWidget);
+        MKText exitSummary = makeWhiteText(Component.literal("Current exits: " + summarizeFamilyExits(family)));
+        exitSummary.setWidth(CONTENT_WIDTH);
+        exitSummary.setMultiline(true);
+        content.addWidget(exitSummary);
+        content.addConstraintToWidget(MarginConstraint.LEFT, exitSummary);
 
         content.manualRecompute();
         scrollView.addWidget(content);
@@ -2091,13 +2073,15 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     private int deriveLegacyDoorwayWidth() {
-        return getDraftOpeningProfile(MKTowerWorkspaceCategory.MAIN.getSerializedName() + "_main")
+        return getDraftOpeningProfile("main_opening")
+                .or(() -> firstCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind.MAIN))
                 .map(MKHorizontalOpeningProfile::openingWidth)
                 .orElse(workspace != null ? workspace.dimensions().doorwayWidth() : 3);
     }
 
     private int deriveLegacyDoorwayHeight() {
-        return getDraftOpeningProfile(MKTowerWorkspaceCategory.MAIN.getSerializedName() + "_main")
+        return getDraftOpeningProfile("main_opening")
+                .or(() -> firstCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind.MAIN))
                 .map(MKHorizontalOpeningProfile::openingHeight)
                 .orElse(workspace != null ? workspace.dimensions().doorwayHeight() : 3);
     }
@@ -2248,6 +2232,33 @@ public class MKWorkspaceScreen extends MKScreen {
         ));
     }
 
+    private int addFamilyExitAtDirection(int familyIndex, Direction direction) {
+        MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(familyIndex);
+        java.util.ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
+        MKWorkspaceHorizontalExitPathKind pathKind = family.mainExit().isPresent() ?
+                MKWorkspaceHorizontalExitPathKind.BRANCH : MKWorkspaceHorizontalExitPathKind.MAIN;
+        exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(
+                direction,
+                pathKind,
+                firstCompatibleOpeningProfileId(pathKind)
+                        .orElseGet(() -> formDraft.openingProfiles.isEmpty() ? "opening_1" : formDraft.openingProfiles.getFirst().profileId())
+        ));
+        replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
+                family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(), exits
+        ));
+        return exits.size() - 1;
+    }
+
+    private int findFamilyExitIndexByDirection(int familyIndex, Direction direction) {
+        List<MKWorkspaceFamilyHorizontalExitDefinition> exits = formDraft.familyDefinitions.get(familyIndex).horizontalExits();
+        for (int i = 0; i < exits.size(); i++) {
+            if (exits.get(i).direction() == direction) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     private void replaceOpeningProfile(int index, MKHorizontalOpeningProfile updatedProfile) {
         java.util.ArrayList<MKHorizontalOpeningProfile> updated = new java.util.ArrayList<>(formDraft.openingProfiles);
         updated.set(index, updatedProfile);
@@ -2279,7 +2290,8 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     private void addHallwayFamily() {
-        String openingProfileId = formDraft.openingProfiles.isEmpty() ? "main_branch" : formDraft.openingProfiles.getFirst().profileId();
+        String openingProfileId = firstCompatibleOpeningProfileId(MKWorkspaceHorizontalExitPathKind.BRANCH)
+                .orElseGet(() -> formDraft.openingProfiles.isEmpty() ? "branch_opening" : formDraft.openingProfiles.getFirst().profileId());
         java.util.ArrayList<MKHallwayFamilyDefinition> updated = new java.util.ArrayList<>(formDraft.hallwayFamilies);
         updated.add(new MKHallwayFamilyDefinition(
                 nextUniqueHallwayFamilyId(),
@@ -2385,9 +2397,13 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     private java.util.Optional<String> firstCompatibleOpeningProfileId(MKWorkspaceHorizontalExitPathKind pathKind) {
+        return firstCompatibleOpeningProfile(pathKind).map(MKHorizontalOpeningProfile::profileId);
+    }
+
+    private java.util.Optional<MKHorizontalOpeningProfile> firstCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind pathKind) {
         return formDraft.openingProfiles.stream()
-                .map(MKHorizontalOpeningProfile::profileId)
-                .filter(profileId -> isCompatibleOpeningProfile(pathKind, profileId))
+                .filter(profile -> pathKind == MKWorkspaceHorizontalExitPathKind.MAIN ?
+                        profile.allowOnMainPath() : profile.allowOnBranchPath())
                 .findFirst();
     }
 

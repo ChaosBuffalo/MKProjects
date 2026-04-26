@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.widgets;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerBranchExitMask;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -8,6 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public class MKBranchExitMaskWidget extends MKWidget {
@@ -18,27 +20,28 @@ public class MKBranchExitMaskWidget extends MKWidget {
     private static final int BACKGROUND = 0xFF1B1B1F;
     private static final int BORDER = 0xFF72727A;
     private static final int ROOM_FILL = 0xFF2A3440;
-    private static final int ACTIVE_EXIT = 0xFF74C69D;
+    private static final int MAIN_EXIT = 0xFF60A5FA;
+    private static final int BRANCH_EXIT = 0xFF74C69D;
     private static final int INACTIVE_EXIT = 0xFF4B5563;
     private static final int LABEL_ACTIVE = 0xFFF8FAFC;
     private static final int LABEL_INACTIVE = 0xFF9CA3AF;
 
-    private MKTowerBranchExitMask branchExitMask;
-    private Consumer<Direction> toggleCallback;
+    private List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits;
+    private Consumer<Direction> selectCallback;
 
-    public MKBranchExitMaskWidget(MKTowerBranchExitMask branchExitMask) {
+    public MKBranchExitMaskWidget(List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits) {
         super(0, 0, WIDGET_SIZE, WIDGET_SIZE);
-        this.branchExitMask = branchExitMask;
-        setTooltip(Component.literal("Click a cardinal direction to toggle that branch exit."));
+        this.horizontalExits = List.copyOf(horizontalExits);
+        setTooltip(Component.literal("Click a cardinal direction to add or edit that horizontal exit."));
     }
 
-    public MKBranchExitMaskWidget setToggleCallback(Consumer<Direction> toggleCallback) {
-        this.toggleCallback = toggleCallback;
+    public MKBranchExitMaskWidget setSelectCallback(Consumer<Direction> selectCallback) {
+        this.selectCallback = selectCallback;
         return this;
     }
 
-    public void setBranchExitMask(MKTowerBranchExitMask branchExitMask) {
-        this.branchExitMask = branchExitMask;
+    public void setHorizontalExits(List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits) {
+        this.horizontalExits = List.copyOf(horizontalExits);
     }
 
     @Override
@@ -47,10 +50,10 @@ public class MKBranchExitMaskWidget extends MKWidget {
             return false;
         }
         Direction direction = hitDirection((int) mouseX, (int) mouseY);
-        if (direction == null || toggleCallback == null) {
+        if (direction == null || selectCallback == null) {
             return false;
         }
-        toggleCallback.accept(direction);
+        selectCallback.accept(direction);
         return true;
     }
 
@@ -90,7 +93,11 @@ public class MKBranchExitMaskWidget extends MKWidget {
 
     private void drawExit(GuiGraphics graphics, Direction direction, int roomLeft, int roomTop, int roomRight, int roomBottom,
                           int centerX, int centerY) {
-        int color = branchExitMask.has(direction) ? ACTIVE_EXIT : INACTIVE_EXIT;
+        int color = switch (exitKind(direction)) {
+            case MAIN -> MAIN_EXIT;
+            case BRANCH -> BRANCH_EXIT;
+            case NONE -> INACTIVE_EXIT;
+        };
         switch (direction) {
             case NORTH -> graphics.fill(centerX - (ARM_THICKNESS / 2), roomTop - ARM_LENGTH,
                     centerX + (ARM_THICKNESS / 2), roomTop, color);
@@ -106,8 +113,22 @@ public class MKBranchExitMaskWidget extends MKWidget {
     }
 
     private void drawDirectionLabel(GuiGraphics graphics, Minecraft minecraft, Direction direction, int x, int y) {
-        int color = branchExitMask.has(direction) ? LABEL_ACTIVE : LABEL_INACTIVE;
-        graphics.drawCenteredString(minecraft.font, Component.literal(direction.getName().substring(0, 1).toUpperCase()), x, y, color);
+        ExitKind exitKind = exitKind(direction);
+        int color = exitKind == ExitKind.NONE ? LABEL_INACTIVE : LABEL_ACTIVE;
+        String label = switch (exitKind) {
+            case MAIN -> direction.getName().substring(0, 1).toUpperCase() + "M";
+            case BRANCH -> direction.getName().substring(0, 1).toUpperCase() + "B";
+            case NONE -> direction.getName().substring(0, 1).toUpperCase();
+        };
+        graphics.drawCenteredString(minecraft.font, Component.literal(label), x, y, color);
+    }
+
+    private ExitKind exitKind(Direction direction) {
+        return horizontalExits.stream()
+                .filter(exit -> exit.direction() == direction)
+                .findFirst()
+                .map(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN ? ExitKind.MAIN : ExitKind.BRANCH)
+                .orElse(ExitKind.NONE);
     }
 
     private Direction hitDirection(int mouseX, int mouseY) {
@@ -135,5 +156,11 @@ public class MKBranchExitMaskWidget extends MKWidget {
             }
         }
         return null;
+    }
+
+    private enum ExitKind {
+        NONE,
+        MAIN,
+        BRANCH
     }
 }

@@ -46,7 +46,7 @@ public class MKTowerWorkspaceFamilyDefinition {
                 new MKTowerWorkspaceFamilyDefinition("entry", MKTowerWorkspaceCategory.ENTRY,
                         MKWorkspacePieceRole.ENTRY, true,
                         List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
-                                MKWorkspaceHorizontalExitPathKind.MAIN, "entry_main"))),
+                                MKWorkspaceHorizontalExitPathKind.MAIN, "main_opening"))),
                 new MKTowerWorkspaceFamilyDefinition("floor_main", MKTowerWorkspaceCategory.MAIN,
                         MKWorkspacePieceRole.FLOOR_MAIN, true, List.of()),
                 new MKTowerWorkspaceFamilyDefinition("boss_approach", MKTowerWorkspaceCategory.BOSS,
