@@ -28,11 +28,4 @@ public enum MKTowerWorkspaceCategory implements StringRepresentable {
     public String getSerializedName() {
         return serializedName;
     }
-
-    public boolean usesAlignedHeightBand() {
-        return switch (this) {
-            case ENTRY, BASEMENT, BASEMENT_CAP -> true;
-            case MAIN, BOSS -> false;
-        };
-    }
 }

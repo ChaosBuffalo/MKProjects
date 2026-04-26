@@ -127,6 +127,53 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void validationRequiresAllCategoryBandsToStayInSharedPhaseFamily() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                ),
+                List.of()
+        );
+        List<MKTowerWorkspaceCategoryProfile> categoryProfiles = workspace.categoryProfiles().stream()
+                .map(profile -> profile.category() == MKTowerWorkspaceCategory.BOSS
+                        ? new MKTowerWorkspaceCategoryProfile(
+                        profile.category(),
+                        profile.roomWidth(),
+                        profile.roomLength(),
+                        profile.fullHeight() + 1,
+                        profile.minHeight())
+                        : profile)
+                .toList();
+
+        workspace = new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                categoryProfiles,
+                workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.hallwayFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces()
+        );
+
+        List<String> errors = workspace.validate();
+        assertTrue(errors.stream().anyMatch(error -> error.contains("boss full height must be one of")));
+    }
+
+    @Test
     void workspaceCodecRoundTripPreservesNestedWorkspaceData() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKStructureWorkspace workspace = new MKStructureWorkspace(

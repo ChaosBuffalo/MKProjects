@@ -305,34 +305,27 @@ public class MKStructureWorkspace {
         }
         Optional<MKTowerWorkspaceCategoryProfile> mainProfile = categoryProfile(MKTowerWorkspaceCategory.MAIN);
         if (mainProfile.isPresent()) {
-            if (!verticalAccessSpec.supportsReusableHeight(mainProfile.get().fullHeight())) {
-                errors.add("main full height " + mainProfile.get().fullHeight() +
-                        " is not reusable for shaft size " + verticalAccessSpec.shaftSize());
-            }
-            int bandCap = verticalAccessSpec.getBandCapForReusableHeight(mainProfile.get().fullHeight());
-            List<Integer> allowedEntranceHeights = MKWorkspaceDimensions.getAllowedEntranceHeights(
+            List<Integer> allowedBandHeights = MKWorkspaceDimensions.getAllowedBandHeights(
                     verticalAccessSpec.stairConfig(),
                     verticalAccessSpec.shaftSize(),
                     mainProfile.get().fullHeight(),
                     3,
-                    4
+                    16
             );
-            for (MKTowerWorkspaceCategory alignedCategory : List.of(
+            for (MKTowerWorkspaceCategory category : List.of(
+                    MKTowerWorkspaceCategory.MAIN,
                     MKTowerWorkspaceCategory.ENTRY,
                     MKTowerWorkspaceCategory.BASEMENT,
+                    MKTowerWorkspaceCategory.BOSS,
                     MKTowerWorkspaceCategory.BASEMENT_CAP)) {
-                Optional<MKTowerWorkspaceCategoryProfile> profile = categoryProfile(alignedCategory);
-                if (profile.isPresent() && !allowedEntranceHeights.contains(profile.get().fullHeight())) {
-                    errors.add(alignedCategory.getSerializedName() + " full height must be one of " +
-                            allowedEntranceHeights + " to stay in phase with main room height " +
+                Optional<MKTowerWorkspaceCategoryProfile> profile = categoryProfile(category);
+                if (profile.isPresent() && !allowedBandHeights.contains(profile.get().fullHeight())) {
+                    errors.add(category.getSerializedName() + " full height must be one of " +
+                            allowedBandHeights + " to stay in phase with main room height " +
                             mainProfile.get().fullHeight());
                 }
             }
-            Optional<MKTowerWorkspaceCategoryProfile> bossProfile = categoryProfile(MKTowerWorkspaceCategory.BOSS);
-            if (bossProfile.isPresent() && !verticalAccessSpec.supportsReusableHeight(bossProfile.get().fullHeight())) {
-                errors.add("boss full height " + bossProfile.get().fullHeight() +
-                        " is not reusable for shaft size " + verticalAccessSpec.shaftSize());
-            }
+            int bandCap = verticalAccessSpec.getBandCapForRequestedHeight(mainProfile.get().fullHeight());
             for (MKHallwayFamilyDefinition hallwayFamily : hallwayFamilies) {
                 int hallwayTopHeight = hallwayFamily.interiorHeight() + Math.abs(hallwayFamily.slopeDelta());
                 if (hallwayTopHeight > bandCap) {

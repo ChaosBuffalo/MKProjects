@@ -2329,11 +2329,8 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private List<Integer> allowedFullHeightsForCategory(MKTowerWorkspaceCategory category) {
         MKWorkspaceVerticalAccessSpec verticalAccessSpec = currentDraftVerticalAccessSpec();
-        if (!category.usesAlignedHeightBand()) {
-            return verticalAccessSpec.getAllowedReusableHeights(3, 6);
-        }
         int referenceHeight = getDraftCategoryProfile(MKTowerWorkspaceCategory.MAIN).fullHeight();
-        return MKWorkspaceDimensions.getAllowedEntranceHeights(
+        return MKWorkspaceDimensions.getAllowedBandHeights(
                 verticalAccessSpec.stairConfig(),
                 verticalAccessSpec.shaftSize(),
                 referenceHeight,
@@ -2363,10 +2360,7 @@ public class MKWorkspaceScreen extends MKScreen {
     private int normalizeCategoryFullHeight(MKTowerWorkspaceCategory category, int requestedHeight,
                                             MKWorkspaceVerticalAccessSpec verticalAccessSpec,
                                             int mainReferenceHeight) {
-        if (!category.usesAlignedHeightBand()) {
-            return snapTowerHeight(verticalAccessSpec.stairConfig(), verticalAccessSpec.shaftSize(), requestedHeight);
-        }
-        return MKWorkspaceDimensions.snapToNearestAllowedEntranceHeight(
+        return MKWorkspaceDimensions.snapToNearestAllowedBandHeight(
                 verticalAccessSpec.stairConfig(),
                 verticalAccessSpec.shaftSize(),
                 mainReferenceHeight,

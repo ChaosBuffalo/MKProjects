@@ -184,6 +184,11 @@ public class MKWorkspaceDimensions {
         return aligned;
     }
 
+    public static List<Integer> getAllowedBandHeights(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
+                                                      int referenceRoomHeight, int minimumHeight, int count) {
+        return getAllowedEntranceHeights(stairConfig, hallwayWidth, referenceRoomHeight, minimumHeight, count);
+    }
+
     public static int snapToNearestAllowedEntranceHeight(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
                                                          int referenceRoomHeight, int requestedHeight, int minimumHeight,
                                                          int count) {
@@ -192,6 +197,13 @@ public class MKWorkspaceDimensions {
         return allowedHeights.stream()
                 .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedHeight)))
                 .orElseGet(() -> allowedHeights.getFirst());
+    }
+
+    public static int snapToNearestAllowedBandHeight(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
+                                                     int referenceRoomHeight, int requestedHeight, int minimumHeight,
+                                                     int count) {
+        return snapToNearestAllowedEntranceHeight(stairConfig, hallwayWidth, referenceRoomHeight, requestedHeight,
+                minimumHeight, count);
     }
 
     public static List<Integer> getAllowedFlatRunLengths(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
