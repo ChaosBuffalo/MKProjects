@@ -8,13 +8,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MKTowerWorkspaceCategoryProfile {
+    public static final int MIN_ROOM_HEIGHT = 2;
+
     public static final Codec<MKTowerWorkspaceCategoryProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             MKWorkspaceCodecs.TOWER_CATEGORY_CODEC.fieldOf("category").forGetter(MKTowerWorkspaceCategoryProfile::category),
             Codec.INT.fieldOf("roomWidth").forGetter(MKTowerWorkspaceCategoryProfile::roomWidth),
             Codec.INT.fieldOf("roomLength").forGetter(MKTowerWorkspaceCategoryProfile::roomLength),
             Codec.INT.optionalFieldOf("fullHeight").forGetter(profile -> java.util.Optional.of(profile.fullHeight())),
             Codec.INT.optionalFieldOf("defaultHeight").forGetter(profile -> java.util.Optional.of(profile.fullHeight())),
-            Codec.INT.optionalFieldOf("minHeight", 3).forGetter(MKTowerWorkspaceCategoryProfile::minHeight),
+            Codec.INT.optionalFieldOf("minHeight").forGetter(profile -> java.util.Optional.<Integer>empty()),
             Codec.INT.optionalFieldOf("maxHeight").forGetter(profile -> java.util.Optional.of(profile.fullHeight())),
             Codec.BOOL.optionalFieldOf("supportsVerticalAccess", true)
                     .forGetter(profile -> true)
@@ -23,42 +25,34 @@ public class MKTowerWorkspaceCategoryProfile {
                     category,
                     roomWidth,
                     roomLength,
-                    fullHeight.orElseGet(() -> defaultHeight.orElseGet(() -> maxHeight.orElse(3))),
-                    minHeight
+                    fullHeight.orElseGet(() -> defaultHeight.orElseGet(() -> maxHeight.orElse(3)))
             )));
 
     private final MKTowerWorkspaceCategory category;
     private final int roomWidth;
     private final int roomLength;
     private final int fullHeight;
-    private final int minHeight;
 
     public MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory category, int roomWidth, int roomLength,
-                                           int fullHeight, int minHeight) {
+                                           int fullHeight) {
         this.category = category;
         this.roomWidth = roomWidth;
         this.roomLength = roomLength;
         this.fullHeight = fullHeight;
-        this.minHeight = minHeight;
     }
 
     public static List<MKTowerWorkspaceCategoryProfile> createDefaults(MKWorkspaceDimensions dimensions) {
         return List.of(
                 new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.ENTRY,
-                        dimensions.roomWidth(), dimensions.roomLength(), dimensions.entranceHeight(),
-                        3),
+                        dimensions.roomWidth(), dimensions.roomLength(), dimensions.entranceHeight()),
                 new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.MAIN,
-                        dimensions.roomWidth(), dimensions.roomLength(), dimensions.roomHeight(),
-                        3),
+                        dimensions.roomWidth(), dimensions.roomLength(), dimensions.roomHeight()),
                 new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BASEMENT,
-                        dimensions.roomWidth(), dimensions.roomLength(), dimensions.basementHeight(),
-                        3),
+                        dimensions.roomWidth(), dimensions.roomLength(), dimensions.basementHeight()),
                 new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.TOP_CAP,
-                        dimensions.roomWidth(), dimensions.roomLength(), dimensions.roomHeight(),
-                        3),
+                        dimensions.roomWidth(), dimensions.roomLength(), dimensions.roomHeight()),
                 new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BASEMENT_CAP,
-                        dimensions.roomWidth(), dimensions.roomLength(), dimensions.basementHeight(),
-                        3)
+                        dimensions.roomWidth(), dimensions.roomLength(), dimensions.basementHeight())
         );
     }
 
@@ -76,12 +70,6 @@ public class MKTowerWorkspaceCategoryProfile {
         validateOdd(errors, category.getSerializedName() + " room length", roomLength, 3);
         if (fullHeight < 3) {
             errors.add(category.getSerializedName() + " full height must be at least 3");
-        }
-        if (minHeight < 3) {
-            errors.add(category.getSerializedName() + " min height must be at least 3");
-        }
-        if (fullHeight < minHeight) {
-            errors.add(category.getSerializedName() + " full height must be greater than or equal to min height");
         }
         if (verticalAccessSpec.shaftSize() > roomWidth) {
             errors.add(category.getSerializedName() + " room width must be at least the shared shaft size");
@@ -115,10 +103,6 @@ public class MKTowerWorkspaceCategoryProfile {
 
     public int fullHeight() {
         return fullHeight;
-    }
-
-    public int minHeight() {
-        return minHeight;
     }
 }
 

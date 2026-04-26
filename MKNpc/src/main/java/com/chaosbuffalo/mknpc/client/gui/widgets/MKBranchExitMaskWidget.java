@@ -20,10 +20,10 @@ public class MKBranchExitMaskWidget extends MKWidget {
     private static final int BACKGROUND = 0xFF1B1B1F;
     private static final int BORDER = 0xFF72727A;
     private static final int ROOM_FILL = 0xFF2A3440;
-    private static final int MAIN_EXIT = 0xFF60A5FA;
-    private static final int BRANCH_EXIT = 0xFF74C69D;
+    private static final int ACTIVE_EXIT = 0xFF9CA3AF;
     private static final int INACTIVE_EXIT = 0xFF4B5563;
-    private static final int SELECTED_OVERLAY = 0x66F59E0B;
+    private static final int SELECTED_MAIN_EXIT = 0xFF60A5FA;
+    private static final int SELECTED_BRANCH_EXIT = 0xFF74C69D;
     private static final int LABEL_ACTIVE = 0xFFF8FAFC;
     private static final int LABEL_INACTIVE = 0xFF9CA3AF;
 
@@ -110,47 +110,39 @@ public class MKBranchExitMaskWidget extends MKWidget {
 
     private void drawExit(GuiGraphics graphics, Direction direction, int roomLeft, int roomTop, int roomRight, int roomBottom,
                           int centerX, int centerY) {
-        int color = switch (exitKind(direction)) {
-            case MAIN -> MAIN_EXIT;
-            case BRANCH -> BRANCH_EXIT;
-            case NONE -> INACTIVE_EXIT;
-        };
+        int color = exitColor(direction);
         switch (direction) {
             case NORTH -> {
                 graphics.fill(centerX - (ARM_THICKNESS / 2), roomTop - ARM_LENGTH,
                         centerX + (ARM_THICKNESS / 2), roomTop, color);
-                if (selectedDirection == Direction.NORTH) {
-                    graphics.fill(centerX - (ARM_THICKNESS / 2), roomTop - ARM_LENGTH,
-                            centerX + (ARM_THICKNESS / 2), roomTop, SELECTED_OVERLAY);
-                }
             }
             case EAST -> {
                 graphics.fill(roomRight, centerY - (ARM_THICKNESS / 2),
                         roomRight + ARM_LENGTH, centerY + (ARM_THICKNESS / 2), color);
-                if (selectedDirection == Direction.EAST) {
-                    graphics.fill(roomRight, centerY - (ARM_THICKNESS / 2),
-                            roomRight + ARM_LENGTH, centerY + (ARM_THICKNESS / 2), SELECTED_OVERLAY);
-                }
             }
             case SOUTH -> {
                 graphics.fill(centerX - (ARM_THICKNESS / 2), roomBottom,
                         centerX + (ARM_THICKNESS / 2), roomBottom + ARM_LENGTH, color);
-                if (selectedDirection == Direction.SOUTH) {
-                    graphics.fill(centerX - (ARM_THICKNESS / 2), roomBottom,
-                            centerX + (ARM_THICKNESS / 2), roomBottom + ARM_LENGTH, SELECTED_OVERLAY);
-                }
             }
             case WEST -> {
                 graphics.fill(roomLeft - ARM_LENGTH, centerY - (ARM_THICKNESS / 2),
                         roomLeft, centerY + (ARM_THICKNESS / 2), color);
-                if (selectedDirection == Direction.WEST) {
-                    graphics.fill(roomLeft - ARM_LENGTH, centerY - (ARM_THICKNESS / 2),
-                            roomLeft, centerY + (ARM_THICKNESS / 2), SELECTED_OVERLAY);
-                }
             }
             default -> {
             }
         }
+    }
+
+    private int exitColor(Direction direction) {
+        ExitKind kind = exitKind(direction);
+        if (selectedDirection == direction) {
+            return switch (kind) {
+                case MAIN -> SELECTED_MAIN_EXIT;
+                case BRANCH -> SELECTED_BRANCH_EXIT;
+                case NONE -> INACTIVE_EXIT;
+            };
+        }
+        return kind == ExitKind.NONE ? INACTIVE_EXIT : ACTIVE_EXIT;
     }
 
     private void drawDirectionLabel(GuiGraphics graphics, Minecraft minecraft, Direction direction, int x, int y) {

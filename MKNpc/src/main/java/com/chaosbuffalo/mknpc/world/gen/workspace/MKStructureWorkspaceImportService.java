@@ -177,8 +177,7 @@ public class MKStructureWorkspaceImportService {
                         profile.category(),
                         profile.roomWidth(),
                         profile.roomLength(),
-                        profile.fullHeight().orElse(profile.defaultHeight().orElse(profile.maxHeight().orElse(3))),
-                        profile.minHeight()
+                        profile.fullHeight().orElse(profile.defaultHeight().orElse(profile.maxHeight().orElse(3)))
                 ))
                 .toList();
         if (categoryProfiles.isEmpty()) {

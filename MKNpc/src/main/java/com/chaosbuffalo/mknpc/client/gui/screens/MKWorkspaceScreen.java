@@ -2115,15 +2115,12 @@ public class MKWorkspaceScreen extends MKScreen {
                                                                     int normalizedMainHeight) {
         int roomWidth = Math.max(3, makeOdd(profile.roomWidth()));
         int roomLength = Math.max(3, makeOdd(profile.roomLength()));
-        int minHeight = Math.max(3, profile.minHeight());
         int fullHeight = normalizeCategoryFullHeight(profile.category(), profile.fullHeight(), verticalAccessSpec, normalizedMainHeight);
-        minHeight = Math.min(minHeight, fullHeight);
         return new MKTowerWorkspaceCategoryProfile(
                 profile.category(),
                 roomWidth,
                 roomLength,
-                fullHeight,
-                minHeight
+                fullHeight
         );
     }
 
@@ -2289,7 +2286,7 @@ public class MKWorkspaceScreen extends MKScreen {
         content.addConstraintToWidget(MarginConstraint.LEFT, header);
 
         MKText summary = makeWhiteText(Component.literal(
-                profile.roomWidth() + "x" + profile.roomLength() + "  |  min " + profile.minHeight()));
+                profile.roomWidth() + "x" + profile.roomLength()));
         summary.setWidth(CONTENT_WIDTH);
         summary.setMultiline(true);
         content.addWidget(summary);
@@ -2298,19 +2295,14 @@ public class MKWorkspaceScreen extends MKScreen {
         MKTextFieldWidget roomWidthField = makeField("Room Width", Integer.toString(profile.roomWidth()));
         roomWidthField.setTextChangeCallback((field, text) -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                 profile.category(), parseInt(text, profile.roomWidth()), profile.roomLength(),
-                profile.fullHeight(), profile.minHeight())));
+                profile.fullHeight())));
         MKTextFieldWidget roomLengthField = makeField("Room Length", Integer.toString(profile.roomLength()));
         roomLengthField.setTextChangeCallback((field, text) -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                 profile.category(), profile.roomWidth(), parseInt(text, profile.roomLength()),
-                profile.fullHeight(), profile.minHeight())));
-        MKTextFieldWidget minHeightField = makeField("Min Height", Integer.toString(profile.minHeight()));
-        minHeightField.setTextChangeCallback((field, text) -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
-                profile.category(), profile.roomWidth(), profile.roomLength(),
-                profile.fullHeight(), parseInt(text, profile.minHeight()))));
+                profile.fullHeight())));
 
         addRow(content, makeWhiteText(Component.literal("Room Width")), roomWidthField);
         addRow(content, makeWhiteText(Component.literal("Room Length")), roomLengthField);
-        addRow(content, makeWhiteText(Component.literal("Min Height")), minHeightField);
     }
 
     private void addCategoryHeightRow(MKStackLayoutVertical content, MKTowerWorkspaceCategory category) {
@@ -2319,7 +2311,7 @@ public class MKWorkspaceScreen extends MKScreen {
         heightButton.setPressedCallback((button, mouseButton) -> {
             replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                     profile.category(), profile.roomWidth(), profile.roomLength(),
-                    nextAllowedCategoryFullHeight(profile.category(), profile.fullHeight()), profile.minHeight()));
+                    nextAllowedCategoryFullHeight(profile.category(), profile.fullHeight())));
             flagNeedSetup();
             return true;
         });
@@ -2502,7 +2494,7 @@ public class MKWorkspaceScreen extends MKScreen {
         if (supportsVerticalAccess) {
             return profile.fullHeight();
         }
-        return Math.max(profile.minHeight(), Math.min(requestedHeight, profile.fullHeight()));
+        return Math.max(MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT, Math.min(requestedHeight, profile.fullHeight()));
     }
 
     private int makeOdd(int value) {

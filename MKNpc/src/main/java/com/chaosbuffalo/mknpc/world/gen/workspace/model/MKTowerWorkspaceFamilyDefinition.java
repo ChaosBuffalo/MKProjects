@@ -127,10 +127,10 @@ public class MKTowerWorkspaceFamilyDefinition {
         }
         validateOdd(errors, "family " + baseName + " room width", roomWidth, 3);
         validateOdd(errors, "family " + baseName + " room length", roomLength, 3);
-        if (roomHeight < 3) {
-            errors.add("family " + baseName + " room height must be at least 3");
-        }
         if (supportsVerticalAccess) {
+            if (roomHeight < 3) {
+                errors.add("family " + baseName + " shaft-enabled room height must be at least 3");
+            }
             if (roomWidth < verticalAccessSpec.shaftSize()) {
                 errors.add("family " + baseName + " room width must be at least the shared shaft size");
             }
@@ -141,9 +141,9 @@ public class MKTowerWorkspaceFamilyDefinition {
                 errors.add("family " + baseName + " shaft-enabled room height must match category full height " +
                         categoryProfile.fullHeight());
             }
-        } else if (roomHeight < categoryProfile.minHeight() || roomHeight > categoryProfile.fullHeight()) {
+        } else if (roomHeight < MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT || roomHeight > categoryProfile.fullHeight()) {
             errors.add("family " + baseName + " non-shaft room height must be within category range " +
-                    categoryProfile.minHeight() + "-" + categoryProfile.fullHeight());
+                    MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT + "-" + categoryProfile.fullHeight());
         }
         long mainExitCount = horizontalExits.stream()
                 .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN)
@@ -328,11 +328,11 @@ public class MKTowerWorkspaceFamilyDefinition {
         java.util.Map<MKTowerWorkspaceCategory, MKTowerWorkspaceCategoryProfile> byCategory = categoryProfiles.stream()
                 .collect(java.util.stream.Collectors.toMap(MKTowerWorkspaceCategoryProfile::category, profile -> profile));
         MKTowerWorkspaceCategoryProfile entry = byCategory.getOrDefault(MKTowerWorkspaceCategory.ENTRY,
-                new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.ENTRY, 9, 9, 5, 3));
+                new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.ENTRY, 9, 9, 5));
         MKTowerWorkspaceCategoryProfile main = byCategory.getOrDefault(MKTowerWorkspaceCategory.MAIN,
-                new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.MAIN, 9, 9, 5, 3));
+                new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.MAIN, 9, 9, 5));
         MKTowerWorkspaceCategoryProfile basement = byCategory.getOrDefault(MKTowerWorkspaceCategory.BASEMENT,
-                new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BASEMENT, 9, 9, 5, 3));
+                new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BASEMENT, 9, 9, 5));
         return new MKWorkspaceDimensions(
                 main.roomWidth(),
                 main.roomLength(),
