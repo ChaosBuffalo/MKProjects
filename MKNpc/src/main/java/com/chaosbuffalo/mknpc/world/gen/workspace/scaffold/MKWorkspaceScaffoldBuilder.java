@@ -144,7 +144,7 @@ public class MKWorkspaceScaffoldBuilder {
         List<BlockPos> markerPositions = new ArrayList<>();
         for (MKPlannedConnector plannedConnector : plannedPiece.connectors()) {
             MKWorkspaceConnectorDefinition connector = placeConnector(level, workspace, plannedPiece, plannedConnector,
-                    context.exportOrigin(), context.geometryOrigin(), effectiveShellMargin,
+                    context.exportOrigin(), context.exportBounds(), context.geometryOrigin(), effectiveShellMargin,
                     context.geometryBounds().getXSpan(), context.geometryBounds().getZSpan(),
                     context.geometryBounds().getYSpan());
             connectors.add(connector);
@@ -459,6 +459,7 @@ public class MKWorkspaceScaffoldBuilder {
 
     private MKWorkspaceConnectorDefinition placeConnector(ServerLevel level, MKStructureWorkspace workspace, MKPlannedPiece piece,
                                                           MKPlannedConnector plannedConnector, BlockPos exportOrigin,
+                                                          BoundingBox exportBounds,
                                                           BlockPos geometryOrigin, int shellMargin, int geometryWidth,
                                                           int geometryLength, int geometryHeight) {
         Direction facing = plannedConnector.facing();
@@ -469,17 +470,13 @@ public class MKWorkspaceScaffoldBuilder {
         validateConnectorBounds(piece, plannedConnector, shellMargin, openingBaseY - geometryOrigin.getY());
         BlockPos connectorPos;
         if (facing == Direction.NORTH) {
-            connectorPos = new BlockPos(interiorCenterX, openingBaseY,
-                    geometryOrigin.getZ() + shellMargin - 1);
+            connectorPos = new BlockPos(interiorCenterX, openingBaseY, exportBounds.minZ());
         } else if (facing == Direction.SOUTH) {
-            connectorPos = new BlockPos(interiorCenterX, openingBaseY,
-                    geometryOrigin.getZ() + shellMargin + piece.interiorLength());
+            connectorPos = new BlockPos(interiorCenterX, openingBaseY, exportBounds.maxZ());
         } else if (facing == Direction.WEST) {
-            connectorPos = new BlockPos(geometryOrigin.getX() + shellMargin - 1,
-                    openingBaseY, interiorCenterZ);
+            connectorPos = new BlockPos(exportBounds.minX(), openingBaseY, interiorCenterZ);
         } else if (facing == Direction.EAST) {
-            connectorPos = new BlockPos(geometryOrigin.getX() + shellMargin + piece.interiorWidth(),
-                    openingBaseY, interiorCenterZ);
+            connectorPos = new BlockPos(exportBounds.maxX(), openingBaseY, interiorCenterZ);
         } else if (facing == Direction.UP) {
             connectorPos = new BlockPos(interiorCenterX,
                     geometryOrigin.getY() + geometryHeight - Math.max(1, verticalShellThickness),
@@ -490,8 +487,8 @@ public class MKWorkspaceScaffoldBuilder {
                     interiorCenterZ);
         }
 
-        carveConnectorOpening(level, geometryOrigin, piece, plannedConnector, shellMargin, verticalShellThickness,
-                geometryWidth, geometryLength, geometryHeight);
+        carveConnectorOpening(level, exportBounds, geometryOrigin, piece, plannedConnector, shellMargin,
+                verticalShellThickness, geometryWidth, geometryLength, geometryHeight);
         level.setBlock(connectorPos, Blocks.JIGSAW.defaultBlockState()
                 .setValue(JigsawBlock.ORIENTATION, getJigsawOrientation(facing)), Block.UPDATE_ALL);
         BlockEntity entity = level.getBlockEntity(connectorPos);
@@ -522,7 +519,7 @@ public class MKWorkspaceScaffoldBuilder {
         );
     }
 
-    private void carveConnectorOpening(ServerLevel level, BlockPos geometryOrigin, MKPlannedPiece piece,
+    private void carveConnectorOpening(ServerLevel level, BoundingBox exportBounds, BlockPos geometryOrigin, MKPlannedPiece piece,
                                        MKPlannedConnector connector, int shellMargin, int verticalShellThickness,
                                        int geometryWidth,
                                        int geometryLength, int geometryHeight) {
@@ -538,27 +535,33 @@ public class MKWorkspaceScaffoldBuilder {
         }
         int halfWidth = connector.openingWidth() / 2;
         int halfDepth = connector.openingHeight() / 2;
-        int carveThickness = connector.facing() == Direction.UP || connector.facing() == Direction.DOWN
-                ? verticalShellThickness
-                : shellMargin;
-        for (int thickness = 0; thickness < carveThickness; thickness++) {
-            if (connector.facing() == Direction.NORTH || connector.facing() == Direction.SOUTH) {
+        if (connector.facing() == Direction.NORTH || connector.facing() == Direction.SOUTH) {
+            int startZ = connector.facing() == Direction.NORTH ? exportBounds.minZ() :
+                    geometryOrigin.getZ() + shellMargin + piece.interiorLength();
+            int endZ = connector.facing() == Direction.NORTH ? geometryOrigin.getZ() + shellMargin - 1 :
+                    exportBounds.maxZ();
+            for (int z = startZ; z <= endZ; z++) {
                 for (int height = 0; height < connector.openingHeight(); height++) {
-                    int z = connector.facing() == Direction.NORTH ? geometryOrigin.getZ() + thickness :
-                            geometryOrigin.getZ() + geometryLength - 1 - thickness;
                     for (int width = -halfWidth; width <= halfWidth; width++) {
                         level.setBlock(new BlockPos(centerX + width, baseY + height, z), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                     }
                 }
-            } else if (connector.facing() == Direction.WEST || connector.facing() == Direction.EAST) {
+            }
+        } else if (connector.facing() == Direction.WEST || connector.facing() == Direction.EAST) {
+            int startX = connector.facing() == Direction.WEST ? exportBounds.minX() :
+                    geometryOrigin.getX() + shellMargin + piece.interiorWidth();
+            int endX = connector.facing() == Direction.WEST ? geometryOrigin.getX() + shellMargin - 1 :
+                    exportBounds.maxX();
+            for (int x = startX; x <= endX; x++) {
                 for (int height = 0; height < connector.openingHeight(); height++) {
-                    int x = connector.facing() == Direction.WEST ? geometryOrigin.getX() + thickness :
-                            geometryOrigin.getX() + geometryWidth - 1 - thickness;
                     for (int width = -halfWidth; width <= halfWidth; width++) {
                         level.setBlock(new BlockPos(x, baseY + height, centerZ + width), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                     }
                 }
-            } else {
+            }
+        } else {
+            int carveThickness = verticalShellThickness;
+            for (int thickness = 0; thickness < carveThickness; thickness++) {
                 int y = connector.facing() == Direction.UP ? geometryOrigin.getY() + geometryHeight - 1 - thickness :
                         geometryOrigin.getY() + thickness;
                 for (int xOffset = -halfWidth; xOffset <= halfWidth; xOffset++) {
