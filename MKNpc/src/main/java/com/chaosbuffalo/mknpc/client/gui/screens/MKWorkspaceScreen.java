@@ -2185,6 +2185,22 @@ public class MKWorkspaceScreen extends MKScreen {
         MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(familyIndex);
         java.util.ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
         exits.set(exitIndex, updatedExit);
+        if (updatedExit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN) {
+            for (int i = 0; i < exits.size(); i++) {
+                if (i == exitIndex) {
+                    continue;
+                }
+                MKWorkspaceFamilyHorizontalExitDefinition existingExit = exits.get(i);
+                if (existingExit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN) {
+                    exits.set(i, new MKWorkspaceFamilyHorizontalExitDefinition(
+                            existingExit.direction(),
+                            MKWorkspaceHorizontalExitPathKind.BRANCH,
+                            ensureCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                    existingExit.openingProfileId())
+                    ));
+                }
+            }
+        }
         replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), exits
@@ -2333,7 +2349,7 @@ public class MKWorkspaceScreen extends MKScreen {
                     exit.pathKind(),
                     exit.openingProfileId()
             ));
-            flagNeedSetup();
+            refreshPreservingActiveScroll();
             return true;
         });
         MKButton pathKindButton = new MKButton(Component.literal(formatTopologyLabel(exit.pathKind().getSerializedName())), 180, 20);
@@ -2344,7 +2360,7 @@ public class MKWorkspaceScreen extends MKScreen {
                     nextPathKind,
                     ensureCompatibleOpeningProfile(nextPathKind, exit.openingProfileId())
             ));
-            flagNeedSetup();
+            refreshPreservingActiveScroll();
             return true;
         });
         MKButton openingProfileButton = new MKButton(Component.literal(exit.openingProfileId()), 180, 20);
@@ -2354,7 +2370,7 @@ public class MKWorkspaceScreen extends MKScreen {
                     exit.pathKind(),
                     nextOpeningProfileId(exit.pathKind(), exit.openingProfileId())
             ));
-            flagNeedSetup();
+            refreshPreservingActiveScroll();
             return true;
         });
         addRow(content, makeWhiteText(Component.literal("Direction")), directionButton);
