@@ -146,7 +146,7 @@ public class MKWorkspaceScaffoldBuilder {
             MKWorkspaceConnectorDefinition connector = placeConnector(level, workspace, plannedPiece, plannedConnector,
                     context.exportOrigin(), context.exportBounds(), context.geometryOrigin(), effectiveShellMargin,
                     context.geometryBounds().getXSpan(), context.geometryBounds().getZSpan(),
-                    context.geometryBounds().getYSpan());
+                    context.geometryBounds().getYSpan(), floorState, wallState, ceilingState);
             connectors.add(connector);
             BlockPos markerPos = placeConnectorMarker(level, connector, context.exportBounds());
             markerPositions.add(markerPos);
@@ -461,7 +461,9 @@ public class MKWorkspaceScaffoldBuilder {
                                                           MKPlannedConnector plannedConnector, BlockPos exportOrigin,
                                                           BoundingBox exportBounds,
                                                           BlockPos geometryOrigin, int shellMargin, int geometryWidth,
-                                                          int geometryLength, int geometryHeight) {
+                                                          int geometryLength, int geometryHeight,
+                                                          BlockState floorState, BlockState wallState,
+                                                          BlockState ceilingState) {
         Direction facing = plannedConnector.facing();
         int verticalShellThickness = getVerticalShellThickness(piece);
         int interiorCenterX = getConnectorCenterX(geometryOrigin, piece, shellMargin, plannedConnector);
@@ -487,6 +489,9 @@ public class MKWorkspaceScaffoldBuilder {
                     interiorCenterZ);
         }
 
+        extendHorizontalConnectorShell(level, exportBounds, geometryOrigin, piece, plannedConnector, shellMargin,
+                verticalShellThickness, geometryWidth, geometryLength, geometryHeight, floorState, wallState,
+                ceilingState);
         carveConnectorOpening(level, exportBounds, geometryOrigin, piece, plannedConnector, shellMargin,
                 verticalShellThickness, geometryWidth, geometryLength, geometryHeight);
         level.setBlock(connectorPos, Blocks.JIGSAW.defaultBlockState()
@@ -517,6 +522,66 @@ public class MKWorkspaceScaffoldBuilder {
                 pool,
                 incomingPool
         );
+    }
+
+    private void extendHorizontalConnectorShell(ServerLevel level, BoundingBox exportBounds, BlockPos geometryOrigin,
+                                                MKPlannedPiece piece, MKPlannedConnector connector, int shellMargin,
+                                                int verticalShellThickness, int geometryWidth, int geometryLength,
+                                                int geometryHeight, BlockState floorState, BlockState wallState,
+                                                BlockState ceilingState) {
+        if (connector.facing().getAxis().isVertical()) {
+            return;
+        }
+        int centerX = getConnectorCenterX(geometryOrigin, piece, shellMargin, connector);
+        int centerZ = getConnectorCenterZ(geometryOrigin, piece, shellMargin, connector);
+        int halfWidth = connector.openingWidth() / 2;
+        int minY = geometryOrigin.getY();
+        int maxY = geometryOrigin.getY() + geometryHeight - 1;
+
+        if (connector.facing() == Direction.NORTH || connector.facing() == Direction.SOUTH) {
+            int minX = centerX - halfWidth - shellMargin;
+            int maxX = centerX + halfWidth + shellMargin;
+            int startZ = connector.facing() == Direction.NORTH ? exportBounds.minZ() :
+                    geometryOrigin.getZ() + shellMargin + piece.interiorLength();
+            int endZ = connector.facing() == Direction.NORTH ? geometryOrigin.getZ() + shellMargin - 1 :
+                    exportBounds.maxZ();
+            for (int z = startZ; z <= endZ; z++) {
+                fillConnectorShellColumn(level, minX, maxX, minY, maxY, z, true,
+                        verticalShellThickness, floorState, wallState, ceilingState);
+            }
+            return;
+        }
+
+        int minZ = centerZ - halfWidth - shellMargin;
+        int maxZ = centerZ + halfWidth + shellMargin;
+        int startX = connector.facing() == Direction.WEST ? exportBounds.minX() :
+                geometryOrigin.getX() + shellMargin + piece.interiorWidth();
+        int endX = connector.facing() == Direction.WEST ? geometryOrigin.getX() + shellMargin - 1 :
+                exportBounds.maxX();
+        for (int x = startX; x <= endX; x++) {
+            fillConnectorShellColumn(level, minZ, maxZ, minY, maxY, x, false,
+                    verticalShellThickness, floorState, wallState, ceilingState);
+        }
+    }
+
+    private void fillConnectorShellColumn(ServerLevel level, int minAcross, int maxAcross, int minY, int maxY,
+                                          int fixedAxisValue, boolean fixedZ, int verticalShellThickness,
+                                          BlockState floorState, BlockState wallState, BlockState ceilingState) {
+        for (int across = minAcross; across <= maxAcross; across++) {
+            for (int y = minY; y <= maxY; y++) {
+                BlockState state;
+                if (y < minY + verticalShellThickness) {
+                    state = floorState;
+                } else if (y > maxY - verticalShellThickness) {
+                    state = ceilingState;
+                } else {
+                    state = wallState;
+                }
+                BlockPos pos = fixedZ ? new BlockPos(across, y, fixedAxisValue) :
+                        new BlockPos(fixedAxisValue, y, across);
+                level.setBlock(pos, state, Block.UPDATE_ALL);
+            }
+        }
     }
 
     private void carveConnectorOpening(ServerLevel level, BoundingBox exportBounds, BlockPos geometryOrigin, MKPlannedPiece piece,
