@@ -84,8 +84,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             workspace
                     ),
                     buildRoomTags("entry", family, stairPlacement, "both",
-                            new MKWorkspaceRuntimePieceInfo(true, MKJigsawPieceRole.ROOM, 0, 0,
-                                    true, false, false, false))
+                            roomRuntimeInfo(true, MKJigsawPieceRole.ROOM, 0, 0, false, false, family))
             );
             case FLOOR_MAIN -> new MKPlannedPiece(
                     family.pieceRole(),
@@ -104,8 +103,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             workspace
                     ),
                     buildRoomTags("floor", family, stairPlacement, "both",
-                            new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 1, 1,
-                                    true, false, false, false))
+                            roomRuntimeInfo(false, MKJigsawPieceRole.ROOM, 1, 1, false, false, family))
             );
             case TOP_CAP_APPROACH -> new MKPlannedPiece(
                     family.pieceRole(),
@@ -124,8 +122,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             workspace
                     ),
                     buildRoomTags("top_cap_approach", family, stairPlacement, "up",
-                            new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.TOP_CAP_APPROACH, 1, 1,
-                                    true, false, false, true))
+                            roomRuntimeInfo(false, MKJigsawPieceRole.TOP_CAP_APPROACH, 1, 1, false, true, family))
             );
             case TOP_CAP -> new MKPlannedPiece(
                     family.pieceRole(),
@@ -141,8 +138,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             workspace
                     ),
                     buildRoomTags("top_cap", family, stairPlacement, "up", true, false,
-                            new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.TOP_CAP, 0, 0,
-                                    true, false, true, true))
+                            roomRuntimeInfo(false, MKJigsawPieceRole.TOP_CAP, 0, 0, true, true, family))
             );
             case BASEMENT_ENTRY -> new MKPlannedPiece(
                     family.pieceRole(),
@@ -161,8 +157,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             workspace
                     ),
                     buildRoomTags("basement_entry", family, stairPlacement, "down",
-                            new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 1, -1,
-                                    true, false, false, false))
+                            roomRuntimeInfo(false, MKJigsawPieceRole.ROOM, 1, -1, false, false, family))
             );
             case BASEMENT_MAIN -> new MKPlannedPiece(
                     family.pieceRole(),
@@ -181,8 +176,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             workspace
                     ),
                     buildRoomTags("basement_main", family, stairPlacement, "down",
-                            new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 1, -1,
-                                    true, false, false, false))
+                            roomRuntimeInfo(false, MKJigsawPieceRole.ROOM, 1, -1, false, false, family))
             );
             case BASEMENT_CAP -> new MKPlannedPiece(
                     family.pieceRole(),
@@ -198,8 +192,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             workspace
                     ),
                     buildRoomTags("basement_cap", family, stairPlacement, "down", false, true,
-                            new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.TERMINAL, 1, -1,
-                                    true, false, true, false))
+                            roomRuntimeInfo(false, MKJigsawPieceRole.TERMINAL, 1, -1, true, false, family))
             );
             case HALLWAY -> throw new IllegalStateException("tower families do not directly create hallway pieces");
         };
@@ -301,6 +294,24 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
 
     private String hallwayPoolName(String openingProfileId, HallwayPathKind pathKind) {
         return HALLWAY_POOL_PREFIX + "/" + pathKind.serializedName + "/" + openingProfileId;
+    }
+
+    private MKWorkspaceRuntimePieceInfo roomRuntimeInfo(boolean start, MKJigsawPieceRole role,
+                                                        int progressionDelta, int verticalLevelDelta,
+                                                        boolean terminal, boolean topCapOnly,
+                                                        MKTowerWorkspaceFamilyDefinition family) {
+        boolean branchOnlyHorizontalFamily = family.mainEntry().isEmpty() && family.mainExit().isEmpty() &&
+                !family.branchExits().isEmpty();
+        return new MKWorkspaceRuntimePieceInfo(
+                start,
+                role,
+                progressionDelta,
+                verticalLevelDelta,
+                !branchOnlyHorizontalFamily,
+                branchOnlyHorizontalFamily,
+                terminal,
+                topCapOnly
+        );
     }
 
     private Map<String, String> buildRoomTags(String topologyRole, MKTowerWorkspaceFamilyDefinition family, String stairPlacement,

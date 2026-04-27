@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
+import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
@@ -17,6 +18,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalet
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
@@ -140,6 +142,109 @@ class TowerWorkspaceV2Test {
         assertTrue(entry.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.MAIN_BACK &&
                         connector.facing() == net.minecraft.core.Direction.SOUTH));
+    }
+
+    @Test
+    void branchOnlyFamiliesExportBranchOnlyRuntimeTags() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                ),
+                List.of()
+        );
+        MKTowerWorkspaceFamilyDefinition updatedMain = new MKTowerWorkspaceFamilyDefinition(
+                "floor_main",
+                MKTowerWorkspaceCategory.MAIN,
+                MKWorkspacePieceRole.FLOOR_MAIN,
+                true,
+                9,
+                9,
+                workspace.dimensions().roomHeight(),
+                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                        MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch"))
+        );
+        workspace = new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
+                workspace.categoryProfiles(),
+                workspace.familyDefinitions().stream()
+                        .map(family -> family.baseName().equals("floor_main") ? updatedMain : family)
+                        .toList(),
+                workspace.openingProfiles(),
+                workspace.hallwayFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces()
+        );
+
+        MKPlannedPiece mainPiece = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.pieceName().equals("floor_main"))
+                .findFirst()
+                .orElseThrow();
+        MKWorkspaceRuntimePieceInfo runtimeInfo = MKWorkspaceRuntimePieceInfo.fromTags(mainPiece.tags()).orElseThrow();
+
+        assertTrue(!runtimeInfo.allowOnMainPath());
+        assertTrue(runtimeInfo.allowOnBranchPath());
+    }
+
+    @Test
+    void exportRuntimePoolsExcludeMainPathRoomsFromBranchPools() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKStructureWorkspace workspace = new MKStructureWorkspace(
+                UUID.randomUUID(),
+                BlockPos.ZERO,
+                "mkdev",
+                "pool_filter_test",
+                MKStructureFamilyType.TOWER,
+                dimensions,
+                workspacePalette(),
+                MKWorkspaceStairAuthoringConfig.defaultConfig(),
+                MKVerticalAccessPlacement.CENTER,
+                1,
+                2,
+                4,
+                MKWorkspaceVerticalAccessSpec.defaultSpec(),
+                MKTowerWorkspaceFloorSettings.defaultSettings(),
+                MKTowerWorkspaceCategoryProfile.createDefaults(dimensions),
+                MKTowerWorkspaceFamilyDefinition.createDefaults(),
+                MKHorizontalOpeningProfile.createDefaults(dimensions),
+                List.of(),
+                1L,
+                2L,
+                List.of(
+                        pieceWithRuntimeAndIncomingPool("main_room", "main_room",
+                                new MKWorkspaceRuntimePieceInfo(true,
+                                        com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole.ROOM,
+                                        0, 0, true, false, false, false),
+                                ResourceLocation.parse("mkdev:pool_filter_test/hallways/branch/branch_opening")),
+                        pieceWithRuntimeAndIncomingPool("branch_room", "branch_room",
+                                new MKWorkspaceRuntimePieceInfo(false,
+                                        com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole.ROOM,
+                                        0, 0, false, true, false, false),
+                                ResourceLocation.parse("mkdev:pool_filter_test/hallways/branch/branch_opening"))
+                )
+        );
+
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 4, "test");
+        MKWorkspaceExportManifest.ExportRuntimePool branchPool = manifest.runtimeHints().pools().stream()
+                .filter(pool -> pool.poolId().equals(ResourceLocation.parse("mkdev:pool_filter_test/hallways/branch/branch_opening")))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(List.of("branch_room"), branchPool.childBaseNames());
     }
 
     @Test
@@ -417,6 +522,45 @@ class TowerWorkspaceV2Test {
 
     private static MKWorkspaceMaterialPalette workspacePalette() {
         return MKWorkspaceMaterialPalette.defaultPalette();
+    }
+
+    private static MKWorkspacePieceDefinition pieceWithRuntimeAndIncomingPool(String pieceName, String baseName,
+                                                                              MKWorkspaceRuntimePieceInfo runtimeInfo,
+                                                                              ResourceLocation incomingPool) {
+        java.util.Map<String, String> tags = new java.util.LinkedHashMap<>();
+        tags.put("workspace_base_name", baseName);
+        tags.put("workspace_piece_kind", "instance");
+        runtimeInfo.applyToTags(tags);
+        return new MKWorkspacePieceDefinition(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                pieceName,
+                MKWorkspacePieceRole.FLOOR_MAIN,
+                0,
+                MKWorkspaceDimensions.defaultDimensions(),
+                1,
+                List.of(new MKWorkspaceConnectorDefinition(
+                        MKConnectorRole.MAIN_BACK,
+                        net.minecraft.core.Direction.NORTH,
+                        BlockPos.ZERO,
+                        3,
+                        3,
+                        0,
+                        0,
+                        ResourceLocation.parse("mkdev:main_back"),
+                        ResourceLocation.parse("mkdev:main_forward"),
+                        ResourceLocation.parse("minecraft:empty"),
+                        incomingPool
+                )),
+                BlockPos.ZERO,
+                new BoundingBox(0, 0, 0, 1, 1, 1),
+                new BoundingBox(0, 0, 0, 1, 1, 1),
+                BlockPos.ZERO,
+                BlockPos.ZERO,
+                List.of(),
+                List.of(),
+                tags
+        );
     }
 }
 

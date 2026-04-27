@@ -776,8 +776,17 @@ public record MKWorkspaceExportManifest(
                 continue;
             }
             String baseName = piece.tags().getOrDefault("workspace_base_name", piece.pieceName());
+            Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = MKWorkspaceRuntimePieceInfo.fromTags(piece.tags());
             for (MKWorkspaceConnectorDefinition connector : piece.connectors()) {
                 if (connector.incomingPool().equals(EMPTY_POOL)) {
+                    continue;
+                }
+                if (isBranchRuntimePool(workspace, connector.incomingPool()) &&
+                        runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnBranchPath).orElse(false) == false) {
+                    continue;
+                }
+                if (!isBranchRuntimePool(workspace, connector.incomingPool()) &&
+                        runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnMainPath).orElse(true) == false) {
                     continue;
                 }
                 childrenByPool.computeIfAbsent(connector.incomingPool(), key -> new LinkedHashSet<>()).add(baseName);
@@ -798,6 +807,13 @@ public record MKWorkspaceExportManifest(
             return poolId.getPath().substring(prefix.length());
         }
         return poolId.toString();
+    }
+
+    private static boolean isBranchRuntimePool(MKStructureWorkspace workspace, ResourceLocation poolId) {
+        String prefix = workspace.structureName() + "/";
+        String path = poolId.getNamespace().equals(workspace.namespace()) && poolId.getPath().startsWith(prefix) ?
+                poolId.getPath().substring(prefix.length()) : poolId.getPath();
+        return path.startsWith("hallways/branch/");
     }
 }
 
