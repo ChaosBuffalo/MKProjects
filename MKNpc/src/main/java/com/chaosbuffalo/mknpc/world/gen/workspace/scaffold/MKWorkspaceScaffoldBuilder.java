@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
@@ -46,6 +47,7 @@ public class MKWorkspaceScaffoldBuilder {
     private static final String WALL_BLOCK_TAG = "workspace_palette_wall";
     private static final String CEILING_BLOCK_TAG = "workspace_palette_ceiling";
     private static final String HALLWAY_SLOPE_DELTA_TAG = "workspace_hallway_slope_delta";
+    private static final String HORIZONTAL_EXTRUSION_MODE_TAG = "workspace_horizontal_extrusion_mode";
 
     private final MKWorkspaceGridLayout gridLayout = new MKWorkspaceGridLayout();
 
@@ -532,6 +534,12 @@ public class MKWorkspaceScaffoldBuilder {
         if (connector.facing().getAxis().isVertical()) {
             return;
         }
+        MKWorkspaceHorizontalExtrusionMode extrusionMode = getHorizontalExtrusionMode(piece);
+        if (extrusionMode == MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY) {
+            extendHorizontalConnectorTunnelShell(level, exportBounds, geometryOrigin, piece, connector, shellMargin,
+                    verticalShellThickness, floorState, wallState, ceilingState);
+            return;
+        }
         int centerX = getConnectorCenterX(geometryOrigin, piece, shellMargin, connector);
         int centerZ = getConnectorCenterZ(geometryOrigin, piece, shellMargin, connector);
         int halfWidth = connector.openingWidth() / 2;
@@ -565,8 +573,8 @@ public class MKWorkspaceScaffoldBuilder {
     }
 
     private void fillConnectorShellColumn(ServerLevel level, int minAcross, int maxAcross, int minY, int maxY,
-                                          int fixedAxisValue, boolean fixedZ, int verticalShellThickness,
-                                          BlockState floorState, BlockState wallState, BlockState ceilingState) {
+                                     int fixedAxisValue, boolean fixedZ, int verticalShellThickness,
+                                     BlockState floorState, BlockState wallState, BlockState ceilingState) {
         for (int across = minAcross; across <= maxAcross; across++) {
             for (int y = minY; y <= maxY; y++) {
                 BlockState state;
@@ -580,6 +588,78 @@ public class MKWorkspaceScaffoldBuilder {
                 BlockPos pos = fixedZ ? new BlockPos(across, y, fixedAxisValue) :
                         new BlockPos(fixedAxisValue, y, across);
                 level.setBlock(pos, state, Block.UPDATE_ALL);
+            }
+        }
+    }
+
+    private void extendHorizontalConnectorTunnelShell(ServerLevel level, BoundingBox exportBounds, BlockPos geometryOrigin,
+                                                      MKPlannedPiece piece, MKPlannedConnector connector, int shellMargin,
+                                                      int verticalShellThickness, BlockState floorState,
+                                                      BlockState wallState, BlockState ceilingState) {
+        int centerX = getConnectorCenterX(geometryOrigin, piece, shellMargin, connector);
+        int centerZ = getConnectorCenterZ(geometryOrigin, piece, shellMargin, connector);
+        int baseY = getOpeningBaseY(geometryOrigin, verticalShellThickness, connector);
+        int halfWidth = connector.openingWidth() / 2;
+        int leftBound = -halfWidth - shellMargin;
+        int rightBound = halfWidth + shellMargin;
+        int floorTopY = Math.max(geometryOrigin.getY(), baseY - 1);
+        int ceilingBottomY = baseY + connector.openingHeight();
+        if (connector.facing() == Direction.NORTH || connector.facing() == Direction.SOUTH) {
+            int startZ = connector.facing() == Direction.NORTH ? exportBounds.minZ() :
+                    geometryOrigin.getZ() + shellMargin + piece.interiorLength();
+            int endZ = connector.facing() == Direction.NORTH ? geometryOrigin.getZ() + shellMargin - 1 :
+                    exportBounds.maxZ();
+            for (int z = startZ; z <= endZ; z++) {
+                for (int offset = leftBound; offset <= rightBound; offset++) {
+                    int x = centerX + offset;
+                    for (int thickness = 0; thickness < verticalShellThickness; thickness++) {
+                        level.setBlock(new BlockPos(x, floorTopY - thickness, z), floorState, Block.UPDATE_ALL);
+                        level.setBlock(new BlockPos(x, ceilingBottomY + thickness, z), ceilingState, Block.UPDATE_ALL);
+                    }
+                }
+                fillTunnelSideWalls(level, centerX, z, true, baseY, connector.openingHeight(), halfWidth, shellMargin,
+                        wallState);
+            }
+            return;
+        }
+
+        int startX = connector.facing() == Direction.WEST ? exportBounds.minX() :
+                geometryOrigin.getX() + shellMargin + piece.interiorWidth();
+        int endX = connector.facing() == Direction.WEST ? geometryOrigin.getX() + shellMargin - 1 :
+                exportBounds.maxX();
+        for (int x = startX; x <= endX; x++) {
+            for (int offset = leftBound; offset <= rightBound; offset++) {
+                int z = centerZ + offset;
+                for (int thickness = 0; thickness < verticalShellThickness; thickness++) {
+                    level.setBlock(new BlockPos(x, floorTopY - thickness, z), floorState, Block.UPDATE_ALL);
+                    level.setBlock(new BlockPos(x, ceilingBottomY + thickness, z), ceilingState, Block.UPDATE_ALL);
+                }
+            }
+            fillTunnelSideWalls(level, centerZ, x, false, baseY, connector.openingHeight(), halfWidth, shellMargin,
+                    wallState);
+        }
+    }
+
+    private void fillTunnelSideWalls(ServerLevel level, int centerAcross, int fixedAxisValue, boolean fixedZ, int baseY,
+                                     int openingHeight, int halfWidth, int shellMargin, BlockState wallState) {
+        int leftStart = centerAcross - halfWidth - shellMargin;
+        int leftEnd = centerAcross - halfWidth - 1;
+        int rightStart = centerAcross + halfWidth + 1;
+        int rightEnd = centerAcross + halfWidth + shellMargin;
+        fillTunnelWallSegment(level, leftStart, leftEnd, fixedAxisValue, fixedZ, baseY, openingHeight, wallState);
+        fillTunnelWallSegment(level, rightStart, rightEnd, fixedAxisValue, fixedZ, baseY, openingHeight, wallState);
+    }
+
+    private void fillTunnelWallSegment(ServerLevel level, int startAcross, int endAcross, int fixedAxisValue,
+                                       boolean fixedZ, int baseY, int openingHeight, BlockState wallState) {
+        if (startAcross > endAcross) {
+            return;
+        }
+        for (int across = startAcross; across <= endAcross; across++) {
+            for (int y = baseY; y < baseY + openingHeight; y++) {
+                BlockPos pos = fixedZ ? new BlockPos(across, y, fixedAxisValue) :
+                        new BlockPos(fixedAxisValue, y, across);
+                level.setBlock(pos, wallState, Block.UPDATE_ALL);
             }
         }
     }
@@ -643,6 +723,13 @@ public class MKWorkspaceScaffoldBuilder {
             return FrontAndTop.fromFrontAndTop(facing, Direction.NORTH);
         }
         return FrontAndTop.fromFrontAndTop(facing, Direction.UP);
+    }
+
+    private MKWorkspaceHorizontalExtrusionMode getHorizontalExtrusionMode(MKPlannedPiece piece) {
+        return MKWorkspaceHorizontalExtrusionMode.fromSerializedName(
+                piece.tags().getOrDefault(HORIZONTAL_EXTRUSION_MODE_TAG,
+                        MKWorkspaceHorizontalExtrusionMode.FULL_BODY.getSerializedName())
+        );
     }
 
     private int getVerticalCenterX(BlockPos geometryOrigin, MKPlannedPiece piece, int shellMargin) {

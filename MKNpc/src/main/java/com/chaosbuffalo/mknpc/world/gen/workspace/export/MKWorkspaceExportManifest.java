@@ -11,6 +11,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
@@ -144,6 +145,11 @@ public record MKWorkspaceExportManifest(
 
     private static Codec<MKWorkspacePieceRole> pieceRoleCodec() {
         return Codec.STRING.xmap(MKWorkspacePieceRole::fromSerializedName, MKWorkspacePieceRole::getSerializedName);
+    }
+
+    private static Codec<MKWorkspaceHorizontalExtrusionMode> horizontalExtrusionModeCodec() {
+        return Codec.STRING.xmap(MKWorkspaceHorizontalExtrusionMode::fromSerializedName,
+                MKWorkspaceHorizontalExtrusionMode::getSerializedName);
     }
 
     private static Codec<MKConnectorRole> connectorRoleCodec() {
@@ -345,6 +351,7 @@ public record MKWorkspaceExportManifest(
             Optional<Integer> roomWidth,
             Optional<Integer> roomLength,
             Optional<Integer> roomHeight,
+            Optional<MKWorkspaceHorizontalExtrusionMode> horizontalExtrusionMode,
             List<ExportFamilyHorizontalExit> horizontalExits,
             Optional<String> legacyBranchExitMask
     ) {
@@ -353,12 +360,14 @@ public record MKWorkspaceExportManifest(
                 towerCategoryCodec().fieldOf("category").forGetter(ExportFamilyDefinition::category),
                 pieceRoleCodec().fieldOf("piece_role").forGetter(ExportFamilyDefinition::pieceRole),
                 Codec.BOOL.fieldOf("supports_vertical_access").forGetter(ExportFamilyDefinition::supportsVerticalAccess),
-                Codec.INT.optionalFieldOf("room_width").forGetter(ExportFamilyDefinition::roomWidth),
-                Codec.INT.optionalFieldOf("room_length").forGetter(ExportFamilyDefinition::roomLength),
-                Codec.INT.optionalFieldOf("room_height").forGetter(ExportFamilyDefinition::roomHeight),
-                ExportFamilyHorizontalExit.CODEC.listOf().optionalFieldOf("horizontal_exits", List.of())
-                        .forGetter(ExportFamilyDefinition::horizontalExits),
-                Codec.STRING.optionalFieldOf("branch_exit_mask").forGetter(ExportFamilyDefinition::legacyBranchExitMask)
+            Codec.INT.optionalFieldOf("room_width").forGetter(ExportFamilyDefinition::roomWidth),
+            Codec.INT.optionalFieldOf("room_length").forGetter(ExportFamilyDefinition::roomLength),
+            Codec.INT.optionalFieldOf("room_height").forGetter(ExportFamilyDefinition::roomHeight),
+            horizontalExtrusionModeCodec().optionalFieldOf("horizontal_extrusion_mode")
+                    .forGetter(ExportFamilyDefinition::horizontalExtrusionMode),
+            ExportFamilyHorizontalExit.CODEC.listOf().optionalFieldOf("horizontal_exits", List.of())
+                    .forGetter(ExportFamilyDefinition::horizontalExits),
+            Codec.STRING.optionalFieldOf("branch_exit_mask").forGetter(ExportFamilyDefinition::legacyBranchExitMask)
         ).apply(instance, ExportFamilyDefinition::new));
 
         public static ExportFamilyDefinition from(MKTowerWorkspaceFamilyDefinition familyDefinition) {
@@ -370,6 +379,7 @@ public record MKWorkspaceExportManifest(
                     Optional.of(familyDefinition.roomWidth()),
                     Optional.of(familyDefinition.roomLength()),
                     Optional.of(familyDefinition.roomHeight()),
+                    Optional.of(familyDefinition.horizontalExtrusionMode()),
                     familyDefinition.horizontalExits().stream().map(ExportFamilyHorizontalExit::from).toList(),
                     Optional.of(familyDefinition.legacyBranchExitMask().getSerializedName())
             );

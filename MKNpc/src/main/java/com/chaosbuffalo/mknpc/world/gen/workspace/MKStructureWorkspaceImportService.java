@@ -195,6 +195,8 @@ public class MKStructureWorkspaceImportService {
                         family.roomWidth().orElse(0),
                         family.roomLength().orElse(0),
                         family.roomHeight().orElse(0),
+                        family.horizontalExtrusionMode().orElse(
+                                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode.FULL_BODY),
                         family.horizontalExits().stream()
                                 .map(exit -> new MKWorkspaceFamilyHorizontalExitDefinition(
                                         Direction.byName(exit.direction()),

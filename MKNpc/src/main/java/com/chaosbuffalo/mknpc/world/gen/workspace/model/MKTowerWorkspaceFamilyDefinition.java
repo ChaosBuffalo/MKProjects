@@ -22,6 +22,9 @@ public class MKTowerWorkspaceFamilyDefinition {
             Codec.INT.optionalFieldOf("roomWidth").forGetter(family -> Optional.of(family.roomWidth())),
             Codec.INT.optionalFieldOf("roomLength").forGetter(family -> Optional.of(family.roomLength())),
             Codec.INT.optionalFieldOf("roomHeight").forGetter(family -> Optional.of(family.roomHeight())),
+            MKWorkspaceCodecs.HORIZONTAL_EXTRUSION_MODE_CODEC.optionalFieldOf("horizontalExtrusionMode",
+                            MKWorkspaceHorizontalExtrusionMode.FULL_BODY)
+                    .forGetter(MKTowerWorkspaceFamilyDefinition::horizontalExtrusionMode),
             MKWorkspaceFamilyHorizontalExitDefinition.CODEC.listOf().optionalFieldOf("horizontalExits", List.of())
                     .forGetter(MKTowerWorkspaceFamilyDefinition::horizontalExits),
             MKWorkspaceCodecs.BRANCH_EXIT_MASK_CODEC.optionalFieldOf("branchExitMask")
@@ -35,11 +38,21 @@ public class MKTowerWorkspaceFamilyDefinition {
     private final int roomWidth;
     private final int roomLength;
     private final int roomHeight;
+    private final MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode;
     private final List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits;
 
     public MKTowerWorkspaceFamilyDefinition(String baseName, MKTowerWorkspaceCategory category,
                                             MKWorkspacePieceRole pieceRole, boolean supportsVerticalAccess,
                                             int roomWidth, int roomLength, int roomHeight,
+                                            List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits) {
+        this(baseName, category, pieceRole, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
+                MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, horizontalExits);
+    }
+
+    public MKTowerWorkspaceFamilyDefinition(String baseName, MKTowerWorkspaceCategory category,
+                                            MKWorkspacePieceRole pieceRole, boolean supportsVerticalAccess,
+                                            int roomWidth, int roomLength, int roomHeight,
+                                            MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
                                             List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits) {
         this.baseName = baseName;
         this.category = category;
@@ -48,6 +61,7 @@ public class MKTowerWorkspaceFamilyDefinition {
         this.roomWidth = roomWidth;
         this.roomLength = roomLength;
         this.roomHeight = roomHeight;
+        this.horizontalExtrusionMode = horizontalExtrusionMode;
         this.horizontalExits = List.copyOf(horizontalExits);
     }
 
@@ -242,6 +256,10 @@ public class MKTowerWorkspaceFamilyDefinition {
         return roomHeight;
     }
 
+    public MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode() {
+        return horizontalExtrusionMode;
+    }
+
     public List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits() {
         return horizontalExits;
     }
@@ -286,15 +304,18 @@ public class MKTowerWorkspaceFamilyDefinition {
                                                                        Optional<Integer> roomWidth,
                                                                        Optional<Integer> roomLength,
                                                                        Optional<Integer> roomHeight,
+                                                                       MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
                                                                        List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
                                                                        Optional<MKTowerBranchExitMask> branchExitMask) {
         if (!horizontalExits.isEmpty()) {
             return new MKTowerWorkspaceFamilyDefinition(baseName, category, pieceRole, supportsVerticalAccess,
                     roomWidth.orElse(0), roomLength.orElse(0), roomHeight.orElse(0),
+                    horizontalExtrusionMode,
                     horizontalExits);
         }
         return new MKTowerWorkspaceFamilyDefinition(baseName, category, pieceRole, supportsVerticalAccess,
                 roomWidth.orElse(0), roomLength.orElse(0), roomHeight.orElse(0),
+                horizontalExtrusionMode,
                 buildLegacyHorizontalExits(category, pieceRole, branchExitMask.orElse(MKTowerBranchExitMask.NONE)));
     }
 
@@ -332,6 +353,7 @@ public class MKTowerWorkspaceFamilyDefinition {
                 roomWidth > 0 ? roomWidth : profile.roomWidth(),
                 roomLength > 0 ? roomLength : profile.roomLength(),
                 roomHeight > 0 ? roomHeight : profile.fullHeight(),
+                horizontalExtrusionMode,
                 horizontalExits
         );
     }

@@ -19,6 +19,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDe
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
@@ -939,7 +940,7 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), title);
 
         MKText helpText = makeWhiteText(Component.literal(
-                "Edit one family at a time. Left click a side of the room diagram to open that exit editor below the widget. Left click again to close it. Right click removes the exit."));
+                "Edit one family at a time. Left click a side of the room diagram to open that exit editor below the widget. Left click again to close it. Right click toggles that exit on or off."));
         helpText.setWidth(CONTENT_WIDTH);
         helpText.setMultiline(true);
         root.addWidget(helpText);
@@ -960,7 +961,8 @@ public class MKWorkspaceScreen extends MKScreen {
         baseNameField.setTextChangeCallback((field, text) -> replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
                 text.trim().isBlank() ? family.baseName() : text.trim(),
                 family.category(), family.pieceRole(), family.supportsVerticalAccess(),
-                family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExits())));
+                family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
+                family.horizontalExits())));
         MKButton categoryButton = new MKButton(Component.literal(formatTopologyLabel(family.category().getSerializedName())), 180, 20);
         categoryButton.setPressedCallback((button, mouseButton) -> {
             MKTowerWorkspaceCategory nextCategory = cycleCategory(family.category());
@@ -971,6 +973,7 @@ public class MKWorkspaceScreen extends MKScreen {
                     normalizeFamilyWidthForCategory(family.roomWidth(), family.supportsVerticalAccess(), nextProfile),
                     normalizeFamilyLengthForCategory(family.roomLength(), family.supportsVerticalAccess(), nextProfile),
                     normalizeFamilyHeightForCategory(family.roomHeight(), family.supportsVerticalAccess(), nextProfile),
+                    family.horizontalExtrusionMode(),
                     family.horizontalExits()));
             selectedFormCategory = nextCategory;
             flagNeedSetup();
@@ -981,7 +984,8 @@ public class MKWorkspaceScreen extends MKScreen {
             replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
                     family.baseName(), family.category(), cycleFamilyRole(family.pieceRole()),
                     family.supportsVerticalAccess(),
-                    family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExits()));
+                    family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
+                    family.horizontalExits()));
             flagNeedSetup();
             return true;
         });
@@ -995,6 +999,16 @@ public class MKWorkspaceScreen extends MKScreen {
                     normalizeFamilyWidthForCategory(family.roomWidth(), supportsVerticalAccess, categoryProfile),
                     normalizeFamilyLengthForCategory(family.roomLength(), supportsVerticalAccess, categoryProfile),
                     normalizeFamilyHeightForCategory(family.roomHeight(), supportsVerticalAccess, categoryProfile),
+                    family.horizontalExtrusionMode(),
+                    family.horizontalExits()));
+            flagNeedSetup();
+            return true;
+        });
+        MKButton extrusionModeButton = new MKButton(Component.literal(formatFamilyExtrusionMode(family.horizontalExtrusionMode())), 180, 20);
+        extrusionModeButton.setPressedCallback((button, mouseButton) -> {
+            replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
+                    family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
+                    family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode().next(),
                     family.horizontalExits()));
             flagNeedSetup();
             return true;
@@ -1003,17 +1017,20 @@ public class MKWorkspaceScreen extends MKScreen {
         roomWidthField.setTextChangeCallback((field, text) -> replaceFamilyDefinition(index, normalizeFamilyDefinition(
                 new MKTowerWorkspaceFamilyDefinition(
                         family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
-                        parseInt(text, family.roomWidth()), family.roomLength(), family.roomHeight(), family.horizontalExits()))));
+                        parseInt(text, family.roomWidth()), family.roomLength(), family.roomHeight(),
+                        family.horizontalExtrusionMode(), family.horizontalExits()))));
         MKTextFieldWidget roomLengthField = makeField("Room Length", Integer.toString(family.roomLength()));
         roomLengthField.setTextChangeCallback((field, text) -> replaceFamilyDefinition(index, normalizeFamilyDefinition(
                 new MKTowerWorkspaceFamilyDefinition(
                         family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
-                        family.roomWidth(), parseInt(text, family.roomLength()), family.roomHeight(), family.horizontalExits()))));
+                        family.roomWidth(), parseInt(text, family.roomLength()), family.roomHeight(),
+                        family.horizontalExtrusionMode(), family.horizontalExits()))));
 
         addRow(content, makeWhiteText(Component.literal("Base Name")), baseNameField);
         addRow(content, makeWhiteText(Component.literal("Category")), categoryButton);
         addRow(content, makeWhiteText(Component.literal("Role")), roleButton);
         addRow(content, makeWhiteText(Component.literal("Vertical Access")), supportsVerticalButton);
+        addRow(content, makeWhiteText(Component.literal("Horizontal Extrusion")), extrusionModeButton);
         addRow(content, makeWhiteText(Component.literal("Room Width")), roomWidthField);
         addRow(content, makeWhiteText(Component.literal("Room Length")), roomLengthField);
         if (family.supportsVerticalAccess()) {
@@ -1029,7 +1046,8 @@ public class MKWorkspaceScreen extends MKScreen {
             roomHeightField.setTextChangeCallback((field, text) -> replaceFamilyDefinition(index, normalizeFamilyDefinition(
                     new MKTowerWorkspaceFamilyDefinition(
                             family.baseName(), family.category(), family.pieceRole(), false,
-                            family.roomWidth(), family.roomLength(), parseInt(text, family.roomHeight()), family.horizontalExits()))));
+                            family.roomWidth(), family.roomLength(), parseInt(text, family.roomHeight()),
+                            family.horizontalExtrusionMode(), family.horizontalExits()))));
             addRow(content, makeWhiteText(Component.literal("Room Height")), roomHeightField);
         }
         MKText exitLabel = makeWhiteText(Component.literal("Horizontal Exits"));
@@ -2166,6 +2184,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 profile.roomWidth(),
                 profile.roomLength(),
                 profile.fullHeight(),
+                MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                 defaultHorizontalExitsForNewFamily()
         ));
         formDraft.familyDefinitions = List.copyOf(updated);
@@ -2203,7 +2222,7 @@ public class MKWorkspaceScreen extends MKScreen {
         }
         replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
-                family.roomWidth(), family.roomLength(), family.roomHeight(), exits
+                family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits
         ));
     }
 
@@ -2213,7 +2232,7 @@ public class MKWorkspaceScreen extends MKScreen {
         exits.remove(exitIndex);
         replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
-                family.roomWidth(), family.roomLength(), family.roomHeight(), exits
+                family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits
         ));
     }
 
@@ -2232,7 +2251,7 @@ public class MKWorkspaceScreen extends MKScreen {
         ));
         replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
-                family.roomWidth(), family.roomLength(), family.roomHeight(), exits
+                family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits
         ));
         return exits.size() - 1;
     }
@@ -2491,6 +2510,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 normalizeFamilyWidthForCategory(family.roomWidth(), family.supportsVerticalAccess(), profile),
                 normalizeFamilyLengthForCategory(family.roomLength(), family.supportsVerticalAccess(), profile),
                 normalizeFamilyHeightForCategory(family.roomHeight(), family.supportsVerticalAccess(), profile),
+                family.horizontalExtrusionMode(),
                 family.horizontalExits()
         );
     }
@@ -2591,6 +2611,13 @@ public class MKWorkspaceScreen extends MKScreen {
     private String describeFamilyExit(MKWorkspaceFamilyHorizontalExitDefinition exit) {
         return formatDirection(exit.direction()) + " / " + formatTopologyLabel(exit.pathKind().getSerializedName()) +
                 " / " + exit.openingProfileId();
+    }
+
+    private String formatFamilyExtrusionMode(MKWorkspaceHorizontalExtrusionMode mode) {
+        return switch (mode) {
+            case TUNNEL_ONLY -> "Tunnel Only";
+            case FULL_BODY -> "Full Body";
+        };
     }
 
     private String formatDirection(Direction direction) {

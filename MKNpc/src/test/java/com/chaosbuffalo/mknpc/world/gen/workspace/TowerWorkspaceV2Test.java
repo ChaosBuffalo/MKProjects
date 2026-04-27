@@ -13,6 +13,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSet
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
@@ -142,6 +143,18 @@ class TowerWorkspaceV2Test {
         assertTrue(entry.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.MAIN_BACK &&
                         connector.facing() == net.minecraft.core.Direction.SOUTH));
+    }
+
+    @Test
+    void familyExtrusionDefaultsToTunnelOnlyButLegacyDataLoadsAsFullBody() {
+        MKTowerWorkspaceFamilyDefinition defaultFamily = MKTowerWorkspaceFamilyDefinition.createDefaults().getFirst();
+        assertEquals(MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, defaultFamily.horizontalExtrusionMode());
+
+        CompoundTag legacyTag = defaultFamily.toTag();
+        legacyTag.remove("horizontalExtrusionMode");
+        MKTowerWorkspaceFamilyDefinition decodedLegacy = MKTowerWorkspaceFamilyDefinition.fromTag(legacyTag);
+
+        assertEquals(MKWorkspaceHorizontalExtrusionMode.FULL_BODY, decodedLegacy.horizontalExtrusionMode());
     }
 
     @Test
@@ -453,6 +466,8 @@ class TowerWorkspaceV2Test {
         assertEquals(workspace.verticalAccessSpec().shaftSize(), decoded.verticalAccessSpec().shaftSize());
         assertEquals(workspace.floorSettings().mainFloors(), decoded.floorSettings().mainFloors());
         assertEquals(workspace.floorSettings().basementFloors(), decoded.floorSettings().basementFloors());
+        assertEquals(workspace.familyDefinitions().get(0).horizontalExtrusionMode(),
+                decoded.familyDefinitions().get(0).horizontalExtrusionMode());
         assertEquals(workspace.familyDefinitions().get(0).horizontalExits(),
                 decoded.familyDefinitions().get(0).horizontalExits());
         assertEquals(workspace.pieces().get(0).pieceId(), decoded.pieces().get(0).pieceId());

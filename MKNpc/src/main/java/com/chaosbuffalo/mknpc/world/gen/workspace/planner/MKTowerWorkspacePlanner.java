@@ -328,6 +328,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         tags.put("workspace_family_id", family.baseName());
         tags.put("workspace_branch_exit_mask", family.legacyBranchExitMask().getSerializedName());
         tags.put("workspace_horizontal_exits", family.horizontalExitSummary());
+        tags.put("workspace_horizontal_extrusion_mode", family.horizontalExtrusionMode().getSerializedName());
         tags.put("workspace_category", family.category().getSerializedName());
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, Boolean.toString(family.supportsVerticalAccess()));
         if (family.supportsVerticalAccess()) {
