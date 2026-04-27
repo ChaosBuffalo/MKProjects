@@ -22,6 +22,7 @@ public class MKBranchExitMaskWidget extends MKWidget {
     private static final int ROOM_FILL = 0xFF2A3440;
     private static final int ACTIVE_EXIT = 0xFF9CA3AF;
     private static final int INACTIVE_EXIT = 0xFF4B5563;
+    private static final int SELECTED_MAIN_ENTRY = 0xFFF59E0B;
     private static final int SELECTED_MAIN_EXIT = 0xFF60A5FA;
     private static final int SELECTED_BRANCH_EXIT = 0xFF74C69D;
     private static final int LABEL_ACTIVE = 0xFFF8FAFC;
@@ -35,7 +36,7 @@ public class MKBranchExitMaskWidget extends MKWidget {
     public MKBranchExitMaskWidget(List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits) {
         super(0, 0, WIDGET_SIZE, WIDGET_SIZE);
         this.horizontalExits = List.copyOf(horizontalExits);
-        setTooltip(Component.literal("Left click an active exit to edit it. Right click to toggle exits on or off."));
+        setTooltip(Component.literal("Left click an active exit to edit its role. Right click to toggle exits on or off."));
     }
 
     public MKBranchExitMaskWidget setEditCallback(Consumer<Direction> editCallback) {
@@ -137,7 +138,8 @@ public class MKBranchExitMaskWidget extends MKWidget {
         ExitKind kind = exitKind(direction);
         if (selectedDirection == direction) {
             return switch (kind) {
-                case MAIN -> SELECTED_MAIN_EXIT;
+                case MAIN_ENTRY -> SELECTED_MAIN_ENTRY;
+                case MAIN_EXIT -> SELECTED_MAIN_EXIT;
                 case BRANCH -> SELECTED_BRANCH_EXIT;
                 case NONE -> INACTIVE_EXIT;
             };
@@ -149,7 +151,8 @@ public class MKBranchExitMaskWidget extends MKWidget {
         ExitKind exitKind = exitKind(direction);
         int color = exitKind == ExitKind.NONE ? LABEL_INACTIVE : LABEL_ACTIVE;
         String label = switch (exitKind) {
-            case MAIN -> direction.getName().substring(0, 1).toUpperCase() + "M";
+            case MAIN_ENTRY -> direction.getName().substring(0, 1).toUpperCase() + "I";
+            case MAIN_EXIT -> direction.getName().substring(0, 1).toUpperCase() + "O";
             case BRANCH -> direction.getName().substring(0, 1).toUpperCase() + "B";
             case NONE -> direction.getName().substring(0, 1).toUpperCase();
         };
@@ -160,7 +163,11 @@ public class MKBranchExitMaskWidget extends MKWidget {
         return horizontalExits.stream()
                 .filter(exit -> exit.direction() == direction)
                 .findFirst()
-                .map(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN ? ExitKind.MAIN : ExitKind.BRANCH)
+                .map(exit -> switch (exit.pathKind()) {
+                    case MAIN_ENTRY -> ExitKind.MAIN_ENTRY;
+                    case MAIN_EXIT -> ExitKind.MAIN_EXIT;
+                    case BRANCH -> ExitKind.BRANCH;
+                })
                 .orElse(ExitKind.NONE);
     }
 
@@ -193,7 +200,8 @@ public class MKBranchExitMaskWidget extends MKWidget {
 
     private enum ExitKind {
         NONE,
-        MAIN,
+        MAIN_ENTRY,
+        MAIN_EXIT,
         BRANCH
     }
 }

@@ -81,7 +81,7 @@ public class MKTowerWorkspaceFamilyDefinition {
                         MKWorkspacePieceRole.ENTRY, true,
                         entry.roomWidth(), entry.roomLength(), entry.fullHeight(),
                         List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
-                                MKWorkspaceHorizontalExitPathKind.MAIN, "main_opening"))),
+                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "main_opening"))),
                 new MKTowerWorkspaceFamilyDefinition("floor_main", MKTowerWorkspaceCategory.MAIN,
                         MKWorkspacePieceRole.FLOOR_MAIN, true,
                         main.roomWidth(), main.roomLength(), main.fullHeight(), List.of()),
@@ -145,11 +145,17 @@ public class MKTowerWorkspaceFamilyDefinition {
             errors.add("family " + baseName + " non-shaft room height must be within category range " +
                     MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT + "-" + categoryProfile.fullHeight());
         }
+        long mainEntryCount = horizontalExits.stream()
+                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY)
+                .count();
+        if (mainEntryCount > 1) {
+            errors.add("family " + baseName + " can only define one main entry horizontal exit");
+        }
         long mainExitCount = horizontalExits.stream()
-                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN)
+                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)
                 .count();
         if (mainExitCount > 1) {
-            errors.add("family " + baseName + " can only define one main horizontal exit");
+            errors.add("family " + baseName + " can only define one main exit horizontal exit");
         }
         Set<Direction> reserved = reservedHorizontalDirections(pieceRole);
         Set<Direction> seenDirections = new LinkedHashSet<>();
@@ -162,7 +168,7 @@ public class MKTowerWorkspaceFamilyDefinition {
                         exit.direction().getSerializedName());
             }
             if (reserved.contains(exit.direction())) {
-                errors.add("family " + baseName + " cannot place a branch exit on reserved direction " +
+                errors.add("family " + baseName + " cannot place a horizontal exit on reserved direction " +
                         exit.direction().getSerializedName() + " for role " + pieceRole.getSerializedName());
             }
             if (exit.openingProfileId().isBlank()) {
@@ -240,9 +246,15 @@ public class MKTowerWorkspaceFamilyDefinition {
         return horizontalExits;
     }
 
+    public Optional<MKWorkspaceFamilyHorizontalExitDefinition> mainEntry() {
+        return horizontalExits.stream()
+                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY)
+                .findFirst();
+    }
+
     public Optional<MKWorkspaceFamilyHorizontalExitDefinition> mainExit() {
         return horizontalExits.stream()
-                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN)
+                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)
                 .findFirst();
     }
 
@@ -292,7 +304,7 @@ public class MKTowerWorkspaceFamilyDefinition {
         ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new ArrayList<>();
         if (pieceRole == MKWorkspacePieceRole.ENTRY) {
             exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
-                    MKWorkspaceHorizontalExitPathKind.MAIN, "main_opening"));
+                    MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "main_opening"));
         }
         for (Direction direction : branchExitMask.directions()) {
             exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(direction,

@@ -289,9 +289,9 @@ public class MKStructureWorkspace {
                             exit.openingProfileId());
                     continue;
                 }
-                if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN && !openingProfile.allowOnMainPath()) {
+                if (exit.pathKind().usesMainPath() && !openingProfile.allowOnMainPath()) {
                     errors.add("family " + familyDefinition.baseName() + " cannot use opening profile " +
-                            exit.openingProfileId() + " for a main exit because it is not main-path compatible");
+                            exit.openingProfileId() + " for a main-path exit because it is not main-path compatible");
                 }
                 if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH && !openingProfile.allowOnBranchPath()) {
                     errors.add("family " + familyDefinition.baseName() + " cannot use opening profile " +

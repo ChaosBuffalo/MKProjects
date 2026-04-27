@@ -2066,14 +2066,14 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private int deriveLegacyDoorwayWidth() {
         return getDraftOpeningProfile("main_opening")
-                .or(() -> firstCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind.MAIN))
+                .or(() -> firstCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind.MAIN_EXIT))
                 .map(MKHorizontalOpeningProfile::openingWidth)
                 .orElse(workspace != null ? workspace.dimensions().doorwayWidth() : 3);
     }
 
     private int deriveLegacyDoorwayHeight() {
         return getDraftOpeningProfile("main_opening")
-                .or(() -> firstCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind.MAIN))
+                .or(() -> firstCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind.MAIN_EXIT))
                 .map(MKHorizontalOpeningProfile::openingHeight)
                 .orElse(workspace != null ? workspace.dimensions().doorwayHeight() : 3);
     }
@@ -2172,11 +2172,11 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     private List<MKWorkspaceFamilyHorizontalExitDefinition> defaultHorizontalExitsForNewFamily() {
-        String openingProfileId = firstCompatibleOpeningProfileId(MKWorkspaceHorizontalExitPathKind.MAIN)
+        String openingProfileId = firstCompatibleOpeningProfileId(MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)
                 .orElseGet(() -> formDraft.openingProfiles.isEmpty() ? "opening_1" : formDraft.openingProfiles.getFirst().profileId());
         return List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
                 Direction.SOUTH,
-                MKWorkspaceHorizontalExitPathKind.MAIN,
+                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
                 openingProfileId
         ));
     }
@@ -2185,13 +2185,13 @@ public class MKWorkspaceScreen extends MKScreen {
         MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(familyIndex);
         java.util.ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
         exits.set(exitIndex, updatedExit);
-        if (updatedExit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN) {
+        if (updatedExit.pathKind() != MKWorkspaceHorizontalExitPathKind.BRANCH) {
             for (int i = 0; i < exits.size(); i++) {
                 if (i == exitIndex) {
                     continue;
                 }
                 MKWorkspaceFamilyHorizontalExitDefinition existingExit = exits.get(i);
-                if (existingExit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN) {
+                if (existingExit.pathKind() == updatedExit.pathKind()) {
                     exits.set(i, new MKWorkspaceFamilyHorizontalExitDefinition(
                             existingExit.direction(),
                             MKWorkspaceHorizontalExitPathKind.BRANCH,
@@ -2220,8 +2220,10 @@ public class MKWorkspaceScreen extends MKScreen {
     private int addFamilyExitAtDirection(int familyIndex, Direction direction) {
         MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(familyIndex);
         java.util.ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
-        MKWorkspaceHorizontalExitPathKind pathKind = family.mainExit().isPresent() ?
-                MKWorkspaceHorizontalExitPathKind.BRANCH : MKWorkspaceHorizontalExitPathKind.MAIN;
+        MKWorkspaceHorizontalExitPathKind pathKind = !family.mainExit().isPresent() ?
+                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT :
+                !family.mainEntry().isPresent() ? MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY :
+                        MKWorkspaceHorizontalExitPathKind.BRANCH;
         exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(
                 direction,
                 pathKind,
@@ -2374,7 +2376,7 @@ public class MKWorkspaceScreen extends MKScreen {
             return true;
         });
         addRow(content, makeWhiteText(Component.literal("Direction")), directionButton);
-        addRow(content, makeWhiteText(Component.literal("Path Kind")), pathKindButton);
+        addRow(content, makeWhiteText(Component.literal("Exit Role")), pathKindButton);
         addRow(content, makeWhiteText(Component.literal("Opening Profile")), openingProfileButton);
     }
 
@@ -2621,7 +2623,7 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private java.util.Optional<MKHorizontalOpeningProfile> firstCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind pathKind) {
         return formDraft.openingProfiles.stream()
-                .filter(profile -> pathKind == MKWorkspaceHorizontalExitPathKind.MAIN ?
+                .filter(profile -> pathKind.usesMainPath() ?
                         profile.allowOnMainPath() : profile.allowOnBranchPath())
                 .findFirst();
     }
@@ -2650,7 +2652,7 @@ public class MKWorkspaceScreen extends MKScreen {
         return formDraft.openingProfiles.stream()
                 .filter(profile -> profile.profileId().equals(profileId))
                 .findFirst()
-                .map(profile -> pathKind == MKWorkspaceHorizontalExitPathKind.MAIN ?
+                .map(profile -> pathKind.usesMainPath() ?
                         profile.allowOnMainPath() : profile.allowOnBranchPath())
                 .orElse(false);
     }

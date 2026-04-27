@@ -272,10 +272,12 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
             ResolvedOpeningProfile opening = resolveOpeningProfile(workspace, exit.openingProfileId())
                     .orElseThrow(() -> new IllegalStateException("missing opening profile " + exit.openingProfileId() +
                             " for family " + family.baseName()));
-            HallwayPathKind hallwayPathKind = exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN ?
-                    HallwayPathKind.MAIN : HallwayPathKind.BRANCH;
-            MKConnectorRole role = exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN ?
-                    MKConnectorRole.MAIN_BACK : MKConnectorRole.BRANCH;
+            HallwayPathKind hallwayPathKind = exit.pathKind().usesMainPath() ? HallwayPathKind.MAIN : HallwayPathKind.BRANCH;
+            MKConnectorRole role = switch (exit.pathKind()) {
+                case MAIN_ENTRY -> MKConnectorRole.MAIN_FORWARD;
+                case MAIN_EXIT -> MKConnectorRole.MAIN_BACK;
+                case BRANCH -> MKConnectorRole.BRANCH;
+            };
             String hallwayPool = resolveHallwayPool(workspace, opening.profileId(), hallwayPathKind);
             connectors.add(new MKPlannedConnector(role, exit.direction(),
                     opening.openingWidth(), opening.openingHeight(), hallwayPool));

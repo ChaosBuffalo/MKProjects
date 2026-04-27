@@ -76,6 +76,73 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void plannerMapsMainEntryAndMainExitToDistinctConnectorRoles() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                ),
+                List.of()
+        );
+        MKTowerWorkspaceFamilyDefinition entryFamily = workspace.familyDefinitions().stream()
+                .filter(family -> family.baseName().equals("entry"))
+                .findFirst()
+                .orElseThrow();
+        MKTowerWorkspaceFamilyDefinition updatedEntry = new MKTowerWorkspaceFamilyDefinition(
+                entryFamily.baseName(),
+                entryFamily.category(),
+                entryFamily.pieceRole(),
+                entryFamily.supportsVerticalAccess(),
+                entryFamily.roomWidth(),
+                entryFamily.roomLength(),
+                entryFamily.roomHeight(),
+                List.of(
+                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                                MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY, "entry_main"),
+                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
+                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "entry_main")
+                )
+        );
+        workspace = new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
+                workspace.categoryProfiles(),
+                workspace.familyDefinitions().stream()
+                        .map(family -> family.baseName().equals("entry") ? updatedEntry : family)
+                        .toList(),
+                workspace.openingProfiles(),
+                workspace.hallwayFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces()
+        );
+
+        MKPlannedPiece entry = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.pieceName().equals("entry"))
+                .findFirst()
+                .orElseThrow();
+
+        assertTrue(entry.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.MAIN_FORWARD &&
+                        connector.facing() == net.minecraft.core.Direction.NORTH));
+        assertTrue(entry.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.MAIN_BACK &&
+                        connector.facing() == net.minecraft.core.Direction.SOUTH));
+    }
+
+    @Test
     void validationRejectsHallwayPathMismatchAndBandOverflow() {
         MKWorkspaceVerticalAccessSpec verticalAccessSpec = MKWorkspaceVerticalAccessSpec.defaultSpec();
         MKTowerWorkspaceCategoryProfile mainProfile = MKTowerWorkspaceCategoryProfile.createDefaults(
@@ -319,7 +386,7 @@ class TowerWorkspaceV2Test {
                         new MKTowerWorkspaceFamilyDefinition("entry", MKTowerWorkspaceCategory.ENTRY, MKWorkspacePieceRole.ENTRY, true,
                                 9, 9, dimensions.entranceHeight(),
                                 List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
-                                        MKWorkspaceHorizontalExitPathKind.MAIN, "entry_main"))),
+                                        MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "entry_main"))),
                         new MKTowerWorkspaceFamilyDefinition("floor_main", MKTowerWorkspaceCategory.MAIN, MKWorkspacePieceRole.FLOOR_MAIN, true,
                                 9, 9, dimensions.roomHeight(),
                                 List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
