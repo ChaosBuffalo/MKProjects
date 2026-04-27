@@ -294,7 +294,7 @@ public class MKTowerWorkspaceFamilyDefinition {
         }
         return horizontalExits.stream()
                 .map(exit -> exit.direction().getSerializedName() + ":" + exit.pathKind().getSerializedName() + ":" +
-                        exit.openingProfileId())
+                        exit.connectionMode().getSerializedName() + ":" + exit.openingProfileId())
                 .collect(java.util.stream.Collectors.joining("|"));
     }
 

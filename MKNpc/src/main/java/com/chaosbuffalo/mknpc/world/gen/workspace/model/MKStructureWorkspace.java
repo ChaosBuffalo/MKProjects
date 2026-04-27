@@ -297,6 +297,16 @@ public class MKStructureWorkspace {
                     errors.add("family " + familyDefinition.baseName() + " cannot use opening profile " +
                             exit.openingProfileId() + " for a branch exit because it is not branch-path compatible");
                 }
+                if (exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.HALLWAY) {
+                    boolean hasCompatibleHallway = hallwayFamilies.stream().anyMatch(hallway ->
+                            hallway.openingProfileId().equals(exit.openingProfileId()) &&
+                                    (exit.pathKind().usesMainPath() ? hallway.allowOnMainPath() : hallway.allowOnBranchPath()));
+                    if (!hasCompatibleHallway) {
+                        errors.add("family " + familyDefinition.baseName() + " uses hallway exit " +
+                                exit.direction().getSerializedName() + " with opening profile " + exit.openingProfileId() +
+                                " but no compatible hallway family exists");
+                    }
+                }
             }
         }
         for (MKHallwayFamilyDefinition hallwayFamily : hallwayFamilies) {

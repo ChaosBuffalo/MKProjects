@@ -9,6 +9,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
@@ -28,6 +29,7 @@ import java.util.Optional;
 public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     private static final String EMPTY_POOL = "minecraft:empty";
     private static final String HALLWAY_POOL_PREFIX = "hallways";
+    private static final String ROOM_POOL_PREFIX = "rooms";
     private static final String FLOOR_BLOCK_TAG = "workspace_palette_floor";
     private static final String WALL_BLOCK_TAG = "workspace_palette_wall";
     private static final String CEILING_BLOCK_TAG = "workspace_palette_ceiling";
@@ -271,9 +273,13 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                 case MAIN_EXIT -> MKConnectorRole.MAIN_BACK;
                 case BRANCH -> MKConnectorRole.BRANCH;
             };
-            String hallwayPool = resolveHallwayPool(workspace, opening.profileId(), hallwayPathKind);
+            String targetPool = exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM ?
+                    directRoomTargetPoolName(opening.profileId(), role) :
+                    resolveHallwayPool(workspace, opening.profileId(), hallwayPathKind);
+            String incomingPool = exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM ?
+                    directRoomIncomingPoolName(opening.profileId(), role) : null;
             connectors.add(new MKPlannedConnector(role, exit.direction(),
-                    opening.openingWidth(), opening.openingHeight(), hallwayPool));
+                    opening.openingWidth(), opening.openingHeight(), 0, 0, targetPool, incomingPool));
         }
         return List.copyOf(connectors);
     }
@@ -294,6 +300,23 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
 
     private String hallwayPoolName(String openingProfileId, HallwayPathKind pathKind) {
         return HALLWAY_POOL_PREFIX + "/" + pathKind.serializedName + "/" + openingProfileId;
+    }
+
+    private String directRoomTargetPoolName(String openingProfileId, MKConnectorRole role) {
+        return ROOM_POOL_PREFIX + "/" + directRoomTargetRoleName(role) + "/" + openingProfileId;
+    }
+
+    private String directRoomIncomingPoolName(String openingProfileId, MKConnectorRole role) {
+        return ROOM_POOL_PREFIX + "/" + role.getSerializedName() + "/" + openingProfileId;
+    }
+
+    private String directRoomTargetRoleName(MKConnectorRole role) {
+        return switch (role) {
+            case MAIN_FORWARD -> MKConnectorRole.MAIN_BACK.getSerializedName();
+            case MAIN_BACK -> MKConnectorRole.MAIN_FORWARD.getSerializedName();
+            case BRANCH -> MKConnectorRole.BRANCH.getSerializedName();
+            default -> throw new IllegalStateException("unsupported direct room connector role " + role);
+        };
     }
 
     private MKWorkspaceRuntimePieceInfo roomRuntimeInfo(boolean start, MKJigsawPieceRole role,

@@ -201,7 +201,9 @@ public class MKStructureWorkspaceImportService {
                                 .map(exit -> new MKWorkspaceFamilyHorizontalExitDefinition(
                                         Direction.byName(exit.direction()),
                                         exit.pathKind(),
-                                        exit.openingProfileId()
+                                        exit.openingProfileId(),
+                                        exit.connectionMode().orElse(
+                                                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode.HALLWAY)
                                 ))
                                 .toList()
                 ))

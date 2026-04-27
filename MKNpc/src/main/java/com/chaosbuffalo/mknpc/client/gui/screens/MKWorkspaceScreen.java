@@ -19,6 +19,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDe
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
@@ -2215,7 +2216,8 @@ public class MKWorkspaceScreen extends MKScreen {
                             existingExit.direction(),
                             MKWorkspaceHorizontalExitPathKind.BRANCH,
                             ensureCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind.BRANCH,
-                                    existingExit.openingProfileId())
+                                    existingExit.openingProfileId()),
+                            existingExit.connectionMode()
                     ));
                 }
             }
@@ -2368,7 +2370,8 @@ public class MKWorkspaceScreen extends MKScreen {
             replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
                     cycleCardinalDirection(exit.direction()),
                     exit.pathKind(),
-                    exit.openingProfileId()
+                    exit.openingProfileId(),
+                    exit.connectionMode()
             ));
             refreshPreservingActiveScroll();
             return true;
@@ -2379,7 +2382,19 @@ public class MKWorkspaceScreen extends MKScreen {
             replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
                     exit.direction(),
                     nextPathKind,
-                    ensureCompatibleOpeningProfile(nextPathKind, exit.openingProfileId())
+                    ensureCompatibleOpeningProfile(nextPathKind, exit.openingProfileId()),
+                    exit.connectionMode()
+            ));
+            refreshPreservingActiveScroll();
+            return true;
+        });
+        MKButton connectionModeButton = new MKButton(Component.literal(formatExitConnectionMode(exit.connectionMode())), 180, 20);
+        connectionModeButton.setPressedCallback((button, mouseButton) -> {
+            replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
+                    exit.direction(),
+                    exit.pathKind(),
+                    exit.openingProfileId(),
+                    exit.connectionMode().next()
             ));
             refreshPreservingActiveScroll();
             return true;
@@ -2389,13 +2404,15 @@ public class MKWorkspaceScreen extends MKScreen {
             replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
                     exit.direction(),
                     exit.pathKind(),
-                    nextOpeningProfileId(exit.pathKind(), exit.openingProfileId())
+                    nextOpeningProfileId(exit.pathKind(), exit.openingProfileId()),
+                    exit.connectionMode()
             ));
             refreshPreservingActiveScroll();
             return true;
         });
         addRow(content, makeWhiteText(Component.literal("Direction")), directionButton);
         addRow(content, makeWhiteText(Component.literal("Exit Role")), pathKindButton);
+        addRow(content, makeWhiteText(Component.literal("Connection")), connectionModeButton);
         addRow(content, makeWhiteText(Component.literal("Opening Profile")), openingProfileButton);
     }
 
@@ -2610,7 +2627,14 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private String describeFamilyExit(MKWorkspaceFamilyHorizontalExitDefinition exit) {
         return formatDirection(exit.direction()) + " / " + formatTopologyLabel(exit.pathKind().getSerializedName()) +
-                " / " + exit.openingProfileId();
+                " / " + formatExitConnectionMode(exit.connectionMode()) + " / " + exit.openingProfileId();
+    }
+
+    private String formatExitConnectionMode(MKWorkspaceHorizontalExitConnectionMode connectionMode) {
+        return switch (connectionMode) {
+            case HALLWAY -> "Hallway";
+            case DIRECT_ROOM -> "Direct Room";
+        };
     }
 
     private String formatFamilyExtrusionMode(MKWorkspaceHorizontalExtrusionMode mode) {

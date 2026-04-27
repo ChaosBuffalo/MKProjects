@@ -11,6 +11,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
@@ -150,6 +151,11 @@ public record MKWorkspaceExportManifest(
     private static Codec<MKWorkspaceHorizontalExtrusionMode> horizontalExtrusionModeCodec() {
         return Codec.STRING.xmap(MKWorkspaceHorizontalExtrusionMode::fromSerializedName,
                 MKWorkspaceHorizontalExtrusionMode::getSerializedName);
+    }
+
+    private static Codec<MKWorkspaceHorizontalExitConnectionMode> horizontalExitConnectionModeCodec() {
+        return Codec.STRING.xmap(MKWorkspaceHorizontalExitConnectionMode::fromSerializedName,
+                MKWorkspaceHorizontalExitConnectionMode::getSerializedName);
     }
 
     private static Codec<MKConnectorRole> connectorRoleCodec() {
@@ -389,21 +395,25 @@ public record MKWorkspaceExportManifest(
     public record ExportFamilyHorizontalExit(
             String direction,
             MKWorkspaceHorizontalExitPathKind pathKind,
-            String openingProfileId
+            String openingProfileId,
+            Optional<MKWorkspaceHorizontalExitConnectionMode> connectionMode
     ) {
         public static final Codec<ExportFamilyHorizontalExit> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("direction").forGetter(ExportFamilyHorizontalExit::direction),
                 Codec.STRING.xmap(MKWorkspaceHorizontalExitPathKind::fromSerializedName,
                         MKWorkspaceHorizontalExitPathKind::getSerializedName)
                         .fieldOf("path_kind").forGetter(ExportFamilyHorizontalExit::pathKind),
-                Codec.STRING.fieldOf("opening_profile_id").forGetter(ExportFamilyHorizontalExit::openingProfileId)
+                Codec.STRING.fieldOf("opening_profile_id").forGetter(ExportFamilyHorizontalExit::openingProfileId),
+                horizontalExitConnectionModeCodec().optionalFieldOf("connection_mode")
+                        .forGetter(ExportFamilyHorizontalExit::connectionMode)
         ).apply(instance, ExportFamilyHorizontalExit::new));
 
         public static ExportFamilyHorizontalExit from(MKWorkspaceFamilyHorizontalExitDefinition exit) {
             return new ExportFamilyHorizontalExit(
                     exit.direction().getSerializedName(),
                     exit.pathKind(),
-                    exit.openingProfileId()
+                    exit.openingProfileId(),
+                    Optional.of(exit.connectionMode())
             );
         }
     }
@@ -823,7 +833,7 @@ public record MKWorkspaceExportManifest(
         String prefix = workspace.structureName() + "/";
         String path = poolId.getNamespace().equals(workspace.namespace()) && poolId.getPath().startsWith(prefix) ?
                 poolId.getPath().substring(prefix.length()) : poolId.getPath();
-        return path.startsWith("hallways/branch/");
+        return path.startsWith("hallways/branch/") || path.startsWith("rooms/branch/");
     }
 }
 

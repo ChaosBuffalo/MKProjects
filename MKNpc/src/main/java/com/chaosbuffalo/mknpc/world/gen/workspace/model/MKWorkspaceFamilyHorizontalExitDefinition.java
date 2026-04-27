@@ -8,14 +8,24 @@ import net.minecraft.nbt.CompoundTag;
 public record MKWorkspaceFamilyHorizontalExitDefinition(
         Direction direction,
         MKWorkspaceHorizontalExitPathKind pathKind,
-        String openingProfileId
+        String openingProfileId,
+        MKWorkspaceHorizontalExitConnectionMode connectionMode
 ) {
     public static final Codec<MKWorkspaceFamilyHorizontalExitDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             MKWorkspaceCodecs.DIRECTION_CODEC.fieldOf("direction").forGetter(MKWorkspaceFamilyHorizontalExitDefinition::direction),
             MKWorkspaceCodecs.HORIZONTAL_EXIT_PATH_KIND_CODEC.fieldOf("pathKind")
                     .forGetter(MKWorkspaceFamilyHorizontalExitDefinition::pathKind),
-            Codec.STRING.fieldOf("openingProfileId").forGetter(MKWorkspaceFamilyHorizontalExitDefinition::openingProfileId)
+            Codec.STRING.fieldOf("openingProfileId").forGetter(MKWorkspaceFamilyHorizontalExitDefinition::openingProfileId),
+            MKWorkspaceCodecs.HORIZONTAL_EXIT_CONNECTION_MODE_CODEC.optionalFieldOf("connectionMode",
+                            MKWorkspaceHorizontalExitConnectionMode.HALLWAY)
+                    .forGetter(MKWorkspaceFamilyHorizontalExitDefinition::connectionMode)
     ).apply(instance, MKWorkspaceFamilyHorizontalExitDefinition::new));
+
+    public MKWorkspaceFamilyHorizontalExitDefinition(Direction direction,
+                                                     MKWorkspaceHorizontalExitPathKind pathKind,
+                                                     String openingProfileId) {
+        this(direction, pathKind, openingProfileId, MKWorkspaceHorizontalExitConnectionMode.HALLWAY);
+    }
 
     public static MKWorkspaceFamilyHorizontalExitDefinition fromTag(CompoundTag tag) {
         return MKWorkspaceCodecs.parseNbt(CODEC, tag, "workspace family horizontal exit definition");

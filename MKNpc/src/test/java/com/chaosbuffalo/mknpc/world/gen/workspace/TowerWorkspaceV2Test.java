@@ -13,6 +13,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSet
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
@@ -155,6 +156,105 @@ class TowerWorkspaceV2Test {
         MKTowerWorkspaceFamilyDefinition decodedLegacy = MKTowerWorkspaceFamilyDefinition.fromTag(legacyTag);
 
         assertEquals(MKWorkspaceHorizontalExtrusionMode.FULL_BODY, decodedLegacy.horizontalExtrusionMode());
+    }
+
+    @Test
+    void plannerAndExportSupportDirectRoomExitPools() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                ),
+                List.of()
+        );
+        List<MKTowerWorkspaceFamilyDefinition> updatedFamilies = workspace.familyDefinitions().stream()
+                .map(family -> {
+                    if (family.baseName().equals("entry")) {
+                        return new MKTowerWorkspaceFamilyDefinition(
+                                family.baseName(),
+                                family.category(),
+                                family.pieceRole(),
+                                family.supportsVerticalAccess(),
+                                family.roomWidth(),
+                                family.roomLength(),
+                                family.roomHeight(),
+                                family.horizontalExtrusionMode(),
+                                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
+                                        net.minecraft.core.Direction.SOUTH,
+                                        MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                                        "entry_main",
+                                        MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM
+                                ))
+                        );
+                    }
+                    if (family.baseName().equals("floor_main")) {
+                        return new MKTowerWorkspaceFamilyDefinition(
+                                family.baseName(),
+                                family.category(),
+                                family.pieceRole(),
+                                family.supportsVerticalAccess(),
+                                family.roomWidth(),
+                                family.roomLength(),
+                                family.roomHeight(),
+                                family.horizontalExtrusionMode(),
+                                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
+                                        net.minecraft.core.Direction.NORTH,
+                                        MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY,
+                                        "entry_main",
+                                        MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM
+                                ))
+                        );
+                    }
+                    return family;
+                })
+                .toList();
+        workspace = new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
+                workspace.categoryProfiles(),
+                updatedFamilies,
+                workspace.openingProfiles(),
+                workspace.hallwayFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces()
+        );
+
+        List<MKPlannedPiece> pieces = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace);
+        MKPlannedPiece entry = pieces.stream().filter(piece -> piece.pieceName().equals("entry")).findFirst().orElseThrow();
+        MKPlannedPiece floorMain = pieces.stream().filter(piece -> piece.pieceName().equals("floor_main")).findFirst().orElseThrow();
+
+        assertTrue(entry.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.MAIN_BACK &&
+                        "rooms/main_forward/entry_main".equals(connector.targetPoolName())));
+        assertTrue(floorMain.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.MAIN_FORWARD &&
+                        "rooms/main_forward/entry_main".equals(connector.incomingPoolName())));
+
+        MKStructureWorkspace directWorkspace = workspace;
+        List<MKWorkspacePieceDefinition> exportedPieces = pieces.stream()
+                .map(piece -> pieceToDefinitionWithConnectors(directWorkspace, piece))
+                .toList();
+        MKStructureWorkspace exportedWorkspace = directWorkspace.withPieces(exportedPieces);
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(exportedWorkspace, 4, "test");
+        MKWorkspaceExportManifest.ExportRuntimePool directPool = manifest.runtimeHints().pools().stream()
+                .filter(pool -> pool.poolId().equals(ResourceLocation.parse("mkdev:planner_test/rooms/main_forward/entry_main")))
+                .findFirst()
+                .orElseThrow();
+
+        assertTrue(directPool.childBaseNames().contains("floor_main"));
     }
 
     @Test
@@ -576,6 +676,53 @@ class TowerWorkspaceV2Test {
                 List.of(),
                 tags
         );
+    }
+
+    private static MKWorkspacePieceDefinition pieceToDefinitionWithConnectors(MKStructureWorkspace workspace,
+                                                                              MKPlannedPiece plannedPiece) {
+        List<MKWorkspaceConnectorDefinition> connectors = plannedPiece.connectors().stream()
+                .map(connector -> new MKWorkspaceConnectorDefinition(
+                        connector.role(),
+                        connector.facing(),
+                        BlockPos.ZERO,
+                        connector.openingWidth(),
+                        connector.openingHeight(),
+                        connector.lateralOffset(),
+                        connector.verticalOffset(),
+                        ResourceLocation.fromNamespaceAndPath(workspace.namespace(), connector.role().getSerializedName()),
+                        ResourceLocation.fromNamespaceAndPath(workspace.namespace(), "target"),
+                        parseWorkspacePool(workspace, connector.targetPoolName()),
+                        parseWorkspacePool(workspace, connector.incomingPoolName())
+                ))
+                .toList();
+        return new MKWorkspacePieceDefinition(
+                UUID.randomUUID(),
+                workspace.id(),
+                plannedPiece.pieceName(),
+                plannedPiece.role(),
+                0,
+                MKWorkspaceDimensions.defaultDimensions(),
+                1,
+                connectors,
+                BlockPos.ZERO,
+                new BoundingBox(0, 0, 0, 1, 1, 1),
+                new BoundingBox(0, 0, 0, 1, 1, 1),
+                BlockPos.ZERO,
+                BlockPos.ZERO,
+                List.of(),
+                List.of(),
+                plannedPiece.tags()
+        );
+    }
+
+    private static ResourceLocation parseWorkspacePool(MKStructureWorkspace workspace, String poolName) {
+        if (poolName == null || poolName.isBlank()) {
+            return ResourceLocation.parse("minecraft:empty");
+        }
+        if (poolName.contains(":")) {
+            return ResourceLocation.parse(poolName);
+        }
+        return ResourceLocation.parse(workspace.namespace() + ":" + workspace.structureName() + "/" + poolName);
     }
 }
 
