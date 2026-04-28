@@ -43,16 +43,37 @@ public class MKDungeonLayoutController {
             return Optional.of("min_floor_budget");
         }
         if (connector.role() == MKConnectorRole.CONNECT_UP) {
-            if (nextFloor == parentState.targetFloors() - 1 && childMetadata.pieceRole() != MKJigsawPieceRole.TOP_CAP_APPROACH) {
-                return Optional.of("final_upward_step_requires_top_cap_approach");
+            if (nextFloor == parentState.targetFloors() - 1) {
+                if (settings.topCapApproachEnabled() &&
+                        childMetadata.pieceRole() != MKJigsawPieceRole.TOP_CAP_APPROACH) {
+                    return Optional.of("final_upward_step_requires_top_cap_approach");
+                }
+                if (!settings.topCapApproachEnabled()) {
+                    if (childMetadata.pieceRole() == MKJigsawPieceRole.TOP_CAP_APPROACH) {
+                        return Optional.of("top_cap_approach_disabled");
+                    }
+                    if (!childMetadata.terminal()) {
+                        return Optional.of("final_upward_step_requires_terminal");
+                    }
+                }
             }
             if (nextFloor < parentState.targetFloors() - 1 && childMetadata.pieceRole() == MKJigsawPieceRole.TOP_CAP_APPROACH) {
                 return Optional.of("top_cap_approach_early");
             }
         }
         if (connector.role() == MKConnectorRole.CONNECT_DOWN) {
-            if (nextFloor == parentState.targetFloors() - 1 && !childMetadata.terminal()) {
-                return Optional.of("final_downward_step_requires_terminal");
+            if (nextFloor == parentState.targetFloors() - 1) {
+                if (settings.basementCapApproachEnabled() &&
+                        childMetadata.pieceRole() != MKJigsawPieceRole.BASEMENT_CAP_APPROACH) {
+                    return Optional.of("final_downward_step_requires_basement_cap_approach");
+                }
+                if (!settings.basementCapApproachEnabled() && !childMetadata.terminal()) {
+                    return Optional.of("final_downward_step_requires_terminal");
+                }
+            }
+            if (nextFloor < parentState.targetFloors() - 1 &&
+                    childMetadata.pieceRole() == MKJigsawPieceRole.BASEMENT_CAP_APPROACH) {
+                return Optional.of("basement_cap_approach_early");
             }
             if (nextFloor < parentState.targetFloors() - 1 && childMetadata.terminal()) {
                 return Optional.of("downward_terminal_early");

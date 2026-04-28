@@ -184,7 +184,8 @@ public class MKStructureWorkspaceImportService {
             categoryProfiles = MKTowerWorkspaceCategoryProfile.createDefaults(workspaceDimensions);
         }
         MKTowerWorkspaceFloorSettings floorSettings = settings.floorSettings()
-                .map(floor -> new MKTowerWorkspaceFloorSettings(floor.mainFloors(), floor.basementFloors()))
+                .map(floor -> new MKTowerWorkspaceFloorSettings(floor.mainFloors(), floor.basementFloors(),
+                        floor.topCapApproachEnabled(), floor.basementCapApproachEnabled()))
                 .orElseGet(MKTowerWorkspaceFloorSettings::defaultSettings);
         List<MKTowerWorkspaceFamilyDefinition> familyDefinitions = settings.familyDefinitions().stream()
                 .map(family -> new MKTowerWorkspaceFamilyDefinition(
@@ -203,7 +204,9 @@ public class MKStructureWorkspaceImportService {
                                         exit.pathKind(),
                                         exit.openingProfileId(),
                                         exit.connectionMode().orElse(
-                                                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode.HALLWAY)
+                                                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode.HALLWAY),
+                                        exit.sideOffset(),
+                                        exit.verticalOffset()
                                 ))
                                 .toList()
                 ))

@@ -293,15 +293,22 @@ public record MKWorkspaceExportManifest(
 
     public record ExportFloorSettings(
             int mainFloors,
-            int basementFloors
+            int basementFloors,
+            boolean topCapApproachEnabled,
+            boolean basementCapApproachEnabled
     ) {
         public static final Codec<ExportFloorSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.INT.fieldOf("main_floors").forGetter(ExportFloorSettings::mainFloors),
-                Codec.INT.fieldOf("basement_floors").forGetter(ExportFloorSettings::basementFloors)
+                Codec.INT.fieldOf("basement_floors").forGetter(ExportFloorSettings::basementFloors),
+                Codec.BOOL.optionalFieldOf("top_cap_approach_enabled", true)
+                        .forGetter(ExportFloorSettings::topCapApproachEnabled),
+                Codec.BOOL.optionalFieldOf("basement_cap_approach_enabled", false)
+                        .forGetter(ExportFloorSettings::basementCapApproachEnabled)
         ).apply(instance, ExportFloorSettings::new));
 
         public static ExportFloorSettings from(MKTowerWorkspaceFloorSettings settings) {
-            return new ExportFloorSettings(settings.mainFloors(), settings.basementFloors());
+            return new ExportFloorSettings(settings.mainFloors(), settings.basementFloors(),
+                    settings.topCapApproachEnabled(), settings.basementCapApproachEnabled());
         }
     }
 
@@ -396,7 +403,9 @@ public record MKWorkspaceExportManifest(
             String direction,
             MKWorkspaceHorizontalExitPathKind pathKind,
             String openingProfileId,
-            Optional<MKWorkspaceHorizontalExitConnectionMode> connectionMode
+            Optional<MKWorkspaceHorizontalExitConnectionMode> connectionMode,
+            int sideOffset,
+            int verticalOffset
     ) {
         public static final Codec<ExportFamilyHorizontalExit> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("direction").forGetter(ExportFamilyHorizontalExit::direction),
@@ -405,7 +414,9 @@ public record MKWorkspaceExportManifest(
                         .fieldOf("path_kind").forGetter(ExportFamilyHorizontalExit::pathKind),
                 Codec.STRING.fieldOf("opening_profile_id").forGetter(ExportFamilyHorizontalExit::openingProfileId),
                 horizontalExitConnectionModeCodec().optionalFieldOf("connection_mode")
-                        .forGetter(ExportFamilyHorizontalExit::connectionMode)
+                        .forGetter(ExportFamilyHorizontalExit::connectionMode),
+                Codec.INT.optionalFieldOf("side_offset", 0).forGetter(ExportFamilyHorizontalExit::sideOffset),
+                Codec.INT.optionalFieldOf("vertical_offset", 0).forGetter(ExportFamilyHorizontalExit::verticalOffset)
         ).apply(instance, ExportFamilyHorizontalExit::new));
 
         public static ExportFamilyHorizontalExit from(MKWorkspaceFamilyHorizontalExitDefinition exit) {
@@ -413,7 +424,9 @@ public record MKWorkspaceExportManifest(
                     exit.direction().getSerializedName(),
                     exit.pathKind(),
                     exit.openingProfileId(),
-                    Optional.of(exit.connectionMode())
+                    Optional.of(exit.connectionMode()),
+                    exit.sideOffset(),
+                    exit.verticalOffset()
             );
         }
     }

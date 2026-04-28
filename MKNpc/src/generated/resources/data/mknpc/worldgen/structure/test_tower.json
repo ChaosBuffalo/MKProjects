@@ -3,13 +3,13 @@
   "biomes": "#mknpc:has_test_tower",
   "dungeon_layout": {
     "connectors": {
-      "boss_back": "mknpc:boss_back",
-      "boss_forward": "mknpc:boss_forward",
       "branch": "mknpc:branch",
       "connect_down": "mknpc:connect_down",
       "connect_up": "mknpc:connect_up",
       "main_back": "mknpc:main_back",
-      "main_forward": "mknpc:main_forward"
+      "main_forward": "mknpc:main_forward",
+      "top_cap_back": "mknpc:boss_back",
+      "top_cap_forward": "mknpc:boss_forward"
     },
     "max_branch_depth": 0,
     "max_floors": 3,

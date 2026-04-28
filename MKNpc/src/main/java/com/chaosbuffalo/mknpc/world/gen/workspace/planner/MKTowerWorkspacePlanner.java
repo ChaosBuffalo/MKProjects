@@ -51,10 +51,19 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     @Override
     public List<MKPlannedPiece> createCanonicalPieces(MKStructureWorkspace workspace) {
         ArrayList<MKPlannedPiece> pieces = workspace.familyDefinitions().stream()
+                .filter(family -> shouldCreateFamily(workspace, family))
                 .map(family -> createPieceForFamily(workspace, family))
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         pieces.addAll(createHallwayPieces(workspace));
         return List.copyOf(pieces);
+    }
+
+    private boolean shouldCreateFamily(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family) {
+        return switch (family.pieceRole()) {
+            case TOP_CAP_APPROACH -> workspace.floorSettings().topCapApproachEnabled();
+            case BASEMENT_CAP_APPROACH -> workspace.floorSettings().basementCapApproachEnabled();
+            default -> true;
+        };
     }
 
     private MKTowerWorkspaceCategoryProfile fallbackProfile(MKTowerWorkspaceCategory category,
@@ -134,13 +143,12 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                     family.roomHeight(),
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
-                                    List.of(new MKPlannedConnector(MKConnectorRole.TOP_CAP_BACK, Direction.DOWN, hallWidth, hallWidth,
-                                            EMPTY_POOL, "top_cap")) : List.of(),
+                                    topCapConnectors(workspace, hallWidth) : List.of(),
                             family,
                             workspace
                     ),
                     buildRoomTags("top_cap", family, stairPlacement, "up", true, false,
-                            roomRuntimeInfo(false, MKJigsawPieceRole.TOP_CAP, 0, 0, true, true, family))
+                            topCapRuntimeInfo(workspace, family))
             );
             case BASEMENT_ENTRY -> new MKPlannedPiece(
                     family.pieceRole(),
@@ -180,6 +188,25 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                     buildRoomTags("basement_main", family, stairPlacement, "down",
                             roomRuntimeInfo(false, MKJigsawPieceRole.ROOM, 1, -1, false, false, family))
             );
+            case BASEMENT_CAP_APPROACH -> new MKPlannedPiece(
+                    family.pieceRole(),
+                    family.baseName(),
+                    family.roomWidth(),
+                    family.roomLength(),
+                    family.roomHeight(),
+                    connectorsWithHorizontalExits(
+                            family.supportsVerticalAccess() ?
+                                    List.of(
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
+                                                    EMPTY_POOL, "connect_down"),
+                                            new MKPlannedConnector(MKConnectorRole.TOP_CAP_FORWARD, Direction.DOWN, hallWidth, hallWidth, "bottom_cap")
+                                    ) : List.of(),
+                            family,
+                            workspace
+                    ),
+                    buildRoomTags("basement_cap_approach", family, stairPlacement, "down",
+                            roomRuntimeInfo(false, MKJigsawPieceRole.BASEMENT_CAP_APPROACH, 1, -1, false, true, family))
+            );
             case BASEMENT_CAP -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
@@ -188,16 +215,49 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                     family.roomHeight(),
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
-                                    List.of(new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
-                                            EMPTY_POOL, "connect_down")) : List.of(),
+                                    basementCapConnectors(workspace, hallWidth) : List.of(),
                             family,
                             workspace
                     ),
                     buildRoomTags("basement_cap", family, stairPlacement, "down", false, true,
-                            roomRuntimeInfo(false, MKJigsawPieceRole.TERMINAL, 1, -1, true, false, family))
+                            basementCapRuntimeInfo(workspace, family))
             );
             case HALLWAY -> throw new IllegalStateException("tower families do not directly create hallway pieces");
         };
+    }
+
+    private List<MKPlannedConnector> topCapConnectors(MKStructureWorkspace workspace, int hallWidth) {
+        if (workspace.floorSettings().topCapApproachEnabled()) {
+            return List.of(new MKPlannedConnector(MKConnectorRole.TOP_CAP_BACK, Direction.DOWN, hallWidth, hallWidth,
+                    EMPTY_POOL, "top_cap"));
+        }
+        return List.of(new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
+                EMPTY_POOL, "connect_up"));
+    }
+
+    private MKWorkspaceRuntimePieceInfo topCapRuntimeInfo(MKStructureWorkspace workspace,
+                                                          MKTowerWorkspaceFamilyDefinition family) {
+        if (workspace.floorSettings().topCapApproachEnabled()) {
+            return roomRuntimeInfo(false, MKJigsawPieceRole.TOP_CAP, 0, 0, true, true, family);
+        }
+        return roomRuntimeInfo(false, MKJigsawPieceRole.TOP_CAP, 1, 1, true, true, family);
+    }
+
+    private List<MKPlannedConnector> basementCapConnectors(MKStructureWorkspace workspace, int hallWidth) {
+        if (workspace.floorSettings().basementCapApproachEnabled()) {
+            return List.of(new MKPlannedConnector(MKConnectorRole.TOP_CAP_BACK, Direction.UP, hallWidth, hallWidth,
+                    EMPTY_POOL, "bottom_cap"));
+        }
+        return List.of(new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
+                EMPTY_POOL, "connect_down"));
+    }
+
+    private MKWorkspaceRuntimePieceInfo basementCapRuntimeInfo(MKStructureWorkspace workspace,
+                                                               MKTowerWorkspaceFamilyDefinition family) {
+        if (workspace.floorSettings().basementCapApproachEnabled()) {
+            return roomRuntimeInfo(false, MKJigsawPieceRole.TERMINAL, 0, 0, true, true, family);
+        }
+        return roomRuntimeInfo(false, MKJigsawPieceRole.TERMINAL, 1, -1, true, false, family);
     }
 
     private List<MKPlannedPiece> createHallwayPieces(MKStructureWorkspace workspace) {
@@ -273,15 +333,30 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                 case MAIN_EXIT -> MKConnectorRole.MAIN_BACK;
                 case BRANCH -> MKConnectorRole.BRANCH;
             };
+            int lateralOffset = toLateralOffset(exit.direction(), exit.sideOffset());
+            if (exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION) {
+                connectors.add(MKPlannedConnector.openingOnly(role, exit.direction(),
+                        opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset()));
+                continue;
+            }
             String targetPool = exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM ?
                     directRoomTargetPoolName(opening.profileId(), role) :
                     resolveHallwayPool(workspace, opening.profileId(), hallwayPathKind);
             String incomingPool = exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM ?
                     directRoomIncomingPoolName(opening.profileId(), role) : null;
             connectors.add(new MKPlannedConnector(role, exit.direction(),
-                    opening.openingWidth(), opening.openingHeight(), 0, 0, targetPool, incomingPool));
+                    opening.openingWidth(), opening.openingHeight(), lateralOffset,
+                    exit.verticalOffset(), targetPool, incomingPool));
         }
         return List.copyOf(connectors);
+    }
+
+    private int toLateralOffset(Direction direction, int sideOffset) {
+        return switch (direction) {
+            case NORTH, EAST -> sideOffset;
+            case SOUTH, WEST -> -sideOffset;
+            default -> 0;
+        };
     }
 
     private Optional<ResolvedOpeningProfile> resolveOpeningProfile(MKStructureWorkspace workspace, String profileId) {

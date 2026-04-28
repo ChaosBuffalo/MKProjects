@@ -9,7 +9,9 @@ public record MKWorkspaceFamilyHorizontalExitDefinition(
         Direction direction,
         MKWorkspaceHorizontalExitPathKind pathKind,
         String openingProfileId,
-        MKWorkspaceHorizontalExitConnectionMode connectionMode
+        MKWorkspaceHorizontalExitConnectionMode connectionMode,
+        int sideOffset,
+        int verticalOffset
 ) {
     public static final Codec<MKWorkspaceFamilyHorizontalExitDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             MKWorkspaceCodecs.DIRECTION_CODEC.fieldOf("direction").forGetter(MKWorkspaceFamilyHorizontalExitDefinition::direction),
@@ -18,13 +20,22 @@ public record MKWorkspaceFamilyHorizontalExitDefinition(
             Codec.STRING.fieldOf("openingProfileId").forGetter(MKWorkspaceFamilyHorizontalExitDefinition::openingProfileId),
             MKWorkspaceCodecs.HORIZONTAL_EXIT_CONNECTION_MODE_CODEC.optionalFieldOf("connectionMode",
                             MKWorkspaceHorizontalExitConnectionMode.HALLWAY)
-                    .forGetter(MKWorkspaceFamilyHorizontalExitDefinition::connectionMode)
+                    .forGetter(MKWorkspaceFamilyHorizontalExitDefinition::connectionMode),
+            Codec.INT.optionalFieldOf("sideOffset", 0).forGetter(MKWorkspaceFamilyHorizontalExitDefinition::sideOffset),
+            Codec.INT.optionalFieldOf("verticalOffset", 0).forGetter(MKWorkspaceFamilyHorizontalExitDefinition::verticalOffset)
     ).apply(instance, MKWorkspaceFamilyHorizontalExitDefinition::new));
 
     public MKWorkspaceFamilyHorizontalExitDefinition(Direction direction,
                                                      MKWorkspaceHorizontalExitPathKind pathKind,
                                                      String openingProfileId) {
         this(direction, pathKind, openingProfileId, MKWorkspaceHorizontalExitConnectionMode.HALLWAY);
+    }
+
+    public MKWorkspaceFamilyHorizontalExitDefinition(Direction direction,
+                                                     MKWorkspaceHorizontalExitPathKind pathKind,
+                                                     String openingProfileId,
+                                                     MKWorkspaceHorizontalExitConnectionMode connectionMode) {
+        this(direction, pathKind, openingProfileId, connectionMode, 0, 0);
     }
 
     public static MKWorkspaceFamilyHorizontalExitDefinition fromTag(CompoundTag tag) {

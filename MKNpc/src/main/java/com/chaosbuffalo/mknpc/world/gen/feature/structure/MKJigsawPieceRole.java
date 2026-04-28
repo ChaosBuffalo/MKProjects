@@ -9,6 +9,7 @@ public enum MKJigsawPieceRole implements StringRepresentable {
     ROOM("room"),
     TOP_CAP_APPROACH("top_cap_approach"),
     TOP_CAP("top_cap"),
+    BASEMENT_CAP_APPROACH("basement_cap_approach"),
     TERMINAL("terminal");
 
     public static final Codec<MKJigsawPieceRole> CODEC = Codec.STRING.xmap(

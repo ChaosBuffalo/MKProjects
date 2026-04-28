@@ -57,6 +57,38 @@ public class MKHallwayFamilyDefinition {
         return MKWorkspaceCodecs.parseNbt(CODEC, tag, "hallway family definition");
     }
 
+    public static List<MKHallwayFamilyDefinition> createDefaults(MKWorkspaceDimensions dimensions,
+                                                                  MKWorkspaceMaterialPalette palette) {
+        return List.of(
+                new MKHallwayFamilyDefinition(
+                        "main",
+                        "main_opening",
+                        5,
+                        dimensions.doorwayWidth(),
+                        dimensions.doorwayHeight(),
+                        0,
+                        true,
+                        false,
+                        palette.floorBlock(),
+                        palette.wallBlock(),
+                        palette.ceilingBlock()
+                ),
+                new MKHallwayFamilyDefinition(
+                        "branch",
+                        "branch_opening",
+                        5,
+                        dimensions.doorwayWidth(),
+                        dimensions.doorwayHeight(),
+                        0,
+                        false,
+                        true,
+                        palette.floorBlock(),
+                        palette.wallBlock(),
+                        palette.ceilingBlock()
+                )
+        );
+    }
+
     public CompoundTag toTag() {
         return MKWorkspaceCodecs.encodeNbt(CODEC, this, "hallway family definition");
     }

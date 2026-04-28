@@ -1,13 +1,13 @@
 package com.chaosbuffalo.mknpc.client.gui.screens;
 
 import com.chaosbuffalo.mknpc.client.gui.widgets.MKBranchExitMaskWidget;
+import com.chaosbuffalo.mknpc.client.gui.widgets.MKIntegerSlider;
 import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantPacket;
 import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantsForAllPacket;
 import com.chaosbuffalo.mknpc.network.packets.ClearWorkspaceStairsPacket;
 import com.chaosbuffalo.mknpc.network.packets.CreateWorkspacePacket;
 import com.chaosbuffalo.mknpc.network.packets.ExportWorkspacePiecesPacket;
 import com.chaosbuffalo.mknpc.network.packets.GenerateAllWorkspaceStairsPacket;
-import com.chaosbuffalo.mknpc.network.packets.GenerateWorkspacePacket;
 import com.chaosbuffalo.mknpc.network.packets.GenerateWorkspaceStairsPacket;
 import com.chaosbuffalo.mknpc.network.packets.LoadWorkspaceFromManifestPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
@@ -64,6 +64,7 @@ public class MKWorkspaceScreen extends MKScreen {
     private static final int PANEL_HEIGHT = 390;
     private static final int SCROLL_WIDTH = PANEL_WIDTH - 20;
     private static final int TOP_CONTENT_Y = 52;
+    private static final int HEADER_SCROLL_GAP = 8;
     private static final int BUTTON_HEIGHT = 20;
     private static final int BUTTON_GAP = 4;
     private static final int BOTTOM_PADDING = 8;
@@ -113,6 +114,8 @@ public class MKWorkspaceScreen extends MKScreen {
         private ResourceLocation ladderBlock;
         private int mainFloors;
         private int basementFloors;
+        private boolean topCapApproachEnabled;
+        private boolean basementCapApproachEnabled;
         private List<MKTowerWorkspaceCategoryProfile> categoryProfiles;
         private List<MKTowerWorkspaceFamilyDefinition> familyDefinitions;
         private List<MKHorizontalOpeningProfile> openingProfiles;
@@ -279,8 +282,9 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), helpText);
 
         int buttonAreaHeight = BUTTON_HEIGHT + BOTTOM_PADDING;
-        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        int scrollTop = scrollTopAfterHeader(root, helpText);
+        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 12 - scrollTop;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
         scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
         root.addWidget(scrollView);
 
@@ -458,8 +462,9 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), helpText);
 
         int buttonAreaHeight = BUTTON_HEIGHT + BOTTOM_PADDING;
-        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        int scrollTop = scrollTopAfterHeader(root, helpText);
+        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 12 - scrollTop;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
         scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
         root.addWidget(scrollView);
 
@@ -522,8 +527,9 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), helpText);
 
         int buttonAreaHeight = BUTTON_HEIGHT + BOTTOM_PADDING;
-        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        int scrollTop = scrollTopAfterHeader(root, helpText);
+        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 12 - scrollTop;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
         scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
         root.addWidget(scrollView);
 
@@ -669,8 +675,9 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), helpText);
 
         int buttonAreaHeight = BUTTON_HEIGHT + BOTTOM_PADDING;
-        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        int scrollTop = scrollTopAfterHeader(root, helpText);
+        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 12 - scrollTop;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
         scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
         root.addWidget(scrollView);
 
@@ -726,6 +733,26 @@ public class MKWorkspaceScreen extends MKScreen {
         });
         addRow(content, makeWhiteText(Component.literal("Basement Floors")), basementFloorsButton);
 
+        MKButton topCapApproachButton = new MKButton(Component.literal(enabledLabel(formDraft.topCapApproachEnabled)), 180, 20);
+        topCapApproachButton.setPressedCallback((button, mouseButton) -> {
+            formDraft.topCapApproachEnabled = !formDraft.topCapApproachEnabled;
+            formDraft.mainFloors = normalizeMainFloorCount(formDraft.mainFloors, formDraft.basementFloors);
+            formDraft.basementFloors = normalizeBasementFloorCount(formDraft.basementFloors, formDraft.mainFloors);
+            flagNeedSetup();
+            return true;
+        });
+        addRow(content, makeWhiteText(Component.literal("Top Cap Approach")), topCapApproachButton);
+
+        MKButton basementCapApproachButton = new MKButton(Component.literal(enabledLabel(formDraft.basementCapApproachEnabled)), 180, 20);
+        basementCapApproachButton.setPressedCallback((button, mouseButton) -> {
+            formDraft.basementCapApproachEnabled = !formDraft.basementCapApproachEnabled;
+            formDraft.basementFloors = normalizeBasementFloorCount(formDraft.basementFloors, formDraft.mainFloors);
+            formDraft.mainFloors = normalizeMainFloorCount(formDraft.mainFloors, formDraft.basementFloors);
+            flagNeedSetup();
+            return true;
+        });
+        addRow(content, makeWhiteText(Component.literal("Basement Cap Approach")), basementCapApproachButton);
+
         MKText allowedFloorsText = makeWhiteText(Component.literal(
                 "Allowed floor counts: main " + allowedMainFloorCountsLabel(formDraft.basementFloors) +
                         "  |  basement " + allowedBasementFloorCountsLabel(formDraft.mainFloors)));
@@ -780,8 +807,9 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), helpText);
 
         int buttonAreaHeight = (2 * BUTTON_HEIGHT) + BUTTON_GAP + BOTTOM_PADDING;
-        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        int scrollTop = scrollTopAfterHeader(root, helpText);
+        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 12 - scrollTop;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
         scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
         root.addWidget(scrollView);
 
@@ -851,8 +879,9 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), helpText);
 
         int buttonAreaHeight = (2 * BUTTON_HEIGHT) + BUTTON_GAP + BOTTOM_PADDING;
-        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        int scrollTop = scrollTopAfterHeader(root, helpText);
+        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 12 - scrollTop;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
         scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
         root.addWidget(scrollView);
 
@@ -949,8 +978,9 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), helpText);
 
         int buttonAreaHeight = (2 * BUTTON_HEIGHT) + BUTTON_GAP + BOTTOM_PADDING;
-        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        int scrollTop = scrollTopAfterHeader(root, helpText);
+        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 12 - scrollTop;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
         scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
         root.addWidget(scrollView);
 
@@ -1014,26 +1044,26 @@ public class MKWorkspaceScreen extends MKScreen {
             flagNeedSetup();
             return true;
         });
-        MKTextFieldWidget roomWidthField = makeField("Room Width", Integer.toString(family.roomWidth()));
-        roomWidthField.setTextChangeCallback((field, text) -> replaceFamilyDefinition(index, normalizeFamilyDefinition(
-                new MKTowerWorkspaceFamilyDefinition(
-                        family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
-                        parseInt(text, family.roomWidth()), family.roomLength(), family.roomHeight(),
-                        family.horizontalExtrusionMode(), family.horizontalExits()))));
-        MKTextFieldWidget roomLengthField = makeField("Room Length", Integer.toString(family.roomLength()));
-        roomLengthField.setTextChangeCallback((field, text) -> replaceFamilyDefinition(index, normalizeFamilyDefinition(
-                new MKTowerWorkspaceFamilyDefinition(
-                        family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
-                        family.roomWidth(), parseInt(text, family.roomLength()), family.roomHeight(),
-                        family.horizontalExtrusionMode(), family.horizontalExits()))));
+        MKIntegerSlider roomWidthSlider = new MKIntegerSlider("Width", 180, 20, 1, 45, 2, family.roomWidth(),
+                value -> replaceFamilyDefinition(index, normalizeFamilyDefinition(
+                        new MKTowerWorkspaceFamilyDefinition(
+                                family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
+                                value, family.roomLength(), family.roomHeight(),
+                                family.horizontalExtrusionMode(), family.horizontalExits()))));
+        MKIntegerSlider roomLengthSlider = new MKIntegerSlider("Length", 180, 20, 1, 45, 2, family.roomLength(),
+                value -> replaceFamilyDefinition(index, normalizeFamilyDefinition(
+                        new MKTowerWorkspaceFamilyDefinition(
+                                family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
+                                family.roomWidth(), value, family.roomHeight(),
+                                family.horizontalExtrusionMode(), family.horizontalExits()))));
 
         addRow(content, makeWhiteText(Component.literal("Base Name")), baseNameField);
         addRow(content, makeWhiteText(Component.literal("Category")), categoryButton);
         addRow(content, makeWhiteText(Component.literal("Role")), roleButton);
         addRow(content, makeWhiteText(Component.literal("Vertical Access")), supportsVerticalButton);
         addRow(content, makeWhiteText(Component.literal("Horizontal Extrusion")), extrusionModeButton);
-        addRow(content, makeWhiteText(Component.literal("Room Width")), roomWidthField);
-        addRow(content, makeWhiteText(Component.literal("Room Length")), roomLengthField);
+        addRow(content, makeWhiteText(Component.literal("Room Width")), roomWidthSlider);
+        addRow(content, makeWhiteText(Component.literal("Room Length")), roomLengthSlider);
         if (family.supportsVerticalAccess()) {
             MKText heightSummary = makeWhiteText(Component.literal(
                     "Room Height: " + family.roomHeight() + " (matches " +
@@ -1146,8 +1176,9 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), helpText);
 
         int buttonAreaHeight = (2 * BUTTON_HEIGHT) + BUTTON_GAP + BOTTOM_PADDING;
-        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        int scrollTop = scrollTopAfterHeader(root, helpText);
+        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 12 - scrollTop;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
         scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
         root.addWidget(scrollView);
 
@@ -1237,8 +1268,9 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), helpText);
 
         int buttonAreaHeight = (2 * BUTTON_HEIGHT) + BUTTON_GAP + BOTTOM_PADDING;
-        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        int scrollTop = scrollTopAfterHeader(root, helpText);
+        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 12 - scrollTop;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
         scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
         root.addWidget(scrollView);
 
@@ -1328,8 +1360,9 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), helpText);
 
         int buttonAreaHeight = (2 * BUTTON_HEIGHT) + BUTTON_GAP + BOTTOM_PADDING;
-        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        int scrollTop = scrollTopAfterHeader(root, helpText);
+        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 12 - scrollTop;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
         scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
         root.addWidget(scrollView);
 
@@ -1420,8 +1453,9 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), helpText);
 
         int buttonAreaHeight = (2 * BUTTON_HEIGHT) + BUTTON_GAP + BOTTOM_PADDING;
-        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 12;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        int scrollTop = scrollTopAfterHeader(root, helpText);
+        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 12 - scrollTop;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
         scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
         root.addWidget(scrollView);
 
@@ -1550,8 +1584,9 @@ public class MKWorkspaceScreen extends MKScreen {
 
         int buttonCount = 4;
         int buttonAreaHeight = (buttonCount * BUTTON_HEIGHT) + ((buttonCount - 1) * BUTTON_GAP) + BOTTOM_PADDING;
-        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - 8;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        int scrollTop = scrollTopAfterHeader(root, summary);
+        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 8 - scrollTop;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
         scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
         root.addWidget(scrollView);
 
@@ -1702,8 +1737,9 @@ public class MKWorkspaceScreen extends MKScreen {
         int buttonCount = stairCategory ? 3 : 2;
         int buttonAreaHeight = (buttonCount * BUTTON_HEIGHT) + BUTTON_GAP + BOTTOM_PADDING;
         int paletteAreaHeight = stairCategory ? 74 : 0;
-        int scrollHeight = PANEL_HEIGHT - TOP_CONTENT_Y - buttonAreaHeight - paletteAreaHeight - 12;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, yPos + TOP_CONTENT_Y, SCROLL_WIDTH, scrollHeight);
+        int scrollTop = scrollTopAfterHeader(root, summary);
+        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - paletteAreaHeight - 12 - scrollTop;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
         scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
         root.addWidget(scrollView);
 
@@ -1815,7 +1851,7 @@ public class MKWorkspaceScreen extends MKScreen {
 
         if (stairCategory) {
             String baseName = getBaseName(templatePiece);
-            int paletteTop = yPos + TOP_CONTENT_Y + scrollHeight + 6;
+            int paletteTop = scrollTop + scrollHeight + 6;
             MKPlayerHotbar hotbar = new MKPlayerHotbar();
             MKBlockSlot stairBlockSlot = new MKBlockSlot();
             stairBlockSlot.setBlock(detailStairBlock);
@@ -1897,6 +1933,13 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), button);
     }
 
+    private void addRow(MKStackLayoutVertical root, MKText label, MKIntegerSlider slider) {
+        root.addWidget(label);
+        root.addConstraintToWidget(MarginConstraint.LEFT, label);
+        root.addWidget(slider);
+        root.addConstraintToWidget(new CenterXConstraint(), slider);
+    }
+
     private MKText makeLabel(String translationKey) {
         MKText text = makeWhiteText(Component.translatable(translationKey));
         text.setWidth(CONTENT_WIDTH);
@@ -1905,6 +1948,11 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private MKText makeWhiteText(Component text) {
         return new MKText(font, text).setColor(TEXT_COLOR);
+    }
+
+    private int scrollTopAfterHeader(MKLayout root, MKText headerText) {
+        root.manualRecompute();
+        return Math.max(root.getY() + TOP_CONTENT_Y, headerText.getBottom() + HEADER_SCROLL_GAP);
     }
 
     private void addPaletteSection(MKLayout root, int xPos, int paletteTop, MKPlayerHotbar hotbar,
@@ -1994,13 +2042,19 @@ public class MKWorkspaceScreen extends MKScreen {
         formDraft.ceilingBlock = workspace != null ? workspace.palette().ceilingBlock() : ResourceLocation.parse("minecraft:smooth_stone");
         formDraft.mainFloors = workspace != null ? workspace.floorSettings().mainFloors() : MKTowerWorkspaceFloorSettings.defaultSettings().mainFloors();
         formDraft.basementFloors = workspace != null ? workspace.floorSettings().basementFloors() : MKTowerWorkspaceFloorSettings.defaultSettings().basementFloors();
+        formDraft.topCapApproachEnabled = workspace != null ? workspace.floorSettings().topCapApproachEnabled() :
+                MKTowerWorkspaceFloorSettings.defaultSettings().topCapApproachEnabled();
+        formDraft.basementCapApproachEnabled = workspace != null ? workspace.floorSettings().basementCapApproachEnabled() :
+                MKTowerWorkspaceFloorSettings.defaultSettings().basementCapApproachEnabled();
         formDraft.categoryProfiles = List.copyOf(workspace != null ? workspace.categoryProfiles() :
                 MKTowerWorkspaceCategoryProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()));
         formDraft.familyDefinitions = List.copyOf(workspace != null ? workspace.familyDefinitions() :
                 MKTowerWorkspaceFamilyDefinition.createDefaults());
         formDraft.openingProfiles = List.copyOf(workspace != null ? workspace.openingProfiles() :
                 MKHorizontalOpeningProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()));
-        formDraft.hallwayFamilies = List.copyOf(workspace != null ? workspace.hallwayFamilies() : List.of());
+        formDraft.hallwayFamilies = List.copyOf(workspace != null ? workspace.hallwayFamilies() :
+                MKHallwayFamilyDefinition.createDefaults(MKWorkspaceDimensions.defaultDimensions(),
+                        MKWorkspaceMaterialPalette.defaultPalette()));
         int requestedShaftSize = workspace != null ? workspace.verticalAccessSpec().shaftSize() :
                 MKWorkspaceVerticalAccessSpec.defaultSpec().shaftSize();
         formDraft.shaftSize = requestedShaftSize;
@@ -2019,8 +2073,7 @@ public class MKWorkspaceScreen extends MKScreen {
     private void submitWorkspaceDraft() {
         ensureFormDraftInitialized();
         snapDraftVerticalAccess();
-        PacketDistributor.sendToServer(new CreateWorkspacePacket(buildWorkspaceDraft()));
-        PacketDistributor.sendToServer(new GenerateWorkspacePacket(anchor));
+        PacketDistributor.sendToServer(new CreateWorkspacePacket(buildWorkspaceDraft(), true));
     }
 
     private MKStructureWorkspace buildWorkspaceDraft() {
@@ -2058,7 +2111,8 @@ public class MKWorkspaceScreen extends MKScreen {
                 formDraft.exteriorAirMargin,
                 formDraft.previewMargin,
                 verticalAccessSpec,
-                new MKTowerWorkspaceFloorSettings(formDraft.mainFloors, formDraft.basementFloors),
+                new MKTowerWorkspaceFloorSettings(formDraft.mainFloors, formDraft.basementFloors,
+                        formDraft.topCapApproachEnabled, formDraft.basementCapApproachEnabled),
                 formDraft.categoryProfiles,
                 formDraft.familyDefinitions,
                 formDraft.openingProfiles,
@@ -2217,7 +2271,9 @@ public class MKWorkspaceScreen extends MKScreen {
                             MKWorkspaceHorizontalExitPathKind.BRANCH,
                             ensureCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind.BRANCH,
                                     existingExit.openingProfileId()),
-                            existingExit.connectionMode()
+                            existingExit.connectionMode(),
+                            existingExit.sideOffset(),
+                            existingExit.verticalOffset()
                     ));
                 }
             }
@@ -2225,6 +2281,21 @@ public class MKWorkspaceScreen extends MKScreen {
         replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits
+        ));
+    }
+
+    private void updateFamilyExitOffsets(int familyIndex, int exitIndex, Integer sideOffset, Integer verticalOffset) {
+        MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(familyIndex);
+        MKWorkspaceFamilyHorizontalExitDefinition currentExit = family.horizontalExits().get(exitIndex);
+        int nextSideOffset = sideOffset == null ? currentExit.sideOffset() : sideOffset;
+        int nextVerticalOffset = verticalOffset == null ? currentExit.verticalOffset() : verticalOffset;
+        replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
+                currentExit.direction(),
+                currentExit.pathKind(),
+                currentExit.openingProfileId(),
+                currentExit.connectionMode(),
+                clampSideOffset(family, currentExit.direction(), currentExit.openingProfileId(), nextSideOffset),
+                clampVerticalOffset(family, currentExit.openingProfileId(), nextVerticalOffset)
         ));
     }
 
@@ -2331,17 +2402,15 @@ public class MKWorkspaceScreen extends MKScreen {
         content.addWidget(summary);
         content.addConstraintToWidget(MarginConstraint.LEFT, summary);
 
-        MKTextFieldWidget roomWidthField = makeField("Room Width", Integer.toString(profile.roomWidth()));
-        roomWidthField.setTextChangeCallback((field, text) -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
-                profile.category(), parseInt(text, profile.roomWidth()), profile.roomLength(),
-                profile.fullHeight())));
-        MKTextFieldWidget roomLengthField = makeField("Room Length", Integer.toString(profile.roomLength()));
-        roomLengthField.setTextChangeCallback((field, text) -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
-                profile.category(), profile.roomWidth(), parseInt(text, profile.roomLength()),
-                profile.fullHeight())));
+        MKIntegerSlider roomWidthSlider = new MKIntegerSlider("Width", 180, 20, 1, 45, 2, profile.roomWidth(),
+                value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                        profile.category(), value, profile.roomLength(), profile.fullHeight())));
+        MKIntegerSlider roomLengthSlider = new MKIntegerSlider("Length", 180, 20, 1, 45, 2, profile.roomLength(),
+                value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                        profile.category(), profile.roomWidth(), value, profile.fullHeight())));
 
-        addRow(content, makeWhiteText(Component.literal("Room Width")), roomWidthField);
-        addRow(content, makeWhiteText(Component.literal("Room Length")), roomLengthField);
+        addRow(content, makeWhiteText(Component.literal("Room Width")), roomWidthSlider);
+        addRow(content, makeWhiteText(Component.literal("Room Length")), roomLengthSlider);
     }
 
     private void addCategoryHeightRow(MKStackLayoutVertical content, MKTowerWorkspaceCategory category) {
@@ -2367,23 +2436,31 @@ public class MKWorkspaceScreen extends MKScreen {
 
         MKButton directionButton = new MKButton(Component.literal(formatDirection(exit.direction())), 180, 20);
         directionButton.setPressedCallback((button, mouseButton) -> {
+            MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(familyIndex);
+            Direction nextDirection = cycleCardinalDirection(exit.direction());
             replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
-                    cycleCardinalDirection(exit.direction()),
+                    nextDirection,
                     exit.pathKind(),
                     exit.openingProfileId(),
-                    exit.connectionMode()
+                    exit.connectionMode(),
+                    clampSideOffset(family, nextDirection, exit.openingProfileId(), exit.sideOffset()),
+                    clampVerticalOffset(family, exit.openingProfileId(), exit.verticalOffset())
             ));
             refreshPreservingActiveScroll();
             return true;
         });
         MKButton pathKindButton = new MKButton(Component.literal(formatTopologyLabel(exit.pathKind().getSerializedName())), 180, 20);
         pathKindButton.setPressedCallback((button, mouseButton) -> {
+            MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(familyIndex);
             MKWorkspaceHorizontalExitPathKind nextPathKind = exit.pathKind().next();
+            String nextOpeningProfileId = ensureCompatibleOpeningProfile(nextPathKind, exit.openingProfileId());
             replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
                     exit.direction(),
                     nextPathKind,
-                    ensureCompatibleOpeningProfile(nextPathKind, exit.openingProfileId()),
-                    exit.connectionMode()
+                    nextOpeningProfileId,
+                    exit.connectionMode(),
+                    clampSideOffset(family, exit.direction(), nextOpeningProfileId, exit.sideOffset()),
+                    clampVerticalOffset(family, nextOpeningProfileId, exit.verticalOffset())
             ));
             refreshPreservingActiveScroll();
             return true;
@@ -2394,26 +2471,45 @@ public class MKWorkspaceScreen extends MKScreen {
                     exit.direction(),
                     exit.pathKind(),
                     exit.openingProfileId(),
-                    exit.connectionMode().next()
+                    exit.connectionMode().next(),
+                    exit.sideOffset(),
+                    exit.verticalOffset()
             ));
             refreshPreservingActiveScroll();
             return true;
         });
         MKButton openingProfileButton = new MKButton(Component.literal(exit.openingProfileId()), 180, 20);
         openingProfileButton.setPressedCallback((button, mouseButton) -> {
+            MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(familyIndex);
+            String nextOpeningProfileId = nextOpeningProfileId(exit.pathKind(), exit.openingProfileId());
             replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
                     exit.direction(),
                     exit.pathKind(),
-                    nextOpeningProfileId(exit.pathKind(), exit.openingProfileId()),
-                    exit.connectionMode()
+                    nextOpeningProfileId,
+                    exit.connectionMode(),
+                    clampSideOffset(family, exit.direction(), nextOpeningProfileId, exit.sideOffset()),
+                    clampVerticalOffset(family, nextOpeningProfileId, exit.verticalOffset())
             ));
             refreshPreservingActiveScroll();
             return true;
         });
+        MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(familyIndex);
+        int sideMin = minSideOffset(family, exit.direction(), exit.openingProfileId());
+        int sideMax = maxSideOffset(family, exit.direction(), exit.openingProfileId());
+        int verticalMin = 0;
+        int verticalMax = maxVerticalOffset(family, exit.openingProfileId());
+        MKIntegerSlider sideOffsetSlider = new MKIntegerSlider("Side", 180, 20, sideMin, sideMax,
+                clamp(exit.sideOffset(), sideMin, sideMax),
+                value -> updateFamilyExitOffsets(familyIndex, exitIndex, value, null));
+        MKIntegerSlider verticalOffsetSlider = new MKIntegerSlider("Vertical", 180, 20, verticalMin, verticalMax,
+                clamp(exit.verticalOffset(), verticalMin, verticalMax),
+                value -> updateFamilyExitOffsets(familyIndex, exitIndex, null, value));
         addRow(content, makeWhiteText(Component.literal("Direction")), directionButton);
         addRow(content, makeWhiteText(Component.literal("Exit Role")), pathKindButton);
         addRow(content, makeWhiteText(Component.literal("Connection")), connectionModeButton);
         addRow(content, makeWhiteText(Component.literal("Opening Profile")), openingProfileButton);
+        addRow(content, makeWhiteText(Component.literal("Side Offset")), sideOffsetSlider);
+        addRow(content, makeWhiteText(Component.literal("Vertical Offset")), verticalOffsetSlider);
     }
 
     private List<Integer> allowedFullHeightsForCategory(MKTowerWorkspaceCategory category) {
@@ -2434,7 +2530,8 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private List<Integer> allowedMainFloorCounts(int basementFloors) {
         ensureFormDraftInitialized();
-        return MKTowerWorkspaceFloorSettings.allowedMainFloorCounts(formDraft.categoryProfiles, basementFloors);
+        return MKTowerWorkspaceFloorSettings.allowedMainFloorCounts(formDraft.categoryProfiles, basementFloors,
+                formDraft.topCapApproachEnabled, formDraft.basementCapApproachEnabled);
     }
 
     private String allowedMainFloorCountsLabel(int basementFloors) {
@@ -2443,7 +2540,8 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private List<Integer> allowedBasementFloorCounts(int mainFloors) {
         ensureFormDraftInitialized();
-        return MKTowerWorkspaceFloorSettings.allowedBasementFloorCounts(formDraft.categoryProfiles, mainFloors);
+        return MKTowerWorkspaceFloorSettings.allowedBasementFloorCounts(formDraft.categoryProfiles, mainFloors,
+                formDraft.topCapApproachEnabled, formDraft.basementCapApproachEnabled);
     }
 
     private String allowedBasementFloorCountsLabel(int mainFloors) {
@@ -2519,17 +2617,78 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private MKTowerWorkspaceFamilyDefinition normalizeFamilyDefinition(MKTowerWorkspaceFamilyDefinition family) {
         MKTowerWorkspaceCategoryProfile profile = getDraftCategoryProfile(family.category());
+        int roomWidth = normalizeFamilyWidthForCategory(family.roomWidth(), family.supportsVerticalAccess(), profile);
+        int roomLength = normalizeFamilyLengthForCategory(family.roomLength(), family.supportsVerticalAccess(), profile);
+        int roomHeight = normalizeFamilyHeightForCategory(family.roomHeight(), family.supportsVerticalAccess(), profile);
+        MKTowerWorkspaceFamilyDefinition normalizedGeometry = new MKTowerWorkspaceFamilyDefinition(
+                family.baseName(),
+                family.category(),
+                family.pieceRole(),
+                family.supportsVerticalAccess(),
+                roomWidth,
+                roomLength,
+                roomHeight,
+                family.horizontalExtrusionMode(),
+                family.horizontalExits()
+        );
         return new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(),
                 family.category(),
                 family.pieceRole(),
                 family.supportsVerticalAccess(),
-                normalizeFamilyWidthForCategory(family.roomWidth(), family.supportsVerticalAccess(), profile),
-                normalizeFamilyLengthForCategory(family.roomLength(), family.supportsVerticalAccess(), profile),
-                normalizeFamilyHeightForCategory(family.roomHeight(), family.supportsVerticalAccess(), profile),
+                roomWidth,
+                roomLength,
+                roomHeight,
                 family.horizontalExtrusionMode(),
-                family.horizontalExits()
+                family.horizontalExits().stream()
+                        .map(exit -> new MKWorkspaceFamilyHorizontalExitDefinition(
+                                exit.direction(),
+                                exit.pathKind(),
+                                exit.openingProfileId(),
+                                exit.connectionMode(),
+                                clampSideOffset(normalizedGeometry, exit.direction(), exit.openingProfileId(), exit.sideOffset()),
+                                clampVerticalOffset(normalizedGeometry, exit.openingProfileId(), exit.verticalOffset())
+                        ))
+                        .toList()
         );
+    }
+
+    private int minSideOffset(MKTowerWorkspaceFamilyDefinition family, Direction direction, String openingProfileId) {
+        int sideLength = getExitSideLength(family, direction);
+        int halfOpening = getDraftOpeningProfile(openingProfileId)
+                .map(MKHorizontalOpeningProfile::openingWidth)
+                .orElse(1) / 2;
+        return halfOpening - (sideLength / 2);
+    }
+
+    private int maxSideOffset(MKTowerWorkspaceFamilyDefinition family, Direction direction, String openingProfileId) {
+        int sideLength = getExitSideLength(family, direction);
+        int halfOpening = getDraftOpeningProfile(openingProfileId)
+                .map(MKHorizontalOpeningProfile::openingWidth)
+                .orElse(1) / 2;
+        return (sideLength - 1 - halfOpening) - (sideLength / 2);
+    }
+
+    private int getExitSideLength(MKTowerWorkspaceFamilyDefinition family, Direction direction) {
+        return direction == Direction.NORTH || direction == Direction.SOUTH ? family.roomWidth() : family.roomLength();
+    }
+
+    private int maxVerticalOffset(MKTowerWorkspaceFamilyDefinition family, String openingProfileId) {
+        int openingHeight = getDraftOpeningProfile(openingProfileId)
+                .map(MKHorizontalOpeningProfile::openingHeight)
+                .orElse(1);
+        return Math.max(0, family.roomHeight() - openingHeight);
+    }
+
+    private int clampSideOffset(MKTowerWorkspaceFamilyDefinition family, Direction direction, String openingProfileId,
+                                int sideOffset) {
+        return clamp(sideOffset, minSideOffset(family, direction, openingProfileId),
+                maxSideOffset(family, direction, openingProfileId));
+    }
+
+    private int clampVerticalOffset(MKTowerWorkspaceFamilyDefinition family, String openingProfileId,
+                                    int verticalOffset) {
+        return clamp(verticalOffset, 0, maxVerticalOffset(family, openingProfileId));
     }
 
     private int normalizeFamilyWidthForCategory(int requestedWidth, boolean supportsVerticalAccess,
@@ -2555,6 +2714,12 @@ public class MKWorkspaceScreen extends MKScreen {
     private int makeOdd(int value) {
         int adjusted = Math.max(1, value);
         return adjusted % 2 == 0 ? adjusted + 1 : adjusted;
+    }
+
+    private int clamp(int value, int min, int max) {
+        int orderedMin = Math.min(min, max);
+        int orderedMax = Math.max(min, max);
+        return Math.max(orderedMin, Math.min(orderedMax, value));
     }
 
     private MKWorkspacePieceRole defaultRoleForCategory(MKTowerWorkspaceCategory category) {
@@ -2625,15 +2790,21 @@ public class MKWorkspaceScreen extends MKScreen {
         return "disabled";
     }
 
+    private String enabledLabel(boolean enabled) {
+        return enabled ? "Enabled" : "Disabled";
+    }
+
     private String describeFamilyExit(MKWorkspaceFamilyHorizontalExitDefinition exit) {
         return formatDirection(exit.direction()) + " / " + formatTopologyLabel(exit.pathKind().getSerializedName()) +
-                " / " + formatExitConnectionMode(exit.connectionMode()) + " / " + exit.openingProfileId();
+                " / " + formatExitConnectionMode(exit.connectionMode()) + " / " + exit.openingProfileId() +
+                " / side " + exit.sideOffset() + " / up " + exit.verticalOffset();
     }
 
     private String formatExitConnectionMode(MKWorkspaceHorizontalExitConnectionMode connectionMode) {
         return switch (connectionMode) {
             case HALLWAY -> "Hallway";
             case DIRECT_ROOM -> "Direct Room";
+            case NO_CONNECTION -> "No Connection";
         };
     }
 
@@ -2641,6 +2812,7 @@ public class MKWorkspaceScreen extends MKScreen {
         return switch (mode) {
             case TUNNEL_ONLY -> "Tunnel Only";
             case FULL_BODY -> "Full Body";
+            case NO_EXTRUSION -> "No Extrusion";
         };
     }
 
@@ -2721,6 +2893,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 MKWorkspacePieceRole.TOP_CAP,
                 MKWorkspacePieceRole.BASEMENT_ENTRY,
                 MKWorkspacePieceRole.BASEMENT_MAIN,
+                MKWorkspacePieceRole.BASEMENT_CAP_APPROACH,
                 MKWorkspacePieceRole.BASEMENT_CAP
         );
         int index = roles.indexOf(current);

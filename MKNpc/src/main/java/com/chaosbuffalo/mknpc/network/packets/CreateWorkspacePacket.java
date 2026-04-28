@@ -18,9 +18,15 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
     );
 
     private final CompoundTag workspaceTag;
+    private final boolean generateAfterCreate;
 
     public CreateWorkspacePacket(MKStructureWorkspace workspace) {
+        this(workspace, false);
+    }
+
+    public CreateWorkspacePacket(MKStructureWorkspace workspace, boolean generateAfterCreate) {
         this.workspaceTag = workspace.toTag();
+        this.generateAfterCreate = generateAfterCreate;
     }
 
     public CreateWorkspacePacket(FriendlyByteBuf buffer) {
@@ -29,6 +35,7 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
             throw new IllegalStateException("workspace create packet was missing payload");
         }
         this.workspaceTag = tag;
+        this.generateAfterCreate = buffer.readBoolean();
     }
 
     @Override
@@ -38,6 +45,7 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
 
     public void toBytes(FriendlyByteBuf buffer) {
         buffer.writeNbt(workspaceTag);
+        buffer.writeBoolean(generateAfterCreate);
     }
 
     public static void handle(CreateWorkspacePacket packet, IPayloadContext context) {
@@ -45,6 +53,12 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
             return;
         }
         MKStructureWorkspace workspace = MKStructureWorkspace.fromTag(packet.workspaceTag);
-        new MKStructureWorkspaceService().createOrUpdateTowerWorkspace(player.serverLevel(), workspace);
+        MKStructureWorkspaceService service = new MKStructureWorkspaceService();
+        service.createOrUpdateTowerWorkspace(player.serverLevel(), workspace)
+                .ifPresent(created -> {
+                    if (packet.generateAfterCreate) {
+                        service.generateTowerWorkspace(player.serverLevel(), created.anchor());
+                    }
+                });
     }
 }

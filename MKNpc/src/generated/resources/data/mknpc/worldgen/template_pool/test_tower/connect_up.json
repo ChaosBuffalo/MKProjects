@@ -17,7 +17,7 @@
       "element": {
         "bWaterLog": false,
         "element_type": "mknpc:mk_single_jigsaw",
-        "location": "mknpc:test_tower/boss_approach_1",
+        "location": "mknpc:test_tower/top_cap_approach_1",
         "override_liquid_settings": "ignore_waterlogging",
         "processors": {
           "processors": []

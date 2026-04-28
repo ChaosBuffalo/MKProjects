@@ -94,8 +94,10 @@ public class MKTowerWorkspaceFamilyDefinition {
                 new MKTowerWorkspaceFamilyDefinition("entry", MKTowerWorkspaceCategory.ENTRY,
                         MKWorkspacePieceRole.ENTRY, true,
                         entry.roomWidth(), entry.roomLength(), entry.fullHeight(),
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
                         List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
-                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "main_opening"))),
+                                MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY, "main_opening",
+                                MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION))),
                 new MKTowerWorkspaceFamilyDefinition("floor_main", MKTowerWorkspaceCategory.MAIN,
                         MKWorkspacePieceRole.FLOOR_MAIN, true,
                         main.roomWidth(), main.roomLength(), main.fullHeight(), List.of()),
@@ -111,6 +113,9 @@ public class MKTowerWorkspaceFamilyDefinition {
                 new MKTowerWorkspaceFamilyDefinition("basement_main", MKTowerWorkspaceCategory.BASEMENT,
                         MKWorkspacePieceRole.BASEMENT_MAIN, true,
                         basement.roomWidth(), basement.roomLength(), basement.fullHeight(), List.of()),
+                new MKTowerWorkspaceFamilyDefinition("basement_cap_approach", MKTowerWorkspaceCategory.BASEMENT_CAP,
+                        MKWorkspacePieceRole.BASEMENT_CAP_APPROACH, true,
+                        basementCap.roomWidth(), basementCap.roomLength(), basementCap.fullHeight(), List.of()),
                 new MKTowerWorkspaceFamilyDefinition("basement_cap", MKTowerWorkspaceCategory.BASEMENT_CAP,
                         MKWorkspacePieceRole.BASEMENT_CAP, true,
                         basementCap.roomWidth(), basementCap.roomLength(), basementCap.fullHeight(), List.of())
@@ -194,7 +199,8 @@ public class MKTowerWorkspaceFamilyDefinition {
 
     public static boolean defaultSupportsVerticalAccess(MKWorkspacePieceRole pieceRole) {
         return switch (pieceRole) {
-            case ENTRY, FLOOR_MAIN, TOP_CAP_APPROACH, TOP_CAP, BASEMENT_ENTRY, BASEMENT_MAIN, BASEMENT_CAP -> true;
+            case ENTRY, FLOOR_MAIN, TOP_CAP_APPROACH, TOP_CAP, BASEMENT_ENTRY, BASEMENT_MAIN,
+                 BASEMENT_CAP_APPROACH, BASEMENT_CAP -> true;
             case HALLWAY -> false;
         };
     }
@@ -294,7 +300,8 @@ public class MKTowerWorkspaceFamilyDefinition {
         }
         return horizontalExits.stream()
                 .map(exit -> exit.direction().getSerializedName() + ":" + exit.pathKind().getSerializedName() + ":" +
-                        exit.connectionMode().getSerializedName() + ":" + exit.openingProfileId())
+                        exit.connectionMode().getSerializedName() + ":" + exit.openingProfileId() + ":" +
+                        exit.sideOffset() + ":" + exit.verticalOffset())
                 .collect(java.util.stream.Collectors.joining("|"));
     }
 
@@ -325,7 +332,8 @@ public class MKTowerWorkspaceFamilyDefinition {
         ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new ArrayList<>();
         if (pieceRole == MKWorkspacePieceRole.ENTRY) {
             exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
-                    MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "main_opening"));
+                    MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY, "main_opening",
+                    MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION));
         }
         for (Direction direction : branchExitMask.directions()) {
             exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(direction,

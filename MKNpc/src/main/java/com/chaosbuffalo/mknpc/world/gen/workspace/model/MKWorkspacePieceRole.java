@@ -9,6 +9,7 @@ public enum MKWorkspacePieceRole implements StringRepresentable {
     TOP_CAP("top_cap"),
     BASEMENT_ENTRY("basement_entry"),
     BASEMENT_MAIN("basement_main"),
+    BASEMENT_CAP_APPROACH("basement_cap_approach"),
     BASEMENT_CAP("basement_cap"),
     HALLWAY("hallway");
 

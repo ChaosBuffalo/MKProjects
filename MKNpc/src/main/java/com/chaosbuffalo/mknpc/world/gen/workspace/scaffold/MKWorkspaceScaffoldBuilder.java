@@ -149,6 +149,9 @@ public class MKWorkspaceScaffoldBuilder {
                     context.exportOrigin(), context.exportBounds(), context.geometryOrigin(), effectiveShellMargin,
                     context.geometryBounds().getXSpan(), context.geometryBounds().getZSpan(),
                     context.geometryBounds().getYSpan(), floorState, wallState, ceilingState);
+            if (connector == null) {
+                continue;
+            }
             connectors.add(connector);
             BlockPos markerPos = placeConnectorMarker(level, connector, context.exportBounds());
             markerPositions.add(markerPos);
@@ -496,6 +499,9 @@ public class MKWorkspaceScaffoldBuilder {
                 ceilingState);
         carveConnectorOpening(level, exportBounds, geometryOrigin, piece, plannedConnector, shellMargin,
                 verticalShellThickness, geometryWidth, geometryLength, geometryHeight);
+        if (!plannedConnector.placesJigsaw()) {
+            return null;
+        }
         level.setBlock(connectorPos, Blocks.JIGSAW.defaultBlockState()
                 .setValue(JigsawBlock.ORIENTATION, getJigsawOrientation(facing)), Block.UPDATE_ALL);
         BlockEntity entity = level.getBlockEntity(connectorPos);
@@ -535,6 +541,9 @@ public class MKWorkspaceScaffoldBuilder {
             return;
         }
         MKWorkspaceHorizontalExtrusionMode extrusionMode = getHorizontalExtrusionMode(piece);
+        if (extrusionMode == MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION) {
+            return;
+        }
         if (extrusionMode == MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY) {
             extendHorizontalConnectorTunnelShell(level, exportBounds, geometryOrigin, piece, connector, shellMargin,
                     verticalShellThickness, floorState, wallState, ceilingState);

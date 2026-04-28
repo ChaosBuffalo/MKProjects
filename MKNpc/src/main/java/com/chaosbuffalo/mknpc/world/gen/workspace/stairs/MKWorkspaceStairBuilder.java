@@ -40,7 +40,7 @@ public class MKWorkspaceStairBuilder {
     public MKWorkspacePieceDefinition generateForPiece(ServerLevel level, MKStructureWorkspace workspace,
                                                        MKWorkspacePieceDefinition piece,
                                                        MKWorkspaceStairAuthoringConfig stairConfig) {
-        clearGenerated(level, piece);
+        clearGenerated(level, workspace, piece);
         if (!isEligible(piece) || stairConfig.mode() == MKWorkspaceStairMode.NONE) {
             return updateGeneratedState(piece, List.of(), MKWorkspaceStairMode.NONE);
         }
@@ -70,8 +70,9 @@ public class MKWorkspaceStairBuilder {
         BlockState ladderState = resolveLadderState(stairConfig.ladderBlock(),
                 MKWorkspaceVerticalAccessGeometry.getPreferredLadderFacing(geometry));
         BlockPos ladderBase = getLadderBase(geometry);
-        clearShaftFootprint(level, geometry);
-        for (int y = geometry.interiorMinY(); y <= geometry.interiorMaxY(); y++) {
+        int editableMinY = getEditableMinY(piece, geometry);
+        clearShaftFootprint(level, geometry, editableMinY);
+        for (int y = editableMinY; y <= geometry.interiorMaxY(); y++) {
             BlockPos pos = new BlockPos(ladderBase.getX(), y, ladderBase.getZ());
             writeGeneratedBlock(level, pos, ladderState);
             generated.add(pos);
@@ -84,7 +85,8 @@ public class MKWorkspaceStairBuilder {
                                                            MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry,
                                                            MKWorkspaceStairAuthoringConfig stairConfig,
                                                            MKVerticalAccessProfile profile) {
-        clearShaftFootprint(level, geometry);
+        int editableMinY = getEditableMinY(piece, geometry);
+        clearShaftFootprint(level, geometry, editableMinY);
         BoundingBox centerlineBounds = getCenterlineBounds(geometry.shaftBounds(), profile.stairWidth());
         List<BlockPos> perimeter = getPerimeterClockwise(centerlineBounds, geometry.interiorMinY());
         if (perimeter.isEmpty()) {
@@ -146,6 +148,7 @@ public class MKWorkspaceStairBuilder {
                     geometry.shaftBounds(), profile.stairWidth(),
                     resolveSlabState(stairConfig.slabBlock(), SlabType.TOP), generated);
         }
+        clipBelowMinY(planned, generated, editableMinY);
         flushPlannedBlocks(level, planned);
         return updateGeneratedState(piece, List.copyOf(generated), MKWorkspaceStairMode.STAIR_STAIRS);
     }
@@ -155,7 +158,8 @@ public class MKWorkspaceStairBuilder {
                                                           MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry,
                                                           MKWorkspaceStairAuthoringConfig stairConfig,
                                                           MKVerticalAccessProfile profile) {
-        clearShaftFootprint(level, geometry);
+        int editableMinY = getEditableMinY(piece, geometry);
+        clearShaftFootprint(level, geometry, editableMinY);
         BoundingBox centerlineBounds = getCenterlineBounds(geometry.shaftBounds(), profile.stairWidth());
         List<BlockPos> perimeter = getPerimeterClockwise(centerlineBounds, geometry.interiorMinY());
         if (perimeter.isEmpty()) {
@@ -205,24 +209,57 @@ public class MKWorkspaceStairBuilder {
                     geometry.shaftBounds(), profile.stairWidth(),
                     resolveSlabState(stairConfig.slabBlock(), SlabType.TOP), generated);
         }
+        clipBelowMinY(planned, generated, editableMinY);
         flushPlannedBlocks(level, planned);
         return updateGeneratedState(piece, List.copyOf(generated), MKWorkspaceStairMode.SLAB_STAIRS);
     }
 
+    private void clearGenerated(ServerLevel level, MKStructureWorkspace workspace, MKWorkspacePieceDefinition piece) {
+        BlockState protectedBottomState = resolveSolidState(workspace.palette().floorBlock(),
+                Blocks.STONE_BRICKS.defaultBlockState());
+        clearGenerated(level, piece, protectedBottomState);
+    }
+
     private void clearGenerated(ServerLevel level, MKWorkspacePieceDefinition piece) {
+        clearGenerated(level, piece, Blocks.STONE_BRICKS.defaultBlockState());
+    }
+
+    private void clearGenerated(ServerLevel level, MKWorkspacePieceDefinition piece, BlockState protectedBottomState) {
         for (BlockPos pos : piece.generatedStairPositions()) {
-            clearGeneratedBlock(level, pos);
+            if (isProtectedBottomShell(piece, pos)) {
+                writeGeneratedBlock(level, pos, protectedBottomState);
+            } else {
+                clearGeneratedBlock(level, pos);
+            }
         }
     }
 
-    private void clearShaftFootprint(ServerLevel level, MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry) {
+    private void clearShaftFootprint(ServerLevel level, MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry,
+                                    int editableMinY) {
         for (int x = geometry.shaftBounds().minX(); x <= geometry.shaftBounds().maxX(); x++) {
-            for (int y = geometry.interiorMinY(); y <= geometry.interiorMaxY(); y++) {
+            for (int y = editableMinY; y <= geometry.interiorMaxY(); y++) {
                 for (int z = geometry.shaftBounds().minZ(); z <= geometry.shaftBounds().maxZ(); z++) {
                     clearGeneratedBlock(level, new BlockPos(x, y, z));
                 }
             }
         }
+    }
+
+    int getEditableMinY(MKWorkspacePieceDefinition piece,
+                        MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry) {
+        if (MKWorkspaceVerticalAccessTags.isBottomCap(piece.tags())) {
+            return Math.min(geometry.interiorMaxY(), geometry.interiorMinY() + 1);
+        }
+        return geometry.interiorMinY();
+    }
+
+    private boolean isProtectedBottomShell(MKWorkspacePieceDefinition piece, BlockPos pos) {
+        return MKWorkspaceVerticalAccessTags.isBottomCap(piece.tags()) && pos.getY() <= piece.exportBounds().minY();
+    }
+
+    private void clipBelowMinY(Map<BlockPos, BlockState> planned, LinkedHashSet<BlockPos> generated, int editableMinY) {
+        planned.keySet().removeIf(pos -> pos.getY() < editableMinY);
+        generated.removeIf(pos -> pos.getY() < editableMinY);
     }
 
     private boolean isEligible(MKWorkspacePieceDefinition piece) {
@@ -231,8 +268,8 @@ public class MKWorkspaceStairBuilder {
                         connector.facing() == Direction.DOWN);
     }
 
-    private MKWorkspaceVerticalAccessGeometry.ShaftGeometry getGenerationGeometry(MKStructureWorkspace workspace,
-                                                                              MKWorkspacePieceDefinition piece) {
+    MKWorkspaceVerticalAccessGeometry.ShaftGeometry getGenerationGeometry(MKStructureWorkspace workspace,
+                                                                          MKWorkspacePieceDefinition piece) {
         MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry = MKWorkspaceVerticalAccessGeometry.forPiece(workspace, piece);
         BoundingBox bounds = geometry.shaftBounds();
         if (MKWorkspaceVerticalAccessTags.isTopCap(piece.tags())) {
@@ -246,19 +283,6 @@ public class MKWorkspaceStairBuilder {
             );
             return new MKWorkspaceVerticalAccessGeometry.ShaftGeometry(constrainedBounds, geometry.interiorMinY(),
                     geometry.interiorMinY(), geometry.placement());
-        }
-        if (MKWorkspaceVerticalAccessTags.isBottomCap(piece.tags())) {
-            int floorY = Math.min(geometry.interiorMaxY(), geometry.interiorMinY() + 1);
-            BoundingBox constrainedBounds = new BoundingBox(
-                    bounds.minX(),
-                    floorY,
-                    bounds.minZ(),
-                    bounds.maxX(),
-                    geometry.interiorMaxY(),
-                    bounds.maxZ()
-            );
-            return new MKWorkspaceVerticalAccessGeometry.ShaftGeometry(constrainedBounds, floorY,
-                    geometry.interiorMaxY(), geometry.placement());
         }
         return geometry;
     }

@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
@@ -23,6 +24,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import net.minecraft.core.BlockPos;
@@ -37,6 +39,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TowerWorkspaceV2Test {
@@ -142,14 +145,255 @@ class TowerWorkspaceV2Test {
                 connector.role() == MKConnectorRole.MAIN_FORWARD &&
                         connector.facing() == net.minecraft.core.Direction.NORTH));
         assertTrue(entry.connectors().stream().anyMatch(connector ->
-                connector.role() == MKConnectorRole.MAIN_BACK &&
+                        connector.role() == MKConnectorRole.MAIN_BACK &&
                         connector.facing() == net.minecraft.core.Direction.SOUTH));
     }
 
     @Test
-    void familyExtrusionDefaultsToTunnelOnlyButLegacyDataLoadsAsFullBody() {
+    void defaultTowerMainEntranceIsOpeningOnly() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKTowerWorkspaceFamilyDefinition entryFamily = MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions).stream()
+                .filter(family -> family.pieceRole() == MKWorkspacePieceRole.ENTRY)
+                .findFirst()
+                .orElseThrow();
+        MKWorkspaceFamilyHorizontalExitDefinition entrance = entryFamily.horizontalExits().getFirst();
+
+        assertEquals(MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, entryFamily.horizontalExtrusionMode());
+        assertEquals(MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY, entrance.pathKind());
+        assertEquals(MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION, entrance.connectionMode());
+
+        MKStructureWorkspace workspace = new MKStructureWorkspace(
+                UUID.randomUUID(),
+                BlockPos.ZERO,
+                "mkdev",
+                "default_entrance",
+                MKStructureFamilyType.TOWER,
+                dimensions,
+                workspacePalette(),
+                MKWorkspaceStairAuthoringConfig.defaultConfig(),
+                MKVerticalAccessPlacement.CENTER,
+                1,
+                2,
+                4,
+                MKWorkspaceVerticalAccessSpec.defaultSpec(),
+                MKTowerWorkspaceFloorSettings.defaultSettings(),
+                MKTowerWorkspaceCategoryProfile.createDefaults(dimensions),
+                MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions),
+                MKHorizontalOpeningProfile.createDefaults(dimensions),
+                MKHallwayFamilyDefinition.createDefaults(dimensions, workspacePalette()),
+                System.currentTimeMillis(),
+                System.currentTimeMillis(),
+                List.of()
+        );
+
+        MKPlannedConnector plannedEntrance = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.pieceName().equals("entry"))
+                .findFirst()
+                .orElseThrow()
+                .connectors()
+                .stream()
+                .filter(connector -> connector.role() == MKConnectorRole.MAIN_FORWARD)
+                .findFirst()
+                .orElseThrow();
+
+        assertFalse(plannedEntrance.placesJigsaw());
+        assertEquals(net.minecraft.core.Direction.SOUTH, plannedEntrance.facing());
+    }
+
+    @Test
+    void plannerTranslatesAuthoredExitOffsetsToConnectorOffsets() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                ),
+                List.of()
+        );
+        MKTowerWorkspaceFamilyDefinition updatedMain = new MKTowerWorkspaceFamilyDefinition(
+                "floor_main",
+                MKTowerWorkspaceCategory.MAIN,
+                MKWorkspacePieceRole.FLOOR_MAIN,
+                true,
+                9,
+                9,
+                workspace.dimensions().roomHeight(),
+                List.of(
+                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                                MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch",
+                                MKWorkspaceHorizontalExitConnectionMode.HALLWAY, 2, 1),
+                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
+                                MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch",
+                                MKWorkspaceHorizontalExitConnectionMode.HALLWAY, 2, 1),
+                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.EAST,
+                                MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch",
+                                MKWorkspaceHorizontalExitConnectionMode.HALLWAY, 2, 1),
+                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.WEST,
+                                MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch",
+                                MKWorkspaceHorizontalExitConnectionMode.HALLWAY, 2, 1)
+                )
+        );
+        workspace = new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
+                workspace.categoryProfiles(),
+                workspace.familyDefinitions().stream()
+                        .map(family -> family.baseName().equals("floor_main") ? updatedMain : family)
+                        .toList(),
+                workspace.openingProfiles(),
+                workspace.hallwayFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces()
+        );
+
+        MKPlannedPiece mainPiece = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.pieceName().equals("floor_main"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(2, branchConnector(mainPiece, net.minecraft.core.Direction.NORTH).lateralOffset());
+        assertEquals(-2, branchConnector(mainPiece, net.minecraft.core.Direction.SOUTH).lateralOffset());
+        assertEquals(2, branchConnector(mainPiece, net.minecraft.core.Direction.EAST).lateralOffset());
+        assertEquals(-2, branchConnector(mainPiece, net.minecraft.core.Direction.WEST).lateralOffset());
+        assertTrue(mainPiece.connectors().stream()
+                .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
+                .allMatch(connector -> connector.verticalOffset() == 1));
+    }
+
+    @Test
+    void floorSettingsPreserveLegacyCapApproachDefaults() {
+        MKTowerWorkspaceFloorSettings settings = MKTowerWorkspaceFloorSettings.defaultSettings();
+
+        assertTrue(settings.topCapApproachEnabled());
+        assertFalse(settings.basementCapApproachEnabled());
+    }
+
+    @Test
+    void floorCountsReflectOptionalCapApproachPieces() {
+        List<MKTowerWorkspaceCategoryProfile> categoryProfiles = MKTowerWorkspaceCategoryProfile.createDefaults(
+                MKWorkspaceDimensions.defaultDimensions());
+
+        List<Integer> mainWithApproach = MKTowerWorkspaceFloorSettings.allowedMainFloorCounts(categoryProfiles,
+                1, true, false);
+        List<Integer> mainWithoutApproach = MKTowerWorkspaceFloorSettings.allowedMainFloorCounts(categoryProfiles,
+                1, false, false);
+        List<Integer> basementWithoutApproach = MKTowerWorkspaceFloorSettings.allowedBasementFloorCounts(categoryProfiles,
+                1, true, false);
+        List<Integer> basementWithApproach = MKTowerWorkspaceFloorSettings.allowedBasementFloorCounts(categoryProfiles,
+                1, true, true);
+
+        assertTrue(mainWithoutApproach.getLast() >= mainWithApproach.getLast());
+        assertTrue(basementWithApproach.getLast() <= basementWithoutApproach.getLast());
+    }
+
+    @Test
+    void defaultWorkspaceAuthoringDataValidates() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceMaterialPalette palette = workspacePalette();
+        MKStructureWorkspace workspace = new MKStructureWorkspace(
+                UUID.randomUUID(),
+                BlockPos.ZERO,
+                "mkdev",
+                "default_validation",
+                MKStructureFamilyType.TOWER,
+                dimensions,
+                palette,
+                MKWorkspaceStairAuthoringConfig.defaultConfig(),
+                MKVerticalAccessPlacement.CENTER,
+                1,
+                2,
+                4,
+                MKWorkspaceVerticalAccessSpec.defaultSpec(),
+                MKTowerWorkspaceFloorSettings.defaultSettings(),
+                MKTowerWorkspaceCategoryProfile.createDefaults(dimensions),
+                MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions),
+                MKHorizontalOpeningProfile.createDefaults(dimensions),
+                MKHallwayFamilyDefinition.createDefaults(dimensions, palette),
+                System.currentTimeMillis(),
+                System.currentTimeMillis(),
+                List.of()
+        );
+
+        assertEquals(List.of(), workspace.validate());
+    }
+
+    @Test
+    void plannerConnectsTopCapDirectlyWhenApproachDisabled() {
+        MKStructureWorkspace workspace = withFloorSettings(baseWorkspace(
+                        List.of(
+                                new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                                new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                        ),
+                        List.of()),
+                new MKTowerWorkspaceFloorSettings(1, 1, false, false));
+
+        List<MKPlannedPiece> pieces = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace);
+        MKPlannedPiece topCap = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("top_cap"))
+                .findFirst()
+                .orElseThrow();
+
+        assertTrue(pieces.stream().noneMatch(piece -> piece.role() == MKWorkspacePieceRole.TOP_CAP_APPROACH));
+        assertTrue(topCap.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.CONNECT_DOWN &&
+                        "connect_up".equals(connector.incomingPoolName())));
+        assertEquals(MKJigsawPieceRole.TOP_CAP.getSerializedName(),
+                topCap.tags().get(MKWorkspaceRuntimePieceInfo.ROLE_TAG));
+        assertEquals("1", topCap.tags().get(MKWorkspaceRuntimePieceInfo.PROGRESSION_DELTA_TAG));
+        assertEquals("1", topCap.tags().get(MKWorkspaceRuntimePieceInfo.VERTICAL_LEVEL_DELTA_TAG));
+    }
+
+    @Test
+    void plannerConnectsBasementCapThroughApproachWhenEnabled() {
+        MKStructureWorkspace workspace = withFloorSettings(baseWorkspace(
+                        List.of(
+                                new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                                new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                        ),
+                        List.of()),
+                new MKTowerWorkspaceFloorSettings(1, 1, true, true));
+
+        List<MKPlannedPiece> pieces = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace);
+        MKPlannedPiece approach = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("basement_cap_approach"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece basementCap = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("basement_cap"))
+                .findFirst()
+                .orElseThrow();
+
+        assertTrue(approach.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.CONNECT_UP &&
+                        "connect_down".equals(connector.incomingPoolName())));
+        assertTrue(approach.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.TOP_CAP_FORWARD &&
+                        "bottom_cap".equals(connector.targetPoolName())));
+        assertEquals(MKJigsawPieceRole.BASEMENT_CAP_APPROACH.getSerializedName(),
+                approach.tags().get(MKWorkspaceRuntimePieceInfo.ROLE_TAG));
+        assertTrue(basementCap.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.TOP_CAP_BACK &&
+                        "bottom_cap".equals(connector.incomingPoolName())));
+        assertEquals("0", basementCap.tags().get(MKWorkspaceRuntimePieceInfo.PROGRESSION_DELTA_TAG));
+        assertEquals("0", basementCap.tags().get(MKWorkspaceRuntimePieceInfo.VERTICAL_LEVEL_DELTA_TAG));
+    }
+
+    @Test
+    void entryFamilyDefaultsToNoExtrusionButLegacyDataLoadsAsFullBody() {
         MKTowerWorkspaceFamilyDefinition defaultFamily = MKTowerWorkspaceFamilyDefinition.createDefaults().getFirst();
-        assertEquals(MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, defaultFamily.horizontalExtrusionMode());
+        assertEquals(MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, defaultFamily.horizontalExtrusionMode());
 
         CompoundTag legacyTag = defaultFamily.toTag();
         legacyTag.remove("horizontalExtrusionMode");
@@ -623,6 +867,9 @@ class TowerWorkspaceV2Test {
                         new MKTowerWorkspaceFamilyDefinition("basement_main", MKTowerWorkspaceCategory.BASEMENT, MKWorkspacePieceRole.BASEMENT_MAIN, true,
                                 9, 9, dimensions.basementHeight(),
                                 List.of()),
+                        new MKTowerWorkspaceFamilyDefinition("basement_cap_approach", MKTowerWorkspaceCategory.BASEMENT_CAP, MKWorkspacePieceRole.BASEMENT_CAP_APPROACH, true,
+                                9, 9, dimensions.basementHeight(),
+                                List.of()),
                         new MKTowerWorkspaceFamilyDefinition("basement_cap", MKTowerWorkspaceCategory.BASEMENT_CAP, MKWorkspacePieceRole.BASEMENT_CAP, true,
                                 9, 9, dimensions.basementHeight(),
                                 List.of())
@@ -635,8 +882,42 @@ class TowerWorkspaceV2Test {
         );
     }
 
+    private static MKStructureWorkspace withFloorSettings(MKStructureWorkspace workspace,
+                                                          MKTowerWorkspaceFloorSettings floorSettings) {
+        return new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                floorSettings,
+                workspace.categoryProfiles(),
+                workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.hallwayFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces()
+        );
+    }
+
     private static MKWorkspaceMaterialPalette workspacePalette() {
         return MKWorkspaceMaterialPalette.defaultPalette();
+    }
+
+    private static MKPlannedConnector branchConnector(MKPlannedPiece piece, net.minecraft.core.Direction direction) {
+        return piece.connectors().stream()
+                .filter(connector -> connector.role() == MKConnectorRole.BRANCH && connector.facing() == direction)
+                .findFirst()
+                .orElseThrow();
     }
 
     private static MKWorkspacePieceDefinition pieceWithRuntimeAndIncomingPool(String pieceName, String baseName,

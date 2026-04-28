@@ -13,6 +13,8 @@ public record MKDungeonLayoutSettings(
         int maxBranchDepth,
         boolean allowBranchesOnFinalFloor,
         MKVerticalProgressionMode verticalProgressionMode,
+        boolean topCapApproachEnabled,
+        boolean basementCapApproachEnabled,
         MKDungeonConnectorSettings connectors
 ) {
     public static final Codec<MKDungeonLayoutSettings> CODEC = RecordCodecBuilder.<MKDungeonLayoutSettings>create(instance -> instance.group(
@@ -23,8 +25,18 @@ public record MKDungeonLayoutSettings(
             Codec.intRange(0, 64).fieldOf("max_branch_depth").forGetter(MKDungeonLayoutSettings::maxBranchDepth),
             Codec.BOOL.optionalFieldOf("allow_branches_on_final_floor", false).forGetter(MKDungeonLayoutSettings::allowBranchesOnFinalFloor),
             MKVerticalProgressionMode.CODEC.optionalFieldOf("vertical_progression_mode", MKVerticalProgressionMode.MIXED).forGetter(MKDungeonLayoutSettings::verticalProgressionMode),
+            Codec.BOOL.optionalFieldOf("top_cap_approach_enabled", true).forGetter(MKDungeonLayoutSettings::topCapApproachEnabled),
+            Codec.BOOL.optionalFieldOf("basement_cap_approach_enabled", false).forGetter(MKDungeonLayoutSettings::basementCapApproachEnabled),
             MKDungeonConnectorSettings.CODEC.fieldOf("connectors").forGetter(MKDungeonLayoutSettings::connectors)
     ).apply(instance, MKDungeonLayoutSettings::new)).flatXmap(MKDungeonLayoutSettings::validate, MKDungeonLayoutSettings::validate);
+
+    public MKDungeonLayoutSettings(int minFloors, int maxFloors, int minPiecesPerFloor, int maxPiecesPerFloor,
+                                   int maxBranchDepth, boolean allowBranchesOnFinalFloor,
+                                   MKVerticalProgressionMode verticalProgressionMode,
+                                   MKDungeonConnectorSettings connectors) {
+        this(minFloors, maxFloors, minPiecesPerFloor, maxPiecesPerFloor, maxBranchDepth,
+                allowBranchesOnFinalFloor, verticalProgressionMode, true, false, connectors);
+    }
 
     private static DataResult<MKDungeonLayoutSettings> validate(MKDungeonLayoutSettings settings) {
         if (settings.minFloors() > settings.maxFloors()) {
