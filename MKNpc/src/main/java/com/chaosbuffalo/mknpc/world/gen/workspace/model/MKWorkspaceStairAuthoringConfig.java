@@ -12,9 +12,8 @@ public class MKWorkspaceStairAuthoringConfig {
     public static final Codec<MKWorkspaceStairAuthoringConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             MKWorkspaceCodecs.STAIR_MODE_CODEC.optionalFieldOf("mode", MKWorkspaceStairMode.AUTO)
                     .forGetter(MKWorkspaceStairAuthoringConfig::mode),
-            MKWorkspaceCodecs.STAIR_RISE_TYPE_CODEC.optionalFieldOf("riseType")
-                    .forGetter(config -> java.util.Optional.of(config.riseType())),
-            Codec.INT.optionalFieldOf("flatRunLength", 0).forGetter(MKWorkspaceStairAuthoringConfig::flatRunLength),
+            MKWorkspaceCodecs.STAIR_RISE_TYPE_CODEC.optionalFieldOf("riseType", MKWorkspaceStairRiseType.MIXED)
+                    .forGetter(MKWorkspaceStairAuthoringConfig::riseType),
             Codec.INT.optionalFieldOf("stairWidth", 1).forGetter(MKWorkspaceStairAuthoringConfig::stairWidth),
             ResourceLocation.CODEC.optionalFieldOf("stairBlock", DEFAULT_STAIR_BLOCK)
                     .forGetter(MKWorkspaceStairAuthoringConfig::stairBlock),
@@ -22,11 +21,10 @@ public class MKWorkspaceStairAuthoringConfig {
                     .forGetter(MKWorkspaceStairAuthoringConfig::slabBlock),
             ResourceLocation.CODEC.optionalFieldOf("ladderBlock", DEFAULT_LADDER_BLOCK)
                     .forGetter(MKWorkspaceStairAuthoringConfig::ladderBlock)
-    ).apply(instance, (mode, riseType, flatRunLength, stairWidth, stairBlock, slabBlock, ladderBlock) ->
+    ).apply(instance, (mode, riseType, stairWidth, stairBlock, slabBlock, ladderBlock) ->
             new MKWorkspaceStairAuthoringConfig(
                     mode,
-                    riseType.orElse(inferLegacyRiseType(mode)),
-                    flatRunLength,
+                    normalizeRiseType(mode, riseType),
                     Math.max(1, stairWidth),
                     stairBlock,
                     slabBlock,
@@ -35,18 +33,16 @@ public class MKWorkspaceStairAuthoringConfig {
 
     private final MKWorkspaceStairMode mode;
     private final MKWorkspaceStairRiseType riseType;
-    private final int flatRunLength;
     private final int stairWidth;
     private final ResourceLocation stairBlock;
     private final ResourceLocation slabBlock;
     private final ResourceLocation ladderBlock;
 
     public MKWorkspaceStairAuthoringConfig(MKWorkspaceStairMode mode, MKWorkspaceStairRiseType riseType,
-                                           int flatRunLength, int stairWidth, ResourceLocation stairBlock,
-                                           ResourceLocation slabBlock, ResourceLocation ladderBlock) {
+                                           int stairWidth, ResourceLocation stairBlock, ResourceLocation slabBlock,
+                                           ResourceLocation ladderBlock) {
         this.mode = mode;
-        this.riseType = riseType;
-        this.flatRunLength = flatRunLength;
+        this.riseType = normalizeRiseType(mode, riseType);
         this.stairWidth = stairWidth;
         this.stairBlock = stairBlock;
         this.slabBlock = slabBlock;
@@ -56,8 +52,7 @@ public class MKWorkspaceStairAuthoringConfig {
     public static MKWorkspaceStairAuthoringConfig defaultConfig() {
         return new MKWorkspaceStairAuthoringConfig(
                 MKWorkspaceStairMode.AUTO,
-                MKWorkspaceStairRiseType.STAIR,
-                0,
+                MKWorkspaceStairRiseType.MIXED,
                 1,
                 DEFAULT_STAIR_BLOCK,
                 DEFAULT_SLAB_BLOCK,
@@ -73,8 +68,14 @@ public class MKWorkspaceStairAuthoringConfig {
         return MKWorkspaceCodecs.encodeNbt(CODEC, this, "workspace stair authoring config");
     }
 
-    private static MKWorkspaceStairRiseType inferLegacyRiseType(MKWorkspaceStairMode mode) {
-        return mode == MKWorkspaceStairMode.SLAB_STAIRS ? MKWorkspaceStairRiseType.SLAB : MKWorkspaceStairRiseType.STAIR;
+    private static MKWorkspaceStairRiseType normalizeRiseType(MKWorkspaceStairMode mode, MKWorkspaceStairRiseType riseType) {
+        if (mode == MKWorkspaceStairMode.SLAB_STAIRS) {
+            return MKWorkspaceStairRiseType.SLAB;
+        }
+        if (mode == MKWorkspaceStairMode.STAIR_STAIRS) {
+            return MKWorkspaceStairRiseType.STAIR;
+        }
+        return riseType == null ? MKWorkspaceStairRiseType.MIXED : riseType;
     }
 
     public MKWorkspaceStairMode mode() {
@@ -83,10 +84,6 @@ public class MKWorkspaceStairAuthoringConfig {
 
     public MKWorkspaceStairRiseType riseType() {
         return riseType;
-    }
-
-    public int flatRunLength() {
-        return flatRunLength;
     }
 
     public int stairWidth() {

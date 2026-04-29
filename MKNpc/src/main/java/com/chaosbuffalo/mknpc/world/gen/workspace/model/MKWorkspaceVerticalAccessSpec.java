@@ -59,25 +59,21 @@ public class MKWorkspaceVerticalAccessSpec {
         if (!allowedStairWidths.contains(stairConfig.stairWidth())) {
             errors.add("stair width must be one of " + allowedStairWidths + " for shaft size " + shaftSize);
         }
-        List<Integer> allowedHeights = MKWorkspaceDimensions.getAllowedTowerHeights(stairConfig, shaftSize, 3, 4);
+        List<Integer> allowedHeights = MKWorkspaceDimensions.getAllowedBandHeights(stairConfig, shaftSize, 3, 3,
+                MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE);
         if (allowedHeights.isEmpty()) {
-            errors.add("vertical access profile did not produce any reusable room heights");
-        } else {
-            List<Integer> allowedFlatRuns = MKWorkspaceDimensions.getAllowedFlatRunLengths(stairConfig, shaftSize,
-                    allowedHeights.getFirst(), 4);
-            if (!allowedFlatRuns.contains(stairConfig.flatRunLength())) {
-                errors.add("flat run length must be one of " + allowedFlatRuns + " for shaft size " + shaftSize);
-            }
+            errors.add("vertical access profile did not produce any reusable room heights below " +
+                    MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE);
         }
         return errors;
     }
 
     public boolean supportsReusableHeight(int interiorHeight) {
-        MKVerticalAccessProfile profile = MKVerticalAccessProfile.forTemplateReuse(stairConfig, shaftSize, shaftSize);
-        if (profile.mode() == MKWorkspaceStairMode.LADDER || profile.mode() == MKWorkspaceStairMode.NONE) {
+        MKWorkspaceStairMode mode = MKVerticalAccessProfile.normalizeMode(stairConfig.mode());
+        if (mode == MKWorkspaceStairMode.LADDER || mode == MKWorkspaceStairMode.NONE) {
             return interiorHeight >= 3;
         }
-        return profile.isReusableInteriorHeight(interiorHeight);
+        return MKResolvedVerticalAccessProfile.resolve(stairConfig, shaftSize, shaftSize, interiorHeight).isPresent();
     }
 
     public List<Integer> getAllowedReusableHeights(int minimumHeight, int count) {

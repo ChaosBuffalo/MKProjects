@@ -95,7 +95,6 @@ public record MKWorkspaceExportManifest(
                         new ExportStairConfig(
                                 workspace.stairConfig().mode(),
                                 workspace.stairConfig().riseType(),
-                                workspace.stairConfig().flatRunLength(),
                                 workspace.stairConfig().stairWidth(),
                                 workspace.stairConfig().stairBlock(),
                                 workspace.stairConfig().slabBlock(),
@@ -281,7 +280,6 @@ public record MKWorkspaceExportManifest(
                     new ExportStairConfig(
                             spec.stairConfig().mode(),
                             spec.stairConfig().riseType(),
-                            spec.stairConfig().flatRunLength(),
                             spec.stairConfig().stairWidth(),
                             spec.stairConfig().stairBlock(),
                             spec.stairConfig().slabBlock(),
@@ -316,6 +314,9 @@ public record MKWorkspaceExportManifest(
             MKTowerWorkspaceCategory category,
             int roomWidth,
             int roomLength,
+            int minMainPathPieces,
+            int maxMainPathPieces,
+            int maxBranchPiecesBeforeCap,
             Optional<Integer> fullHeight,
             Optional<Integer> defaultHeight,
             Optional<Integer> legacyMinHeight,
@@ -329,6 +330,13 @@ public record MKWorkspaceExportManifest(
                 towerCategoryCodec().fieldOf("category").forGetter(ExportCategoryProfile::category),
                 Codec.INT.fieldOf("room_width").forGetter(ExportCategoryProfile::roomWidth),
                 Codec.INT.fieldOf("room_length").forGetter(ExportCategoryProfile::roomLength),
+                Codec.INT.optionalFieldOf("min_main_path_pieces", MKTowerWorkspaceCategoryProfile.DEFAULT_MIN_MAIN_PATH_PIECES)
+                        .forGetter(ExportCategoryProfile::minMainPathPieces),
+                Codec.INT.optionalFieldOf("max_main_path_pieces", MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_MAIN_PATH_PIECES)
+                        .forGetter(ExportCategoryProfile::maxMainPathPieces),
+                Codec.INT.optionalFieldOf("max_branch_pieces_before_cap",
+                                MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP)
+                        .forGetter(ExportCategoryProfile::maxBranchPiecesBeforeCap),
                 Codec.INT.optionalFieldOf("full_height").forGetter(ExportCategoryProfile::fullHeight),
                 Codec.INT.optionalFieldOf("default_height").forGetter(ExportCategoryProfile::defaultHeight),
                 Codec.INT.optionalFieldOf("min_height").forGetter(ExportCategoryProfile::legacyMinHeight),
@@ -344,6 +352,9 @@ public record MKWorkspaceExportManifest(
                     profile.category(),
                     profile.roomWidth(),
                     profile.roomLength(),
+                    profile.minMainPathPieces(),
+                    profile.maxMainPathPieces(),
+                    profile.maxBranchPiecesBeforeCap(),
                     Optional.of(profile.fullHeight()),
                     Optional.of(profile.fullHeight()),
                     Optional.empty(),
@@ -570,7 +581,10 @@ public record MKWorkspaceExportManifest(
             boolean allowOnMainPath,
             boolean allowOnBranchPath,
             boolean terminal,
-            boolean topCapOnly
+            boolean topCapOnly,
+            String category,
+            boolean mainPathEnding,
+            boolean branchCap
     ) {
         public static final Codec<ExportRuntimePieceMetadata> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 jigsawPieceRoleCodec().fieldOf("role").forGetter(ExportRuntimePieceMetadata::role),
@@ -579,7 +593,10 @@ public record MKWorkspaceExportManifest(
                 Codec.BOOL.fieldOf("allow_on_main_path").forGetter(ExportRuntimePieceMetadata::allowOnMainPath),
                 Codec.BOOL.fieldOf("allow_on_branch_path").forGetter(ExportRuntimePieceMetadata::allowOnBranchPath),
                 Codec.BOOL.fieldOf("terminal").forGetter(ExportRuntimePieceMetadata::terminal),
-                Codec.BOOL.fieldOf("top_cap_only").forGetter(ExportRuntimePieceMetadata::topCapOnly)
+                Codec.BOOL.fieldOf("top_cap_only").forGetter(ExportRuntimePieceMetadata::topCapOnly),
+                Codec.STRING.optionalFieldOf("category", "").forGetter(ExportRuntimePieceMetadata::category),
+                Codec.BOOL.optionalFieldOf("main_path_ending", false).forGetter(ExportRuntimePieceMetadata::mainPathEnding),
+                Codec.BOOL.optionalFieldOf("branch_cap", false).forGetter(ExportRuntimePieceMetadata::branchCap)
         ).apply(instance, ExportRuntimePieceMetadata::new));
 
         public static ExportRuntimePieceMetadata from(MKWorkspaceRuntimePieceInfo runtimeInfo) {
@@ -590,18 +607,20 @@ public record MKWorkspaceExportManifest(
                     runtimeInfo.allowOnMainPath(),
                     runtimeInfo.allowOnBranchPath(),
                     runtimeInfo.terminal(),
-                    runtimeInfo.topCapOnly()
+                    runtimeInfo.topCapOnly(),
+                    runtimeInfo.category(),
+                    runtimeInfo.mainPathEnding(),
+                    runtimeInfo.branchCap()
             );
         }
     }
 
-    public record ExportStairConfig(MKWorkspaceStairMode mode, MKWorkspaceStairRiseType riseType, int flatRunLength,
-                                    int stairWidth, ResourceLocation stairBlock, ResourceLocation slabBlock,
+    public record ExportStairConfig(MKWorkspaceStairMode mode, MKWorkspaceStairRiseType riseType, int stairWidth,
+                                    ResourceLocation stairBlock, ResourceLocation slabBlock,
                                     ResourceLocation ladderBlock) {
         public static final Codec<ExportStairConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 stairModeCodec().fieldOf("mode").forGetter(ExportStairConfig::mode),
                 stairRiseTypeCodec().fieldOf("rise_type").forGetter(ExportStairConfig::riseType),
-                Codec.INT.fieldOf("flat_run_length").forGetter(ExportStairConfig::flatRunLength),
                 Codec.INT.fieldOf("stair_width").forGetter(ExportStairConfig::stairWidth),
                 ResourceLocation.CODEC.fieldOf("stair_block").forGetter(ExportStairConfig::stairBlock),
                 ResourceLocation.CODEC.fieldOf("slab_block").forGetter(ExportStairConfig::slabBlock),
@@ -814,6 +833,10 @@ public record MKWorkspaceExportManifest(
                 if (connector.incomingPool().equals(EMPTY_POOL)) {
                     continue;
                 }
+                if (isBranchCapRuntimePool(workspace, connector.incomingPool()) &&
+                        !runtimeInfo.map(MKWorkspaceRuntimePieceInfo::branchCap).orElse(false)) {
+                    continue;
+                }
                 if (isBranchRuntimePool(workspace, connector.incomingPool()) &&
                         runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnBranchPath).orElse(false) == false) {
                     continue;
@@ -843,10 +866,19 @@ public record MKWorkspaceExportManifest(
     }
 
     private static boolean isBranchRuntimePool(MKStructureWorkspace workspace, ResourceLocation poolId) {
+        String path = runtimePoolPath(workspace, poolId);
+        return path.startsWith("hallways/branch/") || path.startsWith("rooms/branch/") ||
+                path.startsWith("branch_caps/");
+    }
+
+    private static boolean isBranchCapRuntimePool(MKStructureWorkspace workspace, ResourceLocation poolId) {
+        return runtimePoolPath(workspace, poolId).startsWith("branch_caps/");
+    }
+
+    private static String runtimePoolPath(MKStructureWorkspace workspace, ResourceLocation poolId) {
         String prefix = workspace.structureName() + "/";
-        String path = poolId.getNamespace().equals(workspace.namespace()) && poolId.getPath().startsWith(prefix) ?
+        return poolId.getNamespace().equals(workspace.namespace()) && poolId.getPath().startsWith(prefix) ?
                 poolId.getPath().substring(prefix.length()) : poolId.getPath();
-        return path.startsWith("hallways/branch/") || path.startsWith("rooms/branch/");
     }
 }
 

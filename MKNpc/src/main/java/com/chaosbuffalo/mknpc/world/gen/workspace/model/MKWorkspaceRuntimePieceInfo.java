@@ -13,7 +13,10 @@ public record MKWorkspaceRuntimePieceInfo(
         boolean allowOnMainPath,
         boolean allowOnBranchPath,
         boolean terminal,
-        boolean topCapOnly
+        boolean topCapOnly,
+        String category,
+        boolean mainPathEnding,
+        boolean branchCap
 ) {
     public static final String START_TAG = "runtime_start";
     public static final String ROLE_TAG = "runtime_piece_role";
@@ -23,6 +26,26 @@ public record MKWorkspaceRuntimePieceInfo(
     public static final String ALLOW_ON_BRANCH_PATH_TAG = "runtime_allow_on_branch_path";
     public static final String TERMINAL_TAG = "runtime_terminal";
     public static final String TOP_CAP_ONLY_TAG = "runtime_top_cap_only";
+    public static final String CATEGORY_TAG = "runtime_category";
+    public static final String MAIN_PATH_ENDING_TAG = "runtime_main_path_ending";
+    public static final String BRANCH_CAP_TAG = "runtime_branch_cap";
+
+    public MKWorkspaceRuntimePieceInfo(boolean start, MKJigsawPieceRole role,
+                                       int progressionDelta, int verticalLevelDelta,
+                                       boolean allowOnMainPath, boolean allowOnBranchPath,
+                                       boolean terminal, boolean topCapOnly) {
+        this(start, role, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
+                topCapOnly, "", false, false);
+    }
+
+    public MKWorkspaceRuntimePieceInfo(boolean start, MKJigsawPieceRole role,
+                                       int progressionDelta, int verticalLevelDelta,
+                                       boolean allowOnMainPath, boolean allowOnBranchPath,
+                                       boolean terminal, boolean topCapOnly, String category,
+                                       boolean mainPathEnding) {
+        this(start, role, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
+                topCapOnly, category, mainPathEnding, false);
+    }
 
     public void applyToTags(Map<String, String> tags) {
         tags.put(START_TAG, Boolean.toString(start));
@@ -33,6 +56,9 @@ public record MKWorkspaceRuntimePieceInfo(
         tags.put(ALLOW_ON_BRANCH_PATH_TAG, Boolean.toString(allowOnBranchPath));
         tags.put(TERMINAL_TAG, Boolean.toString(terminal));
         tags.put(TOP_CAP_ONLY_TAG, Boolean.toString(topCapOnly));
+        tags.put(CATEGORY_TAG, category);
+        tags.put(MAIN_PATH_ENDING_TAG, Boolean.toString(mainPathEnding));
+        tags.put(BRANCH_CAP_TAG, Boolean.toString(branchCap));
     }
 
     public static Optional<MKWorkspaceRuntimePieceInfo> fromTags(Map<String, String> tags) {
@@ -48,7 +74,10 @@ public record MKWorkspaceRuntimePieceInfo(
                 parseBoolean(tags, ALLOW_ON_MAIN_PATH_TAG, true),
                 parseBoolean(tags, ALLOW_ON_BRANCH_PATH_TAG, false),
                 parseBoolean(tags, TERMINAL_TAG, false),
-                parseBoolean(tags, TOP_CAP_ONLY_TAG, false)
+                parseBoolean(tags, TOP_CAP_ONLY_TAG, false),
+                tags.getOrDefault(CATEGORY_TAG, tags.getOrDefault("workspace_category", "")),
+                parseBoolean(tags, MAIN_PATH_ENDING_TAG, false),
+                parseBoolean(tags, BRANCH_CAP_TAG, false)
         ));
     }
 

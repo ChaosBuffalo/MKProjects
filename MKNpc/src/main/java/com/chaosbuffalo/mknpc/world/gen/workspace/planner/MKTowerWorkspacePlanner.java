@@ -329,11 +329,23 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             " for family " + family.baseName()));
             HallwayPathKind hallwayPathKind = exit.pathKind().usesMainPath() ? HallwayPathKind.MAIN : HallwayPathKind.BRANCH;
             MKConnectorRole role = switch (exit.pathKind()) {
-                case MAIN_ENTRY -> MKConnectorRole.MAIN_FORWARD;
+                case MAIN_ENTRY, MAIN_ENDING_ENTRY -> MKConnectorRole.MAIN_FORWARD;
                 case MAIN_EXIT -> MKConnectorRole.MAIN_BACK;
-                case BRANCH -> MKConnectorRole.BRANCH;
+                case BRANCH, BRANCH_CAP_ENTRY -> MKConnectorRole.BRANCH;
             };
             int lateralOffset = toLateralOffset(exit.direction(), exit.sideOffset());
+            if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY) {
+                connectors.add(new MKPlannedConnector(role, exit.direction(),
+                        opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset(),
+                        EMPTY_POOL, mainEndingPoolName(family.category())));
+                continue;
+            }
+            if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY) {
+                connectors.add(new MKPlannedConnector(role, exit.direction(),
+                        opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset(),
+                        EMPTY_POOL, branchCapPoolName(opening.profileId())));
+                continue;
+            }
             if (exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION) {
                 connectors.add(MKPlannedConnector.openingOnly(role, exit.direction(),
                         opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset()));
@@ -385,6 +397,14 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         return ROOM_POOL_PREFIX + "/" + role.getSerializedName() + "/" + openingProfileId;
     }
 
+    public static String mainEndingPoolName(MKTowerWorkspaceCategory category) {
+        return "main_endings/" + category.getSerializedName();
+    }
+
+    public static String branchCapPoolName(String openingProfileId) {
+        return "branch_caps/" + openingProfileId;
+    }
+
     private String directRoomTargetRoleName(MKConnectorRole role) {
         return switch (role) {
             case MAIN_FORWARD -> MKConnectorRole.MAIN_BACK.getSerializedName();
@@ -399,7 +419,9 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                                                         boolean terminal, boolean topCapOnly,
                                                         MKTowerWorkspaceFamilyDefinition family) {
         boolean branchOnlyHorizontalFamily = family.mainEntry().isEmpty() && family.mainExit().isEmpty() &&
-                !family.branchExits().isEmpty();
+                family.mainEndingEntry().isEmpty() &&
+                (!family.branchExits().isEmpty() || family.branchCap());
+        boolean branchCap = family.branchCap();
         return new MKWorkspaceRuntimePieceInfo(
                 start,
                 role,
@@ -407,8 +429,11 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                 verticalLevelDelta,
                 !branchOnlyHorizontalFamily,
                 branchOnlyHorizontalFamily,
-                terminal,
-                topCapOnly
+                terminal || branchCap,
+                topCapOnly,
+                family.category().getSerializedName(),
+                family.mainPathEnding(),
+                branchCap
         );
     }
 

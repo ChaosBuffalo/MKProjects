@@ -49,25 +49,45 @@ public class MKStructureWorkspaceImportService {
     public record MKWorkspaceImportResult(UUID workspaceId, int pieceCount) {
     }
 
+    public record MKWorkspaceImportOutcome(Optional<MKWorkspaceImportResult> result, List<String> validationErrors) {
+        public static MKWorkspaceImportOutcome success(MKWorkspaceImportResult result) {
+            return new MKWorkspaceImportOutcome(Optional.of(result), List.of());
+        }
+
+        public static MKWorkspaceImportOutcome failed() {
+            return new MKWorkspaceImportOutcome(Optional.empty(), List.of());
+        }
+
+        public static MKWorkspaceImportOutcome validationFailed(List<String> validationErrors) {
+            return new MKWorkspaceImportOutcome(Optional.empty(), List.copyOf(validationErrors));
+        }
+    }
+
     private final MKWorkspaceImportManifestDiscovery discovery = new MKWorkspaceImportManifestDiscovery(
             MKWorkspaceExportManifestLoader.resolveModuleRoot(MKNpc.MODULE_DIRECTORY_NAME), MKNpc.MODID);
     private final MKWorkspaceScaffoldBuilder scaffoldBuilder = new MKWorkspaceScaffoldBuilder();
 
     public Optional<MKWorkspaceImportResult> importWorkspaceAtAnchor(ServerLevel level, BlockPos anchor,
                                                                      ResourceLocation manifestId) {
+        return importWorkspaceAtAnchorDetailed(level, anchor, manifestId).result();
+    }
+
+    public MKWorkspaceImportOutcome importWorkspaceAtAnchorDetailed(ServerLevel level, BlockPos anchor,
+                                                                    ResourceLocation manifestId) {
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         if (data.getWorkspaceByAnchor(anchor).isPresent()) {
-            return Optional.empty();
+            return MKWorkspaceImportOutcome.failed();
         }
 
         Optional<MKWorkspaceExportManifest> manifestOpt = discovery.loadManifest(manifestId);
         if (manifestOpt.isEmpty()) {
-            return Optional.empty();
+            return MKWorkspaceImportOutcome.failed();
         }
 
         MKStructureWorkspace workspace = fromManifest(anchor, manifestOpt.get());
-        if (!workspace.validate().isEmpty()) {
-            return Optional.empty();
+        List<String> validationErrors = workspace.validate();
+        if (!validationErrors.isEmpty()) {
+            return MKWorkspaceImportOutcome.validationFailed(validationErrors);
         }
 
         List<MKPlannedPiece> plannedPieces = toPlannedPieces(manifestOpt.get());
@@ -76,7 +96,7 @@ public class MKStructureWorkspaceImportService {
         Optional<Map<String, StructureTemplate>> templatesByPieceNameOpt =
                 preflightImport(level, manifestId, plannedPieces, exportedByName);
         if (templatesByPieceNameOpt.isEmpty()) {
-            return Optional.empty();
+            return MKWorkspaceImportOutcome.failed();
         }
         Map<String, StructureTemplate> templatesByPieceName = templatesByPieceNameOpt.get();
 
@@ -90,14 +110,15 @@ public class MKStructureWorkspaceImportService {
             }
             StructureTemplate template = templatesByPieceName.get(piece.pieceName());
             if (template == null || !placeSavedStructure(level, template, piece.worldOrigin())) {
-                return Optional.empty();
+                return MKWorkspaceImportOutcome.failed();
             }
             importedPieces.add(mergeImportedPiece(piece, exported, workspace.id()));
         }
 
         MKStructureWorkspace importedWorkspace = workspace.withPieces(importedPieces);
         data.createWorkspace(importedWorkspace);
-        return Optional.of(new MKWorkspaceImportResult(importedWorkspace.id(), importedPieces.size()));
+        return MKWorkspaceImportOutcome.success(new MKWorkspaceImportResult(importedWorkspace.id(),
+                importedPieces.size()));
     }
 
     public List<String> discoverManifestIds() {
@@ -147,7 +168,6 @@ public class MKStructureWorkspaceImportService {
         MKWorkspaceStairAuthoringConfig workspaceStairConfig = new MKWorkspaceStairAuthoringConfig(
                 stairConfig.mode(),
                 stairConfig.riseType(),
-                stairConfig.flatRunLength(),
                 stairConfig.stairWidth(),
                 stairConfig.stairBlock(),
                 stairConfig.slabBlock(),
@@ -160,7 +180,6 @@ public class MKStructureWorkspaceImportService {
                         new MKWorkspaceStairAuthoringConfig(
                                 spec.stairConfig().mode(),
                                 spec.stairConfig().riseType(),
-                                spec.stairConfig().flatRunLength(),
                                 spec.stairConfig().stairWidth(),
                                 spec.stairConfig().stairBlock(),
                                 spec.stairConfig().slabBlock(),
@@ -177,7 +196,10 @@ public class MKStructureWorkspaceImportService {
                         profile.category(),
                         profile.roomWidth(),
                         profile.roomLength(),
-                        profile.fullHeight().orElse(profile.defaultHeight().orElse(profile.maxHeight().orElse(3)))
+                        profile.fullHeight().orElse(profile.defaultHeight().orElse(profile.maxHeight().orElse(3))),
+                        profile.minMainPathPieces(),
+                        profile.maxMainPathPieces(),
+                        profile.maxBranchPiecesBeforeCap()
                 ))
                 .toList();
         if (categoryProfiles.isEmpty()) {

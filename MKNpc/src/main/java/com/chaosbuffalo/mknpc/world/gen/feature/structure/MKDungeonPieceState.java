@@ -6,6 +6,14 @@ public record MKDungeonPieceState(
         int piecesOnFloor,
         int branchDepth,
         boolean onMainPath,
-        int targetFloors
+        int targetFloors,
+        String category,
+        int mainPathPiecesInCategory,
+        int mainPathTargetInCategory
 ) {
+    public MKDungeonPieceState(int progressionFloorIndex, int verticalLevelIndex, int piecesOnFloor,
+                               int branchDepth, boolean onMainPath, int targetFloors) {
+        this(progressionFloorIndex, verticalLevelIndex, piecesOnFloor, branchDepth, onMainPath, targetFloors,
+                "", 0, 0);
+    }
 }

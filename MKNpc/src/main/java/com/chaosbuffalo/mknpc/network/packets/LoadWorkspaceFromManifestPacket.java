@@ -45,8 +45,16 @@ public class LoadWorkspaceFromManifestPacket implements CustomPacketPayload {
             return;
         }
         MKStructureWorkspaceService service = new MKStructureWorkspaceService();
-        if (service.importWorkspaceFromManifest(player.serverLevel(), packet.anchor, packet.manifestId).isPresent()) {
+        MKStructureWorkspaceService.MKWorkspaceImportResponse response =
+                service.importWorkspaceFromManifestWithValidation(player.serverLevel(), packet.anchor, packet.manifestId);
+        if (!response.validationErrors().isEmpty()) {
+            MKWorkspaceValidationMessages.displayValidationErrors(player, response.validationErrors());
+            return;
+        }
+        if (response.workspace().isPresent()) {
             service.openWorkspaceScreen(player, packet.anchor);
+        } else {
+            MKWorkspaceValidationMessages.displayFailure(player, "Workspace import failed.");
         }
     }
 }

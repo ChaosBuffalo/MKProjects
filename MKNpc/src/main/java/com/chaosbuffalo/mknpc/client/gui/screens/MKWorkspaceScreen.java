@@ -83,7 +83,6 @@ public class MKWorkspaceScreen extends MKScreen {
     private int selectedHallwayIndex;
     private MKWorkspaceStairMode detailStairMode;
     private MKWorkspaceStairRiseType detailStairRiseType;
-    private int detailFlatRunLength;
     private int detailStairWidth;
     private ResourceLocation detailStairBlock;
     private ResourceLocation detailSlabBlock;
@@ -104,7 +103,6 @@ public class MKWorkspaceScreen extends MKScreen {
         private int previewMargin;
         private MKWorkspaceStairMode stairMode;
         private MKWorkspaceStairRiseType stairRiseType;
-        private int stairFlatRunLength;
         private int stairWidth;
         private ResourceLocation floorBlock;
         private ResourceLocation wallBlock;
@@ -123,7 +121,7 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     public MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace, List<String> importManifestIds) {
-        this(anchor, workspace, importManifestIds, List.of(), null, null, -1, -1, -1, -1, null, null, 0, 1, null, null, null);
+        this(anchor, workspace, importManifestIds, List.of(), null, null, -1, -1, -1, -1, null, null, 1, null, null, null);
     }
 
     private MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace, List<String> importManifestIds,
@@ -135,7 +133,7 @@ public class MKWorkspaceScreen extends MKScreen {
                               int selectedOpeningIndex,
                               int selectedHallwayIndex,
                               MKWorkspaceStairMode detailStairMode,
-                              MKWorkspaceStairRiseType detailStairRiseType, int detailFlatRunLength, int detailStairWidth,
+                              MKWorkspaceStairRiseType detailStairRiseType, int detailStairWidth,
                               ResourceLocation detailStairBlock, ResourceLocation detailSlabBlock,
                               ResourceLocation detailLadderBlock) {
         super(Component.literal("Tower Workspace"));
@@ -151,7 +149,6 @@ public class MKWorkspaceScreen extends MKScreen {
         this.selectedHallwayIndex = selectedHallwayIndex;
         this.detailStairMode = detailStairMode;
         this.detailStairRiseType = detailStairRiseType;
-        this.detailFlatRunLength = detailFlatRunLength;
         this.detailStairWidth = detailStairWidth;
         this.detailStairBlock = detailStairBlock;
         this.detailSlabBlock = detailSlabBlock;
@@ -162,7 +159,7 @@ public class MKWorkspaceScreen extends MKScreen {
         return new MKWorkspaceScreen(anchor, updatedWorkspace, updatedImportManifestIds, getInitialStatesForRefresh(updatedWorkspace),
                 selectedFormCategory, selectedTopologyKey, selectedFamilyIndex, selectedFamilyExitIndex,
                 selectedOpeningIndex, selectedHallwayIndex,
-                detailStairMode, detailStairRiseType, detailFlatRunLength, detailStairWidth,
+                detailStairMode, detailStairRiseType, detailStairWidth,
                 detailStairBlock, detailSlabBlock, detailLadderBlock);
     }
 
@@ -173,7 +170,6 @@ public class MKWorkspaceScreen extends MKScreen {
         addState("import", this::buildImportState);
         addState("form", this::buildFormState);
         addState("form_identity", this::buildFormIdentityState);
-        addState("form_vertical", this::buildFormVerticalState);
         addState("form_materials", this::buildFormMaterialsState);
         addState("form_categories", this::buildFormCategoriesState);
         addState("form_category_detail", this::buildFormCategoryDetailState);
@@ -326,7 +322,7 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), title);
 
         MKText helpText = makeWhiteText(Component.literal(
-                "Edit the workspace through focused v2 sections. Global screens handle naming, margins, materials, and shared vertical access. Category, family, opening, and hallway data each live in their own list and detail screens."));
+                "Edit the workspace through focused v2 sections. Global screens handle naming, margins, materials, categories, family variants, openings, and hallway data."));
         helpText.setWidth(CONTENT_WIDTH);
         helpText.setMultiline(true);
         root.addWidget(helpText);
@@ -357,20 +353,10 @@ public class MKWorkspaceScreen extends MKScreen {
             return true;
         });
 
-        MKButton vertical = new MKButton(Component.literal("Vertical Access"), 220, 20);
-        root.addWidget(vertical);
-        root.addConstraintToWidget(new CenterXConstraint(), vertical);
-        vertical.setY(firstButtonY + BUTTON_HEIGHT + BUTTON_GAP);
-        vertical.setPressedCallback((button, mouseButton) -> {
-            pushState("form_vertical");
-            flagNeedSetup();
-            return true;
-        });
-
         MKButton materials = new MKButton(Component.literal("Materials"), 220, 20);
         root.addWidget(materials);
         root.addConstraintToWidget(new CenterXConstraint(), materials);
-        materials.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 2));
+        materials.setY(firstButtonY + BUTTON_HEIGHT + BUTTON_GAP);
         materials.setPressedCallback((button, mouseButton) -> {
             pushState("form_materials");
             flagNeedSetup();
@@ -380,7 +366,7 @@ public class MKWorkspaceScreen extends MKScreen {
         MKButton categories = new MKButton(Component.literal("Category Profiles"), 220, 20);
         root.addWidget(categories);
         root.addConstraintToWidget(new CenterXConstraint(), categories);
-        categories.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 3));
+        categories.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 2));
         categories.setPressedCallback((button, mouseButton) -> {
             pushState("form_categories");
             flagNeedSetup();
@@ -390,7 +376,7 @@ public class MKWorkspaceScreen extends MKScreen {
         MKButton families = new MKButton(Component.literal("Branch Variants"), 220, 20);
         root.addWidget(families);
         root.addConstraintToWidget(new CenterXConstraint(), families);
-        families.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 4));
+        families.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 3));
         families.setPressedCallback((button, mouseButton) -> {
             pushState("form_families");
             flagNeedSetup();
@@ -400,7 +386,7 @@ public class MKWorkspaceScreen extends MKScreen {
         MKButton openings = new MKButton(Component.literal("Opening Profiles"), 220, 20);
         root.addWidget(openings);
         root.addConstraintToWidget(new CenterXConstraint(), openings);
-        openings.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 5));
+        openings.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 4));
         openings.setPressedCallback((button, mouseButton) -> {
             pushState("form_openings");
             flagNeedSetup();
@@ -410,7 +396,7 @@ public class MKWorkspaceScreen extends MKScreen {
         MKButton hallways = new MKButton(Component.literal("Hallway Families"), 220, 20);
         root.addWidget(hallways);
         root.addConstraintToWidget(new CenterXConstraint(), hallways);
-        hallways.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 6));
+        hallways.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 5));
         hallways.setPressedCallback((button, mouseButton) -> {
             pushState("form_hallways");
             flagNeedSetup();
@@ -505,100 +491,6 @@ public class MKWorkspaceScreen extends MKScreen {
         return root;
     }
 
-    private MKLayout buildFormVerticalState() {
-        ensureFormDraftInitialized();
-        int xPos = width / 2 - PANEL_WIDTH / 2;
-        int yPos = height / 2 - PANEL_HEIGHT / 2;
-        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
-        root.setMargins(8, 8, 8, 8);
-        root.setPaddingTop(8).setPaddingBot(8);
-
-        MKText title = makeWhiteText(Component.literal("Vertical Access"));
-        root.addWidget(title);
-        root.addConstraintToWidget(MarginConstraint.TOP, title);
-        root.addConstraintToWidget(new CenterXConstraint(), title);
-
-        MKText helpText = makeWhiteText(Component.literal(
-                "Adjust placement and stair authoring behavior for the shared shaft. Shaft size and stair width now live on the category page because they directly drive category height bands."));
-        helpText.setWidth(CONTENT_WIDTH);
-        helpText.setMultiline(true);
-        root.addWidget(helpText);
-        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
-        root.addConstraintToWidget(new CenterXConstraint(), helpText);
-
-        int buttonAreaHeight = BUTTON_HEIGHT + BOTTOM_PADDING;
-        int scrollTop = scrollTopAfterHeader(root, helpText);
-        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 12 - scrollTop;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
-        scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
-        root.addWidget(scrollView);
-
-        MKStackLayoutVertical content = new MKStackLayoutVertical(0, 0, CONTENT_WIDTH);
-        content.setMargins(4, 4, 4, 4);
-        content.setPaddingTop(4).setPaddingBot(4);
-
-        List<Integer> allowedHeights = currentDraftVerticalAccessSpec().getAllowedReusableHeights(3, 6);
-        MKText allowedHeightsText = makeWhiteText(Component.literal(
-                "Reusable shaft heights: " + (allowedHeights.isEmpty() ? "none" : allowedHeights.toString())));
-        allowedHeightsText.setWidth(CONTENT_WIDTH);
-        content.addWidget(allowedHeightsText);
-        content.addConstraintToWidget(MarginConstraint.LEFT, allowedHeightsText);
-
-        MKButton stairPlacementButton = new MKButton(getStairPlacementComponent(formDraft.verticalAccessPlacement), 180, 20);
-        MKButton stairModeButton = new MKButton(getStairModeComponent(formDraft.stairMode), 180, 20);
-        MKButton stairRiseTypeButton = new MKButton(getStairRiseTypeComponent(formDraft.stairRiseType), 180, 20);
-        MKButton flatRunButton = new MKButton(Component.literal(Integer.toString(formDraft.stairFlatRunLength)), 180, 20);
-
-        addRow(content, makeLabel("mknpc.workspace.field.stair_placement"), stairPlacementButton);
-        addRow(content, makeLabel("mknpc.workspace.field.stair_mode"), stairModeButton);
-        addRow(content, makeWhiteText(Component.literal("Rise Type")), stairRiseTypeButton);
-        addRow(content, makeWhiteText(Component.literal("Flat Run Length")), flatRunButton);
-        stairPlacementButton.setPressedCallback((button, mouseButton) -> {
-            formDraft.verticalAccessPlacement = formDraft.verticalAccessPlacement.next();
-            button.buttonText = getStairPlacementComponent(formDraft.verticalAccessPlacement);
-            return true;
-        });
-        stairModeButton.setPressedCallback((button, mouseButton) -> {
-            formDraft.stairMode = formDraft.stairMode.next();
-            snapDraftVerticalAccess();
-            button.buttonText = getStairModeComponent(formDraft.stairMode);
-            flatRunButton.buttonText = Component.literal(Integer.toString(formDraft.stairFlatRunLength));
-            flagNeedSetup();
-            return true;
-        });
-        stairRiseTypeButton.setPressedCallback((button, mouseButton) -> {
-            formDraft.stairRiseType = formDraft.stairRiseType.next();
-            snapDraftVerticalAccess();
-            button.buttonText = getStairRiseTypeComponent(formDraft.stairRiseType);
-            flatRunButton.buttonText = Component.literal(Integer.toString(formDraft.stairFlatRunLength));
-            flagNeedSetup();
-            return true;
-        });
-        flatRunButton.setPressedCallback((button, mouseButton) -> {
-            formDraft.stairFlatRunLength = cycleAllowedFlatRunLength(makeDraftStairConfig(), formDraft.shaftSize,
-                    getDraftReferenceRoomHeight(makeDraftStairConfig()), formDraft.stairFlatRunLength);
-            snapDraftVerticalAccess();
-            button.buttonText = Component.literal(Integer.toString(formDraft.stairFlatRunLength));
-            flagNeedSetup();
-            return true;
-        });
-
-        content.manualRecompute();
-        scrollView.addWidget(content);
-        scrollView.centerContentX();
-        finalizeScrollView(scrollView, "form_identity");
-
-        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
-        root.addWidget(back);
-        root.addConstraintToWidget(new CenterXConstraint(), back);
-        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
-        back.setPressedCallback((button, mouseButton) -> {
-            switchToExistingState("form");
-            return true;
-        });
-        return root;
-    }
-
     private MKLayout buildFormMaterialsState() {
         ensureFormDraftInitialized();
         int xPos = width / 2 - PANEL_WIDTH / 2;
@@ -667,7 +559,7 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), title);
 
         MKText helpText = makeWhiteText(Component.literal(
-                "Edit the shaft-driven category bands in one place. Shaft size and stair width live here because they determine which full heights are valid for each category."));
+                "Edit vertical access settings and the shaft-driven category bands in one place. Stair shape, shaft size, and stair width determine which full heights are valid for each category."));
         helpText.setWidth(CONTENT_WIDTH);
         helpText.setMultiline(true);
         root.addWidget(helpText);
@@ -685,18 +577,47 @@ public class MKWorkspaceScreen extends MKScreen {
         content.setMargins(4, 4, 4, 4);
         content.setPaddingTop(4).setPaddingBot(4);
 
-        MKButton shaftSizeButton = new MKButton(Component.literal(Integer.toString(formDraft.shaftSize)), 180, 20);
-        shaftSizeButton.setPressedCallback((button, mouseButton) -> {
-            formDraft.shaftSize = cycleAllowedDraftShaftSize(formDraft.shaftSize);
+        MKButton stairPlacementButton = new MKButton(getStairPlacementComponent(formDraft.verticalAccessPlacement), 180, 20);
+        stairPlacementButton.setPressedCallback((button, mouseButton) -> {
+            formDraft.verticalAccessPlacement = cycleValue(
+                    List.of(MKVerticalAccessPlacement.values()), formDraft.verticalAccessPlacement, isReverseClick(mouseButton));
+            flagNeedSetup();
+            return true;
+        });
+        addRow(content, makeLabel("mknpc.workspace.field.stair_placement"), stairPlacementButton);
+
+        MKButton stairModeButton = new MKButton(getStairModeComponent(formDraft.stairMode), 180, 20);
+        stairModeButton.setPressedCallback((button, mouseButton) -> {
+            formDraft.stairMode = cycleStairMode(formDraft.stairMode, isReverseClick(mouseButton));
             snapDraftVerticalAccess();
             flagNeedSetup();
             return true;
         });
-        addRow(content, makeWhiteText(Component.literal("Shaft Size")), shaftSizeButton);
+        addRow(content, makeLabel("mknpc.workspace.field.stair_mode"), stairModeButton);
+
+        MKButton stairRiseTypeButton = new MKButton(getStairRiseTypeComponent(formDraft.stairRiseType), 180, 20);
+        stairRiseTypeButton.setPressedCallback((button, mouseButton) -> {
+            formDraft.stairRiseType = cycleValue(
+                    List.of(MKWorkspaceStairRiseType.values()), formDraft.stairRiseType, isReverseClick(mouseButton));
+            snapDraftVerticalAccess();
+            flagNeedSetup();
+            return true;
+        });
+        addRow(content, makeWhiteText(Component.literal("Rise Type")), stairRiseTypeButton);
+
+        int[] footprint = getDraftVerticalAccessFootprint();
+        MKIntegerSlider shaftSizeSlider = new MKIntegerSlider("Shaft", 180, 20,
+                MKWorkspaceDimensions.getAllowedShaftSizes(footprint[0], footprint[1]), formDraft.shaftSize, value -> {
+            formDraft.shaftSize = value;
+            snapDraftVerticalAccess();
+            flagNeedSetup();
+        });
+        addRow(content, makeWhiteText(Component.literal("Shaft Size")), shaftSizeSlider);
 
         MKButton stairWidthButton = new MKButton(Component.literal(Integer.toString(formDraft.stairWidth)), 180, 20);
         stairWidthButton.setPressedCallback((button, mouseButton) -> {
-            formDraft.stairWidth = cycleAllowedStairWidth(formDraft.shaftSize, formDraft.stairWidth);
+            formDraft.stairWidth = cycleAllowedStairWidth(formDraft.shaftSize, formDraft.stairWidth,
+                    isReverseClick(mouseButton));
             snapDraftVerticalAccess();
             flagNeedSetup();
             return true;
@@ -717,7 +638,8 @@ public class MKWorkspaceScreen extends MKScreen {
 
         MKButton mainFloorsButton = new MKButton(Component.literal(Integer.toString(formDraft.mainFloors)), 180, 20);
         mainFloorsButton.setPressedCallback((button, mouseButton) -> {
-            formDraft.mainFloors = nextAllowedMainFloorCount(formDraft.mainFloors, formDraft.basementFloors);
+            formDraft.mainFloors = nextAllowedMainFloorCount(formDraft.mainFloors, formDraft.basementFloors,
+                    isReverseClick(mouseButton));
             formDraft.basementFloors = normalizeBasementFloorCount(formDraft.basementFloors, formDraft.mainFloors);
             flagNeedSetup();
             return true;
@@ -726,7 +648,8 @@ public class MKWorkspaceScreen extends MKScreen {
 
         MKButton basementFloorsButton = new MKButton(Component.literal(Integer.toString(formDraft.basementFloors)), 180, 20);
         basementFloorsButton.setPressedCallback((button, mouseButton) -> {
-            formDraft.basementFloors = nextAllowedBasementFloorCount(formDraft.basementFloors, formDraft.mainFloors);
+            formDraft.basementFloors = nextAllowedBasementFloorCount(formDraft.basementFloors, formDraft.mainFloors,
+                    isReverseClick(mouseButton));
             formDraft.mainFloors = normalizeMainFloorCount(formDraft.mainFloors, formDraft.basementFloors);
             flagNeedSetup();
             return true;
@@ -996,7 +919,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 family.horizontalExits())));
         MKButton categoryButton = new MKButton(Component.literal(formatTopologyLabel(family.category().getSerializedName())), 180, 20);
         categoryButton.setPressedCallback((button, mouseButton) -> {
-            MKTowerWorkspaceCategory nextCategory = cycleCategory(family.category());
+            MKTowerWorkspaceCategory nextCategory = cycleCategory(family.category(), isReverseClick(mouseButton));
             MKTowerWorkspaceCategoryProfile nextProfile = getDraftCategoryProfile(nextCategory);
             replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
                     family.baseName(), nextCategory, family.pieceRole(),
@@ -1013,7 +936,7 @@ public class MKWorkspaceScreen extends MKScreen {
         MKButton roleButton = new MKButton(Component.literal(formatTopologyLabel(family.pieceRole().getSerializedName())), 180, 20);
         roleButton.setPressedCallback((button, mouseButton) -> {
             replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
-                    family.baseName(), family.category(), cycleFamilyRole(family.pieceRole()),
+                    family.baseName(), family.category(), cycleFamilyRole(family.pieceRole(), isReverseClick(mouseButton)),
                     family.supportsVerticalAccess(),
                     family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
                     family.horizontalExits()));
@@ -1039,7 +962,9 @@ public class MKWorkspaceScreen extends MKScreen {
         extrusionModeButton.setPressedCallback((button, mouseButton) -> {
             replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
                     family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
-                    family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode().next(),
+                    family.roomWidth(), family.roomLength(), family.roomHeight(),
+                    cycleValue(List.of(MKWorkspaceHorizontalExtrusionMode.values()), family.horizontalExtrusionMode(),
+                            isReverseClick(mouseButton)),
                     family.horizontalExits()));
             flagNeedSetup();
             return true;
@@ -1713,12 +1638,6 @@ public class MKWorkspaceScreen extends MKScreen {
 
         ensureCategoryOverridesInitialized();
         detailStairWidth = MKWorkspaceDimensions.snapToNearestAllowedStairWidth(workspace.dimensions().hallwayWidth(), detailStairWidth);
-        detailFlatRunLength = snapAllowedFlatRunLength(
-                makeStairConfig(detailStairMode, detailStairRiseType, detailFlatRunLength, detailStairWidth,
-                        detailStairBlock, detailSlabBlock, detailLadderBlock),
-                workspace.dimensions().hallwayWidth(),
-                categoryHeight,
-                detailFlatRunLength);
 
         MKText title = makeWhiteText(Component.literal(buildWorkspaceGroupLabel(templatePiece)));
         root.addWidget(title);
@@ -1750,60 +1669,28 @@ public class MKWorkspaceScreen extends MKScreen {
         if (stairCategory) {
             MKText stairModeLabel = makeLabel("mknpc.workspace.field.stair_mode");
             MKButton stairModeButton = new MKButton(getStairModeComponent(detailStairMode), 180, 20);
-            MKText runLengthLabel = makeWhiteText(Component.literal("Flat Run Length"));
-            MKButton runLengthButton = new MKButton(Component.literal(Integer.toString(detailFlatRunLength)), 180, 20);
             addRow(content, stairModeLabel, stairModeButton);
             stairModeButton.setPressedCallback((button, mouseButton) -> {
-                detailStairMode = detailStairMode.next();
-                detailFlatRunLength = snapAllowedFlatRunLength(
-                        makeStairConfig(detailStairMode, detailStairRiseType, detailFlatRunLength, detailStairWidth,
-                                detailStairBlock, detailSlabBlock, detailLadderBlock),
-                        workspace.dimensions().hallwayWidth(),
-                        categoryHeight,
-                        detailFlatRunLength);
+                detailStairMode = cycleStairMode(detailStairMode, isReverseClick(mouseButton));
                 button.buttonText = getStairModeComponent(detailStairMode);
-                runLengthButton.buttonText = Component.literal(Integer.toString(detailFlatRunLength));
                 return true;
             });
             MKText riseTypeLabel = makeWhiteText(Component.literal("Rise Type"));
             MKButton riseTypeButton = new MKButton(getStairRiseTypeComponent(detailStairRiseType), 180, 20);
             addRow(content, riseTypeLabel, riseTypeButton);
             riseTypeButton.setPressedCallback((button, mouseButton) -> {
-                detailStairRiseType = detailStairRiseType.next();
-                detailFlatRunLength = snapAllowedFlatRunLength(
-                        makeStairConfig(detailStairMode, detailStairRiseType, detailFlatRunLength, detailStairWidth,
-                                detailStairBlock, detailSlabBlock, detailLadderBlock),
-                        workspace.dimensions().hallwayWidth(),
-                        categoryHeight,
-                        detailFlatRunLength);
+                detailStairRiseType = cycleValue(List.of(MKWorkspaceStairRiseType.values()), detailStairRiseType,
+                        isReverseClick(mouseButton));
                 button.buttonText = getStairRiseTypeComponent(detailStairRiseType);
-                runLengthButton.buttonText = Component.literal(Integer.toString(detailFlatRunLength));
-                return true;
-            });
-            addRow(content, runLengthLabel, runLengthButton);
-            runLengthButton.setPressedCallback((button, mouseButton) -> {
-                detailFlatRunLength = cycleAllowedFlatRunLength(
-                        makeStairConfig(detailStairMode, detailStairRiseType, detailFlatRunLength, detailStairWidth,
-                                detailStairBlock, detailSlabBlock, detailLadderBlock),
-                        workspace.dimensions().hallwayWidth(),
-                        categoryHeight,
-                        detailFlatRunLength);
-                button.buttonText = Component.literal(Integer.toString(detailFlatRunLength));
                 return true;
             });
             MKText widthLabel = makeWhiteText(Component.literal("Stair Width"));
             MKButton widthButton = new MKButton(Component.literal(Integer.toString(detailStairWidth)), 180, 20);
             addRow(content, widthLabel, widthButton);
             widthButton.setPressedCallback((button, mouseButton) -> {
-                detailStairWidth = cycleAllowedStairWidth(workspace.dimensions().hallwayWidth(), detailStairWidth);
-                detailFlatRunLength = snapAllowedFlatRunLength(
-                        makeStairConfig(detailStairMode, detailStairRiseType, detailFlatRunLength, detailStairWidth,
-                                detailStairBlock, detailSlabBlock, detailLadderBlock),
-                        workspace.dimensions().hallwayWidth(),
-                        categoryHeight,
-                        detailFlatRunLength);
+                detailStairWidth = cycleAllowedStairWidth(workspace.dimensions().hallwayWidth(), detailStairWidth,
+                        isReverseClick(mouseButton));
                 button.buttonText = Component.literal(Integer.toString(detailStairWidth));
-                runLengthButton.buttonText = Component.literal(Integer.toString(detailFlatRunLength));
                 return true;
             });
         }
@@ -1829,8 +1716,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 content.addConstraintToWidget(new CenterXConstraint(), generateStairs);
                 generateStairs.setPressedCallback((button, mouseButton) -> {
                     PacketDistributor.sendToServer(new GenerateWorkspaceStairsPacket(anchor, pieceName, detailStairMode,
-                            detailStairRiseType, detailFlatRunLength, detailStairWidth, detailStairBlock,
-                            detailSlabBlock, detailLadderBlock));
+                            detailStairRiseType, detailStairWidth, detailStairBlock, detailSlabBlock, detailLadderBlock));
                     return true;
                 });
 
@@ -2027,8 +1913,7 @@ public class MKWorkspaceScreen extends MKScreen {
         formDraft.namespace = valueOrDefault(workspace != null ? workspace.namespace() : null, "mkdev");
         formDraft.structureName = valueOrDefault(workspace != null ? workspace.structureName() : null, "tower_workspace");
         formDraft.stairMode = workspace != null ? workspace.stairConfig().mode() : MKWorkspaceStairMode.AUTO;
-        formDraft.stairRiseType = workspace != null ? workspace.stairConfig().riseType() : MKWorkspaceStairRiseType.STAIR;
-        formDraft.stairFlatRunLength = workspace != null ? workspace.stairConfig().flatRunLength() : 0;
+        formDraft.stairRiseType = workspace != null ? workspace.stairConfig().riseType() : MKWorkspaceStairRiseType.MIXED;
         formDraft.stairWidth = workspace != null ? workspace.stairConfig().stairWidth() : 1;
         formDraft.stairBlock = workspace != null ? workspace.stairConfig().stairBlock() : ResourceLocation.parse("minecraft:stone_brick_stairs");
         formDraft.slabBlock = workspace != null ? workspace.stairConfig().slabBlock() : ResourceLocation.parse("minecraft:stone_brick_slab");
@@ -2066,7 +1951,7 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig makeDraftStairConfig() {
         ensureFormDraftInitialized();
-        return makeStairConfig(formDraft.stairMode, formDraft.stairRiseType, formDraft.stairFlatRunLength, formDraft.stairWidth,
+        return makeStairConfig(formDraft.stairMode, formDraft.stairRiseType, formDraft.stairWidth,
                 formDraft.stairBlock, formDraft.slabBlock, formDraft.ladderBlock);
     }
 
@@ -2165,9 +2050,6 @@ public class MKWorkspaceScreen extends MKScreen {
         int[] footprint = getDraftVerticalAccessFootprint();
         formDraft.shaftSize = MKWorkspaceDimensions.snapToNearestAllowedShaftSize(footprint[0], footprint[1], formDraft.shaftSize);
         formDraft.stairWidth = MKWorkspaceDimensions.snapToNearestAllowedStairWidth(formDraft.shaftSize, formDraft.stairWidth);
-        var config = makeDraftStairConfig();
-        int referenceHeight = getDraftReferenceRoomHeight(config);
-        formDraft.stairFlatRunLength = snapAllowedFlatRunLength(config, formDraft.shaftSize, referenceHeight, formDraft.stairFlatRunLength);
         MKWorkspaceVerticalAccessSpec verticalAccessSpec = currentDraftVerticalAccessSpec();
         int normalizedMainHeight = normalizeCategoryFullHeight(MKTowerWorkspaceCategory.MAIN,
                 getDraftCategoryProfile(MKTowerWorkspaceCategory.MAIN).fullHeight(), verticalAccessSpec,
@@ -2193,7 +2075,11 @@ public class MKWorkspaceScreen extends MKScreen {
                 profile.category(),
                 roomWidth,
                 roomLength,
-                fullHeight
+                fullHeight,
+                Math.max(0, profile.minMainPathPieces()),
+                Math.max(Math.max(0, profile.minMainPathPieces()), profile.maxMainPathPieces()),
+                Math.max(0, Math.min(MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP,
+                        profile.maxBranchPiecesBeforeCap()))
         );
     }
 
@@ -2201,11 +2087,6 @@ public class MKWorkspaceScreen extends MKScreen {
         int minWidth = formDraft.categoryProfiles.stream().mapToInt(MKTowerWorkspaceCategoryProfile::roomWidth).min().orElse(9);
         int minLength = formDraft.categoryProfiles.stream().mapToInt(MKTowerWorkspaceCategoryProfile::roomLength).min().orElse(9);
         return new int[]{minWidth, minLength};
-    }
-
-    private int cycleAllowedDraftShaftSize(int currentSize) {
-        int[] footprint = getDraftVerticalAccessFootprint();
-        return cycleAllowedShaftSize(footprint[0], footprint[1], currentSize);
     }
 
     private int getDraftReferenceRoomHeight(com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig stairConfig) {
@@ -2396,7 +2277,10 @@ public class MKWorkspaceScreen extends MKScreen {
         content.addConstraintToWidget(MarginConstraint.LEFT, header);
 
         MKText summary = makeWhiteText(Component.literal(
-                profile.roomWidth() + "x" + profile.roomLength()));
+                profile.roomWidth() + "x" + profile.roomLength() +
+                        (showCategoryPathControls(category) ? "  |  path " +
+                                profile.minMainPathPieces() + "-" + profile.maxMainPathPieces() : "") +
+                        "  |  branch cap " + profile.maxBranchPiecesBeforeCap()));
         summary.setWidth(CONTENT_WIDTH);
         summary.setMultiline(true);
         content.addWidget(summary);
@@ -2404,28 +2288,71 @@ public class MKWorkspaceScreen extends MKScreen {
 
         MKIntegerSlider roomWidthSlider = new MKIntegerSlider("Width", 180, 20, 1, 45, 2, profile.roomWidth(),
                 value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
-                        profile.category(), value, profile.roomLength(), profile.fullHeight())));
+                        profile.category(), value, profile.roomLength(), profile.fullHeight(),
+                        profile.minMainPathPieces(), profile.maxMainPathPieces(),
+                        profile.maxBranchPiecesBeforeCap())));
         MKIntegerSlider roomLengthSlider = new MKIntegerSlider("Length", 180, 20, 1, 45, 2, profile.roomLength(),
                 value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
-                        profile.category(), profile.roomWidth(), value, profile.fullHeight())));
+                        profile.category(), profile.roomWidth(), value, profile.fullHeight(),
+                        profile.minMainPathPieces(), profile.maxMainPathPieces(),
+                        profile.maxBranchPiecesBeforeCap())));
 
         addRow(content, makeWhiteText(Component.literal("Room Width")), roomWidthSlider);
         addRow(content, makeWhiteText(Component.literal("Room Length")), roomLengthSlider);
+        if (showCategoryPathControls(category)) {
+            MKIntegerSlider minPathSlider = new MKIntegerSlider("Min", 180, 20, 0, 10, 1,
+                    profile.minMainPathPieces(), value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                    profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
+                    value, Math.max(value, profile.maxMainPathPieces()), profile.maxBranchPiecesBeforeCap())));
+            MKIntegerSlider maxPathSlider = new MKIntegerSlider("Max", 180, 20, 0, 10, 1,
+                    profile.maxMainPathPieces(), value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                    profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
+                    Math.min(profile.minMainPathPieces(), value), value, profile.maxBranchPiecesBeforeCap())));
+            addRow(content, makeWhiteText(Component.literal("Main Path Min")), minPathSlider);
+            addRow(content, makeWhiteText(Component.literal("Main Path Max")), maxPathSlider);
+        }
+        MKIntegerSlider maxBranchBeforeCapSlider = new MKIntegerSlider("Max", 180, 20, 0,
+                MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP, 1,
+                profile.maxBranchPiecesBeforeCap(), value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
+                profile.minMainPathPieces(), profile.maxMainPathPieces(), value)));
+        addRow(content, makeWhiteText(Component.literal("Branch Cap Max")), maxBranchBeforeCapSlider);
     }
 
     private void addCategoryHeightRow(MKStackLayoutVertical content, MKTowerWorkspaceCategory category) {
         MKTowerWorkspaceCategoryProfile profile = getDraftCategoryProfile(category);
-        MKButton heightButton = new MKButton(Component.literal(Integer.toString(profile.fullHeight())), 180, 20);
-        heightButton.setPressedCallback((button, mouseButton) -> {
+        MKIntegerSlider heightSlider = new MKIntegerSlider("Height", 180, 20,
+                allowedFullHeightsForCategory(category), profile.fullHeight(), value -> {
             replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                     profile.category(), profile.roomWidth(), profile.roomLength(),
-                    nextAllowedCategoryFullHeight(profile.category(), profile.fullHeight())));
+                    value,
+                    profile.minMainPathPieces(), profile.maxMainPathPieces(),
+                    profile.maxBranchPiecesBeforeCap()));
             flagNeedSetup();
-            return true;
         });
         addRow(content,
                 makeWhiteText(Component.literal(formatTopologyLabel(category.getSerializedName()) + " Height")),
-                heightButton);
+                heightSlider);
+    }
+
+    private boolean showCategoryPathControls(MKTowerWorkspaceCategory category) {
+        return hasMainPathContinuationFamily(category) ||
+                !hasMainPathEndingFamily(category);
+    }
+
+    private boolean hasMainPathContinuationFamily(MKTowerWorkspaceCategory category) {
+        return formDraft.familyDefinitions.stream()
+                .filter(family -> family.category() == category)
+                .filter(family -> !family.mainPathEnding())
+                .flatMap(family -> family.horizontalExits().stream())
+                .anyMatch(exit -> exit.pathKind().usesMainPath() &&
+                        exit.pathKind() != MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY);
+    }
+
+    private boolean hasMainPathEndingFamily(MKTowerWorkspaceCategory category) {
+        return formDraft.familyDefinitions.stream()
+                .filter(family -> family.category() == category)
+                .anyMatch(MKTowerWorkspaceFamilyDefinition::mainPathEnding);
     }
 
     private void addInlineFamilyExitEditor(MKStackLayoutVertical content, int familyIndex, int exitIndex,
@@ -2437,7 +2364,7 @@ public class MKWorkspaceScreen extends MKScreen {
         MKButton directionButton = new MKButton(Component.literal(formatDirection(exit.direction())), 180, 20);
         directionButton.setPressedCallback((button, mouseButton) -> {
             MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(familyIndex);
-            Direction nextDirection = cycleCardinalDirection(exit.direction());
+            Direction nextDirection = cycleCardinalDirection(exit.direction(), isReverseClick(mouseButton));
             replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
                     nextDirection,
                     exit.pathKind(),
@@ -2452,7 +2379,8 @@ public class MKWorkspaceScreen extends MKScreen {
         MKButton pathKindButton = new MKButton(Component.literal(formatTopologyLabel(exit.pathKind().getSerializedName())), 180, 20);
         pathKindButton.setPressedCallback((button, mouseButton) -> {
             MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(familyIndex);
-            MKWorkspaceHorizontalExitPathKind nextPathKind = exit.pathKind().next();
+            MKWorkspaceHorizontalExitPathKind nextPathKind = cycleValue(
+                    List.of(MKWorkspaceHorizontalExitPathKind.values()), exit.pathKind(), isReverseClick(mouseButton));
             String nextOpeningProfileId = ensureCompatibleOpeningProfile(nextPathKind, exit.openingProfileId());
             replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
                     exit.direction(),
@@ -2471,7 +2399,8 @@ public class MKWorkspaceScreen extends MKScreen {
                     exit.direction(),
                     exit.pathKind(),
                     exit.openingProfileId(),
-                    exit.connectionMode().next(),
+                    cycleValue(List.of(MKWorkspaceHorizontalExitConnectionMode.values()), exit.connectionMode(),
+                            isReverseClick(mouseButton)),
                     exit.sideOffset(),
                     exit.verticalOffset()
             ));
@@ -2481,7 +2410,8 @@ public class MKWorkspaceScreen extends MKScreen {
         MKButton openingProfileButton = new MKButton(Component.literal(exit.openingProfileId()), 180, 20);
         openingProfileButton.setPressedCallback((button, mouseButton) -> {
             MKTowerWorkspaceFamilyDefinition family = formDraft.familyDefinitions.get(familyIndex);
-            String nextOpeningProfileId = nextOpeningProfileId(exit.pathKind(), exit.openingProfileId());
+            String nextOpeningProfileId = nextOpeningProfileId(exit.pathKind(), exit.openingProfileId(),
+                    isReverseClick(mouseButton));
             replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
                     exit.direction(),
                     exit.pathKind(),
@@ -2513,6 +2443,9 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     private List<Integer> allowedFullHeightsForCategory(MKTowerWorkspaceCategory category) {
+        if (category == MKTowerWorkspaceCategory.TOP_CAP && !formDraft.topCapApproachEnabled) {
+            return integerRange(3, MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE - 1);
+        }
         MKWorkspaceVerticalAccessSpec verticalAccessSpec = currentDraftVerticalAccessSpec();
         int referenceHeight = getDraftCategoryProfile(MKTowerWorkspaceCategory.MAIN).fullHeight();
         return MKWorkspaceDimensions.getAllowedBandHeights(
@@ -2520,7 +2453,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 verticalAccessSpec.shaftSize(),
                 referenceHeight,
                 3,
-                6
+                MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE
         );
     }
 
@@ -2548,30 +2481,16 @@ public class MKWorkspaceScreen extends MKScreen {
         return allowedBasementFloorCounts(mainFloors).toString();
     }
 
-    private int nextAllowedMainFloorCount(int currentCount, int basementFloors) {
+    private int nextAllowedMainFloorCount(int currentCount, int basementFloors, boolean reverse) {
         List<Integer> allowedCounts = allowedMainFloorCounts(basementFloors);
-        if (allowedCounts.isEmpty()) {
-            return currentCount;
-        }
         int normalized = normalizeMainFloorCount(currentCount, basementFloors);
-        int currentIndex = allowedCounts.indexOf(normalized);
-        if (currentIndex < 0) {
-            return allowedCounts.getFirst();
-        }
-        return allowedCounts.get((currentIndex + 1) % allowedCounts.size());
+        return cycleValue(allowedCounts, normalized, reverse, currentCount);
     }
 
-    private int nextAllowedBasementFloorCount(int currentCount, int mainFloors) {
+    private int nextAllowedBasementFloorCount(int currentCount, int mainFloors, boolean reverse) {
         List<Integer> allowedCounts = allowedBasementFloorCounts(mainFloors);
-        if (allowedCounts.isEmpty()) {
-            return currentCount;
-        }
         int normalized = normalizeBasementFloorCount(currentCount, mainFloors);
-        int currentIndex = allowedCounts.indexOf(normalized);
-        if (currentIndex < 0) {
-            return allowedCounts.getFirst();
-        }
-        return allowedCounts.get((currentIndex + 1) % allowedCounts.size());
+        return cycleValue(allowedCounts, normalized, reverse, currentCount);
     }
 
     private int normalizeMainFloorCount(int requestedCount, int basementFloors) {
@@ -2588,30 +2507,19 @@ public class MKWorkspaceScreen extends MKScreen {
                 .orElse(0);
     }
 
-    private int nextAllowedCategoryFullHeight(MKTowerWorkspaceCategory category, int currentHeight) {
-        List<Integer> allowedHeights = allowedFullHeightsForCategory(category);
-        if (allowedHeights.isEmpty()) {
-            return currentHeight;
-        }
-        int normalized = normalizeCategoryFullHeight(category, currentHeight, currentDraftVerticalAccessSpec(),
-                getDraftCategoryProfile(MKTowerWorkspaceCategory.MAIN).fullHeight());
-        int currentIndex = allowedHeights.indexOf(normalized);
-        if (currentIndex < 0) {
-            return allowedHeights.getFirst();
-        }
-        return allowedHeights.get((currentIndex + 1) % allowedHeights.size());
-    }
-
     private int normalizeCategoryFullHeight(MKTowerWorkspaceCategory category, int requestedHeight,
                                             MKWorkspaceVerticalAccessSpec verticalAccessSpec,
                                             int mainReferenceHeight) {
+        if (category == MKTowerWorkspaceCategory.TOP_CAP && !formDraft.topCapApproachEnabled) {
+            return Math.max(3, Math.min(MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE - 1, requestedHeight));
+        }
         return MKWorkspaceDimensions.snapToNearestAllowedBandHeight(
                 verticalAccessSpec.stairConfig(),
                 verticalAccessSpec.shaftSize(),
                 mainReferenceHeight,
                 requestedHeight,
                 3,
-                6
+                MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE
         );
     }
 
@@ -2820,14 +2728,8 @@ public class MKWorkspaceScreen extends MKScreen {
         return formatTopologyLabel(direction.getSerializedName());
     }
 
-    private Direction cycleCardinalDirection(Direction direction) {
-        return switch (direction) {
-            case NORTH -> Direction.EAST;
-            case EAST -> Direction.SOUTH;
-            case SOUTH -> Direction.WEST;
-            case WEST -> Direction.NORTH;
-            default -> Direction.NORTH;
-        };
+    private Direction cycleCardinalDirection(Direction direction, boolean reverse) {
+        return cycleValue(List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST), direction, reverse);
     }
 
     private java.util.Optional<Direction> firstUnusedCardinalDirection(List<MKWorkspaceFamilyHorizontalExitDefinition> exits) {
@@ -2851,19 +2753,13 @@ public class MKWorkspaceScreen extends MKScreen {
                 .findFirst();
     }
 
-    private String nextOpeningProfileId(MKWorkspaceHorizontalExitPathKind pathKind, String currentProfileId) {
+    private String nextOpeningProfileId(MKWorkspaceHorizontalExitPathKind pathKind, String currentProfileId,
+                                        boolean reverse) {
         List<String> compatibleProfiles = formDraft.openingProfiles.stream()
                 .map(MKHorizontalOpeningProfile::profileId)
                 .filter(profileId -> isCompatibleOpeningProfile(pathKind, profileId))
                 .toList();
-        if (compatibleProfiles.isEmpty()) {
-            return currentProfileId;
-        }
-        int currentIndex = compatibleProfiles.indexOf(currentProfileId);
-        if (currentIndex < 0) {
-            return compatibleProfiles.getFirst();
-        }
-        return compatibleProfiles.get((currentIndex + 1) % compatibleProfiles.size());
+        return cycleValue(compatibleProfiles, currentProfileId, reverse, currentProfileId);
     }
 
     private String ensureCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind pathKind, String currentProfileId) {
@@ -2880,12 +2776,11 @@ public class MKWorkspaceScreen extends MKScreen {
                 .orElse(false);
     }
 
-    private MKTowerWorkspaceCategory cycleCategory(MKTowerWorkspaceCategory current) {
-        MKTowerWorkspaceCategory[] values = MKTowerWorkspaceCategory.values();
-        return values[(current.ordinal() + 1) % values.length];
+    private MKTowerWorkspaceCategory cycleCategory(MKTowerWorkspaceCategory current, boolean reverse) {
+        return cycleValue(List.of(MKTowerWorkspaceCategory.values()), current, reverse);
     }
 
-    private MKWorkspacePieceRole cycleFamilyRole(MKWorkspacePieceRole current) {
+    private MKWorkspacePieceRole cycleFamilyRole(MKWorkspacePieceRole current, boolean reverse) {
         List<MKWorkspacePieceRole> roles = List.of(
                 MKWorkspacePieceRole.ENTRY,
                 MKWorkspacePieceRole.FLOOR_MAIN,
@@ -2896,11 +2791,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 MKWorkspacePieceRole.BASEMENT_CAP_APPROACH,
                 MKWorkspacePieceRole.BASEMENT_CAP
         );
-        int index = roles.indexOf(current);
-        if (index < 0) {
-            return roles.getFirst();
-        }
-        return roles.get((index + 1) % roles.size());
+        return cycleValue(roles, current, reverse);
     }
 
     private ResourceLocation parseResourceLocation(String text, ResourceLocation fallback) {
@@ -2932,41 +2823,47 @@ public class MKWorkspaceScreen extends MKScreen {
         return MKWorkspaceDimensions.snapToNearestAllowedTowerHeight(stairConfig, hallwayWidth, requestedHeight, 3, 4);
     }
 
-    private int cycleAllowedShaftSize(int roomWidth, int roomLength, int currentSize) {
-        List<Integer> allowedSizes = MKWorkspaceDimensions.getAllowedShaftSizes(roomWidth, roomLength);
-        int snapped = MKWorkspaceDimensions.snapToNearestAllowedShaftSize(roomWidth, roomLength, currentSize);
-        int index = allowedSizes.indexOf(snapped);
-        if (index < 0) {
-            return allowedSizes.getFirst();
-        }
-        return allowedSizes.get((index + 1) % allowedSizes.size());
+    private boolean isReverseClick(int mouseButton) {
+        return mouseButton == 1;
     }
 
-    private int cycleAllowedStairWidth(int hallwayWidth, int currentWidth) {
+    private MKWorkspaceStairMode cycleStairMode(MKWorkspaceStairMode current, boolean reverse) {
+        return cycleValue(List.of(
+                MKWorkspaceStairMode.AUTO,
+                MKWorkspaceStairMode.RUN_PROFILE,
+                MKWorkspaceStairMode.LADDER,
+                MKWorkspaceStairMode.NONE
+        ), current, reverse);
+    }
+
+    private <T> T cycleValue(List<T> values, T current, boolean reverse) {
+        return cycleValue(values, current, reverse, values.isEmpty() ? current : values.getFirst());
+    }
+
+    private <T> T cycleValue(List<T> values, T current, boolean reverse, T fallback) {
+        if (values.isEmpty()) {
+            return fallback;
+        }
+        int index = values.indexOf(current);
+        if (index < 0) {
+            return values.getFirst();
+        }
+        int nextIndex = Math.floorMod(index + (reverse ? -1 : 1), values.size());
+        return values.get(nextIndex);
+    }
+
+    private List<Integer> integerRange(int minInclusive, int maxInclusive) {
+        List<Integer> values = new java.util.ArrayList<>();
+        for (int value = minInclusive; value <= maxInclusive; value++) {
+            values.add(value);
+        }
+        return values;
+    }
+
+    private int cycleAllowedStairWidth(int hallwayWidth, int currentWidth, boolean reverse) {
         List<Integer> allowedWidths = MKWorkspaceDimensions.getAllowedStairWidths(hallwayWidth);
         int snapped = MKWorkspaceDimensions.snapToNearestAllowedStairWidth(hallwayWidth, currentWidth);
-        int index = allowedWidths.indexOf(snapped);
-        if (index < 0) {
-            return allowedWidths.getFirst();
-        }
-        return allowedWidths.get((index + 1) % allowedWidths.size());
-    }
-
-    private int cycleAllowedFlatRunLength(com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig stairConfig,
-                                          int hallwayWidth, int roomHeight, int currentFlatRunLength) {
-        List<Integer> allowedFlatRuns = MKWorkspaceDimensions.getAllowedFlatRunLengths(stairConfig, hallwayWidth, roomHeight, 4);
-        int snapped = snapAllowedFlatRunLength(stairConfig, hallwayWidth, roomHeight, currentFlatRunLength);
-        int index = allowedFlatRuns.indexOf(snapped);
-        if (index < 0) {
-            return allowedFlatRuns.getFirst();
-        }
-        return allowedFlatRuns.get((index + 1) % allowedFlatRuns.size());
-    }
-
-    private int snapAllowedFlatRunLength(com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig stairConfig,
-                                         int hallwayWidth, int roomHeight, int requestedFlatRunLength) {
-        return MKWorkspaceDimensions.snapToNearestAllowedFlatRunLength(stairConfig, hallwayWidth, roomHeight,
-                requestedFlatRunLength, 4);
+        return cycleValue(allowedWidths, snapped, reverse, currentWidth);
     }
 
     private int countVariants(List<MKWorkspacePieceDefinition> pieces) {
@@ -3194,8 +3091,7 @@ public class MKWorkspaceScreen extends MKScreen {
     private void resetCategoryOverrides() {
         if (workspace == null) {
             detailStairMode = MKWorkspaceStairMode.AUTO;
-            detailStairRiseType = MKWorkspaceStairRiseType.STAIR;
-            detailFlatRunLength = 0;
+            detailStairRiseType = MKWorkspaceStairRiseType.MIXED;
             detailStairWidth = 1;
             detailStairBlock = ResourceLocation.parse("minecraft:stone_brick_stairs");
             detailSlabBlock = ResourceLocation.parse("minecraft:stone_brick_slab");
@@ -3204,7 +3100,6 @@ public class MKWorkspaceScreen extends MKScreen {
         }
         detailStairMode = workspace.stairConfig().mode();
         detailStairRiseType = workspace.stairConfig().riseType();
-        detailFlatRunLength = workspace.stairConfig().flatRunLength();
         detailStairWidth = workspace.stairConfig().stairWidth();
         detailStairBlock = workspace.stairConfig().stairBlock();
         detailSlabBlock = workspace.stairConfig().slabBlock();
@@ -3219,10 +3114,10 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     private com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig makeStairConfig(
-            MKWorkspaceStairMode stairMode, MKWorkspaceStairRiseType riseType, int flatRunLength, int stairWidth,
+            MKWorkspaceStairMode stairMode, MKWorkspaceStairRiseType riseType, int stairWidth,
             ResourceLocation stairBlock, ResourceLocation slabBlock, ResourceLocation ladderBlock) {
         return new com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig(
-                stairMode, riseType, flatRunLength, stairWidth, stairBlock, slabBlock, ladderBlock);
+                stairMode, riseType, stairWidth, stairBlock, slabBlock, ladderBlock);
     }
 
     @Override

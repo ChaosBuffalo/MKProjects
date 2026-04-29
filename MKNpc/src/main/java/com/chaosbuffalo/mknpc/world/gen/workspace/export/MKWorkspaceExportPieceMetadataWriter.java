@@ -41,7 +41,10 @@ public class MKWorkspaceExportPieceMetadataWriter {
                     category.pieceMetadata().allowOnMainPath(),
                     category.pieceMetadata().allowOnBranchPath(),
                     category.pieceMetadata().terminal(),
-                    category.pieceMetadata().topCapOnly()
+                    category.pieceMetadata().topCapOnly(),
+                    category.pieceMetadata().category(),
+                    category.pieceMetadata().mainPathEnding(),
+                    category.pieceMetadata().branchCap()
             );
             JsonElement json = MKJigsawPieceMetadata.CODEC.encodeStart(JsonOps.INSTANCE, metadata).getOrThrow();
             Files.writeString(metadataDir.resolve(piece.pieceName() + ".json"), gson.toJson(json));

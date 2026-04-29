@@ -9,36 +9,68 @@ import java.util.List;
 
 public class MKTowerWorkspaceCategoryProfile {
     public static final int MIN_ROOM_HEIGHT = 2;
+    public static final int DEFAULT_MIN_MAIN_PATH_PIECES = 1;
+    public static final int DEFAULT_MAX_MAIN_PATH_PIECES = 2;
+    public static final int DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP = 10;
 
     public static final Codec<MKTowerWorkspaceCategoryProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             MKWorkspaceCodecs.TOWER_CATEGORY_CODEC.fieldOf("category").forGetter(MKTowerWorkspaceCategoryProfile::category),
             Codec.INT.fieldOf("roomWidth").forGetter(MKTowerWorkspaceCategoryProfile::roomWidth),
             Codec.INT.fieldOf("roomLength").forGetter(MKTowerWorkspaceCategoryProfile::roomLength),
+            Codec.INT.optionalFieldOf("minMainPathPieces", DEFAULT_MIN_MAIN_PATH_PIECES)
+                    .forGetter(MKTowerWorkspaceCategoryProfile::minMainPathPieces),
+            Codec.INT.optionalFieldOf("maxMainPathPieces", DEFAULT_MAX_MAIN_PATH_PIECES)
+                    .forGetter(MKTowerWorkspaceCategoryProfile::maxMainPathPieces),
+            Codec.INT.optionalFieldOf("maxBranchPiecesBeforeCap", DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP)
+                    .forGetter(MKTowerWorkspaceCategoryProfile::maxBranchPiecesBeforeCap),
             Codec.INT.optionalFieldOf("fullHeight").forGetter(profile -> java.util.Optional.of(profile.fullHeight())),
             Codec.INT.optionalFieldOf("defaultHeight").forGetter(profile -> java.util.Optional.of(profile.fullHeight())),
             Codec.INT.optionalFieldOf("minHeight").forGetter(profile -> java.util.Optional.<Integer>empty()),
             Codec.INT.optionalFieldOf("maxHeight").forGetter(profile -> java.util.Optional.of(profile.fullHeight())),
             Codec.BOOL.optionalFieldOf("supportsVerticalAccess", true)
                     .forGetter(profile -> true)
-    ).apply(instance, (category, roomWidth, roomLength, fullHeight, defaultHeight, minHeight, maxHeight, supportsVerticalAccess) ->
+    ).apply(instance, (category, roomWidth, roomLength, minMainPathPieces, maxMainPathPieces, maxBranchPiecesBeforeCap,
+                       fullHeight, defaultHeight, minHeight, maxHeight, supportsVerticalAccess) ->
             new MKTowerWorkspaceCategoryProfile(
                     category,
                     roomWidth,
                     roomLength,
-                    fullHeight.orElseGet(() -> defaultHeight.orElseGet(() -> maxHeight.orElse(3)))
+                    fullHeight.orElseGet(() -> defaultHeight.orElseGet(() -> maxHeight.orElse(3))),
+                    minMainPathPieces,
+                    maxMainPathPieces,
+                    maxBranchPiecesBeforeCap
             )));
 
     private final MKTowerWorkspaceCategory category;
     private final int roomWidth;
     private final int roomLength;
     private final int fullHeight;
+    private final int minMainPathPieces;
+    private final int maxMainPathPieces;
+    private final int maxBranchPiecesBeforeCap;
 
     public MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory category, int roomWidth, int roomLength,
                                            int fullHeight) {
+        this(category, roomWidth, roomLength, fullHeight, DEFAULT_MIN_MAIN_PATH_PIECES,
+                DEFAULT_MAX_MAIN_PATH_PIECES, DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP);
+    }
+
+    public MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory category, int roomWidth, int roomLength,
+                                           int fullHeight, int minMainPathPieces, int maxMainPathPieces) {
+        this(category, roomWidth, roomLength, fullHeight, minMainPathPieces, maxMainPathPieces,
+                DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP);
+    }
+
+    public MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory category, int roomWidth, int roomLength,
+                                           int fullHeight, int minMainPathPieces, int maxMainPathPieces,
+                                           int maxBranchPiecesBeforeCap) {
         this.category = category;
         this.roomWidth = roomWidth;
         this.roomLength = roomLength;
         this.fullHeight = fullHeight;
+        this.minMainPathPieces = minMainPathPieces;
+        this.maxMainPathPieces = maxMainPathPieces;
+        this.maxBranchPiecesBeforeCap = maxBranchPiecesBeforeCap;
     }
 
     public static List<MKTowerWorkspaceCategoryProfile> createDefaults(MKWorkspaceDimensions dimensions) {
@@ -77,6 +109,22 @@ public class MKTowerWorkspaceCategoryProfile {
         if (verticalAccessSpec.shaftSize() > roomLength) {
             errors.add(category.getSerializedName() + " room length must be at least the shared shaft size");
         }
+        if (minMainPathPieces < 0) {
+            errors.add(category.getSerializedName() + " min main path pieces must be at least 0");
+        }
+        if (maxMainPathPieces < 0) {
+            errors.add(category.getSerializedName() + " max main path pieces must be at least 0");
+        }
+        if (minMainPathPieces > maxMainPathPieces) {
+            errors.add(category.getSerializedName() + " min main path pieces must be <= max main path pieces");
+        }
+        if (maxBranchPiecesBeforeCap < 0) {
+            errors.add(category.getSerializedName() + " max branch pieces before cap must be at least 0");
+        }
+        if (maxBranchPiecesBeforeCap > DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP) {
+            errors.add(category.getSerializedName() + " max branch pieces before cap must be at most " +
+                    DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP);
+        }
         return errors;
     }
 
@@ -103,6 +151,18 @@ public class MKTowerWorkspaceCategoryProfile {
 
     public int fullHeight() {
         return fullHeight;
+    }
+
+    public int minMainPathPieces() {
+        return minMainPathPieces;
+    }
+
+    public int maxMainPathPieces() {
+        return maxMainPathPieces;
+    }
+
+    public int maxBranchPiecesBeforeCap() {
+        return maxBranchPiecesBeforeCap;
     }
 }
 

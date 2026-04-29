@@ -140,7 +140,8 @@ public class MKBranchExitMaskWidget extends MKWidget {
             return switch (kind) {
                 case MAIN_ENTRY -> SELECTED_MAIN_ENTRY;
                 case MAIN_EXIT -> SELECTED_MAIN_EXIT;
-                case BRANCH -> SELECTED_BRANCH_EXIT;
+                case MAIN_ENDING_ENTRY -> SELECTED_MAIN_ENTRY;
+                case BRANCH, BRANCH_CAP_ENTRY -> SELECTED_BRANCH_EXIT;
                 case NONE -> INACTIVE_EXIT;
             };
         }
@@ -153,7 +154,9 @@ public class MKBranchExitMaskWidget extends MKWidget {
         String label = switch (exitKind) {
             case MAIN_ENTRY -> direction.getName().substring(0, 1).toUpperCase() + "I";
             case MAIN_EXIT -> direction.getName().substring(0, 1).toUpperCase() + "O";
+            case MAIN_ENDING_ENTRY -> direction.getName().substring(0, 1).toUpperCase() + "E";
             case BRANCH -> direction.getName().substring(0, 1).toUpperCase() + "B";
+            case BRANCH_CAP_ENTRY -> direction.getName().substring(0, 1).toUpperCase() + "C";
             case NONE -> direction.getName().substring(0, 1).toUpperCase();
         };
         graphics.drawCenteredString(minecraft.font, Component.literal(label), x, y, color);
@@ -166,7 +169,9 @@ public class MKBranchExitMaskWidget extends MKWidget {
                 .map(exit -> switch (exit.pathKind()) {
                     case MAIN_ENTRY -> ExitKind.MAIN_ENTRY;
                     case MAIN_EXIT -> ExitKind.MAIN_EXIT;
+                    case MAIN_ENDING_ENTRY -> ExitKind.MAIN_ENDING_ENTRY;
                     case BRANCH -> ExitKind.BRANCH;
+                    case BRANCH_CAP_ENTRY -> ExitKind.BRANCH_CAP_ENTRY;
                 })
                 .orElse(ExitKind.NONE);
     }
@@ -202,6 +207,8 @@ public class MKBranchExitMaskWidget extends MKWidget {
         NONE,
         MAIN_ENTRY,
         MAIN_EXIT,
-        BRANCH
+        MAIN_ENDING_ENTRY,
+        BRANCH,
+        BRANCH_CAP_ENTRY
     }
 }

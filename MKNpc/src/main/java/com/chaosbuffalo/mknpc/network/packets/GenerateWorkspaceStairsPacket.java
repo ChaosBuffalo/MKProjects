@@ -24,21 +24,19 @@ public class GenerateWorkspaceStairsPacket implements CustomPacketPayload {
     private final String pieceName;
     private final MKWorkspaceStairMode stairMode;
     private final MKWorkspaceStairRiseType stairRiseType;
-    private final int stairFlatRunLength;
     private final int stairWidth;
     private final ResourceLocation stairBlock;
     private final ResourceLocation slabBlock;
     private final ResourceLocation ladderBlock;
 
     public GenerateWorkspaceStairsPacket(BlockPos anchor, String pieceName, MKWorkspaceStairMode stairMode,
-                                         MKWorkspaceStairRiseType stairRiseType, int stairFlatRunLength, int stairWidth,
+                                         MKWorkspaceStairRiseType stairRiseType, int stairWidth,
                                          ResourceLocation stairBlock, ResourceLocation slabBlock,
                                          ResourceLocation ladderBlock) {
         this.anchor = anchor;
         this.pieceName = pieceName;
         this.stairMode = stairMode;
         this.stairRiseType = stairRiseType;
-        this.stairFlatRunLength = stairFlatRunLength;
         this.stairWidth = stairWidth;
         this.stairBlock = stairBlock;
         this.slabBlock = slabBlock;
@@ -50,7 +48,6 @@ public class GenerateWorkspaceStairsPacket implements CustomPacketPayload {
         this.pieceName = buffer.readUtf();
         this.stairMode = MKWorkspaceStairMode.fromSerializedName(buffer.readUtf());
         this.stairRiseType = MKWorkspaceStairRiseType.fromSerializedName(buffer.readUtf());
-        this.stairFlatRunLength = buffer.readInt();
         this.stairWidth = buffer.readInt();
         this.stairBlock = ResourceLocation.parse(buffer.readUtf());
         this.slabBlock = ResourceLocation.parse(buffer.readUtf());
@@ -67,7 +64,6 @@ public class GenerateWorkspaceStairsPacket implements CustomPacketPayload {
         buffer.writeUtf(pieceName);
         buffer.writeUtf(stairMode.getSerializedName());
         buffer.writeUtf(stairRiseType.getSerializedName());
-        buffer.writeInt(stairFlatRunLength);
         buffer.writeInt(stairWidth);
         buffer.writeUtf(stairBlock.toString());
         buffer.writeUtf(slabBlock.toString());
@@ -79,8 +75,8 @@ public class GenerateWorkspaceStairsPacket implements CustomPacketPayload {
             return;
         }
         new MKStructureWorkspaceService().generateTowerWorkspaceStairs(player.serverLevel(), packet.anchor, packet.pieceName,
-                new MKWorkspaceStairAuthoringConfig(packet.stairMode, packet.stairRiseType, packet.stairFlatRunLength,
-                        packet.stairWidth, packet.stairBlock, packet.slabBlock, packet.ladderBlock))
+                new MKWorkspaceStairAuthoringConfig(packet.stairMode, packet.stairRiseType, packet.stairWidth,
+                        packet.stairBlock, packet.slabBlock, packet.ladderBlock))
                 .ifPresent(updated -> player.connection.send(new OpenWorkspaceScreenPacket(packet.anchor, updated)));
     }
 }

@@ -31,6 +31,20 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class MKStructureWorkspaceService {
+    public record MKWorkspaceImportResponse(Optional<MKStructureWorkspace> workspace, List<String> validationErrors) {
+        public static MKWorkspaceImportResponse success(MKStructureWorkspace workspace) {
+            return new MKWorkspaceImportResponse(Optional.of(workspace), List.of());
+        }
+
+        public static MKWorkspaceImportResponse failed() {
+            return new MKWorkspaceImportResponse(Optional.empty(), List.of());
+        }
+
+        public static MKWorkspaceImportResponse validationFailed(List<String> validationErrors) {
+            return new MKWorkspaceImportResponse(Optional.empty(), List.copyOf(validationErrors));
+        }
+    }
+
     private final MKWorkspacePlanner towerPlanner = new MKTowerWorkspacePlanner();
     private final MKWorkspaceScaffoldBuilder scaffoldBuilder = new MKWorkspaceScaffoldBuilder();
     private final MKWorkspaceStairBuilder stairBuilder = new MKWorkspaceStairBuilder();
@@ -85,6 +99,9 @@ public class MKStructureWorkspaceService {
         }
         MKStructureWorkspace workspace = workspaceOpt.get();
         if (workspace.familyType() != MKStructureFamilyType.TOWER) {
+            return Optional.empty();
+        }
+        if (!workspace.validate().isEmpty()) {
             return Optional.empty();
         }
         List<MKPlannedPiece> templates = towerPlanner.createCanonicalPieces(workspace).stream()
@@ -266,15 +283,26 @@ public class MKStructureWorkspaceService {
 
     public Optional<MKStructureWorkspace> importWorkspaceFromManifest(ServerLevel level, BlockPos anchor,
                                                                      ResourceLocation manifestId) {
-        Optional<MKStructureWorkspaceImportService.MKWorkspaceImportResult> resultOpt =
-                importService.importWorkspaceAtAnchor(level, anchor, manifestId);
-        if (resultOpt.isEmpty()) {
-            return Optional.empty();
+        return importWorkspaceFromManifestWithValidation(level, anchor, manifestId).workspace();
+    }
+
+    public MKWorkspaceImportResponse importWorkspaceFromManifestWithValidation(ServerLevel level, BlockPos anchor,
+                                                                              ResourceLocation manifestId) {
+        MKStructureWorkspaceImportService.MKWorkspaceImportOutcome outcome =
+                importService.importWorkspaceAtAnchorDetailed(level, anchor, manifestId);
+        if (!outcome.validationErrors().isEmpty()) {
+            return MKWorkspaceImportResponse.validationFailed(outcome.validationErrors());
+        }
+        if (outcome.result().isEmpty()) {
+            return MKWorkspaceImportResponse.failed();
         }
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
-        Optional<MKStructureWorkspace> imported = data.getWorkspace(resultOpt.get().workspaceId());
+        Optional<MKStructureWorkspace> imported = data.getWorkspace(outcome.result().get().workspaceId());
+        if (imported.isEmpty()) {
+            return MKWorkspaceImportResponse.failed();
+        }
         imported.ifPresent(workspace -> syncBlockEntity(level, anchor, workspace.id()));
-        return imported;
+        return MKWorkspaceImportResponse.success(imported.get());
     }
 
     private void syncBlockEntity(ServerLevel level, BlockPos anchor, java.util.UUID workspaceId) {

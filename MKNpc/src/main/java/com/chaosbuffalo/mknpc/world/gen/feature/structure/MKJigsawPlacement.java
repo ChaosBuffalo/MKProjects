@@ -288,6 +288,8 @@ public class MKJigsawPlacement {
                 if (depth != this.maxDepth) {
                     candidates.addAll(holder.value().getShuffledTemplates(this.random));
                 }
+                addMainPathEndingCandidates(candidates, dungeonState, connectorInfo, aliasLookup);
+                boolean branchCapsAvailable = addBranchCapCandidates(candidates, connectorInfo, poolKey, aliasLookup);
                 candidates.addAll(fallback.value().getShuffledTemplates(this.random));
                 int placementPriority = parentJigsaw.nbt() != null ? parentJigsaw.nbt().getInt("placement_priority") : 0;
 
@@ -307,7 +309,8 @@ public class MKJigsawPlacement {
                         continue;
                     }
                     MKJigsawPieceMetadata childMetadata = childMetadataOptional.get();
-                    Optional<String> rejectionReason = layoutController.getRejectionReason(dungeonState, connectorInfo, childMetadata);
+                    Optional<String> rejectionReason = layoutController.getRejectionReason(dungeonState, connectorInfo,
+                            childMetadata, branchCapsAvailable);
                     if (rejectionReason.isPresent()) {
                         logRejection(rejectionReason.get(), connectorInfo, childTemplateId.get(), dungeonState);
                         continue;
@@ -388,7 +391,8 @@ public class MKJigsawPlacement {
                             piece.addJunction(new JigsawJunction(childAttachPos.getX(), junctionY - parentJigsawY + groundLevelDelta, childAttachPos.getZ(), relativeY, childProjection));
                             placedChild.addJunction(new JigsawJunction(parentJigsawPos.getX(), junctionY - childJigsawY + childGroundDelta, parentJigsawPos.getZ(), -relativeY, projection));
                             this.pieces.add(placedChild);
-                            MKDungeonPieceState childState = layoutController.nextState(dungeonState, connectorInfo, childMetadata);
+                            MKDungeonPieceState childState = layoutController.nextState(dungeonState, connectorInfo,
+                                    childMetadata, this.random);
                             if (MKNpc.DEV_LOGGING) {
                                 MKNpc.LOGGER.debug("mk_jigsaw accept template={} connector={} floor={} vertical={} piecesOnFloor={} branchDepth={} mainPath={}",
                                         childTemplateId.get(), connectorInfo.role().getSerializedName(), childState.progressionFloorIndex(),
@@ -416,6 +420,62 @@ public class MKJigsawPlacement {
             CompoundTag compoundTag = Objects.requireNonNull(blockInfo.nbt(), () -> blockInfo + " nbt was null");
             ResourceKey<StructureTemplatePool> resourceKey = Pools.parseKey(compoundTag.getString("pool"));
             return aliasLookup.lookup(resourceKey);
+        }
+
+        private void addMainPathEndingCandidates(List<StructurePoolElement> candidates,
+                                                 MKDungeonPieceState dungeonState,
+                                                 MKConnectorInfo connectorInfo,
+                                                 PoolAliasLookup aliasLookup) {
+            Optional<ResourceLocation> endingPool = layoutController.endingPoolForState(dungeonState, connectorInfo);
+            if (endingPool.isEmpty()) {
+                return;
+            }
+            ResourceKey<StructureTemplatePool> poolKey = ResourceKey.create(Registries.TEMPLATE_POOL, endingPool.get());
+            ResourceKey<StructureTemplatePool> resolvedPoolKey = aliasLookup.lookup(poolKey);
+            pools.getOptional(resolvedPoolKey)
+                    .ifPresent(pool -> candidates.addAll(pool.getShuffledTemplates(this.random)));
+        }
+
+        private boolean addBranchCapCandidates(List<StructurePoolElement> candidates,
+                                               MKConnectorInfo connectorInfo,
+                                               ResourceKey<StructureTemplatePool> targetPoolKey,
+                                               PoolAliasLookup aliasLookup) {
+            if (connectorInfo.role() != MKConnectorRole.BRANCH) {
+                return false;
+            }
+            Optional<StructureTemplatePool> poolOpt = branchCapPoolFor(targetPoolKey)
+                    .map(pool -> ResourceKey.create(Registries.TEMPLATE_POOL, pool))
+                    .map(aliasLookup::lookup)
+                    .flatMap(pools::getOptional)
+                    .filter(pool -> pool.size() > 0);
+            poolOpt.ifPresent(pool -> candidates.addAll(pool.getShuffledTemplates(this.random)));
+            return poolOpt.isPresent();
+        }
+
+        private Optional<ResourceLocation> branchCapPoolFor(ResourceKey<StructureTemplatePool> targetPoolKey) {
+            ResourceLocation location = targetPoolKey.location();
+            String path = location.getPath();
+            Optional<String> openingProfile = branchOpeningProfile(path, "hallways/branch/")
+                    .or(() -> branchOpeningProfile(path, "rooms/branch/"));
+            if (openingProfile.isEmpty()) {
+                return Optional.empty();
+            }
+            int markerIndex = path.indexOf("hallways/branch/");
+            if (markerIndex < 0) {
+                markerIndex = path.indexOf("rooms/branch/");
+            }
+            String prefix = markerIndex <= 0 ? "" : path.substring(0, markerIndex);
+            return Optional.of(ResourceLocation.fromNamespaceAndPath(location.getNamespace(),
+                    prefix + "branch_caps/" + openingProfile.get()));
+        }
+
+        private Optional<String> branchOpeningProfile(String path, String marker) {
+            int markerIndex = path.indexOf(marker);
+            if (markerIndex < 0) {
+                return Optional.empty();
+            }
+            String openingProfile = path.substring(markerIndex + marker.length());
+            return openingProfile.isBlank() ? Optional.empty() : Optional.of(openingProfile);
         }
     }
 

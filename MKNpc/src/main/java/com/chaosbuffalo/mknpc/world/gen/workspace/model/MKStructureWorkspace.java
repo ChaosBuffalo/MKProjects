@@ -293,11 +293,21 @@ public class MKStructureWorkspace {
                     errors.add("family " + familyDefinition.baseName() + " cannot use opening profile " +
                             exit.openingProfileId() + " for a main-path exit because it is not main-path compatible");
                 }
-                if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH && !openingProfile.allowOnBranchPath()) {
+                if ((exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH ||
+                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY) &&
+                        !openingProfile.allowOnBranchPath()) {
                     errors.add("family " + familyDefinition.baseName() + " cannot use opening profile " +
                             exit.openingProfileId() + " for a branch exit because it is not branch-path compatible");
                 }
-                if (exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.HALLWAY) {
+                if ((exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY ||
+                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY) &&
+                        exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION) {
+                    errors.add("family " + familyDefinition.baseName() + " " +
+                            exit.pathKind().getSerializedName() + " must place a connector");
+                }
+                if (exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.HALLWAY &&
+                        exit.pathKind() != MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY &&
+                        exit.pathKind() != MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY) {
                     boolean hasCompatibleHallway = hallwayFamilies.stream().anyMatch(hallway ->
                             hallway.openingProfileId().equals(exit.openingProfileId()) &&
                                     (exit.pathKind().usesMainPath() ? hallway.allowOnMainPath() : hallway.allowOnBranchPath()));
@@ -362,12 +372,15 @@ public class MKStructureWorkspace {
                     3,
                     16
             );
-            for (MKTowerWorkspaceCategory category : List.of(
+            List<MKTowerWorkspaceCategory> stairBandCategories = new ArrayList<>(List.of(
                     MKTowerWorkspaceCategory.MAIN,
                     MKTowerWorkspaceCategory.ENTRY,
                     MKTowerWorkspaceCategory.BASEMENT,
-                    MKTowerWorkspaceCategory.TOP_CAP,
-                    MKTowerWorkspaceCategory.BASEMENT_CAP)) {
+                    MKTowerWorkspaceCategory.BASEMENT_CAP));
+            if (floorSettings.topCapApproachEnabled()) {
+                stairBandCategories.add(MKTowerWorkspaceCategory.TOP_CAP);
+            }
+            for (MKTowerWorkspaceCategory category : stairBandCategories) {
                 Optional<MKTowerWorkspaceCategoryProfile> profile = categoryProfile(category);
                 if (profile.isPresent() && !allowedBandHeights.contains(profile.get().fullHeight())) {
                     errors.add(category.getSerializedName() + " full height must be one of " +

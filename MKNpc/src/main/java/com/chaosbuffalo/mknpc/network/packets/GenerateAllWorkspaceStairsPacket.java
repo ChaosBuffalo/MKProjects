@@ -2,13 +2,18 @@ package com.chaosbuffalo.mknpc.network.packets;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.world.gen.workspace.MKStructureWorkspaceService;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+
+import java.util.List;
 
 public class GenerateAllWorkspaceStairsPacket implements CustomPacketPayload {
     public static final Type<GenerateAllWorkspaceStairsPacket> TYPE =
@@ -40,6 +45,18 @@ public class GenerateAllWorkspaceStairsPacket implements CustomPacketPayload {
             return;
         }
         new MKStructureWorkspaceService().generateAllTowerWorkspaceStairs(player.serverLevel(), packet.anchor)
-                .ifPresent(updated -> player.connection.send(new OpenWorkspaceScreenPacket(packet.anchor, updated)));
+                .ifPresent(updated -> {
+                    List<String> unresolvedPieces = updated.pieces().stream()
+                            .filter(piece -> MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags()))
+                            .filter(piece -> MKWorkspaceStairMode.NONE.getSerializedName()
+                                    .equals(piece.tags().get("generated_stair_mode")))
+                            .map(piece -> piece.pieceName() + " [" + piece.role().getSerializedName() + "]")
+                            .toList();
+                    if (!unresolvedPieces.isEmpty() && updated.stairConfig().mode() != MKWorkspaceStairMode.NONE) {
+                        player.displayClientMessage(Component.literal("Workspace stairs: no valid profile for " +
+                                String.join(", ", unresolvedPieces)), false);
+                    }
+                    player.connection.send(new OpenWorkspaceScreenPacket(packet.anchor, updated));
+                });
     }
 }

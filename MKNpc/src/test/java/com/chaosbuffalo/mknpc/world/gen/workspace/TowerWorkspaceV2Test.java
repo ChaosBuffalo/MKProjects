@@ -1,7 +1,14 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonCategoryRule;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonConnectorSettings;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonLayoutController;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonLayoutSettings;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonPieceState;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceMetadata;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKVerticalProgressionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
@@ -21,8 +28,11 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalet
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKResolvedVerticalAccessProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
@@ -43,6 +53,108 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TowerWorkspaceV2Test {
+
+    @Test
+    void defaultStairAuthoringUsesMixedRiseStrategy() {
+        assertEquals(MKWorkspaceStairRiseType.MIXED, MKWorkspaceStairAuthoringConfig.defaultConfig().riseType());
+    }
+
+    @Test
+    void mixedRiseStrategyResolvesHeightRejectedByStairOnly() {
+        ResourceLocation stairBlock = ResourceLocation.parse("minecraft:stone_brick_stairs");
+        ResourceLocation slabBlock = ResourceLocation.parse("minecraft:stone_brick_slab");
+        ResourceLocation ladderBlock = ResourceLocation.parse("minecraft:ladder");
+        MKWorkspaceStairAuthoringConfig stairOnly = new MKWorkspaceStairAuthoringConfig(
+                MKWorkspaceStairMode.RUN_PROFILE,
+                MKWorkspaceStairRiseType.STAIR,
+                1,
+                stairBlock,
+                slabBlock,
+                ladderBlock
+        );
+        MKWorkspaceStairAuthoringConfig mixed = new MKWorkspaceStairAuthoringConfig(
+                MKWorkspaceStairMode.RUN_PROFILE,
+                MKWorkspaceStairRiseType.MIXED,
+                1,
+                stairBlock,
+                slabBlock,
+                ladderBlock
+        );
+
+        assertTrue(MKResolvedVerticalAccessProfile.resolve(stairOnly, 5, 5, 6).isEmpty());
+        assertTrue(MKResolvedVerticalAccessProfile.resolve(mixed, 5, 5, 6).isPresent());
+    }
+
+    @Test
+    void resolvedRunProfileRequiresTwoBlockPassClearance() {
+        ResourceLocation stairBlock = ResourceLocation.parse("minecraft:stone_brick_stairs");
+        ResourceLocation slabBlock = ResourceLocation.parse("minecraft:stone_brick_slab");
+        ResourceLocation ladderBlock = ResourceLocation.parse("minecraft:ladder");
+        MKWorkspaceStairAuthoringConfig slabOnly = new MKWorkspaceStairAuthoringConfig(
+                MKWorkspaceStairMode.RUN_PROFILE,
+                MKWorkspaceStairRiseType.SLAB,
+                2,
+                stairBlock,
+                slabBlock,
+                ladderBlock
+        );
+        MKWorkspaceStairAuthoringConfig mixed = new MKWorkspaceStairAuthoringConfig(
+                MKWorkspaceStairMode.RUN_PROFILE,
+                MKWorkspaceStairRiseType.MIXED,
+                2,
+                stairBlock,
+                slabBlock,
+                ladderBlock
+        );
+
+        assertTrue(MKResolvedVerticalAccessProfile.resolve(slabOnly, 3, 3, 5).isEmpty());
+        assertTrue(MKResolvedVerticalAccessProfile.resolve(slabOnly, 5, 5, 5).isEmpty());
+        MKResolvedVerticalAccessProfile profile = MKResolvedVerticalAccessProfile.resolve(mixed, 5, 5, 5)
+                .orElseThrow();
+        assertTrue(profile.hasRequiredPassClearance());
+    }
+
+    @Test
+    void allowedBandHeightsIncludeEveryResolvableHeightBelowFortyEight() {
+        ResourceLocation stairBlock = ResourceLocation.parse("minecraft:stone_brick_stairs");
+        ResourceLocation slabBlock = ResourceLocation.parse("minecraft:stone_brick_slab");
+        ResourceLocation ladderBlock = ResourceLocation.parse("minecraft:ladder");
+        MKWorkspaceStairAuthoringConfig ladder = new MKWorkspaceStairAuthoringConfig(
+                MKWorkspaceStairMode.LADDER,
+                MKWorkspaceStairRiseType.MIXED,
+                1,
+                stairBlock,
+                slabBlock,
+                ladderBlock
+        );
+
+        List<Integer> allowedHeights = MKWorkspaceDimensions.getAllowedBandHeights(ladder, 3, 5, 3, 6);
+
+        assertTrue(allowedHeights.size() > 6);
+        assertEquals(3, allowedHeights.getFirst());
+        assertEquals(MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE - 1, allowedHeights.getLast());
+        assertTrue(allowedHeights.stream().allMatch(height -> height < MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE));
+    }
+
+    @Test
+    void snappingBandHeightFallsBackWhenNoBandHeightsAreResolvable() {
+        ResourceLocation stairBlock = ResourceLocation.parse("minecraft:stone_brick_stairs");
+        ResourceLocation slabBlock = ResourceLocation.parse("minecraft:stone_brick_slab");
+        ResourceLocation ladderBlock = ResourceLocation.parse("minecraft:ladder");
+        MKWorkspaceStairAuthoringConfig overwideStairs = new MKWorkspaceStairAuthoringConfig(
+                MKWorkspaceStairMode.RUN_PROFILE,
+                MKWorkspaceStairRiseType.MIXED,
+                4,
+                stairBlock,
+                slabBlock,
+                ladderBlock
+        );
+
+        assertTrue(MKWorkspaceDimensions.getAllowedBandHeights(overwideStairs, 3, 5, 3,
+                MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE).isEmpty());
+        assertEquals(5, MKWorkspaceDimensions.snapToNearestAllowedBandHeight(overwideStairs, 3, 5, 5, 3,
+                MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE));
+    }
 
     @Test
     void plannerCreatesSeparateMainAndBranchHallwayPools() {
@@ -198,6 +310,385 @@ class TowerWorkspaceV2Test {
 
         assertFalse(plannedEntrance.placesJigsaw());
         assertEquals(net.minecraft.core.Direction.SOUTH, plannedEntrance.facing());
+    }
+
+    @Test
+    void mainEndingEntryPlansIncomingEndingPoolAndExportsMetadata() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                ),
+                List.of()
+        );
+        MKTowerWorkspaceFamilyDefinition endingFamily = new MKTowerWorkspaceFamilyDefinition(
+                "main_end",
+                MKTowerWorkspaceCategory.MAIN,
+                MKWorkspacePieceRole.FLOOR_MAIN,
+                false,
+                9,
+                9,
+                5,
+                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                        MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY, "entry_main"))
+        );
+        workspace = new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
+                workspace.categoryProfiles(),
+                List.of(endingFamily),
+                workspace.openingProfiles(),
+                workspace.hallwayFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                List.of()
+        );
+
+        MKPlannedPiece plannedEnding = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.pieceName().equals("main_end"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedConnector endingConnector = plannedEnding.connectors().stream()
+                .filter(connector -> connector.role() == MKConnectorRole.MAIN_FORWARD)
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals("main_endings/main", endingConnector.incomingPoolName());
+        assertEquals("minecraft:empty", endingConnector.targetPoolName());
+        assertEquals("true", plannedEnding.tags().get(MKWorkspaceRuntimePieceInfo.MAIN_PATH_ENDING_TAG));
+        assertEquals("main", plannedEnding.tags().get(MKWorkspaceRuntimePieceInfo.CATEGORY_TAG));
+    }
+
+    @Test
+    void branchCapEntryPlansIncomingCapPoolAndExportsMetadata() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                ),
+                List.of()
+        );
+        MKTowerWorkspaceFamilyDefinition branchCapFamily = new MKTowerWorkspaceFamilyDefinition(
+                "branch_cap",
+                MKTowerWorkspaceCategory.MAIN,
+                MKWorkspacePieceRole.FLOOR_MAIN,
+                false,
+                9,
+                9,
+                5,
+                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                        MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY, "main_branch"))
+        );
+        workspace = new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
+                workspace.categoryProfiles(),
+                java.util.stream.Stream.concat(workspace.familyDefinitions().stream(), java.util.stream.Stream.of(branchCapFamily))
+                        .toList(),
+                workspace.openingProfiles(),
+                workspace.hallwayFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                List.of()
+        );
+
+        List<MKPlannedPiece> pieces = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace);
+        MKPlannedPiece plannedCap = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("branch_cap"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedConnector capConnector = plannedCap.connectors().stream()
+                .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals("branch_caps/main_branch", capConnector.incomingPoolName());
+        assertEquals("minecraft:empty", capConnector.targetPoolName());
+        assertEquals("true", plannedCap.tags().get(MKWorkspaceRuntimePieceInfo.BRANCH_CAP_TAG));
+        assertEquals("true", plannedCap.tags().get(MKWorkspaceRuntimePieceInfo.TERMINAL_TAG));
+        assertEquals("false", plannedCap.tags().get(MKWorkspaceRuntimePieceInfo.ALLOW_ON_MAIN_PATH_TAG));
+        assertEquals("true", plannedCap.tags().get(MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG));
+
+        MKStructureWorkspace branchCapWorkspace = workspace;
+        MKStructureWorkspace exportedWorkspace = branchCapWorkspace.withPieces(pieces.stream()
+                .map(piece -> pieceToDefinitionWithConnectors(branchCapWorkspace, piece))
+                .toList());
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(exportedWorkspace, 4, "test");
+        MKWorkspaceExportManifest.ExportRuntimeCategory category = manifest.runtimeHints().categories().stream()
+                .filter(runtimeCategory -> runtimeCategory.baseName().equals("branch_cap"))
+                .findFirst()
+                .orElseThrow();
+        MKWorkspaceExportManifest.ExportRuntimePool capPool = manifest.runtimeHints().pools().stream()
+                .filter(pool -> pool.poolId().equals(ResourceLocation.parse("mkdev:planner_test/branch_caps/main_branch")))
+                .findFirst()
+                .orElseThrow();
+
+        assertTrue(category.pieceMetadata().branchCap());
+        assertEquals(List.of("branch_cap"), capPool.childBaseNames());
+    }
+
+    @Test
+    void workspaceRejectsMainEndingEntryWithMainExit() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                ),
+                List.of()
+        );
+        MKTowerWorkspaceFamilyDefinition invalidEnding = new MKTowerWorkspaceFamilyDefinition(
+                "invalid_end",
+                MKTowerWorkspaceCategory.MAIN,
+                MKWorkspacePieceRole.FLOOR_MAIN,
+                false,
+                9,
+                9,
+                5,
+                List.of(
+                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                                MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY, "entry_main"),
+                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
+                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "entry_main")
+                )
+        );
+        workspace = new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
+                workspace.categoryProfiles(),
+                List.of(invalidEnding),
+                workspace.openingProfiles(),
+                workspace.hallwayFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                List.of()
+        );
+
+        assertTrue(workspace.validate().stream()
+                .anyMatch(error -> error.contains("cannot define a main ending entry and a main exit")));
+    }
+
+    @Test
+    void workspaceRejectsInvalidBranchCapEntryShapes() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                ),
+                List.of()
+        );
+        MKTowerWorkspaceFamilyDefinition invalidCap = new MKTowerWorkspaceFamilyDefinition(
+                "invalid_cap",
+                MKTowerWorkspaceCategory.MAIN,
+                MKWorkspacePieceRole.FLOOR_MAIN,
+                false,
+                9,
+                9,
+                5,
+                List.of(
+                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                                MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY, "main_branch",
+                                MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION),
+                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
+                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "entry_main",
+                                MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM)
+                )
+        );
+        workspace = new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
+                workspace.categoryProfiles(),
+                List.of(invalidCap),
+                workspace.openingProfiles(),
+                workspace.hallwayFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                List.of()
+        );
+
+        List<String> errors = workspace.validate();
+        assertTrue(errors.stream().anyMatch(error -> error.contains("branch_cap_entry must place a connector")));
+        assertTrue(errors.stream().anyMatch(error -> error.contains("cannot define a branch cap entry and a main path exit")));
+    }
+
+    @Test
+    void layoutControllerSwitchesFromContinuationToEndingAtCategoryTarget() {
+        ResourceLocation endingPool = ResourceLocation.fromNamespaceAndPath("mknpc", "test/main_endings/main");
+        MKDungeonLayoutController controller = new MKDungeonLayoutController(new MKDungeonLayoutSettings(
+                1,
+                3,
+                1,
+                4,
+                0,
+                true,
+                MKVerticalProgressionMode.MIXED,
+                true,
+                false,
+                List.of(new MKDungeonCategoryRule("main", 2, 2, true, java.util.Optional.of(endingPool))),
+                connectorSettings()
+        ));
+        MKDungeonPieceState beforeTarget = new MKDungeonPieceState(0, 0, 1, 0, true, 3,
+                "main", 1, 2);
+        MKDungeonPieceState atTarget = new MKDungeonPieceState(0, 0, 2, 0, true, 3,
+                "main", 2, 2);
+        MKJigsawPieceMetadata continuation = new MKJigsawPieceMetadata(MKJigsawPieceRole.ROOM, 0, 0,
+                true, false, false, false, "main", false);
+        MKJigsawPieceMetadata ending = new MKJigsawPieceMetadata(MKJigsawPieceRole.ROOM, 0, 0,
+                true, false, false, false, "main", true);
+        var mainConnector = new com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorInfo(
+                ResourceLocation.fromNamespaceAndPath("mknpc", "main_back"),
+                ResourceLocation.fromNamespaceAndPath("mknpc", "main_forward"),
+                net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.TEMPLATE_POOL,
+                        ResourceLocation.fromNamespaceAndPath("mknpc", "test/main")),
+                MKConnectorRole.MAIN_BACK
+        );
+
+        assertTrue(controller.getRejectionReason(beforeTarget, mainConnector, continuation).isEmpty());
+        assertTrue(controller.getRejectionReason(beforeTarget, mainConnector, ending).isPresent());
+        assertTrue(controller.getRejectionReason(atTarget, mainConnector, continuation).isPresent());
+        assertTrue(controller.getRejectionReason(atTarget, mainConnector, ending).isEmpty());
+        assertEquals(java.util.Optional.of(endingPool), controller.endingPoolForState(atTarget, mainConnector));
+    }
+
+    @Test
+    void layoutControllerRequiresBranchCapAtCategoryBranchLimitWhenCapsAvailable() {
+        MKDungeonLayoutController controller = new MKDungeonLayoutController(new MKDungeonLayoutSettings(
+                1,
+                3,
+                1,
+                4,
+                5,
+                true,
+                MKVerticalProgressionMode.MIXED,
+                true,
+                false,
+                List.of(new MKDungeonCategoryRule("main", 1, 2, 2, true, java.util.Optional.empty())),
+                connectorSettings()
+        ));
+        MKDungeonPieceState atBranchLimit = new MKDungeonPieceState(0, 0, 2, 2, false, 3,
+                "main", 1, 2);
+        MKJigsawPieceMetadata continuation = new MKJigsawPieceMetadata(MKJigsawPieceRole.ROOM, 0, 0,
+                false, true, false, false, "main", false, false);
+        MKJigsawPieceMetadata branchCap = new MKJigsawPieceMetadata(MKJigsawPieceRole.ROOM, 0, 0,
+                false, true, true, false, "main", false, true);
+        var branchConnector = new com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorInfo(
+                ResourceLocation.fromNamespaceAndPath("mknpc", "branch"),
+                ResourceLocation.fromNamespaceAndPath("mknpc", "branch"),
+                net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.TEMPLATE_POOL,
+                        ResourceLocation.fromNamespaceAndPath("mknpc", "test/rooms/branch/main_branch")),
+                MKConnectorRole.BRANCH
+        );
+
+        assertTrue(controller.getRejectionReason(atBranchLimit, branchConnector, continuation, false).isEmpty());
+        assertEquals(java.util.Optional.of("branch_cap_required"),
+                controller.getRejectionReason(atBranchLimit, branchConnector, continuation, true));
+        assertTrue(controller.getRejectionReason(atBranchLimit, branchConnector, branchCap, true).isEmpty());
+    }
+
+    @Test
+    void categoryProfileBranchCapLimitExportsToManifest() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                ),
+                List.of()
+        );
+        List<MKTowerWorkspaceCategoryProfile> categoryProfiles = workspace.categoryProfiles().stream()
+                .map(profile -> profile.category() == MKTowerWorkspaceCategory.MAIN ?
+                        new MKTowerWorkspaceCategoryProfile(
+                                profile.category(),
+                                profile.roomWidth(),
+                                profile.roomLength(),
+                                profile.fullHeight(),
+                                profile.minMainPathPieces(),
+                                profile.maxMainPathPieces(),
+                                3) :
+                        profile)
+                .toList();
+        workspace = new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
+                categoryProfiles,
+                workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.hallwayFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces()
+        );
+
+        MKStructureWorkspace exportSource = workspace;
+        List<MKPlannedPiece> pieces = new MKTowerWorkspacePlanner().createCanonicalPieces(exportSource);
+        MKStructureWorkspace exportWorkspace = exportSource.withPieces(pieces.stream()
+                .map(piece -> pieceToDefinitionWithConnectors(exportSource, piece))
+                .toList());
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(exportWorkspace, 4, "test");
+        MKWorkspaceExportManifest.ExportCategoryProfile mainProfile = manifest.settings().categoryProfiles().stream()
+                .filter(profile -> profile.category() == MKTowerWorkspaceCategory.MAIN)
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(3, mainProfile.maxBranchPiecesBeforeCap());
     }
 
     @Test
@@ -658,7 +1149,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void validationRequiresAllCategoryBandsToStayInSharedPhaseFamily() {
+    void validationAllowsCategoryBandsWithIndependentlyResolvedCanonicalProfiles() {
         MKStructureWorkspace workspace = baseWorkspace(
                 List.of(
                         new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
@@ -701,7 +1192,7 @@ class TowerWorkspaceV2Test {
         );
 
         List<String> errors = workspace.validate();
-        assertTrue(errors.stream().anyMatch(error -> error.contains("top_cap full height must be one of")));
+        assertFalse(errors.stream().anyMatch(error -> error.contains("top_cap full height must be one of")));
     }
 
     @Test
@@ -911,6 +1402,18 @@ class TowerWorkspaceV2Test {
 
     private static MKWorkspaceMaterialPalette workspacePalette() {
         return MKWorkspaceMaterialPalette.defaultPalette();
+    }
+
+    private static MKDungeonConnectorSettings connectorSettings() {
+        return new MKDungeonConnectorSettings(
+                ResourceLocation.fromNamespaceAndPath("mknpc", "main_forward"),
+                ResourceLocation.fromNamespaceAndPath("mknpc", "main_back"),
+                ResourceLocation.fromNamespaceAndPath("mknpc", "branch"),
+                ResourceLocation.fromNamespaceAndPath("mknpc", "connect_down"),
+                ResourceLocation.fromNamespaceAndPath("mknpc", "connect_up"),
+                ResourceLocation.fromNamespaceAndPath("mknpc", "top_cap_forward"),
+                ResourceLocation.fromNamespaceAndPath("mknpc", "top_cap_back")
+        );
     }
 
     private static MKPlannedConnector branchConnector(MKPlannedPiece piece, net.minecraft.core.Direction direction) {

@@ -4,7 +4,8 @@ import net.minecraft.util.StringRepresentable;
 
 public enum MKWorkspaceStairRiseType implements StringRepresentable {
     STAIR("stair"),
-    SLAB("slab");
+    SLAB("slab"),
+    MIXED("mixed");
 
     private final String serializedName;
 
@@ -18,7 +19,7 @@ public enum MKWorkspaceStairRiseType implements StringRepresentable {
                 return value;
             }
         }
-        return STAIR;
+        return MIXED;
     }
 
     @Override

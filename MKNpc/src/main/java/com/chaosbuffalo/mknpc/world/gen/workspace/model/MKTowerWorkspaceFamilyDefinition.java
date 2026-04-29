@@ -176,6 +176,28 @@ public class MKTowerWorkspaceFamilyDefinition {
         if (mainExitCount > 1) {
             errors.add("family " + baseName + " can only define one main exit horizontal exit");
         }
+        long mainEndingEntryCount = horizontalExits.stream()
+                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY)
+                .count();
+        if (mainEndingEntryCount > 1) {
+            errors.add("family " + baseName + " can only define one main ending entry horizontal exit");
+        }
+        long branchCapEntryCount = horizontalExits.stream()
+                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY)
+                .count();
+        if (branchCapEntryCount > 1) {
+            errors.add("family " + baseName + " can only define one branch cap entry horizontal exit");
+        }
+        if (mainEndingEntryCount > 0 && mainExitCount > 0) {
+            errors.add("family " + baseName + " cannot define a main ending entry and a main exit");
+        }
+        if (branchCapEntryCount > 0 && (mainEntryCount > 0 || mainExitCount > 0 || mainEndingEntryCount > 0)) {
+            errors.add("family " + baseName + " cannot define a branch cap entry and a main path exit");
+        }
+        if (branchCapEntryCount > 0 && horizontalExits.stream()
+                .anyMatch(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH)) {
+            errors.add("family " + baseName + " cannot define a branch cap entry and a branch exit");
+        }
         Set<Direction> reserved = reservedHorizontalDirections(pieceRole);
         Set<Direction> seenDirections = new LinkedHashSet<>();
         for (MKWorkspaceFamilyHorizontalExitDefinition exit : horizontalExits) {
@@ -280,6 +302,26 @@ public class MKTowerWorkspaceFamilyDefinition {
         return horizontalExits.stream()
                 .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)
                 .findFirst();
+    }
+
+    public Optional<MKWorkspaceFamilyHorizontalExitDefinition> mainEndingEntry() {
+        return horizontalExits.stream()
+                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY)
+                .findFirst();
+    }
+
+    public boolean mainPathEnding() {
+        return mainEndingEntry().isPresent();
+    }
+
+    public Optional<MKWorkspaceFamilyHorizontalExitDefinition> branchCapEntry() {
+        return horizontalExits.stream()
+                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY)
+                .findFirst();
+    }
+
+    public boolean branchCap() {
+        return branchCapEntry().isPresent();
     }
 
     public List<MKWorkspaceFamilyHorizontalExitDefinition> branchExits() {

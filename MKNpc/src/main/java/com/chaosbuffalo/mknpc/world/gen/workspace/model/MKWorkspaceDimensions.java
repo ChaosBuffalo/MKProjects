@@ -6,7 +6,12 @@ import net.minecraft.nbt.CompoundTag;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 public class MKWorkspaceDimensions {
+    public static final int MAX_BAND_HEIGHT_EXCLUSIVE = 48;
+    private static final Map<BandHeightCacheKey, List<Integer>> ALLOWED_BAND_HEIGHT_CACHE = new ConcurrentHashMap<>();
+
     public static final Codec<MKWorkspaceDimensions> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.INT.fieldOf("roomWidth").forGetter(MKWorkspaceDimensions::roomWidth),
             Codec.INT.fieldOf("roomLength").forGetter(MKWorkspaceDimensions::roomLength),
@@ -129,15 +134,15 @@ public class MKWorkspaceDimensions {
 
     public static List<Integer> getAllowedTowerHeights(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
                                                        int minimumHeight, int count) {
-        MKVerticalAccessProfile profile = MKVerticalAccessProfile.forTemplateReuse(stairConfig, hallwayWidth, hallwayWidth);
-        if (profile.mode() == MKWorkspaceStairMode.LADDER || profile.mode() == MKWorkspaceStairMode.NONE) {
+        MKWorkspaceStairMode mode = MKVerticalAccessProfile.normalizeMode(stairConfig.mode());
+        if (mode == MKWorkspaceStairMode.LADDER || mode == MKWorkspaceStairMode.NONE) {
             return MKVerticalAccessProfile.getAllowedHeights(MKWorkspaceStairMode.LADDER, hallwayWidth, minimumHeight, count);
         }
         java.util.List<Integer> values = new java.util.ArrayList<>();
         int candidate = Math.max(1, minimumHeight);
         int maxCandidate = Math.max(candidate + 255, candidate + (count * 64));
         while (values.size() < count && candidate <= maxCandidate) {
-            if (profile.isReusableInteriorHeight(candidate)) {
+            if (MKResolvedVerticalAccessProfile.resolve(stairConfig, hallwayWidth, hallwayWidth, candidate).isPresent()) {
                 values.add(candidate);
             }
             candidate++;
@@ -162,16 +167,15 @@ public class MKWorkspaceDimensions {
         List<Integer> allowedHeights = getAllowedTowerHeights(stairConfig, hallwayWidth, minimumHeight, count);
         return allowedHeights.stream()
                 .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedHeight)))
-                .orElseGet(() -> allowedHeights.getFirst());
+                .orElse(Math.max(minimumHeight, Math.min(MAX_BAND_HEIGHT_EXCLUSIVE - 1, requestedHeight)));
     }
 
     public static List<Integer> getAllowedEntranceHeights(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
                                                           int referenceRoomHeight, int minimumHeight, int count) {
-        MKVerticalAccessProfile profile = MKVerticalAccessProfile.forTemplateReuse(stairConfig, hallwayWidth, hallwayWidth);
         List<Integer> allowedHeights = getAllowedTowerHeights(stairConfig, hallwayWidth, minimumHeight, Math.max(count * 3, count));
         List<Integer> aligned = new java.util.ArrayList<>();
         for (int height : allowedHeights) {
-            if (profile.isInteriorPhaseAligned(referenceRoomHeight, height)) {
+            if (MKResolvedVerticalAccessProfile.resolve(stairConfig, hallwayWidth, hallwayWidth, height).isPresent()) {
                 aligned.add(height);
                 if (aligned.size() >= count) {
                     break;
@@ -186,7 +190,10 @@ public class MKWorkspaceDimensions {
 
     public static List<Integer> getAllowedBandHeights(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
                                                       int referenceRoomHeight, int minimumHeight, int count) {
-        return getAllowedEntranceHeights(stairConfig, hallwayWidth, referenceRoomHeight, minimumHeight, count);
+        BandHeightCacheKey key = BandHeightCacheKey.from(stairConfig, hallwayWidth, minimumHeight);
+        List<Integer> allowedHeights = ALLOWED_BAND_HEIGHT_CACHE.computeIfAbsent(key,
+                ignored -> computeAllowedBandHeights(stairConfig, key.hallwayWidth(), key.minimumHeight()));
+        return allowedHeights;
     }
 
     public static int snapToNearestAllowedEntranceHeight(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
@@ -196,28 +203,17 @@ public class MKWorkspaceDimensions {
                 count);
         return allowedHeights.stream()
                 .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedHeight)))
-                .orElseGet(() -> allowedHeights.getFirst());
+                .orElse(Math.max(minimumHeight, Math.min(MAX_BAND_HEIGHT_EXCLUSIVE - 1, requestedHeight)));
     }
 
     public static int snapToNearestAllowedBandHeight(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
                                                      int referenceRoomHeight, int requestedHeight, int minimumHeight,
                                                      int count) {
-        return snapToNearestAllowedEntranceHeight(stairConfig, hallwayWidth, referenceRoomHeight, requestedHeight,
+        List<Integer> allowedHeights = getAllowedBandHeights(stairConfig, hallwayWidth, referenceRoomHeight,
                 minimumHeight, count);
-    }
-
-    public static List<Integer> getAllowedFlatRunLengths(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
-                                                         int referenceRoomHeight, int count) {
-        return MKVerticalAccessProfile.getAllowedFlatRunLengths(stairConfig, hallwayWidth, hallwayWidth,
-                referenceRoomHeight, count);
-    }
-
-    public static int snapToNearestAllowedFlatRunLength(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
-                                                        int referenceRoomHeight, int requestedFlatRunLength, int count) {
-        List<Integer> allowedFlatRuns = getAllowedFlatRunLengths(stairConfig, hallwayWidth, referenceRoomHeight, count);
-        return allowedFlatRuns.stream()
-                .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedFlatRunLength)))
-                .orElseGet(() -> allowedFlatRuns.getFirst());
+        return allowedHeights.stream()
+                .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedHeight)))
+                .orElse(Math.max(minimumHeight, Math.min(MAX_BAND_HEIGHT_EXCLUSIVE - 1, requestedHeight)));
     }
 
     public static List<Integer> getAllowedStairWidths(int hallwayWidth) {
@@ -242,6 +238,31 @@ public class MKWorkspaceDimensions {
         }
         if (value % 2 == 0) {
             errors.add(label + " must be odd");
+        }
+    }
+
+    private static List<Integer> computeAllowedBandHeights(MKWorkspaceStairAuthoringConfig stairConfig,
+                                                           int hallwayWidth, int minimumHeight) {
+        List<Integer> aligned = new java.util.ArrayList<>();
+        for (int height = minimumHeight; height < MAX_BAND_HEIGHT_EXCLUSIVE; height++) {
+            if (MKResolvedVerticalAccessProfile.resolve(stairConfig, hallwayWidth, hallwayWidth, height).isPresent()) {
+                aligned.add(height);
+            }
+        }
+        return List.copyOf(aligned);
+    }
+
+    private record BandHeightCacheKey(MKWorkspaceStairMode mode, MKWorkspaceStairRiseType riseType, int stairWidth,
+                                      int hallwayWidth, int minimumHeight) {
+        private static BandHeightCacheKey from(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
+                                               int minimumHeight) {
+            return new BandHeightCacheKey(
+                    MKVerticalAccessProfile.normalizeMode(stairConfig.mode()),
+                    stairConfig.riseType(),
+                    Math.max(1, stairConfig.stairWidth()),
+                    Math.max(1, hallwayWidth),
+                    Math.max(1, minimumHeight)
+            );
         }
     }
 

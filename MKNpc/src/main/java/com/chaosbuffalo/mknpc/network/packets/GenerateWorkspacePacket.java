@@ -2,6 +2,8 @@ package com.chaosbuffalo.mknpc.network.packets;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.world.gen.workspace.MKStructureWorkspaceService;
+import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -9,6 +11,9 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+
+import java.util.List;
+import java.util.Optional;
 
 public class GenerateWorkspacePacket implements CustomPacketPayload {
     public static final Type<GenerateWorkspacePacket> TYPE = new Type<>(MKNpc.id("generate_workspace"));
@@ -39,6 +44,20 @@ public class GenerateWorkspacePacket implements CustomPacketPayload {
         if (!(context.player() instanceof ServerPlayer player) || !player.isCreative()) {
             return;
         }
-        new MKStructureWorkspaceService().generateTowerWorkspace(player.serverLevel(), packet.anchor);
+        Optional<MKStructureWorkspace> workspaceOpt =
+                IMKStructureWorkspaceData.get(player.serverLevel()).getWorkspaceByAnchor(packet.anchor);
+        if (workspaceOpt.isEmpty()) {
+            MKWorkspaceValidationMessages.displayFailure(player,
+                    "Workspace generation failed: no workspace found at this anchor.");
+            return;
+        }
+        List<String> errors = workspaceOpt.get().validate();
+        if (!errors.isEmpty()) {
+            MKWorkspaceValidationMessages.displayValidationErrors(player, errors);
+            return;
+        }
+        if (new MKStructureWorkspaceService().generateTowerWorkspace(player.serverLevel(), packet.anchor).isEmpty()) {
+            MKWorkspaceValidationMessages.displayFailure(player, "Workspace generation failed.");
+        }
     }
 }

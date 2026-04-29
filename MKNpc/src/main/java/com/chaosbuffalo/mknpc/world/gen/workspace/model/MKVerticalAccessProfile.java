@@ -22,18 +22,12 @@ public record MKVerticalAccessProfile(MKWorkspaceStairMode mode, MKWorkspaceStai
         }
     }
 
-    public static MKVerticalAccessProfile forTemplateReuse(MKWorkspaceStairAuthoringConfig config, int shaftWidth, int shaftLength) {
-        MKWorkspaceStairMode mode = normalizeMode(config.mode());
-        if (mode == MKWorkspaceStairMode.LADDER || mode == MKWorkspaceStairMode.NONE) {
-            return new MKVerticalAccessProfile(mode, config.riseType(), 1, 2, 0, 1);
-        }
-        int width = Math.max(1, config.stairWidth());
-        int pathWidth = Math.max(1, shaftWidth - (2 * (width - 1)));
-        int pathLength = Math.max(1, shaftLength - (2 * (width - 1)));
-        int cycleLength = getPerimeterStepCount(pathWidth, pathLength);
-        int riseHalfBlocksPerStep = config.riseType() == MKWorkspaceStairRiseType.SLAB ? 1 : 2;
-        return new MKVerticalAccessProfile(mode, config.riseType(), cycleLength, riseHalfBlocksPerStep,
-                Math.max(0, config.flatRunLength()), width);
+    public static MKVerticalAccessProfile forTemplateReuse(MKWorkspaceStairAuthoringConfig config, int shaftWidth,
+                                                           int shaftLength, int interiorHeight) {
+        return MKResolvedVerticalAccessProfile.resolve(config, shaftWidth, shaftLength, interiorHeight)
+                .map(MKResolvedVerticalAccessProfile::asUniformProfile)
+                .orElseGet(() -> new MKVerticalAccessProfile(normalizeMode(config.mode()), config.riseType(), 1, 2,
+                        0, Math.max(1, config.stairWidth())));
     }
 
     public static MKWorkspaceStairMode normalizeMode(MKWorkspaceStairMode requestedMode) {
@@ -56,11 +50,12 @@ public record MKVerticalAccessProfile(MKWorkspaceStairMode mode, MKWorkspaceStai
         MKVerticalAccessProfile profile = forTemplateReuse(
                 new MKWorkspaceStairAuthoringConfig(requestedMode,
                         requestedMode == MKWorkspaceStairMode.SLAB_STAIRS ? MKWorkspaceStairRiseType.SLAB :
-                                MKWorkspaceStairRiseType.STAIR,
-                        0, 1, net.minecraft.resources.ResourceLocation.parse("minecraft:stone_brick_stairs"),
+                                requestedMode == MKWorkspaceStairMode.STAIR_STAIRS ? MKWorkspaceStairRiseType.STAIR :
+                                        MKWorkspaceStairRiseType.MIXED,
+                        1, net.minecraft.resources.ResourceLocation.parse("minecraft:stone_brick_stairs"),
                         net.minecraft.resources.ResourceLocation.parse("minecraft:stone_brick_slab"),
                         net.minecraft.resources.ResourceLocation.parse("minecraft:ladder")),
-                hallwayWidth, hallwayWidth);
+                hallwayWidth, hallwayWidth, minimumHeight);
         if (profile.mode() == MKWorkspaceStairMode.LADDER || profile.mode() == MKWorkspaceStairMode.NONE) {
             List<Integer> values = new ArrayList<>();
             for (int i = 0; i < count; i++) {
@@ -73,7 +68,14 @@ public record MKVerticalAccessProfile(MKWorkspaceStairMode mode, MKWorkspaceStai
         int candidate = Math.max(1, minimumHeight);
         int maxCandidate = Math.max(candidate + 255, candidate + (count * 64));
         while (values.size() < count && candidate <= maxCandidate) {
-            if (profile.getBoundaryCompatibilityForInteriorHeight(candidate).isUsable()) {
+            if (MKResolvedVerticalAccessProfile.resolve(new MKWorkspaceStairAuthoringConfig(requestedMode,
+                            requestedMode == MKWorkspaceStairMode.SLAB_STAIRS ? MKWorkspaceStairRiseType.SLAB :
+                                    requestedMode == MKWorkspaceStairMode.STAIR_STAIRS ? MKWorkspaceStairRiseType.STAIR :
+                                            MKWorkspaceStairRiseType.MIXED,
+                            1, net.minecraft.resources.ResourceLocation.parse("minecraft:stone_brick_stairs"),
+                            net.minecraft.resources.ResourceLocation.parse("minecraft:stone_brick_slab"),
+                            net.minecraft.resources.ResourceLocation.parse("minecraft:ladder")),
+                    hallwayWidth, hallwayWidth, candidate).isPresent()) {
                 values.add(candidate);
             }
             candidate++;
@@ -95,38 +97,6 @@ public record MKVerticalAccessProfile(MKWorkspaceStairMode mode, MKWorkspaceStai
                 .orElseGet(() -> allowed.getFirst());
     }
 
-    public static List<Integer> getAllowedFlatRunLengths(MKWorkspaceStairAuthoringConfig config, int shaftWidth,
-                                                         int shaftLength, int referenceHeight, int count) {
-        MKWorkspaceStairMode mode = normalizeMode(config.mode());
-        if (mode == MKWorkspaceStairMode.LADDER || mode == MKWorkspaceStairMode.NONE) {
-            return List.of(0);
-        }
-
-        List<Integer> values = new ArrayList<>();
-        int candidate = 0;
-        int maxCandidate = Math.max(16, count * 8);
-        while (candidate <= maxCandidate && values.size() < count) {
-            MKWorkspaceStairAuthoringConfig candidateConfig = new MKWorkspaceStairAuthoringConfig(
-                    config.mode(),
-                    config.riseType(),
-                    candidate,
-                    config.stairWidth(),
-                    config.stairBlock(),
-                    config.slabBlock(),
-                    config.ladderBlock()
-            );
-            MKVerticalAccessProfile profile = forTemplateReuse(candidateConfig, shaftWidth, shaftLength);
-            if (profile.getBoundaryCompatibilityForInteriorHeight(referenceHeight).isUsable()) {
-                values.add(candidate);
-            }
-            candidate++;
-        }
-        if (values.isEmpty()) {
-            values.add(Math.max(0, config.flatRunLength()));
-        }
-        return values;
-    }
-
     public boolean isReusableHeight(int fullBlockHeight) {
         return getBoundaryCompatibilityForHeight(fullBlockHeight).isUsable();
     }
@@ -138,6 +108,10 @@ public record MKVerticalAccessProfile(MKWorkspaceStairMode mode, MKWorkspaceStai
         }
         int pathSteps = getPathStepsForHeight(fullBlockHeight);
         int segmentLength = flatRunLength + 1;
+        return getBoundaryCompatibility(cycleLength, pathSteps, segmentLength);
+    }
+
+    public static BoundaryCompatibility getBoundaryCompatibility(int cycleLength, int pathSteps, int segmentLength) {
         Set<Integer> bottomIndices = new HashSet<>();
         bottomIndices.add(Math.floorMod(-1, cycleLength));
         for (int step = 0; step < segmentLength; step++) {
