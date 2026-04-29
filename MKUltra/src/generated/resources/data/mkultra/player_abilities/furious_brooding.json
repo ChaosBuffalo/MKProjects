@@ -32,12 +32,37 @@
       "mkultra:furious_brooding.heal.modifier_scaling": 1.0,
       "mkultra:furious_brooding.heal.per_level": 1.0
     },
-    "healingFormula": {
-      "type": "mkcore:bonus_scaled_linear",
-      "base_param": "mkultra:furious_brooding.heal.base",
-      "bonus_key": "mkcore:heal_bonus",
-      "bonus_scale_param": "mkultra:furious_brooding.heal.modifier_scaling",
-      "per_level_param": "mkultra:furious_brooding.heal.per_level"
+    "healing": {
+      "baseFormula": {
+        "type": "mkcore:parameter_value",
+        "key": "mkultra:furious_brooding.heal.base"
+      },
+      "bonusFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:furious_brooding.heal.modifier_scaling"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:heal_bonus"
+          }
+        ]
+      },
+      "perStackFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:furious_brooding.heal.per_level"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:skill_level"
+          }
+        ]
+      }
     }
   },
   "castTime": 0,

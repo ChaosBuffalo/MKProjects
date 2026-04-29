@@ -3,12 +3,42 @@
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:smite_cast",
     "casting_particles": "mkultra:smite_casting",
-    "damageFormula": {
-      "type": "mkcore:bonus_scaled_linear",
-      "base_param": "mkultra:smite.damage.base",
-      "bonus_key": "mkcore:damage_bonus",
-      "bonus_scale_param": "mkultra:smite.damage.modifier_scaling",
-      "per_level_param": "mkultra:smite.damage.per_level"
+    "damage": {
+      "baseFormula": {
+        "type": "mkcore:add",
+        "terms": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:smite.damage.base"
+          },
+          {
+            "type": "mkcore:multiply",
+            "factors": [
+              {
+                "type": "mkcore:parameter_value",
+                "key": "mkultra:smite.damage.per_level"
+              },
+              {
+                "type": "mkcore:context_value",
+                "key": "mkcore:skill_level"
+              }
+            ]
+          }
+        ]
+      },
+      "bonusFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:smite.damage.modifier_scaling"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:damage_bonus"
+          }
+        ]
+      }
     },
     "durationFormula": {
       "type": "mkcore:add",

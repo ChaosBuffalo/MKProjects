@@ -11,14 +11,14 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.effects.utility.MKParticleEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
@@ -51,8 +51,8 @@ public class IgniteAbility extends MKAbility {
                     .with(DAMAGE_PER_LEVEL_PARAMETER, 1.0f)
                     .with(MODIFIER_SCALING_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, MODIFIER_SCALING_PARAMETER));
     protected final FloatAttribute igniteDistance = new FloatAttribute("igniteDistance", 5.0f);
     protected final ResourceLocationAttribute cast_1_particles = new ResourceLocationAttribute("cast_1_particles", CAST_1_PARTICLES);
@@ -63,7 +63,7 @@ public class IgniteAbility extends MKAbility {
         setCooldownSeconds(12);
         setManaCost(6);
         setCastTime(GameConstants.TICKS_PER_SECOND / 4);
-        addAttributes(formulaParameters, damageFormula, cast_1_particles, cast_2_particles);
+        addAttributes(formulaParameters, damage, cast_1_particles, cast_2_particles);
         addSkillAttribute(MKAttributes.EVOCATION);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
@@ -77,7 +77,7 @@ public class IgniteAbility extends MKAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.EVOCATION);
         Component valueStr = getDamageDescription(entityData,
-                CoreDamageTypes.FireDamage.get(), damageFormula.value(), formulaParameters.value(), level);
+                CoreDamageTypes.FireDamage.get(), damage.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(), valueStr, igniteDistance.value());
     }
 
@@ -111,18 +111,18 @@ public class IgniteAbility extends MKAbility {
         super.endCast(entity, data, context);
         float level = context.getSkill(MKAttributes.EVOCATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
-            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.FireDamage.get(),
-                            damageFormula.value(), formulaParameters.value())
+            MKEffectBuilder<?> damageEffect = MKAbilityDamageEffect.from(entity, CoreDamageTypes.FireDamage.get(),
+                            damage.value(), formulaParameters.value())
                     .ability(this)
                     .skillLevel(level);
 
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> {
-                targetData.getEffects().addEffect(damage);
+                targetData.getEffects().addEffect(damageEffect);
 
                 SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_fire_4.value(), targetEntity.getSoundSource());
 
                 if (MKUAbilityUtils.isBurning(targetData)) {
-                    MKEffectBuilder<?> ignite = IgniteEffect.from(entity, damageFormula.value(), formulaParameters.value())
+                    MKEffectBuilder<?> ignite = IgniteEffect.from(entity, damage.value(), formulaParameters.value())
                             .ability(this)
                             .skillLevel(level);
                     MKEffectBuilder<?> particle = MKParticleEffect.from(entity, cast_2_particles.getValue(),

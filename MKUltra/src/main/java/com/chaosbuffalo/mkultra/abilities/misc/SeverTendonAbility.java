@@ -10,16 +10,19 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.AbilityMeleeDamageEffect;
 import com.chaosbuffalo.mkcore.fx.ParticleEffects;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.formulas.StackingBonusFormulaSpec;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.ParticleEffectSpawnPacket;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.EnumAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.StackingBonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.effects.SeverTendonEffect;
 import com.chaosbuffalo.mkultra.init.MKUSounds;
@@ -61,11 +64,11 @@ public class SeverTendonAbility extends MKAbility {
                     .with(DURATION_BASE_PARAMETER, 4.0f)
                     .with(DURATION_PER_LEVEL_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute hitDamageFormula = new FormulaAttribute("hitDamageFormula",
-            AbilityFormula.bonusScaledLinear(HIT_DAMAGE_BASE_PARAMETER, HIT_DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute hitDamage = new BonusFormulaSpecAttribute("hitDamage",
+            BonusFormulaSpec.skilledBonusScaled(HIT_DAMAGE_BASE_PARAMETER, HIT_DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, HIT_DAMAGE_MODIFIER_SCALING_PARAMETER));
-    protected final FormulaAttribute bleedDamageFormula = new FormulaAttribute("bleedDamageFormula",
-            AbilityFormula.bonusScaledLinear(BLEED_DAMAGE_BASE_PARAMETER, BLEED_DAMAGE_PER_LEVEL_PARAMETER,
+    protected final StackingBonusFormulaSpecAttribute bleedDamage = new StackingBonusFormulaSpecAttribute("bleedDamage",
+            StackingBonusFormulaSpec.skilledBonusScaled(BLEED_DAMAGE_BASE_PARAMETER, BLEED_DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, BLEED_DAMAGE_MODIFIER_SCALING_PARAMETER));
     protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final EnumAttribute<InteractionHand> attackHand = new EnumAttribute<>("attackHand", InteractionHand.MAIN_HAND, InteractionHand.class);
@@ -75,7 +78,7 @@ public class SeverTendonAbility extends MKAbility {
         setCooldownSeconds(12);
         setManaCost(5);
         setCastTime(0);
-        addAttributes(formulaParameters, hitDamageFormula, bleedDamageFormula, durationFormula, attackHand);
+        addAttributes(formulaParameters, hitDamage, bleedDamage, durationFormula, attackHand);
         addSkillAttribute(MKAttributes.PANKRATION);
     }
 
@@ -83,9 +86,9 @@ public class SeverTendonAbility extends MKAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.PANKRATION);
         Component valueStr = getDamageDescription(entityData,
-                CoreDamageTypes.MeleeDamage.get(), hitDamageFormula.value(), formulaParameters.value(), level);
+                CoreDamageTypes.MeleeDamage.get(), hitDamage.value(), formulaParameters.value(), level);
         Component dotStr = getDamageDescription(entityData,
-                CoreDamageTypes.BleedDamage.get(), bleedDamageFormula.value(), formulaParameters.value(), level);
+                CoreDamageTypes.BleedDamage.get(), bleedDamage.value(), formulaParameters.value(), level);
         int periodSeconds = SeverTendonEffect.DEFAULT_PERIOD / 20;
         return Component.translatable(getDescriptionTranslationKey(), valueStr,
                 getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), level) / 20,
@@ -124,20 +127,20 @@ public class SeverTendonAbility extends MKAbility {
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
             InteractionHand hand = AbilityMeleeAttackHelper.resolveHand(entity, attackHand.getValue());
             MeleeAttackVisualHelper.startVisualAttack(entity, hand, new int[]{0}, new int[]{6});
-            MKEffectBuilder<?> damage = AbilityMeleeDamageEffect.from(entity, hand,
-                            hitDamageFormula.value(), formulaParameters.value())
+            MKEffectBuilder<?> damageEffect = AbilityMeleeDamageEffect.from(entity, hand,
+                            hitDamage.value(), formulaParameters.value())
                     .ability(this)
                     .skillLevel(level);
 
 
             int dur = getBuffDuration(data, durationFormula.value(), formulaParameters.value(), level);
-            MKEffectBuilder<?> severTendon = SeverTendonEffect.from(entity, bleedDamageFormula.value(), formulaParameters.value())
+            MKEffectBuilder<?> severTendon = SeverTendonEffect.from(entity, bleedDamage.value(), formulaParameters.value())
                     .ability(this)
                     .timed(dur)
                     .skillLevel(level);
 
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> {
-                targetData.getEffects().addEffect(damage);
+                targetData.getEffects().addEffect(damageEffect);
                 targetData.getEffects().addEffect(severTendon);
             });
 

@@ -9,12 +9,12 @@ import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -45,8 +45,8 @@ public class HolyFireAbility extends WindUpPulseAbility {
                     .with(PER_LEVEL_PARAMETER, 1.0f)
                     .with(MODIFIER_SCALING_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(BASE_PARAMETER, PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(BASE_PARAMETER, PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, MODIFIER_SCALING_PARAMETER));
 
     public HolyFireAbility() {
@@ -54,7 +54,7 @@ public class HolyFireAbility extends WindUpPulseAbility {
         waitParticles.setDefaultValue(WAIT_PARTICLES);
         pulseParticles.setDefaultValue(PULSE_PARTICLES);
         duration.setDefaultValue(GameConstants.TICKS_PER_SECOND * 3);
-        addAttributes(formulaParameters, damageFormula);
+        addAttributes(formulaParameters, damage);
         addSkillAttribute(MKAttributes.EVOCATION);
         waitTime.setDefaultValue(GameConstants.TICKS_PER_SECOND * 2);
         waitTickRate.setDefaultValue(GameConstants.TICKS_PER_SECOND / 4);
@@ -76,7 +76,7 @@ public class HolyFireAbility extends WindUpPulseAbility {
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.EVOCATION);
         Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage.get(),
-                damageFormula.value(), formulaParameters.value(), level);
+                damage.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(),
                 NUMBER_FORMATTER.format(radius.value()),
                 NUMBER_FORMATTER.format(convertDurationToSeconds(waitTime.value())),
@@ -89,15 +89,15 @@ public class HolyFireAbility extends WindUpPulseAbility {
     public void setupEntityEffect(EntityEffectBuilder.PointEffectBuilder builder, IMKEntityData casterData, Vec3 position, AbilityContext context) {
         float level = context.getSkill(MKAttributes.EVOCATION);
         LivingEntity castingEntity = casterData.getEntity();
-        MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.FireDamage.get(),
-                        damageFormula.value(), formulaParameters.value())
+        MKEffectBuilder<?> damageEffect = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.FireDamage.get(),
+                        damage.value(), formulaParameters.value())
                 .ability(this)
                 .skillLevel(level);
         MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_fire_8.value(), castingEntity.getSoundSource())
                 .ability(this);
 
-        builder.effect(damage, getTargetContext())
-                .delayedEffect(damage, getTargetContext(), waitTime.value())
+        builder.effect(damageEffect, getTargetContext())
+                .delayedEffect(damageEffect, getTargetContext(), waitTime.value())
                 .delayedEffect(sound, getTargetContext(), waitTime.value());
         SoundUtils.serverPlaySoundFromEntity(position.x(), position.y(), position.z(), MKUSounds.spell_holy_9.value(),
                 castingEntity.getSoundSource(), 1.0f, 1.0f, castingEntity);

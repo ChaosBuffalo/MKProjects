@@ -5,8 +5,8 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.status.DamageTypeDotEffect;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.formulas.StackingBonusFormulaSpec;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
@@ -28,7 +28,7 @@ public class DrownEffect extends DamageTypeDotEffect {
         addAttribute(Attributes.ATTACK_SPEED, modUUID, -0.05, -0.05, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, MKAttributes.CONJURATION);
     }
 
-    public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula damageFormula,
+    public static MKEffectBuilder<?> from(LivingEntity source, StackingBonusFormulaSpec damageFormula,
                                           FormulaParameters parameters, ResourceLocation castParticles) {
         return MKUEffects.DROWN.get().builder(source)
                 .state(s -> {

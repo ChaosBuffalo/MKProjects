@@ -6,7 +6,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Mth;
 
-import javax.annotation.Nullable;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -78,31 +77,6 @@ public interface AbilityFormula {
     }
 
     /**
-     * Creates a semantic damage/healing style formula:
-     * <pre>{@code
-     * baseParameter
-     *   + perLevelParameter * skill_level
-     *   + bonusScaleParameter * bonusKey
-     * }</pre>
-     * <p>
-     * {@code baseParameter}, {@code perLevelParameter}, and
-     * {@code bonusScaleParameter} come from {@link FormulaParameters}.
-     * {@code skill_level} and {@code bonusKey} come from the runtime
-     * {@link FormulaContext}.
-     * <p>
-     * The first two terms form the "base" contribution. The final term is a
-     * separate runtime bonus contribution. This split is used by callers such as
-     * tooltip rendering and runtime damage/heal plumbing that need to carry the
-     * bonus portion separately from the immediately evaluated base portion.
-     */
-    static BonusScaledLinear bonusScaledLinear(FormulaParameterKey baseParameter,
-                                               FormulaParameterKey perLevelParameter,
-                                               FormulaContextKey bonusKey,
-                                               FormulaParameterKey bonusScaleParameter) {
-        return new BonusScaledLinear(baseParameter, perLevelParameter, bonusKey, bonusScaleParameter);
-    }
-
-    /**
      * Creates a formula that evaluates each child and returns their sum.
      */
     static Add add(AbilityFormula... terms) {
@@ -171,17 +145,6 @@ public interface AbilityFormula {
     }
 
     /**
-     * Returns an optional semantic split of this formula into
-     * {@code total = baseFormula + bonusFormula}.
-     * <p>
-     * This is primarily used by renderers and runtime plumbing that need to display or
-     * transport the base and bonus contributions separately.
-     */
-    default @Nullable Breakdown breakdown(FormulaParameters parameters) {
-        return null;
-    }
-
-    /**
      * Returns every parameter that is still unresolved in this formula.
      */
     default List<FormulaParameterKey> getUnboundParameters() {
@@ -194,12 +157,6 @@ public interface AbilityFormula {
     }
 
     AbilityFormulaType<? extends AbilityFormula> getType();
-
-    /**
-     * Semantic decomposition of a formula into base and bonus contributions.
-     */
-    record Breakdown(AbilityFormula baseFormula, AbilityFormula bonusFormula) {
-    }
 
     private static <T extends List<AbilityFormula>> DataResult<T> requireNonEmpty(T values, String fieldName) {
         if (values.isEmpty()) {
@@ -287,70 +244,6 @@ public interface AbilityFormula {
         @Override
         public AbilityFormulaType<Linear> getType() {
             return AbilityFormulaTypes.LINEAR.get();
-        }
-    }
-
-    /**
-     * Semantic helper for formulas that behave like
-     * {@code base + perLevel * skill_level + bonusScale * runtimeBonus}.
-     */
-    record BonusScaledLinear(FormulaParameterKey baseParameter,
-                             FormulaParameterKey perLevelParameter,
-                             FormulaContextKey bonusKey,
-                             FormulaParameterKey bonusScaleParameter) implements AbilityFormula {
-        public static final MapCodec<BonusScaledLinear> MAP_CODEC = RecordCodecBuilder.mapCodec(
-                instance -> instance.group(
-                                FormulaParameterKey.CODEC.fieldOf("base_param").forGetter(BonusScaledLinear::baseParameter),
-                                FormulaParameterKey.CODEC.fieldOf("per_level_param").forGetter(BonusScaledLinear::perLevelParameter),
-                                FormulaContextKey.CODEC.fieldOf("bonus_key").forGetter(BonusScaledLinear::bonusKey),
-                                FormulaParameterKey.CODEC.fieldOf("bonus_scale_param").forGetter(BonusScaledLinear::bonusScaleParameter)
-                        )
-                        .apply(instance, BonusScaledLinear::new)
-        );
-
-        @Override
-        public float evaluate(FormulaEvaluationContext context) {
-            return context.getParameter(baseParameter)
-                    + context.getParameter(perLevelParameter) * context.getContext(FormulaContextKey.SKILL_LEVEL)
-                    + context.getParameter(bonusScaleParameter) * context.getContext(bonusKey);
-        }
-
-        @Override
-        public AbilityFormula bindParameters(FormulaParameters parameters) {
-            return compose().bindParameters(parameters);
-        }
-
-        @Override
-        public Breakdown breakdown(FormulaParameters parameters) {
-            return new Breakdown(baseContribution().bindParametersStrict(parameters),
-                    bonusContribution().bindParametersStrict(parameters));
-        }
-
-        @Override
-        public void collectUnboundParameters(Set<FormulaParameterKey> output) {
-            output.add(baseParameter);
-            output.add(perLevelParameter);
-            output.add(bonusScaleParameter);
-        }
-
-        @Override
-        public AbilityFormulaType<BonusScaledLinear> getType() {
-            return AbilityFormulaTypes.BONUS_SCALED_LINEAR.get();
-        }
-
-        private AbilityFormula compose() {
-            return AbilityFormula.add(baseContribution(), bonusContribution());
-        }
-
-        private AbilityFormula baseContribution() {
-            return AbilityFormula.skilledLinear(baseParameter, perLevelParameter);
-        }
-
-        private AbilityFormula bonusContribution() {
-            return AbilityFormula.multiply(
-                    AbilityFormula.param(bonusScaleParameter),
-                    AbilityFormula.context(bonusKey)
-            );
         }
     }
 

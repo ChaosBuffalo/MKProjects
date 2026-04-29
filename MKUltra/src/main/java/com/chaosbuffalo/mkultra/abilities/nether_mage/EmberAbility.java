@@ -8,14 +8,18 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.formulas.StackingBonusFormulaSpec;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.StackingBonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.BurnEffect;
@@ -59,11 +63,11 @@ public class EmberAbility extends MKAbility {
                     .with(DURATION_BASE_PARAMETER, 6.0f)
                     .with(DURATION_PER_LEVEL_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
-    protected final FormulaAttribute burnDamageFormula = new FormulaAttribute("burnDamageFormula",
-            AbilityFormula.bonusScaledLinear(BURN_BASE_PARAMETER, BURN_PER_LEVEL_PARAMETER,
+    protected final StackingBonusFormulaSpecAttribute burnDamage = new StackingBonusFormulaSpecAttribute("burnDamage",
+            StackingBonusFormulaSpec.skilledBonusScaled(BURN_BASE_PARAMETER, BURN_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, BURN_MODIFIER_SCALING_PARAMETER));
     protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
@@ -75,7 +79,7 @@ public class EmberAbility extends MKAbility {
         setCooldownSeconds(6);
         setManaCost(4);
         setCastTime(GameConstants.TICKS_PER_SECOND / 2);
-        addAttributes(formulaParameters, damageFormula, burnDamageFormula, durationFormula,
+        addAttributes(formulaParameters, damage, burnDamage, durationFormula,
                 cast_particles, burn_cast_particles);
         addSkillAttribute(MKAttributes.EVOCATION);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
@@ -85,9 +89,9 @@ public class EmberAbility extends MKAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.EVOCATION);
         Component valueStr = getDamageDescription(entityData,
-                CoreDamageTypes.FireDamage.get(), damageFormula.value(), formulaParameters.value(), level);
+                CoreDamageTypes.FireDamage.get(), damage.value(), formulaParameters.value(), level);
         Component dotStr = getDamageDescription(entityData,
-                CoreDamageTypes.FireDamage.get(), burnDamageFormula.value(), formulaParameters.value(), level);
+                CoreDamageTypes.FireDamage.get(), burnDamage.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(), valueStr,
                 NUMBER_FORMATTER.format(convertDurationToSeconds(
                         getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), level))),
@@ -96,7 +100,7 @@ public class EmberAbility extends MKAbility {
 
     public MKEffectBuilder<?> getBurnCast(IMKEntityData casterData, float level) {
         int burnTicks = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level);
-        return BurnEffect.from(casterData.getEntity(), burnDamageFormula.value(), formulaParameters.value(),
+        return BurnEffect.from(casterData.getEntity(), burnDamage.value(), formulaParameters.value(),
                         burn_cast_particles.getValue())
                 .ability(this)
                 .skillLevel(level)
@@ -133,8 +137,8 @@ public class EmberAbility extends MKAbility {
         super.endCast(entity, data, context);
         float level = context.getSkill(MKAttributes.EVOCATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
-            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.FireDamage.get(),
-                            damageFormula.value(), formulaParameters.value())
+            MKEffectBuilder<?> damageEffect = MKAbilityDamageEffect.from(entity, CoreDamageTypes.FireDamage.get(),
+                            damage.value(), formulaParameters.value())
                     .ability(this)
                     .skillLevel(level);
             MKEffectBuilder<?> burn = getBurnCast(data, level)
@@ -142,7 +146,7 @@ public class EmberAbility extends MKAbility {
                     .skillLevel(level);
 
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> {
-                targetData.getEffects().addEffect(damage);
+                targetData.getEffects().addEffect(damageEffect);
                 targetData.getEffects().addEffect(burn);
             });
 

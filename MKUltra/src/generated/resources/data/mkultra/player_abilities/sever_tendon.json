@@ -1,12 +1,37 @@
 {
   "attributes": {
     "attackHand": "main_hand",
-    "bleedDamageFormula": {
-      "type": "mkcore:bonus_scaled_linear",
-      "base_param": "mkultra:sever_tendon.bleed_damage.base",
-      "bonus_key": "mkcore:damage_bonus",
-      "bonus_scale_param": "mkultra:sever_tendon.bleed_damage.modifier_scaling",
-      "per_level_param": "mkultra:sever_tendon.bleed_damage.per_level"
+    "bleedDamage": {
+      "baseFormula": {
+        "type": "mkcore:parameter_value",
+        "key": "mkultra:sever_tendon.bleed_damage.base"
+      },
+      "bonusFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:sever_tendon.bleed_damage.modifier_scaling"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:damage_bonus"
+          }
+        ]
+      },
+      "perStackFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:sever_tendon.bleed_damage.per_level"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:skill_level"
+          }
+        ]
+      }
     },
     "cast_animation_category": "mkcore:default",
     "casting_particles": "mkcore:fx.casting.empty",
@@ -42,12 +67,42 @@
       "mkultra:sever_tendon.hit_damage.modifier_scaling": 0.1,
       "mkultra:sever_tendon.hit_damage.per_level": 0.25
     },
-    "hitDamageFormula": {
-      "type": "mkcore:bonus_scaled_linear",
-      "base_param": "mkultra:sever_tendon.hit_damage.base",
-      "bonus_key": "mkcore:damage_bonus",
-      "bonus_scale_param": "mkultra:sever_tendon.hit_damage.modifier_scaling",
-      "per_level_param": "mkultra:sever_tendon.hit_damage.per_level"
+    "hitDamage": {
+      "baseFormula": {
+        "type": "mkcore:add",
+        "terms": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:sever_tendon.hit_damage.base"
+          },
+          {
+            "type": "mkcore:multiply",
+            "factors": [
+              {
+                "type": "mkcore:parameter_value",
+                "key": "mkultra:sever_tendon.hit_damage.per_level"
+              },
+              {
+                "type": "mkcore:context_value",
+                "key": "mkcore:skill_level"
+              }
+            ]
+          }
+        ]
+      },
+      "bonusFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:sever_tendon.hit_damage.modifier_scaling"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:damage_bonus"
+          }
+        ]
+      }
     }
   },
   "castTime": 0,

@@ -15,10 +15,12 @@ import com.chaosbuffalo.mkcore.effects.status.StunEffect;
 import com.chaosbuffalo.mkcore.effects.utility.MKParticleEffect;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
@@ -59,8 +61,8 @@ public class StunningShoutAbility extends MKAbility {
                     .with(DURATION_BASE_PARAMETER, 1.0f)
                     .with(DURATION_PER_LEVEL_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
     protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
@@ -70,7 +72,7 @@ public class StunningShoutAbility extends MKAbility {
         super();
         setCooldownSeconds(12);
         setManaCost(4);
-        addAttributes(formulaParameters, damageFormula, durationFormula, cast_particles, tick_particles);
+        addAttributes(formulaParameters, damage, durationFormula, cast_particles, tick_particles);
         addSkillAttribute(MKAttributes.PNEUMA);
     }
 
@@ -93,7 +95,7 @@ public class StunningShoutAbility extends MKAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.PNEUMA);
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.BleedDamage.get(),
-                damageFormula.value(), formulaParameters.value(), level);
+                damage.value(), formulaParameters.value(), level);
         int dur = getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), level)
                 / GameConstants.TICKS_PER_SECOND;
         return Component.translatable(getDescriptionTranslationKey(), INTEGER_FORMATTER.format(dur), damageStr);
@@ -116,8 +118,8 @@ public class StunningShoutAbility extends MKAbility {
         float level = context.getSkill(MKAttributes.PNEUMA);
 
 
-        MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.BleedDamage.get(),
-                        damageFormula.value(), formulaParameters.value())
+        MKEffectBuilder<?> damageEffect = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.BleedDamage.get(),
+                        damage.value(), formulaParameters.value())
                 .skillLevel(level)
                 .ability(this);
         MKEffectBuilder<?> stun = StunEffect.from(castingEntity).ability(this).skillLevel(level).timed(
@@ -133,7 +135,7 @@ public class StunningShoutAbility extends MKAbility {
 
         for (LivingEntity entHit : entityHit) {
             MKCore.getEntityData(entHit).ifPresent(targetData -> {
-                targetData.getEffects().addEffect(damage);
+                targetData.getEffects().addEffect(damageEffect);
                 targetData.getEffects().addEffect(stun);
                 targetData.getEffects().addEffect(particles);
             });

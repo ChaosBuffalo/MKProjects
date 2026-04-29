@@ -3,12 +3,42 @@
     "breakDuration": 40,
     "cast_animation_category": "mkcore:default",
     "casting_particles": "mkultra:flame_wave_casting",
-    "damageFormula": {
-      "type": "mkcore:bonus_scaled_linear",
-      "base_param": "mkultra:wrath_beam.damage.base",
-      "bonus_key": "mkcore:damage_bonus",
-      "bonus_scale_param": "mkultra:wrath_beam.damage.modifier_scaling",
-      "per_level_param": "mkultra:wrath_beam.damage.per_level"
+    "damage": {
+      "baseFormula": {
+        "type": "mkcore:add",
+        "terms": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:wrath_beam.damage.base"
+          },
+          {
+            "type": "mkcore:multiply",
+            "factors": [
+              {
+                "type": "mkcore:parameter_value",
+                "key": "mkultra:wrath_beam.damage.per_level"
+              },
+              {
+                "type": "mkcore:context_value",
+                "key": "mkcore:skill_level"
+              }
+            ]
+          }
+        ]
+      },
+      "bonusFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:wrath_beam.damage.modifier_scaling"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:damage_bonus"
+          }
+        ]
+      }
     },
     "duration": 40,
     "formulaParameters": {

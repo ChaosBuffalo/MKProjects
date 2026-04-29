@@ -6,9 +6,11 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.formulas.StackingBonusFormulaSpec;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.test.effects.DamagePipelineProbeEffect;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
@@ -410,7 +412,7 @@ public class MKDamagePipelineCharacterizationGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
-    public static void parameterizedMkAbilityDamageEffectAppliesRuntimeDamageBonus(GameTestHelper helper) {
+    public static void stackingBonusFormulaSpecMkAbilityDamageEffectPreservesLegacyStackScaling(GameTestHelper helper) {
         final float skillLevel = 3.0f;
         final float fireBonus = 4.0f;
 
@@ -419,7 +421,46 @@ public class MKDamagePipelineCharacterizationGameTests {
         setBaseValue(attacker, MKAttributes.FIRE_DAMAGE, fireBonus);
         setBaseValue(attacker, MKAttributes.SPELL_CRIT, 0.0);
 
-        AbilityFormula damageFormula = AbilityFormula.bonusScaledLinear(
+        StackingBonusFormulaSpec damageFormula = StackingBonusFormulaSpec.skilledBonusScaled(
+                TEST_DAMAGE_BASE,
+                TEST_DAMAGE_PER_LEVEL,
+                FormulaContextKey.DAMAGE_BONUS,
+                TEST_DAMAGE_MODIFIER_SCALING
+        );
+        FormulaParameters parameters = FormulaParameters.builder()
+                .with(TEST_DAMAGE_BASE, 2.0f)
+                .with(TEST_DAMAGE_PER_LEVEL, 1.0f)
+                .with(TEST_DAMAGE_MODIFIER_SCALING, 0.5f)
+                .build();
+
+        helper.startSequence()
+                .thenExecuteAfter(2, () -> {
+                    float startingHealth = target.getHealth();
+                    MKCore.getPlayerOrThrow(target).getEffects().addEffect(
+                            MKAbilityDamageEffect.from(attacker, CoreDamageTypes.FireDamage.get(), damageFormula, parameters)
+                                    .ability(MKTestAbilities.TEST_EMBER.get())
+                                    .skillLevel(skillLevel)
+                                    .amplify(2)
+                    );
+                    float damage = startingHealth - target.getHealth();
+
+                    assertFloatEquals(helper, damage, 13.0f, 0.001f,
+                            "stacking bonus formula spec damage should preserve legacy per-stack scaling");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void bonusFormulaSpecMkAbilityDamageEffectAppliesRuntimeDamageBonus(GameTestHelper helper) {
+        final float skillLevel = 3.0f;
+        final float fireBonus = 4.0f;
+
+        Player attacker = createMockPlayer(helper, ATTACKER_POS, false);
+        Player target = createMockPlayer(helper, TARGET_POS, false);
+        setBaseValue(attacker, MKAttributes.FIRE_DAMAGE, fireBonus);
+        setBaseValue(attacker, MKAttributes.SPELL_CRIT, 0.0);
+
+        BonusFormulaSpec damageFormula = BonusFormulaSpec.skilledBonusScaled(
                 TEST_DAMAGE_BASE,
                 TEST_DAMAGE_PER_LEVEL,
                 FormulaContextKey.DAMAGE_BONUS,
@@ -442,7 +483,7 @@ public class MKDamagePipelineCharacterizationGameTests {
                     float damage = startingHealth - target.getHealth();
 
                     assertFloatEquals(helper, damage, 7.0f, 0.001f,
-                            "parameterized ability damage should add runtime fire bonus through the damage pipeline");
+                            "bonus formula spec damage should add runtime fire bonus through the damage pipeline");
                 })
                 .thenSucceed();
     }

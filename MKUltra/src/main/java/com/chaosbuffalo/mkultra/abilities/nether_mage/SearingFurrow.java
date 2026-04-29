@@ -11,11 +11,11 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.entities.BaseEffectEntity;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
@@ -50,8 +50,8 @@ public class SearingFurrow extends MKAbility {
                     .with(DAMAGE_PER_LEVEL_PARAMETER, 4.2f)
                     .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 1.0f)
                     .build());
-    private final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    private final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
     private final IntAttribute lineLength = new IntAttribute("lineLength", 8);
     private final IntAttribute lingerDuration = new IntAttribute("lingerDuration", GameConstants.TICKS_PER_SECOND * 30);
@@ -65,7 +65,7 @@ public class SearingFurrow extends MKAbility {
         setCastTime(GameConstants.TICKS_PER_SECOND * 8);
         setUseCondition(new MeleeUseCondition(this));
         addSkillAttribute(MKAttributes.EVOCATION);
-        addAttributes(formulaParameters, damageFormula, lineLength, lingerDuration, tickRate, lineParticles);
+        addAttributes(formulaParameters, damage, lineLength, lingerDuration, tickRate, lineParticles);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
         castAnimationCategory.setDefaultValue(CAST_SLAM_CATEGORY);
     }
@@ -74,7 +74,7 @@ public class SearingFurrow extends MKAbility {
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.EVOCATION);
         Component damage = getDamageDescription(casterData, com.chaosbuffalo.mkcore.init.CoreDamageTypes.FireDamage.get(),
-                damageFormula.value(), formulaParameters.value(), level);
+                this.damage.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(),
                 INTEGER_FORMATTER.format(lineLength.value()),
                 damage,
@@ -119,7 +119,7 @@ public class SearingFurrow extends MKAbility {
         Vec3 end = start.add(direction.scale(lineLength.value() - 1.0));
         EntityEffectBuilder.createLineEffect(castingEntity, start, end)
                 .effect(MKAbilityDamageEffect.from(castingEntity, com.chaosbuffalo.mkcore.init.CoreDamageTypes.FireDamage.get(),
-                                damageFormula.value(), formulaParameters.value())
+                                damage.value(), formulaParameters.value())
                         .ability(this)
                         .skillLevel(level), getTargetContext())
                 .duration(lingerDuration.value())

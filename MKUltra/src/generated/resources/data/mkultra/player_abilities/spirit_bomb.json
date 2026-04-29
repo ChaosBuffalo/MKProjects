@@ -15,12 +15,42 @@
       }
     },
     "casting_particles": "mkultra:spirit_bomb_casting",
-    "damageFormula": {
-      "type": "mkcore:bonus_scaled_linear",
-      "base_param": "mkultra:spirit_bomb.damage.base",
-      "bonus_key": "mkcore:damage_bonus",
-      "bonus_scale_param": "mkultra:spirit_bomb.damage.modifier_scaling",
-      "per_level_param": "mkultra:spirit_bomb.damage.per_level"
+    "damage": {
+      "baseFormula": {
+        "type": "mkcore:add",
+        "terms": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:spirit_bomb.damage.base"
+          },
+          {
+            "type": "mkcore:multiply",
+            "factors": [
+              {
+                "type": "mkcore:parameter_value",
+                "key": "mkultra:spirit_bomb.damage.per_level"
+              },
+              {
+                "type": "mkcore:context_value",
+                "key": "mkcore:skill_level"
+              }
+            ]
+          }
+        ]
+      },
+      "bonusFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:spirit_bomb.damage.modifier_scaling"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:damage_bonus"
+          }
+        ]
+      }
     },
     "detonate_particles": "mkultra:spirit_bomb_detonate",
     "formulaParameters": {

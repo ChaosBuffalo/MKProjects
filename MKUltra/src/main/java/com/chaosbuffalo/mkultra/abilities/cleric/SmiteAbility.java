@@ -11,6 +11,7 @@ import com.chaosbuffalo.mkcore.effects.status.StunEffect;
 import com.chaosbuffalo.mkcore.formulas.*;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
@@ -46,8 +47,8 @@ public class SmiteAbility extends MKAbility {
                     .with(DURATION_BASE_PARAMETER, 1.0f)
                     .with(DURATION_PER_LEVEL_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(BASE_PARAMETER, PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(BASE_PARAMETER, PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, MODIFIER_SCALING_PARAMETER));
     protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
@@ -57,7 +58,7 @@ public class SmiteAbility extends MKAbility {
         setCooldownSeconds(6);
         setManaCost(5);
         setCastTime(GameConstants.TICKS_PER_SECOND);
-        addAttributes(formulaParameters, damageFormula, durationFormula, cast_particles);
+        addAttributes(formulaParameters, damage, durationFormula, cast_particles);
         addSkillAttribute(MKAttributes.EVOCATION);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
@@ -66,9 +67,9 @@ public class SmiteAbility extends MKAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.EVOCATION);
         Component valueStr = getDamageDescription(entityData,
-                CoreDamageTypes.HolyDamage.get(), damageFormula.value(), formulaParameters.value(), level);
+                CoreDamageTypes.HolyDamage.get(), damage.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(), valueStr,
-                convertDurationToSeconds(getFormulaDuration(entityData, durationFormula.value(), formulaParameters.value(), level)));
+                convertDurationToSeconds(getDebuffDuration(entityData, durationFormula.value(), formulaParameters.value(), level)));
     }
 
     @Override
@@ -102,18 +103,18 @@ public class SmiteAbility extends MKAbility {
         float level = context.getSkill(MKAttributes.EVOCATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
 
-            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.HolyDamage.get(),
-                            damageFormula.value(), formulaParameters.value())
+            MKEffectBuilder<?> damageEffect = MKAbilityDamageEffect.from(entity, CoreDamageTypes.HolyDamage.get(),
+                            damage.value(), formulaParameters.value())
                     .ability(this)
                     .skillLevel(level);
 
             MKEffectBuilder<?> stun = StunEffect.from(entity)
                     .ability(this)
-                    .timed(getFormulaDuration(data, durationFormula.value(), formulaParameters.value(), level))
+                    .timed(getDebuffDuration(data, durationFormula.value(), formulaParameters.value(), level))
                     .skillLevel(level);
 
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> {
-                targetData.getEffects().addEffect(damage);
+                targetData.getEffects().addEffect(damageEffect);
                 targetData.getEffects().addEffect(stun);
             });
             SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_holy_2.value(), targetEntity.getSoundSource());

@@ -7,8 +7,8 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.formulas.StackingBonusFormulaSpec;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -24,7 +24,7 @@ public class NaturesRemedyEffect extends MKEffect {
         super(MobEffectCategory.BENEFICIAL);
     }
 
-    public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula healingFormula,
+    public static MKEffectBuilder<?> from(LivingEntity source, StackingBonusFormulaSpec healingFormula,
                                           FormulaParameters parameters, ResourceLocation castParticles) {
         return MKUEffects.NATURES_REMEDY.get().builder(source)
                 .state(s -> {

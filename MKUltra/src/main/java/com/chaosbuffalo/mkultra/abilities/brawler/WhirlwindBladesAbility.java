@@ -17,13 +17,13 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.AbilityMeleeDamageEffect;
 import com.chaosbuffalo.mkcore.effects.utility.MKParticleEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
@@ -57,8 +57,8 @@ public class WhirlwindBladesAbility extends MKAbility {
                     .with(DAMAGE_PER_LEVEL_PARAMETER, 0.5f)
                     .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 0.15f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
     protected final FloatAttribute perTick = new FloatAttribute("perTick", 0.15f);
     protected final FloatAttribute offHandScaleModifier = new FloatAttribute("offHandScaleModifier", 0.6f);
@@ -66,7 +66,7 @@ public class WhirlwindBladesAbility extends MKAbility {
 
     public WhirlwindBladesAbility() {
         super();
-        addAttributes(cast_particles, formulaParameters, damageFormula, perTick, offHandScaleModifier, tickRate);
+        addAttributes(cast_particles, formulaParameters, damage, perTick, offHandScaleModifier, tickRate);
         setCastTime(GameConstants.TICKS_PER_SECOND * 3);
         setCooldownSeconds(20);
         setManaCost(6);
@@ -98,7 +98,7 @@ public class WhirlwindBladesAbility extends MKAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.PANKRATION);
         Component bonusDamage = getDamageDescription(entityData,
-                CoreDamageTypes.MeleeDamage.get(), damageFormula.value(), formulaParameters.value(), level);
+                CoreDamageTypes.MeleeDamage.get(), damage.value(), formulaParameters.value(), level);
         float periodSeconds = ((float)tickRate.value()) / GameConstants.TICKS_PER_SECOND;
         int castSeconds = getCastTime(entityData) / GameConstants.TICKS_PER_SECOND;
         int numberOfCasts = Math.round(castSeconds / periodSeconds);
@@ -155,11 +155,11 @@ public class WhirlwindBladesAbility extends MKAbility {
                 MeleeAttackVisualHelper.startVisualAttack(castingEntity, hand, new int[]{swingDelay}, new int[]{6});
                 float handSwingDamageScale = hand == InteractionHand.OFF_HAND ?
                         swingDamageScale * offHandScaleModifier.value() : swingDamageScale;
-                MKEffectBuilder<?> damage = AbilityMeleeDamageEffect.from(castingEntity, hand, handSwingDamageScale,
-                                damageFormula.value(), formulaParameters.value())
+                MKEffectBuilder<?> damageEffect = AbilityMeleeDamageEffect.from(castingEntity, hand, handSwingDamageScale,
+                                damage.value(), formulaParameters.value())
                         .ability(this)
                         .skillLevel(level);
-                builder.effect(damage, getTargetContext());
+                builder.effect(damageEffect, getTargetContext());
             }
             builder.instant()
                     .color(16409620)

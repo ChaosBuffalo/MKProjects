@@ -9,15 +9,15 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.abilities.ProjectileAbility;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
@@ -53,8 +53,8 @@ public class FireballAbility extends ProjectileAbility {
                     .with(DAMAGE_PER_LEVEL_PARAMETER, 2.0f)
                     .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
 
     public FireballAbility() {
@@ -62,7 +62,7 @@ public class FireballAbility extends ProjectileAbility {
         setCooldownSeconds(4);
         setManaCost(5);
         setCastTime(GameConstants.TICKS_PER_SECOND);
-        addAttributes(radius, formulaParameters, damageFormula);
+        addAttributes(radius, formulaParameters, damage);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
@@ -75,7 +75,7 @@ public class FireballAbility extends ProjectileAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float skillLevel = context.getSkill(MKAttributes.EVOCATION);
-        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.FireDamage.get(), damageFormula.value(),
+        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.FireDamage.get(), damage.value(),
                 formulaParameters.value(), skillLevel);
         return Component.translatable(getDescriptionTranslationKey(), damageStr, getExplosionRadius(),
                 (skillLevel + 1) * .1f * 100.0f, skillLevel + 1);
@@ -86,8 +86,8 @@ public class FireballAbility extends ProjectileAbility {
         SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
         SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_fire_4.value(), cat);
         MKParticles.spawnOffset(projectile, new Vec3(0.0, 0.0, 0.0), detonateParticles.getValue());
-        MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(caster, CoreDamageTypes.FireDamage.get(),
-                        damageFormula.value(),
+        MKEffectBuilder<?> damageEffect = MKAbilityDamageEffect.from(caster, CoreDamageTypes.FireDamage.get(),
+                        damage.value(),
                         formulaParameters.value())
                 .ability(this)
                 .directEntity(projectile)
@@ -102,7 +102,7 @@ public class FireballAbility extends ProjectileAbility {
                 .amplify(amplifier);
 
         AreaEffectBuilder.createOnEntity(caster, projectile)
-                .effect(damage, getTargetContext())
+                .effect(damageEffect, getTargetContext())
                 .effect(fireBreak, getTargetContext())
                 .instant()
                 .color(16737330).radius(getExplosionRadius(), true)

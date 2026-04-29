@@ -10,13 +10,13 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
 import com.chaosbuffalo.mkcore.entities.BaseEffectEntity;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
@@ -51,8 +51,8 @@ public class WrathBeamAbility extends PositionTargetingAbility {
                     .with(DAMAGE_PER_LEVEL_PARAMETER, 5.0f)
                     .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
     protected final ResourceLocationAttribute pulse_particles = new ResourceLocationAttribute("pulse_particles", PULSE_PARTICLES);
     protected final ResourceLocationAttribute wait_particles = new ResourceLocationAttribute("wait_particles", WAIT_PARTICLES);
@@ -67,14 +67,14 @@ public class WrathBeamAbility extends PositionTargetingAbility {
         setManaCost(6);
         addSkillAttribute(MKAttributes.EVOCATION);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
-        addAttributes(formulaParameters, damageFormula, tickRate, pulse_particles, wait_particles, duration, breakDuration);
+        addAttributes(formulaParameters, damage, tickRate, pulse_particles, wait_particles, duration, breakDuration);
     }
 
     @Override
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.EVOCATION);
         Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage.get(),
-                damageFormula.value(), formulaParameters.value(), level);
+                damage.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(), damageStr,
                 NUMBER_FORMATTER.format(convertDurationToSeconds(breakDuration.value())),
                 NUMBER_FORMATTER.format(convertDurationToSeconds(tickRate.value())),
@@ -101,8 +101,8 @@ public class WrathBeamAbility extends PositionTargetingAbility {
     public void castAtPosition(IMKEntityData casterData, Vec3 position, AbilityContext context) {
         LivingEntity castingEntity = casterData.getEntity();
         float level = context.getSkill(MKAttributes.EVOCATION);
-        MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.FireDamage.get(),
-                        damageFormula.value(), formulaParameters.value())
+        MKEffectBuilder<?> damageEffect = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.FireDamage.get(),
+                        damage.value(), formulaParameters.value())
                 .ability(this)
                 .skillLevel(level);
         MKEffectBuilder<?> fireBreak = MKUEffects.BREAK_FIRE.get().builder(castingEntity)
@@ -114,7 +114,7 @@ public class WrathBeamAbility extends PositionTargetingAbility {
         EntityEffectBuilder.LineEffectBuilder lineBuilder = EntityEffectBuilder.createLineEffect(castingEntity,
                 position.subtract(0.0, 0.1, 0.0),
                 position.add(0.0, 4.1, 0.0));
-        lineBuilder.effect(damage, getTargetContext())
+        lineBuilder.effect(damageEffect, getTargetContext())
                 .effect(fireBreak, getTargetContext())
                 .effect(sound, getTargetContext())
                 .setParticles(new BaseEffectEntity.ParticleDisplay(pulse_particles.getValue(), tickRate.value(), BaseEffectEntity.ParticleDisplay.DisplayType.CONTINUOUS))

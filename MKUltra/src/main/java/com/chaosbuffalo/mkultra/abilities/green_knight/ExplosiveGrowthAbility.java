@@ -14,14 +14,14 @@ import com.chaosbuffalo.mkcore.core.combat.AbilityMeleeAttackExecutor;
 import com.chaosbuffalo.mkcore.core.combat.AbilityMeleeAttackHelper;
 import com.chaosbuffalo.mkcore.core.combat.MeleeAttackVisualHelper;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContext;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.EnumAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.RayTraceUtils;
@@ -63,8 +63,8 @@ public class ExplosiveGrowthAbility extends MKAbility {
                     .with(DAMAGE_PER_LEVEL_PARAMETER, 1.0f)
                     .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 0.1f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
     protected final ResourceLocationAttribute detonate_particles = new ResourceLocationAttribute("detonate_particles", DETONATE_PARTICLES);
@@ -75,7 +75,7 @@ public class ExplosiveGrowthAbility extends MKAbility {
         setCooldownSeconds(35);
         setManaCost(6);
         setCastTime(GameConstants.TICKS_PER_SECOND / 4);
-        addAttributes(formulaParameters, damageFormula, cast_particles, detonate_particles, attackHand);
+        addAttributes(formulaParameters, damage, cast_particles, detonate_particles, attackHand);
         addSkillAttribute(MKAttributes.RESTORATION);
         addSkillAttribute(MKAttributes.PANKRATION);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
@@ -86,7 +86,7 @@ public class ExplosiveGrowthAbility extends MKAbility {
                 .withSkillLevel(skillLevel)
                 .withDamageBonus(casterData.getStats().getDamageTypeBonus(CoreDamageTypes.MeleeDamage.get()))
                 .build();
-        return damageFormula.value().bindParametersStrict(formulaParameters.value()).evaluate(context);
+        return damage.value().bindStrict(formulaParameters.value()).evaluate(context);
     }
 
     @Override
@@ -106,7 +106,7 @@ public class ExplosiveGrowthAbility extends MKAbility {
 
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
-        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.MeleeDamage.get(), damageFormula.value(),
+        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.MeleeDamage.get(), damage.value(),
                 formulaParameters.value(), context.getSkill(MKAttributes.PANKRATION));
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }

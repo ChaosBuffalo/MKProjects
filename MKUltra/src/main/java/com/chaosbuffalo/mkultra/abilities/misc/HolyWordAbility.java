@@ -11,11 +11,13 @@ import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
@@ -66,8 +68,8 @@ public class HolyWordAbility extends ProjectileAbility {
                     .with(STUN_DURATION_BASE_PARAMETER, 3.0f)
                     .with(STUN_DURATION_PER_LEVEL_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
     protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final FormulaAttribute stunDurationFormula = new FormulaAttribute("stunDurationFormula", AbilityFormula.skilledLinear(STUN_DURATION_BASE_PARAMETER, STUN_DURATION_PER_LEVEL_PARAMETER));
@@ -77,7 +79,7 @@ public class HolyWordAbility extends ProjectileAbility {
         super(MKAttributes.EVOCATION, false);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
-        addAttributes(formulaParameters, damageFormula, durationFormula, stunDurationFormula, stacks);
+        addAttributes(formulaParameters, damage, durationFormula, stunDurationFormula, stacks);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
         projectileSpeed.setDefaultValue(0.8f);
         setCastTime(GameConstants.TICKS_PER_SECOND + GameConstants.TICKS_PER_SECOND / 4);
@@ -95,8 +97,8 @@ public class HolyWordAbility extends ProjectileAbility {
 
             MKCore.getEntityData(caster).ifPresent(casterData -> {
                 float skillLevel = getSkillLevel(caster, skill);
-                MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(caster, CoreDamageTypes.HolyDamage.get(),
-                                damageFormula.value(),
+                MKEffectBuilder<?> damageEffect = MKAbilityDamageEffect.from(caster, CoreDamageTypes.HolyDamage.get(),
+                                damage.value(),
                                 formulaParameters.value())
                         .ability(this)
                         .directEntity(projectile)
@@ -115,7 +117,7 @@ public class HolyWordAbility extends ProjectileAbility {
 
 
                 MKCore.getEntityData(entityTrace.getEntity()).ifPresent(x -> {
-                    x.getEffects().addEffect(damage);
+                    x.getEffects().addEffect(damageEffect);
                     x.getEffects().addEffect(stunCounter);
                 });
             });
@@ -139,7 +141,7 @@ public class HolyWordAbility extends ProjectileAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(skill);
         Component dmg = getDamageDescription(entityData,
-                CoreDamageTypes.HolyDamage.get(), damageFormula.value(), formulaParameters.value(), level);
+                CoreDamageTypes.HolyDamage.get(), damage.value(), formulaParameters.value(), level);
         float duration = convertDurationToSeconds(getBuffDuration(entityData, durationFormula.value(),
                 formulaParameters.value(), level));
         return Component.translatable(getDescriptionTranslationKey(),

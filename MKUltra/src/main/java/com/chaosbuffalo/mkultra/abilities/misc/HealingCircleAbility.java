@@ -9,11 +9,11 @@ import com.chaosbuffalo.mkcore.core.healing.MKHealing;
 import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -45,8 +45,8 @@ public class HealingCircleAbility extends WindUpPulseAbility {
                     .with(HEAL_PER_LEVEL_PARAMETER, 1.0f)
                     .with(HEAL_MODIFIER_SCALING_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute healingFormula = new FormulaAttribute("healingFormula",
-            AbilityFormula.bonusScaledLinear(HEAL_BASE_PARAMETER, HEAL_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute healing = new BonusFormulaSpecAttribute("healing",
+            BonusFormulaSpec.skilledBonusScaled(HEAL_BASE_PARAMETER, HEAL_PER_LEVEL_PARAMETER,
                     FormulaContextKey.HEAL_BONUS, HEAL_MODIFIER_SCALING_PARAMETER));
 
     public HealingCircleAbility() {
@@ -54,7 +54,7 @@ public class HealingCircleAbility extends WindUpPulseAbility {
         waitParticles.setDefaultValue(WAIT_PARTICLES);
         pulseParticles.setDefaultValue(PULSE_PARTICLES);
         duration.setDefaultValue(GameConstants.TICKS_PER_SECOND * 4);
-        addAttributes(formulaParameters, healingFormula);
+        addAttributes(formulaParameters, healing);
         addSkillAttribute(MKAttributes.RESTORATION);
         waitTime.setDefaultValue(GameConstants.TICKS_PER_SECOND);
         waitTickRate.setDefaultValue(GameConstants.TICKS_PER_SECOND / 4);
@@ -75,7 +75,7 @@ public class HealingCircleAbility extends WindUpPulseAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.RESTORATION);
-        Component damageStr = getHealDescription(casterData, healingFormula.value(), formulaParameters.value(), level);
+        Component damageStr = getHealDescription(casterData, healing.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(),
                 NUMBER_FORMATTER.format(radius.value()),
                 NUMBER_FORMATTER.format(convertDurationToSeconds(waitTime.value())),
@@ -88,15 +88,15 @@ public class HealingCircleAbility extends WindUpPulseAbility {
     public void setupEntityEffect(EntityEffectBuilder.PointEffectBuilder builder, IMKEntityData casterData, Vec3 position, AbilityContext context) {
         float level = context.getSkill(MKAttributes.RESTORATION);
         LivingEntity castingEntity = casterData.getEntity();
-        MKEffectBuilder<?> damage = ClericHealEffect.from(castingEntity,
-                        healingFormula.value(), formulaParameters.value())
+        MKEffectBuilder<?> healEffect = ClericHealEffect.from(castingEntity,
+                        healing.value(), formulaParameters.value())
                 .ability(this)
                 .skillLevel(level);
         MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_holy_4.value(), castingEntity.getSoundSource())
                 .ability(this);
 
-        builder.effect(damage, getTargetContext())
-                .delayedEffect(damage, getTargetContext(), waitTime.value())
+        builder.effect(healEffect, getTargetContext())
+                .delayedEffect(healEffect, getTargetContext(), waitTime.value())
                 .delayedEffect(sound, getTargetContext(), waitTime.value());
         SoundUtils.serverPlaySoundFromEntity(position.x(), position.y(), position.z(), MKUSounds.spell_holy_8.value(),
                 castingEntity.getSoundSource(), 1.0f, 1.0f, castingEntity);

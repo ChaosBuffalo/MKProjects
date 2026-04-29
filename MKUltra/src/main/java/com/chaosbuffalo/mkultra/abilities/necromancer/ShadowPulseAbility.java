@@ -9,13 +9,13 @@ import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -53,13 +53,13 @@ public class ShadowPulseAbility extends WindUpPulseAbility {
                     .with(DETONATE_PER_LEVEL_PARAMETER, 5.0f)
                     .with(MODIFIER_SCALING_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, MODIFIER_SCALING_PARAMETER));
     protected final FloatAttribute baseGravity = new FloatAttribute("baseGravity", 0.25f);
     protected final FloatAttribute scaleGravity = new FloatAttribute("scaleGravity", 0.0f);
-    protected final FormulaAttribute detonateDamageFormula = new FormulaAttribute("detonateDamageFormula",
-            AbilityFormula.bonusScaledLinear(DETONATE_BASE_PARAMETER, DETONATE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute detonateDamage = new BonusFormulaSpecAttribute("detonateDamage",
+            BonusFormulaSpec.skilledBonusScaled(DETONATE_BASE_PARAMETER, DETONATE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, MODIFIER_SCALING_PARAMETER));
 
 
@@ -72,15 +72,15 @@ public class ShadowPulseAbility extends WindUpPulseAbility {
         pulseParticles.setDefaultValue(PULSE_PARTICLES);
         waitParticles.setDefaultValue(WAIT_PARTICLES);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
-        addAttributes(formulaParameters, damageFormula, baseGravity, scaleGravity, detonateDamageFormula);
+        addAttributes(formulaParameters, damage, baseGravity, scaleGravity, detonateDamage);
     }
 
     @Override
     public void setupEntityEffect(EntityEffectBuilder.PointEffectBuilder builder, IMKEntityData casterData, Vec3 position, AbilityContext context) {
         float level = context.getSkill(MKAttributes.CONJURATION);
         LivingEntity castingEntity = casterData.getEntity();
-        MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
-                        damageFormula.value(), formulaParameters.value())
+        MKEffectBuilder<?> damageEffect = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
+                        damage.value(), formulaParameters.value())
                 .ability(this)
                 .skillLevel(level);
         MKEffectBuilder<?> pull = PullEffect.from(castingEntity, baseGravity.value(), scaleGravity.value(), position)
@@ -88,17 +88,17 @@ public class ShadowPulseAbility extends WindUpPulseAbility {
                 .skillLevel(level);
         MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_shadow_10.value(), castingEntity.getSoundSource())
                 .ability(this);
-        MKEffectBuilder<?> detonateDamage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
-                        detonateDamageFormula.value(), formulaParameters.value())
+        MKEffectBuilder<?> detonateDamageEffect = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
+                        detonateDamage.value(), formulaParameters.value())
                 .ability(this)
                 .skillLevel(level);
         MKEffectBuilder<?> detonateSound = SoundEffect.from(castingEntity, MKUSounds.spell_shadow_9.value(), castingEntity.getSoundSource())
                 .ability(this);
-        builder.effect(damage, getTargetContext())
+        builder.effect(damageEffect, getTargetContext())
                 .effect(sound, getTargetContext())
                 .effect(pull, getTargetContext())
                 .delayedEffect(detonateSound, getTargetContext(), duration.value())
-                .delayedEffect(detonateDamage, getTargetContext(), duration.value());
+                .delayedEffect(detonateDamageEffect, getTargetContext(), duration.value());
         SoundUtils.serverPlaySoundFromEntity(position.x(), position.y(), position.z(), MKUSounds.spell_dark_13.value(),
                 castingEntity.getSoundSource(), 1.0f, 1.0f, castingEntity);
     }
@@ -108,9 +108,9 @@ public class ShadowPulseAbility extends WindUpPulseAbility {
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.CONJURATION);
         Component damageStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(),
-                damageFormula.value(), formulaParameters.value(), level);
+                damage.value(), formulaParameters.value(), level);
         Component detonateStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(),
-                detonateDamageFormula.value(), formulaParameters.value(), level);
+                detonateDamage.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(),
                 NUMBER_FORMATTER.format(radius.value()),
                 damageStr,

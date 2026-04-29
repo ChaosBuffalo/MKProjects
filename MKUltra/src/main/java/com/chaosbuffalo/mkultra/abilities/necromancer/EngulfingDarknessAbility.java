@@ -13,12 +13,14 @@ import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.formulas.StackingBonusFormulaSpec;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.StackingBonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.EngulfingDarknessEffect;
@@ -56,8 +58,8 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
                     .with(DURATION_BASE_PARAMETER, 10.0f)
                     .with(DURATION_PER_LEVEL_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute dotDamageFormula = new FormulaAttribute("dotDamageFormula",
-            AbilityFormula.bonusScaledLinear(DOT_DAMAGE_BASE_PARAMETER, DOT_DAMAGE_PER_LEVEL_PARAMETER,
+    protected final StackingBonusFormulaSpecAttribute dotDamage = new StackingBonusFormulaSpecAttribute("dotDamage",
+            StackingBonusFormulaSpec.skilledBonusScaled(DOT_DAMAGE_BASE_PARAMETER, DOT_DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DOT_DAMAGE_MODIFIER_SCALING_PARAMETER));
     protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final ResourceLocationAttribute castParticles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
@@ -71,7 +73,7 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
         setCooldownSeconds(4);
         setManaCost(3);
         setCastTime((GameConstants.TICKS_PER_SECOND * 3) / 2);
-        addAttributes(formulaParameters, dotDamageFormula, durationFormula,
+        addAttributes(formulaParameters, dotDamage, durationFormula,
                 castParticles, dotCastParticles, shadowbringerChance, shadowbringerDuration);
         addSkillAttribute(MKAttributes.CONJURATION);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
@@ -93,7 +95,7 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.CONJURATION);
         Component dotStr = getDamageDescription(entityData,
-                CoreDamageTypes.ShadowDamage.get(), dotDamageFormula.value(), formulaParameters.value(), level);
+                CoreDamageTypes.ShadowDamage.get(), dotDamage.value(), formulaParameters.value(), level);
         float dotDur = convertDurationToSeconds(
                 getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), level));
         float shadowbringerDur = convertDurationToSeconds(shadowbringerDuration.value());
@@ -104,7 +106,7 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
 
     public MKEffectBuilder<?> getDotCast(IMKEntityData casterData, float level) {
         int dur = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level);
-        return EngulfingDarknessEffect.from(casterData.getEntity(), dotDamageFormula.value(), formulaParameters.value(),
+        return EngulfingDarknessEffect.from(casterData.getEntity(), dotDamage.value(), formulaParameters.value(),
                         getShadowbringerChance(casterData), shadowbringerDuration.value(),
                         dotCastParticles.getValue())
                 .ability(this)

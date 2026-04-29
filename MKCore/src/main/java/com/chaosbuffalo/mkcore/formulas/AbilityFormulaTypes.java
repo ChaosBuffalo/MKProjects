@@ -19,8 +19,6 @@ public class AbilityFormulaTypes {
             REGISTRY.register("parameter_value", () -> () -> AbilityFormula.ParameterValue.MAP_CODEC);
     public static final Supplier<AbilityFormulaType<AbilityFormula.Linear>> LINEAR =
             REGISTRY.register("linear", () -> () -> AbilityFormula.Linear.MAP_CODEC);
-    public static final Supplier<AbilityFormulaType<AbilityFormula.BonusScaledLinear>> BONUS_SCALED_LINEAR =
-            REGISTRY.register("bonus_scaled_linear", () -> () -> AbilityFormula.BonusScaledLinear.MAP_CODEC);
     public static final Supplier<AbilityFormulaType<AbilityFormula.Add>> ADD =
             REGISTRY.register("add", () -> () -> AbilityFormula.Add.MAP_CODEC);
     public static final Supplier<AbilityFormulaType<AbilityFormula.Multiply>> MULTIPLY =

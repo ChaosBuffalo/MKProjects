@@ -7,7 +7,7 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkultra.abilities.MKUAbilityUtils;
@@ -21,14 +21,14 @@ import java.util.UUID;
 
 public class FlameWaveEffect extends MKEffect {
 
-    public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula damageFormula,
+    public static MKEffectBuilder<?> from(LivingEntity source, BonusFormulaSpec damage,
                                           FormulaParameters parameters, int witherBase, int witherScale,
                                           float damageMultiplier) {
         return MKUEffects.FLAME_WAVE.get().builder(source).state(s -> {
             s.witherDurationBase = witherBase;
             s.witherDurationScale = witherScale;
             s.damageBoost = damageMultiplier;
-            s.setParameterizedDamageFormula(damageFormula, parameters);
+            s.setParameterizedDamageFormula(damage, parameters);
         });
     }
 

@@ -30,9 +30,19 @@ public class AttackSpeedEffect extends MKEffect {
         return new State();
     }
 
-    public MKEffectBuilder<State> from(LivingEntity source, AbilityFormula valueFormula, FormulaParameters parameters) {
+    public MKEffectBuilder<State> from(LivingEntity source, AbilityFormula valueFormula,
+                                       FormulaParameters parameters,
+                                       ScalingValueEffectState.ValueStackPolicy stackPolicy) {
         return new MKEffectBuilder<>(this, source, State::new)
-                .state(s -> s.setScalingFormula(valueFormula, parameters));
+                .state(s -> s.setScalingFormula(valueFormula, parameters, stackPolicy));
+    }
+
+    public MKEffectBuilder<State> from(LivingEntity source,
+                                       AbilityFormula baseFormula,
+                                       AbilityFormula perStackFormula,
+                                       FormulaParameters parameters) {
+        return new MKEffectBuilder<>(this, source, State::new)
+                .state(s -> s.setBaseAndPerStackScalingFormulas(baseFormula, perStackFormula, parameters));
     }
 
     @Override
@@ -59,8 +69,36 @@ public class AttackSpeedEffect extends MKEffect {
         }
 
         @Override
+        public void setScalingFormula(AbilityFormula scalingFormula,
+                                      FormulaParameters parameters,
+                                      ValueStackPolicy stackPolicy) {
+            super.setScalingFormula(scalingFormula, parameters, stackPolicy);
+            scalingFormulaOverride = true;
+        }
+
+        @Override
         public void setScalingFormula(AbilityFormula scalingFormula) {
             super.setScalingFormula(scalingFormula);
+            scalingFormulaOverride = true;
+        }
+
+        @Override
+        public void setScalingFormula(AbilityFormula scalingFormula, ValueStackPolicy stackPolicy) {
+            super.setScalingFormula(scalingFormula, stackPolicy);
+            scalingFormulaOverride = true;
+        }
+
+        @Override
+        public void setBaseAndPerStackScalingFormulas(AbilityFormula baseFormula,
+                                                      AbilityFormula perStackFormula,
+                                                      FormulaParameters parameters) {
+            super.setBaseAndPerStackScalingFormulas(baseFormula, perStackFormula, parameters);
+            scalingFormulaOverride = true;
+        }
+
+        @Override
+        public void setBaseAndPerStackScalingFormulas(AbilityFormula baseFormula, AbilityFormula perStackFormula) {
+            super.setBaseAndPerStackScalingFormulas(baseFormula, perStackFormula);
             scalingFormulaOverride = true;
         }
 
@@ -81,7 +119,10 @@ public class AttackSpeedEffect extends MKEffect {
         @Override
         public void deserializeStorage(CompoundTag stateTag) {
             super.deserializeStorage(stateTag);
-            scalingFormulaOverride = stateTag.contains("scalingFormula") || stateTag.contains("base") || stateTag.contains("scale");
+            scalingFormulaOverride = stateTag.contains("valueStackPolicy")
+                    || stateTag.contains("scalingFormula")
+                    || stateTag.contains("scalingBaseFormula")
+                    || stateTag.contains("scalingPerStackFormula");
         }
     }
 }

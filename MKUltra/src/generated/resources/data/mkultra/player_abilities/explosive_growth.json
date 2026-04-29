@@ -4,12 +4,42 @@
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:explosive_growth_cast",
     "casting_particles": "mkultra:explosive_growth_casting",
-    "damageFormula": {
-      "type": "mkcore:bonus_scaled_linear",
-      "base_param": "mkultra:explosive_growth.damage.base",
-      "bonus_key": "mkcore:damage_bonus",
-      "bonus_scale_param": "mkultra:explosive_growth.damage.modifier_scaling",
-      "per_level_param": "mkultra:explosive_growth.damage.per_level"
+    "damage": {
+      "baseFormula": {
+        "type": "mkcore:add",
+        "terms": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:explosive_growth.damage.base"
+          },
+          {
+            "type": "mkcore:multiply",
+            "factors": [
+              {
+                "type": "mkcore:parameter_value",
+                "key": "mkultra:explosive_growth.damage.per_level"
+              },
+              {
+                "type": "mkcore:context_value",
+                "key": "mkcore:skill_level"
+              }
+            ]
+          }
+        ]
+      },
+      "bonusFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:explosive_growth.damage.modifier_scaling"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:damage_bonus"
+          }
+        ]
+      }
     },
     "detonate_particles": "mkultra:explosive_growth_detonate",
     "formulaParameters": {

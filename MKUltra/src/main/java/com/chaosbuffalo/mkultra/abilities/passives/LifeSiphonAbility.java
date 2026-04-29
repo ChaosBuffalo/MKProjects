@@ -7,11 +7,12 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContext;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
@@ -34,35 +35,35 @@ public class LifeSiphonAbility extends MKPassiveAbility {
                     .with(HEAL_PER_LEVEL_PARAMETER, 4.0f)
                     .with(HEAL_MODIFIER_SCALING_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute healingFormula = new FormulaAttribute("healingFormula",
-            AbilityFormula.bonusScaledLinear(HEAL_BASE_PARAMETER, HEAL_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute healing = new BonusFormulaSpecAttribute("healing",
+            BonusFormulaSpec.skilledBonusScaled(HEAL_BASE_PARAMETER, HEAL_PER_LEVEL_PARAMETER,
                     FormulaContextKey.HEAL_BONUS, HEAL_MODIFIER_SCALING_PARAMETER));
 
     public LifeSiphonAbility() {
         super();
         addSkillAttribute(MKAttributes.NECROMANCY);
-        addAttributes(formulaParameters, healingFormula);
+        addAttributes(formulaParameters, healing);
     }
 
-    public AbilityFormula.Breakdown getHealingBreakdown() {
-        AbilityFormula.Breakdown breakdown = healingFormula.value().breakdown(formulaParameters.value());
-        if (breakdown == null) {
-            throw new IllegalStateException("Parameterized healing formulas must provide a runtime bonus breakdown");
-        }
-        return breakdown;
+    public BonusFormulaSpec getBoundHealingSpec() {
+        return healing.value().bindStrict(formulaParameters.value());
     }
 
     public float getBaseHealingValue(LivingEntity entity) {
         float necromancyLevel = MKAbility.getSkillLevel(entity, MKAttributes.NECROMANCY);
-        return getHealingBreakdown().baseFormula().evaluate(FormulaContext.builder()
+        return getBoundHealingSpec().baseFormula().evaluate(FormulaContext.builder()
                 .withSkillLevel(necromancyLevel)
                 .build());
+    }
+
+    public AbilityFormula getHealingBonusFormula() {
+        return getBoundHealingSpec().bonusFormula();
     }
 
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.NECROMANCY);
-        Component valueStr = getHealDescription(entityData, healingFormula.value(), formulaParameters.value(), level);
+        Component valueStr = getHealDescription(entityData, healing.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(), valueStr);
     }
 

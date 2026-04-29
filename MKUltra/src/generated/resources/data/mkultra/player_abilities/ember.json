@@ -1,22 +1,77 @@
 {
   "attributes": {
-    "burnDamageFormula": {
-      "type": "mkcore:bonus_scaled_linear",
-      "base_param": "mkultra:ember.burn.base",
-      "bonus_key": "mkcore:damage_bonus",
-      "bonus_scale_param": "mkultra:ember.burn.modifier_scaling",
-      "per_level_param": "mkultra:ember.burn.per_level"
+    "burnDamage": {
+      "baseFormula": {
+        "type": "mkcore:parameter_value",
+        "key": "mkultra:ember.burn.base"
+      },
+      "bonusFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:ember.burn.modifier_scaling"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:damage_bonus"
+          }
+        ]
+      },
+      "perStackFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:ember.burn.per_level"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:skill_level"
+          }
+        ]
+      }
     },
     "burn_cast_particles": "mkultra:burn_tick",
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:ember_cast",
     "casting_particles": "mkultra:ember_casting",
-    "damageFormula": {
-      "type": "mkcore:bonus_scaled_linear",
-      "base_param": "mkultra:ember.damage.base",
-      "bonus_key": "mkcore:damage_bonus",
-      "bonus_scale_param": "mkultra:ember.damage.modifier_scaling",
-      "per_level_param": "mkultra:ember.damage.per_level"
+    "damage": {
+      "baseFormula": {
+        "type": "mkcore:add",
+        "terms": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:ember.damage.base"
+          },
+          {
+            "type": "mkcore:multiply",
+            "factors": [
+              {
+                "type": "mkcore:parameter_value",
+                "key": "mkultra:ember.damage.per_level"
+              },
+              {
+                "type": "mkcore:context_value",
+                "key": "mkcore:skill_level"
+              }
+            ]
+          }
+        ]
+      },
+      "bonusFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:ember.damage.modifier_scaling"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:damage_bonus"
+          }
+        ]
+      }
     },
     "durationFormula": {
       "type": "mkcore:add",

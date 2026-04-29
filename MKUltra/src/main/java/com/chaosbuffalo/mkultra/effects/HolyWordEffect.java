@@ -30,7 +30,8 @@ public class HolyWordEffect extends OnStackEffect {
                                               FormulaParameters parameters, int maxStacks) {
         return MKUEffects.HOLY_WORD_EFFECT.get().builder(source)
                 .state(s -> {
-                    s.setScalingFormula(stunDurationFormula, parameters);
+                    s.setScalingFormula(stunDurationFormula, parameters,
+                            ScalingValueEffectState.ValueStackPolicy.IGNORE_STACKS);
                     s.setMaxStacks(maxStacks);
                 });
     }

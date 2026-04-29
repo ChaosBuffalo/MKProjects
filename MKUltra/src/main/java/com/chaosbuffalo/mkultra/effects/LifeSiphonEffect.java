@@ -27,7 +27,7 @@ public class LifeSiphonEffect extends MKEffect {
         LivingEntity living = killerData.getEntity();
         SoundUtils.serverPlaySoundAtEntity(living, MKUSounds.spell_dark_5.value(), living.getSoundSource());
         MKHealSource healSource = MKHealSource.getShadowHeal(MKUAbilities.LIFE_SIPHON.getId(), living, living)
-                .setHealBonusFormula(MKUAbilities.LIFE_SIPHON.get().getHealingBreakdown().bonusFormula());
+                .setHealBonusFormula(MKUAbilities.LIFE_SIPHON.get().getHealingBonusFormula());
         float amount = MKUAbilities.LIFE_SIPHON.get().getBaseHealingValue(living);
         MKHealing.healEntityFrom(living, amount, healSource);
     }

@@ -8,8 +8,8 @@ import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
 import com.chaosbuffalo.mkcore.fx.ParticleEffects;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.formulas.StackingBonusFormulaSpec;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.ParticleEffectSpawnPacket;
@@ -32,9 +32,9 @@ public class SeverTendonEffect extends MKEffect {
         addAttribute(Attributes.MOVEMENT_SPEED, modUUID, -0.05, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
     }
 
-    public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula damageFormula, FormulaParameters parameters) {
+    public static MKEffectBuilder<?> from(LivingEntity source, StackingBonusFormulaSpec damage, FormulaParameters parameters) {
         return MKUEffects.SEVER_TENDON.get().builder(source)
-                .state(s -> s.setParameterizedDamageFormula(damageFormula, parameters))
+                .state(s -> s.setParameterizedDamageFormula(damage, parameters))
                 .periodic(DEFAULT_PERIOD);
     }
 

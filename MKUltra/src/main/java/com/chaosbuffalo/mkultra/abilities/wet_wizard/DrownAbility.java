@@ -12,12 +12,14 @@ import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.formulas.StackingBonusFormulaSpec;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.StackingBonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.DrownEffect;
@@ -57,8 +59,8 @@ public class DrownAbility extends ProjectileAbility {
                     .with(DURATION_BASE_PARAMETER, 10.0f)
                     .with(DURATION_PER_LEVEL_PARAMETER, 2.0f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final StackingBonusFormulaSpecAttribute damage = new StackingBonusFormulaSpecAttribute("damage",
+            StackingBonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
     protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final ResourceLocationAttribute tick_particles = new ResourceLocationAttribute("tick_particles", TICK_PARTICLES);
@@ -69,7 +71,7 @@ public class DrownAbility extends ProjectileAbility {
         setCooldownSeconds(10);
         setManaCost(5);
         setCastTime(GameConstants.TICKS_PER_SECOND);
-        addAttributes(formulaParameters, damageFormula, durationFormula, tick_particles);
+        addAttributes(formulaParameters, damage, durationFormula, tick_particles);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
@@ -80,7 +82,7 @@ public class DrownAbility extends ProjectileAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(skill);
         Component dotStr = getDamageDescription(entityData,
-                CoreDamageTypes.NatureDamage.get(), damageFormula.value(), formulaParameters.value(), level);
+                CoreDamageTypes.NatureDamage.get(), damage.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(),
                 dotStr, NUMBER_FORMATTER.format(convertDurationToSeconds(DrownEffect.DEFAULT_PERIOD)),
                 NUMBER_FORMATTER.format(convertDurationToSeconds(
@@ -89,7 +91,7 @@ public class DrownAbility extends ProjectileAbility {
 
     protected MKEffectBuilder<?> getDotEffect(IMKEntityData casterData, float level) {
         int durTicks = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level);
-        return DrownEffect.from(casterData.getEntity(), damageFormula.value(), formulaParameters.value(),
+        return DrownEffect.from(casterData.getEntity(), damage.value(), formulaParameters.value(),
                         tick_particles.getValue())
                 .ability(this)
                 .skillLevel(level)

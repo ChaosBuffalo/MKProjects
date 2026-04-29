@@ -14,10 +14,12 @@ import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.effects.utility.MKParticleEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
@@ -60,8 +62,8 @@ public class FlameBlade extends MKAbility {
                     .with(DURATION_BASE_PARAMETER, 10.0f)
                     .with(DURATION_PER_LEVEL_PARAMETER, 5.0f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
     protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final ResourceLocationAttribute castParticles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
@@ -73,7 +75,7 @@ public class FlameBlade extends MKAbility {
         setManaCost(6);
         setCastTime(GameConstants.TICKS_PER_SECOND);
         addSkillAttribute(MKAttributes.ENCHANTMENT);
-        addAttributes(formulaParameters, damageFormula, durationFormula, castParticles, edgeParticles);
+        addAttributes(formulaParameters, damage, durationFormula, castParticles, edgeParticles);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
 
@@ -106,7 +108,7 @@ public class FlameBlade extends MKAbility {
 
     public MKEffectBuilder<?> onHitEffect(OnHitEffect.OnHitCallbackData args) {
         return MKAbilityDamageEffect.from(args.entityData.getEntity(), CoreDamageTypes.FireDamage.get(),
-                        damageFormula.value(), formulaParameters.value())
+                        damage.value(), formulaParameters.value())
                 .skillLevel(args.instance.getSkillLevel())
                 .ability(this);
     }
@@ -114,11 +116,11 @@ public class FlameBlade extends MKAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.ENCHANTMENT);
-        Component damage = getDamageDescription(entityData, CoreDamageTypes.FireDamage.get(),
-                damageFormula.value(), formulaParameters.value(), level);
+        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.FireDamage.get(),
+                damage.value(), formulaParameters.value(), level);
         float duration = convertDurationToSeconds(
                 getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), level));
-        return Component.translatable(getDescriptionTranslationKey(), duration, damage);
+        return Component.translatable(getDescriptionTranslationKey(), duration, damageStr);
     }
 
     @Override

@@ -14,12 +14,12 @@ import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.entities.BaseEffectEntity;
 import com.chaosbuffalo.mkcore.entities.ConeAreaEffectEntity;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
@@ -55,8 +55,8 @@ public class SkullFlameBreathAbility extends MKAbility {
                     .with(DAMAGE_PER_LEVEL_PARAMETER, 0.75f)
                     .with(MODIFIER_SCALING_PARAMETER, 0.35f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, MODIFIER_SCALING_PARAMETER));
     protected final FloatAttribute range = new FloatAttribute("range", 5.0f);
     protected final FloatAttribute angle = new FloatAttribute("angle", 36.0f);
@@ -69,7 +69,7 @@ public class SkullFlameBreathAbility extends MKAbility {
         setCooldownSeconds(10);
         setManaCost(5);
         setCastTime(GameConstants.TICKS_PER_SECOND * 6);
-        addAttributes(formulaParameters, damageFormula, range, angle, tickRate, burnSeconds, breath_particles);
+        addAttributes(formulaParameters, damage, range, angle, tickRate, burnSeconds, breath_particles);
         addSkillAttribute(MKAttributes.EVOCATION);
         setUseCondition(new MeleeUseCondition(this));
     }
@@ -78,7 +78,7 @@ public class SkullFlameBreathAbility extends MKAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.EVOCATION);
         Component damageStr = getDamageDescription(entityData, com.chaosbuffalo.mkcore.init.CoreDamageTypes.FireDamage.get(),
-                damageFormula.value(), formulaParameters.value(), level);
+                damage.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(),
                 NUMBER_FORMATTER.format(convertDurationToSeconds(getBaseCastTime())),
                 damageStr,
@@ -119,7 +119,7 @@ public class SkullFlameBreathAbility extends MKAbility {
         LivingEntity castingEntity = casterData.getEntity();
 
         float level = context.getSkill(MKAttributes.EVOCATION);
-        MKEffectBuilder<?> damage = SkullFlameBreathEffect.from(castingEntity, damageFormula.value(),
+        MKEffectBuilder<?> damageEffect = SkullFlameBreathEffect.from(castingEntity, damage.value(),
                         formulaParameters.value(), burnSeconds.value())
                 .ability(this)
                 .skillLevel(level);
@@ -132,7 +132,7 @@ public class SkullFlameBreathAbility extends MKAbility {
                 .angleDegrees(angle.value())
                 .useOwnerLook();
 
-        builder.effect(damage, getTargetContext())
+        builder.effect(damageEffect, getTargetContext())
                 .setParticles(new BaseEffectEntity.ParticleDisplay(breath_particles.getValue(), tickRate.value(),
                         BaseEffectEntity.ParticleDisplay.DisplayType.CONTINUOUS))
                 .infiniteDuration()

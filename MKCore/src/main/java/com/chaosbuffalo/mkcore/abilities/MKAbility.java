@@ -10,11 +10,13 @@ import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import com.chaosbuffalo.mkcore.core.player.PlayerKnownAbility;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContext;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.formulas.FormulaTextRenderer;
 import com.chaosbuffalo.mkcore.formulas.FormulaTextStyle;
+import com.chaosbuffalo.mkcore.formulas.StackingBonusFormulaSpec;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
 import com.chaosbuffalo.mkcore.serialization.ISerializableAttributeContainer;
 import com.chaosbuffalo.mkcore.serialization.attributes.ISerializableAttribute;
@@ -118,7 +120,16 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return desc;
     }
 
-    public Component getDamageDescription(IMKEntityData casterData, MKDamageType damageType, AbilityFormula damageFormula,
+    public Component getDamageDescription(IMKEntityData casterData, MKDamageType damageType, BonusFormulaSpec damageFormula,
+                                          FormulaParameters parameters, float skillLevel) {
+        FormulaContext context = damageFormulaContext(casterData, damageType, skillLevel).build();
+        MutableComponent desc = FormulaTextRenderer.render(damageFormula, parameters, context, FormulaTextStyle.DAMAGE);
+        desc.append(" ").append(damageType.getFormattedDisplayName());
+        return desc;
+    }
+
+    public Component getDamageDescription(IMKEntityData casterData, MKDamageType damageType,
+                                          StackingBonusFormulaSpec damageFormula,
                                           FormulaParameters parameters, float skillLevel) {
         FormulaContext context = damageFormulaContext(casterData, damageType, skillLevel).build();
         MutableComponent desc = FormulaTextRenderer.render(damageFormula, parameters, context, FormulaTextStyle.DAMAGE);
@@ -145,7 +156,13 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return FormulaTextRenderer.render(healingFormula, MODIFIER_SCALED_HEAL_BONUS, context, FormulaTextStyle.HEAL);
     }
 
-    public Component getHealDescription(IMKEntityData casterData, AbilityFormula healingFormula,
+    public Component getHealDescription(IMKEntityData casterData, BonusFormulaSpec healingFormula,
+                                        FormulaParameters parameters, float skillLevel) {
+        FormulaContext context = healFormulaContext(casterData, skillLevel).build();
+        return FormulaTextRenderer.render(healingFormula, parameters, context, FormulaTextStyle.HEAL);
+    }
+
+    public Component getHealDescription(IMKEntityData casterData, StackingBonusFormulaSpec healingFormula,
                                         FormulaParameters parameters, float skillLevel) {
         FormulaContext context = healFormulaContext(casterData, skillLevel).build();
         return FormulaTextRenderer.render(healingFormula, parameters, context, FormulaTextStyle.HEAL);
@@ -459,11 +476,6 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return Collections.unmodifiableSet(skillAttributes);
     }
 
-    protected int getBuffDuration(IMKEntityData casterData, AbilityFormula durationFormula, FormulaContext context) {
-        int duration = Math.round(durationFormula.evaluate(context) * GameConstants.TICKS_PER_SECOND);
-        return MKCombatFormulas.applyBuffDurationModifier(casterData, duration);
-    }
-
     protected int getBuffDuration(IMKEntityData casterData, AbilityFormula durationFormula,
                                   FormulaParameters parameters, FormulaContext context) {
         int duration = Math.round(durationFormula.bindParametersStrict(parameters).evaluate(context) * GameConstants.TICKS_PER_SECOND);
@@ -472,21 +484,18 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     protected int getBuffDuration(IMKEntityData casterData, AbilityFormula durationFormula,
                                   FormulaParameters parameters, float skillLevel) {
-        return getBuffDuration(casterData, durationFormula, parameters, baseFormulaContext(casterData, skillLevel).build());
+        FormulaContext context = baseFormulaContext(casterData, skillLevel).build();
+        return getBuffDuration(casterData, durationFormula, parameters, context);
     }
 
-    protected int getBuffDuration(IMKEntityData casterData, float level, int base, int scale) {
-        return getBuffDuration(casterData, AbilityFormula.linear(base, scale), baseFormulaContext(casterData, level).build());
-    }
-
-    protected int getFormulaDuration(IMKEntityData casterData, AbilityFormula durationFormula,
-                                     FormulaParameters parameters, float level) {
+    protected int getDebuffDuration(IMKEntityData casterData, AbilityFormula durationFormula,
+                                    FormulaParameters parameters, float level) {
         FormulaContext context = baseFormulaContext(casterData, level).build();
-        return getFormulaDuration(casterData, durationFormula, parameters, context);
+        return getDebuffDuration(casterData, durationFormula, parameters, context);
     }
 
-    protected int getFormulaDuration(IMKEntityData casterData, AbilityFormula durationFormula,
-                                     FormulaParameters parameters, FormulaContext context) {
+    protected int getDebuffDuration(IMKEntityData casterData, AbilityFormula durationFormula,
+                                    FormulaParameters parameters, FormulaContext context) {
         return Math.round(durationFormula.bindParametersStrict(parameters).evaluate(context) * GameConstants.TICKS_PER_SECOND);
     }
 

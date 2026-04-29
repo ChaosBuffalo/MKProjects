@@ -8,7 +8,9 @@ import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.formulas.StackingBonusFormulaSpec;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -35,8 +37,16 @@ public class MKAbilityDamageEffect extends MKEffect {
         });
     }
 
-    public static MKEffectBuilder<State> from(LivingEntity source, MKDamageType damageType, AbilityFormula damageFormula,
+    public static MKEffectBuilder<State> from(LivingEntity source, MKDamageType damageType, BonusFormulaSpec damageFormula,
                                               FormulaParameters parameters) {
+        return CoreEffects.ABILITY_DAMAGE.get().builder(source).state(s -> {
+            s.setDamageType(damageType);
+            s.setParameterizedDamageFormula(damageFormula, parameters);
+        });
+    }
+
+    public static MKEffectBuilder<State> from(LivingEntity source, MKDamageType damageType,
+                                              StackingBonusFormulaSpec damageFormula, FormulaParameters parameters) {
         return CoreEffects.ABILITY_DAMAGE.get().builder(source).state(s -> {
             s.setDamageType(damageType);
             s.setParameterizedDamageFormula(damageFormula, parameters);

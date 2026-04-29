@@ -5,7 +5,9 @@ import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import com.chaosbuffalo.mkcore.core.healing.MKHealSource;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.formulas.StackingBonusFormulaSpec;
 import com.chaosbuffalo.mkcore.utils.MKNBTUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -80,24 +82,28 @@ public abstract class ScalingDamageEffectState extends ScalingValueEffectState {
         healBonusFormula = MKHealSource.createLegacyHealBonusFormula(modifierScaling);
     }
 
-    public void setParameterizedDamageFormula(AbilityFormula scalingFormula, FormulaParameters parameters) {
-        AbilityFormula.Breakdown breakdown = scalingFormula.breakdown(parameters);
-        if (breakdown == null) {
-            throw new IllegalStateException("Parameterized damage formulas must provide a runtime bonus breakdown");
-        }
-        super.setScalingFormula(breakdown.baseFormula());
-        damageBonusFormula = breakdown.bonusFormula();
-        healBonusFormula = AbilityFormula.constant(0.0f);
+    public void setParameterizedDamageFormula(BonusFormulaSpec scalingFormula, FormulaParameters parameters) {
+        BonusFormulaSpec bound = scalingFormula.bindStrict(parameters);
+        applyScalingSpec(bound);
+        applyDamageBonusFormula(bound.bonusFormula());
     }
 
-    public void setParameterizedHealingFormula(AbilityFormula scalingFormula, FormulaParameters parameters) {
-        AbilityFormula.Breakdown breakdown = scalingFormula.breakdown(parameters);
-        if (breakdown == null) {
-            throw new IllegalStateException("Parameterized healing formulas must provide a runtime bonus breakdown");
-        }
-        super.setScalingFormula(breakdown.baseFormula());
-        damageBonusFormula = AbilityFormula.constant(0.0f);
-        healBonusFormula = breakdown.bonusFormula();
+    public void setParameterizedDamageFormula(StackingBonusFormulaSpec scalingFormula, FormulaParameters parameters) {
+        StackingBonusFormulaSpec bound = scalingFormula.bindStrict(parameters);
+        applyScalingSpec(bound);
+        applyDamageBonusFormula(bound.bonusFormula());
+    }
+
+    public void setParameterizedHealingFormula(BonusFormulaSpec scalingFormula, FormulaParameters parameters) {
+        BonusFormulaSpec bound = scalingFormula.bindStrict(parameters);
+        applyScalingSpec(bound);
+        applyHealBonusFormula(bound.bonusFormula());
+    }
+
+    public void setParameterizedHealingFormula(StackingBonusFormulaSpec scalingFormula, FormulaParameters parameters) {
+        StackingBonusFormulaSpec bound = scalingFormula.bindStrict(parameters);
+        applyScalingSpec(bound);
+        applyHealBonusFormula(bound.bonusFormula());
     }
 
     public AbilityFormula getDamageBonusFormula() {
@@ -106,6 +112,24 @@ public abstract class ScalingDamageEffectState extends ScalingValueEffectState {
 
     public AbilityFormula getHealBonusFormula() {
         return healBonusFormula;
+    }
+
+    private void applyScalingSpec(BonusFormulaSpec bound) {
+        super.setScalingFormula(bound.baseFormula(), ValueStackPolicy.IGNORE_STACKS);
+    }
+
+    private void applyScalingSpec(StackingBonusFormulaSpec bound) {
+        super.setBaseAndPerStackScalingFormulas(bound.baseFormula(), bound.perStackFormula());
+    }
+
+    private void applyDamageBonusFormula(AbilityFormula bonusFormula) {
+        damageBonusFormula = bonusFormula;
+        healBonusFormula = AbilityFormula.constant(0.0f);
+    }
+
+    private void applyHealBonusFormula(AbilityFormula bonusFormula) {
+        damageBonusFormula = AbilityFormula.constant(0.0f);
+        healBonusFormula = bonusFormula;
     }
 
     @Override

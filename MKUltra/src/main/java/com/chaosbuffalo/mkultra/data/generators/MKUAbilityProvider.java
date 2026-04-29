@@ -68,16 +68,11 @@ public class MKUAbilityProvider extends MKAbilityProvider {
                 AbilityVariantPatch.builder()
                         .cooldown(180)
                         .manaCost(7.0f)
-                        .replaceAttribute("damageFormula", AbilityFormula.add(
-                                AbilityFormula.linear(10.0f, 7.0f),
-                                AbilityFormula.multiply(
-                                        AbilityFormula.constant(1.5f),
-                                        AbilityFormula.context(FormulaContextKey.DAMAGE_BONUS)
-                                )))
-                        .replaceFormulaParameters(FormulaParameters.builder()
-                                .with(SmiteAbility.DURATION_BASE_PARAMETER, 1.0f)
-                                .with(SmiteAbility.DURATION_PER_LEVEL_PARAMETER, 1.0f)
-                                .build())
+                        .mergeFormulaParameter(SmiteAbility.BASE_PARAMETER, 10.0f)
+                        .mergeFormulaParameter(SmiteAbility.PER_LEVEL_PARAMETER, 7.0f)
+                        .mergeFormulaParameter(SmiteAbility.MODIFIER_SCALING_PARAMETER, 1.5f)
+                        .mergeFormulaParameter(SmiteAbility.DURATION_BASE_PARAMETER, 1.0f)
+                        .mergeFormulaParameter(SmiteAbility.DURATION_PER_LEVEL_PARAMETER, 1.0f)
                         .build(),
                 pOutput));
         futures.add(writeVariant(MKUAbilities.HOLY_WORD_BURST.getId(), MKUAbilities.HOLY_WORD.get(),

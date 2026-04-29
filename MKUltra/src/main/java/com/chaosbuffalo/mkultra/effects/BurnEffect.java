@@ -4,8 +4,8 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.status.DamageTypeDotEffect;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.formulas.StackingBonusFormulaSpec;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
@@ -23,12 +23,12 @@ public class BurnEffect extends DamageTypeDotEffect {
     public BurnEffect() {
     }
 
-    public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula damageFormula,
+    public static MKEffectBuilder<?> from(LivingEntity source, StackingBonusFormulaSpec damage,
                                           FormulaParameters parameters, ResourceLocation castParticles) {
         return MKUEffects.BURN.get().builder(source)
                 .state(s -> {
                     s.setEffectParticles(castParticles);
-                    s.setParameterizedDamageFormula(damageFormula, parameters);
+                    s.setParameterizedDamageFormula(damage, parameters);
                 })
                 .periodic(DEFAULT_PERIOD);
     }

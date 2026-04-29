@@ -7,7 +7,7 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.targeting_api.TargetingContext;
@@ -22,7 +22,7 @@ public class ClericHealEffect extends MKEffect {
         super(MobEffectCategory.BENEFICIAL);
     }
 
-    public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula healingFormula,
+    public static MKEffectBuilder<?> from(LivingEntity source, BonusFormulaSpec healingFormula,
                                           FormulaParameters parameters) {
         return MKUEffects.CLERIC_HEAL.get().builder(source)
                 .state(s -> s.setParameterizedHealingFormula(healingFormula, parameters));

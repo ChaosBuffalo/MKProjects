@@ -11,10 +11,12 @@ import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.formulas.StackingBonusFormulaSpec;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.StackingBonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.FuriousBroodingEffect;
 import com.chaosbuffalo.mkultra.init.MKUSounds;
@@ -49,8 +51,8 @@ public class FuriousBroodingAbility extends MKAbility {
                     .with(DURATION_BASE_PARAMETER, 6.0f)
                     .with(DURATION_PER_LEVEL_PARAMETER, 5.0f)
                     .build());
-    protected final FormulaAttribute healingFormula = new FormulaAttribute("healingFormula",
-            AbilityFormula.bonusScaledLinear(HEAL_BASE_PARAMETER, HEAL_PER_LEVEL_PARAMETER,
+    protected final StackingBonusFormulaSpecAttribute healing = new StackingBonusFormulaSpecAttribute("healing",
+            StackingBonusFormulaSpec.skilledBonusScaled(HEAL_BASE_PARAMETER, HEAL_PER_LEVEL_PARAMETER,
                     FormulaContextKey.HEAL_BONUS, MODIFIER_SCALING_PARAMETER));
     protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
 
@@ -58,7 +60,7 @@ public class FuriousBroodingAbility extends MKAbility {
         super();
         setCooldownSeconds(18);
         setManaCost(6);
-        addAttributes(tick_particles, formulaParameters, healingFormula, durationFormula);
+        addAttributes(tick_particles, formulaParameters, healing, durationFormula);
         addSkillAttribute(MKAttributes.PNEUMA);
         setUseCondition(new HealCondition(this, 0.8f).setSelfOnly(true));
     }
@@ -76,7 +78,7 @@ public class FuriousBroodingAbility extends MKAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.PNEUMA);
-        Component damageStr = getHealDescription(casterData, healingFormula.value(), formulaParameters.value(), level);
+        Component damageStr = getHealDescription(casterData, healing.value(), formulaParameters.value(), level);
         int duration = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level)
                 / GameConstants.TICKS_PER_SECOND;
         float speedReduction = -0.6f + 0.05f * level;
@@ -91,7 +93,7 @@ public class FuriousBroodingAbility extends MKAbility {
 
     public MKEffectBuilder<?> createFuriousBroodingEffect(IMKEntityData casterData, float level) {
         int duration = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level);
-        return FuriousBroodingEffect.from(casterData.getEntity(), healingFormula.value(),
+        return FuriousBroodingEffect.from(casterData.getEntity(), healing.value(),
                         formulaParameters.value(), tick_particles.getValue())
                 .ability(this)
                 .skillLevel(level)

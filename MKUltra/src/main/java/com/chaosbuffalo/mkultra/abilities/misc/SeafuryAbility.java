@@ -9,14 +9,14 @@ import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.entities.BaseEffectEntity;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.DoubleAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
@@ -58,8 +58,8 @@ public class SeafuryAbility extends PositionTargetingAbility {
                     .with(PER_LEVEL_PARAMETER, 1.0f)
                     .with(MODIFIER_SCALING_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(BASE_PARAMETER, PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(BASE_PARAMETER, PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, MODIFIER_SCALING_PARAMETER));
 
     public SeafuryAbility() {
@@ -69,7 +69,7 @@ public class SeafuryAbility extends PositionTargetingAbility {
         setCooldownSeconds(15);
         setManaCost(6);
         addAttributes(pulse_particles, wait_particles, wait_time, step, step_delay, iterations, radius,
-                formulaParameters, damageFormula);
+                formulaParameters, damage);
         addSkillAttribute(MKAttributes.EVOCATION);
     }
 
@@ -77,7 +77,7 @@ public class SeafuryAbility extends PositionTargetingAbility {
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.EVOCATION);
         Component damageStr = getDamageDescription(casterData, CoreDamageTypes.NatureDamage.get(),
-                damageFormula.value(), formulaParameters.value(), level);
+                damage.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(),
                 NUMBER_FORMATTER.format(iterations.value()),
                 NUMBER_FORMATTER.format(step.value()),
@@ -103,14 +103,14 @@ public class SeafuryAbility extends PositionTargetingAbility {
 
             EntityEffectBuilder.PointEffectBuilder builder = EntityEffectBuilder.createPointEffect(castingEntity, pos);
 
-            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.NatureDamage.get(),
-                            damageFormula.value(), formulaParameters.value())
+            MKEffectBuilder<?> damageEffect = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.NatureDamage.get(),
+                            damage.value(), formulaParameters.value())
                     .ability(this)
                     .skillLevel(level);
 
 
             builder.radius(radius.value())
-                    .effect(damage, getTargetContext())
+                    .effect(damageEffect, getTargetContext())
                     .setParticles(new BaseEffectEntity.ParticleDisplay(pulse_particles.getValue(), tickRate.value(), BaseEffectEntity.ParticleDisplay.DisplayType.ONCE))
                     .setWaitingParticles(new BaseEffectEntity.ParticleDisplay(wait_particles.getValue(), GameConstants.TICKS_PER_SECOND / 5, BaseEffectEntity.ParticleDisplay.DisplayType.CONTINUOUS))
                     .setPreDelay(delay)

@@ -9,8 +9,10 @@ import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContext;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.formulas.StackingBonusFormulaSpec;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import net.minecraft.nbt.CompoundTag;
@@ -41,11 +43,19 @@ public class AbilityMeleeDamageEffect extends MKEffect {
         });
     }
 
-    public static MKEffectBuilder<State> from(LivingEntity source, InteractionHand hand, AbilityFormula damageFormula,
+    public static MKEffectBuilder<State> from(LivingEntity source, InteractionHand hand, BonusFormulaSpec damage,
                                               FormulaParameters parameters) {
         return CoreEffects.ABILITY_MELEE_DAMAGE.get().builder(source).state(s -> {
             s.setHand(hand);
-            s.setParameterizedDamageFormula(damageFormula, parameters);
+            s.setParameterizedDamageFormula(damage, parameters);
+        });
+    }
+
+    public static MKEffectBuilder<State> from(LivingEntity source, InteractionHand hand, StackingBonusFormulaSpec damage,
+                                              FormulaParameters parameters) {
+        return CoreEffects.ABILITY_MELEE_DAMAGE.get().builder(source).state(s -> {
+            s.setHand(hand);
+            s.setParameterizedDamageFormula(damage, parameters);
         });
     }
 
@@ -59,11 +69,20 @@ public class AbilityMeleeDamageEffect extends MKEffect {
     }
 
     public static MKEffectBuilder<State> from(LivingEntity source, InteractionHand hand, float swingDamageScale,
-                                              AbilityFormula damageFormula, FormulaParameters parameters) {
+                                              BonusFormulaSpec damage, FormulaParameters parameters) {
         return CoreEffects.ABILITY_MELEE_DAMAGE.get().builder(source).state(s -> {
             s.setHand(hand);
             s.setSwingDamageScale(swingDamageScale);
-            s.setParameterizedDamageFormula(damageFormula, parameters);
+            s.setParameterizedDamageFormula(damage, parameters);
+        });
+    }
+
+    public static MKEffectBuilder<State> from(LivingEntity source, InteractionHand hand, float swingDamageScale,
+                                              StackingBonusFormulaSpec damage, FormulaParameters parameters) {
+        return CoreEffects.ABILITY_MELEE_DAMAGE.get().builder(source).state(s -> {
+            s.setHand(hand);
+            s.setSwingDamageScale(swingDamageScale);
+            s.setParameterizedDamageFormula(damage, parameters);
         });
     }
 

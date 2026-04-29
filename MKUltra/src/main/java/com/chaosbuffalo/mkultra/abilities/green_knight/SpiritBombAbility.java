@@ -9,14 +9,14 @@ import com.chaosbuffalo.mkcore.effects.AreaEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -51,8 +51,8 @@ public class SpiritBombAbility extends ProjectileAbility {
                     .with(DAMAGE_PER_LEVEL_PARAMETER, 4.0f)
                     .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 1.25f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
 
     public SpiritBombAbility() {
@@ -60,7 +60,7 @@ public class SpiritBombAbility extends ProjectileAbility {
         setCooldownSeconds(10);
         setCastTime(GameConstants.TICKS_PER_SECOND + (GameConstants.TICKS_PER_SECOND / 4));
         setManaCost(4);
-        addAttributes(formulaParameters, damageFormula);
+        addAttributes(formulaParameters, damage);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
@@ -80,15 +80,15 @@ public class SpiritBombAbility extends ProjectileAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.NatureDamage.get(),
-                damageFormula.value(),
+                damage.value(),
                 formulaParameters.value(),
                 context.getSkill(MKAttributes.EVOCATION));
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }
 
     private boolean doEffect(AbilityProjectileEntity projectile, LivingEntity caster, int amplifier) {
-        MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(caster, CoreDamageTypes.NatureDamage.get(),
-                        damageFormula.value(),
+        MKEffectBuilder<?> damageEffect = MKAbilityDamageEffect.from(caster, CoreDamageTypes.NatureDamage.get(),
+                        damage.value(),
                         formulaParameters.value())
                 .ability(this)
                 .directEntity(projectile)
@@ -96,7 +96,7 @@ public class SpiritBombAbility extends ProjectileAbility {
                 .amplify(amplifier);
 
         AreaEffectBuilder.createOnEntity(caster, projectile)
-                .effect(damage, getTargetContext())
+                .effect(damageEffect, getTargetContext())
                 .instant()
                 .color(65535)
                 .radius(4.0f, true)

@@ -103,7 +103,13 @@ public class TorporAbility extends MKAbility {
             float level = context.getSkill(MKAttributes.PHANTASM);
             int duration = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level);
             MKEffectBuilder<?> effect = MKUEffects.ATTACK_SPEED_SLOW.get()
-                    .from(castingEntity, valueFormula.value(), formulaParameters.value())
+                    .from(castingEntity,
+                            AbilityFormula.param(VALUE_BASE_PARAMETER),
+                            AbilityFormula.multiply(
+                                    AbilityFormula.param(VALUE_PER_LEVEL_PARAMETER),
+                                    AbilityFormula.context(FormulaContextKey.SKILL_LEVEL)
+                            ),
+                            formulaParameters.value())
                     .ability(this)
                     .skillLevel(level)
                     .timed(duration);

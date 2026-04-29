@@ -7,11 +7,12 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.healing.MKHealing;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
@@ -40,8 +41,8 @@ public class HealAbility extends MKAbility {
                     .with(PER_LEVEL_PARAMETER, 5.0f)
                     .with(MODIFIER_SCALING_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute healingFormula = new FormulaAttribute("healingFormula",
-            AbilityFormula.bonusScaledLinear(BASE_PARAMETER, PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute healing = new BonusFormulaSpecAttribute("healing",
+            BonusFormulaSpec.skilledBonusScaled(BASE_PARAMETER, PER_LEVEL_PARAMETER,
                     FormulaContextKey.HEAL_BONUS, MODIFIER_SCALING_PARAMETER));
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
 
@@ -50,7 +51,7 @@ public class HealAbility extends MKAbility {
         setCooldownSeconds(6);
         setManaCost(4);
         setCastTime(GameConstants.TICKS_PER_SECOND / 4);
-        addAttributes(formulaParameters, healingFormula, cast_particles);
+        addAttributes(formulaParameters, healing, cast_particles);
         addSkillAttribute(MKAttributes.RESTORATION);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
@@ -58,7 +59,7 @@ public class HealAbility extends MKAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.RESTORATION);
-        Component valueStr = getHealDescription(entityData, healingFormula.value(), formulaParameters.value(), level);
+        Component valueStr = getHealDescription(entityData, healing.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(), valueStr);
     }
 
@@ -97,7 +98,7 @@ public class HealAbility extends MKAbility {
         super.endCast(castingEntity, casterData, context);
         float level = context.getSkill(MKAttributes.RESTORATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
-            MKEffectBuilder<?> heal = ClericHealEffect.from(castingEntity, healingFormula.value(), formulaParameters.value())
+            MKEffectBuilder<?> heal = ClericHealEffect.from(castingEntity, healing.value(), formulaParameters.value())
                     .ability(this)
                     .skillLevel(level);
 

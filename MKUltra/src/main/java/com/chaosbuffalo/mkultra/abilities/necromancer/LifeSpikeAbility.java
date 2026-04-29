@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContext;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
@@ -16,7 +17,7 @@ import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.formulas.FormulaTextRenderer;
 import com.chaosbuffalo.mkcore.formulas.FormulaTextStyle;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
@@ -52,8 +53,8 @@ public class LifeSpikeAbility extends MKAbility {
                     .with(HEAL_DAMAGE_SCALE_PARAMETER, 1.0f)
                     .with(HEAL_MODIFIER_SCALING_PARAMETER, 0.5f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
 
@@ -62,17 +63,13 @@ public class LifeSpikeAbility extends MKAbility {
         setCooldownSeconds(30);
         setManaCost(8);
         setCastTime(GameConstants.TICKS_PER_SECOND * 2);
-        addAttributes(formulaParameters, damageFormula, cast_particles);
+        addAttributes(formulaParameters, damage, cast_particles);
         addSkillAttribute(MKAttributes.NECROMANCY);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
 
-    protected AbilityFormula.Breakdown getDamageBreakdown() {
-        AbilityFormula.Breakdown breakdown = damageFormula.value().breakdown(formulaParameters.value());
-        if (breakdown == null) {
-            throw new IllegalStateException("Parameterized damage formulas must provide a runtime bonus breakdown");
-        }
-        return breakdown;
+    protected BonusFormulaSpec getBoundDamageSpec() {
+        return damage.value().bindStrict(formulaParameters.value());
     }
 
     protected float getHealDamageScale() {
@@ -84,15 +81,15 @@ public class LifeSpikeAbility extends MKAbility {
     }
 
     protected Component getLifeStealDescription(IMKEntityData entityData, float skillLevel) {
-        AbilityFormula.Breakdown damageBreakdown = getDamageBreakdown();
+        BonusFormulaSpec damageSpec = getBoundDamageSpec();
         AbilityFormula baseHealFormula = AbilityFormula.multiply(
                 AbilityFormula.constant(getHealDamageScale()),
-                damageBreakdown.baseFormula()
+                damageSpec.baseFormula()
         );
         AbilityFormula bonusHealFormula = AbilityFormula.add(
                 AbilityFormula.multiply(
                         AbilityFormula.constant(getHealDamageScale()),
-                        damageBreakdown.bonusFormula()
+                        damageSpec.bonusFormula()
                 ),
                 AbilityFormula.multiply(
                         AbilityFormula.constant(getHealModifierScaling()),
@@ -116,7 +113,7 @@ public class LifeSpikeAbility extends MKAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.NECROMANCY);
         Component valueStr = getDamageDescription(entityData,
-                CoreDamageTypes.ShadowDamage.get(), damageFormula.value(), formulaParameters.value(), level);
+                CoreDamageTypes.ShadowDamage.get(), damage.value(), formulaParameters.value(), level);
         Component healStr = getLifeStealDescription(entityData, level);
         return Component.translatable(getDescriptionTranslationKey(), valueStr, healStr);
     }
@@ -152,14 +149,14 @@ public class LifeSpikeAbility extends MKAbility {
         float level = context.getSkill(MKAttributes.NECROMANCY);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
 
-            MKEffectBuilder<?> damage = VampiricDamageEffect.from(entity, CoreDamageTypes.ShadowDamage.get(),
-                            damageFormula.value(), formulaParameters.value(), getHealDamageScale(), getHealModifierScaling())
+            MKEffectBuilder<?> damageEffect = VampiricDamageEffect.from(entity, CoreDamageTypes.ShadowDamage.get(),
+                            damage.value(), formulaParameters.value(), getHealDamageScale(), getHealModifierScaling())
                     .ability(this)
                     .skillLevel(level);
 
 
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> {
-                targetData.getEffects().addEffect(damage);
+                targetData.getEffects().addEffect(damageEffect);
             });
 
             SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_shadow_6.value(), targetEntity.getSoundSource());

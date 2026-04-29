@@ -18,11 +18,18 @@ public class FormulaTextRenderer {
 
     public static MutableComponent render(AbilityFormula formula, FormulaParameters parameters,
                                           FormulaContext context, FormulaTextStyle style) {
-        AbilityFormula.Breakdown breakdown = formula.breakdown(parameters);
-        if (breakdown != null) {
-            return render(breakdown.baseFormula(), breakdown.bonusFormula(), context, style);
-        }
         return render(formula.bindParametersStrict(parameters), context, style);
+    }
+
+    public static MutableComponent render(BonusFormulaSpec formula, FormulaParameters parameters,
+                                          FormulaContext context, FormulaTextStyle style) {
+        BonusFormulaSpec bound = formula.bindStrict(parameters);
+        return render(bound.baseFormula(), bound.bonusFormula(), context, style);
+    }
+
+    public static MutableComponent render(StackingBonusFormulaSpec formula, FormulaParameters parameters,
+                                          FormulaContext context, FormulaTextStyle style) {
+        return render(formula.singleStackSpec(), parameters, context, style);
     }
 
     public static MutableComponent render(AbilityFormula baseFormula, @Nullable AbilityFormula bonusFormula,

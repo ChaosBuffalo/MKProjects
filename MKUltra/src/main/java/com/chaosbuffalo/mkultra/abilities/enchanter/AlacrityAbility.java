@@ -68,11 +68,10 @@ public class AlacrityAbility extends MKAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.ENCHANTMENT);
         FormulaContext formulaContext = baseFormulaContext(entityData, level).build();
-        int duration = getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), formulaContext)
-                / GameConstants.TICKS_PER_SECOND;
+        int duration = getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), formulaContext);
         String value = FormulaTextRenderer.format(valueFormula.value(), formulaParameters.value(), formulaContext,
                 FormulaTextStyle.PERCENT);
-        return Component.translatable(getDescriptionTranslationKey(), value, duration);
+        return Component.translatable(getDescriptionTranslationKey(), value, convertDurationToSeconds(duration));
     }
 
     @Override
@@ -102,7 +101,13 @@ public class AlacrityAbility extends MKAbility {
             float level = context.getSkill(MKAttributes.ENCHANTMENT);
             int duration = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level);
             MKEffectBuilder<?> effect = MKUEffects.ATTACK_SPEED_HASTE.get()
-                    .from(castingEntity, valueFormula.value(), formulaParameters.value())
+                    .from(castingEntity,
+                            AbilityFormula.param(VALUE_BASE_PARAMETER),
+                            AbilityFormula.multiply(
+                                    AbilityFormula.param(VALUE_PER_LEVEL_PARAMETER),
+                                    AbilityFormula.context(FormulaContextKey.SKILL_LEVEL)
+                            ),
+                            formulaParameters.value())
                     .ability(this)
                     .skillLevel(level)
                     .timed(duration);

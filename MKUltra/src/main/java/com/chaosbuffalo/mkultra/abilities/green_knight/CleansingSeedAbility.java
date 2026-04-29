@@ -10,7 +10,7 @@ import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContext;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
@@ -18,7 +18,7 @@ import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -57,8 +57,8 @@ public class CleansingSeedAbility extends ProjectileAbility {
                     .with(DAMAGE_PER_LEVEL_PARAMETER, 4.0f)
                     .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
 
 
@@ -67,22 +67,18 @@ public class CleansingSeedAbility extends ProjectileAbility {
         setCooldownSeconds(8);
         setManaCost(4);
         setCastTime(GameConstants.TICKS_PER_SECOND - 5);
-        addAttributes(formulaParameters, damageFormula);
+        addAttributes(formulaParameters, damage);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
     }
 
-    private AbilityFormula.Breakdown getDamageBreakdown() {
-        AbilityFormula.Breakdown breakdown = damageFormula.value().breakdown(formulaParameters.value());
-        if (breakdown == null) {
-            throw new IllegalStateException("Parameterized damage formulas must provide a runtime bonus breakdown");
-        }
-        return breakdown;
+    private BonusFormulaSpec getBoundDamageSpec() {
+        return damage.value().bindStrict(formulaParameters.value());
     }
 
     protected float getDamageForLevel(float level) {
-        return getDamageBreakdown().baseFormula().evaluate(FormulaContext.builder()
+        return getBoundDamageSpec().baseFormula().evaluate(FormulaContext.builder()
                 .withSkillLevel(level)
                 .build());
     }
@@ -90,7 +86,7 @@ public class CleansingSeedAbility extends ProjectileAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.NatureDamage.get(),
-                damageFormula.value(), formulaParameters.value(), context.getSkill(MKAttributes.RESTORATION));
+                damage.value(), formulaParameters.value(), context.getSkill(MKAttributes.RESTORATION));
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }
 
@@ -129,10 +125,10 @@ public class CleansingSeedAbility extends ProjectileAbility {
                     }
                     case ENEMY: {
                         float skillLevel = getSkillLevel(caster, skill);
-                        AbilityFormula.Breakdown damageBreakdown = getDamageBreakdown();
+                        BonusFormulaSpec damageSpec = getBoundDamageSpec();
                         target.hurt(MKDamageSource.causeAbilityDamage(target.level(), CoreDamageTypes.NatureDamage.get(),
                                         getAbilityId(), projectile, caster)
-                                        .setDamageBonusFormula(damageBreakdown.bonusFormula()),
+                                        .setDamageBonusFormula(damageSpec.bonusFormula()),
                                 getDamageForLevel(skillLevel));
                         SoundUtils.serverPlaySoundAtEntity(target, MKUSounds.spell_water_8.value(), cat);
                         break;

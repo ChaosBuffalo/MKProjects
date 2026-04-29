@@ -12,13 +12,14 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.utility.MKParticleEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
@@ -51,8 +52,8 @@ public class FlameWaveAbility extends MKAbility {
                     .with(DAMAGE_PER_LEVEL_PARAMETER, 3.0f)
                     .with(MODIFIER_SCALING_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, MODIFIER_SCALING_PARAMETER));
     protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 3);
     protected final IntAttribute scaleDuration = new IntAttribute("scaleDuration", 1);
@@ -66,7 +67,7 @@ public class FlameWaveAbility extends MKAbility {
         setCooldownSeconds(14);
         setManaCost(6);
         setCastTime(GameConstants.TICKS_PER_SECOND / 2);
-        addAttributes(formulaParameters, damageFormula, baseDuration, scaleDuration, damageBoost,
+        addAttributes(formulaParameters, damage, baseDuration, scaleDuration, damageBoost,
                 cast_1_particles, cast_2_particles);
         addSkillAttribute(MKAttributes.EVOCATION);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
@@ -76,7 +77,7 @@ public class FlameWaveAbility extends MKAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.EVOCATION);
         Component dmgStr = getDamageDescription(entityData, CoreDamageTypes.FireDamage.get(),
-                damageFormula.value(), formulaParameters.value(), level);
+                damage.value(), formulaParameters.value(), level);
         int dur = Math.round(baseDuration.value() + scaleDuration.value() * level);
         float mult = damageBoost.value() * 100.0f;
         return Component.translatable(getDescriptionTranslationKey(), dmgStr, mult, dur);
@@ -114,7 +115,7 @@ public class FlameWaveAbility extends MKAbility {
         super.endCast(entity, data, context);
         float level = context.getSkill(MKAttributes.EVOCATION);
 
-        MKEffectBuilder<?> flames = FlameWaveEffect.from(entity, damageFormula.value(), formulaParameters.value(),
+        MKEffectBuilder<?> flames = FlameWaveEffect.from(entity, damage.value(), formulaParameters.value(),
                         baseDuration.value(), scaleDuration.value(), damageBoost.value())
                 .ability(this)
                 .skillLevel(level);

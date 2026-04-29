@@ -12,10 +12,12 @@ import com.chaosbuffalo.mkcore.formulas.FormulaContext;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.formulas.StackingBonusFormulaSpec;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.StackingBonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.NaturesRemedyEffect;
@@ -52,8 +54,8 @@ public class NaturesRemedyAbility extends MKAbility {
                     .with(DURATION_BASE_PARAMETER, 4.0f)
                     .with(DURATION_PER_LEVEL_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute healingFormula = new FormulaAttribute("healingFormula",
-            AbilityFormula.bonusScaledLinear(HEAL_BASE_PARAMETER, HEAL_PER_LEVEL_PARAMETER,
+    protected final StackingBonusFormulaSpecAttribute healing = new StackingBonusFormulaSpecAttribute("healing",
+            StackingBonusFormulaSpec.skilledBonusScaled(HEAL_BASE_PARAMETER, HEAL_PER_LEVEL_PARAMETER,
                     FormulaContextKey.HEAL_BONUS, MODIFIER_SCALING_PARAMETER));
     protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
@@ -65,7 +67,7 @@ public class NaturesRemedyAbility extends MKAbility {
         setManaCost(4);
         setCastTime(GameConstants.TICKS_PER_SECOND / 2);
         addSkillAttribute(MKAttributes.RESTORATION);
-        addAttributes(formulaParameters, healingFormula, durationFormula, cast_particles, tick_particles);
+        addAttributes(formulaParameters, healing, durationFormula, cast_particles, tick_particles);
         setUseCondition(new HealCondition(this, .75f));
         castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
@@ -84,7 +86,7 @@ public class NaturesRemedyAbility extends MKAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.RESTORATION);
         FormulaContext formulaContext = baseFormulaContext(entityData, level).build();
-        Component damageStr = getHealDescription(entityData, healingFormula.value(), formulaParameters.value(), level);
+        Component damageStr = getHealDescription(entityData, healing.value(), formulaParameters.value(), level);
         int duration = getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), formulaContext)
                 / GameConstants.TICKS_PER_SECOND;
         return Component.translatable(getDescriptionTranslationKey(), damageStr, duration);
@@ -99,7 +101,7 @@ public class NaturesRemedyAbility extends MKAbility {
     public MKEffectBuilder<?> createNaturesRemedyEffect(IMKEntityData casterData, float level) {
         FormulaContext formulaContext = baseFormulaContext(casterData, level).build();
         int duration = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), formulaContext);
-        return NaturesRemedyEffect.from(casterData.getEntity(), healingFormula.value(),
+        return NaturesRemedyEffect.from(casterData.getEntity(), healing.value(),
                         formulaParameters.value(), tick_particles.getValue())
                 .ability(this)
                 .skillLevel(level)

@@ -15,12 +15,37 @@
       }
     },
     "casting_particles": "mkultra:drown_casting",
-    "damageFormula": {
-      "type": "mkcore:bonus_scaled_linear",
-      "base_param": "mkultra:drown.damage.base",
-      "bonus_key": "mkcore:damage_bonus",
-      "bonus_scale_param": "mkultra:drown.damage.modifier_scaling",
-      "per_level_param": "mkultra:drown.damage.per_level"
+    "damage": {
+      "baseFormula": {
+        "type": "mkcore:parameter_value",
+        "key": "mkultra:drown.damage.base"
+      },
+      "bonusFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:drown.damage.modifier_scaling"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:damage_bonus"
+          }
+        ]
+      },
+      "perStackFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:drown.damage.per_level"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:skill_level"
+          }
+        ]
+      }
     },
     "detonate_particles": "mkultra:drown_detonate",
     "durationFormula": {

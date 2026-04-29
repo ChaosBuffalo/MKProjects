@@ -9,14 +9,14 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -50,8 +50,8 @@ public class ShadowBoltAbility extends ProjectileAbility {
                     .with(DAMAGE_PER_LEVEL_PARAMETER, 4.0f)
                     .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
 
     public ShadowBoltAbility() {
@@ -59,7 +59,7 @@ public class ShadowBoltAbility extends ProjectileAbility {
         setCooldownSeconds(8);
         setManaCost(5);
         setCastTime(GameConstants.TICKS_PER_SECOND);
-        addAttributes(formulaParameters, damageFormula);
+        addAttributes(formulaParameters, damage);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
@@ -79,7 +79,7 @@ public class ShadowBoltAbility extends ProjectileAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float skillLevel = context.getSkill(skill);
-        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.ShadowDamage.get(), damageFormula.value(),
+        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.ShadowDamage.get(), damage.value(),
                 formulaParameters.value(), skillLevel);
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }
@@ -98,15 +98,15 @@ public class ShadowBoltAbility extends ProjectileAbility {
 
         if (result.getType().equals(HitResult.Type.ENTITY)) {
             EntityHitResult entityTrace = (EntityHitResult) result;
-            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(caster, CoreDamageTypes.ShadowDamage.get(),
-                            damageFormula.value(),
+            MKEffectBuilder<?> damageEffect = MKAbilityDamageEffect.from(caster, CoreDamageTypes.ShadowDamage.get(),
+                            damage.value(),
                             formulaParameters.value())
                     .ability(this)
                     .directEntity(projectile)
                     .skillLevel(getSkillLevel(caster, skill))
                     .amplify(amplifier);
             MKCore.getEntityData(entityTrace.getEntity()).ifPresent(x -> {
-                x.getEffects().addEffect(damage);
+                x.getEffects().addEffect(damageEffect);
             });
         }
         return true;

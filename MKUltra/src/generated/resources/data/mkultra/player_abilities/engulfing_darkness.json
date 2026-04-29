@@ -3,12 +3,37 @@
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:engulfing_darkness_cast",
     "casting_particles": "mkultra:shadow_bolt_casting",
-    "dotDamageFormula": {
-      "type": "mkcore:bonus_scaled_linear",
-      "base_param": "mkultra:engulfing_darkness.dot_damage.base",
-      "bonus_key": "mkcore:damage_bonus",
-      "bonus_scale_param": "mkultra:engulfing_darkness.dot_damage.modifier_scaling",
-      "per_level_param": "mkultra:engulfing_darkness.dot_damage.per_level"
+    "dotDamage": {
+      "baseFormula": {
+        "type": "mkcore:parameter_value",
+        "key": "mkultra:engulfing_darkness.dot_damage.base"
+      },
+      "bonusFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:engulfing_darkness.dot_damage.modifier_scaling"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:damage_bonus"
+          }
+        ]
+      },
+      "perStackFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkultra:engulfing_darkness.dot_damage.per_level"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:skill_level"
+          }
+        ]
+      }
     },
     "dot_cast_particles": "mkultra:engulfing_darkness_tick",
     "durationFormula": {

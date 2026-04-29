@@ -13,12 +13,12 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
 import com.chaosbuffalo.mkcore.entities.BaseEffectEntity;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.BonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
@@ -59,8 +59,8 @@ public class NecrotideGolemBeam extends StructureAbility {
                     .with(DAMAGE_PER_LEVEL_PARAMETER, 5.0f)
                     .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 1.0f)
                     .build());
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
-            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+    protected final BonusFormulaSpecAttribute damage = new BonusFormulaSpecAttribute("damage",
+            BonusFormulaSpec.skilledBonusScaled(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
     protected final FloatAttribute beamSpeed = new FloatAttribute("beam_speed", 1.85f);
     protected final FloatAttribute beamSpeedScale = new FloatAttribute("beam_speed_scale", 0.025f);
@@ -83,7 +83,7 @@ public class NecrotideGolemBeam extends StructureAbility {
         setManaCost(8);
         setCastTime(GameConstants.TICKS_PER_SECOND * 3);
         addAttributes(pulse_particles, wait_particles, poi_name, tickRate, duration, charge_time, formulaParameters,
-                damageFormula, beamSpeed, beamSpeedScale, beamDeathSelfDamage);
+                damage, beamSpeed, beamSpeedScale, beamDeathSelfDamage);
         setUseCondition(new MeleeUseCondition(this));
         addSkillAttribute(MKAttributes.NECROMANCY);
     }
@@ -113,8 +113,8 @@ public class NecrotideGolemBeam extends StructureAbility {
                     MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_dark_1.value(),
                                     castingEntity.getSoundSource())
                             .ability(this);
-                    MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
-                                    damageFormula.value(), formulaParameters.value())
+                    MKEffectBuilder<?> damageEffect = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
+                                    damage.value(), formulaParameters.value())
                             .ability(this)
                             .skillLevel(skillLevel);
                     castingEntity.level().setBlockAndUpdate(pos, Blocks.SOUL_LANTERN.defaultBlockState().setValue(HANGING, true));
@@ -127,7 +127,7 @@ public class NecrotideGolemBeam extends StructureAbility {
                                     tickRate.value(), BaseEffectEntity.ParticleDisplay.DisplayType.CONTINUOUS))
                             .duration(getCooldown(casterData))
                             .effect(sound, TargetingContexts.ENEMY)
-                            .effect(damage, TargetingContexts.ENEMY)
+                            .effect(damageEffect, TargetingContexts.ENEMY)
                             .waitTime(charge_time.value())
                             .tickRate(tickRate.value())
                             .setDeathCallback(this::onEffectDie);

@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.abilities.projectiles.BurstProjectileBehavior;
 import com.chaosbuffalo.mkcore.abilities.projectiles.ProjectileCastBehavior;
 import com.chaosbuffalo.mkcore.data.providers.MKAbilityProvider;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.BonusFormulaSpec;
 import com.chaosbuffalo.mkcore.formulas.FormulaContext;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaEvaluationContext;
@@ -12,6 +13,7 @@ import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
 import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.formulas.FormulaTextRenderer;
 import com.chaosbuffalo.mkcore.formulas.FormulaTextStyle;
+import com.chaosbuffalo.mkcore.formulas.StackingBonusFormulaSpec;
 import com.chaosbuffalo.mkcore.utils.location.CircularLocationProvider;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -119,12 +121,13 @@ public class MKAbilityFormulaGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
-    public static void bonusScaledLinearEvaluatesAndBinds(GameTestHelper helper) {
-        AbilityFormula formula = AbilityFormula.bonusScaledLinear(
-                TEST_BASE,
-                TEST_SCALE,
-                FormulaContextKey.HEAL_BONUS,
-                TEST_MODIFIER_SCALING
+    public static void composedParameterizedFormulaEvaluatesAndBinds(GameTestHelper helper) {
+        AbilityFormula formula = AbilityFormula.add(
+                AbilityFormula.skilledLinear(TEST_BASE, TEST_SCALE),
+                AbilityFormula.multiply(
+                        AbilityFormula.param(TEST_MODIFIER_SCALING),
+                        AbilityFormula.context(FormulaContextKey.HEAL_BONUS)
+                )
         );
         FormulaParameters parameters = FormulaParameters.builder()
                 .with(TEST_BASE, 5.0f)
@@ -138,18 +141,18 @@ public class MKAbilityFormulaGameTests {
         JsonElement encoded = AbilityFormula.CODEC.encodeStart(JsonOps.INSTANCE, formula).getOrThrow();
         AbilityFormula boundFormula = formula.bindParameters(parameters);
 
-        helper.assertTrue(encoded.toString().contains("\"type\":\"mkcore:bonus_scaled_linear\""),
-                "encoded formula should use the semantic bonus_scaled_linear node");
+        helper.assertTrue(encoded.toString().contains("\"type\":\"mkcore:add\""),
+                "encoded formula should use ordinary composed formula nodes");
         assertFloatEquals(helper, formula.evaluate(FormulaEvaluationContext.of(runtimeContext, parameters)),
-                13.0f, 0.0001f, "semantic formula evaluation");
+                13.0f, 0.0001f, "composed formula evaluation");
         assertFloatEquals(helper, boundFormula.evaluate(runtimeContext), 13.0f, 0.0001f,
-                "bound semantic formula evaluation");
+                "bound composed formula evaluation");
         helper.succeed();
     }
 
     @GameTest(template = "player_data_phase0")
-    public static void parameterizedFormulaTextRendererShowsBonusBreakdown(GameTestHelper helper) {
-        AbilityFormula formula = AbilityFormula.bonusScaledLinear(
+    public static void bonusFormulaSpecTextRendererShowsBonusBreakdown(GameTestHelper helper) {
+        BonusFormulaSpec formula = BonusFormulaSpec.skilledBonusScaled(
                 TEST_BASE,
                 TEST_SCALE,
                 FormulaContextKey.HEAL_BONUS,
@@ -168,6 +171,64 @@ public class MKAbilityFormulaGameTests {
         String rendered = FormulaTextRenderer.render(formula, parameters, context, FormulaTextStyle.HEAL).getString();
         helper.assertTrue(rendered.startsWith("13"), "rendered total should include the full formula value");
         helper.assertTrue(rendered.contains("(+2)"), "rendered value should include the semantic bonus breakdown");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void bonusFormulaSpecCodecRoundTripPreservesEvaluation(GameTestHelper helper) {
+        BonusFormulaSpec original = BonusFormulaSpec.skilledBonusScaled(
+                TEST_BASE,
+                TEST_SCALE,
+                FormulaContextKey.HEAL_BONUS,
+                TEST_MODIFIER_SCALING
+        );
+        FormulaParameters parameters = FormulaParameters.builder()
+                .with(TEST_BASE, 5.0f)
+                .with(TEST_SCALE, 3.0f)
+                .with(TEST_MODIFIER_SCALING, 0.5f)
+                .build();
+        FormulaContext context = FormulaContext.builder()
+                .withSkillLevel(2.0f)
+                .withHealBonus(4.0f)
+                .build();
+        JsonElement encoded = BonusFormulaSpec.CODEC.encodeStart(JsonOps.INSTANCE, original).getOrThrow();
+        BonusFormulaSpec decoded = BonusFormulaSpec.CODEC.parse(JsonOps.INSTANCE, encoded).getOrThrow();
+
+        helper.assertTrue(encoded.toString().contains("\"baseFormula\""),
+                "encoded bonus formula spec should preserve explicit base and bonus channels");
+        assertFloatEquals(helper, decoded.bindStrict(parameters).evaluate(context), 13.0f, 0.0001f,
+                "decoded bonus formula spec evaluation");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void stackingBonusFormulaSpecRendererUsesSingleStackValue(GameTestHelper helper) {
+        StackingBonusFormulaSpec formula = StackingBonusFormulaSpec.skilledBonusScaled(
+                TEST_BASE,
+                TEST_SCALE,
+                FormulaContextKey.HEAL_BONUS,
+                TEST_MODIFIER_SCALING
+        );
+        FormulaParameters parameters = FormulaParameters.builder()
+                .with(TEST_BASE, 5.0f)
+                .with(TEST_SCALE, 3.0f)
+                .with(TEST_MODIFIER_SCALING, 0.5f)
+                .build();
+        FormulaContext context = FormulaContext.builder()
+                .withSkillLevel(2.0f)
+                .withHealBonus(4.0f)
+                .withStackCount(3.0f)
+                .build();
+
+        String rendered = FormulaTextRenderer.render(formula, parameters, context, FormulaTextStyle.HEAL).getString();
+        float stackedValue = formula.bindStrict(parameters).totalFormula().evaluate(context);
+
+        helper.assertTrue(rendered.startsWith("13"),
+                "stacking spec renderer should show the single-stack authored value");
+        helper.assertTrue(rendered.contains("(+2)"),
+                "stacking spec renderer should still show the explicit bonus channel");
+        assertFloatEquals(helper, stackedValue, 25.0f, 0.0001f,
+                "stacking spec total formula should still evaluate with stack count at runtime");
         helper.succeed();
     }
 
@@ -257,11 +318,44 @@ public class MKAbilityFormulaGameTests {
                       "mkcore:test.scale": 3.0
                     },
                     "damageFormula": {
-                      "type": "mkcore:bonus_scaled_linear",
-                      "base_param": "mkcore:test.base",
-                      "per_level_param": "mkcore:test.scale",
-                      "bonus_key": "mkcore:damage_bonus",
-                      "bonus_scale_param": "mkcore:test.modifier_scaling"
+                      "type": "mkcore:add",
+                      "terms": [
+                        {
+                          "type": "mkcore:add",
+                          "terms": [
+                            {
+                              "type": "mkcore:parameter_value",
+                              "key": "mkcore:test.base"
+                            },
+                            {
+                              "type": "mkcore:multiply",
+                              "factors": [
+                                {
+                                  "type": "mkcore:parameter_value",
+                                  "key": "mkcore:test.scale"
+                                },
+                                {
+                                  "type": "mkcore:context_value",
+                                  "key": "mkcore:skill_level"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "mkcore:multiply",
+                          "factors": [
+                            {
+                              "type": "mkcore:parameter_value",
+                              "key": "mkcore:test.modifier_scaling"
+                            },
+                            {
+                              "type": "mkcore:context_value",
+                              "key": "mkcore:damage_bonus"
+                            }
+                          ]
+                        }
+                      ]
                     }
                   }
                 }
