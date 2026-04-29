@@ -32,11 +32,6 @@ public class HolyWordEffect extends OnStackEffect {
                 });
     }
 
-    public static MKEffectBuilder<State> from(LivingEntity source, float baseStunSeconds, float scalingSeconds,
-                                              float modifierScaling, int maxStacks) {
-        return from(source, baseStunSeconds, scalingSeconds, maxStacks);
-    }
-
     @Override
     public MKEffectBuilder<State> builder(UUID sourceId) {
         return new MKEffectBuilder<>(this, sourceId, this::makeState);

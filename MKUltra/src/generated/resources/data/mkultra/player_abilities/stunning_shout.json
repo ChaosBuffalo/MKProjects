@@ -1,11 +1,21 @@
 {
   "attributes": {
-    "baseDamage": 4.0,
     "baseDuration": 1,
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:stunning_shout_cast",
     "casting_particles": "mkcore:fx.casting.empty",
-    "scaleDamage": 2.0,
+    "damageFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:stunning_shout.damage.base",
+      "bonus_key": "mkcore:damage_bonus",
+      "bonus_scale_param": "mkultra:stunning_shout.damage.modifier_scaling",
+      "per_level_param": "mkultra:stunning_shout.damage.per_level"
+    },
+    "formulaParameters": {
+      "mkultra:stunning_shout.damage.base": 4.0,
+      "mkultra:stunning_shout.damage.modifier_scaling": 1.0,
+      "mkultra:stunning_shout.damage.per_level": 2.0
+    },
     "scaleDuration": 1,
     "tick_particles": "mkultra:stunning_shout_tick"
   },

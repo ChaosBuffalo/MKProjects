@@ -6,9 +6,14 @@ import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
@@ -26,13 +31,25 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class WarpCurseAbility extends MKAbility {
+    private static final FormulaParameterKey DAMAGE_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("warp_curse.damage.base"));
+    private static final FormulaParameterKey DAMAGE_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("warp_curse.damage.per_level"));
+    private static final FormulaParameterKey MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("warp_curse.damage.modifier_scaling"));
     public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("warp_curse_casting");
     public static final ResourceLocation CAST_PARTICLES = MKUltra.id("warp_curse_cast");
-    protected final FloatAttribute base = new FloatAttribute("base", 4.0f);
-    protected final FloatAttribute scale = new FloatAttribute("scale", 2.0f);
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(DAMAGE_BASE_PARAMETER, 4.0f)
+                    .with(DAMAGE_PER_LEVEL_PARAMETER, 2.0f)
+                    .with(MODIFIER_SCALING_PARAMETER, 0.25f)
+                    .build());
+    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
+            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+                    FormulaContextKey.DAMAGE_BONUS, MODIFIER_SCALING_PARAMETER));
     protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 4);
     protected final IntAttribute scaleDuration = new IntAttribute("scaleDuration", 2);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 0.25f);
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
 
     public WarpCurseAbility() {
@@ -40,7 +57,7 @@ public class WarpCurseAbility extends MKAbility {
         setCooldownSeconds(16);
         setManaCost(8);
         setCastTime(GameConstants.TICKS_PER_SECOND + 10);
-        addAttributes(base, scale, modifierScaling, baseDuration, scaleDuration, cast_particles);
+        addAttributes(formulaParameters, damageFormula, baseDuration, scaleDuration, cast_particles);
         addSkillAttribute(MKAttributes.ALTERATON);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
@@ -50,7 +67,7 @@ public class WarpCurseAbility extends MKAbility {
         float level = context.getSkill(MKAttributes.ALTERATON);
         int duration = getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value());
         Component valueStr = getDamageDescription(entityData,
-                CoreDamageTypes.ShadowDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
+                CoreDamageTypes.ShadowDamage.get(), damageFormula.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(), valueStr,
                 WarpCurseEffect.DEFAULT_PERIOD / 20,
                 duration / 20);
@@ -87,8 +104,8 @@ public class WarpCurseAbility extends MKAbility {
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
             float level = context.getSkill(MKAttributes.ALTERATON);
             int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value());
-            MKEffectBuilder<?> warpCast = WarpCurseEffect.from(castingEntity, base.value(), scale.value(),
-                            modifierScaling.value(), cast_particles.getValue())
+            MKEffectBuilder<?> warpCast = WarpCurseEffect.from(castingEntity, damageFormula.value(),
+                            formulaParameters.value(), cast_particles.getValue())
                     .ability(this)
                     .timed(duration)
                     .skillLevel(level);

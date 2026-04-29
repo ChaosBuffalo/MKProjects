@@ -1,6 +1,5 @@
 {
   "attributes": {
-    "base_damage": 4.0,
     "cast_animation_category": "mkcore:default",
     "cast_behavior": {
       "type": "mkcore:simple",
@@ -16,12 +15,22 @@
       }
     },
     "casting_particles": "mkultra:cleansing_seed_casting",
+    "damageFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:cleansing_seed.damage.base",
+      "bonus_key": "mkcore:damage_bonus",
+      "bonus_scale_param": "mkultra:cleansing_seed.damage.modifier_scaling",
+      "per_level_param": "mkultra:cleansing_seed.damage.per_level"
+    },
     "detonate_particles": "mkultra:cleansing_seed_detonate",
-    "modifier_scaling": 1.0,
+    "formulaParameters": {
+      "mkultra:cleansing_seed.damage.base": 4.0,
+      "mkultra:cleansing_seed.damage.modifier_scaling": 1.0,
+      "mkultra:cleansing_seed.damage.per_level": 4.0
+    },
     "npc_solve_ballistics": 2,
     "projectile_inaccuracy": 0.2,
     "projectile_speed": 1.25,
-    "scale_damage": 4.0,
     "trail_particles": "mkultra:cleansing_seed_trail"
   },
   "castTime": 15,

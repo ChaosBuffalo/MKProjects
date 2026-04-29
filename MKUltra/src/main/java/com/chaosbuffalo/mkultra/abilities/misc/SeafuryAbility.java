@@ -9,9 +9,15 @@ import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.entities.BaseEffectEntity;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.serialization.attributes.DoubleAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
@@ -27,6 +33,12 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public class SeafuryAbility extends PositionTargetingAbility {
+    private static final FormulaParameterKey BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("seafury.damage.base"));
+    private static final FormulaParameterKey PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("seafury.damage.per_level"));
+    private static final FormulaParameterKey MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("seafury.damage.modifier_scaling"));
     private static final ResourceLocation WAIT_PARTICLES = MKUltra.id("seafury_wait");
     private static final ResourceLocation PULSE_PARTICLES = MKUltra.id("seafury_pulse");
     public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("seafury_casting");
@@ -40,9 +52,15 @@ public class SeafuryAbility extends PositionTargetingAbility {
     protected final FloatAttribute radius = new FloatAttribute("radius", 1.0f);
     protected final IntAttribute duration = new IntAttribute("duration", GameConstants.TICKS_PER_SECOND);
     protected final IntAttribute tickRate = new IntAttribute("tickRate", GameConstants.TICKS_PER_SECOND / 2);
-    protected final FloatAttribute base = new FloatAttribute("base", 2.0f);
-    protected final FloatAttribute scale = new FloatAttribute("scale", 1.0f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(BASE_PARAMETER, 2.0f)
+                    .with(PER_LEVEL_PARAMETER, 1.0f)
+                    .with(MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .build());
+    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
+            AbilityFormula.bonusScaledLinear(BASE_PARAMETER, PER_LEVEL_PARAMETER,
+                    FormulaContextKey.DAMAGE_BONUS, MODIFIER_SCALING_PARAMETER));
 
     public SeafuryAbility() {
         super();
@@ -51,14 +69,15 @@ public class SeafuryAbility extends PositionTargetingAbility {
         setCooldownSeconds(15);
         setManaCost(6);
         addAttributes(pulse_particles, wait_particles, wait_time, step, step_delay, iterations, radius,
-                base, scale, modifierScaling);
+                formulaParameters, damageFormula);
         addSkillAttribute(MKAttributes.EVOCATION);
     }
 
     @Override
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.EVOCATION);
-        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.NatureDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
+        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.NatureDamage.get(),
+                damageFormula.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(),
                 NUMBER_FORMATTER.format(iterations.value()),
                 NUMBER_FORMATTER.format(step.value()),
@@ -85,7 +104,7 @@ public class SeafuryAbility extends PositionTargetingAbility {
             EntityEffectBuilder.PointEffectBuilder builder = EntityEffectBuilder.createPointEffect(castingEntity, pos);
 
             MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.NatureDamage.get(),
-                            base.value(), scale.value(), modifierScaling.value())
+                            damageFormula.value(), formulaParameters.value())
                     .ability(this)
                     .skillLevel(level);
 

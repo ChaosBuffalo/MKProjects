@@ -1,10 +1,19 @@
 {
   "attributes": {
-    "base": 4.0,
     "cast_animation_category": "mkcore:default",
     "casting_particles": "mkcore:fx.casting.empty",
-    "modifierScaling": 1.0,
-    "scale": 4.0
+    "formulaParameters": {
+      "mkultra:life_siphon.heal.base": 4.0,
+      "mkultra:life_siphon.heal.modifier_scaling": 1.0,
+      "mkultra:life_siphon.heal.per_level": 4.0
+    },
+    "healingFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:life_siphon.heal.base",
+      "bonus_key": "mkcore:heal_bonus",
+      "bonus_scale_param": "mkultra:life_siphon.heal.modifier_scaling",
+      "per_level_param": "mkultra:life_siphon.heal.per_level"
+    }
   },
   "castTime": 0,
   "cooldown": 20,

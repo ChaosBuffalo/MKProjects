@@ -1,13 +1,22 @@
 {
   "attributes": {
-    "base": 1.0,
     "baseDuration": 10,
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:flame_blade_cast",
     "casting_particles": "mkultra:flame_blade_casting",
+    "damageFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:flame_blade.damage.base",
+      "bonus_key": "mkcore:damage_bonus",
+      "bonus_scale_param": "mkultra:flame_blade.damage.modifier_scaling",
+      "per_level_param": "mkultra:flame_blade.damage.per_level"
+    },
     "edge_particles": "mkultra:flame_blade_particles",
-    "modifierScaling": 1.0,
-    "scale": 1.0,
+    "formulaParameters": {
+      "mkultra:flame_blade.damage.base": 1.0,
+      "mkultra:flame_blade.damage.modifier_scaling": 1.0,
+      "mkultra:flame_blade.damage.per_level": 1.0
+    },
     "scaleDuration": 5
   },
   "castTime": 20,

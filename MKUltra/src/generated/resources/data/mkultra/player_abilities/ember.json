@@ -1,16 +1,32 @@
 {
   "attributes": {
-    "base": 8.0,
-    "baseBurnDamage": 2.0,
     "baseDuration": 6,
+    "burnDamageFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:ember.burn.base",
+      "bonus_key": "mkcore:damage_bonus",
+      "bonus_scale_param": "mkultra:ember.burn.modifier_scaling",
+      "per_level_param": "mkultra:ember.burn.per_level"
+    },
     "burn_cast_particles": "mkultra:burn_tick",
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:ember_cast",
     "casting_particles": "mkultra:ember_casting",
-    "dotModifierScaling": 0.2,
-    "modifierScaling": 1.0,
-    "scale": 3.0,
-    "scaleBurnDamage": 1.0,
+    "damageFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:ember.damage.base",
+      "bonus_key": "mkcore:damage_bonus",
+      "bonus_scale_param": "mkultra:ember.damage.modifier_scaling",
+      "per_level_param": "mkultra:ember.damage.per_level"
+    },
+    "formulaParameters": {
+      "mkultra:ember.burn.base": 2.0,
+      "mkultra:ember.burn.modifier_scaling": 0.2,
+      "mkultra:ember.burn.per_level": 1.0,
+      "mkultra:ember.damage.base": 8.0,
+      "mkultra:ember.damage.modifier_scaling": 1.0,
+      "mkultra:ember.damage.per_level": 3.0
+    },
     "scaleDuration": 1
   },
   "castTime": 10,

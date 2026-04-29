@@ -13,7 +13,13 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
 import com.chaosbuffalo.mkcore.entities.BaseEffectEntity;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
@@ -32,6 +38,12 @@ import net.minecraft.world.phys.Vec3;
 import static net.minecraft.world.level.block.LanternBlock.HANGING;
 
 public class NecrotideGolemBeam extends StructureAbility {
+    private static final FormulaParameterKey DAMAGE_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("necrotide_golem_beam.damage.base"));
+    private static final FormulaParameterKey DAMAGE_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("necrotide_golem_beam.damage.per_level"));
+    private static final FormulaParameterKey DAMAGE_MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("necrotide_golem_beam.damage.modifier_scaling"));
 
     private static final ResourceLocation PULSE_PARTICLES = MKUltra.id("necrotide_golem_beam");
     private static final ResourceLocation WAIT_PARTICLES = MKUltra.id("necrotide_golem_beam_wait");
@@ -41,9 +53,15 @@ public class NecrotideGolemBeam extends StructureAbility {
     protected final StringAttribute poi_name = new StringAttribute("poi_name", "golem_lantern");
     protected final IntAttribute tickRate = new IntAttribute("tick_rate", GameConstants.TICKS_PER_SECOND / 2);
     protected final IntAttribute duration = new IntAttribute("duration", GameConstants.TICKS_PER_SECOND * 2);
-    protected final FloatAttribute base = new FloatAttribute("base", 8.0f);
-    protected final FloatAttribute scale = new FloatAttribute("scale", 5.0f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifier_scaling", 1.0f);
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(DAMAGE_BASE_PARAMETER, 8.0f)
+                    .with(DAMAGE_PER_LEVEL_PARAMETER, 5.0f)
+                    .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .build());
+    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
+            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+                    FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
     protected final FloatAttribute beamSpeed = new FloatAttribute("beam_speed", 1.85f);
     protected final FloatAttribute beamSpeedScale = new FloatAttribute("beam_speed_scale", 0.025f);
     protected final FloatAttribute beamDeathSelfDamage = new FloatAttribute("beam_death_damage", 25.0f);
@@ -64,8 +82,8 @@ public class NecrotideGolemBeam extends StructureAbility {
         setCooldownSeconds(45);
         setManaCost(8);
         setCastTime(GameConstants.TICKS_PER_SECOND * 3);
-        addAttributes(pulse_particles, wait_particles, poi_name, tickRate, duration, charge_time, base, scale,
-                modifierScaling);
+        addAttributes(pulse_particles, wait_particles, poi_name, tickRate, duration, charge_time, formulaParameters,
+                damageFormula, beamSpeed, beamSpeedScale, beamDeathSelfDamage);
         setUseCondition(new MeleeUseCondition(this));
         addSkillAttribute(MKAttributes.NECROMANCY);
     }
@@ -96,7 +114,7 @@ public class NecrotideGolemBeam extends StructureAbility {
                                     castingEntity.getSoundSource())
                             .ability(this);
                     MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
-                                    base.value(), scale.value(), modifierScaling.value())
+                                    damageFormula.value(), formulaParameters.value())
                             .ability(this)
                             .skillLevel(skillLevel);
                     castingEntity.level().setBlockAndUpdate(pos, Blocks.SOUL_LANTERN.defaultBlockState().setValue(HANGING, true));

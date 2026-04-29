@@ -9,6 +9,8 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -28,12 +30,12 @@ public class FuriousBroodingEffect extends MKEffect {
         addAttribute(Attributes.MOVEMENT_SPEED, modUUID, -0.60, 0.05, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, MKAttributes.PNEUMA);
     }
 
-    public static MKEffectBuilder<?> from(LivingEntity source, float baseHealing, float scaling, float modifierScaling,
-                                          ResourceLocation castParticles) {
+    public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula healingFormula,
+                                          FormulaParameters parameters, ResourceLocation castParticles) {
         return MKUEffects.FURIOUS_BROODING.get().builder(source)
                 .state(s -> {
                     s.setEffectParticles(castParticles);
-                    s.setHealingParameters(baseHealing, scaling, modifierScaling);
+                    s.setParameterizedHealingFormula(healingFormula, parameters);
                 })
                 .periodic(DEFAULT_PERIOD);
     }

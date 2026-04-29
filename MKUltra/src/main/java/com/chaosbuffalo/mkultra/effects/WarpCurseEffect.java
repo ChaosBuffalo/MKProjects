@@ -7,6 +7,8 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
@@ -22,10 +24,11 @@ import java.util.UUID;
 public class WarpCurseEffect extends MKEffect {
     public static final int DEFAULT_PERIOD = 40;
 
-    public static MKEffectBuilder<?> from(LivingEntity source, float base, float scaling, float modifier, ResourceLocation castParticles) {
+    public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula damageFormula,
+                                          FormulaParameters parameters, ResourceLocation castParticles) {
         return MKUEffects.WARP_CURSE.get().builder(source).state(s -> {
                     s.setEffectParticles(castParticles);
-                    s.setDamageParameters(base, scaling, modifier);
+                    s.setParameterizedDamageFormula(damageFormula, parameters);
                 })
                 .periodic(DEFAULT_PERIOD);
     }

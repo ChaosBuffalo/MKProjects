@@ -24,21 +24,6 @@ public class NaturesRemedyEffect extends MKEffect {
         super(MobEffectCategory.BENEFICIAL);
     }
 
-    public static MKEffectBuilder<?> from(LivingEntity source, float base, float scale, float modScale,
-                                          ResourceLocation castParticles) {
-        return from(source, AbilityFormula.linear(base, scale), modScale, castParticles);
-    }
-
-    public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula healingFormula, float modScale,
-                                          ResourceLocation castParticles) {
-        return MKUEffects.NATURES_REMEDY.get().builder(source)
-                .state(s -> {
-                    s.setEffectParticles(castParticles);
-                    s.setHealingFormula(healingFormula, modScale);
-                })
-                .periodic(DEFAULT_PERIOD);
-    }
-
     public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula healingFormula,
                                           FormulaParameters parameters, ResourceLocation castParticles) {
         return MKUEffects.NATURES_REMEDY.get().builder(source)

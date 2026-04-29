@@ -1,7 +1,5 @@
 package com.chaosbuffalo.mkcore.core.combat;
 
-import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -33,10 +31,5 @@ public final class AbilityMeleeAttackHelper {
             hands.add(InteractionHand.MAIN_HAND);
         }
         return hands;
-    }
-
-    public static float computeBonusDamage(IMKEntityData sourceData, float base, float scale, float skillLevel, float modifierScale) {
-        float rawBonus = sourceData.getStats().getDamageTypeBonus(CoreDamageTypes.MeleeDamage.get());
-        return base + scale * skillLevel + rawBonus * modifierScale;
     }
 }

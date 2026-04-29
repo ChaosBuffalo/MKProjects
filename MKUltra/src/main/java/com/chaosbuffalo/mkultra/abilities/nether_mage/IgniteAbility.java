@@ -11,9 +11,15 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.effects.utility.MKParticleEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -30,12 +36,24 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class IgniteAbility extends MKAbility {
+    private static final FormulaParameterKey DAMAGE_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("ignite.damage.base"));
+    private static final FormulaParameterKey DAMAGE_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("ignite.damage.per_level"));
+    private static final FormulaParameterKey MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("ignite.damage.modifier_scaling"));
     public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("ignite_casting");
     public static final ResourceLocation CAST_1_PARTICLES = MKUltra.id("ignite_cast_1");
     public static final ResourceLocation CAST_2_PARTICLES = MKUltra.id("ignite_cast_2");
-    protected final FloatAttribute base = new FloatAttribute("base", 8.0f);
-    protected final FloatAttribute scale = new FloatAttribute("scale", 1.0f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(DAMAGE_BASE_PARAMETER, 8.0f)
+                    .with(DAMAGE_PER_LEVEL_PARAMETER, 1.0f)
+                    .with(MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .build());
+    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
+            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+                    FormulaContextKey.DAMAGE_BONUS, MODIFIER_SCALING_PARAMETER));
     protected final FloatAttribute igniteDistance = new FloatAttribute("igniteDistance", 5.0f);
     protected final ResourceLocationAttribute cast_1_particles = new ResourceLocationAttribute("cast_1_particles", CAST_1_PARTICLES);
     protected final ResourceLocationAttribute cast_2_particles = new ResourceLocationAttribute("cast_2_particles", CAST_2_PARTICLES);
@@ -45,7 +63,7 @@ public class IgniteAbility extends MKAbility {
         setCooldownSeconds(12);
         setManaCost(6);
         setCastTime(GameConstants.TICKS_PER_SECOND / 4);
-        addAttributes(base, scale, modifierScaling, cast_1_particles, cast_2_particles);
+        addAttributes(formulaParameters, damageFormula, cast_1_particles, cast_2_particles);
         addSkillAttribute(MKAttributes.EVOCATION);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
@@ -59,7 +77,7 @@ public class IgniteAbility extends MKAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.EVOCATION);
         Component valueStr = getDamageDescription(entityData,
-                CoreDamageTypes.FireDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
+                CoreDamageTypes.FireDamage.get(), damageFormula.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(), valueStr, igniteDistance.value());
     }
 
@@ -94,9 +112,7 @@ public class IgniteAbility extends MKAbility {
         float level = context.getSkill(MKAttributes.EVOCATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
             MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.FireDamage.get(),
-                            base.value(),
-                            scale.value(),
-                            modifierScaling.value())
+                            damageFormula.value(), formulaParameters.value())
                     .ability(this)
                     .skillLevel(level);
 
@@ -106,7 +122,7 @@ public class IgniteAbility extends MKAbility {
                 SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_fire_4.value(), targetEntity.getSoundSource());
 
                 if (MKUAbilityUtils.isBurning(targetData)) {
-                    MKEffectBuilder<?> ignite = IgniteEffect.from(entity, base.value(), scale.value(), modifierScaling.value())
+                    MKEffectBuilder<?> ignite = IgniteEffect.from(entity, damageFormula.value(), formulaParameters.value())
                             .ability(this)
                             .skillLevel(level);
                     MKEffectBuilder<?> particle = MKParticleEffect.from(entity, cast_2_particles.getValue(),

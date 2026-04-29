@@ -1,6 +1,5 @@
 {
   "attributes": {
-    "base_damage": 6.0,
     "cast_animation_category": "mkcore:default",
     "cast_behavior": {
       "type": "mkcore:burst",
@@ -21,13 +20,23 @@
       }
     },
     "casting_particles": "mkultra:fireball_casting",
+    "damageFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:fireball.damage.base",
+      "bonus_key": "mkcore:damage_bonus",
+      "bonus_scale_param": "mkultra:fireball.damage.modifier_scaling",
+      "per_level_param": "mkultra:fireball.damage.per_level"
+    },
     "detonate_particles": "mkultra:fireball_detonate",
     "explosionRadius": 2.0,
-    "modifier_scaling": 1.0,
+    "formulaParameters": {
+      "mkultra:fireball.damage.base": 6.0,
+      "mkultra:fireball.damage.modifier_scaling": 1.0,
+      "mkultra:fireball.damage.per_level": 2.0
+    },
     "npc_solve_ballistics": 1,
     "projectile_inaccuracy": 0.2,
     "projectile_speed": 1.25,
-    "scale_damage": 2.0,
     "trail_particles": "mkultra:fireball_trail"
   },
   "castTime": 80,

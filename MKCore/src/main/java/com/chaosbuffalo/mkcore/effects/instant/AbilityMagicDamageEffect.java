@@ -19,10 +19,6 @@ public class AbilityMagicDamageEffect extends MKEffect {
         super(MobEffectCategory.HARMFUL);
     }
 
-    public static MKEffectBuilder<State> from(LivingEntity source, float baseDamage, float scaling, float modifierScaling) {
-        return from(source, baseDamage, scaling);
-    }
-
     public static MKEffectBuilder<State> from(LivingEntity source, float baseDamage, float scaling) {
         return CoreEffects.ABILITY_MAGIC_DAMAGE.value().builder(source)
                 .state(s -> s.setScalingParameters(baseDamage, scaling));

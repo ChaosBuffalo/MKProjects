@@ -1,10 +1,20 @@
 {
   "attributes": {
-    "base": 3.0,
     "cast_animation_category": "mkcore:default",
     "casting_particles": "mkultra:healing_circle_casting",
     "duration": 80,
-    "modifierScaling": 1.0,
+    "formulaParameters": {
+      "mkultra:healing_circle.heal.base": 3.0,
+      "mkultra:healing_circle.heal.modifier_scaling": 1.0,
+      "mkultra:healing_circle.heal.per_level": 1.0
+    },
+    "healingFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:healing_circle.heal.base",
+      "bonus_key": "mkcore:heal_bonus",
+      "bonus_scale_param": "mkultra:healing_circle.heal.modifier_scaling",
+      "per_level_param": "mkultra:healing_circle.heal.per_level"
+    },
     "offset": {
       "x": 0.0,
       "y": 0.5,
@@ -12,7 +22,6 @@
     },
     "pulse_particles": "mkultra:healing_circle_detonate",
     "radius": 1.6,
-    "scale": 1.0,
     "tick_rate": 10,
     "wait_particles": "mkultra:healing_circle_wait",
     "wait_tick_rate": 5,

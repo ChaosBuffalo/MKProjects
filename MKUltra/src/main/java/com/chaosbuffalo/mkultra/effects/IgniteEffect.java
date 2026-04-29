@@ -7,6 +7,8 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
@@ -17,9 +19,10 @@ import java.util.UUID;
 
 public class IgniteEffect extends MKEffect {
 
-    public static MKEffectBuilder<?> from(LivingEntity source, float baseDamage, float scaling, float modifierScaling) {
+    public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula damageFormula,
+                                          FormulaParameters parameters) {
         return MKUEffects.IGNITE.get().builder(source)
-                .state(s -> s.setDamageParameters(baseDamage, scaling, modifierScaling));
+                .state(s -> s.setParameterizedDamageFormula(damageFormula, parameters));
     }
 
     public IgniteEffect() {

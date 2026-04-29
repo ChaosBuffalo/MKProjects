@@ -1,13 +1,22 @@
 {
   "attributes": {
     "baseDuration": 6,
-    "baseValue": 2.0,
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:furious_brooding_pulse",
     "casting_particles": "mkcore:fx.casting.empty",
-    "modifierScaling": 1.0,
-    "scaleDuration": 5,
-    "scaleValue": 1.0
+    "formulaParameters": {
+      "mkultra:furious_brooding.heal.base": 2.0,
+      "mkultra:furious_brooding.heal.modifier_scaling": 1.0,
+      "mkultra:furious_brooding.heal.per_level": 1.0
+    },
+    "healingFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:furious_brooding.heal.base",
+      "bonus_key": "mkcore:heal_bonus",
+      "bonus_scale_param": "mkultra:furious_brooding.heal.modifier_scaling",
+      "per_level_param": "mkultra:furious_brooding.heal.per_level"
+    },
+    "scaleDuration": 5
   },
   "castTime": 0,
   "cooldown": 360,

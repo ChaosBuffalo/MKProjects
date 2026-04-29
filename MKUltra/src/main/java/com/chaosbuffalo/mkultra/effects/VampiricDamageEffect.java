@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkultra.effects;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
@@ -9,6 +10,9 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContext;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.damagesource.DamageSource;
@@ -38,11 +42,11 @@ public class VampiricDamageEffect extends MKEffect {
         return new MKEffectBuilder<>(this, sourceEntity, this::makeState);
     }
 
-    public static MKEffectBuilder<State> from(LivingEntity source, MKDamageType damageType, float baseDamage,
-                                              float scaling, float modifierScaling, float healthScaling, float healModScaling) {
+    public static MKEffectBuilder<State> from(LivingEntity source, MKDamageType damageType, AbilityFormula damageFormula,
+                                              FormulaParameters parameters, float healthScaling, float healModScaling) {
         return MKUEffects.VAMPIRIC_DAMAGE.get().builder(source).state((s) -> {
             s.setDamageType(damageType);
-            s.setDamageParameters(baseDamage, scaling, modifierScaling);
+            s.setParameterizedDamageFormula(damageFormula, parameters);
             s.setHealthScaling(healthScaling);
             s.setHealModScaling(healModScaling);
         });
@@ -101,10 +105,15 @@ public class VampiricDamageEffect extends MKEffect {
             targetData.getEntity().hurt(damage, value);
             LivingEntity source = activeEffect.getSourceEntity();
             if (source != null) {
-                MKHealSource healSource = MKHealSource.getShadowHeal(activeEffect.getAbilityId(),
-                        activeEffect.getDirectEntity(), activeEffect.getSourceEntity())
+                float totalDamageForHealing = value + MKCore.getEntityData(source).map(sourceData ->
+                        getDamageBonusFormula().evaluate(FormulaContext.builder()
+                                .withDamageBonus(sourceData.getStats().getDamageTypeBonus(damageType))
+                                .build())).orElse(0.0f);
+                MKHealSource healSource = new MKHealSource(activeEffect.getAbilityId(),
+                        activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), damageType, 1.0f)
+                        .setDamageUndead(false)
                         .setHealBonusFormula(MKHealSource.createLegacyHealBonusFormula(getHealModScaling()));
-                MKHealing.healEntityFrom(source, value * getHealthScaling(), healSource);
+                MKHealing.healEntityFrom(source, totalDamageForHealing * getHealthScaling(), healSource);
             }
             return true;
         }

@@ -1,13 +1,23 @@
 {
   "attributes": {
-    "base": 1.0,
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:whirlwind_blades_pulse",
     "casting_particles": "mkcore:fx.casting.empty",
-    "modifierScaling": 0.15,
+    "damageFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:whirlwind_blades.damage.base",
+      "bonus_key": "mkcore:damage_bonus",
+      "bonus_scale_param": "mkultra:whirlwind_blades.damage.modifier_scaling",
+      "per_level_param": "mkultra:whirlwind_blades.damage.per_level"
+    },
+    "formulaParameters": {
+      "mkultra:whirlwind_blades.damage.base": 1.0,
+      "mkultra:whirlwind_blades.damage.modifier_scaling": 0.15,
+      "mkultra:whirlwind_blades.damage.per_level": 0.5
+    },
     "offHandScaleModifier": 0.6,
     "perTick": 0.15,
-    "scale": 0.5
+    "tickRate": 10
   },
   "castTime": 60,
   "cooldown": 400,

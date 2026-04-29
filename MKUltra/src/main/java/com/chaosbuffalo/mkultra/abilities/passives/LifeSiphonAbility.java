@@ -6,7 +6,14 @@ import com.chaosbuffalo.mkcore.abilities.MKPassiveAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
-import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContext;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
+import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
@@ -15,29 +22,47 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import java.util.function.Function;
 
 public class LifeSiphonAbility extends MKPassiveAbility {
-    protected final FloatAttribute base = new FloatAttribute("base", 4.0f);
-    protected final FloatAttribute scale = new FloatAttribute("scale", 4.0f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
+    private static final FormulaParameterKey HEAL_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("life_siphon.heal.base"));
+    private static final FormulaParameterKey HEAL_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("life_siphon.heal.per_level"));
+    private static final FormulaParameterKey HEAL_MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("life_siphon.heal.modifier_scaling"));
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(HEAL_BASE_PARAMETER, 4.0f)
+                    .with(HEAL_PER_LEVEL_PARAMETER, 4.0f)
+                    .with(HEAL_MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .build());
+    protected final FormulaAttribute healingFormula = new FormulaAttribute("healingFormula",
+            AbilityFormula.bonusScaledLinear(HEAL_BASE_PARAMETER, HEAL_PER_LEVEL_PARAMETER,
+                    FormulaContextKey.HEAL_BONUS, HEAL_MODIFIER_SCALING_PARAMETER));
 
     public LifeSiphonAbility() {
         super();
         addSkillAttribute(MKAttributes.NECROMANCY);
-        addAttributes(base, scale, modifierScaling);
+        addAttributes(formulaParameters, healingFormula);
     }
 
-    public float getHealingValue(LivingEntity entity) {
+    public AbilityFormula.Breakdown getHealingBreakdown() {
+        AbilityFormula.Breakdown breakdown = healingFormula.value().breakdown(formulaParameters.value());
+        if (breakdown == null) {
+            throw new IllegalStateException("Parameterized healing formulas must provide a runtime bonus breakdown");
+        }
+        return breakdown;
+    }
+
+    public float getBaseHealingValue(LivingEntity entity) {
         float necromancyLevel = MKAbility.getSkillLevel(entity, MKAttributes.NECROMANCY);
-        return base.value() + scale.value() * necromancyLevel;
-    }
-
-    public float getModifierScaling() {
-        return modifierScaling.value();
+        return getHealingBreakdown().baseFormula().evaluate(FormulaContext.builder()
+                .withSkillLevel(necromancyLevel)
+                .build());
     }
 
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.NECROMANCY);
-        Component valueStr = getHealDescription(entityData, base.value(), scale.value(), level, modifierScaling.value());
+        Component valueStr = getHealDescription(entityData, healingFormula.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(), valueStr);
     }
 

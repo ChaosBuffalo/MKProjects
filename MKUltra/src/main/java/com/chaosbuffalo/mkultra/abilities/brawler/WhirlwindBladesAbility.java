@@ -17,8 +17,14 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.AbilityMeleeDamageEffect;
 import com.chaosbuffalo.mkcore.effects.utility.MKParticleEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -37,18 +43,30 @@ import java.util.List;
 
 
 public class WhirlwindBladesAbility extends MKAbility {
+    private static final FormulaParameterKey DAMAGE_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("whirlwind_blades.damage.base"));
+    private static final FormulaParameterKey DAMAGE_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("whirlwind_blades.damage.per_level"));
+    private static final FormulaParameterKey DAMAGE_MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("whirlwind_blades.damage.modifier_scaling"));
     public static final ResourceLocation CAST_PARTICLES = MKUltra.id("whirlwind_blades_pulse");
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 0.15f);
-    protected final FloatAttribute base = new FloatAttribute("base", 1.0f);
-    protected final FloatAttribute scale = new FloatAttribute("scale", 0.5f);
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(DAMAGE_BASE_PARAMETER, 1.0f)
+                    .with(DAMAGE_PER_LEVEL_PARAMETER, 0.5f)
+                    .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 0.15f)
+                    .build());
+    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
+            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+                    FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
     protected final FloatAttribute perTick = new FloatAttribute("perTick", 0.15f);
     protected final FloatAttribute offHandScaleModifier = new FloatAttribute("offHandScaleModifier", 0.6f);
     protected final IntAttribute tickRate = new IntAttribute("tickRate", 10);
 
     public WhirlwindBladesAbility() {
         super();
-        addAttributes(cast_particles, base, scale, modifierScaling, perTick, offHandScaleModifier);
+        addAttributes(cast_particles, formulaParameters, damageFormula, perTick, offHandScaleModifier, tickRate);
         setCastTime(GameConstants.TICKS_PER_SECOND * 3);
         setCooldownSeconds(20);
         setManaCost(6);
@@ -80,7 +98,7 @@ public class WhirlwindBladesAbility extends MKAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.PANKRATION);
         Component bonusDamage = getDamageDescription(entityData,
-                CoreDamageTypes.MeleeDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
+                CoreDamageTypes.MeleeDamage.get(), damageFormula.value(), formulaParameters.value(), level);
         float periodSeconds = ((float)tickRate.value()) / GameConstants.TICKS_PER_SECOND;
         int castSeconds = getCastTime(entityData) / GameConstants.TICKS_PER_SECOND;
         int numberOfCasts = Math.round(castSeconds / periodSeconds);
@@ -138,7 +156,7 @@ public class WhirlwindBladesAbility extends MKAbility {
                 float handSwingDamageScale = hand == InteractionHand.OFF_HAND ?
                         swingDamageScale * offHandScaleModifier.value() : swingDamageScale;
                 MKEffectBuilder<?> damage = AbilityMeleeDamageEffect.from(castingEntity, hand, handSwingDamageScale,
-                                base.value(), scale.value(), modifierScaling.value())
+                                damageFormula.value(), formulaParameters.value())
                         .ability(this)
                         .skillLevel(level);
                 builder.effect(damage, getTargetContext());

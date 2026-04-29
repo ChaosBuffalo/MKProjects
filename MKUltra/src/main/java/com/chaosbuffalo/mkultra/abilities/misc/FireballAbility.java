@@ -9,8 +9,14 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.abilities.ProjectileAbility;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -31,17 +37,32 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class FireballAbility extends ProjectileAbility {
+    private static final FormulaParameterKey DAMAGE_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("fireball.damage.base"));
+    private static final FormulaParameterKey DAMAGE_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("fireball.damage.per_level"));
+    private static final FormulaParameterKey DAMAGE_MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("fireball.damage.modifier_scaling"));
     public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("fireball_casting");
     protected final FloatAttribute radius = new FloatAttribute("explosionRadius", 2.0f);
     public static final ResourceLocation DETONATE_PARTICLES = MKUltra.id("fireball_detonate");
     public static final ResourceLocation TRAIL_PARTICLES = MKUltra.id("fireball_trail");
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(DAMAGE_BASE_PARAMETER, 6.0f)
+                    .with(DAMAGE_PER_LEVEL_PARAMETER, 2.0f)
+                    .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .build());
+    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
+            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+                    FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
 
     public FireballAbility() {
-        super(MKAttributes.EVOCATION);
+        super(MKAttributes.EVOCATION, false);
         setCooldownSeconds(4);
         setManaCost(5);
         setCastTime(GameConstants.TICKS_PER_SECOND);
-        addAttributes(radius);
+        addAttributes(radius, formulaParameters, damageFormula);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
@@ -54,9 +75,8 @@ public class FireballAbility extends ProjectileAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float skillLevel = context.getSkill(MKAttributes.EVOCATION);
-        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.FireDamage.get(), baseDamage.value(),
-                scaleDamage.value(), skillLevel,
-                getModifierScaling());
+        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.FireDamage.get(), damageFormula.value(),
+                formulaParameters.value(), skillLevel);
         return Component.translatable(getDescriptionTranslationKey(), damageStr, getExplosionRadius(),
                 (skillLevel + 1) * .1f * 100.0f, skillLevel + 1);
     }
@@ -67,9 +87,8 @@ public class FireballAbility extends ProjectileAbility {
         SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_fire_4.value(), cat);
         MKParticles.spawnOffset(projectile, new Vec3(0.0, 0.0, 0.0), detonateParticles.getValue());
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(caster, CoreDamageTypes.FireDamage.get(),
-                        getBaseDamage(),
-                        getScaleDamage(),
-                        getModifierScaling())
+                        damageFormula.value(),
+                        formulaParameters.value())
                 .ability(this)
                 .directEntity(projectile)
                 .skillLevel(getSkillLevel(caster, skill))

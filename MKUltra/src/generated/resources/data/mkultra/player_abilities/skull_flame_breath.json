@@ -1,14 +1,23 @@
 {
   "attributes": {
     "angle": 36.0,
-    "base": 1.5,
     "breath_particles": "mkultra:fire_breath_cone",
     "burnSeconds": 2,
     "cast_animation_category": "mkcore:default",
     "casting_particles": "mkcore:fx.casting.empty",
-    "modifierScaling": 0.35,
+    "damageFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:skull_flame_breath.damage.base",
+      "bonus_key": "mkcore:damage_bonus",
+      "bonus_scale_param": "mkultra:skull_flame_breath.damage.modifier_scaling",
+      "per_level_param": "mkultra:skull_flame_breath.damage.per_level"
+    },
+    "formulaParameters": {
+      "mkultra:skull_flame_breath.damage.base": 1.5,
+      "mkultra:skull_flame_breath.damage.modifier_scaling": 0.35,
+      "mkultra:skull_flame_breath.damage.per_level": 0.75
+    },
     "range": 5.0,
-    "scale": 0.75,
     "tickRate": 4
   },
   "castTime": 120,

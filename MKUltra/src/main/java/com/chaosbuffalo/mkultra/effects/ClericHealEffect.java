@@ -22,14 +22,6 @@ public class ClericHealEffect extends MKEffect {
         super(MobEffectCategory.BENEFICIAL);
     }
 
-    public static MKEffectBuilder<?> from(LivingEntity source, float base, float scale, float modScale) {
-        return from(source, AbilityFormula.linear(base, scale), modScale);
-    }
-
-    public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula healingFormula, float modScale) {
-        return MKUEffects.CLERIC_HEAL.get().builder(source).state(s -> s.setHealingFormula(healingFormula, modScale));
-    }
-
     public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula healingFormula,
                                           FormulaParameters parameters) {
         return MKUEffects.CLERIC_HEAL.get().builder(source)

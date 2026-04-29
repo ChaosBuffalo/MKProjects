@@ -14,9 +14,15 @@ import com.chaosbuffalo.mkcore.core.combat.AbilityMeleeAttackExecutor;
 import com.chaosbuffalo.mkcore.core.combat.AbilityMeleeAttackHelper;
 import com.chaosbuffalo.mkcore.core.combat.MeleeAttackVisualHelper;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContext;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.serialization.attributes.EnumAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.RayTraceUtils;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
@@ -42,12 +48,24 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class ExplosiveGrowthAbility extends MKAbility {
+    private static final FormulaParameterKey DAMAGE_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("explosive_growth.damage.base"));
+    private static final FormulaParameterKey DAMAGE_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("explosive_growth.damage.per_level"));
+    private static final FormulaParameterKey DAMAGE_MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("explosive_growth.damage.modifier_scaling"));
     public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("explosive_growth_casting");
     public static final ResourceLocation CAST_PARTICLES = MKUltra.id("explosive_growth_cast");
     public static final ResourceLocation DETONATE_PARTICLES = MKUltra.id("explosive_growth_detonate");
-    protected final FloatAttribute baseDamage = new FloatAttribute("baseDamage", 4.0f);
-    protected final FloatAttribute scaleDamage = new FloatAttribute("scaleDamage", 1.0f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 0.1f);
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(DAMAGE_BASE_PARAMETER, 4.0f)
+                    .with(DAMAGE_PER_LEVEL_PARAMETER, 1.0f)
+                    .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 0.1f)
+                    .build());
+    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
+            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+                    FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
     protected final ResourceLocationAttribute detonate_particles = new ResourceLocationAttribute("detonate_particles", DETONATE_PARTICLES);
     protected final EnumAttribute<InteractionHand> attackHand = new EnumAttribute<>("attackHand", InteractionHand.MAIN_HAND, InteractionHand.class);
@@ -57,10 +75,18 @@ public class ExplosiveGrowthAbility extends MKAbility {
         setCooldownSeconds(35);
         setManaCost(6);
         setCastTime(GameConstants.TICKS_PER_SECOND / 4);
-        addAttributes(baseDamage, scaleDamage, cast_particles, detonate_particles, attackHand);
+        addAttributes(formulaParameters, damageFormula, cast_particles, detonate_particles, attackHand);
         addSkillAttribute(MKAttributes.RESTORATION);
         addSkillAttribute(MKAttributes.PANKRATION);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
+    }
+
+    protected float getDamageValue(IMKEntityData casterData, float skillLevel) {
+        FormulaContext context = FormulaContext.builder()
+                .withSkillLevel(skillLevel)
+                .withDamageBonus(casterData.getStats().getDamageTypeBonus(CoreDamageTypes.MeleeDamage.get()))
+                .build();
+        return damageFormula.value().bindParametersStrict(formulaParameters.value()).evaluate(context);
     }
 
     @Override
@@ -80,10 +106,8 @@ public class ExplosiveGrowthAbility extends MKAbility {
 
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
-        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.MeleeDamage.get(), baseDamage.value(),
-                scaleDamage.value(),
-                context.getSkill(MKAttributes.PANKRATION),
-                modifierScaling.value());
+        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.MeleeDamage.get(), damageFormula.value(),
+                formulaParameters.value(), context.getSkill(MKAttributes.PANKRATION));
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }
 
@@ -109,8 +133,7 @@ public class ExplosiveGrowthAbility extends MKAbility {
         float restoLevel = context.getSkill(MKAttributes.RESTORATION);
         float pankrationLevel = context.getSkill(MKAttributes.PANKRATION);
         InteractionHand hand = AbilityMeleeAttackHelper.resolveHand(castingEntity, attackHand.getValue());
-        float damage = AbilityMeleeAttackHelper.computeBonusDamage(casterData, baseDamage.value(), scaleDamage.value(),
-                pankrationLevel, modifierScaling.value());
+        float damage = getDamageValue(casterData, pankrationLevel);
 
         SoundSource cat = castingEntity instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
 

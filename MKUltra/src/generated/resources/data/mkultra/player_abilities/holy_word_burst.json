@@ -2,7 +2,6 @@
   "attributes": {
     "baseDuration": 30,
     "baseStunDuration": 3,
-    "base_damage": 5.0,
     "cast_animation_category": "mkcore:default",
     "cast_behavior": {
       "type": "mkcore:burst",
@@ -23,16 +22,25 @@
       }
     },
     "casting_particles": "mkultra:holy_word_casting",
+    "damageFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:holy_word.damage.base",
+      "bonus_key": "mkcore:damage_bonus",
+      "bonus_scale_param": "mkultra:holy_word.damage.modifier_scaling",
+      "per_level_param": "mkultra:holy_word.damage.per_level"
+    },
     "detonate_particles": "mkultra:holy_word_detonate",
-    "modifier_scaling": 1.0,
+    "formulaParameters": {
+      "mkultra:holy_word.damage.base": 5.0,
+      "mkultra:holy_word.damage.modifier_scaling": 1.0,
+      "mkultra:holy_word.damage.per_level": 3.0
+    },
     "npc_solve_ballistics": 1,
     "projectile_inaccuracy": 0.0,
     "projectile_speed": 0.8,
     "scaleDuration": 10,
     "scaleStunDuration": 1,
-    "scale_damage": 3.0,
     "stacks": 5,
-    "stunModifier": 1.0,
     "trail_particles": "mkultra:holy_word_trail"
   },
   "castTime": 80,

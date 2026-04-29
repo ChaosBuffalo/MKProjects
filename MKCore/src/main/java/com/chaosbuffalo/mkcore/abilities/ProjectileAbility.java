@@ -52,11 +52,20 @@ public abstract class ProjectileAbility extends MKAbility {
     protected final Holder<Attribute> skill;
 
     public ProjectileAbility(Holder<Attribute> skillAttribute) {
+        this(skillAttribute, true);
+    }
+
+    protected ProjectileAbility(Holder<Attribute> skillAttribute, boolean includeLegacyDamageAttributes) {
         super();
         addSkillAttribute(skillAttribute);
         skill = skillAttribute;
-        addAttributes(baseDamage, scaleDamage, projectileSpeed, projectileInaccuracy, modifierScaling, trailParticles,
-                detonateParticles, solveBallisticsForNpc, castBehavior);
+        if (includeLegacyDamageAttributes) {
+            addAttributes(baseDamage, scaleDamage, projectileSpeed, projectileInaccuracy, modifierScaling, trailParticles,
+                    detonateParticles, solveBallisticsForNpc, castBehavior);
+        } else {
+            addAttributes(projectileSpeed, projectileInaccuracy, trailParticles,
+                    detonateParticles, solveBallisticsForNpc, castBehavior);
+        }
     }
 
     public float getBaseDamage() {

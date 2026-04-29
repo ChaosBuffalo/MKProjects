@@ -6,6 +6,8 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.nbt.CompoundTag;
@@ -17,11 +19,11 @@ import java.util.UUID;
 
 public class SkullFlameBreathEffect extends MKEffect {
 
-    public static MKEffectBuilder<?> from(LivingEntity source, float baseDamage, float scaling, float modifierScaling,
-                                          int fireSeconds) {
+    public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula damageFormula,
+                                          FormulaParameters parameters, int fireSeconds) {
         return MKUEffects.SKULL_FLAME_BREATH.get().builder(source).state(s -> {
             s.fireSeconds = fireSeconds;
-            s.setDamageParameters(baseDamage, scaling, modifierScaling);
+            s.setParameterizedDamageFormula(damageFormula, parameters);
         });
     }
 

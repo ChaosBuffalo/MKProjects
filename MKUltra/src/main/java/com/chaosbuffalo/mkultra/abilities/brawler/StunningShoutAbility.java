@@ -14,8 +14,13 @@ import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.effects.status.StunEffect;
 import com.chaosbuffalo.mkcore.effects.utility.MKParticleEffect;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.TargetUtil;
@@ -35,11 +40,23 @@ import java.util.List;
 import java.util.function.Function;
 
 public class StunningShoutAbility extends MKAbility {
+    private static final FormulaParameterKey DAMAGE_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("stunning_shout.damage.base"));
+    private static final FormulaParameterKey DAMAGE_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("stunning_shout.damage.per_level"));
+    private static final FormulaParameterKey DAMAGE_MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("stunning_shout.damage.modifier_scaling"));
     public static final ResourceLocation TICK_PARTICLES = MKUltra.id("stunning_shout_tick");
     public static final ResourceLocation CAST_PARTICLES = MKUltra.id("stunning_shout_cast");
-    protected final FloatAttribute baseDamage = new FloatAttribute("baseDamage", 4.0f);
-    protected final FloatAttribute scaleDamage = new FloatAttribute("scaleDamage", 2.0f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(DAMAGE_BASE_PARAMETER, 4.0f)
+                    .with(DAMAGE_PER_LEVEL_PARAMETER, 2.0f)
+                    .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .build());
+    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
+            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+                    FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
     protected final ResourceLocationAttribute tick_particles = new ResourceLocationAttribute("tick_particles", TICK_PARTICLES);
     protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 1);
@@ -49,7 +66,7 @@ public class StunningShoutAbility extends MKAbility {
         super();
         setCooldownSeconds(12);
         setManaCost(4);
-        addAttributes(baseDamage, scaleDamage, baseDuration, scaleDuration, cast_particles, tick_particles);
+        addAttributes(formulaParameters, damageFormula, baseDuration, scaleDuration, cast_particles, tick_particles);
         addSkillAttribute(MKAttributes.PNEUMA);
     }
 
@@ -71,8 +88,8 @@ public class StunningShoutAbility extends MKAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.PNEUMA);
-        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.BleedDamage.get(), baseDamage.value(),
-                scaleDamage.value(), level, modifierScaling.value());
+        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.BleedDamage.get(),
+                damageFormula.value(), formulaParameters.value(), level);
         int dur = getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
         return Component.translatable(getDescriptionTranslationKey(), INTEGER_FORMATTER.format(dur), damageStr);
     }
@@ -95,7 +112,7 @@ public class StunningShoutAbility extends MKAbility {
 
 
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.BleedDamage.get(),
-                        baseDamage.value(), scaleDamage.value(), modifierScaling.value())
+                        damageFormula.value(), formulaParameters.value())
                 .skillLevel(level)
                 .ability(this);
         MKEffectBuilder<?> stun = StunEffect.from(castingEntity).ability(this).skillLevel(level).timed(
@@ -122,4 +139,3 @@ public class StunningShoutAbility extends MKAbility {
         });
     }
 }
-

@@ -1,13 +1,22 @@
 {
   "attributes": {
-    "base": 8.0,
     "cast_animation_category": "mkultra:cast_slam",
     "casting_particles": "mkultra:flame_wave_casting",
+    "damageFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:searing_furrow.damage.base",
+      "bonus_key": "mkcore:damage_bonus",
+      "bonus_scale_param": "mkultra:searing_furrow.damage.modifier_scaling",
+      "per_level_param": "mkultra:searing_furrow.damage.per_level"
+    },
+    "formulaParameters": {
+      "mkultra:searing_furrow.damage.base": 8.0,
+      "mkultra:searing_furrow.damage.modifier_scaling": 1.0,
+      "mkultra:searing_furrow.damage.per_level": 4.2
+    },
     "lineLength": 8,
     "line_particles": "mkultra:searing_furrow_particles",
     "lingerDuration": 600,
-    "modifierScaling": 1.0,
-    "scale": 4.2,
     "tickRate": 10
   },
   "castTime": 160,

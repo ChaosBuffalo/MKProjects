@@ -1,13 +1,22 @@
 {
   "attributes": {
-    "base": 10.0,
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:lifespike_cast",
     "casting_particles": "mkultra:lifespike_casting",
-    "healModScaling": 0.5,
-    "healScaling": 1.0,
-    "modifierScaling": 1.0,
-    "scale": 2.0
+    "damageFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:life_spike.damage.base",
+      "bonus_key": "mkcore:damage_bonus",
+      "bonus_scale_param": "mkultra:life_spike.damage.modifier_scaling",
+      "per_level_param": "mkultra:life_spike.damage.per_level"
+    },
+    "formulaParameters": {
+      "mkultra:life_spike.damage.base": 10.0,
+      "mkultra:life_spike.damage.modifier_scaling": 1.0,
+      "mkultra:life_spike.damage.per_level": 2.0,
+      "mkultra:life_spike.heal.damage_scale": 1.0,
+      "mkultra:life_spike.heal.modifier_scaling": 0.5
+    }
   },
   "castTime": 40,
   "cooldown": 600,

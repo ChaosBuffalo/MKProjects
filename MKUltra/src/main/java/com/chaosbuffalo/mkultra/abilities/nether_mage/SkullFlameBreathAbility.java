@@ -14,7 +14,13 @@ import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.entities.BaseEffectEntity;
 import com.chaosbuffalo.mkcore.entities.ConeAreaEffectEntity;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -36,10 +42,22 @@ import java.util.Optional;
 
 public class SkullFlameBreathAbility extends MKAbility {
     private static final ResourceLocation FLAME_PARTICLES = MKUltra.id("fire_breath_cone");
+    private static final FormulaParameterKey DAMAGE_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("skull_flame_breath.damage.base"));
+    private static final FormulaParameterKey DAMAGE_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("skull_flame_breath.damage.per_level"));
+    private static final FormulaParameterKey MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("skull_flame_breath.damage.modifier_scaling"));
 
-    protected final FloatAttribute base = new FloatAttribute("base", 1.5f);
-    protected final FloatAttribute scale = new FloatAttribute("scale", 0.75f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 0.35f);
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(DAMAGE_BASE_PARAMETER, 1.5f)
+                    .with(DAMAGE_PER_LEVEL_PARAMETER, 0.75f)
+                    .with(MODIFIER_SCALING_PARAMETER, 0.35f)
+                    .build());
+    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
+            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+                    FormulaContextKey.DAMAGE_BONUS, MODIFIER_SCALING_PARAMETER));
     protected final FloatAttribute range = new FloatAttribute("range", 5.0f);
     protected final FloatAttribute angle = new FloatAttribute("angle", 36.0f);
     protected final IntAttribute tickRate = new IntAttribute("tickRate", 4);
@@ -51,7 +69,7 @@ public class SkullFlameBreathAbility extends MKAbility {
         setCooldownSeconds(10);
         setManaCost(5);
         setCastTime(GameConstants.TICKS_PER_SECOND * 6);
-        addAttributes(base, scale, modifierScaling, range, angle, tickRate, burnSeconds, breath_particles);
+        addAttributes(formulaParameters, damageFormula, range, angle, tickRate, burnSeconds, breath_particles);
         addSkillAttribute(MKAttributes.EVOCATION);
         setUseCondition(new MeleeUseCondition(this));
     }
@@ -60,7 +78,7 @@ public class SkullFlameBreathAbility extends MKAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.EVOCATION);
         Component damageStr = getDamageDescription(entityData, com.chaosbuffalo.mkcore.init.CoreDamageTypes.FireDamage.get(),
-                base.value(), scale.value(), level, modifierScaling.value());
+                damageFormula.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(),
                 NUMBER_FORMATTER.format(convertDurationToSeconds(getBaseCastTime())),
                 damageStr,
@@ -101,8 +119,8 @@ public class SkullFlameBreathAbility extends MKAbility {
         LivingEntity castingEntity = casterData.getEntity();
 
         float level = context.getSkill(MKAttributes.EVOCATION);
-        MKEffectBuilder<?> damage = SkullFlameBreathEffect.from(castingEntity, base.value(), scale.value(),
-                        modifierScaling.value(), burnSeconds.value())
+        MKEffectBuilder<?> damage = SkullFlameBreathEffect.from(castingEntity, damageFormula.value(),
+                        formulaParameters.value(), burnSeconds.value())
                 .ability(this)
                 .skillLevel(level);
 

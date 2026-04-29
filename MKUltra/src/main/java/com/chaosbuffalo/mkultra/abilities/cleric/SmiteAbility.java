@@ -8,9 +8,14 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.effects.status.StunEffect;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -24,11 +29,23 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class SmiteAbility extends MKAbility {
+    private static final FormulaParameterKey BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("smite.damage.base"));
+    private static final FormulaParameterKey PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("smite.damage.per_level"));
+    private static final FormulaParameterKey MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("smite.damage.modifier_scaling"));
     protected final ResourceLocation CASTING_PARTICLES = MKUltra.id("smite_casting");
     protected final ResourceLocation CAST_PARTICLES = MKUltra.id("smite_cast");
-    protected final FloatAttribute base = new FloatAttribute("base", 5.0f);
-    protected final FloatAttribute scale = new FloatAttribute("scale", 5.0f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(BASE_PARAMETER, 5.0f)
+                    .with(PER_LEVEL_PARAMETER, 5.0f)
+                    .with(MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .build());
+    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
+            AbilityFormula.bonusScaledLinear(BASE_PARAMETER, PER_LEVEL_PARAMETER,
+                    FormulaContextKey.DAMAGE_BONUS, MODIFIER_SCALING_PARAMETER));
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
 
     public SmiteAbility() {
@@ -36,7 +53,7 @@ public class SmiteAbility extends MKAbility {
         setCooldownSeconds(6);
         setManaCost(5);
         setCastTime(GameConstants.TICKS_PER_SECOND);
-        addAttributes(base, scale, modifierScaling, cast_particles);
+        addAttributes(formulaParameters, damageFormula, cast_particles);
         addSkillAttribute(MKAttributes.EVOCATION);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
@@ -45,7 +62,7 @@ public class SmiteAbility extends MKAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.EVOCATION);
         Component valueStr = getDamageDescription(entityData,
-                CoreDamageTypes.HolyDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
+                CoreDamageTypes.HolyDamage.get(), damageFormula.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(), valueStr,
                 getBuffDuration(entityData, level, 0, 1) / 20);
     }
@@ -82,7 +99,7 @@ public class SmiteAbility extends MKAbility {
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
 
             MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.HolyDamage.get(),
-                            base.value(), scale.value(), modifierScaling.value())
+                            damageFormula.value(), formulaParameters.value())
                     .ability(this)
                     .skillLevel(level);
 

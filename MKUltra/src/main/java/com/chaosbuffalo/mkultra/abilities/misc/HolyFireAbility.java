@@ -9,8 +9,13 @@ import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUSounds;
@@ -25,19 +30,31 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class HolyFireAbility extends WindUpPulseAbility {
+    private static final FormulaParameterKey BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("holy_fire.damage.base"));
+    private static final FormulaParameterKey PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("holy_fire.damage.per_level"));
+    private static final FormulaParameterKey MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("holy_fire.damage.modifier_scaling"));
     private static final ResourceLocation PULSE_PARTICLES = MKUltra.id("holy_fire_detonate");
     private static final ResourceLocation WAIT_PARTICLES = MKUltra.id("holy_fire_wait");
     private static final ResourceLocation CASTING_PARTICLES = MKUltra.id("holy_fire_casting");
-    protected final FloatAttribute base = new FloatAttribute("base", 4.0f);
-    protected final FloatAttribute scale = new FloatAttribute("scale", 1.0f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(BASE_PARAMETER, 4.0f)
+                    .with(PER_LEVEL_PARAMETER, 1.0f)
+                    .with(MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .build());
+    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
+            AbilityFormula.bonusScaledLinear(BASE_PARAMETER, PER_LEVEL_PARAMETER,
+                    FormulaContextKey.DAMAGE_BONUS, MODIFIER_SCALING_PARAMETER));
 
     public HolyFireAbility() {
         super();
         waitParticles.setDefaultValue(WAIT_PARTICLES);
         pulseParticles.setDefaultValue(PULSE_PARTICLES);
         duration.setDefaultValue(GameConstants.TICKS_PER_SECOND * 3);
-        addAttributes(base, scale, modifierScaling);
+        addAttributes(formulaParameters, damageFormula);
         addSkillAttribute(MKAttributes.EVOCATION);
         waitTime.setDefaultValue(GameConstants.TICKS_PER_SECOND * 2);
         waitTickRate.setDefaultValue(GameConstants.TICKS_PER_SECOND / 4);
@@ -58,7 +75,8 @@ public class HolyFireAbility extends WindUpPulseAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.EVOCATION);
-        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
+        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage.get(),
+                damageFormula.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(),
                 NUMBER_FORMATTER.format(radius.value()),
                 NUMBER_FORMATTER.format(convertDurationToSeconds(waitTime.value())),
@@ -72,7 +90,7 @@ public class HolyFireAbility extends WindUpPulseAbility {
         float level = context.getSkill(MKAttributes.EVOCATION);
         LivingEntity castingEntity = casterData.getEntity();
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.FireDamage.get(),
-                        base.value(), scale.value(), modifierScaling.value())
+                        damageFormula.value(), formulaParameters.value())
                 .ability(this)
                 .skillLevel(level);
         MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_fire_8.value(), castingEntity.getSoundSource())

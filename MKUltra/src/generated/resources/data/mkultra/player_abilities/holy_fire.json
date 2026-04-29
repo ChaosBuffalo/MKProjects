@@ -1,10 +1,20 @@
 {
   "attributes": {
-    "base": 4.0,
     "cast_animation_category": "mkcore:default",
     "casting_particles": "mkultra:holy_fire_casting",
+    "damageFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:holy_fire.damage.base",
+      "bonus_key": "mkcore:damage_bonus",
+      "bonus_scale_param": "mkultra:holy_fire.damage.modifier_scaling",
+      "per_level_param": "mkultra:holy_fire.damage.per_level"
+    },
     "duration": 60,
-    "modifierScaling": 1.0,
+    "formulaParameters": {
+      "mkultra:holy_fire.damage.base": 4.0,
+      "mkultra:holy_fire.damage.modifier_scaling": 1.0,
+      "mkultra:holy_fire.damage.per_level": 1.0
+    },
     "offset": {
       "x": 0.0,
       "y": 0.5,
@@ -12,7 +22,6 @@
     },
     "pulse_particles": "mkultra:holy_fire_detonate",
     "radius": 1.6,
-    "scale": 1.0,
     "tick_rate": 6,
     "wait_particles": "mkultra:holy_fire_wait",
     "wait_tick_rate": 5,

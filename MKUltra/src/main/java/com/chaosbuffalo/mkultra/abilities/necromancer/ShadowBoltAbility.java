@@ -9,9 +9,15 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.*;
@@ -29,17 +35,31 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class ShadowBoltAbility extends ProjectileAbility {
+    private static final FormulaParameterKey DAMAGE_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("shadow_bolt.damage.base"));
+    private static final FormulaParameterKey DAMAGE_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("shadow_bolt.damage.per_level"));
+    private static final FormulaParameterKey DAMAGE_MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("shadow_bolt.damage.modifier_scaling"));
     public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("shadow_bolt_casting");
     public static final ResourceLocation TRAIL_PARTICLES = MKUltra.id("shadow_bolt_trail");
     public static final ResourceLocation DETONATE_PARTICLES = MKUltra.id("shadow_bolt_detonate");
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(DAMAGE_BASE_PARAMETER, 8.0f)
+                    .with(DAMAGE_PER_LEVEL_PARAMETER, 4.0f)
+                    .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .build());
+    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
+            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+                    FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
 
     public ShadowBoltAbility() {
-        super(MKAttributes.EVOCATION);
+        super(MKAttributes.EVOCATION, false);
         setCooldownSeconds(8);
         setManaCost(5);
         setCastTime(GameConstants.TICKS_PER_SECOND);
-        baseDamage.setDefaultValue(8.0f);
-        scaleDamage.setDefaultValue(4.0f);
+        addAttributes(formulaParameters, damageFormula);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
@@ -59,9 +79,8 @@ public class ShadowBoltAbility extends ProjectileAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float skillLevel = context.getSkill(skill);
-        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.ShadowDamage.get(), baseDamage.value(),
-                scaleDamage.value(), skillLevel,
-                modifierScaling.value());
+        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.ShadowDamage.get(), damageFormula.value(),
+                formulaParameters.value(), skillLevel);
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }
 
@@ -80,9 +99,8 @@ public class ShadowBoltAbility extends ProjectileAbility {
         if (result.getType().equals(HitResult.Type.ENTITY)) {
             EntityHitResult entityTrace = (EntityHitResult) result;
             MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(caster, CoreDamageTypes.ShadowDamage.get(),
-                            getBaseDamage(),
-                            getScaleDamage(),
-                            getModifierScaling())
+                            damageFormula.value(),
+                            formulaParameters.value())
                     .ability(this)
                     .directEntity(projectile)
                     .skillLevel(getSkillLevel(caster, skill))

@@ -9,9 +9,15 @@ import com.chaosbuffalo.mkcore.effects.AreaEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUItems;
@@ -30,18 +36,31 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class SpiritBombAbility extends ProjectileAbility {
+    private static final FormulaParameterKey DAMAGE_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("spirit_bomb.damage.base"));
+    private static final FormulaParameterKey DAMAGE_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("spirit_bomb.damage.per_level"));
+    private static final FormulaParameterKey DAMAGE_MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("spirit_bomb.damage.modifier_scaling"));
     public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("spirit_bomb_casting");
     public static final ResourceLocation TRAIL_PARTICLES = MKUltra.id("spirit_bomb_trail");
     public static final ResourceLocation DETONATE_PARTICLES = MKUltra.id("spirit_bomb_detonate");
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(DAMAGE_BASE_PARAMETER, 4.0f)
+                    .with(DAMAGE_PER_LEVEL_PARAMETER, 4.0f)
+                    .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 1.25f)
+                    .build());
+    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
+            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+                    FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
 
     public SpiritBombAbility() {
-        super(MKAttributes.EVOCATION);
+        super(MKAttributes.EVOCATION, false);
         setCooldownSeconds(10);
         setCastTime(GameConstants.TICKS_PER_SECOND + (GameConstants.TICKS_PER_SECOND / 4));
         setManaCost(4);
-        baseDamage.setDefaultValue(4.0f);
-        scaleDamage.setDefaultValue(4.0f);
-        modifierScaling.setDefaultValue(1.25f);
+        addAttributes(formulaParameters, damageFormula);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
@@ -61,18 +80,16 @@ public class SpiritBombAbility extends ProjectileAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.NatureDamage.get(),
-                baseDamage.value(),
-                scaleDamage.value(),
-                context.getSkill(MKAttributes.EVOCATION),
-                modifierScaling.value());
+                damageFormula.value(),
+                formulaParameters.value(),
+                context.getSkill(MKAttributes.EVOCATION));
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }
 
     private boolean doEffect(AbilityProjectileEntity projectile, LivingEntity caster, int amplifier) {
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(caster, CoreDamageTypes.NatureDamage.get(),
-                        getBaseDamage(),
-                        getScaleDamage(),
-                        getModifierScaling())
+                        damageFormula.value(),
+                        formulaParameters.value())
                 .ability(this)
                 .directEntity(projectile)
                 .skillLevel(getSkillLevel(caster, skill))

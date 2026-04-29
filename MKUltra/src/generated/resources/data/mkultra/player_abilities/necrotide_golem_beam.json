@@ -1,14 +1,26 @@
 {
   "attributes": {
-    "base": 8.0,
+    "beam_death_damage": 25.0,
+    "beam_speed": 1.85,
+    "beam_speed_scale": 0.025,
     "cast_animation_category": "mkcore:default",
     "casting_particles": "mkcore:fx.casting.empty",
     "charge_time": 40,
+    "damageFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:necrotide_golem_beam.damage.base",
+      "bonus_key": "mkcore:damage_bonus",
+      "bonus_scale_param": "mkultra:necrotide_golem_beam.damage.modifier_scaling",
+      "per_level_param": "mkultra:necrotide_golem_beam.damage.per_level"
+    },
     "duration": 40,
-    "modifier_scaling": 1.0,
+    "formulaParameters": {
+      "mkultra:necrotide_golem_beam.damage.base": 8.0,
+      "mkultra:necrotide_golem_beam.damage.modifier_scaling": 1.0,
+      "mkultra:necrotide_golem_beam.damage.per_level": 5.0
+    },
     "poi_name": "golem_lantern",
     "pulse_particles": "mkultra:necrotide_golem_beam",
-    "scale": 5.0,
     "tick_rate": 10,
     "wait_particles": "mkultra:necrotide_golem_beam_wait"
   },

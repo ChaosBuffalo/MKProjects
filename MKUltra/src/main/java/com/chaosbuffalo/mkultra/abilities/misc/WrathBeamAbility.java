@@ -10,8 +10,14 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
 import com.chaosbuffalo.mkcore.entities.BaseEffectEntity;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
@@ -29,13 +35,25 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class WrathBeamAbility extends PositionTargetingAbility {
+    private static final FormulaParameterKey DAMAGE_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("wrath_beam.damage.base"));
+    private static final FormulaParameterKey DAMAGE_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("wrath_beam.damage.per_level"));
+    private static final FormulaParameterKey DAMAGE_MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("wrath_beam.damage.modifier_scaling"));
     private static final ResourceLocation PULSE_PARTICLES = MKUltra.id("wrath_beam_pulse");
     public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("flame_wave_casting");
     private static final ResourceLocation WAIT_PARTICLES = MKUltra.id("wrath_beam_wait");
 
-    protected final FloatAttribute base = new FloatAttribute("base", 5.0f);
-    protected final FloatAttribute scale = new FloatAttribute("scale", 5.0f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(DAMAGE_BASE_PARAMETER, 5.0f)
+                    .with(DAMAGE_PER_LEVEL_PARAMETER, 5.0f)
+                    .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .build());
+    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
+            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+                    FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
     protected final ResourceLocationAttribute pulse_particles = new ResourceLocationAttribute("pulse_particles", PULSE_PARTICLES);
     protected final ResourceLocationAttribute wait_particles = new ResourceLocationAttribute("wait_particles", WAIT_PARTICLES);
     protected final IntAttribute tickRate = new IntAttribute("tickRate", GameConstants.TICKS_PER_SECOND / 2);
@@ -49,13 +67,14 @@ public class WrathBeamAbility extends PositionTargetingAbility {
         setManaCost(6);
         addSkillAttribute(MKAttributes.EVOCATION);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
-        addAttributes(base, scale, modifierScaling, tickRate, pulse_particles, wait_particles, duration, breakDuration);
+        addAttributes(formulaParameters, damageFormula, tickRate, pulse_particles, wait_particles, duration, breakDuration);
     }
 
     @Override
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.EVOCATION);
-        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
+        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage.get(),
+                damageFormula.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(), damageStr,
                 NUMBER_FORMATTER.format(convertDurationToSeconds(breakDuration.value())),
                 NUMBER_FORMATTER.format(convertDurationToSeconds(tickRate.value())),
@@ -83,7 +102,7 @@ public class WrathBeamAbility extends PositionTargetingAbility {
         LivingEntity castingEntity = casterData.getEntity();
         float level = context.getSkill(MKAttributes.EVOCATION);
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.FireDamage.get(),
-                        base.value(), scale.value(), modifierScaling.value())
+                        damageFormula.value(), formulaParameters.value())
                 .ability(this)
                 .skillLevel(level);
         MKEffectBuilder<?> fireBreak = MKUEffects.BREAK_FIRE.get().builder(castingEntity)

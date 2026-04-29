@@ -10,9 +10,14 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
-import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -33,26 +38,38 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public class HolyWordAbility extends ProjectileAbility {
+    private static final FormulaParameterKey DAMAGE_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("holy_word.damage.base"));
+    private static final FormulaParameterKey DAMAGE_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("holy_word.damage.per_level"));
+    private static final FormulaParameterKey DAMAGE_MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("holy_word.damage.modifier_scaling"));
 
     public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("holy_word_casting");
     public static final ResourceLocation TRAIL_PARTICLES = MKUltra.id("holy_word_trail");
     public static final ResourceLocation DETONATE_PARTICLES = MKUltra.id("holy_word_detonate");
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(DAMAGE_BASE_PARAMETER, 5.0f)
+                    .with(DAMAGE_PER_LEVEL_PARAMETER, 3.0f)
+                    .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .build());
+    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
+            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+                    FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
     protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 30);
     protected final IntAttribute scaleDuration = new IntAttribute("scaleDuration", 10);
     protected final IntAttribute baseStunDuration = new IntAttribute("baseStunDuration", 3);
     protected final IntAttribute scaleStunDuration = new IntAttribute("scaleStunDuration", 1);
-    protected final FloatAttribute stunModiferScaling = new FloatAttribute("stunModifier", 1.0f);
     protected final IntAttribute stacks = new IntAttribute("stacks", 5);
 
     public HolyWordAbility() {
-        super(MKAttributes.EVOCATION);
+        super(MKAttributes.EVOCATION, false);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
-        addAttributes(baseDuration, scaleDuration, baseStunDuration, scaleStunDuration, stunModiferScaling, stacks);
+        addAttributes(formulaParameters, damageFormula, baseDuration, scaleDuration, baseStunDuration, scaleStunDuration, stacks);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
         projectileSpeed.setDefaultValue(0.8f);
-        baseDamage.setDefaultValue(5.0f);
-        scaleDamage.setDefaultValue(3.0f);
         setCastTime(GameConstants.TICKS_PER_SECOND + GameConstants.TICKS_PER_SECOND / 4);
         setCooldownTicks(GameConstants.TICKS_PER_SECOND * 5);
         projectileInaccuracy.setDefaultValue(0.0f);
@@ -69,9 +86,8 @@ public class HolyWordAbility extends ProjectileAbility {
             MKCore.getEntityData(caster).ifPresent(casterData -> {
                 float skillLevel = getSkillLevel(caster, skill);
                 MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(caster, CoreDamageTypes.HolyDamage.get(),
-                                getBaseDamage(),
-                                getScaleDamage(),
-                                getModifierScaling())
+                                damageFormula.value(),
+                                formulaParameters.value())
                         .ability(this)
                         .directEntity(projectile)
                         .skillLevel(skillLevel)
@@ -113,7 +129,7 @@ public class HolyWordAbility extends ProjectileAbility {
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(skill);
         Component dmg = getDamageDescription(entityData,
-                CoreDamageTypes.HolyDamage.get(), baseDamage.value(), scaleDamage.value(), level, modifierScaling.value());
+                CoreDamageTypes.HolyDamage.get(), damageFormula.value(), formulaParameters.value(), level);
         float duration = convertDurationToSeconds(getBuffDuration(entityData, level,
                 baseDuration.value(), scaleDuration.value()));
         return Component.translatable(getDescriptionTranslationKey(),

@@ -8,7 +8,9 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
 import com.chaosbuffalo.mkcore.formulas.FormulaContext;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import net.minecraft.nbt.CompoundTag;
@@ -39,12 +41,29 @@ public class AbilityMeleeDamageEffect extends MKEffect {
         });
     }
 
+    public static MKEffectBuilder<State> from(LivingEntity source, InteractionHand hand, AbilityFormula damageFormula,
+                                              FormulaParameters parameters) {
+        return CoreEffects.ABILITY_MELEE_DAMAGE.get().builder(source).state(s -> {
+            s.setHand(hand);
+            s.setParameterizedDamageFormula(damageFormula, parameters);
+        });
+    }
+
     public static MKEffectBuilder<State> from(LivingEntity source, InteractionHand hand, float swingDamageScale,
                                               float baseDamage, float scaling, float modifierScaling) {
         return CoreEffects.ABILITY_MELEE_DAMAGE.get().builder(source).state(s -> {
             s.setHand(hand);
             s.setSwingDamageScale(swingDamageScale);
             s.setDamageParameters(baseDamage, scaling, modifierScaling);
+        });
+    }
+
+    public static MKEffectBuilder<State> from(LivingEntity source, InteractionHand hand, float swingDamageScale,
+                                              AbilityFormula damageFormula, FormulaParameters parameters) {
+        return CoreEffects.ABILITY_MELEE_DAMAGE.get().builder(source).state(s -> {
+            s.setHand(hand);
+            s.setSwingDamageScale(swingDamageScale);
+            s.setParameterizedDamageFormula(damageFormula, parameters);
         });
     }
 

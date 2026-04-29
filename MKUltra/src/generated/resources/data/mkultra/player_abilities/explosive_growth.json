@@ -1,12 +1,22 @@
 {
   "attributes": {
     "attackHand": "main_hand",
-    "baseDamage": 4.0,
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:explosive_growth_cast",
     "casting_particles": "mkultra:explosive_growth_casting",
+    "damageFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:explosive_growth.damage.base",
+      "bonus_key": "mkcore:damage_bonus",
+      "bonus_scale_param": "mkultra:explosive_growth.damage.modifier_scaling",
+      "per_level_param": "mkultra:explosive_growth.damage.per_level"
+    },
     "detonate_particles": "mkultra:explosive_growth_detonate",
-    "scaleDamage": 1.0
+    "formulaParameters": {
+      "mkultra:explosive_growth.damage.base": 4.0,
+      "mkultra:explosive_growth.damage.modifier_scaling": 0.1,
+      "mkultra:explosive_growth.damage.per_level": 1.0
+    }
   },
   "castTime": 5,
   "cooldown": 700,
