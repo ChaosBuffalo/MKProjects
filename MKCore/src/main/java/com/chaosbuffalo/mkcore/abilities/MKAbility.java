@@ -479,6 +479,17 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return getBuffDuration(casterData, AbilityFormula.linear(base, scale), baseFormulaContext(casterData, level).build());
     }
 
+    protected int getFormulaDuration(IMKEntityData casterData, AbilityFormula durationFormula,
+                                     FormulaParameters parameters, float level) {
+        FormulaContext context = baseFormulaContext(casterData, level).build();
+        return getFormulaDuration(casterData, durationFormula, parameters, context);
+    }
+
+    protected int getFormulaDuration(IMKEntityData casterData, AbilityFormula durationFormula,
+                                     FormulaParameters parameters, FormulaContext context) {
+        return Math.round(durationFormula.bindParametersStrict(parameters).evaluate(context) * GameConstants.TICKS_PER_SECOND);
+    }
+
     public void onAbilityGroupAdded(IMKEntityData targetData, MKAbilityInfo abilityInfo) {
 
     }

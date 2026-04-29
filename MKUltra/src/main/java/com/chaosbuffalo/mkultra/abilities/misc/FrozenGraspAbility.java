@@ -12,6 +12,12 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.OnHitEffect;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -30,8 +36,16 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Consumer;
 
 public class FrozenGraspAbility extends MKAbility {
-    protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 10);
-    protected final IntAttribute scaleDuration = new IntAttribute("scaleDuration", 2);
+    private static final FormulaParameterKey DURATION_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("frozen_grasp.duration.base"));
+    private static final FormulaParameterKey DURATION_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("frozen_grasp.duration.per_level"));
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(DURATION_BASE_PARAMETER, 10.0f)
+                    .with(DURATION_PER_LEVEL_PARAMETER, 2.0f)
+                    .build());
+    protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final IntAttribute maxStacks = new IntAttribute("maxStacks", 2);
     protected final IntAttribute selfDuration = new IntAttribute("selfDuration", 20);
     public static final ResourceLocation CAST_PARTICLES = MKUltra.id("frozen_grasp_cast");
@@ -46,7 +60,7 @@ public class FrozenGraspAbility extends MKAbility {
         addSkillAttribute(MKAttributes.NECROMANCY);
         setCastTime(GameConstants.TICKS_PER_SECOND);
         castingParticles.setDefaultValue(CAST_PARTICLES);
-        addAttributes(baseDuration, scaleDuration, selfDuration, hitParticles);
+        addAttributes(formulaParameters, durationFormula, selfDuration, hitParticles);
         setUseCondition(new NeedsBuffCondition(this, MKUEffects.FROZEN_GRASP_APPLIER).setCombatOnly(true));
     }
 
@@ -77,8 +91,8 @@ public class FrozenGraspAbility extends MKAbility {
     private final Vec3 YP = new Vec3(0.0, 1.0, 0.0);
 
     public MKEffectBuilder<?> onHitEffect(OnHitEffect.OnHitCallbackData args) {
-        int dur = getBuffDuration(args.entityData, args.instance.getSkillLevel(),
-                baseDuration.value(), scaleDuration.value());
+        int dur = getBuffDuration(args.entityData, durationFormula.value(), formulaParameters.value(),
+                args.instance.getSkillLevel());
         MKParticles.spawnOffset(args.target, YP, hitParticles.getValue());
         return MKUEffects.FROZEN_GRASP.get().builder(args.entityData.getEntity())
                 .skillLevel(args.instance.getSkillLevel()).timed(dur);
@@ -87,7 +101,8 @@ public class FrozenGraspAbility extends MKAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.NECROMANCY);
-        float dur = convertDurationToSeconds(getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()));
+        float dur = convertDurationToSeconds(getBuffDuration(entityData, durationFormula.value(),
+                formulaParameters.value(), level));
         return Component.translatable(getDescriptionTranslationKey(), INTEGER_FORMATTER.format(maxStacks.value()), dur);
     }
 
@@ -100,7 +115,6 @@ public class FrozenGraspAbility extends MKAbility {
     @Override
     public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
         super.endCast(castingEntity, casterData, context);
-        float level = context.getSkill(MKAttributes.NECROMANCY);
         casterData.getEffects().addEffect(FrozenGraspEffect.applierFrom(castingEntity,
                 selfDuration.value() * GameConstants.TICKS_PER_SECOND, maxStacks.value()));
     }

@@ -56,13 +56,7 @@ public class MKAbilityFormulaGameTests {
 
     @GameTest(template = "player_data_phase0")
     public static void parameterFormulaEvaluatesWithProvidedParameters(GameTestHelper helper) {
-        AbilityFormula formula = AbilityFormula.add(
-                AbilityFormula.param(TEST_BASE),
-                AbilityFormula.multiply(
-                        AbilityFormula.param(TEST_SCALE),
-                        AbilityFormula.context(FormulaContextKey.SKILL_LEVEL)
-                )
-        );
+        AbilityFormula formula = AbilityFormula.skilledLinear(TEST_BASE, TEST_SCALE);
         FormulaContext runtimeContext = FormulaContext.builder()
                 .withSkillLevel(3.0f)
                 .build();
@@ -106,13 +100,7 @@ public class MKAbilityFormulaGameTests {
 
     @GameTest(template = "player_data_phase0")
     public static void bindParametersProducesClosedFormula(GameTestHelper helper) {
-        AbilityFormula formula = AbilityFormula.add(
-                AbilityFormula.param(TEST_BASE),
-                AbilityFormula.multiply(
-                        AbilityFormula.param(TEST_SCALE),
-                        AbilityFormula.context(FormulaContextKey.SKILL_LEVEL)
-                )
-        );
+        AbilityFormula formula = AbilityFormula.skilledLinear(TEST_BASE, TEST_SCALE);
         FormulaParameters parameters = FormulaParameters.builder()
                 .with(TEST_BASE, 1.5f)
                 .with(TEST_SCALE, 2.5f)
@@ -185,13 +173,7 @@ public class MKAbilityFormulaGameTests {
 
     @GameTest(template = "player_data_phase0")
     public static void parameterizedFormatAndRoundUseProvidedParameters(GameTestHelper helper) {
-        AbilityFormula formula = AbilityFormula.add(
-                AbilityFormula.param(TEST_BASE),
-                AbilityFormula.multiply(
-                        AbilityFormula.param(TEST_SCALE),
-                        AbilityFormula.context(FormulaContextKey.SKILL_LEVEL)
-                )
-        );
+        AbilityFormula formula = AbilityFormula.skilledLinear(TEST_BASE, TEST_SCALE);
         FormulaParameters parameters = FormulaParameters.builder()
                 .with(TEST_BASE, 2.4f)
                 .with(TEST_SCALE, 1.6f)
@@ -209,13 +191,7 @@ public class MKAbilityFormulaGameTests {
 
     @GameTest(template = "player_data_phase0")
     public static void strictBindingFailsWhenParametersAreMissing(GameTestHelper helper) {
-        AbilityFormula formula = AbilityFormula.add(
-                AbilityFormula.param(TEST_BASE),
-                AbilityFormula.multiply(
-                        AbilityFormula.param(TEST_SCALE),
-                        AbilityFormula.context(FormulaContextKey.SKILL_LEVEL)
-                )
-        );
+        AbilityFormula formula = AbilityFormula.skilledLinear(TEST_BASE, TEST_SCALE);
         boolean threw = false;
         try {
             formula.bindParametersStrict(FormulaParameters.builder().with(TEST_BASE, 4.0f).build());

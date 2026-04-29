@@ -44,21 +44,26 @@ public class FlameBlade extends MKAbility {
             FormulaParameterKey.of(MKUltra.id("flame_blade.damage.per_level"));
     private static final FormulaParameterKey DAMAGE_MODIFIER_SCALING_PARAMETER =
             FormulaParameterKey.of(MKUltra.id("flame_blade.damage.modifier_scaling"));
+    private static final FormulaParameterKey DURATION_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("flame_blade.duration.base"));
+    private static final FormulaParameterKey DURATION_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("flame_blade.duration.per_level"));
     public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("flame_blade_casting");
     public static final ResourceLocation CAST_PARTICLES = MKUltra.id("flame_blade_cast");
     public static final ResourceLocation EDGE_PARTICLES = MKUltra.id("flame_blade_particles");
 
-    protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 10);
-    protected final IntAttribute scaleDuration = new IntAttribute("scaleDuration", 5);
     protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
             FormulaParameters.builder()
                     .with(DAMAGE_BASE_PARAMETER, 1.0f)
                     .with(DAMAGE_PER_LEVEL_PARAMETER, 1.0f)
                     .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .with(DURATION_BASE_PARAMETER, 10.0f)
+                    .with(DURATION_PER_LEVEL_PARAMETER, 5.0f)
                     .build());
     protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
             AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
+    protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final ResourceLocationAttribute castParticles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
     protected final ResourceLocationAttribute edgeParticles = new ResourceLocationAttribute("edge_particles", EDGE_PARTICLES);
 
@@ -68,7 +73,7 @@ public class FlameBlade extends MKAbility {
         setManaCost(6);
         setCastTime(GameConstants.TICKS_PER_SECOND);
         addSkillAttribute(MKAttributes.ENCHANTMENT);
-        addAttributes(baseDuration, scaleDuration, formulaParameters, damageFormula, castParticles, edgeParticles);
+        addAttributes(formulaParameters, damageFormula, durationFormula, castParticles, edgeParticles);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
 
@@ -111,7 +116,8 @@ public class FlameBlade extends MKAbility {
         float level = context.getSkill(MKAttributes.ENCHANTMENT);
         Component damage = getDamageDescription(entityData, CoreDamageTypes.FireDamage.get(),
                 damageFormula.value(), formulaParameters.value(), level);
-        float duration = convertDurationToSeconds(getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()));
+        float duration = convertDurationToSeconds(
+                getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), level));
         return Component.translatable(getDescriptionTranslationKey(), duration, damage);
     }
 
@@ -119,7 +125,7 @@ public class FlameBlade extends MKAbility {
     public void endCast(LivingEntity entity, IMKEntityData casterData, AbilityContext context) {
         super.endCast(entity, casterData, context);
         float level = context.getSkill(MKAttributes.ENCHANTMENT);
-        int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value());
+        int duration = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level);
 
         MKEffectBuilder<?> flameBlade = MKUEffects.FLAME_BLADE_APPLIER.get().builder(entity)
                 .ability(this)

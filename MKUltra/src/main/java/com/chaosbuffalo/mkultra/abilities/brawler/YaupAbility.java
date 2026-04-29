@@ -14,7 +14,12 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.utility.MKParticleEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
-import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.YaupEffect;
@@ -31,19 +36,27 @@ import net.minecraft.world.phys.Vec3;
 import java.util.function.Consumer;
 
 public class YaupAbility extends MKAbility {
+    private static final FormulaParameterKey DURATION_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("yaup.duration.base"));
+    private static final FormulaParameterKey DURATION_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("yaup.duration.per_level"));
     public static final ResourceLocation CAST_PARTICLES = MKUltra.id("yaup_cast");
     public static final ResourceLocation TICK_PARTICLES = MKUltra.id("yaup_tick");
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
     protected final ResourceLocationAttribute tick_particles = new ResourceLocationAttribute("tick_particles", TICK_PARTICLES);
-    protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 15);
-    protected final IntAttribute scaleDuration = new IntAttribute("scaleDuration", 5);
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(DURATION_BASE_PARAMETER, 15.0f)
+                    .with(DURATION_PER_LEVEL_PARAMETER, 5.0f)
+                    .build());
+    protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
 
 
     public YaupAbility() {
         super();
         setCooldownSeconds(45);
         setManaCost(2);
-        addAttributes(baseDuration, scaleDuration, tick_particles, cast_particles);
+        addAttributes(formulaParameters, durationFormula, tick_particles, cast_particles);
         addSkillAttribute(MKAttributes.ARETE);
         setUseCondition(new NeedsBuffCondition(this, MKUEffects.YAUP));
     }
@@ -51,7 +64,8 @@ public class YaupAbility extends MKAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.ARETE);
-        int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
+        int duration = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level)
+                / GameConstants.TICKS_PER_SECOND;
         return Component.translatable(getDescriptionTranslationKey(), INTEGER_FORMATTER.format(duration));
     }
 
@@ -85,7 +99,8 @@ public class YaupAbility extends MKAbility {
     public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
         super.endCast(entity, data, context);
         float level = context.getSkill(MKAttributes.ARETE);
-        MKEffectBuilder<?> yaup = YaupEffect.from(entity, level, getBuffDuration(data, level, baseDuration.value(), scaleDuration.value()));
+        MKEffectBuilder<?> yaup = YaupEffect.from(entity, level,
+                getBuffDuration(data, durationFormula.value(), formulaParameters.value(), level));
         MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_buff_attack_4.value(), entity.getSoundSource())
                 .ability(this);
         MKEffectBuilder<?> particles = MKParticleEffect.from(entity, tick_particles.getValue(),

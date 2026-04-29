@@ -1,10 +1,34 @@
 {
   "attributes": {
-    "baseDuration": 8,
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:inspire_cast",
     "casting_particles": "mkultra:inspire_casting",
-    "scaleDuration": 2
+    "durationFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:inspire.duration.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:inspire.duration.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
+    "formulaParameters": {
+      "mkultra:inspire.duration.base": 8.0,
+      "mkultra:inspire.duration.per_level": 2.0
+    }
   },
   "castTime": 40,
   "cooldown": 700,

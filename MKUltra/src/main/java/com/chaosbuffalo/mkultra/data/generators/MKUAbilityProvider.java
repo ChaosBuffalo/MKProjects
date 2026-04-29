@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.abilities.projectiles.SimpleProjectileBehavior;
 import com.chaosbuffalo.mkcore.data.providers.MKAbilityProvider;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.utils.location.CircularLocationProvider;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.abilities.cleric.HealAbility;
@@ -73,7 +74,10 @@ public class MKUAbilityProvider extends MKAbilityProvider {
                                         AbilityFormula.constant(1.5f),
                                         AbilityFormula.context(FormulaContextKey.DAMAGE_BONUS)
                                 )))
-                        .clearFormulaParameters()
+                        .replaceFormulaParameters(FormulaParameters.builder()
+                                .with(SmiteAbility.DURATION_BASE_PARAMETER, 1.0f)
+                                .with(SmiteAbility.DURATION_PER_LEVEL_PARAMETER, 1.0f)
+                                .build())
                         .build(),
                 pOutput));
         futures.add(writeVariant(MKUAbilities.HOLY_WORD_BURST.getId(), MKUAbilities.HOLY_WORD.get(),

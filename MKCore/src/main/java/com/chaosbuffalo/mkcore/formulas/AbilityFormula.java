@@ -58,6 +58,26 @@ public interface AbilityFormula {
     }
 
     /**
+     * Creates a skill-scaled linear formula:
+     * <pre>{@code
+     * baseParameter + perLevelParameter * skill_level
+     * }</pre>
+     * <p>
+     * This is a convenience composition of existing add/multiply/context nodes and
+     * does not introduce a new semantic formula type.
+     */
+    static AbilityFormula skilledLinear(FormulaParameterKey baseParameter,
+                                              FormulaParameterKey perLevelParameter) {
+        return add(
+                param(baseParameter),
+                multiply(
+                        param(perLevelParameter),
+                        context(FormulaContextKey.SKILL_LEVEL)
+                )
+        );
+    }
+
+    /**
      * Creates a semantic damage/healing style formula:
      * <pre>{@code
      * baseParameter
@@ -323,13 +343,7 @@ public interface AbilityFormula {
         }
 
         private AbilityFormula baseContribution() {
-            return AbilityFormula.add(
-                    AbilityFormula.param(baseParameter),
-                    AbilityFormula.multiply(
-                            AbilityFormula.param(perLevelParameter),
-                            AbilityFormula.context(FormulaContextKey.SKILL_LEVEL)
-                    )
-            );
+            return AbilityFormula.skilledLinear(baseParameter, perLevelParameter);
         }
 
         private AbilityFormula bonusContribution() {

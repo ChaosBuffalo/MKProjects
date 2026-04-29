@@ -23,7 +23,32 @@
         }
       ]
     },
-    "formulaParameters": {}
+    "durationFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:smite.duration.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:smite.duration.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
+    "formulaParameters": {
+      "mkultra:smite.duration.base": 1.0,
+      "mkultra:smite.duration.per_level": 1.0
+    }
   },
   "castTime": 20,
   "cooldown": 180,

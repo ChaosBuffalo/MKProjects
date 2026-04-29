@@ -1,6 +1,5 @@
 {
   "attributes": {
-    "base_duration": 10,
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:engulfing_darkness_cast",
     "casting_particles": "mkultra:shadow_bolt_casting",
@@ -12,12 +11,35 @@
       "per_level_param": "mkultra:engulfing_darkness.dot_damage.per_level"
     },
     "dot_cast_particles": "mkultra:engulfing_darkness_tick",
+    "durationFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:engulfing_darkness.duration.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:engulfing_darkness.duration.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
     "formulaParameters": {
       "mkultra:engulfing_darkness.dot_damage.base": 2.0,
       "mkultra:engulfing_darkness.dot_damage.modifier_scaling": 0.2,
-      "mkultra:engulfing_darkness.dot_damage.per_level": 2.0
+      "mkultra:engulfing_darkness.dot_damage.per_level": 2.0,
+      "mkultra:engulfing_darkness.duration.base": 10.0,
+      "mkultra:engulfing_darkness.duration.per_level": 1.0
     },
-    "scale_duration": 1,
     "shadowbringer_chance": 0.02,
     "shadowbringer_duration": 200
   },

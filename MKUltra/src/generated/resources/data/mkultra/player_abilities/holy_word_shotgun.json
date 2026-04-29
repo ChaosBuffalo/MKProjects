@@ -1,7 +1,5 @@
 {
   "attributes": {
-    "baseDuration": 30,
-    "baseStunDuration": 3,
     "cast_animation_category": "mkcore:default",
     "cast_behavior": {
       "type": "mkcore:simple",
@@ -30,17 +28,63 @@
       "per_level_param": "mkultra:holy_word.damage.per_level"
     },
     "detonate_particles": "mkultra:holy_word_detonate",
+    "durationFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:holy_word.duration.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:holy_word.duration.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
     "formulaParameters": {
       "mkultra:holy_word.damage.base": 5.0,
       "mkultra:holy_word.damage.modifier_scaling": 1.0,
-      "mkultra:holy_word.damage.per_level": 3.0
+      "mkultra:holy_word.damage.per_level": 3.0,
+      "mkultra:holy_word.duration.base": 30.0,
+      "mkultra:holy_word.duration.per_level": 10.0,
+      "mkultra:holy_word.stun_duration.base": 3.0,
+      "mkultra:holy_word.stun_duration.per_level": 1.0
     },
     "npc_solve_ballistics": 1,
     "projectile_inaccuracy": 0.0,
     "projectile_speed": 0.8,
-    "scaleDuration": 10,
-    "scaleStunDuration": 1,
     "stacks": 5,
+    "stunDurationFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:holy_word.stun_duration.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:holy_word.stun_duration.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
     "trail_particles": "mkultra:holy_word_trail"
   },
   "castTime": 25,

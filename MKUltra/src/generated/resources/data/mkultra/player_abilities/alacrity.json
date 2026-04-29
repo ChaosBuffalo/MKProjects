@@ -1,12 +1,58 @@
 {
   "attributes": {
-    "baseDuration": 600,
-    "baseValue": 0.25,
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:inspire_cast",
     "casting_particles": "mkcore:fx.casting.empty",
-    "scaleDuration": 60,
-    "scaleValue": 0.03
+    "durationFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:alacrity.duration.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:alacrity.duration.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
+    "formulaParameters": {
+      "mkultra:alacrity.duration.base": 600.0,
+      "mkultra:alacrity.duration.per_level": 60.0,
+      "mkultra:alacrity.value.base": 0.25,
+      "mkultra:alacrity.value.per_level": 0.03
+    },
+    "valueFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:alacrity.value.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:alacrity.value.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    }
   },
   "castTime": 20,
   "cooldown": 600,

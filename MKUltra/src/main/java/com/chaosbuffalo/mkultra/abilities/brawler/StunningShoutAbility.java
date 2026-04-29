@@ -21,7 +21,6 @@ import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -46,6 +45,10 @@ public class StunningShoutAbility extends MKAbility {
             FormulaParameterKey.of(MKUltra.id("stunning_shout.damage.per_level"));
     private static final FormulaParameterKey DAMAGE_MODIFIER_SCALING_PARAMETER =
             FormulaParameterKey.of(MKUltra.id("stunning_shout.damage.modifier_scaling"));
+    private static final FormulaParameterKey DURATION_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("stunning_shout.duration.base"));
+    private static final FormulaParameterKey DURATION_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("stunning_shout.duration.per_level"));
     public static final ResourceLocation TICK_PARTICLES = MKUltra.id("stunning_shout_tick");
     public static final ResourceLocation CAST_PARTICLES = MKUltra.id("stunning_shout_cast");
     protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
@@ -53,20 +56,21 @@ public class StunningShoutAbility extends MKAbility {
                     .with(DAMAGE_BASE_PARAMETER, 4.0f)
                     .with(DAMAGE_PER_LEVEL_PARAMETER, 2.0f)
                     .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .with(DURATION_BASE_PARAMETER, 1.0f)
+                    .with(DURATION_PER_LEVEL_PARAMETER, 1.0f)
                     .build());
     protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
             AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
+    protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
     protected final ResourceLocationAttribute tick_particles = new ResourceLocationAttribute("tick_particles", TICK_PARTICLES);
-    protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 1);
-    protected final IntAttribute scaleDuration = new IntAttribute("scaleDuration", 1);
 
     public StunningShoutAbility() {
         super();
         setCooldownSeconds(12);
         setManaCost(4);
-        addAttributes(formulaParameters, damageFormula, baseDuration, scaleDuration, cast_particles, tick_particles);
+        addAttributes(formulaParameters, damageFormula, durationFormula, cast_particles, tick_particles);
         addSkillAttribute(MKAttributes.PNEUMA);
     }
 
@@ -90,7 +94,8 @@ public class StunningShoutAbility extends MKAbility {
         float level = context.getSkill(MKAttributes.PNEUMA);
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.BleedDamage.get(),
                 damageFormula.value(), formulaParameters.value(), level);
-        int dur = getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
+        int dur = getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), level)
+                / GameConstants.TICKS_PER_SECOND;
         return Component.translatable(getDescriptionTranslationKey(), INTEGER_FORMATTER.format(dur), damageStr);
     }
 
@@ -116,7 +121,7 @@ public class StunningShoutAbility extends MKAbility {
                 .skillLevel(level)
                 .ability(this);
         MKEffectBuilder<?> stun = StunEffect.from(castingEntity).ability(this).skillLevel(level).timed(
-                getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value()));
+                getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level));
         MKEffectBuilder<?> particles = MKParticleEffect.from(castingEntity, tick_particles.getValue(),
                         false, new Vec3(0.0, 1.5, 0.0))
                 .ability(this);

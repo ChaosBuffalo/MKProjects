@@ -1,6 +1,5 @@
 {
   "attributes": {
-    "baseDuration": 6,
     "burnDamageFormula": {
       "type": "mkcore:bonus_scaled_linear",
       "base_param": "mkultra:ember.burn.base",
@@ -19,15 +18,38 @@
       "bonus_scale_param": "mkultra:ember.damage.modifier_scaling",
       "per_level_param": "mkultra:ember.damage.per_level"
     },
+    "durationFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:ember.duration.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:ember.duration.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
     "formulaParameters": {
       "mkultra:ember.burn.base": 2.0,
       "mkultra:ember.burn.modifier_scaling": 0.2,
       "mkultra:ember.burn.per_level": 1.0,
       "mkultra:ember.damage.base": 8.0,
       "mkultra:ember.damage.modifier_scaling": 1.0,
-      "mkultra:ember.damage.per_level": 3.0
-    },
-    "scaleDuration": 1
+      "mkultra:ember.damage.per_level": 3.0,
+      "mkultra:ember.duration.base": 6.0,
+      "mkultra:ember.duration.per_level": 1.0
+    }
   },
   "castTime": 10,
   "cooldown": 120,

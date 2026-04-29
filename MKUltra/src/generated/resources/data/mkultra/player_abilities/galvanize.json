@@ -1,11 +1,35 @@
 {
   "attributes": {
-    "baseDuration": 5,
     "cast_1_particles": "mkultra:galvanize_cast_1",
     "cast_2_particles": "mkultra:galvanize_cast_2",
     "cast_animation_category": "mkcore:default",
     "casting_particles": "mkultra:galvanize_casting",
-    "scaleDuration": 2
+    "durationFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:galvanize.duration.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:galvanize.duration.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
+    "formulaParameters": {
+      "mkultra:galvanize.duration.base": 5.0,
+      "mkultra:galvanize.duration.per_level": 2.0
+    }
   },
   "castTime": 5,
   "cooldown": 500,

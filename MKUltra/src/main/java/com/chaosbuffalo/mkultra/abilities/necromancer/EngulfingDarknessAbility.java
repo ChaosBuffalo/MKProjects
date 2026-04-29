@@ -41,6 +41,10 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
             FormulaParameterKey.of(MKUltra.id("engulfing_darkness.dot_damage.per_level"));
     private static final FormulaParameterKey DOT_DAMAGE_MODIFIER_SCALING_PARAMETER =
             FormulaParameterKey.of(MKUltra.id("engulfing_darkness.dot_damage.modifier_scaling"));
+    private static final FormulaParameterKey DURATION_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("engulfing_darkness.duration.base"));
+    private static final FormulaParameterKey DURATION_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("engulfing_darkness.duration.per_level"));
     public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("shadow_bolt_casting");
     public static final ResourceLocation CAST_PARTICLES = MKUltra.id("engulfing_darkness_cast");
     public static final ResourceLocation TICK_PARTICLES = MKUltra.id("engulfing_darkness_tick");
@@ -49,12 +53,13 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
                     .with(DOT_DAMAGE_BASE_PARAMETER, 2.0f)
                     .with(DOT_DAMAGE_PER_LEVEL_PARAMETER, 2.0f)
                     .with(DOT_DAMAGE_MODIFIER_SCALING_PARAMETER, 0.2f)
+                    .with(DURATION_BASE_PARAMETER, 10.0f)
+                    .with(DURATION_PER_LEVEL_PARAMETER, 1.0f)
                     .build());
     protected final FormulaAttribute dotDamageFormula = new FormulaAttribute("dotDamageFormula",
             AbilityFormula.bonusScaledLinear(DOT_DAMAGE_BASE_PARAMETER, DOT_DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DOT_DAMAGE_MODIFIER_SCALING_PARAMETER));
-    protected final IntAttribute baseDuration = new IntAttribute("base_duration", 10);
-    protected final IntAttribute scaleDuration = new IntAttribute("scale_duration", 1);
+    protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final ResourceLocationAttribute castParticles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
     protected final ResourceLocationAttribute dotCastParticles = new ResourceLocationAttribute("dot_cast_particles", TICK_PARTICLES);
     protected final IntAttribute shadowbringerDuration = new IntAttribute("shadowbringer_duration", GameConstants.TICKS_PER_SECOND * 10);
@@ -66,7 +71,7 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
         setCooldownSeconds(4);
         setManaCost(3);
         setCastTime((GameConstants.TICKS_PER_SECOND * 3) / 2);
-        addAttributes(baseDuration, scaleDuration, formulaParameters, dotDamageFormula,
+        addAttributes(formulaParameters, dotDamageFormula, durationFormula,
                 castParticles, dotCastParticles, shadowbringerChance, shadowbringerDuration);
         addSkillAttribute(MKAttributes.CONJURATION);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
@@ -89,7 +94,8 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
         float level = context.getSkill(MKAttributes.CONJURATION);
         Component dotStr = getDamageDescription(entityData,
                 CoreDamageTypes.ShadowDamage.get(), dotDamageFormula.value(), formulaParameters.value(), level);
-        float dotDur = convertDurationToSeconds(getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()));
+        float dotDur = convertDurationToSeconds(
+                getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), level));
         float shadowbringerDur = convertDurationToSeconds(shadowbringerDuration.value());
         return Component.translatable(getDescriptionTranslationKey(),
                 dotStr, NUMBER_FORMATTER.format(convertDurationToSeconds(EngulfingDarknessEffect.DEFAULT_PERIOD)),
@@ -97,7 +103,7 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
     }
 
     public MKEffectBuilder<?> getDotCast(IMKEntityData casterData, float level) {
-        int dur = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value());
+        int dur = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level);
         return EngulfingDarknessEffect.from(casterData.getEntity(), dotDamageFormula.value(), formulaParameters.value(),
                         getShadowbringerChance(casterData), shadowbringerDuration.value(),
                         dotCastParticles.getValue())

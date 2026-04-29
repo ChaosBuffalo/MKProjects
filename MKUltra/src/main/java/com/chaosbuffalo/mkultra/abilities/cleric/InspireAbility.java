@@ -12,7 +12,12 @@ import com.chaosbuffalo.mkcore.effects.AreaEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.utility.MKParticleEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
-import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUSounds;
@@ -27,10 +32,18 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class InspireAbility extends MKAbility {
+    private static final FormulaParameterKey DURATION_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("inspire.duration.base"));
+    private static final FormulaParameterKey DURATION_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("inspire.duration.per_level"));
     protected final ResourceLocation CASTING_PARTICLES = MKUltra.id("inspire_casting");
     protected final ResourceLocation CAST_PARTICLES = MKUltra.id("inspire_cast");
-    protected final IntAttribute base = new IntAttribute("baseDuration", 8);
-    protected final IntAttribute scale = new IntAttribute("scaleDuration", 2);
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(DURATION_BASE_PARAMETER, 8.0f)
+                    .with(DURATION_PER_LEVEL_PARAMETER, 2.0f)
+                    .build());
+    protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
 
     public InspireAbility() {
@@ -38,7 +51,7 @@ public class InspireAbility extends MKAbility {
         setCooldownSeconds(35);
         setManaCost(8);
         setCastTime(GameConstants.TICKS_PER_SECOND * 2);
-        addAttributes(base, scale, cast_particles);
+        addAttributes(formulaParameters, durationFormula, cast_particles);
         addSkillAttribute(MKAttributes.ALTERATON);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
@@ -46,7 +59,8 @@ public class InspireAbility extends MKAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.ALTERATON);
-        int duration = getBuffDuration(entityData, level, base.value(), scale.value()) / GameConstants.TICKS_PER_SECOND;
+        int duration = getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), level)
+                / GameConstants.TICKS_PER_SECOND;
         return Component.translatable(getDescriptionTranslationKey(), duration);
     }
 
@@ -84,7 +98,7 @@ public class InspireAbility extends MKAbility {
     public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
         super.endCast(castingEntity, casterData, context);
         float level = context.getSkill(MKAttributes.ALTERATON);
-        int duration = getBuffDuration(casterData, level, base.value(), scale.value());
+        int duration = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level);
         int oldAmp = Math.round(level);
 
         MobEffectInstance hasteEffect = new MobEffectInstance(MobEffects.DIG_SPEED, duration, oldAmp, false, false);

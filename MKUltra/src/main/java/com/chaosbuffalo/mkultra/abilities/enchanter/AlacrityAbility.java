@@ -11,8 +11,15 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
-import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContext;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.formulas.FormulaTextRenderer;
+import com.chaosbuffalo.mkcore.formulas.FormulaTextStyle;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -27,12 +34,25 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class AlacrityAbility extends MKAbility {
+    private static final FormulaParameterKey VALUE_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("alacrity.value.base"));
+    private static final FormulaParameterKey VALUE_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("alacrity.value.per_level"));
+    private static final FormulaParameterKey DURATION_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("alacrity.duration.base"));
+    private static final FormulaParameterKey DURATION_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("alacrity.duration.per_level"));
     public static final ResourceLocation CAST_PARTICLES = MKUltra.id("inspire_cast");
 
-    protected final FloatAttribute baseValue = new FloatAttribute("baseValue", 0.25f);
-    protected final FloatAttribute scaleValue = new FloatAttribute("scaleValue", 0.03f);
-    protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 600);
-    protected final IntAttribute scaleDuration = new IntAttribute("scaleDuration", 60);
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(VALUE_BASE_PARAMETER, 0.25f)
+                    .with(VALUE_PER_LEVEL_PARAMETER, 0.03f)
+                    .with(DURATION_BASE_PARAMETER, 600.0f)
+                    .with(DURATION_PER_LEVEL_PARAMETER, 60.0f)
+                    .build());
+    protected final FormulaAttribute valueFormula = new FormulaAttribute("valueFormula", AbilityFormula.skilledLinear(VALUE_BASE_PARAMETER, VALUE_PER_LEVEL_PARAMETER));
+    protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
 
     public AlacrityAbility() {
@@ -40,16 +60,19 @@ public class AlacrityAbility extends MKAbility {
         setCooldownSeconds(30);
         setManaCost(10);
         setCastTime(GameConstants.TICKS_PER_SECOND);
-        addAttributes(baseValue, scaleValue, baseDuration, scaleDuration, cast_particles);
+        addAttributes(formulaParameters, valueFormula, durationFormula, cast_particles);
         addSkillAttribute(MKAttributes.ENCHANTMENT);
     }
 
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.ENCHANTMENT);
-        int duration = getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
-        float value = baseValue.value() + scaleValue.value() * level;
-        return Component.translatable(getDescriptionTranslationKey(), PERCENT_FORMATTER.format(value), duration);
+        FormulaContext formulaContext = baseFormulaContext(entityData, level).build();
+        int duration = getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), formulaContext)
+                / GameConstants.TICKS_PER_SECOND;
+        String value = FormulaTextRenderer.format(valueFormula.value(), formulaParameters.value(), formulaContext,
+                FormulaTextStyle.PERCENT);
+        return Component.translatable(getDescriptionTranslationKey(), value, duration);
     }
 
     @Override
@@ -77,8 +100,9 @@ public class AlacrityAbility extends MKAbility {
         super.endCast(castingEntity, casterData, context);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
             float level = context.getSkill(MKAttributes.ENCHANTMENT);
-            int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value());
-            MKEffectBuilder<?> effect = MKUEffects.ATTACK_SPEED_HASTE.get().builder(castingEntity)
+            int duration = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level);
+            MKEffectBuilder<?> effect = MKUEffects.ATTACK_SPEED_HASTE.get()
+                    .from(castingEntity, valueFormula.value(), formulaParameters.value())
                     .ability(this)
                     .skillLevel(level)
                     .timed(duration);

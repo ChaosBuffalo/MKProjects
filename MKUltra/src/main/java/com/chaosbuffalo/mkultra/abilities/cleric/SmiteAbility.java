@@ -8,10 +8,7 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.effects.status.StunEffect;
-import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
-import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
-import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
-import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.formulas.*;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
@@ -35,6 +32,10 @@ public class SmiteAbility extends MKAbility {
             FormulaParameterKey.of(MKUltra.id("smite.damage.per_level"));
     public static final FormulaParameterKey MODIFIER_SCALING_PARAMETER =
             FormulaParameterKey.of(MKUltra.id("smite.damage.modifier_scaling"));
+    public static final FormulaParameterKey DURATION_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("smite.duration.base"));
+    public static final FormulaParameterKey DURATION_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("smite.duration.per_level"));
     protected final ResourceLocation CASTING_PARTICLES = MKUltra.id("smite_casting");
     protected final ResourceLocation CAST_PARTICLES = MKUltra.id("smite_cast");
     protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
@@ -42,10 +43,13 @@ public class SmiteAbility extends MKAbility {
                     .with(BASE_PARAMETER, 5.0f)
                     .with(PER_LEVEL_PARAMETER, 5.0f)
                     .with(MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .with(DURATION_BASE_PARAMETER, 1.0f)
+                    .with(DURATION_PER_LEVEL_PARAMETER, 1.0f)
                     .build());
     protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
             AbilityFormula.bonusScaledLinear(BASE_PARAMETER, PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, MODIFIER_SCALING_PARAMETER));
+    protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
 
     public SmiteAbility() {
@@ -53,7 +57,7 @@ public class SmiteAbility extends MKAbility {
         setCooldownSeconds(6);
         setManaCost(5);
         setCastTime(GameConstants.TICKS_PER_SECOND);
-        addAttributes(formulaParameters, damageFormula, cast_particles);
+        addAttributes(formulaParameters, damageFormula, durationFormula, cast_particles);
         addSkillAttribute(MKAttributes.EVOCATION);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
@@ -64,7 +68,7 @@ public class SmiteAbility extends MKAbility {
         Component valueStr = getDamageDescription(entityData,
                 CoreDamageTypes.HolyDamage.get(), damageFormula.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(), valueStr,
-                getBuffDuration(entityData, level, 0, 1) / 20);
+                convertDurationToSeconds(getFormulaDuration(entityData, durationFormula.value(), formulaParameters.value(), level)));
     }
 
     @Override
@@ -105,7 +109,7 @@ public class SmiteAbility extends MKAbility {
 
             MKEffectBuilder<?> stun = StunEffect.from(entity)
                     .ability(this)
-                    .timed(Math.round(GameConstants.TICKS_PER_SECOND * (level + 1.0f)))
+                    .timed(getFormulaDuration(data, durationFormula.value(), formulaParameters.value(), level))
                     .skillLevel(level);
 
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> {

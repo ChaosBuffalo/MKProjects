@@ -30,12 +30,7 @@ public class SoulDrainAbility extends MKPassiveAbility {
                     .with(BASE_PARAMETER, 4.0f)
                     .with(PER_LEVEL_PARAMETER, 4.0f)
                     .build());
-    protected final FormulaAttribute drainFormula = new FormulaAttribute("drainFormula", AbilityFormula.add(
-            AbilityFormula.param(BASE_PARAMETER),
-            AbilityFormula.multiply(
-                    AbilityFormula.param(PER_LEVEL_PARAMETER),
-                    AbilityFormula.context(FormulaContextKey.SKILL_LEVEL)
-            )));
+    protected final FormulaAttribute drainFormula = new FormulaAttribute("drainFormula", AbilityFormula.skilledLinear(BASE_PARAMETER, PER_LEVEL_PARAMETER));
 
     public SoulDrainAbility() {
         super();

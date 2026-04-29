@@ -7,6 +7,8 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
 import com.chaosbuffalo.mkcore.effects.status.OnStackEffect;
 import com.chaosbuffalo.mkcore.effects.status.StunEffect;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.google.common.reflect.TypeToken;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -24,10 +26,11 @@ public class HolyWordEffect extends OnStackEffect {
         return new State();
     }
 
-    public static MKEffectBuilder<State> from(LivingEntity source, float baseStunSeconds, float scalingSeconds, int maxStacks) {
+    public static MKEffectBuilder<State> from(LivingEntity source, AbilityFormula stunDurationFormula,
+                                              FormulaParameters parameters, int maxStacks) {
         return MKUEffects.HOLY_WORD_EFFECT.get().builder(source)
                 .state(s -> {
-                    s.setScalingParameters(baseStunSeconds, scalingSeconds);
+                    s.setScalingFormula(stunDurationFormula, parameters);
                     s.setMaxStacks(maxStacks);
                 });
     }

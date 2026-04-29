@@ -1,10 +1,34 @@
 {
   "attributes": {
-    "baseDuration": 10,
     "cast_animation_category": "mkcore:default",
     "casting_particles": "mkultra:frozen_grasp_cast",
+    "durationFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:frozen_grasp.duration.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:frozen_grasp.duration.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
+    "formulaParameters": {
+      "mkultra:frozen_grasp.duration.base": 10.0,
+      "mkultra:frozen_grasp.duration.per_level": 2.0
+    },
     "hit_particles": "mkultra:frozen_grasp_hit",
-    "scaleDuration": 2,
     "selfDuration": 20
   },
   "castTime": 20,

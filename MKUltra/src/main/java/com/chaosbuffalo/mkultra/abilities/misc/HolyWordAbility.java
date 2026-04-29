@@ -44,6 +44,14 @@ public class HolyWordAbility extends ProjectileAbility {
             FormulaParameterKey.of(MKUltra.id("holy_word.damage.per_level"));
     private static final FormulaParameterKey DAMAGE_MODIFIER_SCALING_PARAMETER =
             FormulaParameterKey.of(MKUltra.id("holy_word.damage.modifier_scaling"));
+    private static final FormulaParameterKey DURATION_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("holy_word.duration.base"));
+    private static final FormulaParameterKey DURATION_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("holy_word.duration.per_level"));
+    private static final FormulaParameterKey STUN_DURATION_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("holy_word.stun_duration.base"));
+    private static final FormulaParameterKey STUN_DURATION_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("holy_word.stun_duration.per_level"));
 
     public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("holy_word_casting");
     public static final ResourceLocation TRAIL_PARTICLES = MKUltra.id("holy_word_trail");
@@ -53,21 +61,23 @@ public class HolyWordAbility extends ProjectileAbility {
                     .with(DAMAGE_BASE_PARAMETER, 5.0f)
                     .with(DAMAGE_PER_LEVEL_PARAMETER, 3.0f)
                     .with(DAMAGE_MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .with(DURATION_BASE_PARAMETER, 30.0f)
+                    .with(DURATION_PER_LEVEL_PARAMETER, 10.0f)
+                    .with(STUN_DURATION_BASE_PARAMETER, 3.0f)
+                    .with(STUN_DURATION_PER_LEVEL_PARAMETER, 1.0f)
                     .build());
     protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
             AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, DAMAGE_MODIFIER_SCALING_PARAMETER));
-    protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 30);
-    protected final IntAttribute scaleDuration = new IntAttribute("scaleDuration", 10);
-    protected final IntAttribute baseStunDuration = new IntAttribute("baseStunDuration", 3);
-    protected final IntAttribute scaleStunDuration = new IntAttribute("scaleStunDuration", 1);
+    protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
+    protected final FormulaAttribute stunDurationFormula = new FormulaAttribute("stunDurationFormula", AbilityFormula.skilledLinear(STUN_DURATION_BASE_PARAMETER, STUN_DURATION_PER_LEVEL_PARAMETER));
     protected final IntAttribute stacks = new IntAttribute("stacks", 5);
 
     public HolyWordAbility() {
         super(MKAttributes.EVOCATION, false);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
-        addAttributes(formulaParameters, damageFormula, baseDuration, scaleDuration, baseStunDuration, scaleStunDuration, stacks);
+        addAttributes(formulaParameters, damageFormula, durationFormula, stunDurationFormula, stacks);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
         projectileSpeed.setDefaultValue(0.8f);
         setCastTime(GameConstants.TICKS_PER_SECOND + GameConstants.TICKS_PER_SECOND / 4);
@@ -94,14 +104,14 @@ public class HolyWordAbility extends ProjectileAbility {
                         .amplify(amplifier);
 
                 MKEffectBuilder<?> stunCounter = HolyWordEffect.from(caster,
-                                baseStunDuration.value(),
-                                scaleStunDuration.value(),
+                                stunDurationFormula.value(),
+                                formulaParameters.value(),
                                 stacks.value())
                         .ability(this)
                         .directEntity(projectile)
                         .skillLevel(skillLevel)
                         .amplify(amplifier)
-                        .timed(getBuffDuration(casterData, skillLevel, baseDuration.value(), scaleDuration.value()));
+                        .timed(getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), skillLevel));
 
 
                 MKCore.getEntityData(entityTrace.getEntity()).ifPresent(x -> {
@@ -130,15 +140,15 @@ public class HolyWordAbility extends ProjectileAbility {
         float level = context.getSkill(skill);
         Component dmg = getDamageDescription(entityData,
                 CoreDamageTypes.HolyDamage.get(), damageFormula.value(), formulaParameters.value(), level);
-        float duration = convertDurationToSeconds(getBuffDuration(entityData, level,
-                baseDuration.value(), scaleDuration.value()));
+        float duration = convertDurationToSeconds(getBuffDuration(entityData, durationFormula.value(),
+                formulaParameters.value(), level));
         return Component.translatable(getDescriptionTranslationKey(),
                 dmg,
                 MKUEffects.HOLY_WORD_EFFECT.get().getDisplayName(),
                 NUMBER_FORMATTER.format(duration),
                 stacks.value(),
                 NUMBER_FORMATTER.format(convertDurationToSeconds(
-                        getBuffDuration(entityData, level, baseStunDuration.value(), scaleStunDuration.value())))
+                        getBuffDuration(entityData, stunDurationFormula.value(), formulaParameters.value(), level)))
                 );
     }
 

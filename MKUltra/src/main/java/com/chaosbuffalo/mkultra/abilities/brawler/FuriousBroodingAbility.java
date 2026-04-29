@@ -14,7 +14,6 @@ import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.FuriousBroodingEffect;
@@ -37,24 +36,29 @@ public class FuriousBroodingAbility extends MKAbility {
             FormulaParameterKey.of(MKUltra.id("furious_brooding.heal.per_level"));
     private static final FormulaParameterKey MODIFIER_SCALING_PARAMETER =
             FormulaParameterKey.of(MKUltra.id("furious_brooding.heal.modifier_scaling"));
+    private static final FormulaParameterKey DURATION_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("furious_brooding.duration.base"));
+    private static final FormulaParameterKey DURATION_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("furious_brooding.duration.per_level"));
     protected final ResourceLocationAttribute tick_particles = new ResourceLocationAttribute("cast_particles", TICK_PARTICLES);
     protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
             FormulaParameters.builder()
                     .with(HEAL_BASE_PARAMETER, 2.0f)
                     .with(HEAL_PER_LEVEL_PARAMETER, 1.0f)
                     .with(MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .with(DURATION_BASE_PARAMETER, 6.0f)
+                    .with(DURATION_PER_LEVEL_PARAMETER, 5.0f)
                     .build());
     protected final FormulaAttribute healingFormula = new FormulaAttribute("healingFormula",
             AbilityFormula.bonusScaledLinear(HEAL_BASE_PARAMETER, HEAL_PER_LEVEL_PARAMETER,
                     FormulaContextKey.HEAL_BONUS, MODIFIER_SCALING_PARAMETER));
-    protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 6);
-    protected final IntAttribute scaleDuration = new IntAttribute("scaleDuration", 5);
+    protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
 
     public FuriousBroodingAbility() {
         super();
         setCooldownSeconds(18);
         setManaCost(6);
-        addAttributes(tick_particles, formulaParameters, healingFormula, baseDuration, scaleDuration);
+        addAttributes(tick_particles, formulaParameters, healingFormula, durationFormula);
         addSkillAttribute(MKAttributes.PNEUMA);
         setUseCondition(new HealCondition(this, 0.8f).setSelfOnly(true));
     }
@@ -73,7 +77,8 @@ public class FuriousBroodingAbility extends MKAbility {
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.PNEUMA);
         Component damageStr = getHealDescription(casterData, healingFormula.value(), formulaParameters.value(), level);
-        int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
+        int duration = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level)
+                / GameConstants.TICKS_PER_SECOND;
         float speedReduction = -0.6f + 0.05f * level;
         return Component.translatable(getDescriptionTranslationKey(), damageStr, INTEGER_FORMATTER.format(duration), PERCENT_FORMATTER.format(speedReduction));
     }
@@ -85,7 +90,7 @@ public class FuriousBroodingAbility extends MKAbility {
     }
 
     public MKEffectBuilder<?> createFuriousBroodingEffect(IMKEntityData casterData, float level) {
-        int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value());
+        int duration = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level);
         return FuriousBroodingEffect.from(casterData.getEntity(), healingFormula.value(),
                         formulaParameters.value(), tick_particles.getValue())
                 .ability(this)

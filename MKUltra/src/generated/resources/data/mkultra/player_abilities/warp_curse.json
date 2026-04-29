@@ -1,6 +1,5 @@
 {
   "attributes": {
-    "baseDuration": 4,
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:warp_curse_cast",
     "casting_particles": "mkultra:warp_curse_casting",
@@ -11,12 +10,35 @@
       "bonus_scale_param": "mkultra:warp_curse.damage.modifier_scaling",
       "per_level_param": "mkultra:warp_curse.damage.per_level"
     },
+    "durationFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:warp_curse.duration.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:warp_curse.duration.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
     "formulaParameters": {
       "mkultra:warp_curse.damage.base": 4.0,
       "mkultra:warp_curse.damage.modifier_scaling": 0.25,
-      "mkultra:warp_curse.damage.per_level": 2.0
-    },
-    "scaleDuration": 2
+      "mkultra:warp_curse.damage.per_level": 2.0,
+      "mkultra:warp_curse.duration.base": 4.0,
+      "mkultra:warp_curse.duration.per_level": 2.0
+    }
   },
   "castTime": 30,
   "cooldown": 320,

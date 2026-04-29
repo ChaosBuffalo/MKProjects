@@ -10,10 +10,34 @@
       "bonus_scale_param": "mkultra:smite.damage.modifier_scaling",
       "per_level_param": "mkultra:smite.damage.per_level"
     },
+    "durationFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:smite.duration.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:smite.duration.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
     "formulaParameters": {
       "mkultra:smite.damage.base": 8.0,
       "mkultra:smite.damage.modifier_scaling": 1.25,
-      "mkultra:smite.damage.per_level": 6.0
+      "mkultra:smite.damage.per_level": 6.0,
+      "mkultra:smite.duration.base": 1.0,
+      "mkultra:smite.duration.per_level": 1.0
     }
   },
   "castTime": 20,

@@ -7,7 +7,12 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
-import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -25,10 +30,18 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class PowerWordSummonAbility extends MKAbility {
+    private static final FormulaParameterKey DURATION_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("power_word_summon.duration.base"));
+    private static final FormulaParameterKey DURATION_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("power_word_summon.duration.per_level"));
     protected final ResourceLocation CASTING_PARTICLES = MKUltra.id("power_word_summon_casting");
     protected final ResourceLocation CAST_PARTICLES = MKUltra.id("power_word_summon_cast");
-    protected final IntAttribute base = new IntAttribute("baseDuration", 4);
-    protected final IntAttribute scale = new IntAttribute("scaleDuration", 1);
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(DURATION_BASE_PARAMETER, 4.0f)
+                    .with(DURATION_PER_LEVEL_PARAMETER, 1.0f)
+                    .build());
+    protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
 
     public PowerWordSummonAbility() {
@@ -36,7 +49,7 @@ public class PowerWordSummonAbility extends MKAbility {
         setCooldownSeconds(16);
         setCastTime(GameConstants.TICKS_PER_SECOND);
         setManaCost(6);
-        addAttributes(base, scale, cast_particles);
+        addAttributes(formulaParameters, durationFormula, cast_particles);
         addSkillAttribute(MKAttributes.CONJURATION);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
@@ -54,7 +67,8 @@ public class PowerWordSummonAbility extends MKAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.CONJURATION);
-        int duration = getBuffDuration(entityData, level, base.value(), scale.value()) / GameConstants.TICKS_PER_SECOND;
+        int duration = getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), level)
+                / GameConstants.TICKS_PER_SECOND;
         return Component.translatable(getDescriptionTranslationKey(), duration);
     }
 
@@ -81,7 +95,7 @@ public class PowerWordSummonAbility extends MKAbility {
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> targetData.getEffects().addEffect(warp));
 
             if (Targeting.isValidEnemy(castingEntity, targetEntity)) {
-                int duration = getBuffDuration(casterData, level, base.value(), scale.value());
+                int duration = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level);
                 targetEntity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, duration, 100, false, false));
             }
 

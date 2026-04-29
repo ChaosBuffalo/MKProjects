@@ -46,6 +46,10 @@ public class SeverTendonAbility extends MKAbility {
             FormulaParameterKey.of(MKUltra.id("sever_tendon.bleed_damage.per_level"));
     private static final FormulaParameterKey BLEED_DAMAGE_MODIFIER_SCALING_PARAMETER =
             FormulaParameterKey.of(MKUltra.id("sever_tendon.bleed_damage.modifier_scaling"));
+    private static final FormulaParameterKey DURATION_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("sever_tendon.duration.base"));
+    private static final FormulaParameterKey DURATION_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("sever_tendon.duration.per_level"));
     protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
             FormulaParameters.builder()
                     .with(HIT_DAMAGE_BASE_PARAMETER, 1.0f)
@@ -54,6 +58,8 @@ public class SeverTendonAbility extends MKAbility {
                     .with(BLEED_DAMAGE_BASE_PARAMETER, 1.0f)
                     .with(BLEED_DAMAGE_PER_LEVEL_PARAMETER, 1.0f)
                     .with(BLEED_DAMAGE_MODIFIER_SCALING_PARAMETER, 0.1f)
+                    .with(DURATION_BASE_PARAMETER, 4.0f)
+                    .with(DURATION_PER_LEVEL_PARAMETER, 1.0f)
                     .build());
     protected final FormulaAttribute hitDamageFormula = new FormulaAttribute("hitDamageFormula",
             AbilityFormula.bonusScaledLinear(HIT_DAMAGE_BASE_PARAMETER, HIT_DAMAGE_PER_LEVEL_PARAMETER,
@@ -61,8 +67,7 @@ public class SeverTendonAbility extends MKAbility {
     protected final FormulaAttribute bleedDamageFormula = new FormulaAttribute("bleedDamageFormula",
             AbilityFormula.bonusScaledLinear(BLEED_DAMAGE_BASE_PARAMETER, BLEED_DAMAGE_PER_LEVEL_PARAMETER,
                     FormulaContextKey.DAMAGE_BONUS, BLEED_DAMAGE_MODIFIER_SCALING_PARAMETER));
-    protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 4);
-    protected final IntAttribute scaleDuration = new IntAttribute("scaleDuration", 1);
+    protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final EnumAttribute<InteractionHand> attackHand = new EnumAttribute<>("attackHand", InteractionHand.MAIN_HAND, InteractionHand.class);
 
     public SeverTendonAbility() {
@@ -70,7 +75,7 @@ public class SeverTendonAbility extends MKAbility {
         setCooldownSeconds(12);
         setManaCost(5);
         setCastTime(0);
-        addAttributes(formulaParameters, hitDamageFormula, bleedDamageFormula, baseDuration, scaleDuration, attackHand);
+        addAttributes(formulaParameters, hitDamageFormula, bleedDamageFormula, durationFormula, attackHand);
         addSkillAttribute(MKAttributes.PANKRATION);
     }
 
@@ -83,7 +88,7 @@ public class SeverTendonAbility extends MKAbility {
                 CoreDamageTypes.BleedDamage.get(), bleedDamageFormula.value(), formulaParameters.value(), level);
         int periodSeconds = SeverTendonEffect.DEFAULT_PERIOD / 20;
         return Component.translatable(getDescriptionTranslationKey(), valueStr,
-                getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()) / 20,
+                getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), level) / 20,
                 dotStr, periodSeconds, (level + 1) * .05f * 100.0f);
     }
 
@@ -125,7 +130,7 @@ public class SeverTendonAbility extends MKAbility {
                     .skillLevel(level);
 
 
-            int dur = getBuffDuration(data, level, baseDuration.value(), scaleDuration.value());
+            int dur = getBuffDuration(data, durationFormula.value(), formulaParameters.value(), level);
             MKEffectBuilder<?> severTendon = SeverTendonEffect.from(entity, bleedDamageFormula.value(), formulaParameters.value())
                     .ability(this)
                     .timed(dur)

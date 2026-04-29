@@ -1,10 +1,34 @@
 {
   "attributes": {
-    "baseDuration": 15,
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:yaup_cast",
     "casting_particles": "mkcore:fx.casting.empty",
-    "scaleDuration": 5,
+    "durationFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:yaup.duration.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:yaup.duration.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
+    "formulaParameters": {
+      "mkultra:yaup.duration.base": 15.0,
+      "mkultra:yaup.duration.per_level": 5.0
+    },
     "tick_particles": "mkultra:yaup_tick"
   },
   "castTime": 0,

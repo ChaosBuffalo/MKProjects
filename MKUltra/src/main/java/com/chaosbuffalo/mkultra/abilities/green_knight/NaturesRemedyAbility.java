@@ -55,12 +55,7 @@ public class NaturesRemedyAbility extends MKAbility {
     protected final FormulaAttribute healingFormula = new FormulaAttribute("healingFormula",
             AbilityFormula.bonusScaledLinear(HEAL_BASE_PARAMETER, HEAL_PER_LEVEL_PARAMETER,
                     FormulaContextKey.HEAL_BONUS, MODIFIER_SCALING_PARAMETER));
-    protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.add(
-            AbilityFormula.param(DURATION_BASE_PARAMETER),
-            AbilityFormula.multiply(
-                    AbilityFormula.param(DURATION_PER_LEVEL_PARAMETER),
-                    AbilityFormula.context(FormulaContextKey.SKILL_LEVEL)
-            )));
+    protected final FormulaAttribute durationFormula = new FormulaAttribute("durationFormula", AbilityFormula.skilledLinear(DURATION_BASE_PARAMETER, DURATION_PER_LEVEL_PARAMETER));
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
     protected final ResourceLocationAttribute tick_particles = new ResourceLocationAttribute("tick_particles", TICK_PARTICLES);
 

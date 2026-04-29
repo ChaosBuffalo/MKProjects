@@ -1,6 +1,5 @@
 {
   "attributes": {
-    "baseDuration": 10,
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:flame_blade_cast",
     "casting_particles": "mkultra:flame_blade_casting",
@@ -11,13 +10,36 @@
       "bonus_scale_param": "mkultra:flame_blade.damage.modifier_scaling",
       "per_level_param": "mkultra:flame_blade.damage.per_level"
     },
+    "durationFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:flame_blade.duration.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:flame_blade.duration.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
     "edge_particles": "mkultra:flame_blade_particles",
     "formulaParameters": {
       "mkultra:flame_blade.damage.base": 1.0,
       "mkultra:flame_blade.damage.modifier_scaling": 1.0,
-      "mkultra:flame_blade.damage.per_level": 1.0
-    },
-    "scaleDuration": 5
+      "mkultra:flame_blade.damage.per_level": 1.0,
+      "mkultra:flame_blade.duration.base": 10.0,
+      "mkultra:flame_blade.duration.per_level": 5.0
+    }
   },
   "castTime": 20,
   "cooldown": 360,

@@ -1,7 +1,6 @@
 {
   "attributes": {
     "attackHand": "main_hand",
-    "baseDuration": 4,
     "bleedDamageFormula": {
       "type": "mkcore:bonus_scaled_linear",
       "base_param": "mkultra:sever_tendon.bleed_damage.base",
@@ -11,10 +10,34 @@
     },
     "cast_animation_category": "mkcore:default",
     "casting_particles": "mkcore:fx.casting.empty",
+    "durationFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:sever_tendon.duration.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:sever_tendon.duration.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
     "formulaParameters": {
       "mkultra:sever_tendon.bleed_damage.base": 1.0,
       "mkultra:sever_tendon.bleed_damage.modifier_scaling": 0.1,
       "mkultra:sever_tendon.bleed_damage.per_level": 1.0,
+      "mkultra:sever_tendon.duration.base": 4.0,
+      "mkultra:sever_tendon.duration.per_level": 1.0,
       "mkultra:sever_tendon.hit_damage.base": 1.0,
       "mkultra:sever_tendon.hit_damage.modifier_scaling": 0.1,
       "mkultra:sever_tendon.hit_damage.per_level": 0.25
@@ -25,8 +48,7 @@
       "bonus_key": "mkcore:damage_bonus",
       "bonus_scale_param": "mkultra:sever_tendon.hit_damage.modifier_scaling",
       "per_level_param": "mkultra:sever_tendon.hit_damage.per_level"
-    },
-    "scaleDuration": 1
+    }
   },
   "castTime": 0,
   "cooldown": 240,

@@ -1,10 +1,34 @@
 {
   "attributes": {
-    "baseDuration": 60,
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:fire_armor_cast",
     "casting_particles": "mkultra:fire_armor_casting",
-    "scaleDuration": 15
+    "durationFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:fire_armor.duration.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:fire_armor.duration.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
+    "formulaParameters": {
+      "mkultra:fire_armor.duration.base": 60.0,
+      "mkultra:fire_armor.duration.per_level": 15.0
+    }
   },
   "castTime": 20,
   "cooldown": 3000,
