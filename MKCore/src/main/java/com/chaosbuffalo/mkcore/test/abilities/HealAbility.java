@@ -88,7 +88,7 @@ public class HealAbility extends MKAbility {
             MKEffectBuilder<?> heal = MKTestEffects.NEW_HEAL.get().builder(castingEntity)
                     .ability(this)
                     .skillLevel(level)
-                    .state(s -> s.setScalingParameters(base.value(), scale.value()));
+                    .state(s -> s.setHealingParameters(base.value(), scale.value(), modifierScaling.value()));
 //            SpellCast heal = ClericHealEffect.Create(entity, targetEntity,
 //                    base.getValue(), scale.getValue());
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> {

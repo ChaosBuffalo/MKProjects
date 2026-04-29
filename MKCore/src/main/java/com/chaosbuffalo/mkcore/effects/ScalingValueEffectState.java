@@ -3,29 +3,24 @@ package com.chaosbuffalo.mkcore.effects;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
 import com.chaosbuffalo.mkcore.formulas.FormulaContext;
 import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 
 public abstract class ScalingValueEffectState extends ParticleEffectState {
     protected AbilityFormula scalingFormula = AbilityFormula.constant(0.0f);
-    protected float modScale = 1.0f;
 
     public void setScalingParameters(float base, float scale) {
-        setScalingParameters(base, scale, 1.0f);
+        setScalingFormula(createLegacyScalingFormula(base, scale));
     }
 
-    public void setScalingParameters(float base, float scale, float modScale) {
-        setScalingFormula(createLegacyScalingFormula(base, scale), modScale);
+    public void setScalingFormula(AbilityFormula scalingFormula, FormulaParameters parameters) {
+        setScalingFormula(scalingFormula.bindParametersStrict(parameters));
     }
 
     public void setScalingFormula(AbilityFormula scalingFormula) {
-        setScalingFormula(scalingFormula, 1.0f);
-    }
-
-    public void setScalingFormula(AbilityFormula scalingFormula, float modScale) {
         this.scalingFormula = scalingFormula;
-        this.modScale = modScale;
     }
 
     public float getScaledValue(int stacks, float skillLevel) {
@@ -40,16 +35,11 @@ public abstract class ScalingValueEffectState extends ParticleEffectState {
         return scalingFormula;
     }
 
-    public float getModifierScale() {
-        return modScale;
-    }
-
     @Override
     public void serializeStorage(CompoundTag stateTag) {
         super.serializeStorage(stateTag);
         Tag formulaTag = AbilityFormula.CODEC.encodeStart(NbtOps.INSTANCE, scalingFormula).getOrThrow();
         stateTag.put("scalingFormula", formulaTag);
-        stateTag.putFloat("modScale", modScale);
     }
 
     @Override
@@ -63,7 +53,6 @@ public abstract class ScalingValueEffectState extends ParticleEffectState {
         } else {
             scalingFormula = createLegacyScalingFormula(stateTag.getFloat("base"), stateTag.getFloat("scale"));
         }
-        modScale = stateTag.contains("modScale") ? stateTag.getFloat("modScale") : 1.0f;
     }
 
     private static AbilityFormula createLegacyScalingFormula(float base, float scale) {

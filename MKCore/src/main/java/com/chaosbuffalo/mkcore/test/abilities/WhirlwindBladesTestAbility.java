@@ -89,7 +89,7 @@ public class WhirlwindBladesTestAbility extends MKAbility {
             float baseAmount = 0.15f;
             float scaling = count * baseAmount;
             // What to do for each target hit
-            MKEffectBuilder<?> damage = AbilityMagicDamageEffect.from(castingEntity, BASE_DAMAGE, DAMAGE_SCALE, scaling)
+            MKEffectBuilder<?> damage = AbilityMagicDamageEffect.from(castingEntity, BASE_DAMAGE, DAMAGE_SCALE)
                     .ability(this)
                     .amplify(level);
             MKEffectBuilder<?> particlePotion = MKOldParticleEffect.from(castingEntity,

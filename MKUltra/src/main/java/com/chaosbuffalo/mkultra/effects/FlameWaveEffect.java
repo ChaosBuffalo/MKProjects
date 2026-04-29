@@ -25,7 +25,7 @@ public class FlameWaveEffect extends MKEffect {
             s.witherDurationBase = witherBase;
             s.witherDurationScale = witherScale;
             s.damageBoost = damageMultiplier;
-            s.setScalingParameters(baseDamage, scaling, modifierScaling);
+            s.setDamageParameters(baseDamage, scaling, modifierScaling);
         });
     }
 
@@ -66,7 +66,8 @@ public class FlameWaveEffect extends MKEffect {
 
             targetData.getEntity().hurt(MKDamageSource.causeAbilityDamage(targetData.getEntity().level(),
                     CoreDamageTypes.FireDamage.get(),
-                    activeEffect.getAbilityId(), activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), getModifierScale()), damage);
+                    activeEffect.getAbilityId(), activeEffect.getDirectEntity(), activeEffect.getSourceEntity())
+                    .setDamageBonusFormula(getDamageBonusFormula()), damage);
             return true;
         }
     }

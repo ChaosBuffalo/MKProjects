@@ -38,7 +38,7 @@ public class NewHealSong extends MKSongAbility {
     @Override
     public void addPulseAreaEffects(IMKEntityData casterData, AreaEffectBuilder areaEffect) {
         MKEffectBuilder<?> effect = MKTestEffects.NEW_HEAL.get().builder(casterData.getEntity())
-                .state(s -> s.setScalingParameters(3, 1))
+                .state(s -> s.setHealingParameters(3, 1))
                 .ability(this);
 
         areaEffect.effect(effect, TargetingContexts.FRIENDLY);

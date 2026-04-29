@@ -14,7 +14,7 @@ public class MKHealing {
 
     public static void healEntityFrom(LivingEntity target, float amount, MKHealSource healSource) {
         float finalValue = MKCore.getEntityData(healSource.getSourceEntity())
-                .map(casterData -> MKCombatFormulas.applyHealBonus(casterData, amount, healSource.getModifierScaling()))
+                .map(casterData -> MKCombatFormulas.applyHealBonus(casterData, amount, healSource.getHealBonusFormula()))
                 .orElse(amount);
 
         MKAbilityHealEvent event = new MKAbilityHealEvent(target, finalValue, healSource);

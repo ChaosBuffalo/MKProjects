@@ -6,7 +6,10 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Mth;
 
+import javax.annotation.Nullable;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public interface AbilityFormula {
     Codec<AbilityFormula> CODEC = AbilityFormulaCodecs.codec();
@@ -60,7 +63,32 @@ public interface AbilityFormula {
         return this;
     }
 
+    default AbilityFormula bindParametersStrict(FormulaParameters parameters) {
+        AbilityFormula bound = bindParameters(parameters);
+        List<FormulaParameterKey> unboundParameters = bound.getUnboundParameters();
+        if (!unboundParameters.isEmpty()) {
+            throw new IllegalStateException("Formula still has unbound parameters: " + unboundParameters);
+        }
+        return bound;
+    }
+
+    default @Nullable Breakdown breakdown(FormulaParameters parameters) {
+        return null;
+    }
+
+    default List<FormulaParameterKey> getUnboundParameters() {
+        Set<FormulaParameterKey> output = new LinkedHashSet<>();
+        collectUnboundParameters(output);
+        return List.copyOf(output);
+    }
+
+    default void collectUnboundParameters(Set<FormulaParameterKey> output) {
+    }
+
     AbilityFormulaType<? extends AbilityFormula> getType();
+
+    record Breakdown(AbilityFormula baseFormula, AbilityFormula bonusFormula) {
+    }
 
     private static <T extends List<AbilityFormula>> DataResult<T> requireNonEmpty(T values, String fieldName) {
         if (values.isEmpty()) {
@@ -121,6 +149,11 @@ public interface AbilityFormula {
         }
 
         @Override
+        public void collectUnboundParameters(Set<FormulaParameterKey> output) {
+            output.add(key);
+        }
+
+        @Override
         public AbilityFormulaType<ParameterValue> getType() {
             return AbilityFormulaTypes.PARAMETER_VALUE.get();
         }
@@ -169,22 +202,46 @@ public interface AbilityFormula {
 
         @Override
         public AbilityFormula bindParameters(FormulaParameters parameters) {
-            return AbilityFormula.add(
-                    AbilityFormula.param(baseParameter),
-                    AbilityFormula.multiply(
-                            AbilityFormula.param(perLevelParameter),
-                            AbilityFormula.context(FormulaContextKey.SKILL_LEVEL)
-                    ),
-                    AbilityFormula.multiply(
-                            AbilityFormula.param(bonusScaleParameter),
-                            AbilityFormula.context(bonusKey)
-                    )
-            ).bindParameters(parameters);
+            return compose().bindParameters(parameters);
+        }
+
+        @Override
+        public Breakdown breakdown(FormulaParameters parameters) {
+            return new Breakdown(baseContribution().bindParametersStrict(parameters),
+                    bonusContribution().bindParametersStrict(parameters));
+        }
+
+        @Override
+        public void collectUnboundParameters(Set<FormulaParameterKey> output) {
+            output.add(baseParameter);
+            output.add(perLevelParameter);
+            output.add(bonusScaleParameter);
         }
 
         @Override
         public AbilityFormulaType<BonusScaledLinear> getType() {
             return AbilityFormulaTypes.BONUS_SCALED_LINEAR.get();
+        }
+
+        private AbilityFormula compose() {
+            return AbilityFormula.add(baseContribution(), bonusContribution());
+        }
+
+        private AbilityFormula baseContribution() {
+            return AbilityFormula.add(
+                    AbilityFormula.param(baseParameter),
+                    AbilityFormula.multiply(
+                            AbilityFormula.param(perLevelParameter),
+                            AbilityFormula.context(FormulaContextKey.SKILL_LEVEL)
+                    )
+            );
+        }
+
+        private AbilityFormula bonusContribution() {
+            return AbilityFormula.multiply(
+                    AbilityFormula.param(bonusScaleParameter),
+                    AbilityFormula.context(bonusKey)
+            );
         }
     }
 
@@ -204,6 +261,11 @@ public interface AbilityFormula {
         @Override
         public AbilityFormula bindParameters(FormulaParameters parameters) {
             return new Add(terms.stream().map(term -> term.bindParameters(parameters)).toList());
+        }
+
+        @Override
+        public void collectUnboundParameters(Set<FormulaParameterKey> output) {
+            terms.forEach(term -> term.collectUnboundParameters(output));
         }
 
         @Override
@@ -233,6 +295,11 @@ public interface AbilityFormula {
         }
 
         @Override
+        public void collectUnboundParameters(Set<FormulaParameterKey> output) {
+            factors.forEach(factor -> factor.collectUnboundParameters(output));
+        }
+
+        @Override
         public AbilityFormulaType<Multiply> getType() {
             return AbilityFormulaTypes.MULTIPLY.get();
         }
@@ -256,6 +323,12 @@ public interface AbilityFormula {
         @Override
         public AbilityFormula bindParameters(FormulaParameters parameters) {
             return new Fraction(numerator.bindParameters(parameters), denominator.bindParameters(parameters));
+        }
+
+        @Override
+        public void collectUnboundParameters(Set<FormulaParameterKey> output) {
+            numerator.collectUnboundParameters(output);
+            denominator.collectUnboundParameters(output);
         }
 
         @Override
@@ -285,6 +358,11 @@ public interface AbilityFormula {
         @Override
         public AbilityFormula bindParameters(FormulaParameters parameters) {
             return new Clamped(value.bindParameters(parameters), min, max);
+        }
+
+        @Override
+        public void collectUnboundParameters(Set<FormulaParameterKey> output) {
+            value.collectUnboundParameters(output);
         }
 
         @Override

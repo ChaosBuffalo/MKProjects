@@ -4,16 +4,41 @@
     "cast_particles": "mkultra:natures_remedy_cast",
     "casting_particles": "mkultra:natures_remedy_casting",
     "durationFormula": {
-      "type": "mkcore:linear",
-      "base": 4.0,
-      "scale": 1.0
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:natures_remedy.duration.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:natures_remedy.duration.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
+    "formulaParameters": {
+      "mkultra:natures_remedy.duration.base": 4.0,
+      "mkultra:natures_remedy.duration.per_level": 1.0,
+      "mkultra:natures_remedy.heal.base": 2.0,
+      "mkultra:natures_remedy.heal.modifier_scaling": 1.0,
+      "mkultra:natures_remedy.heal.per_level": 1.0
     },
     "healingFormula": {
-      "type": "mkcore:linear",
-      "base": 2.0,
-      "scale": 1.0
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:natures_remedy.heal.base",
+      "bonus_key": "mkcore:heal_bonus",
+      "bonus_scale_param": "mkultra:natures_remedy.heal.modifier_scaling",
+      "per_level_param": "mkultra:natures_remedy.heal.per_level"
     },
-    "modifierScaling": 1.0,
     "tick_particles": "mkultra:natures_remedy_tick"
   },
   "castTime": 10,

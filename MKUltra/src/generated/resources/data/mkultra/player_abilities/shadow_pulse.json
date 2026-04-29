@@ -4,17 +4,27 @@
     "cast_animation_category": "mkcore:default",
     "casting_particles": "mkultra:shadow_bolt_casting",
     "damageFormula": {
-      "type": "mkcore:linear",
-      "base": 1.0,
-      "scale": 0.25
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:shadow_pulse.damage.base",
+      "bonus_key": "mkcore:damage_bonus",
+      "bonus_scale_param": "mkultra:shadow_pulse.damage.modifier_scaling",
+      "per_level_param": "mkultra:shadow_pulse.damage.per_level"
     },
     "detonateDamageFormula": {
-      "type": "mkcore:linear",
-      "base": 5.0,
-      "scale": 5.0
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:shadow_pulse.detonate.base",
+      "bonus_key": "mkcore:damage_bonus",
+      "bonus_scale_param": "mkultra:shadow_pulse.damage.modifier_scaling",
+      "per_level_param": "mkultra:shadow_pulse.detonate.per_level"
     },
     "duration": 20,
-    "modifierScaling": 1.0,
+    "formulaParameters": {
+      "mkultra:shadow_pulse.damage.base": 1.0,
+      "mkultra:shadow_pulse.damage.modifier_scaling": 1.0,
+      "mkultra:shadow_pulse.damage.per_level": 0.25,
+      "mkultra:shadow_pulse.detonate.base": 5.0,
+      "mkultra:shadow_pulse.detonate.per_level": 5.0
+    },
     "offset": {
       "x": 0.0,
       "y": 0.5,

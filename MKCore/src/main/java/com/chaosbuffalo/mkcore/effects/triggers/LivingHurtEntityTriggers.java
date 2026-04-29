@@ -175,7 +175,8 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
                                    MKDamageSource source, String typeTag,
                                    List<Trigger> playerHurtTriggers, LivingHurtEntityEffectTriggers effectTriggers) {
         Entity immediate = source.getDirectEntity() != null ? source.getDirectEntity() : livingSource;
-        float newDamage = source.getMKDamageType().applyDamage(livingSource, livingTarget, immediate, event.getNewDamage(), source.getModifierScaling());
+        float newDamage = source.getMKDamageType().applyDamage(livingSource, livingTarget, immediate, event.getNewDamage(),
+                source.getDamageBonusFormula());
         boolean notBlocked = !wasBlocked(source);
         if (notBlocked && source.getMKDamageType().rollCrit(livingSource, livingTarget, immediate)) {
             newDamage = source.getMKDamageType().applyCritDamage(livingSource, livingTarget, immediate, newDamage);

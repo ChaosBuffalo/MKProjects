@@ -33,7 +33,7 @@ public class EngulfingDarknessEffect extends DamageTypeDotEffect {
         return MKUEffects.ENGULFING_DARKNESS.get().builder(source)
                 .state(s -> {
                     s.setEffectParticles(castParticles);
-                    s.setScalingParameters(base, scaling, modifierScaling);
+                    s.setDamageParameters(base, scaling, modifierScaling);
                     s.setTriggerChance(chanceToTrigger);
                     s.setTriggerTime(ticksForTrigger);
                 })

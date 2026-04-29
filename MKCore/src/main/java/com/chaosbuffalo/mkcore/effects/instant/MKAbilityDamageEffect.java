@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -30,7 +31,15 @@ public class MKAbilityDamageEffect extends MKEffect {
                                               float modifierScaling) {
         return CoreEffects.ABILITY_DAMAGE.get().builder(source).state(s -> {
             s.setDamageType(damageType);
-            s.setScalingFormula(damageFormula, modifierScaling);
+            s.setDamageFormula(damageFormula, modifierScaling);
+        });
+    }
+
+    public static MKEffectBuilder<State> from(LivingEntity source, MKDamageType damageType, AbilityFormula damageFormula,
+                                              FormulaParameters parameters) {
+        return CoreEffects.ABILITY_DAMAGE.get().builder(source).state(s -> {
+            s.setDamageType(damageType);
+            s.setParameterizedDamageFormula(damageFormula, parameters);
         });
     }
 
@@ -65,7 +74,8 @@ public class MKAbilityDamageEffect extends MKEffect {
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect activeEffect) {
             DamageSource damage = MKDamageSource.causeAbilityDamage(targetData.getEntity().level(),
                     damageType, activeEffect.getAbilityId(),
-                    activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), getModifierScale());
+                    activeEffect.getDirectEntity(), activeEffect.getSourceEntity())
+                    .setDamageBonusFormula(getDamageBonusFormula());
 
             float value = getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel());
             targetData.getEntity().hurt(damage, value);

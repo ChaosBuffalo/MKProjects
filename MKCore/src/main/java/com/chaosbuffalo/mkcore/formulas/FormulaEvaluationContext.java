@@ -21,6 +21,6 @@ public record FormulaEvaluationContext(FormulaContext runtimeContext, FormulaPar
     }
 
     public float getParameter(FormulaParameterKey key) {
-        return parameters.get(key);
+        return parameters.require(key);
     }
 }

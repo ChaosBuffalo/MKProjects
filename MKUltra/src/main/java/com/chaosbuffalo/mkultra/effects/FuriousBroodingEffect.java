@@ -33,7 +33,7 @@ public class FuriousBroodingEffect extends MKEffect {
         return MKUEffects.FURIOUS_BROODING.get().builder(source)
                 .state(s -> {
                     s.setEffectParticles(castParticles);
-                    s.setScalingParameters(baseHealing, scaling, modifierScaling);
+                    s.setHealingParameters(baseHealing, scaling, modifierScaling);
                 })
                 .periodic(DEFAULT_PERIOD);
     }
@@ -60,7 +60,8 @@ public class FuriousBroodingEffect extends MKEffect {
             float healing = getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel());
             LivingEntity target = targetData.getEntity();
             MKHealing.healEntityFrom(target, healing, MKHealSource.getNatureHeal(activeEffect.getAbilityId(),
-                    activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), getModifierScale()));
+                            activeEffect.getDirectEntity(), activeEffect.getSourceEntity())
+                    .setHealBonusFormula(getHealBonusFormula()));
             sendEffectParticles(targetData.getEntity());
             return true;
         }

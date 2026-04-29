@@ -19,7 +19,7 @@ public class IgniteEffect extends MKEffect {
 
     public static MKEffectBuilder<?> from(LivingEntity source, float baseDamage, float scaling, float modifierScaling) {
         return MKUEffects.IGNITE.get().builder(source)
-                .state(s -> s.setScalingParameters(baseDamage, scaling, modifierScaling));
+                .state(s -> s.setDamageParameters(baseDamage, scaling, modifierScaling));
     }
 
     public IgniteEffect() {
@@ -47,11 +47,11 @@ public class IgniteEffect extends MKEffect {
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect activeEffect) {
 
             float damage = getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel());
-            float scaling = getModifierScale();
             targetData.getEntity().hurt(MKDamageSource.causeAbilityDamage(
                     targetData.getEntity().level(),
                     CoreDamageTypes.FireDamage.get(),
-                    activeEffect.getAbilityId(), activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), scaling), damage);
+                    activeEffect.getAbilityId(), activeEffect.getDirectEntity(), activeEffect.getSourceEntity())
+                    .setDamageBonusFormula(getDamageBonusFormula()), damage);
 
             MKCore.getEntityData(activeEffect.getSourceEntity()).ifPresent(casterData -> {
                 MKEffectBuilder<?> burn = MKUAbilities.EMBER.get().getBurnCast(casterData, activeEffect.getStackCount())

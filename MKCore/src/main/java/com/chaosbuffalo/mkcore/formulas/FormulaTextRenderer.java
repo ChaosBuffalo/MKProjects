@@ -13,7 +13,16 @@ public class FormulaTextRenderer {
     private static final NumberFormat NUMBER_FORMATTER = NumberFormat.getNumberInstance();
 
     public static MutableComponent render(AbilityFormula formula, FormulaContext context, FormulaTextStyle style) {
-        return render(formula, null, context, style);
+        return render(formula, (AbilityFormula) null, context, style);
+    }
+
+    public static MutableComponent render(AbilityFormula formula, FormulaParameters parameters,
+                                          FormulaContext context, FormulaTextStyle style) {
+        AbilityFormula.Breakdown breakdown = formula.breakdown(parameters);
+        if (breakdown != null) {
+            return render(breakdown.baseFormula(), breakdown.bonusFormula(), context, style);
+        }
+        return render(formula.bindParametersStrict(parameters), context, style);
     }
 
     public static MutableComponent render(AbilityFormula baseFormula, @Nullable AbilityFormula bonusFormula,
@@ -35,8 +44,17 @@ public class FormulaTextRenderer {
         return Math.round(formula.evaluate(context));
     }
 
+    public static int round(AbilityFormula formula, FormulaParameters parameters, FormulaContext context) {
+        return Math.round(formula.bindParametersStrict(parameters).evaluate(context));
+    }
+
     public static String format(AbilityFormula formula, FormulaContext context, FormulaTextStyle style) {
         return formatValue(formula.evaluate(context), style);
+    }
+
+    public static String format(AbilityFormula formula, FormulaParameters parameters,
+                                FormulaContext context, FormulaTextStyle style) {
+        return formatValue(formula.bindParametersStrict(parameters).evaluate(context), style);
     }
 
     private static MutableComponent style(MutableComponent component, FormulaTextStyle style) {

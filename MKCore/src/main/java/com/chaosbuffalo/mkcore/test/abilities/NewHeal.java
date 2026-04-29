@@ -71,7 +71,7 @@ public class NewHeal extends MKAbility {
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> {
                 MKEffectBuilder<?> heal = MKTestEffects.NEW_HEAL.get().builder(castingEntity)
                         .ability(this)
-                        .state(s -> s.setScalingParameters(base.value(), scale.value()))
+                        .state(s -> s.setHealingParameters(base.value(), scale.value(), modifierScaling.value()))
                         .timed(200)
                         .skillLevel(level)
                         .periodic(40);

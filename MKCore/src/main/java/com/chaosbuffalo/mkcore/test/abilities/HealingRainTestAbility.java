@@ -66,7 +66,7 @@ public class HealingRainTestAbility extends MKAbility {
         if (castTimeLeft % tickSpeed == 0) {
             int level = 0;
             MKEffectBuilder<?> heal = MKTestEffects.NEW_HEAL.get().builder(castingEntity)
-                    .state(s -> s.setScalingParameters(BASE_AMOUNT, AMOUNT_SCALE))
+                    .state(s -> s.setHealingParameters(BASE_AMOUNT, AMOUNT_SCALE))
                     .ability(this)
                     .amplify(level);
             MKEffectBuilder<?> particlePotion = MKOldParticleEffect.from(castingEntity,

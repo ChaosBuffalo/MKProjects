@@ -22,6 +22,8 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public class MKAbilityFormulaGameTests {
     private static final FormulaParameterKey TEST_BASE = FormulaParameterKey.of(MKCore.id("test.base"));
     private static final FormulaParameterKey TEST_SCALE = FormulaParameterKey.of(MKCore.id("test.scale"));
+    private static final FormulaParameterKey TEST_MODIFIER_SCALING =
+            FormulaParameterKey.of(MKCore.id("test.modifier_scaling"));
 
     @GameTest(template = "player_data_phase0")
     public static void nestedFormulaCodecRoundTripPreservesEvaluation(GameTestHelper helper) {
@@ -76,14 +78,23 @@ public class MKAbilityFormulaGameTests {
         FormulaParameters original = FormulaParameters.builder()
                 .with(TEST_BASE, 6.0f)
                 .with(TEST_SCALE, 1.25f)
+                .with(TEST_MODIFIER_SCALING, 0.5f)
                 .build();
         JsonElement encoded = FormulaParameters.CODEC.encodeStart(JsonOps.INSTANCE, original).getOrThrow();
         FormulaParameters decoded = FormulaParameters.CODEC.parse(JsonOps.INSTANCE, encoded).getOrThrow();
+        String encodedString = encoded.toString();
 
-        helper.assertTrue(encoded.toString().contains("\"mkcore:test.base\":6.0"),
+        helper.assertTrue(encodedString.contains("\"mkcore:test.base\":6.0"),
                 "encoded parameter map should use namespaced parameter keys");
+        helper.assertTrue(encodedString.indexOf("\"mkcore:test.base\"")
+                        < encodedString.indexOf("\"mkcore:test.scale\"")
+                        && encodedString.indexOf("\"mkcore:test.scale\"")
+                        < encodedString.indexOf("\"mkcore:test.modifier_scaling\""),
+                "encoded parameter map should preserve insertion order");
         assertFloatEquals(helper, decoded.get(TEST_BASE), 6.0f, 0.0001f, "decoded base parameter");
         assertFloatEquals(helper, decoded.get(TEST_SCALE), 1.25f, 0.0001f, "decoded scale parameter");
+        assertFloatEquals(helper, decoded.get(TEST_MODIFIER_SCALING), 0.5f, 0.0001f,
+                "decoded modifier scaling parameter");
         helper.succeed();
     }
 
@@ -119,12 +130,12 @@ public class MKAbilityFormulaGameTests {
                 TEST_BASE,
                 TEST_SCALE,
                 FormulaContextKey.HEAL_BONUS,
-                FormulaParameterKey.of(MKCore.id("test.modifier_scaling"))
+                TEST_MODIFIER_SCALING
         );
         FormulaParameters parameters = FormulaParameters.builder()
                 .with(TEST_BASE, 5.0f)
                 .with(TEST_SCALE, 3.0f)
-                .with(FormulaParameterKey.of(MKCore.id("test.modifier_scaling")), 0.5f)
+                .with(TEST_MODIFIER_SCALING, 0.5f)
                 .build();
         FormulaContext runtimeContext = FormulaContext.builder()
                 .withSkillLevel(2.0f)
@@ -139,6 +150,74 @@ public class MKAbilityFormulaGameTests {
                 13.0f, 0.0001f, "semantic formula evaluation");
         assertFloatEquals(helper, boundFormula.evaluate(runtimeContext), 13.0f, 0.0001f,
                 "bound semantic formula evaluation");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void parameterizedFormulaTextRendererShowsBonusBreakdown(GameTestHelper helper) {
+        AbilityFormula formula = AbilityFormula.bonusScaledLinear(
+                TEST_BASE,
+                TEST_SCALE,
+                FormulaContextKey.HEAL_BONUS,
+                TEST_MODIFIER_SCALING
+        );
+        FormulaParameters parameters = FormulaParameters.builder()
+                .with(TEST_BASE, 5.0f)
+                .with(TEST_SCALE, 3.0f)
+                .with(TEST_MODIFIER_SCALING, 0.5f)
+                .build();
+        FormulaContext context = FormulaContext.builder()
+                .withSkillLevel(2.0f)
+                .withHealBonus(4.0f)
+                .build();
+
+        String rendered = FormulaTextRenderer.render(formula, parameters, context, FormulaTextStyle.HEAL).getString();
+        helper.assertTrue(rendered.startsWith("13"), "rendered total should include the full formula value");
+        helper.assertTrue(rendered.contains("(+2)"), "rendered value should include the semantic bonus breakdown");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void parameterizedFormatAndRoundUseProvidedParameters(GameTestHelper helper) {
+        AbilityFormula formula = AbilityFormula.add(
+                AbilityFormula.param(TEST_BASE),
+                AbilityFormula.multiply(
+                        AbilityFormula.param(TEST_SCALE),
+                        AbilityFormula.context(FormulaContextKey.SKILL_LEVEL)
+                )
+        );
+        FormulaParameters parameters = FormulaParameters.builder()
+                .with(TEST_BASE, 2.4f)
+                .with(TEST_SCALE, 1.6f)
+                .build();
+        FormulaContext context = FormulaContext.builder()
+                .withSkillLevel(2.0f)
+                .build();
+
+        helper.assertTrue("5.6".equals(FormulaTextRenderer.format(formula, parameters, context, FormulaTextStyle.NUMBER)),
+                "parameterized format should evaluate with the provided parameter values");
+        helper.assertTrue(FormulaTextRenderer.round(formula, parameters, context) == 6,
+                "parameterized round should evaluate with the provided parameter values");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void strictBindingFailsWhenParametersAreMissing(GameTestHelper helper) {
+        AbilityFormula formula = AbilityFormula.add(
+                AbilityFormula.param(TEST_BASE),
+                AbilityFormula.multiply(
+                        AbilityFormula.param(TEST_SCALE),
+                        AbilityFormula.context(FormulaContextKey.SKILL_LEVEL)
+                )
+        );
+        boolean threw = false;
+        try {
+            formula.bindParametersStrict(FormulaParameters.builder().with(TEST_BASE, 4.0f).build());
+        } catch (IllegalStateException e) {
+            threw = e.getMessage().contains(TEST_SCALE.toString());
+        }
+
+        helper.assertTrue(threw, "strict parameter binding should fail when a parameter is missing");
         helper.succeed();
     }
 

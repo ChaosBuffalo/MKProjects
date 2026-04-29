@@ -1,6 +1,9 @@
 package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.core.healing.MKHealSource;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContext;
 import net.minecraft.world.entity.LivingEntity;
 
 public class MKCombatFormulas {
@@ -30,8 +33,14 @@ public class MKCombatFormulas {
     }
 
     public static float applyHealBonus(IMKEntityData entityData, float amount, float modifierScaling) {
-        float mod = entityData.getStats().getHealBonus();
-        return amount + mod * modifierScaling;
+        return applyHealBonus(entityData, amount, MKHealSource.createLegacyHealBonusFormula(modifierScaling));
+    }
+
+    public static float applyHealBonus(IMKEntityData entityData, float amount, AbilityFormula healBonusFormula) {
+        FormulaContext context = FormulaContext.builder()
+                .withHealBonus(entityData.getStats().getHealBonus())
+                .build();
+        return amount + healBonusFormula.evaluate(context);
     }
 
     public static float applyHealEfficiency(IMKEntityData entityData, float amount) {

@@ -4,6 +4,11 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
+import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.test.effects.DamagePipelineProbeEffect;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
@@ -32,6 +37,12 @@ public class MKDamagePipelineCharacterizationGameTests {
     private static final BlockPos TARGET_RANGED_ALT_POS = new BlockPos(7, 2, 3);
     private static final float DAMAGE_AMOUNT = 10.0f;
     private static final float STARTING_POISE = 20.0f;
+    private static final FormulaParameterKey TEST_DAMAGE_BASE =
+            FormulaParameterKey.of(MKCore.id("test.damage.base"));
+    private static final FormulaParameterKey TEST_DAMAGE_PER_LEVEL =
+            FormulaParameterKey.of(MKCore.id("test.damage.per_level"));
+    private static final FormulaParameterKey TEST_DAMAGE_MODIFIER_SCALING =
+            FormulaParameterKey.of(MKCore.id("test.damage.modifier_scaling"));
 
     @GameTest(template = "player_data_phase0")
     public static void fullShieldBlockSkipsAttackerAndVictimDamageTriggers(GameTestHelper helper) {
@@ -378,6 +389,65 @@ public class MKDamagePipelineCharacterizationGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void mkAbilityDamageModifierScalingStillAddsConfiguredDamageBonus(GameTestHelper helper) {
+        final float baseDamage = 6.0f;
+        final float fireBonus = 8.0f;
+        final float modifierScaling = 0.5f;
+
+        Player attacker = createMockPlayer(helper, ATTACKER_POS, false);
+        Player target = createMockPlayer(helper, TARGET_POS, false);
+        setBaseValue(attacker, MKAttributes.FIRE_DAMAGE, fireBonus);
+        setBaseValue(attacker, MKAttributes.SPELL_CRIT, 0.0);
+
+        helper.startSequence()
+                .thenExecuteAfter(2, () -> {
+                    float damage = dealMKAbilityDamage(attacker, target, baseDamage, modifierScaling);
+
+                    assertFloatEquals(helper, damage, baseDamage + fireBonus * modifierScaling,
+                            0.001f, "legacy modifier scaling should still add the configured fire bonus");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void parameterizedMkAbilityDamageEffectAppliesRuntimeDamageBonus(GameTestHelper helper) {
+        final float skillLevel = 3.0f;
+        final float fireBonus = 4.0f;
+
+        Player attacker = createMockPlayer(helper, ATTACKER_POS, false);
+        Player target = createMockPlayer(helper, TARGET_POS, false);
+        setBaseValue(attacker, MKAttributes.FIRE_DAMAGE, fireBonus);
+        setBaseValue(attacker, MKAttributes.SPELL_CRIT, 0.0);
+
+        AbilityFormula damageFormula = AbilityFormula.bonusScaledLinear(
+                TEST_DAMAGE_BASE,
+                TEST_DAMAGE_PER_LEVEL,
+                FormulaContextKey.DAMAGE_BONUS,
+                TEST_DAMAGE_MODIFIER_SCALING
+        );
+        FormulaParameters parameters = FormulaParameters.builder()
+                .with(TEST_DAMAGE_BASE, 2.0f)
+                .with(TEST_DAMAGE_PER_LEVEL, 1.0f)
+                .with(TEST_DAMAGE_MODIFIER_SCALING, 0.5f)
+                .build();
+
+        helper.startSequence()
+                .thenExecuteAfter(2, () -> {
+                    float startingHealth = target.getHealth();
+                    MKCore.getPlayerOrThrow(target).getEffects().addEffect(
+                            MKAbilityDamageEffect.from(attacker, CoreDamageTypes.FireDamage.get(), damageFormula, parameters)
+                                    .ability(MKTestAbilities.TEST_EMBER.get())
+                                    .skillLevel(skillLevel)
+                    );
+                    float damage = startingHealth - target.getHealth();
+
+                    assertFloatEquals(helper, damage, 7.0f, 0.001f,
+                            "parameterized ability damage should add runtime fire bonus through the damage pipeline");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void mkAbilityDamageCurrentlyIgnoresFireResistanceWithoutBypassesArmorTag(GameTestHelper helper) {
         final float baseDamage = 6.0f;
 
@@ -450,9 +520,13 @@ public class MKDamagePipelineCharacterizationGameTests {
     }
 
     private static float dealMKAbilityDamage(Player attacker, Player target, float damageAmount) {
+        return dealMKAbilityDamage(attacker, target, damageAmount, 1.0f);
+    }
+
+    private static float dealMKAbilityDamage(Player attacker, Player target, float damageAmount, float modifierScaling) {
         float startingHealth = target.getHealth();
         target.hurt(MKDamageSource.causeAbilityDamage(target.level(), CoreDamageTypes.FireDamage.get(),
-                MKTestAbilities.TEST_EMBER.get().getAbilityId(), attacker, attacker), damageAmount);
+                MKTestAbilities.TEST_EMBER.get().getAbilityId(), attacker, attacker, modifierScaling), damageAmount);
         return startingHealth - target.getHealth();
     }
 

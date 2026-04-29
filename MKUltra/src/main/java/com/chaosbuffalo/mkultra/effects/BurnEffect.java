@@ -26,7 +26,7 @@ public class BurnEffect extends DamageTypeDotEffect {
         return MKUEffects.BURN.get().builder(source)
                 .state(s -> {
                     s.setEffectParticles(castParticles);
-                    s.setScalingParameters(base, scaling, modifierScaling);
+                    s.setDamageParameters(base, scaling, modifierScaling);
                 })
                 .periodic(DEFAULT_PERIOD);
     }

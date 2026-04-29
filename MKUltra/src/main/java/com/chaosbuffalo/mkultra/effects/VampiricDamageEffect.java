@@ -42,7 +42,7 @@ public class VampiricDamageEffect extends MKEffect {
                                               float scaling, float modifierScaling, float healthScaling, float healModScaling) {
         return MKUEffects.VAMPIRIC_DAMAGE.get().builder(source).state((s) -> {
             s.setDamageType(damageType);
-            s.setScalingParameters(baseDamage, scaling, modifierScaling);
+            s.setDamageParameters(baseDamage, scaling, modifierScaling);
             s.setHealthScaling(healthScaling);
             s.setHealModScaling(healModScaling);
         });
@@ -95,13 +95,15 @@ public class VampiricDamageEffect extends MKEffect {
 
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect activeEffect) {
             DamageSource damage = MKDamageSource.causeAbilityDamage(targetData.getEntity().level(), this.damageType, activeEffect.getAbilityId(),
-                    activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), this.getModifierScale());
+                    activeEffect.getDirectEntity(), activeEffect.getSourceEntity())
+                    .setDamageBonusFormula(getDamageBonusFormula());
             float value = this.getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel());
             targetData.getEntity().hurt(damage, value);
             LivingEntity source = activeEffect.getSourceEntity();
             if (source != null) {
                 MKHealSource healSource = MKHealSource.getShadowHeal(activeEffect.getAbilityId(),
-                        activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), getHealModScaling());
+                        activeEffect.getDirectEntity(), activeEffect.getSourceEntity())
+                        .setHealBonusFormula(MKHealSource.createLegacyHealBonusFormula(getHealModScaling()));
                 MKHealing.healEntityFrom(source, value * getHealthScaling(), healSource);
             }
             return true;

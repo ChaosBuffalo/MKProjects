@@ -7,7 +7,8 @@ import com.chaosbuffalo.mkcore.core.combat.AbilityMeleeAttackExecutor;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
-import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
+import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
+import com.chaosbuffalo.mkcore.formulas.FormulaContext;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import net.minecraft.nbt.CompoundTag;
@@ -26,7 +27,7 @@ public class AbilityMeleeDamageEffect extends MKEffect {
     public static MKEffectBuilder<State> from(LivingEntity source, InteractionHand hand, float baseDamage,
                                               float scaling, float modifierScaling) {
         return CoreEffects.ABILITY_MELEE_DAMAGE.get().builder(source).state(s -> {
-            s.setScalingParameters(baseDamage, scaling, modifierScaling);
+            s.setDamageParameters(baseDamage, scaling, modifierScaling);
             s.setHand(hand);
         });
     }
@@ -43,7 +44,7 @@ public class AbilityMeleeDamageEffect extends MKEffect {
         return CoreEffects.ABILITY_MELEE_DAMAGE.get().builder(source).state(s -> {
             s.setHand(hand);
             s.setSwingDamageScale(swingDamageScale);
-            s.setScalingParameters(baseDamage, scaling, modifierScaling);
+            s.setDamageParameters(baseDamage, scaling, modifierScaling);
         });
     }
 
@@ -62,7 +63,7 @@ public class AbilityMeleeDamageEffect extends MKEffect {
         return new MKEffectBuilder<>(this, sourceEntity, this::makeState);
     }
 
-    public static class State extends ScalingValueEffectState {
+    public static class State extends ScalingDamageEffectState {
         private InteractionHand hand = InteractionHand.MAIN_HAND;
         private float swingDamageScale = 1.0f;
 
@@ -100,8 +101,10 @@ public class AbilityMeleeDamageEffect extends MKEffect {
             }
             return MKCore.getEntityData(sourceEntity).map(sourceData -> {
                 float rawBonus = sourceData.getStats().getDamageTypeBonus(CoreDamageTypes.MeleeDamage.get());
-                float bonusDamage = getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel()) +
-                        rawBonus * getModifierScale();
+                float bonusDamage = getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel())
+                        + getDamageBonusFormula().evaluate(FormulaContext.builder()
+                                .withDamageBonus(rawBonus)
+                                .build());
                 AbilityMeleeAttackContext context = new AbilityMeleeAttackContext(
                         sourceData,
                         sourceEntity,

@@ -4,7 +4,7 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
-import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
+import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageSources;
@@ -20,8 +20,12 @@ public class AbilityMagicDamageEffect extends MKEffect {
     }
 
     public static MKEffectBuilder<State> from(LivingEntity source, float baseDamage, float scaling, float modifierScaling) {
+        return from(source, baseDamage, scaling);
+    }
+
+    public static MKEffectBuilder<State> from(LivingEntity source, float baseDamage, float scaling) {
         return CoreEffects.ABILITY_MAGIC_DAMAGE.value().builder(source)
-                .state(s -> s.setScalingParameters(baseDamage, scaling, modifierScaling));
+                .state(s -> s.setScalingParameters(baseDamage, scaling));
     }
 
     @Override
@@ -39,7 +43,7 @@ public class AbilityMagicDamageEffect extends MKEffect {
         return new MKEffectBuilder<>(this, sourceEntity, this::makeState);
     }
 
-    public static class State extends ScalingDamageEffectState {
+    public static class State extends ScalingValueEffectState {
 
         @Override
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect activeEffect) {

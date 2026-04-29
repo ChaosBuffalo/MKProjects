@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
-import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
+import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
@@ -24,7 +24,7 @@ public class RepulseEffect extends MKEffect {
 
     public static MKEffectBuilder<?> from(LivingEntity source, float base, float scale, Vec3 sourcePos) {
         return MKUEffects.REPULSE.get().builder(source).state(s -> {
-            s.setScalingParameters(base, scale, 0.0f);
+            s.setScalingParameters(base, scale);
             s.setPos(sourcePos);
         });
     }
@@ -44,7 +44,7 @@ public class RepulseEffect extends MKEffect {
         return new RepulseEffect.State();
     }
 
-    public static class State extends ScalingDamageEffectState {
+    public static class State extends ScalingValueEffectState {
         protected Vec3 pos;
 
         @Override

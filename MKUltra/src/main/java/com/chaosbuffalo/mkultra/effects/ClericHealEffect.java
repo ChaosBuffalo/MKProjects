@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -26,7 +27,13 @@ public class ClericHealEffect extends MKEffect {
     }
 
     public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula healingFormula, float modScale) {
-        return MKUEffects.CLERIC_HEAL.get().builder(source).state(s -> s.setScalingFormula(healingFormula, modScale));
+        return MKUEffects.CLERIC_HEAL.get().builder(source).state(s -> s.setHealingFormula(healingFormula, modScale));
+    }
+
+    public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula healingFormula,
+                                          FormulaParameters parameters) {
+        return MKUEffects.CLERIC_HEAL.get().builder(source)
+                .state(s -> s.setParameterizedHealingFormula(healingFormula, parameters));
     }
 
     @Override
@@ -58,7 +65,8 @@ public class ClericHealEffect extends MKEffect {
             float value = getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel());
 //            MKUltra.LOGGER.info("ClericHealEffect.performEffect {} on {} from {} {}", value, target, source, instance);
             MKHealSource heal = MKHealSource.getHolyHeal(activeEffect.getAbilityId(),
-                    activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), getModifierScale());
+                            activeEffect.getDirectEntity(), activeEffect.getSourceEntity())
+                    .setHealBonusFormula(getHealBonusFormula());
             heal.setDamageUndead(activeEffect.hasSourceEntity() && !activeEffect.getSourceEntity().isInvertedHealAndHarm());
             MKHealing.healEntityFrom(target, value, heal);
             return true;

@@ -31,7 +31,7 @@ public class DrownEffect extends DamageTypeDotEffect {
         return MKUEffects.DROWN.get().builder(source)
                 .state(s -> {
                     s.setEffectParticles(castParticles);
-                    s.setScalingParameters(base, scaling, modifierScaling);
+                    s.setDamageParameters(base, scaling, modifierScaling);
                 })
                 .periodic(DEFAULT_PERIOD);
     }
@@ -66,4 +66,3 @@ public class DrownEffect extends DamageTypeDotEffect {
         }
     }
 }
-

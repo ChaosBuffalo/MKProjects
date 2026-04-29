@@ -1,9 +1,33 @@
 {
   "attributes": {
-    "base": 4.0,
     "cast_animation_category": "mkcore:default",
     "casting_particles": "mkcore:fx.casting.empty",
-    "scale": 4.0
+    "drainFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkultra:soul_drain.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkultra:soul_drain.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
+    "formulaParameters": {
+      "mkultra:soul_drain.base": 4.0,
+      "mkultra:soul_drain.per_level": 4.0
+    }
   },
   "castTime": 0,
   "cooldown": 20,

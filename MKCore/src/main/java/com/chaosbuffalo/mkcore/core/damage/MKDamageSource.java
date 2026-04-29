@@ -2,6 +2,8 @@ package com.chaosbuffalo.mkcore.core.damage;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -19,6 +21,7 @@ import javax.annotation.Nullable;
 public abstract class MKDamageSource extends DamageSource {
     protected final MKDamageType damageType;
     protected float modifierScaling = 1.0f;
+    protected AbilityFormula damageBonusFormula = createLegacyDamageBonusFormula(1.0f);
     @Nullable
     protected InteractionHand attackHand;
 
@@ -136,6 +139,16 @@ public abstract class MKDamageSource extends DamageSource {
 
     public MKDamageSource setModifierScaling(float value) {
         modifierScaling = value;
+        damageBonusFormula = createLegacyDamageBonusFormula(value);
+        return this;
+    }
+
+    public AbilityFormula getDamageBonusFormula() {
+        return damageBonusFormula;
+    }
+
+    public MKDamageSource setDamageBonusFormula(AbilityFormula damageBonusFormula) {
+        this.damageBonusFormula = damageBonusFormula;
         return this;
     }
 
@@ -155,6 +168,13 @@ public abstract class MKDamageSource extends DamageSource {
 
     public boolean isMeleeDamage() {
         return damageType.equals(CoreDamageTypes.MeleeDamage.get());
+    }
+
+    public static AbilityFormula createLegacyDamageBonusFormula(float modifierScaling) {
+        return AbilityFormula.multiply(
+                AbilityFormula.constant(modifierScaling),
+                AbilityFormula.context(FormulaContextKey.DAMAGE_BONUS)
+        );
     }
 
     public static MKDamageSource causeAbilityDamage(Level level, MKDamageType damageType,

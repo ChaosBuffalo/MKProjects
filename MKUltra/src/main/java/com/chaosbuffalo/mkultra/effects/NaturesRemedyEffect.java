@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -33,7 +34,17 @@ public class NaturesRemedyEffect extends MKEffect {
         return MKUEffects.NATURES_REMEDY.get().builder(source)
                 .state(s -> {
                     s.setEffectParticles(castParticles);
-                    s.setScalingFormula(healingFormula, modScale);
+                    s.setHealingFormula(healingFormula, modScale);
+                })
+                .periodic(DEFAULT_PERIOD);
+    }
+
+    public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula healingFormula,
+                                          FormulaParameters parameters, ResourceLocation castParticles) {
+        return MKUEffects.NATURES_REMEDY.get().builder(source)
+                .state(s -> {
+                    s.setEffectParticles(castParticles);
+                    s.setParameterizedHealingFormula(healingFormula, parameters);
                 })
                 .periodic(DEFAULT_PERIOD);
     }
@@ -66,8 +77,8 @@ public class NaturesRemedyEffect extends MKEffect {
             float value = getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel());
             MKHealSource heal = MKHealSource.getNatureHeal(activeEffect.getAbilityId(),
                     activeEffect.getDirectEntity(),
-                    activeEffect.getSourceEntity(),
-                    getModifierScale());
+                    activeEffect.getSourceEntity())
+                    .setHealBonusFormula(getHealBonusFormula());
             heal.setDamageUndead(activeEffect.hasSourceEntity() && !activeEffect.getSourceEntity().isInvertedHealAndHarm());
             MKHealing.healEntityFrom(target, value, heal);
             sendEffectParticles(targetData.getEntity());

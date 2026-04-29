@@ -80,7 +80,6 @@ public class HolyWordAbility extends ProjectileAbility {
                 MKEffectBuilder<?> stunCounter = HolyWordEffect.from(caster,
                                 baseStunDuration.value(),
                                 scaleStunDuration.value(),
-                                stunModiferScaling.value(),
                                 stacks.value())
                         .ability(this)
                         .directEntity(projectile)

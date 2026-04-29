@@ -10,9 +10,13 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
 import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.PullEffect;
@@ -28,14 +32,35 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class ShadowPulseAbility extends WindUpPulseAbility {
+    private static final FormulaParameterKey DAMAGE_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("shadow_pulse.damage.base"));
+    private static final FormulaParameterKey DAMAGE_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("shadow_pulse.damage.per_level"));
+    private static final FormulaParameterKey DETONATE_BASE_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("shadow_pulse.detonate.base"));
+    private static final FormulaParameterKey DETONATE_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("shadow_pulse.detonate.per_level"));
+    private static final FormulaParameterKey MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKUltra.id("shadow_pulse.damage.modifier_scaling"));
     private static final ResourceLocation PULSE_PARTICLES = MKUltra.id("shadow_pulse_detonate");
     public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("shadow_bolt_casting");
     private static final ResourceLocation WAIT_PARTICLES = MKUltra.id("shadow_pulse_wait");
-    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula", AbilityFormula.linear(1.0f, 0.25f));
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(DAMAGE_BASE_PARAMETER, 1.0f)
+                    .with(DAMAGE_PER_LEVEL_PARAMETER, 0.25f)
+                    .with(DETONATE_BASE_PARAMETER, 5.0f)
+                    .with(DETONATE_PER_LEVEL_PARAMETER, 5.0f)
+                    .with(MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .build());
+    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula",
+            AbilityFormula.bonusScaledLinear(DAMAGE_BASE_PARAMETER, DAMAGE_PER_LEVEL_PARAMETER,
+                    FormulaContextKey.DAMAGE_BONUS, MODIFIER_SCALING_PARAMETER));
     protected final FloatAttribute baseGravity = new FloatAttribute("baseGravity", 0.25f);
     protected final FloatAttribute scaleGravity = new FloatAttribute("scaleGravity", 0.0f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
-    protected final FormulaAttribute detonateDamageFormula = new FormulaAttribute("detonateDamageFormula", AbilityFormula.linear(5.0f, 5.0f));
+    protected final FormulaAttribute detonateDamageFormula = new FormulaAttribute("detonateDamageFormula",
+            AbilityFormula.bonusScaledLinear(DETONATE_BASE_PARAMETER, DETONATE_PER_LEVEL_PARAMETER,
+                    FormulaContextKey.DAMAGE_BONUS, MODIFIER_SCALING_PARAMETER));
 
 
     public ShadowPulseAbility() {
@@ -47,7 +72,7 @@ public class ShadowPulseAbility extends WindUpPulseAbility {
         pulseParticles.setDefaultValue(PULSE_PARTICLES);
         waitParticles.setDefaultValue(WAIT_PARTICLES);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
-        addAttributes(damageFormula, modifierScaling, baseGravity, scaleGravity, detonateDamageFormula);
+        addAttributes(formulaParameters, damageFormula, baseGravity, scaleGravity, detonateDamageFormula);
     }
 
     @Override
@@ -55,7 +80,7 @@ public class ShadowPulseAbility extends WindUpPulseAbility {
         float level = context.getSkill(MKAttributes.CONJURATION);
         LivingEntity castingEntity = casterData.getEntity();
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
-                        damageFormula.value(), modifierScaling.value())
+                        damageFormula.value(), formulaParameters.value())
                 .ability(this)
                 .skillLevel(level);
         MKEffectBuilder<?> pull = PullEffect.from(castingEntity, baseGravity.value(), scaleGravity.value(), position)
@@ -64,7 +89,7 @@ public class ShadowPulseAbility extends WindUpPulseAbility {
         MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_shadow_10.value(), castingEntity.getSoundSource())
                 .ability(this);
         MKEffectBuilder<?> detonateDamage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
-                        detonateDamageFormula.value(), modifierScaling.value())
+                        detonateDamageFormula.value(), formulaParameters.value())
                 .ability(this)
                 .skillLevel(level);
         MKEffectBuilder<?> detonateSound = SoundEffect.from(castingEntity, MKUSounds.spell_shadow_9.value(), castingEntity.getSoundSource())
@@ -82,8 +107,10 @@ public class ShadowPulseAbility extends WindUpPulseAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.CONJURATION);
-        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(), damageFormula.value(), level, modifierScaling.value());
-        Component detonateStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(), detonateDamageFormula.value(), level, modifierScaling.value());
+        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(),
+                damageFormula.value(), formulaParameters.value(), level);
+        Component detonateStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(),
+                detonateDamageFormula.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(),
                 NUMBER_FORMATTER.format(radius.value()),
                 damageStr,

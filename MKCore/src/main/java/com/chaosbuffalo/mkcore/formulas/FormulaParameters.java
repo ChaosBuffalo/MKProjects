@@ -2,7 +2,8 @@ package com.chaosbuffalo.mkcore.formulas;
 
 import com.mojang.serialization.Codec;
 
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class FormulaParameters {
@@ -21,7 +22,7 @@ public class FormulaParameters {
     }
 
     private static FormulaParameters fromMap(Map<FormulaParameterKey, Float> values) {
-        return values.isEmpty() ? EMPTY : new FormulaParameters(Map.copyOf(values));
+        return values.isEmpty() ? EMPTY : new FormulaParameters(Collections.unmodifiableMap(new LinkedHashMap<>(values)));
     }
 
     public Map<FormulaParameterKey, Float> asMap() {
@@ -36,8 +37,16 @@ public class FormulaParameters {
         return values.getOrDefault(key, 0.0f);
     }
 
+    public float require(FormulaParameterKey key) {
+        Float value = values.get(key);
+        if (value == null) {
+            throw new IllegalStateException("Missing required formula parameter: " + key);
+        }
+        return value;
+    }
+
     public static class Builder {
-        private final Map<FormulaParameterKey, Float> values = new HashMap<>();
+        private final Map<FormulaParameterKey, Float> values = new LinkedHashMap<>();
 
         public Builder with(FormulaParameterKey key, float value) {
             values.put(key, value);

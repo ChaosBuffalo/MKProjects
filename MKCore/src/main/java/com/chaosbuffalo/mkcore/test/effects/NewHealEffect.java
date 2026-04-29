@@ -58,7 +58,8 @@ public class NewHealEffect extends MKEffect {
             MKCore.LOGGER.debug("NewHealEffect.performEffect {} on {} from {} {}", value, target,
                     activeEffect.getSourceEntity(), activeEffect);
             MKHealSource heal = MKHealSource.getHolyHeal(activeEffect.getAbilityId(), activeEffect.getDirectEntity(),
-                    activeEffect.getSourceEntity(), getModifierScale());
+                            activeEffect.getSourceEntity())
+                    .setHealBonusFormula(getHealBonusFormula());
             MKHealing.healEntityFrom(target, value, heal);
             return true;
         }

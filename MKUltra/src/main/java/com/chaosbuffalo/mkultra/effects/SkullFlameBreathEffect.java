@@ -21,7 +21,7 @@ public class SkullFlameBreathEffect extends MKEffect {
                                           int fireSeconds) {
         return MKUEffects.SKULL_FLAME_BREATH.get().builder(source).state(s -> {
             s.fireSeconds = fireSeconds;
-            s.setScalingParameters(baseDamage, scaling, modifierScaling);
+            s.setDamageParameters(baseDamage, scaling, modifierScaling);
         });
     }
 
@@ -51,7 +51,8 @@ public class SkullFlameBreathEffect extends MKEffect {
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect activeEffect) {
             DamageSource damage = MKDamageSource.causeAbilityDamage(targetData.getEntity().level(),
                     CoreDamageTypes.FireDamage.get(), activeEffect.getAbilityId(),
-                    activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), getModifierScale());
+                    activeEffect.getDirectEntity(), activeEffect.getSourceEntity())
+                    .setDamageBonusFormula(getDamageBonusFormula());
 
             targetData.getEntity().hurt(damage, getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel()));
             targetData.getEntity().igniteForSeconds(fireSeconds);

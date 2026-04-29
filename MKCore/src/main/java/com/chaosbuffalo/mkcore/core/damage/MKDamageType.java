@@ -3,6 +3,8 @@ package com.chaosbuffalo.mkcore.core.damage;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKCombatFormulas;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
@@ -139,11 +141,25 @@ public class MKDamageType {
     }
 
     public float applyDamage(LivingEntity source, LivingEntity target, float originalDamage, float modifierScaling) {
-        return applyDamage(source, target, source, originalDamage, modifierScaling);
+        return applyDamage(source, target, source, originalDamage,
+                MKDamageSource.createLegacyDamageBonusFormula(modifierScaling));
     }
 
     public float applyDamage(LivingEntity source, LivingEntity target, Entity immediate, float originalDamage, float modifierScaling) {
-        return (float) (originalDamage + source.getAttributeValue(getDamageAttribute()) * modifierScaling);
+        return applyDamage(source, target, immediate, originalDamage,
+                MKDamageSource.createLegacyDamageBonusFormula(modifierScaling));
+    }
+
+    public float applyDamage(LivingEntity source, LivingEntity target, float originalDamage, AbilityFormula damageBonusFormula) {
+        return applyDamage(source, target, source, originalDamage, damageBonusFormula);
+    }
+
+    public float applyDamage(LivingEntity source, LivingEntity target, Entity immediate, float originalDamage,
+                             AbilityFormula damageBonusFormula) {
+        FormulaContext context = FormulaContext.builder()
+                .withDamageBonus((float) source.getAttributeValue(getDamageAttribute()))
+                .build();
+        return originalDamage + damageBonusFormula.evaluate(context);
     }
 
     public float applyResistance(LivingEntity target, float originalDamage, DamageSource source) {

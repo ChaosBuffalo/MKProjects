@@ -27,7 +27,7 @@ public class BleedEffect extends MKEffect {
     public static MKEffectBuilder<?> from(LivingEntity caster, int maxStacks, float base, float scale, float modScale) {
         return MKWeaponEffects.BLEED_DAMAGE.get().builder(caster).state(s -> {
             s.setMaxStacks(maxStacks);
-            s.setScalingParameters(base, scale, modScale);
+            s.setDamageParameters(base, scale, modScale);
         });
     }
 
@@ -54,7 +54,8 @@ public class BleedEffect extends MKEffect {
             //MKWeapons.LOGGER.info("bleed damage {} {} from {}", damage, activeEffect, source);
             LivingEntity target = targetData.getEntity();
             target.hurt(MKDamageSource.causeEffectDamage(target.level(), CoreDamageTypes.BleedDamage.get(), "mkweapons.effect.bleed",
-                    activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), getModifierScale()), damage);
+                    activeEffect.getDirectEntity(), activeEffect.getSourceEntity())
+                    .setDamageBonusFormula(getDamageBonusFormula()), damage);
 
             PacketHandler.sendToTrackingAndSelf(
                     new ParticleEffectSpawnPacket(

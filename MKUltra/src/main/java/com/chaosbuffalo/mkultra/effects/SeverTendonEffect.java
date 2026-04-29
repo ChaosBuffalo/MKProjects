@@ -32,7 +32,7 @@ public class SeverTendonEffect extends MKEffect {
 
     public static MKEffectBuilder<?> from(LivingEntity source, float baseDamage, float scaling, float modifierScaling) {
         return MKUEffects.SEVER_TENDON.get().builder(source)
-                .state(s -> s.setScalingParameters(baseDamage, scaling, modifierScaling))
+                .state(s -> s.setDamageParameters(baseDamage, scaling, modifierScaling))
                 .periodic(DEFAULT_PERIOD);
     }
 
@@ -59,8 +59,8 @@ public class SeverTendonEffect extends MKEffect {
             float damage = getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel());
             LivingEntity target = targetData.getEntity();
             target.hurt(MKDamageSource.causeAbilityDamage(targetData.getEntity().level(), CoreDamageTypes.BleedDamage.get(),
-                    activeEffect.getAbilityId(), activeEffect.getDirectEntity(), activeEffect.getSourceEntity(),
-                    getModifierScale()), damage);
+                    activeEffect.getAbilityId(), activeEffect.getDirectEntity(), activeEffect.getSourceEntity())
+                    .setDamageBonusFormula(getDamageBonusFormula()), damage);
             PacketHandler.sendToTrackingAndSelf(
                     new ParticleEffectSpawnPacket(
                             MKWeaponsParticles.DRIPPING_BLOOD.get(),

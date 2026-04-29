@@ -3,12 +3,18 @@
     "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:heal_cast",
     "casting_particles": "mkultra:heal_casting",
-    "healingFormula": {
-      "type": "mkcore:linear",
-      "base": 5.0,
-      "scale": 5.0
+    "formulaParameters": {
+      "mkultra:heal.base": 5.0,
+      "mkultra:heal.modifier_scaling": 1.0,
+      "mkultra:heal.per_level": 5.0
     },
-    "modifierScaling": 1.0
+    "healingFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:heal.base",
+      "bonus_key": "mkcore:heal_bonus",
+      "bonus_scale_param": "mkultra:heal.modifier_scaling",
+      "per_level_param": "mkultra:heal.per_level"
+    }
   },
   "castTime": 5,
   "cooldown": 120,
