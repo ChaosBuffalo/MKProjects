@@ -13,6 +13,8 @@ import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mkcore.core.talents.TalentNodeDisplay;
 import com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition;
 import com.chaosbuffalo.mkcore.core.talents.TalentType;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormulaType;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormulaTypes;
 import com.chaosbuffalo.mkcore.init.CoreTalentTypes;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.init.*;
@@ -55,6 +57,8 @@ public class MKCoreRegistry {
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "projectile_cast_behavior_types"));
     public static final ResourceKey<Registry<AbilityClientStateType<?>>> CLIENT_STATE_TYPES_NAME = ResourceKey.createRegistryKey(
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "ability_client_state_types"));
+    public static final ResourceKey<Registry<AbilityFormulaType<?>>> ABILITY_FORMULA_TYPE_REGISTRY_KEY = ResourceKey.createRegistryKey(
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "ability_formula_types"));
 
     public static final Registry<MKAbility> ABILITIES = new RegistryBuilder<>(ABILITY_REGISTRY_KEY)
             .sync(true)
@@ -80,6 +84,9 @@ public class MKCoreRegistry {
     public static final Registry<AbilityClientStateType<?>> CLIENT_STATE_TYPES = new RegistryBuilder<>(CLIENT_STATE_TYPES_NAME)
             .sync(true)
             .create();
+    public static final Registry<AbilityFormulaType<?>> ABILITY_FORMULA_TYPES = new RegistryBuilder<>(ABILITY_FORMULA_TYPE_REGISTRY_KEY)
+            .sync(true)
+            .create();
 
 
     @Nullable
@@ -102,6 +109,7 @@ public class MKCoreRegistry {
         event.register(LOCATION_PROVIDER_TYPES);
         event.register(CLIENT_STATE_TYPES);
         event.register(CAST_BEHAVIOR_TYPES);
+        event.register(ABILITY_FORMULA_TYPES);
     }
 
     @SubscribeEvent
@@ -128,6 +136,7 @@ public class MKCoreRegistry {
         LocationProviderTypes.register(modBus);
         ProjectileCastBehaviorTypes.register(modBus);
         AbilityClientStateTypes.register(modBus);
+        AbilityFormulaTypes.register(modBus);
         MKAttributes.register(modBus);
         CoreAttachments.register(modBus);
         CoreItemComponents.register(modBus);

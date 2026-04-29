@@ -9,6 +9,11 @@ import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import com.chaosbuffalo.mkcore.core.player.PlayerKnownAbility;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
+import com.chaosbuffalo.mkcore.formulas.FormulaContext;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaTextRenderer;
+import com.chaosbuffalo.mkcore.formulas.FormulaTextStyle;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
 import com.chaosbuffalo.mkcore.serialization.ISerializableAttributeContainer;
 import com.chaosbuffalo.mkcore.serialization.attributes.ISerializableAttribute;
@@ -54,6 +59,12 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     public static final NumberFormat PERCENT_FORMATTER = NumberFormat.getPercentInstance();
     public static final NumberFormat INTEGER_FORMATTER = NumberFormat.getIntegerInstance();
     public static final NumberFormat NUMBER_FORMATTER = NumberFormat.getNumberInstance();
+    private static final AbilityFormula MODIFIER_SCALED_DAMAGE_BONUS = AbilityFormula.multiply(
+            AbilityFormula.context(FormulaContextKey.MODIFIER_SCALING),
+            AbilityFormula.context(FormulaContextKey.DAMAGE_BONUS));
+    private static final AbilityFormula MODIFIER_SCALED_HEAL_BONUS = AbilityFormula.multiply(
+            AbilityFormula.context(FormulaContextKey.MODIFIER_SCALING),
+            AbilityFormula.context(FormulaContextKey.HEAL_BONUS));
 
 
     public MKAbility() {
@@ -79,34 +90,57 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return castAnimationCategory.getValue();
     }
 
-    public Component getDamageDescription(IMKEntityData casterData, MKDamageType damageType, float damage,
-                                          float scale, float level, float modifierScaling) {
-        float rawBonus = casterData.getStats().getDamageTypeBonus(damageType);
-        MutableComponent desc = formatEffectValue(damage, scale, level, rawBonus, modifierScaling);
+    protected FormulaContext.Builder baseFormulaContext(IMKEntityData casterData, float skillLevel) {
+        return FormulaContext.builder()
+                .withSkillLevel(skillLevel)
+                .withBuffDurationMultiplier(casterData.getStats().getBuffDurationModifier());
+    }
+
+    public Component getDamageDescription(IMKEntityData casterData, MKDamageType damageType, AbilityFormula damageFormula,
+                                          float skillLevel, float modifierScaling) {
+        FormulaContext context = baseFormulaContext(casterData, skillLevel)
+                .withModifierScaling(modifierScaling)
+                .withDamageBonus(casterData.getStats().getDamageTypeBonus(damageType))
+                .build();
+        MutableComponent desc = FormulaTextRenderer.render(damageFormula, MODIFIER_SCALED_DAMAGE_BONUS, context, FormulaTextStyle.DAMAGE);
         desc.append(" ").append(damageType.getFormattedDisplayName());
         return desc;
     }
 
+    public Component getDamageDescription(IMKEntityData casterData, MKDamageType damageType, float damage,
+                                          float scale, float level, float modifierScaling) {
+        return getDamageDescription(casterData, damageType, AbilityFormula.linear(damage, scale), level, modifierScaling);
+    }
+
     protected MutableComponent formatEffectValue(float damage, float levelScale, float level, float bonus, float scaleMod) {
-        float effectiveBonus = bonus * scaleMod;
-        float value = damage + (levelScale * level) + effectiveBonus;
-        MutableComponent damageStr = Component.empty();
-        damageStr.append(Component.literal(NUMBER_FORMATTER.format(value)).withStyle(ChatFormatting.BOLD));
-        if (effectiveBonus != 0) {
-            damageStr.append(Component.literal(String.format(" (+%s)", NUMBER_FORMATTER.format(effectiveBonus))).withStyle(ChatFormatting.BOLD));
-        }
-        return damageStr;
+        FormulaContext context = FormulaContext.builder().withSkillLevel(level).build();
+        return FormulaTextRenderer.render(AbilityFormula.linear(damage, levelScale), AbilityFormula.constant(bonus * scaleMod),
+                context, FormulaTextStyle.DAMAGE);
+    }
+
+    public Component getHealDescription(IMKEntityData casterData, AbilityFormula healingFormula,
+                                        float skillLevel, float modifierScaling) {
+        FormulaContext context = baseFormulaContext(casterData, skillLevel)
+                .withModifierScaling(modifierScaling)
+                .withHealBonus(casterData.getStats().getHealBonus())
+                .build();
+        return FormulaTextRenderer.render(healingFormula, MODIFIER_SCALED_HEAL_BONUS, context, FormulaTextStyle.HEAL);
     }
 
     public Component getHealDescription(IMKEntityData casterData, float value,
                                         float scale, float level, float modifierScaling) {
-        float bonus = casterData.getStats().getHealBonus();
-        return formatEffectValue(value, scale, level, bonus, modifierScaling).withStyle(ChatFormatting.GREEN);
+        return getHealDescription(casterData, AbilityFormula.linear(value, scale), level, modifierScaling);
+    }
+
+    protected Component formatManaValue(IMKEntityData casterData, AbilityFormula valueFormula, float skillLevel,
+                                        float bonus, float modifierScaling) {
+        FormulaContext context = baseFormulaContext(casterData, skillLevel).build();
+        return FormulaTextRenderer.render(valueFormula, AbilityFormula.constant(bonus * modifierScaling), context, FormulaTextStyle.MANA);
     }
 
     protected Component formatManaValue(IMKEntityData casterData, float value, float scale, float level,
                                         float bonus, float modifierScaling) {
-        return formatEffectValue(value, scale, level, bonus, modifierScaling).withStyle(ChatFormatting.BLUE);
+        return formatManaValue(casterData, AbilityFormula.linear(value, scale), level, bonus, modifierScaling);
     }
 
     protected Component getSkillDescription(IMKEntityData casterData, AbilityContext context) {
@@ -395,9 +429,13 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return Collections.unmodifiableSet(skillAttributes);
     }
 
-    protected int getBuffDuration(IMKEntityData casterData, float level, int base, int scale) {
-        int duration = Math.round((base + scale * level) * GameConstants.TICKS_PER_SECOND);
+    protected int getBuffDuration(IMKEntityData casterData, AbilityFormula durationFormula, FormulaContext context) {
+        int duration = Math.round(durationFormula.evaluate(context) * GameConstants.TICKS_PER_SECOND);
         return MKCombatFormulas.applyBuffDurationModifier(casterData, duration);
+    }
+
+    protected int getBuffDuration(IMKEntityData casterData, float level, int base, int scale) {
+        return getBuffDuration(casterData, AbilityFormula.linear(base, scale), baseFormulaContext(casterData, level).build());
     }
 
     public void onAbilityGroupAdded(IMKEntityData targetData, MKAbilityInfo abilityInfo) {

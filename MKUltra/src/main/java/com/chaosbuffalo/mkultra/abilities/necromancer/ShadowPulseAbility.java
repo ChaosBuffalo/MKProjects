@@ -9,8 +9,10 @@ import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.PullEffect;
@@ -29,13 +31,11 @@ public class ShadowPulseAbility extends WindUpPulseAbility {
     private static final ResourceLocation PULSE_PARTICLES = MKUltra.id("shadow_pulse_detonate");
     public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("shadow_bolt_casting");
     private static final ResourceLocation WAIT_PARTICLES = MKUltra.id("shadow_pulse_wait");
-    protected final FloatAttribute base = new FloatAttribute("base", 1.0f);
-    protected final FloatAttribute scale = new FloatAttribute("scale", 0.25f);
+    protected final FormulaAttribute damageFormula = new FormulaAttribute("damageFormula", AbilityFormula.linear(1.0f, 0.25f));
     protected final FloatAttribute baseGravity = new FloatAttribute("baseGravity", 0.25f);
     protected final FloatAttribute scaleGravity = new FloatAttribute("scaleGravity", 0.0f);
     protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
-    protected final FloatAttribute detonateBase = new FloatAttribute("detonateBase", 5.0f);
-    protected final FloatAttribute detonateScale = new FloatAttribute("detonateScale", 5.0f);
+    protected final FormulaAttribute detonateDamageFormula = new FormulaAttribute("detonateDamageFormula", AbilityFormula.linear(5.0f, 5.0f));
 
 
     public ShadowPulseAbility() {
@@ -47,7 +47,7 @@ public class ShadowPulseAbility extends WindUpPulseAbility {
         pulseParticles.setDefaultValue(PULSE_PARTICLES);
         waitParticles.setDefaultValue(WAIT_PARTICLES);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
-        addAttributes(base, scale, modifierScaling, baseGravity, scaleGravity, detonateBase, detonateScale);
+        addAttributes(damageFormula, modifierScaling, baseGravity, scaleGravity, detonateDamageFormula);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class ShadowPulseAbility extends WindUpPulseAbility {
         float level = context.getSkill(MKAttributes.CONJURATION);
         LivingEntity castingEntity = casterData.getEntity();
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
-                        base.value(), scale.value(), modifierScaling.value())
+                        damageFormula.value(), modifierScaling.value())
                 .ability(this)
                 .skillLevel(level);
         MKEffectBuilder<?> pull = PullEffect.from(castingEntity, baseGravity.value(), scaleGravity.value(), position)
@@ -64,7 +64,7 @@ public class ShadowPulseAbility extends WindUpPulseAbility {
         MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_shadow_10.value(), castingEntity.getSoundSource())
                 .ability(this);
         MKEffectBuilder<?> detonateDamage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
-                        detonateBase.value(), detonateScale.value(), modifierScaling.value())
+                        detonateDamageFormula.value(), modifierScaling.value())
                 .ability(this)
                 .skillLevel(level);
         MKEffectBuilder<?> detonateSound = SoundEffect.from(castingEntity, MKUSounds.spell_shadow_9.value(), castingEntity.getSoundSource())
@@ -82,8 +82,8 @@ public class ShadowPulseAbility extends WindUpPulseAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.CONJURATION);
-        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
-        Component detonateStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(), detonateBase.value(), detonateScale.value(), level, modifierScaling.value());
+        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(), damageFormula.value(), level, modifierScaling.value());
+        Component detonateStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(), detonateDamageFormula.value(), level, modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(),
                 NUMBER_FORMATTER.format(radius.value()),
                 damageStr,

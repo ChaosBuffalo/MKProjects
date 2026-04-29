@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -22,9 +23,14 @@ public class MKAbilityDamageEffect extends MKEffect {
 
     public static MKEffectBuilder<State> from(LivingEntity source, MKDamageType damageType, float baseDamage,
                                               float scaling, float modifierScaling) {
+        return from(source, damageType, AbilityFormula.linear(baseDamage, scaling), modifierScaling);
+    }
+
+    public static MKEffectBuilder<State> from(LivingEntity source, MKDamageType damageType, AbilityFormula damageFormula,
+                                              float modifierScaling) {
         return CoreEffects.ABILITY_DAMAGE.get().builder(source).state(s -> {
             s.setDamageType(damageType);
-            s.setScalingParameters(baseDamage, scaling, modifierScaling);
+            s.setScalingFormula(damageFormula, modifierScaling);
         });
     }
 

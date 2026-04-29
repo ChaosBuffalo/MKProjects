@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -24,10 +25,15 @@ public class NaturesRemedyEffect extends MKEffect {
 
     public static MKEffectBuilder<?> from(LivingEntity source, float base, float scale, float modScale,
                                           ResourceLocation castParticles) {
+        return from(source, AbilityFormula.linear(base, scale), modScale, castParticles);
+    }
+
+    public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula healingFormula, float modScale,
+                                          ResourceLocation castParticles) {
         return MKUEffects.NATURES_REMEDY.get().builder(source)
                 .state(s -> {
                     s.setEffectParticles(castParticles);
-                    s.setScalingParameters(base, scale, modScale);
+                    s.setScalingFormula(healingFormula, modScale);
                 })
                 .periodic(DEFAULT_PERIOD);
     }

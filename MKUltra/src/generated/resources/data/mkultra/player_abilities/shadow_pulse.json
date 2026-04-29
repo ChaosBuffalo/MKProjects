@@ -1,11 +1,18 @@
 {
   "attributes": {
-    "base": 1.0,
     "baseGravity": 0.25,
     "cast_animation_category": "mkcore:default",
     "casting_particles": "mkultra:shadow_bolt_casting",
-    "detonateBase": 5.0,
-    "detonateScale": 5.0,
+    "damageFormula": {
+      "type": "mkcore:linear",
+      "base": 1.0,
+      "scale": 0.25
+    },
+    "detonateDamageFormula": {
+      "type": "mkcore:linear",
+      "base": 5.0,
+      "scale": 5.0
+    },
     "duration": 20,
     "modifierScaling": 1.0,
     "offset": {
@@ -15,7 +22,6 @@
     },
     "pulse_particles": "mkultra:shadow_pulse_detonate",
     "radius": 1.5,
-    "scale": 0.25,
     "scaleGravity": 0.0,
     "tick_rate": 4,
     "wait_particles": "mkultra:shadow_pulse_wait",

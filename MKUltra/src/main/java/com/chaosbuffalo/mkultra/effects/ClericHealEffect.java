@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
+import com.chaosbuffalo.mkcore.formulas.AbilityFormula;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -21,7 +22,11 @@ public class ClericHealEffect extends MKEffect {
     }
 
     public static MKEffectBuilder<?> from(LivingEntity source, float base, float scale, float modScale) {
-        return MKUEffects.CLERIC_HEAL.get().builder(source).state(s -> s.setScalingParameters(base, scale, modScale));
+        return from(source, AbilityFormula.linear(base, scale), modScale);
+    }
+
+    public static MKEffectBuilder<?> from(LivingEntity source, AbilityFormula healingFormula, float modScale) {
+        return MKUEffects.CLERIC_HEAL.get().builder(source).state(s -> s.setScalingFormula(healingFormula, modScale));
     }
 
     @Override
