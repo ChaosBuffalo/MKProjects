@@ -1,0 +1,31 @@
+{
+  "attributes": {
+    "cast_animation_category": "mkcore:default",
+    "cast_particles": "mkultra:smite_cast",
+    "casting_particles": "mkultra:smite_casting",
+    "damageFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:linear",
+          "base": 10.0,
+          "scale": 7.0
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            1.5,
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:damage_bonus"
+            }
+          ]
+        }
+      ]
+    },
+    "formulaParameters": {}
+  },
+  "castTime": 20,
+  "cooldown": 180,
+  "manaCost": 7.0
+}

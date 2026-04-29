@@ -1,0 +1,22 @@
+{
+  "attributes": {
+    "cast_animation_category": "mkcore:default",
+    "cast_particles": "mkultra:smite_cast",
+    "casting_particles": "mkultra:smite_casting",
+    "damageFormula": {
+      "type": "mkcore:bonus_scaled_linear",
+      "base_param": "mkultra:smite.damage.base",
+      "bonus_key": "mkcore:damage_bonus",
+      "bonus_scale_param": "mkultra:smite.damage.modifier_scaling",
+      "per_level_param": "mkultra:smite.damage.per_level"
+    },
+    "formulaParameters": {
+      "mkultra:smite.damage.base": 8.0,
+      "mkultra:smite.damage.modifier_scaling": 1.25,
+      "mkultra:smite.damage.per_level": 6.0
+    }
+  },
+  "castTime": 20,
+  "cooldown": 160,
+  "manaCost": 6.0
+}

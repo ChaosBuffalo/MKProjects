@@ -9,6 +9,12 @@ import com.chaosbuffalo.mkweapons.items.weapon.types.RangedWeaponTypes;
 import net.minecraft.data.PackOutput;
 
 public class MKULangProvider extends NpcLanguageProvider {
+    private static final String HOLY_WORD_DESCRIPTION =
+            "Strikes the target with the word of God, dealing %s and applying a stack of %s lasting %s seconds, when %s stacks are reached, stuns the target for %s seconds.";
+    private static final String SHADOW_BOLT_DESCRIPTION =
+            "Throws a magical ball of shadow, causing %s to the target.";
+    private static final String FIREBALL_DESCRIPTION =
+            "Throws a magical ball of fire, causing %s to enemies within %.1f blocks of its impact. Reduces target fire resistance by %.2f%% for %d seconds.";
 
     public MKULangProvider(PackOutput output, String locale) {
         super(output, MKUltra.MODID, locale);
@@ -19,11 +25,11 @@ public class MKULangProvider extends NpcLanguageProvider {
         addItems();
         add("mkultra.pet_name_format", "%s's %s");
         ability(MKUAbilities.HOLY_FIRE, "Holy Fire", "Summons a ring of fire with radius %s at the location, after %s seconds it starts dealing %s every %s seconds for %s seconds.");
-        ability(MKUAbilities.HOLY_WORD, "Holy Word", "Strikes the target with the word of God, dealing %s and applying a stack of %s lasting %s seconds, when %s stacks are reached, stuns the target for %s seconds.");
+        ability(MKUAbilities.HOLY_WORD, "Holy Word", HOLY_WORD_DESCRIPTION);
         mkEffect(MKUEffects.HOLY_WORD_EFFECT, "Holy Judgement");
-        ability(MKUAbilities.HOLY_WORD_SHOTGUN, "Holy Word (Shotgun)");
+        ability(MKUAbilities.HOLY_WORD_SHOTGUN, "Holy Word (Shotgun)", HOLY_WORD_DESCRIPTION);
         ability(MKUAbilities.HOLY_FIRE_FLURRY, "Holy Fire Flurry");
-        ability(MKUAbilities.HOLY_WORD_BURST, "Holy Word (Burst)");
+        ability(MKUAbilities.HOLY_WORD_BURST, "Holy Word (Burst)", HOLY_WORD_DESCRIPTION);
         ability(MKUAbilities.HOLY_CIRCLE_ABILITY, "Healing Circle", "Summons a ring of divine energy with radius %s at the location, after %s seconds it starts healing %s every %s seconds for %s seconds.");
         ability(MKUAbilities.ALACRITY, "Alacrity", "Increases your target's attack speed by %s for %d seconds.");
         ability(MKUAbilities.TORPOR, "Torpor", "Reduces your target's attack speed by %s for %d seconds.");
@@ -40,7 +46,8 @@ public class MKULangProvider extends NpcLanguageProvider {
         talentTree(MKUltra.id("green_knight"), "Green Knight");
         ability(MKUAbilities.FLAME_BLADE, "Flame Blade", "Enchants your weapons and those of nearby allies with fire for %s seconds. Each melee hit deals an additional %s.");
         ability(MKUAbilities.SHADOW_PULSE, "Shadow Pulse", "Summons a vortex of shadow with a radius of %s blocks, pulling nearby enemies in and dealing %s every %s seconds for %s seconds. When the effect ends, the vortex detonates dealing %s.");
-        ability(MKUAbilities.SHADOW_BOLT, "Shadow Bolt", "Throws a magical ball of shadow, causing %s to the target.");
+        ability(MKUAbilities.SHADOW_BOLT, "Shadow Bolt", SHADOW_BOLT_DESCRIPTION);
+        ability(MKUAbilities.SHADOW_BOLT_DUAL_SHOTGUN, "Shadow Bolt", SHADOW_BOLT_DESCRIPTION);
         ability(MKUAbilities.ENGULFING_DARKNESS, "Engulfing Darkness", "Conjures a magical darkness around the target, causing %s every %s seconds for %s seconds and slowing their movement. Every tick has a %s chance to grant the caster Shadowbringer for %s seconds. Shadowbringer causes your next Shadowbolt to have an instant cast time, 50%% of the mana cost, and instantly resets its cooldown.");
         ability(MKUAbilities.LIFE_SPIKE, "Life Spike", "Strikes the target with a blast of dark energy causing %s and transferring %s health to the caster.");
         mkEffect(MKUEffects.SHADOWBRINGER, "Shadowbringer");
@@ -71,7 +78,8 @@ public class MKULangProvider extends NpcLanguageProvider {
         ability(MKUAbilities.WARP_CURSE, "Warp Curse", "Curses your target, causing them to teleport a short distance and take %s every %d seconds and slowing them for %d seconds.");
         ability(MKUAbilities.FLAME_WAVE, "Flame Wave", "A wave of fire engulfs your enemies, causing %s to each one. If the target is already burning damage is increased by %.2f%% and the target is withered for %d seconds.");
         ability(MKUAbilities.SKULL_FLAME_BREATH, "Skull Flame Breath", "Channel a cone of flame for %s seconds, dealing %s every %s seconds and setting enemies on fire for %s seconds.");
-        ability(MKUAbilities.FIREBALL, "Fireball", "Throws a magical ball of fire, causing %s to enemies within %.1f blocks of its impact. Reduces target fire resistance by %.2f%% for %d seconds.");
+        ability(MKUAbilities.FIREBALL, "Fireball", FIREBALL_DESCRIPTION);
+        ability(MKUAbilities.FIREBALL_BURST, "Fireball", FIREBALL_DESCRIPTION);
         ability(MKUAbilities.SEVER_TENDON, "Sever Tendon", "Strike your target for a full melee hit plus %s, then cause them to bleed for %s seconds, dealing %s damage every %d seconds and reducing their movement speed by %.2f%%.");
         mkEffect(MKUEffects.SEVER_TENDON, "Severed Tendon");
         mkEffect(MKUEffects.BREAK_FIRE, "Break Fire");
@@ -87,7 +95,10 @@ public class MKULangProvider extends NpcLanguageProvider {
         mkEffect(MKUEffects.SKULL_FLAME_BREATH, "Skull Flame Breath");
         ability(MKUAbilities.EXPLOSIVE_GROWTH, "Explosive Growth", "Dash forward, striking each enemy you hit with a full melee attack plus %s, while casting Cleansing Seed and Nature's Remedy on your allies and yourself.");
         ability(MKUAbilities.HEAL, "Heal", "Heals your target for %s.");
+        ability(MKUAbilities.GREATER_HEAL, "Greater Heal", "Heals your target for %s.");
         ability(MKUAbilities.SMITE, "Smite", "Smites your target for %s and Stuns them for %d seconds.");
+        ability(MKUAbilities.GREATER_SMITE, "Greater Smite", "Smites your target for %s and Stuns them for %d seconds.");
+        ability(MKUAbilities.EMPOWERED_SMITE, "Empowered Smite", "Smites your target for %s and Stuns them for %d seconds.");
         ability(MKUAbilities.POWER_WORD_SUMMON, "Power Word Summon", "Summons your target in front of you, if they're an enemy roots them for %d seconds.");
         ability(MKUAbilities.SKIN_LIKE_WOOD, "Skin Like Wood", "Hardens your skin, increasing your armor. Drains 1 mana for every hit you take.");
         mkEffect(MKUEffects.SKIN_LIKE_WOOD, "Skin Like Wood");

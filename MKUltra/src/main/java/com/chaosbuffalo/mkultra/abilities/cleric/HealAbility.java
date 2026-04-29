@@ -28,9 +28,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class HealAbility extends MKAbility {
-    private static final FormulaParameterKey BASE_PARAMETER = FormulaParameterKey.of(MKUltra.id("heal.base"));
-    private static final FormulaParameterKey PER_LEVEL_PARAMETER = FormulaParameterKey.of(MKUltra.id("heal.per_level"));
-    private static final FormulaParameterKey MODIFIER_SCALING_PARAMETER =
+    public static final FormulaParameterKey BASE_PARAMETER = FormulaParameterKey.of(MKUltra.id("heal.base"));
+    public static final FormulaParameterKey PER_LEVEL_PARAMETER = FormulaParameterKey.of(MKUltra.id("heal.per_level"));
+    public static final FormulaParameterKey MODIFIER_SCALING_PARAMETER =
             FormulaParameterKey.of(MKUltra.id("heal.modifier_scaling"));
     protected final ResourceLocation CASTING_PARTICLES = MKUltra.id("heal_casting");
     protected final ResourceLocation CAST_PARTICLES = MKUltra.id("heal_cast");

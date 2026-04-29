@@ -33,7 +33,7 @@ public class MKUAbilities {
     public static final DeferredHolder<MKAbility, WrathBeamFlurryAbility> WRATH_BEAM_FLURRY = REGISTRY.register("wrath_beam_flurry", WrathBeamFlurryAbility::new);
     public static final DeferredHolder<MKAbility, SeverTendonAbility> SEVER_TENDON = REGISTRY.register("sever_tendon", SeverTendonAbility::new);
     public static final DeferredHolder<MKAbility, FireballAbility> FIREBALL = REGISTRY.register("fireball", FireballAbility::new);
-    public static final DeferredHolder<MKAbility, FireballBurstAbility> FIREBALL_BURST = REGISTRY.register("fireball_burst", FireballBurstAbility::new);
+    public static final DeferredHolder<MKAbility, FireballAbility> FIREBALL_BURST = REGISTRY.register("fireball_burst", FireballAbility::new);
     public static final DeferredHolder<MKAbility, ShadowPulseFlurryAbility> SHADOW_PUlSE_FLURRY = REGISTRY.register("shadow_pulse_flurry", ShadowPulseFlurryAbility::new);
 
     public static final DeferredHolder<MKAbility, SeafuryAbility> SEAFURY = REGISTRY.register("seafury", SeafuryAbility::new);
@@ -45,14 +45,14 @@ public class MKUAbilities {
 
     public static final DeferredHolder<MKAbility, HolyWordAbility> HOLY_WORD = REGISTRY.register("holy_word",
             HolyWordAbility::new);
-    public static final DeferredHolder<MKAbility, HolyWordShotgunAbility> HOLY_WORD_SHOTGUN = REGISTRY.register("holy_word_shotgun",
-            HolyWordShotgunAbility::new);
+    public static final DeferredHolder<MKAbility, HolyWordAbility> HOLY_WORD_SHOTGUN = REGISTRY.register("holy_word_shotgun",
+            HolyWordAbility::new);
     public static final DeferredHolder<MKAbility, HolyFireAbility> HOLY_FIRE = REGISTRY.register("holy_fire",
             HolyFireAbility::new);
     public static final DeferredHolder<MKAbility, HolyFireFlurryAbility> HOLY_FIRE_FLURRY = REGISTRY.register("holy_fire_flurry",
             HolyFireFlurryAbility::new);
-    public static final DeferredHolder<MKAbility, HolyWordBurstAbility> HOLY_WORD_BURST = REGISTRY.register("holy_word_burst",
-            HolyWordBurstAbility::new);
+    public static final DeferredHolder<MKAbility, HolyWordAbility> HOLY_WORD_BURST = REGISTRY.register("holy_word_burst",
+            HolyWordAbility::new);
     public static final DeferredHolder<MKAbility, HealingCircleAbility> HOLY_CIRCLE_ABILITY = REGISTRY.register("healing_circle", HealingCircleAbility::new);
 
     // enchanter
@@ -73,7 +73,7 @@ public class MKUAbilities {
     public static final DeferredHolder<MKAbility, ShadowBoltAbility> SHADOW_BOLT = REGISTRY.register("shadow_bolt", ShadowBoltAbility::new);
     public static final DeferredHolder<MKAbility, LifeSpikeAbility> LIFE_SPIKE = REGISTRY.register("life_spike", LifeSpikeAbility::new);
     public static final DeferredHolder<MKAbility, EngulfingDarknessAbility> ENGULFING_DARKNESS = REGISTRY.register("engulfing_darkness", EngulfingDarknessAbility::new);
-    public static final DeferredHolder<MKAbility, ShadowboltDualShotgunAbility> SHADOW_BOLT_DUAL_SHOTGUN = REGISTRY.register("shadow_bolt_dual_shotgun", ShadowboltDualShotgunAbility::new);
+    public static final DeferredHolder<MKAbility, ShadowBoltAbility> SHADOW_BOLT_DUAL_SHOTGUN = REGISTRY.register("shadow_bolt_dual_shotgun", ShadowBoltAbility::new);
 
     // nethermage
     public static final DeferredHolder<MKAbility, EmberAbility> EMBER = REGISTRY.register("ember", EmberAbility::new);
@@ -95,9 +95,12 @@ public class MKUAbilities {
 
     //cleric
     public static final DeferredHolder<MKAbility, SmiteAbility> SMITE = REGISTRY.register("smite", SmiteAbility::new);
+    public static final DeferredHolder<MKAbility, SmiteAbility> GREATER_SMITE = REGISTRY.register("greater_smite", SmiteAbility::new);
+    public static final DeferredHolder<MKAbility, SmiteAbility> EMPOWERED_SMITE = REGISTRY.register("empowered_smite", SmiteAbility::new);
     public static final DeferredHolder<MKAbility, PowerWordSummonAbility> POWER_WORD_SUMMON = REGISTRY.register("power_word_summon", PowerWordSummonAbility::new);
     public static final DeferredHolder<MKAbility, InspireAbility> INSPIRE = REGISTRY.register("inspire", InspireAbility::new);
     public static final DeferredHolder<MKAbility, HealAbility> HEAL = REGISTRY.register("heal", HealAbility::new);
+    public static final DeferredHolder<MKAbility, HealAbility> GREATER_HEAL = REGISTRY.register("greater_heal", HealAbility::new);
     public static final DeferredHolder<MKAbility, GalvanizeAbility> GALVANIZE = REGISTRY.register("galvanize", GalvanizeAbility::new);
 
     //brawler

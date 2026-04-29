@@ -29,11 +29,11 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class SmiteAbility extends MKAbility {
-    private static final FormulaParameterKey BASE_PARAMETER =
+    public static final FormulaParameterKey BASE_PARAMETER =
             FormulaParameterKey.of(MKUltra.id("smite.damage.base"));
-    private static final FormulaParameterKey PER_LEVEL_PARAMETER =
+    public static final FormulaParameterKey PER_LEVEL_PARAMETER =
             FormulaParameterKey.of(MKUltra.id("smite.damage.per_level"));
-    private static final FormulaParameterKey MODIFIER_SCALING_PARAMETER =
+    public static final FormulaParameterKey MODIFIER_SCALING_PARAMETER =
             FormulaParameterKey.of(MKUltra.id("smite.damage.modifier_scaling"));
     protected final ResourceLocation CASTING_PARTICLES = MKUltra.id("smite_casting");
     protected final ResourceLocation CAST_PARTICLES = MKUltra.id("smite_cast");

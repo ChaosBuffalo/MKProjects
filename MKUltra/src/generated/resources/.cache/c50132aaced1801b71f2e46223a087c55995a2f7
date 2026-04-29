@@ -1,8 +1,9 @@
-// 1.21.1	2026-04-26T21:09:39.47703	MK Abilities: mkultra
+// 1.21.1	2026-04-26T21:49:58.077	MK Abilities: mkultra
 b703c6a21952efaa14c2fc94964daa7a37459e94 data/mkultra/player_abilities/alacrity.json
 9ca922b2fcacd18c4ce673139b5e0b243957a41c data/mkultra/player_abilities/cleansing_seed.json
 41cdb8bd3f0b3a819024dd953188855e33321143 data/mkultra/player_abilities/drown.json
 694b17d3944cc51ecda8d3ce9cc6dd71dfa29b99 data/mkultra/player_abilities/ember.json
+d885ed63e3bf616b58118c89fac37b6a16aa031c data/mkultra/player_abilities/empowered_smite.json
 9d693997e525392e68c746cf65c234162b7d5283 data/mkultra/player_abilities/engulfing_darkness.json
 cb0cffe36dda4e7ff3a97bd5245d296a7c820bec data/mkultra/player_abilities/explosive_growth.json
 527f2e71b9a4ec0213f8cf7098034dc13ee88d00 data/mkultra/player_abilities/fire_armor.json
@@ -14,6 +15,7 @@ b602eecf068d68f2dfce231bf701a6168e6d471a data/mkultra/player_abilities/flame_wav
 fe68cbc0447672322b6cb45b75f3310c8628f360 data/mkultra/player_abilities/furious_brooding.json
 98583aec7b0f078a747988d17e9da8d517c0078c data/mkultra/player_abilities/galvanize.json
 31b774edff80e5d18b2a552e94ed0beec8f2a655 data/mkultra/player_abilities/greater_heal.json
+297c5465425e29638504ac1993c057b39f4370b3 data/mkultra/player_abilities/greater_smite.json
 213a5c08d7fb364f65aec9eae4bb379baa321c1d data/mkultra/player_abilities/green_soul.json
 58984939e252ea1c4f1da6cf5a574fa34a6abb59 data/mkultra/player_abilities/heal.json
 a8be5fce7032d20f0d9d3b2358be5001ac8f1203 data/mkultra/player_abilities/healing_circle.json

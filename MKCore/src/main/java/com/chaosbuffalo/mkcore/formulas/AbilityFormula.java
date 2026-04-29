@@ -11,25 +11,70 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * A composable numeric expression tree used for data-driven ability scaling.
+ * <p>
+ * Formulas combine runtime values from a {@link FormulaContext} with authoring-time
+ * parameter values from {@link FormulaParameters}. The static factory methods on this
+ * interface create the concrete formula node types that are serialized through
+ * {@link #CODEC}.
+ */
 public interface AbilityFormula {
     Codec<AbilityFormula> CODEC = AbilityFormulaCodecs.codec();
 
+    /**
+     * Creates a formula that always evaluates to the supplied literal value.
+     */
     static Constant constant(float value) {
         return new Constant(value);
     }
 
+    /**
+     * Creates a formula that reads a runtime value from the evaluation context.
+     */
     static ContextValue context(FormulaContextKey key) {
         return new ContextValue(key);
     }
 
+    /**
+     * Creates a formula that reads a design-time parameter value.
+     * <p>
+     * The returned node remains unresolved until parameters are supplied through
+     * {@link #bindParameters(FormulaParameters)} or evaluation is performed with a
+     * {@link FormulaEvaluationContext} that contains the parameter.
+     */
     static ParameterValue param(FormulaParameterKey key) {
         return new ParameterValue(key);
     }
 
+    /**
+     * Creates a legacy-style linear formula:
+     * <pre>{@code
+     * base + scale * skill_level
+     * }</pre>
+     */
     static Linear linear(float base, float scale) {
         return new Linear(base, scale);
     }
 
+    /**
+     * Creates a semantic damage/healing style formula:
+     * <pre>{@code
+     * baseParameter
+     *   + perLevelParameter * skill_level
+     *   + bonusScaleParameter * bonusKey
+     * }</pre>
+     * <p>
+     * {@code baseParameter}, {@code perLevelParameter}, and
+     * {@code bonusScaleParameter} come from {@link FormulaParameters}.
+     * {@code skill_level} and {@code bonusKey} come from the runtime
+     * {@link FormulaContext}.
+     * <p>
+     * The first two terms form the "base" contribution. The final term is a
+     * separate runtime bonus contribution. This split is used by callers such as
+     * tooltip rendering and runtime damage/heal plumbing that need to carry the
+     * bonus portion separately from the immediately evaluated base portion.
+     */
     static BonusScaledLinear bonusScaledLinear(FormulaParameterKey baseParameter,
                                                FormulaParameterKey perLevelParameter,
                                                FormulaContextKey bonusKey,
@@ -37,32 +82,65 @@ public interface AbilityFormula {
         return new BonusScaledLinear(baseParameter, perLevelParameter, bonusKey, bonusScaleParameter);
     }
 
+    /**
+     * Creates a formula that evaluates each child and returns their sum.
+     */
     static Add add(AbilityFormula... terms) {
         return new Add(List.of(terms));
     }
 
+    /**
+     * Creates a formula that evaluates each child and returns their product.
+     */
     static Multiply multiply(AbilityFormula... factors) {
         return new Multiply(List.of(factors));
     }
 
+    /**
+     * Creates a formula that evaluates {@code numerator / denominator}.
+     * <p>
+     * Division by zero returns {@code 0.0f}.
+     */
     static Fraction fraction(AbilityFormula numerator, AbilityFormula denominator) {
         return new Fraction(numerator, denominator);
     }
 
+    /**
+     * Creates a formula that clamps the child formula into the inclusive range
+     * {@code [min, max]}.
+     */
     static Clamped clamped(AbilityFormula value, float min, float max) {
         return new Clamped(value, min, max);
     }
 
+    /**
+     * Evaluates this formula using both runtime context values and parameter values.
+     */
     float evaluate(FormulaEvaluationContext context);
 
+    /**
+     * Convenience overload for formulas that only depend on runtime context values.
+     * Parameter lookup nodes will still fail at evaluation time unless they were
+     * already bound beforehand.
+     */
     default float evaluate(FormulaContext context) {
         return evaluate(FormulaEvaluationContext.of(context));
     }
 
+    /**
+     * Returns a version of this formula with any resolvable parameter lookups replaced
+     * by constants from {@code parameters}.
+     * <p>
+     * Missing parameters are left in place so callers can partially apply a formula.
+     */
     default AbilityFormula bindParameters(FormulaParameters parameters) {
         return this;
     }
 
+    /**
+     * Binds parameters like {@link #bindParameters(FormulaParameters)} and then fails
+     * if any parameter lookup nodes remain unresolved.
+     */
     default AbilityFormula bindParametersStrict(FormulaParameters parameters) {
         AbilityFormula bound = bindParameters(parameters);
         List<FormulaParameterKey> unboundParameters = bound.getUnboundParameters();
@@ -72,10 +150,20 @@ public interface AbilityFormula {
         return bound;
     }
 
+    /**
+     * Returns an optional semantic split of this formula into
+     * {@code total = baseFormula + bonusFormula}.
+     * <p>
+     * This is primarily used by renderers and runtime plumbing that need to display or
+     * transport the base and bonus contributions separately.
+     */
     default @Nullable Breakdown breakdown(FormulaParameters parameters) {
         return null;
     }
 
+    /**
+     * Returns every parameter that is still unresolved in this formula.
+     */
     default List<FormulaParameterKey> getUnboundParameters() {
         Set<FormulaParameterKey> output = new LinkedHashSet<>();
         collectUnboundParameters(output);
@@ -87,6 +175,9 @@ public interface AbilityFormula {
 
     AbilityFormulaType<? extends AbilityFormula> getType();
 
+    /**
+     * Semantic decomposition of a formula into base and bonus contributions.
+     */
     record Breakdown(AbilityFormula baseFormula, AbilityFormula bonusFormula) {
     }
 
@@ -179,6 +270,10 @@ public interface AbilityFormula {
         }
     }
 
+    /**
+     * Semantic helper for formulas that behave like
+     * {@code base + perLevel * skill_level + bonusScale * runtimeBonus}.
+     */
     record BonusScaledLinear(FormulaParameterKey baseParameter,
                              FormulaParameterKey perLevelParameter,
                              FormulaContextKey bonusKey,
