@@ -41,6 +41,14 @@ public class MKWorkspaceExportPathResolver {
                 .resolve(workspace.structureName());
     }
 
+    public Path getBackupBlockSnapshotPath(Path manifestPath) {
+        String fileName = manifestPath.getFileName().toString();
+        if (fileName.endsWith(".json")) {
+            fileName = fileName.substring(0, fileName.length() - ".json".length());
+        }
+        return manifestPath.resolveSibling(fileName + ".blocks.json");
+    }
+
     private String sanitizePathSegment(String value) {
         if (value == null || value.isBlank()) {
             return "workspace-mutation";

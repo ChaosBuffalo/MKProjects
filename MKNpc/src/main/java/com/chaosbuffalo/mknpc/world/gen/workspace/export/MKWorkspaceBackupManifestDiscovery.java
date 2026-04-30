@@ -29,6 +29,7 @@ public class MKWorkspaceBackupManifestDiscovery {
         try (Stream<Path> stream = Files.list(backupDir)) {
             return stream.filter(Files::isRegularFile)
                     .filter(path -> path.toString().endsWith(".json"))
+                    .filter(path -> !path.toString().endsWith(".blocks.json"))
                     .map(path -> loadCandidate(path, workspace))
                     .flatMap(Optional::stream)
                     .sorted((left, right) -> right.lastModified().compareTo(left.lastModified()))

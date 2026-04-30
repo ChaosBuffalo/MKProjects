@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,6 +19,14 @@ public class MKWorkspaceBackupManifestWriter {
 
     private final Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     private final MKWorkspaceExportPathResolver pathResolver = new MKWorkspaceExportPathResolver();
+    private final MKWorkspaceBackupBlockSnapshotStore blockSnapshotStore = new MKWorkspaceBackupBlockSnapshotStore();
+
+    public WrittenBackup writeBeforeMutation(ServerLevel level, MKStructureWorkspace workspace,
+                                             String operation) throws IOException {
+        WrittenBackup backup = writeBeforeMutation(level.getServer(), workspace, operation);
+        blockSnapshotStore.writeSnapshot(backup.path(), level, workspace, backup.manifest().exportedAt());
+        return backup;
+    }
 
     public WrittenBackup writeBeforeMutation(MinecraftServer server, MKStructureWorkspace workspace,
                                              String operation) throws IOException {

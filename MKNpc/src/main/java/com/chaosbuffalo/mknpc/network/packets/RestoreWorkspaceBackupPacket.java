@@ -70,11 +70,15 @@ public class RestoreWorkspaceBackupPacket implements CustomPacketPayload {
                         "Backup file not found for this workspace: " + packet.fileName);
                 return;
             }
-            player.displayClientMessage(Component.literal("Restored workspace backup: " + packet.fileName), false);
+            String blockRestoreSuffix = result.blockRestoreStats()
+                    .map(stats -> " and " + stats.restoredBlockCount() + " saved blocks")
+                    .orElse(" metadata only; no block snapshot was present");
+            player.displayClientMessage(Component.literal("Restored workspace backup: " + packet.fileName +
+                    blockRestoreSuffix), false);
             new MKStructureWorkspaceService().openWorkspaceScreen(player, packet.anchor);
         } catch (IOException e) {
             MKWorkspaceValidationMessages.displayFailure(player,
-                    "Backup restore failed while writing backup manifest: " + e.getMessage());
+                    "Backup restore failed while restoring backup data: " + e.getMessage());
         }
     }
 }

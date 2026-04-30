@@ -49,11 +49,11 @@ public class MKWorkspacePieceRelayoutService {
         }
         if (workspace.previewMargin() == previewMargin) {
             return Optional.of(new RelayoutResult(workspace, backupWriter
-                    .writeBeforeMutation(level.getServer(), workspace, "preview-margin-noop").path(), 0, 0));
+                    .writeBeforeMutation(level, workspace, "preview-margin-noop").path(), 0, 0));
         }
 
         MKWorkspaceBackupManifestWriter.WrittenBackup backup =
-                backupWriter.writeBeforeMutation(level.getServer(), workspace, "preview-margin-relayout");
+                backupWriter.writeBeforeMutation(level, workspace, "preview-margin-relayout");
         MKStructureWorkspace targetWorkspace = withPreviewMargin(workspace, previewMargin);
         List<PieceMove> moves = buildMoves(targetWorkspace, workspace.pieces());
         if (moves.isEmpty()) {

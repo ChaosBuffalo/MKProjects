@@ -15,24 +15,28 @@ import java.util.Optional;
 public class MKWorkspaceBackupRestoreService {
     private final MKWorkspaceBackupManifestDiscovery discovery = new MKWorkspaceBackupManifestDiscovery();
     private final MKWorkspaceBackupManifestWriter backupWriter = new MKWorkspaceBackupManifestWriter();
+    private final MKWorkspaceBackupBlockSnapshotStore blockSnapshotStore = new MKWorkspaceBackupBlockSnapshotStore();
     private final MKStructureWorkspaceImportService importService = new MKStructureWorkspaceImportService();
 
     public record RestoreResult(Optional<MKStructureWorkspace> workspace, Optional<Path> selectedBackupPath,
-                                Optional<Path> beforeRestoreBackupPath, List<String> validationErrors) {
+                                Optional<Path> beforeRestoreBackupPath,
+                                Optional<MKWorkspaceBackupBlockSnapshotStore.RestoreStats> blockRestoreStats,
+                                List<String> validationErrors) {
         public static RestoreResult failed() {
-            return new RestoreResult(Optional.empty(), Optional.empty(), Optional.empty(), List.of());
+            return new RestoreResult(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), List.of());
         }
 
         public static RestoreResult validationFailed(Path selectedBackupPath, Path beforeRestoreBackupPath,
                                                      List<String> validationErrors) {
             return new RestoreResult(Optional.empty(), Optional.of(selectedBackupPath),
-                    Optional.of(beforeRestoreBackupPath), List.copyOf(validationErrors));
+                    Optional.of(beforeRestoreBackupPath), Optional.empty(), List.copyOf(validationErrors));
         }
 
         public static RestoreResult success(MKStructureWorkspace workspace, Path selectedBackupPath,
-                                            Path beforeRestoreBackupPath) {
+                                            Path beforeRestoreBackupPath,
+                                            Optional<MKWorkspaceBackupBlockSnapshotStore.RestoreStats> blockRestoreStats) {
             return new RestoreResult(Optional.of(workspace), Optional.of(selectedBackupPath),
-                    Optional.of(beforeRestoreBackupPath), List.of());
+                    Optional.of(beforeRestoreBackupPath), blockRestoreStats, List.of());
         }
     }
 
@@ -64,7 +68,7 @@ public class MKWorkspaceBackupRestoreService {
             return RestoreResult.failed();
         }
         MKWorkspaceBackupManifestWriter.WrittenBackup beforeRestore =
-                backupWriter.writeBeforeMutation(level.getServer(), current, "backup-restore");
+                backupWriter.writeBeforeMutation(level, current, "backup-restore");
         MKWorkspaceExportManifest manifest = manifestOpt.get();
         MKStructureWorkspace restoredBase = importService.workspaceFromManifest(
                 current.id(), current.anchor(), current.createdAt(), manifest);
@@ -75,10 +79,12 @@ public class MKWorkspaceBackupRestoreService {
             return RestoreResult.validationFailed(candidate.path(), beforeRestore.path(), validationErrors);
         }
 
+        Optional<MKWorkspaceBackupBlockSnapshotStore.RestoreStats> blockRestoreStats =
+                blockSnapshotStore.restoreSnapshot(candidate.path(), level, current, restored);
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         data.updateWorkspace(restored);
         syncBlockEntity(level, restored);
-        return RestoreResult.success(restored, candidate.path(), beforeRestore.path());
+        return RestoreResult.success(restored, candidate.path(), beforeRestore.path(), blockRestoreStats);
     }
 
     private void syncBlockEntity(ServerLevel level, MKStructureWorkspace workspace) {

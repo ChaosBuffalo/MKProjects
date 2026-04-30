@@ -34,7 +34,7 @@ public class MKWorkspaceIdentityRenameService {
     public RenameResult rename(ServerLevel level, MKStructureWorkspace workspace, String namespace,
                                String structureName) throws IOException {
         MKWorkspaceBackupManifestWriter.WrittenBackup backup =
-                backupWriter.writeBeforeMutation(level.getServer(), workspace, "identity-rename");
+                backupWriter.writeBeforeMutation(level, workspace, "identity-rename");
         MKStructureWorkspace renamed = new MKStructureWorkspace(
                 workspace.id(),
                 workspace.anchor(),

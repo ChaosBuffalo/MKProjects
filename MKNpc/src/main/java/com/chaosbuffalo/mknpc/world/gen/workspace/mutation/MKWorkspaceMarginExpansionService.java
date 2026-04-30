@@ -70,7 +70,7 @@ public class MKWorkspaceMarginExpansionService {
         }
         if (shellMargin == workspace.shellMargin() && exteriorAirMargin == workspace.exteriorAirMargin()) {
             return Optional.of(new ExpansionResult(workspace, backupWriter
-                    .writeBeforeMutation(level.getServer(), workspace, "margin-expansion-noop").path(), 0, 0, 0));
+                    .writeBeforeMutation(level, workspace, "margin-expansion-noop").path(), 0, 0, 0));
         }
 
         MKStructureWorkspace targetWorkspace = withMargins(workspace, shellMargin, exteriorAirMargin);
@@ -80,7 +80,7 @@ public class MKWorkspaceMarginExpansionService {
         preflightDestinations(level, collectSourcePositions(expansions), destinations.keySet(), expansions);
 
         MKWorkspaceBackupManifestWriter.WrittenBackup backup =
-                backupWriter.writeBeforeMutation(level.getServer(), workspace, "margin-expansion");
+                backupWriter.writeBeforeMutation(level, workspace, "margin-expansion");
         clearSources(level, collectSourcePositions(expansions));
         placeDestinations(level, destinations);
         int filled = fillExpandedShells(level, targetWorkspace, expansions, destinations.keySet());

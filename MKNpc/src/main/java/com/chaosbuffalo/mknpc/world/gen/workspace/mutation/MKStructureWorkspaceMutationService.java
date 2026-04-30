@@ -48,7 +48,7 @@ public class MKStructureWorkspaceMutationService {
                                                 String operation)
             throws IOException {
         MKWorkspaceBackupManifestWriter.WrittenBackup backup = backupManifestWriter.writeBeforeMutation(
-                level.getServer(), workspace, operation);
+                level, workspace, operation);
         Map<ResourceLocation, MutableStats> aggregateStats = new LinkedHashMap<>();
         int pieceCount = 0;
         int replacedCount = 0;
