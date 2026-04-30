@@ -5,8 +5,10 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspa
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestDiscovery;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupRestoreService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspacePieceRelayoutService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKStructureWorkspaceMutationService;
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -35,6 +37,9 @@ public class MKWorkspaceCommands {
                                 .then(Commands.argument("fileName", StringArgumentType.word())
                                         .executes(MKWorkspaceCommands::restoreSelectedBackupAtNearestWorkspace))))
                 .then(Commands.literal("regenerate").executes(MKWorkspaceCommands::regenerateAtPlayer))
+                .then(Commands.literal("setpreviewmargin")
+                        .then(Commands.argument("value", IntegerArgumentType.integer(2))
+                                .executes(MKWorkspaceCommands::setPreviewMarginAtNearestWorkspace)))
                 .then(Commands.literal("swapblock")
                         .then(Commands.argument("source", ResourceLocationArgument.id())
                                 .then(Commands.argument("target", ResourceLocationArgument.id())
@@ -147,6 +152,42 @@ public class MKWorkspaceCommands {
             return Command.SINGLE_SUCCESS;
         } catch (IOException e) {
             player.sendSystemMessage(Component.literal("Backup restore failed while writing backup manifest: " + e.getMessage()));
+            return Command.SINGLE_SUCCESS;
+        }
+    }
+
+    private static int setPreviewMarginAtNearestWorkspace(CommandContext<CommandSourceStack> context)
+            throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        if (!player.isCreative()) {
+            player.sendSystemMessage(Component.literal("Only creative players can relayout workspaces."));
+            return Command.SINGLE_SUCCESS;
+        }
+        MKStructureWorkspace nearest = getNearestWorkspace(player);
+        if (nearest == null) {
+            player.sendSystemMessage(Component.literal("No structure workspaces to relayout."));
+            return Command.SINGLE_SUCCESS;
+        }
+        int previewMargin = IntegerArgumentType.getInteger(context, "value");
+        try {
+            var resultOpt = new MKWorkspacePieceRelayoutService().relayoutPreviewMargin(
+                    player.serverLevel(), nearest, previewMargin);
+            if (resultOpt.isEmpty()) {
+                player.sendSystemMessage(Component.literal("Preview margin relayout was not applicable."));
+                return Command.SINGLE_SUCCESS;
+            }
+            MKWorkspacePieceRelayoutService.RelayoutResult result = resultOpt.get();
+            player.sendSystemMessage(Component.literal("Relayouted " + result.movedPieceCount() +
+                    " pieces for preview margin " + previewMargin + "."));
+            player.sendSystemMessage(Component.literal("Moved " + result.movedBlockCount() +
+                    " workspace positions. Backup manifest: " + result.backupPath()));
+            return Command.SINGLE_SUCCESS;
+        } catch (IOException e) {
+            player.sendSystemMessage(Component.literal("Preview margin relayout failed while writing backup manifest: " +
+                    e.getMessage()));
+            return Command.SINGLE_SUCCESS;
+        } catch (IllegalStateException e) {
+            player.sendSystemMessage(Component.literal("Preview margin relayout failed: " + e.getMessage()));
             return Command.SINGLE_SUCCESS;
         }
     }

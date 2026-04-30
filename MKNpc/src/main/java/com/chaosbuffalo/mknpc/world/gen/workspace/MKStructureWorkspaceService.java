@@ -14,6 +14,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifestWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportPieceMetadataWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportResult;
+import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspacePieceRelayoutService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceScaffoldBuilder;
 import com.chaosbuffalo.mknpc.world.gen.workspace.stairs.MKWorkspaceStairBuilder;
@@ -49,6 +50,7 @@ public class MKStructureWorkspaceService {
     private final MKWorkspaceScaffoldBuilder scaffoldBuilder = new MKWorkspaceScaffoldBuilder();
     private final MKWorkspaceStairBuilder stairBuilder = new MKWorkspaceStairBuilder();
     private final MKStructureWorkspaceImportService importService = new MKStructureWorkspaceImportService();
+    private final MKWorkspacePieceRelayoutService relayoutService = new MKWorkspacePieceRelayoutService();
 
     public Optional<MKStructureWorkspace> createOrUpdateTowerWorkspace(ServerLevel level, MKStructureWorkspace workspace) {
         List<String> errors = workspace.validate();
@@ -59,6 +61,14 @@ public class MKStructureWorkspaceService {
         Optional<MKStructureWorkspace> existingOpt = data.getWorkspaceByAnchor(workspace.anchor());
         if (existingOpt.isPresent()) {
             MKStructureWorkspace existing = existingOpt.get();
+            if (canRelayoutPreviewMarginOnly(existing, workspace)) {
+                try {
+                    return relayoutService.relayoutPreviewMargin(level, existing, workspace.previewMargin())
+                            .map(MKWorkspacePieceRelayoutService.RelayoutResult::workspace);
+                } catch (IOException e) {
+                    throw new IllegalStateException("Failed to write workspace backup before preview margin relayout", e);
+                }
+            }
             MKStructureWorkspace updated = new MKStructureWorkspace(
                     existing.id(),
                     workspace.anchor(),
@@ -89,6 +99,13 @@ public class MKStructureWorkspaceService {
         data.createWorkspace(workspace);
         syncBlockEntity(level, workspace.anchor(), workspace.id());
         return Optional.of(workspace);
+    }
+
+    public boolean canApplyPreviewMarginRelayout(ServerLevel level, MKStructureWorkspace requested) {
+        return IMKStructureWorkspaceData.get(level)
+                .getWorkspaceByAnchor(requested.anchor())
+                .filter(existing -> canRelayoutPreviewMarginOnly(existing, requested))
+                .isPresent();
     }
 
     public Optional<MKStructureWorkspace> generateTowerWorkspace(ServerLevel level, BlockPos anchor) {
@@ -363,6 +380,41 @@ public class MKStructureWorkspaceService {
 
     private String getBaseName(MKWorkspacePieceDefinition piece) {
         return piece.tags().getOrDefault(MKWorkspaceGridLayout.TAG_BASE_NAME, piece.pieceName());
+    }
+
+    private boolean canRelayoutPreviewMarginOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
+        if (existing.pieces().isEmpty() || existing.previewMargin() == requested.previewMargin()) {
+            return false;
+        }
+        return settingsComparisonTag(existing, existing.id(), requested.previewMargin())
+                .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin()));
+    }
+
+    private net.minecraft.nbt.CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, java.util.UUID id,
+                                                                int previewMargin) {
+        return new MKStructureWorkspace(
+                id,
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                previewMargin,
+                workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
+                workspace.categoryProfiles(),
+                workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.hallwayFamilies(),
+                0,
+                0,
+                List.of()
+        ).toTag();
     }
 }
 
