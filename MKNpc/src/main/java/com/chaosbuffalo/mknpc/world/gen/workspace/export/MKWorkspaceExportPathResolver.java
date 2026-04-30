@@ -28,13 +28,17 @@ public class MKWorkspaceExportPathResolver {
                                       Instant timestamp) {
         String safeOperation = sanitizePathSegment(operation);
         String fileName = BACKUP_TIMESTAMP_FORMAT.format(timestamp) + "-before-" + safeOperation + ".json";
+        return getBackupManifestDirectory(server, workspace)
+                .resolve(fileName);
+    }
+
+    public Path getBackupManifestDirectory(MinecraftServer server, MKStructureWorkspace workspace) {
         return server.getWorldPath(LevelResource.ROOT)
                 .resolve("generated")
                 .resolve(workspace.namespace())
                 .resolve("mk_workspace_exports")
                 .resolve("backups")
-                .resolve(workspace.structureName())
-                .resolve(fileName);
+                .resolve(workspace.structureName());
     }
 
     private String sanitizePathSegment(String value) {

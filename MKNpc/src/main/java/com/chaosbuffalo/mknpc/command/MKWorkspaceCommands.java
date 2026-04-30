@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.command;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.MKStructureWorkspaceService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
+import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestDiscovery;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKStructureWorkspaceMutationService;
 import com.mojang.brigadier.Command;
@@ -24,6 +25,8 @@ public class MKWorkspaceCommands {
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("mkworkspace")
                 .then(Commands.literal("list").executes(MKWorkspaceCommands::listWorkspaces))
+                .then(Commands.literal("backups")
+                        .then(Commands.literal("list").executes(MKWorkspaceCommands::listBackupsAtNearestWorkspace)))
                 .then(Commands.literal("regenerate").executes(MKWorkspaceCommands::regenerateAtPlayer))
                 .then(Commands.literal("swapblock")
                         .then(Commands.argument("source", ResourceLocationArgument.id())
@@ -56,6 +59,36 @@ public class MKWorkspaceCommands {
         player.sendSystemMessage(Component.literal(regenerated ?
                 "Regenerated workspace at " + nearest.anchor() :
                 "Failed to regenerate workspace at " + nearest.anchor()));
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int listBackupsAtNearestWorkspace(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        MKStructureWorkspace nearest = getNearestWorkspace(player);
+        if (nearest == null) {
+            player.sendSystemMessage(Component.literal("No structure workspaces to inspect."));
+            return Command.SINGLE_SUCCESS;
+        }
+        var backups = new MKWorkspaceBackupManifestDiscovery().discoverBackups(player.server, nearest);
+        if (backups.isEmpty()) {
+            player.sendSystemMessage(Component.literal("No backups found for " +
+                    nearest.namespace() + ":" + nearest.structureName()));
+            return Command.SINGLE_SUCCESS;
+        }
+        player.sendSystemMessage(Component.literal("Backups for " + nearest.namespace() + ":" +
+                nearest.structureName() + ":"));
+        for (int i = 0; i < Math.min(backups.size(), 10); i++) {
+            MKWorkspaceBackupManifestDiscovery.BackupCandidate backup = backups.get(i);
+            player.sendSystemMessage(Component.literal(String.format("[%d] %s pieces=%d schema=%d file=%s",
+                    i + 1,
+                    backup.operation(),
+                    backup.pieceCount(),
+                    backup.schemaVersion(),
+                    backup.fileName())));
+        }
+        if (backups.size() > 10) {
+            player.sendSystemMessage(Component.literal("Showing 10 of " + backups.size() + " backups."));
+        }
         return Command.SINGLE_SUCCESS;
     }
 
