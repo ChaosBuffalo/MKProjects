@@ -18,15 +18,22 @@ public class AddWorkspaceVariantPacket implements CustomPacketPayload {
 
     private final BlockPos anchor;
     private final String basePieceName;
+    private final String sourcePieceName;
 
     public AddWorkspaceVariantPacket(BlockPos anchor, String basePieceName) {
+        this(anchor, basePieceName, null);
+    }
+
+    public AddWorkspaceVariantPacket(BlockPos anchor, String basePieceName, String sourcePieceName) {
         this.anchor = anchor;
         this.basePieceName = basePieceName;
+        this.sourcePieceName = sourcePieceName;
     }
 
     public AddWorkspaceVariantPacket(FriendlyByteBuf buffer) {
         this.anchor = buffer.readBlockPos();
         this.basePieceName = buffer.readUtf();
+        this.sourcePieceName = buffer.readBoolean() ? buffer.readUtf() : null;
     }
 
     @Override
@@ -37,13 +44,19 @@ public class AddWorkspaceVariantPacket implements CustomPacketPayload {
     public void toBytes(FriendlyByteBuf buffer) {
         buffer.writeBlockPos(anchor);
         buffer.writeUtf(basePieceName);
+        buffer.writeBoolean(sourcePieceName != null);
+        if (sourcePieceName != null) {
+            buffer.writeUtf(sourcePieceName);
+        }
     }
 
     public static void handle(AddWorkspaceVariantPacket packet, IPayloadContext context) {
         if (!(context.player() instanceof ServerPlayer player) || !player.isCreative()) {
             return;
         }
-        new MKStructureWorkspaceService().addTowerWorkspaceVariant(player.serverLevel(), packet.anchor, packet.basePieceName)
+        new MKStructureWorkspaceService()
+                .addTowerWorkspaceVariant(player.serverLevel(), packet.anchor, packet.basePieceName,
+                        packet.sourcePieceName)
                 .ifPresent(updated -> player.connection.send(new OpenWorkspaceScreenPacket(packet.anchor, updated)));
     }
 }

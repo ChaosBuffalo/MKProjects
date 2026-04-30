@@ -185,6 +185,11 @@ public class MKStructureWorkspaceService {
     }
 
     public Optional<MKStructureWorkspace> addTowerWorkspaceVariant(ServerLevel level, BlockPos anchor, String basePieceName) {
+        return addTowerWorkspaceVariant(level, anchor, basePieceName, null);
+    }
+
+    public Optional<MKStructureWorkspace> addTowerWorkspaceVariant(ServerLevel level, BlockPos anchor,
+                                                                  String basePieceName, String sourcePieceName) {
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
         if (workspaceOpt.isEmpty()) {
@@ -195,16 +200,30 @@ public class MKStructureWorkspaceService {
             return Optional.empty();
         }
 
+        String resolvedBasePieceName = basePieceName;
+        MKWorkspacePieceDefinition sourcePiece = null;
+        if (sourcePieceName != null && !sourcePieceName.isBlank()) {
+            sourcePiece = workspace.pieces().stream()
+                    .filter(piece -> sourcePieceName.equals(piece.pieceName()))
+                    .findFirst()
+                    .orElse(null);
+            if (sourcePiece == null) {
+                return Optional.empty();
+            }
+            resolvedBasePieceName = getBaseName(sourcePiece);
+        }
+        final String targetBasePieceName = resolvedBasePieceName;
+
         List<MKPlannedPiece> canonicalPieces = towerPlanner.createCanonicalPieces(workspace);
         Map<String, MKPlannedPiece> canonicalByBaseName = canonicalPieces.stream()
                 .collect(Collectors.toMap(MKPlannedPiece::pieceName, piece -> piece));
-        MKPlannedPiece basePiece = canonicalByBaseName.get(basePieceName);
+        MKPlannedPiece basePiece = canonicalByBaseName.get(targetBasePieceName);
         if (basePiece == null) {
             return Optional.empty();
         }
 
         int nextVariantIndex = workspace.pieces().stream()
-                .filter(piece -> basePieceName.equals(getBaseName(piece)))
+                .filter(piece -> targetBasePieceName.equals(getBaseName(piece)))
                 .mapToInt(MKWorkspacePieceDefinition::variantIndex)
                 .max()
                 .orElse(0) + 1;
@@ -220,8 +239,8 @@ public class MKStructureWorkspaceService {
         MKPlannedPiece variantPiece = toVariantPiece(basePiece, nextVariantIndex);
         layoutPieces.add(variantPiece);
 
-        MKWorkspacePieceDefinition templatePiece = workspace.pieces().stream()
-                .filter(piece -> piece.variantIndex() == 0 && basePieceName.equals(getBaseName(piece)))
+        MKWorkspacePieceDefinition templatePiece = sourcePiece != null ? sourcePiece : workspace.pieces().stream()
+                .filter(piece -> piece.variantIndex() == 0 && targetBasePieceName.equals(getBaseName(piece)))
                 .findFirst()
                 .orElse(null);
         if (templatePiece == null) {

@@ -201,6 +201,8 @@ public class MKWorkspaceScreen extends MKScreen {
         addState("form_hallways", this::buildFormHallwaysState);
         addState("form_hallway_detail", this::buildFormHallwayDetailState);
         addState("workspace", this::buildWorkspaceState);
+        addState("utilities", this::buildUtilitiesState);
+        addState("block_swap", this::buildBlockSwapState);
         addState("backups", this::buildBackupState);
         addState("category", this::buildCategoryState);
         List<String> statesToPush = initialStates.isEmpty() ? getDefaultInitialStates() : initialStates;
@@ -1586,52 +1588,6 @@ public class MKWorkspaceScreen extends MKScreen {
         content.setMargins(4, 4, 4, 4);
         content.setPaddingTop(4).setPaddingBot(4);
 
-        MKText blockSwapHeader = makeWhiteText(Component.literal("Block Swap"));
-        blockSwapHeader.setWidth(CONTENT_WIDTH);
-        content.addWidget(blockSwapHeader);
-        content.addConstraintToWidget(MarginConstraint.LEFT, blockSwapHeader);
-        MKTextFieldWidget sourceBlockField = makeField("Source Block", workspace.palette().wallBlock().toString());
-        MKTextFieldWidget targetBlockField = makeField("Target Block", workspace.palette().wallBlock().toString());
-        addRow(content, makeWhiteText(Component.literal("Source Block")), sourceBlockField);
-        addRow(content, makeWhiteText(Component.literal("Target Block")), targetBlockField);
-        MKButton swapBlocks = new MKButton(Component.literal("Swap Blocks"), 180, 20);
-        content.addWidget(swapBlocks);
-        content.addConstraintToWidget(new CenterXConstraint(), swapBlocks);
-        swapBlocks.setPressedCallback((button, mouseButton) -> {
-            ResourceLocation sourceBlock = parseResourceLocationOrNull(sourceBlockField.getText());
-            ResourceLocation targetBlock = parseResourceLocationOrNull(targetBlockField.getText());
-            if (sourceBlock != null && targetBlock != null) {
-                PacketDistributor.sendToServer(new SwapWorkspaceBlockPacket(anchor, sourceBlock, targetBlock));
-            }
-            return true;
-        });
-
-        MKText backupHeader = makeWhiteText(Component.literal("Backups"));
-        backupHeader.setWidth(CONTENT_WIDTH);
-        content.addWidget(backupHeader);
-        content.addConstraintToWidget(MarginConstraint.LEFT, backupHeader);
-        MKButton openBackups = new MKButton(Component.literal(backupManifestFiles.isEmpty() ?
-                "No Backups Found" : "Browse Backups (" + backupManifestFiles.size() + ")"), 180, 20);
-        content.addWidget(openBackups);
-        content.addConstraintToWidget(new CenterXConstraint(), openBackups);
-        openBackups.setPressedCallback((button, mouseButton) -> {
-            if (!backupManifestFiles.isEmpty()) {
-                pushState("backups");
-                flagNeedSetup();
-            }
-            return true;
-        });
-
-        if (workspace.pieces().stream().anyMatch(this::supportsStairGeneration)) {
-            MKButton generateAllStairs = new MKButton(Component.literal("Generate All Stairs"), 180, 20);
-            content.addWidget(generateAllStairs);
-            content.addConstraintToWidget(new CenterXConstraint(), generateAllStairs);
-            generateAllStairs.setPressedCallback((button, mouseButton) -> {
-                PacketDistributor.sendToServer(new GenerateAllWorkspaceStairsPacket(anchor));
-                return true;
-            });
-        }
-
         for (Map.Entry<String, List<MKWorkspacePieceDefinition>> entry : groupPiecesByTopology().entrySet()) {
             String topologyKey = entry.getKey();
             List<MKWorkspacePieceDefinition> pieces = entry.getValue();
@@ -1671,7 +1627,7 @@ public class MKWorkspaceScreen extends MKScreen {
         content.manualRecompute();
         scrollView.addWidget(content);
         scrollView.centerContentX();
-        finalizeScrollView(scrollView, "form_hallway_detail");
+        finalizeScrollView(scrollView, "workspace");
 
         MKButton close = new MKButton(Component.translatable("mknpc.workspace.button.close"), 120, 20);
         root.addWidget(close);
@@ -1682,12 +1638,13 @@ public class MKWorkspaceScreen extends MKScreen {
             return true;
         });
 
-        MKButton addCopyForAll = new MKButton(Component.translatable("mknpc.workspace.button.add_copy_for_all"), 180, 20);
-        root.addWidget(addCopyForAll);
-        root.addConstraintToWidget(new CenterXConstraint(), addCopyForAll);
-        addCopyForAll.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT);
-        addCopyForAll.setPressedCallback((button, mouseButton) -> {
-            PacketDistributor.sendToServer(new AddWorkspaceVariantsForAllPacket(anchor));
+        MKButton utilities = new MKButton(Component.literal("Utilities"), 180, 20);
+        root.addWidget(utilities);
+        root.addConstraintToWidget(new CenterXConstraint(), utilities);
+        utilities.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT);
+        utilities.setPressedCallback((button, mouseButton) -> {
+            pushState("utilities");
+            flagNeedSetup();
             return true;
         });
 
@@ -1712,6 +1669,137 @@ public class MKWorkspaceScreen extends MKScreen {
             return true;
         });
 
+        return root;
+    }
+
+    private MKLayout buildUtilitiesState() {
+        int xPos = width / 2 - PANEL_WIDTH / 2;
+        int yPos = height / 2 - PANEL_HEIGHT / 2;
+        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
+        root.setMargins(8, 8, 8, 8);
+        root.setPaddingTop(8).setPaddingBot(8);
+
+        MKText title = makeWhiteText(Component.literal("Utilities"));
+        root.addWidget(title);
+        root.addConstraintToWidget(MarginConstraint.TOP, title);
+        root.addConstraintToWidget(new CenterXConstraint(), title);
+
+        MKText summary = makeWhiteText(Component.literal("Workspace-wide tools for live workspace maintenance."));
+        summary.setWidth(CONTENT_WIDTH);
+        summary.setMultiline(true);
+        root.addWidget(summary);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, summary);
+        root.addConstraintToWidget(new CenterXConstraint(), summary);
+
+        int scrollTop = scrollTopAfterHeader(root, summary);
+        int scrollHeight = yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - 12 - scrollTop;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
+        scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
+        root.addWidget(scrollView);
+
+        MKStackLayoutVertical content = new MKStackLayoutVertical(0, 0, CONTENT_WIDTH);
+        content.setMargins(4, 4, 4, 4);
+        content.setPaddingTop(4).setPaddingBot(4);
+
+        MKButton blockSwap = new MKButton(Component.literal("Block Swap"), 180, 20);
+        content.addWidget(blockSwap);
+        content.addConstraintToWidget(new CenterXConstraint(), blockSwap);
+        blockSwap.setPressedCallback((button, mouseButton) -> {
+            pushState("block_swap");
+            flagNeedSetup();
+            return true;
+        });
+
+        MKButton backups = new MKButton(Component.literal("Backups (" + backupManifestFiles.size() + ")"), 180, 20);
+        content.addWidget(backups);
+        content.addConstraintToWidget(new CenterXConstraint(), backups);
+        backups.setPressedCallback((button, mouseButton) -> {
+            pushState("backups");
+            flagNeedSetup();
+            return true;
+        });
+
+        if (workspace.pieces().stream().anyMatch(this::supportsStairGeneration)) {
+            MKButton generateAllStairs = new MKButton(Component.literal("Generate All Stairs"), 180, 20);
+            content.addWidget(generateAllStairs);
+            content.addConstraintToWidget(new CenterXConstraint(), generateAllStairs);
+            generateAllStairs.setPressedCallback((button, mouseButton) -> {
+                PacketDistributor.sendToServer(new GenerateAllWorkspaceStairsPacket(anchor));
+                return true;
+            });
+        }
+
+        MKButton addCopyForAll = new MKButton(Component.translatable("mknpc.workspace.button.add_copy_for_all"), 180, 20);
+        content.addWidget(addCopyForAll);
+        content.addConstraintToWidget(new CenterXConstraint(), addCopyForAll);
+        addCopyForAll.setPressedCallback((button, mouseButton) -> {
+            PacketDistributor.sendToServer(new AddWorkspaceVariantsForAllPacket(anchor));
+            return true;
+        });
+
+        content.manualRecompute();
+        scrollView.addWidget(content);
+        scrollView.centerContentX();
+        finalizeScrollView(scrollView, "utilities");
+
+        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
+        root.addWidget(back);
+        root.addConstraintToWidget(new CenterXConstraint(), back);
+        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
+        back.setPressedCallback((button, mouseButton) -> {
+            switchToExistingState("workspace");
+            return true;
+        });
+        return root;
+    }
+
+    private MKLayout buildBlockSwapState() {
+        int xPos = width / 2 - PANEL_WIDTH / 2;
+        int yPos = height / 2 - PANEL_HEIGHT / 2;
+        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
+        root.setMargins(8, 8, 8, 8);
+        root.setPaddingTop(8).setPaddingBot(8);
+
+        MKText title = makeWhiteText(Component.literal("Block Swap"));
+        root.addWidget(title);
+        root.addConstraintToWidget(MarginConstraint.TOP, title);
+        root.addConstraintToWidget(new CenterXConstraint(), title);
+
+        MKText summary = makeWhiteText(Component.literal("Choose source and target blocks from the hotbar."));
+        summary.setWidth(CONTENT_WIDTH);
+        summary.setMultiline(true);
+        root.addWidget(summary);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, summary);
+        root.addConstraintToWidget(new CenterXConstraint(), summary);
+
+        MKPlayerHotbar hotbar = new MKPlayerHotbar();
+        MKBlockSlot sourceSlot = new MKBlockSlot();
+        sourceSlot.setBlock(workspace.palette().wallBlock());
+        MKBlockSlot targetSlot = new MKBlockSlot();
+        targetSlot.setBlock(workspace.palette().floorBlock());
+        addBlockSwapPaletteSection(root, xPos, yPos + 92, hotbar, sourceSlot, targetSlot);
+
+        MKButton swapBlocks = new MKButton(Component.literal("Swap Blocks"), 180, 20);
+        root.addWidget(swapBlocks);
+        root.addConstraintToWidget(new CenterXConstraint(), swapBlocks);
+        swapBlocks.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT);
+        swapBlocks.setPressedCallback((button, mouseButton) -> {
+            ResourceLocation sourceBlock = sourceSlot.getBlockId();
+            ResourceLocation targetBlock = targetSlot.getBlockId();
+            if (!sourceBlock.equals(ResourceLocation.withDefaultNamespace("air")) && !sourceBlock.equals(targetBlock)) {
+                PacketDistributor.sendToServer(new SwapWorkspaceBlockPacket(anchor, sourceBlock, targetBlock));
+            }
+            return true;
+        });
+
+        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
+        root.addWidget(back);
+        root.addConstraintToWidget(new CenterXConstraint(), back);
+        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
+        back.setPressedCallback((button, mouseButton) -> {
+            switchToExistingState("utilities");
+            return true;
+        });
         return root;
     }
 
@@ -1778,7 +1866,7 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), back);
         back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
         back.setPressedCallback((button, mouseButton) -> {
-            switchToExistingState("workspace");
+            switchToExistingState("utilities");
             return true;
         });
         return root;
@@ -1880,6 +1968,16 @@ public class MKWorkspaceScreen extends MKScreen {
                 content.addWidget(stairStatus);
                 content.addConstraintToWidget(MarginConstraint.LEFT, stairStatus);
             }
+
+            String sourcePieceName = piece.pieceName();
+            String sourceBaseName = getBaseName(piece);
+            MKButton copyVariant = new MKButton(Component.literal("Copy This Variant"), 180, 20);
+            content.addWidget(copyVariant);
+            content.addConstraintToWidget(new CenterXConstraint(), copyVariant);
+            copyVariant.setPressedCallback((button, mouseButton) -> {
+                PacketDistributor.sendToServer(new AddWorkspaceVariantPacket(anchor, sourceBaseName, sourcePieceName));
+                return true;
+            });
 
             if (stairCategory && supportsStairGeneration(piece)) {
                 String pieceName = piece.pieceName();
@@ -2039,6 +2137,25 @@ public class MKWorkspaceScreen extends MKScreen {
         addSlotWithLabel(root, stairBlockSlot, "Stair", secondRowX, firstRowY);
         addSlotWithLabel(root, slabBlockSlot, "Slab", secondRowX + 38, firstRowY);
         addSlotWithLabel(root, ladderBlockSlot, "Ladder", secondRowX + 76, firstRowY);
+    }
+
+    private void addBlockSwapPaletteSection(MKLayout root, int xPos, int paletteTop, MKPlayerHotbar hotbar,
+                                            MKBlockSlot sourceSlot, MKBlockSlot targetSlot) {
+        MKText hotbarLabel = makeLabel("mknpc.workspace.field.hotbar");
+        hotbarLabel.setWidth(CONTENT_WIDTH);
+        hotbarLabel.setY(paletteTop);
+        root.addWidget(hotbarLabel);
+        root.addConstraintToWidget(new CenterXConstraint(), hotbarLabel);
+
+        hotbar.setY(paletteTop + 12);
+        root.addWidget(hotbar);
+        root.addConstraintToWidget(new CenterXConstraint(), hotbar);
+
+        int slotY = paletteTop + 42;
+        int slotGroupWidth = (2 * 18) + 56;
+        int slotX = xPos + (PANEL_WIDTH / 2) - (slotGroupWidth / 2);
+        addSlotWithLabel(root, sourceSlot, "Source", slotX, slotY);
+        addSlotWithLabel(root, targetSlot, "Target", slotX + 56, slotY);
     }
 
     private void addSlotWithLabel(MKLayout root, MKBlockSlot slot, String label, int x, int y) {
@@ -3086,14 +3203,6 @@ public class MKWorkspaceScreen extends MKScreen {
             return ResourceLocation.parse(text.trim());
         } catch (Exception ignored) {
             return fallback;
-        }
-    }
-
-    private ResourceLocation parseResourceLocationOrNull(String text) {
-        try {
-            return ResourceLocation.parse(text.trim());
-        } catch (Exception ignored) {
-            return null;
         }
     }
 
