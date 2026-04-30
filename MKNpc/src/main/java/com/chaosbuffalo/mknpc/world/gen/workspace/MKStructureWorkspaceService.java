@@ -14,6 +14,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifestWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportPieceMetadataWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportResult;
+import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspaceIdentityRenameService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspacePieceRelayoutService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKStructureWorkspaceMutationService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
@@ -53,6 +54,7 @@ public class MKStructureWorkspaceService {
     private final MKStructureWorkspaceImportService importService = new MKStructureWorkspaceImportService();
     private final MKWorkspacePieceRelayoutService relayoutService = new MKWorkspacePieceRelayoutService();
     private final MKStructureWorkspaceMutationService mutationService = new MKStructureWorkspaceMutationService();
+    private final MKWorkspaceIdentityRenameService identityRenameService = new MKWorkspaceIdentityRenameService();
 
     public Optional<MKStructureWorkspace> createOrUpdateTowerWorkspace(ServerLevel level, MKStructureWorkspace workspace) {
         List<String> errors = workspace.validate();
@@ -77,6 +79,14 @@ public class MKStructureWorkspaceService {
                     return data.getWorkspace(existing.id());
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to write workspace backup before palette swap", e);
+                }
+            }
+            if (canRenameIdentityOnly(existing, workspace)) {
+                try {
+                    return Optional.of(identityRenameService.rename(level, existing,
+                            workspace.namespace(), workspace.structureName()).workspace());
+                } catch (IOException e) {
+                    throw new IllegalStateException("Failed to write workspace backup before identity rename", e);
                 }
             }
             MKStructureWorkspace updated = new MKStructureWorkspace(
@@ -122,6 +132,13 @@ public class MKStructureWorkspaceService {
         return IMKStructureWorkspaceData.get(level)
                 .getWorkspaceByAnchor(requested.anchor())
                 .filter(existing -> canSwapPaletteOnly(existing, requested))
+                .isPresent();
+    }
+
+    public boolean canApplyIdentityRename(ServerLevel level, MKStructureWorkspace requested) {
+        return IMKStructureWorkspaceData.get(level)
+                .getWorkspaceByAnchor(requested.anchor())
+                .filter(existing -> canRenameIdentityOnly(existing, requested))
                 .isPresent();
     }
 
@@ -415,6 +432,21 @@ public class MKStructureWorkspaceService {
                 .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin(), requested.palette()));
     }
 
+    private boolean canRenameIdentityOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
+        if (existing.pieces().isEmpty()) {
+            return false;
+        }
+        boolean identityChanged = !existing.namespace().equals(requested.namespace()) ||
+                !existing.structureName().equals(requested.structureName());
+        if (!identityChanged) {
+            return false;
+        }
+        return settingsComparisonTag(existing, existing.id(), existing.previewMargin(), existing.palette(),
+                requested.namespace(), requested.structureName())
+                .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin(),
+                        requested.palette(), requested.namespace(), requested.structureName()));
+    }
+
     private net.minecraft.nbt.CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, java.util.UUID id,
                                                                 int previewMargin) {
         return settingsComparisonTag(workspace, id, previewMargin, workspace.palette());
@@ -423,11 +455,18 @@ public class MKStructureWorkspaceService {
     private net.minecraft.nbt.CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, java.util.UUID id,
                                                                 int previewMargin,
                                                                 com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette palette) {
+        return settingsComparisonTag(workspace, id, previewMargin, palette, workspace.namespace(), workspace.structureName());
+    }
+
+    private net.minecraft.nbt.CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, java.util.UUID id,
+                                                                int previewMargin,
+                                                                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette palette,
+                                                                String namespace, String structureName) {
         return new MKStructureWorkspace(
                 id,
                 workspace.anchor(),
-                workspace.namespace(),
-                workspace.structureName(),
+                namespace,
+                structureName,
                 workspace.familyType(),
                 workspace.dimensions(),
                 palette,
