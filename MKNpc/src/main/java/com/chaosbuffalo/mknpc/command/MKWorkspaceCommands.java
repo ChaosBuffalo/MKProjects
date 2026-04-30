@@ -3,21 +3,32 @@ package com.chaosbuffalo.mknpc.command;
 import com.chaosbuffalo.mknpc.world.gen.workspace.MKStructureWorkspaceService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKStructureWorkspaceMutationService;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+
+import java.io.IOException;
+import java.util.Map;
 
 public class MKWorkspaceCommands {
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("mkworkspace")
                 .then(Commands.literal("list").executes(MKWorkspaceCommands::listWorkspaces))
-                .then(Commands.literal("regenerate").executes(MKWorkspaceCommands::regenerateAtPlayer));
+                .then(Commands.literal("regenerate").executes(MKWorkspaceCommands::regenerateAtPlayer))
+                .then(Commands.literal("swapblock")
+                        .then(Commands.argument("source", ResourceLocationArgument.id())
+                                .then(Commands.argument("target", ResourceLocationArgument.id())
+                                        .executes(MKWorkspaceCommands::swapBlockAtNearestWorkspace))));
     }
 
     private static int listWorkspaces(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -36,13 +47,7 @@ public class MKWorkspaceCommands {
 
     private static int regenerateAtPlayer(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
-        BlockPos playerPos = player.blockPosition();
-        IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(player.serverLevel());
-        MKStructureWorkspace nearest = data.getAllWorkspaces().stream()
-                .min((left, right) -> Integer.compare(
-                        left.anchor().distManhattan(playerPos),
-                        right.anchor().distManhattan(playerPos)))
-                .orElse(null);
+        MKStructureWorkspace nearest = getNearestWorkspace(player);
         if (nearest == null) {
             player.sendSystemMessage(Component.literal("No structure workspaces to regenerate."));
             return Command.SINGLE_SUCCESS;
@@ -52,5 +57,50 @@ public class MKWorkspaceCommands {
                 "Regenerated workspace at " + nearest.anchor() :
                 "Failed to regenerate workspace at " + nearest.anchor()));
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static int swapBlockAtNearestWorkspace(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        if (!player.isCreative()) {
+            player.sendSystemMessage(Component.literal("Only creative players can mutate workspaces."));
+            return Command.SINGLE_SUCCESS;
+        }
+        ResourceLocation source = ResourceLocationArgument.getId(context, "source");
+        ResourceLocation target = ResourceLocationArgument.getId(context, "target");
+        if (BuiltInRegistries.BLOCK.getOptional(source).isEmpty()) {
+            player.sendSystemMessage(Component.literal("Unknown source block: " + source));
+            return Command.SINGLE_SUCCESS;
+        }
+        if (BuiltInRegistries.BLOCK.getOptional(target).isEmpty()) {
+            player.sendSystemMessage(Component.literal("Unknown target block: " + target));
+            return Command.SINGLE_SUCCESS;
+        }
+        MKStructureWorkspace nearest = getNearestWorkspace(player);
+        if (nearest == null) {
+            player.sendSystemMessage(Component.literal("No structure workspaces to mutate."));
+            return Command.SINGLE_SUCCESS;
+        }
+        try {
+            MKStructureWorkspaceMutationService.WorkspaceBlockSwapResult result =
+                    new MKStructureWorkspaceMutationService().swapBlocks(
+                            player.serverLevel(), nearest, Map.of(source, target));
+            player.sendSystemMessage(Component.literal("Swapped " + result.replacedCount() + " blocks across " +
+                    result.pieceCount() + " pieces in " + nearest.namespace() + ":" + nearest.structureName()));
+            player.sendSystemMessage(Component.literal("Backup manifest: " + result.backupPath()));
+            return Command.SINGLE_SUCCESS;
+        } catch (IOException e) {
+            player.sendSystemMessage(Component.literal("Block swap failed while writing backup manifest: " + e.getMessage()));
+            return Command.SINGLE_SUCCESS;
+        }
+    }
+
+    private static MKStructureWorkspace getNearestWorkspace(ServerPlayer player) {
+        BlockPos playerPos = player.blockPosition();
+        IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(player.serverLevel());
+        return data.getAllWorkspaces().stream()
+                .min((left, right) -> Integer.compare(
+                        left.anchor().distManhattan(playerPos),
+                        right.anchor().distManhattan(playerPos)))
+                .orElse(null);
     }
 }
