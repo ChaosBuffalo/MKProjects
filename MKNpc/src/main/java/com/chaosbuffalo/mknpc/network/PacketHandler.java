@@ -16,6 +16,7 @@ import com.chaosbuffalo.mknpc.network.packets.OpenWorkspaceScreenPacket;
 import com.chaosbuffalo.mknpc.network.packets.OpenMKSpawnerPacket;
 import com.chaosbuffalo.mknpc.network.packets.CreateWorkspacePacket;
 import com.chaosbuffalo.mknpc.network.packets.SetSpawnListPacket;
+import com.chaosbuffalo.mknpc.network.packets.SwapWorkspaceBlockPacket;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -99,6 +100,11 @@ public class PacketHandler {
                 LoadWorkspaceFromManifestPacket.TYPE,
                 LoadWorkspaceFromManifestPacket.STREAM_CODEC,
                 LoadWorkspaceFromManifestPacket::handle
+        );
+        registrar.playToServer(
+                SwapWorkspaceBlockPacket.TYPE,
+                SwapWorkspaceBlockPacket.STREAM_CODEC,
+                SwapWorkspaceBlockPacket::handle
         );
     }
 }

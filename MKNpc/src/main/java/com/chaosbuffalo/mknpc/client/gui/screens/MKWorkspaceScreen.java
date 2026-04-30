@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.network.packets.ExportWorkspacePiecesPacket;
 import com.chaosbuffalo.mknpc.network.packets.GenerateAllWorkspaceStairsPacket;
 import com.chaosbuffalo.mknpc.network.packets.GenerateWorkspaceStairsPacket;
 import com.chaosbuffalo.mknpc.network.packets.LoadWorkspaceFromManifestPacket;
+import com.chaosbuffalo.mknpc.network.packets.SwapWorkspaceBlockPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
@@ -1519,6 +1520,26 @@ public class MKWorkspaceScreen extends MKScreen {
         content.setMargins(4, 4, 4, 4);
         content.setPaddingTop(4).setPaddingBot(4);
 
+        MKText blockSwapHeader = makeWhiteText(Component.literal("Block Swap"));
+        blockSwapHeader.setWidth(CONTENT_WIDTH);
+        content.addWidget(blockSwapHeader);
+        content.addConstraintToWidget(MarginConstraint.LEFT, blockSwapHeader);
+        MKTextFieldWidget sourceBlockField = makeField("Source Block", workspace.palette().wallBlock().toString());
+        MKTextFieldWidget targetBlockField = makeField("Target Block", workspace.palette().wallBlock().toString());
+        addRow(content, makeWhiteText(Component.literal("Source Block")), sourceBlockField);
+        addRow(content, makeWhiteText(Component.literal("Target Block")), targetBlockField);
+        MKButton swapBlocks = new MKButton(Component.literal("Swap Blocks"), 180, 20);
+        content.addWidget(swapBlocks);
+        content.addConstraintToWidget(new CenterXConstraint(), swapBlocks);
+        swapBlocks.setPressedCallback((button, mouseButton) -> {
+            ResourceLocation sourceBlock = parseResourceLocationOrNull(sourceBlockField.getText());
+            ResourceLocation targetBlock = parseResourceLocationOrNull(targetBlockField.getText());
+            if (sourceBlock != null && targetBlock != null) {
+                PacketDistributor.sendToServer(new SwapWorkspaceBlockPacket(anchor, sourceBlock, targetBlock));
+            }
+            return true;
+        });
+
         if (workspace.pieces().stream().anyMatch(this::supportsStairGeneration)) {
             MKButton generateAllStairs = new MKButton(Component.literal("Generate All Stairs"), 180, 20);
             content.addWidget(generateAllStairs);
@@ -2799,6 +2820,14 @@ public class MKWorkspaceScreen extends MKScreen {
             return ResourceLocation.parse(text.trim());
         } catch (Exception ignored) {
             return fallback;
+        }
+    }
+
+    private ResourceLocation parseResourceLocationOrNull(String text) {
+        try {
+            return ResourceLocation.parse(text.trim());
+        } catch (Exception ignored) {
+            return null;
         }
     }
 
