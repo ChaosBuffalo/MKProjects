@@ -21,21 +21,29 @@ public class OpenWorkspaceScreenPacket implements CustomPacketPayload {
     private final BlockPos anchor;
     private final CompoundTag workspaceTag;
     private final java.util.List<String> importManifestIds;
+    private final java.util.List<String> backupManifestFiles;
 
     public OpenWorkspaceScreenPacket(BlockPos anchor, MKStructureWorkspace workspace) {
-        this(anchor, workspace, java.util.List.of());
+        this(anchor, workspace, java.util.List.of(), java.util.List.of());
     }
 
     public OpenWorkspaceScreenPacket(BlockPos anchor, MKStructureWorkspace workspace, java.util.List<String> importManifestIds) {
+        this(anchor, workspace, importManifestIds, java.util.List.of());
+    }
+
+    public OpenWorkspaceScreenPacket(BlockPos anchor, MKStructureWorkspace workspace, java.util.List<String> importManifestIds,
+                                     java.util.List<String> backupManifestFiles) {
         this.anchor = anchor;
         this.workspaceTag = workspace != null ? workspace.toTag() : null;
         this.importManifestIds = java.util.List.copyOf(importManifestIds);
+        this.backupManifestFiles = java.util.List.copyOf(backupManifestFiles);
     }
 
     public OpenWorkspaceScreenPacket(FriendlyByteBuf buffer) {
         this.anchor = buffer.readBlockPos();
         this.workspaceTag = buffer.readBoolean() ? buffer.readNbt() : null;
         this.importManifestIds = buffer.readList(FriendlyByteBuf::readUtf);
+        this.backupManifestFiles = buffer.readList(FriendlyByteBuf::readUtf);
     }
 
     @Override
@@ -50,14 +58,17 @@ public class OpenWorkspaceScreenPacket implements CustomPacketPayload {
             buffer.writeNbt(workspaceTag);
         }
         buffer.writeCollection(importManifestIds, FriendlyByteBuf::writeUtf);
+        buffer.writeCollection(backupManifestFiles, FriendlyByteBuf::writeUtf);
     }
 
     public static void handle(OpenWorkspaceScreenPacket packet, IPayloadContext context) {
         MKStructureWorkspace workspace = packet.workspaceTag != null ? MKStructureWorkspace.fromTag(packet.workspaceTag) : null;
         if (Minecraft.getInstance().screen instanceof MKWorkspaceScreen current) {
-            Minecraft.getInstance().setScreen(current.copyWithWorkspace(workspace, packet.importManifestIds));
+            Minecraft.getInstance().setScreen(current.copyWithWorkspace(workspace, packet.importManifestIds,
+                    packet.backupManifestFiles));
         } else {
-            Minecraft.getInstance().setScreen(new MKWorkspaceScreen(packet.anchor, workspace, packet.importManifestIds));
+            Minecraft.getInstance().setScreen(new MKWorkspaceScreen(packet.anchor, workspace, packet.importManifestIds,
+                    packet.backupManifestFiles));
         }
     }
 }

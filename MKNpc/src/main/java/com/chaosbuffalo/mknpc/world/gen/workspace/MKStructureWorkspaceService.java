@@ -14,6 +14,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifestWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportPieceMetadataWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportResult;
+import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestDiscovery;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspaceIdentityRenameService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspacePieceRelayoutService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKStructureWorkspaceMutationService;
@@ -52,6 +53,7 @@ public class MKStructureWorkspaceService {
     private final MKWorkspaceScaffoldBuilder scaffoldBuilder = new MKWorkspaceScaffoldBuilder();
     private final MKWorkspaceStairBuilder stairBuilder = new MKWorkspaceStairBuilder();
     private final MKStructureWorkspaceImportService importService = new MKStructureWorkspaceImportService();
+    private final MKWorkspaceBackupManifestDiscovery backupDiscovery = new MKWorkspaceBackupManifestDiscovery();
     private final MKWorkspacePieceRelayoutService relayoutService = new MKWorkspacePieceRelayoutService();
     private final MKStructureWorkspaceMutationService mutationService = new MKStructureWorkspaceMutationService();
     private final MKWorkspaceIdentityRenameService identityRenameService = new MKWorkspaceIdentityRenameService();
@@ -328,8 +330,18 @@ public class MKStructureWorkspaceService {
 
     public void openWorkspaceScreen(ServerPlayer player, BlockPos anchor) {
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(player.serverLevel());
-        player.connection.send(new OpenWorkspaceScreenPacket(anchor, data.getWorkspaceByAnchor(anchor).orElse(null),
-                importService.discoverManifestIds()));
+        MKStructureWorkspace workspace = data.getWorkspaceByAnchor(anchor).orElse(null);
+        player.connection.send(new OpenWorkspaceScreenPacket(anchor, workspace,
+                importService.discoverManifestIds(), discoverBackupFileNames(player, workspace)));
+    }
+
+    private List<String> discoverBackupFileNames(ServerPlayer player, MKStructureWorkspace workspace) {
+        if (workspace == null) {
+            return List.of();
+        }
+        return backupDiscovery.discoverBackups(player.server, workspace).stream()
+                .map(MKWorkspaceBackupManifestDiscovery.BackupCandidate::fileName)
+                .toList();
     }
 
     public Optional<MKStructureWorkspace> importWorkspaceFromManifest(ServerLevel level, BlockPos anchor,

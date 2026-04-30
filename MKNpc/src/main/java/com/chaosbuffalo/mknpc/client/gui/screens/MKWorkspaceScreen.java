@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.network.packets.ExportWorkspacePiecesPacket;
 import com.chaosbuffalo.mknpc.network.packets.GenerateAllWorkspaceStairsPacket;
 import com.chaosbuffalo.mknpc.network.packets.GenerateWorkspaceStairsPacket;
 import com.chaosbuffalo.mknpc.network.packets.LoadWorkspaceFromManifestPacket;
+import com.chaosbuffalo.mknpc.network.packets.RestoreWorkspaceBackupPacket;
 import com.chaosbuffalo.mknpc.network.packets.SwapWorkspaceBlockPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
@@ -75,6 +76,7 @@ public class MKWorkspaceScreen extends MKScreen {
     private final net.minecraft.core.BlockPos anchor;
     private final MKStructureWorkspace workspace;
     private final List<String> importManifestIds;
+    private final List<String> backupManifestFiles;
     private final List<String> initialStates;
     private String selectedTopologyKey;
     private MKTowerWorkspaceCategory selectedFormCategory;
@@ -122,10 +124,17 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     public MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace, List<String> importManifestIds) {
-        this(anchor, workspace, importManifestIds, List.of(), null, null, -1, -1, -1, -1, null, null, 1, null, null, null);
+        this(anchor, workspace, importManifestIds, List.of());
+    }
+
+    public MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace,
+                             List<String> importManifestIds, List<String> backupManifestFiles) {
+        this(anchor, workspace, importManifestIds, backupManifestFiles, List.of(), null, null, -1, -1, -1, -1,
+                null, null, 1, null, null, null);
     }
 
     private MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace, List<String> importManifestIds,
+                              List<String> backupManifestFiles,
                               List<String> initialStates,
                               MKTowerWorkspaceCategory selectedFormCategory,
                               String selectedTopologyKey,
@@ -141,6 +150,7 @@ public class MKWorkspaceScreen extends MKScreen {
         this.anchor = anchor;
         this.workspace = workspace;
         this.importManifestIds = List.copyOf(importManifestIds);
+        this.backupManifestFiles = List.copyOf(backupManifestFiles);
         this.initialStates = List.copyOf(initialStates);
         this.selectedFormCategory = selectedFormCategory;
         this.selectedTopologyKey = selectedTopologyKey;
@@ -157,7 +167,13 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     public MKWorkspaceScreen copyWithWorkspace(MKStructureWorkspace updatedWorkspace, List<String> updatedImportManifestIds) {
-        return new MKWorkspaceScreen(anchor, updatedWorkspace, updatedImportManifestIds, getInitialStatesForRefresh(updatedWorkspace),
+        return copyWithWorkspace(updatedWorkspace, updatedImportManifestIds, backupManifestFiles);
+    }
+
+    public MKWorkspaceScreen copyWithWorkspace(MKStructureWorkspace updatedWorkspace, List<String> updatedImportManifestIds,
+                                               List<String> updatedBackupManifestFiles) {
+        return new MKWorkspaceScreen(anchor, updatedWorkspace, updatedImportManifestIds, updatedBackupManifestFiles,
+                getInitialStatesForRefresh(updatedWorkspace),
                 selectedFormCategory, selectedTopologyKey, selectedFamilyIndex, selectedFamilyExitIndex,
                 selectedOpeningIndex, selectedHallwayIndex,
                 detailStairMode, detailStairRiseType, detailStairWidth,
@@ -183,6 +199,7 @@ public class MKWorkspaceScreen extends MKScreen {
         addState("form_hallways", this::buildFormHallwaysState);
         addState("form_hallway_detail", this::buildFormHallwayDetailState);
         addState("workspace", this::buildWorkspaceState);
+        addState("backups", this::buildBackupState);
         addState("category", this::buildCategoryState);
         List<String> statesToPush = initialStates.isEmpty() ? getDefaultInitialStates() : initialStates;
         for (String state : statesToPush) {
@@ -1540,6 +1557,22 @@ public class MKWorkspaceScreen extends MKScreen {
             return true;
         });
 
+        MKText backupHeader = makeWhiteText(Component.literal("Backups"));
+        backupHeader.setWidth(CONTENT_WIDTH);
+        content.addWidget(backupHeader);
+        content.addConstraintToWidget(MarginConstraint.LEFT, backupHeader);
+        MKButton openBackups = new MKButton(Component.literal(backupManifestFiles.isEmpty() ?
+                "No Backups Found" : "Browse Backups (" + backupManifestFiles.size() + ")"), 180, 20);
+        content.addWidget(openBackups);
+        content.addConstraintToWidget(new CenterXConstraint(), openBackups);
+        openBackups.setPressedCallback((button, mouseButton) -> {
+            if (!backupManifestFiles.isEmpty()) {
+                pushState("backups");
+                flagNeedSetup();
+            }
+            return true;
+        });
+
         if (workspace.pieces().stream().anyMatch(this::supportsStairGeneration)) {
             MKButton generateAllStairs = new MKButton(Component.literal("Generate All Stairs"), 180, 20);
             content.addWidget(generateAllStairs);
@@ -1630,6 +1663,75 @@ public class MKWorkspaceScreen extends MKScreen {
             return true;
         });
 
+        return root;
+    }
+
+    private MKLayout buildBackupState() {
+        int xPos = width / 2 - PANEL_WIDTH / 2;
+        int yPos = height / 2 - PANEL_HEIGHT / 2;
+        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
+        root.setMargins(8, 8, 8, 8);
+        root.setPaddingTop(8).setPaddingBot(8);
+
+        MKText title = makeWhiteText(Component.literal("Workspace Backups"));
+        root.addWidget(title);
+        root.addConstraintToWidget(MarginConstraint.TOP, title);
+        root.addConstraintToWidget(new CenterXConstraint(), title);
+
+        MKText summary = makeWhiteText(Component.literal("Restore live workspace metadata from a backup manifest."));
+        summary.setWidth(CONTENT_WIDTH);
+        summary.setMultiline(true);
+        root.addWidget(summary);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, summary);
+        root.addConstraintToWidget(new CenterXConstraint(), summary);
+
+        int scrollTop = scrollTopAfterHeader(root, summary);
+        int scrollHeight = yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - 12 - scrollTop;
+        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
+        scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
+        root.addWidget(scrollView);
+
+        MKStackLayoutVertical content = new MKStackLayoutVertical(0, 0, CONTENT_WIDTH);
+        content.setMargins(4, 4, 4, 4);
+        content.setPaddingTop(4).setPaddingBot(4);
+
+        if (backupManifestFiles.isEmpty()) {
+            MKText empty = makeWhiteText(Component.literal("No backups found for this workspace."));
+            empty.setWidth(CONTENT_WIDTH);
+            empty.setMultiline(true);
+            content.addWidget(empty);
+            content.addConstraintToWidget(MarginConstraint.LEFT, empty);
+        } else {
+            for (String fileName : backupManifestFiles) {
+                MKText fileLabel = makeWhiteText(Component.literal(fileName));
+                fileLabel.setWidth(CONTENT_WIDTH);
+                fileLabel.setMultiline(true);
+                content.addWidget(fileLabel);
+                content.addConstraintToWidget(MarginConstraint.LEFT, fileLabel);
+
+                MKButton restore = new MKButton(Component.literal("Restore"), 180, 20);
+                content.addWidget(restore);
+                content.addConstraintToWidget(new CenterXConstraint(), restore);
+                restore.setPressedCallback((button, mouseButton) -> {
+                    PacketDistributor.sendToServer(new RestoreWorkspaceBackupPacket(anchor, fileName));
+                    return true;
+                });
+            }
+        }
+
+        content.manualRecompute();
+        scrollView.addWidget(content);
+        scrollView.centerContentX();
+        finalizeScrollView(scrollView, "backups");
+
+        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
+        root.addWidget(back);
+        root.addConstraintToWidget(new CenterXConstraint(), back);
+        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
+        back.setPressedCallback((button, mouseButton) -> {
+            switchToExistingState("workspace");
+            return true;
+        });
         return root;
     }
 
@@ -3087,6 +3189,9 @@ public class MKWorkspaceScreen extends MKScreen {
         String currentState = getState();
         if ("category".equals(currentState) && selectedTopologyKey != null && updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
             return List.of("workspace", "category");
+        }
+        if ("backups".equals(currentState) && updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
+            return List.of("workspace", "backups");
         }
         if ("form".equals(currentState)) {
             return updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()
