@@ -1,7 +1,9 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.mutation;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestWriter;
+import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import net.minecraft.core.BlockPos;
@@ -26,8 +28,27 @@ public class MKStructureWorkspaceMutationService {
     public WorkspaceBlockSwapResult swapBlocks(ServerLevel level, MKStructureWorkspace workspace,
                                                Map<ResourceLocation, ResourceLocation> replacements)
             throws IOException {
+        return swapBlocks(level, workspace, replacements, "block-swap");
+    }
+
+    public WorkspaceBlockSwapResult swapPalette(ServerLevel level, MKStructureWorkspace workspace,
+                                                MKWorkspaceMaterialPalette targetPalette)
+            throws IOException {
+        LinkedHashMap<ResourceLocation, ResourceLocation> replacements = new LinkedHashMap<>();
+        addReplacement(replacements, workspace.palette().floorBlock(), targetPalette.floorBlock());
+        addReplacement(replacements, workspace.palette().wallBlock(), targetPalette.wallBlock());
+        addReplacement(replacements, workspace.palette().ceilingBlock(), targetPalette.ceilingBlock());
+        WorkspaceBlockSwapResult result = swapBlocks(level, workspace, replacements, "palette-swap");
+        IMKStructureWorkspaceData.get(level).updateWorkspace(withPalette(workspace, targetPalette));
+        return result;
+    }
+
+    private WorkspaceBlockSwapResult swapBlocks(ServerLevel level, MKStructureWorkspace workspace,
+                                                Map<ResourceLocation, ResourceLocation> replacements,
+                                                String operation)
+            throws IOException {
         MKWorkspaceBackupManifestWriter.WrittenBackup backup = backupManifestWriter.writeBeforeMutation(
-                level.getServer(), workspace, "block-swap");
+                level.getServer(), workspace, operation);
         Map<ResourceLocation, MutableStats> aggregateStats = new LinkedHashMap<>();
         int pieceCount = 0;
         int replacedCount = 0;
@@ -45,6 +66,39 @@ public class MKStructureWorkspaceMutationService {
             }
         }
         return new WorkspaceBlockSwapResult(backup.path(), pieceCount, replacedCount, freezeStats(aggregateStats));
+    }
+
+    private void addReplacement(Map<ResourceLocation, ResourceLocation> replacements, ResourceLocation source,
+                                ResourceLocation target) {
+        if (!source.equals(target)) {
+            replacements.put(source, target);
+        }
+    }
+
+    private MKStructureWorkspace withPalette(MKStructureWorkspace workspace, MKWorkspaceMaterialPalette palette) {
+        return new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.dimensions(),
+                palette,
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
+                workspace.categoryProfiles(),
+                workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.hallwayFamilies(),
+                workspace.createdAt(),
+                System.currentTimeMillis(),
+                workspace.pieces()
+        );
     }
 
     private Set<BlockPos> getExcludedPositions(MKWorkspacePieceDefinition piece) {

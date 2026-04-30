@@ -15,6 +15,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManife
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportPieceMetadataWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportResult;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspacePieceRelayoutService;
+import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKStructureWorkspaceMutationService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceScaffoldBuilder;
 import com.chaosbuffalo.mknpc.world.gen.workspace.stairs.MKWorkspaceStairBuilder;
@@ -51,6 +52,7 @@ public class MKStructureWorkspaceService {
     private final MKWorkspaceStairBuilder stairBuilder = new MKWorkspaceStairBuilder();
     private final MKStructureWorkspaceImportService importService = new MKStructureWorkspaceImportService();
     private final MKWorkspacePieceRelayoutService relayoutService = new MKWorkspacePieceRelayoutService();
+    private final MKStructureWorkspaceMutationService mutationService = new MKStructureWorkspaceMutationService();
 
     public Optional<MKStructureWorkspace> createOrUpdateTowerWorkspace(ServerLevel level, MKStructureWorkspace workspace) {
         List<String> errors = workspace.validate();
@@ -67,6 +69,14 @@ public class MKStructureWorkspaceService {
                             .map(MKWorkspacePieceRelayoutService.RelayoutResult::workspace);
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to write workspace backup before preview margin relayout", e);
+                }
+            }
+            if (canSwapPaletteOnly(existing, workspace)) {
+                try {
+                    mutationService.swapPalette(level, existing, workspace.palette());
+                    return data.getWorkspace(existing.id());
+                } catch (IOException e) {
+                    throw new IllegalStateException("Failed to write workspace backup before palette swap", e);
                 }
             }
             MKStructureWorkspace updated = new MKStructureWorkspace(
@@ -105,6 +115,13 @@ public class MKStructureWorkspaceService {
         return IMKStructureWorkspaceData.get(level)
                 .getWorkspaceByAnchor(requested.anchor())
                 .filter(existing -> canRelayoutPreviewMarginOnly(existing, requested))
+                .isPresent();
+    }
+
+    public boolean canApplyPaletteSwap(ServerLevel level, MKStructureWorkspace requested) {
+        return IMKStructureWorkspaceData.get(level)
+                .getWorkspaceByAnchor(requested.anchor())
+                .filter(existing -> canSwapPaletteOnly(existing, requested))
                 .isPresent();
     }
 
@@ -390,8 +407,22 @@ public class MKStructureWorkspaceService {
                 .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin()));
     }
 
+    private boolean canSwapPaletteOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
+        if (existing.pieces().isEmpty() || existing.palette().toTag().equals(requested.palette().toTag())) {
+            return false;
+        }
+        return settingsComparisonTag(existing, existing.id(), existing.previewMargin(), requested.palette())
+                .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin(), requested.palette()));
+    }
+
     private net.minecraft.nbt.CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, java.util.UUID id,
                                                                 int previewMargin) {
+        return settingsComparisonTag(workspace, id, previewMargin, workspace.palette());
+    }
+
+    private net.minecraft.nbt.CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, java.util.UUID id,
+                                                                int previewMargin,
+                                                                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette palette) {
         return new MKStructureWorkspace(
                 id,
                 workspace.anchor(),
@@ -399,7 +430,7 @@ public class MKStructureWorkspaceService {
                 workspace.structureName(),
                 workspace.familyType(),
                 workspace.dimensions(),
-                workspace.palette(),
+                palette,
                 workspace.stairConfig(),
                 workspace.verticalAccessPlacement(),
                 workspace.shellMargin(),

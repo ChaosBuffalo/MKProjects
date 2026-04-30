@@ -68,9 +68,10 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
         }
         MKStructureWorkspaceService service = new MKStructureWorkspaceService();
         boolean nonDestructivePreviewRelayout = service.canApplyPreviewMarginRelayout(player.serverLevel(), workspace);
+        boolean nonDestructivePaletteSwap = service.canApplyPaletteSwap(player.serverLevel(), workspace);
         service.createOrUpdateTowerWorkspace(player.serverLevel(), workspace)
                 .ifPresentOrElse(created -> {
-                    if (packet.generateAfterCreate && !nonDestructivePreviewRelayout &&
+                    if (packet.generateAfterCreate && !nonDestructivePreviewRelayout && !nonDestructivePaletteSwap &&
                             service.generateTowerWorkspace(player.serverLevel(), created.anchor()).isEmpty()) {
                         MKWorkspaceValidationMessages.displayFailure(player, "Workspace generation failed.");
                     }
