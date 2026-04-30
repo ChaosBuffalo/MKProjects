@@ -16,6 +16,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportPieceM
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportResult;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestDiscovery;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspaceIdentityRenameService;
+import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspaceMarginExpansionService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspacePieceRelayoutService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKStructureWorkspaceMutationService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
@@ -55,6 +56,7 @@ public class MKStructureWorkspaceService {
     private final MKStructureWorkspaceImportService importService = new MKStructureWorkspaceImportService();
     private final MKWorkspaceBackupManifestDiscovery backupDiscovery = new MKWorkspaceBackupManifestDiscovery();
     private final MKWorkspacePieceRelayoutService relayoutService = new MKWorkspacePieceRelayoutService();
+    private final MKWorkspaceMarginExpansionService marginExpansionService = new MKWorkspaceMarginExpansionService();
     private final MKStructureWorkspaceMutationService mutationService = new MKStructureWorkspaceMutationService();
     private final MKWorkspaceIdentityRenameService identityRenameService = new MKWorkspaceIdentityRenameService();
 
@@ -89,6 +91,15 @@ public class MKStructureWorkspaceService {
                             workspace.namespace(), workspace.structureName()).workspace());
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to write workspace backup before identity rename", e);
+                }
+            }
+            if (canExpandMarginsOnly(existing, workspace)) {
+                try {
+                    return marginExpansionService.expandMargins(level, existing,
+                                    workspace.shellMargin(), workspace.exteriorAirMargin())
+                            .map(MKWorkspaceMarginExpansionService.ExpansionResult::workspace);
+                } catch (IOException e) {
+                    throw new IllegalStateException("Failed to write workspace backup before margin expansion", e);
                 }
             }
             MKStructureWorkspace updated = new MKStructureWorkspace(
@@ -141,6 +152,13 @@ public class MKStructureWorkspaceService {
         return IMKStructureWorkspaceData.get(level)
                 .getWorkspaceByAnchor(requested.anchor())
                 .filter(existing -> canRenameIdentityOnly(existing, requested))
+                .isPresent();
+    }
+
+    public boolean canApplyMarginExpansion(ServerLevel level, MKStructureWorkspace requested) {
+        return IMKStructureWorkspaceData.get(level)
+                .getWorkspaceByAnchor(requested.anchor())
+                .filter(existing -> canExpandMarginsOnly(existing, requested))
                 .isPresent();
     }
 
@@ -459,6 +477,23 @@ public class MKStructureWorkspaceService {
                         requested.palette(), requested.namespace(), requested.structureName()));
     }
 
+    private boolean canExpandMarginsOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
+        if (existing.pieces().isEmpty()) {
+            return false;
+        }
+        boolean marginChanged = existing.shellMargin() != requested.shellMargin() ||
+                existing.exteriorAirMargin() != requested.exteriorAirMargin();
+        if (!marginChanged || requested.shellMargin() < existing.shellMargin() ||
+                requested.exteriorAirMargin() < existing.exteriorAirMargin()) {
+            return false;
+        }
+        return settingsComparisonTag(existing, existing.id(), existing.previewMargin(), existing.palette(),
+                existing.namespace(), existing.structureName(), requested.shellMargin(), requested.exteriorAirMargin())
+                .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin(),
+                        requested.palette(), requested.namespace(), requested.structureName(),
+                        requested.shellMargin(), requested.exteriorAirMargin()));
+    }
+
     private net.minecraft.nbt.CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, java.util.UUID id,
                                                                 int previewMargin) {
         return settingsComparisonTag(workspace, id, previewMargin, workspace.palette());
@@ -474,6 +509,15 @@ public class MKStructureWorkspaceService {
                                                                 int previewMargin,
                                                                 com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette palette,
                                                                 String namespace, String structureName) {
+        return settingsComparisonTag(workspace, id, previewMargin, palette, namespace, structureName,
+                workspace.shellMargin(), workspace.exteriorAirMargin());
+    }
+
+    private net.minecraft.nbt.CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, java.util.UUID id,
+                                                                int previewMargin,
+                                                                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette palette,
+                                                                String namespace, String structureName,
+                                                                int shellMargin, int exteriorAirMargin) {
         return new MKStructureWorkspace(
                 id,
                 workspace.anchor(),
@@ -484,8 +528,8 @@ public class MKStructureWorkspaceService {
                 palette,
                 workspace.stairConfig(),
                 workspace.verticalAccessPlacement(),
-                workspace.shellMargin(),
-                workspace.exteriorAirMargin(),
+                shellMargin,
+                exteriorAirMargin,
                 previewMargin,
                 workspace.verticalAccessSpec(),
                 workspace.floorSettings(),
