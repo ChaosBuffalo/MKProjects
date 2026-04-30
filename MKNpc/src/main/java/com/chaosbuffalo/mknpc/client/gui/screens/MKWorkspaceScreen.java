@@ -50,6 +50,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -186,6 +187,7 @@ public class MKWorkspaceScreen extends MKScreen {
         addState("home", this::buildHomeState);
         addState("import", this::buildImportState);
         addState("form", this::buildFormState);
+        addState("generate_confirm", this::buildGenerateConfirmState);
         addState("form_identity", this::buildFormIdentityState);
         addState("form_materials", this::buildFormMaterialsState);
         addState("form_categories", this::buildFormCategoriesState);
@@ -503,6 +505,53 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), back);
         back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
         back.setPressedCallback((button, mouseButton) -> {
+            switchToExistingState("form");
+            return true;
+        });
+        return root;
+    }
+
+    private MKLayout buildGenerateConfirmState() {
+        int xPos = width / 2 - PANEL_WIDTH / 2;
+        int yPos = height / 2 - PANEL_HEIGHT / 2;
+        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
+        root.setMargins(8, 8, 8, 8);
+        root.setPaddingTop(8).setPaddingBot(8);
+
+        MKText title = makeWhiteText(Component.literal("Confirm Regenerate"));
+        root.addWidget(title);
+        root.addConstraintToWidget(MarginConstraint.TOP, title);
+        root.addConstraintToWidget(new CenterXConstraint(), title);
+
+        MKText warning = makeWhiteText(Component.literal(
+                "This change is not covered by a safe live mutation. Regenerating will rebuild the workspace scaffold and overwrite existing authored workspace blocks."));
+        warning.setWidth(CONTENT_WIDTH);
+        warning.setMultiline(true);
+        root.addWidget(warning);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, warning);
+        root.addConstraintToWidget(new CenterXConstraint(), warning);
+
+        MKText target = makeWhiteText(Component.literal(formDraft.namespace + ":" + formDraft.structureName));
+        target.setWidth(CONTENT_WIDTH);
+        target.setMultiline(true);
+        root.addWidget(target);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, target);
+        root.addConstraintToWidget(new CenterXConstraint(), target);
+
+        MKButton confirm = new MKButton(Component.literal("Regenerate Workspace"), 200, 20);
+        root.addWidget(confirm);
+        root.addConstraintToWidget(new CenterXConstraint(), confirm);
+        confirm.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT);
+        confirm.setPressedCallback((button, mouseButton) -> {
+            sendWorkspaceDraft();
+            return true;
+        });
+
+        MKButton cancel = new MKButton(Component.literal("Cancel"), 120, 20);
+        root.addWidget(cancel);
+        root.addConstraintToWidget(new CenterXConstraint(), cancel);
+        cancel.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
+        cancel.setPressedCallback((button, mouseButton) -> {
             switchToExistingState("form");
             return true;
         });
@@ -2081,7 +2130,122 @@ public class MKWorkspaceScreen extends MKScreen {
     private void submitWorkspaceDraft() {
         ensureFormDraftInitialized();
         snapDraftVerticalAccess();
-        PacketDistributor.sendToServer(new CreateWorkspacePacket(buildWorkspaceDraft(), true));
+        MKStructureWorkspace draft = buildWorkspaceDraft();
+        if (requiresDestructiveRegenerateConfirmation(draft)) {
+            pushState("generate_confirm");
+            flagNeedSetup();
+            return;
+        }
+        sendWorkspaceDraft(draft);
+    }
+
+    private void sendWorkspaceDraft() {
+        sendWorkspaceDraft(buildWorkspaceDraft());
+    }
+
+    private void sendWorkspaceDraft(MKStructureWorkspace draft) {
+        PacketDistributor.sendToServer(new CreateWorkspacePacket(draft, true));
+    }
+
+    private boolean requiresDestructiveRegenerateConfirmation(MKStructureWorkspace draft) {
+        if (workspace == null || workspace.pieces().isEmpty()) {
+            return false;
+        }
+        return !canApplySafeLiveMutation(workspace, draft);
+    }
+
+    private boolean canApplySafeLiveMutation(MKStructureWorkspace existing, MKStructureWorkspace requested) {
+        return canRelayoutPreviewMarginOnly(existing, requested) ||
+                canSwapPaletteOnly(existing, requested) ||
+                canRenameIdentityOnly(existing, requested) ||
+                canExpandMarginsOnly(existing, requested);
+    }
+
+    private boolean canRelayoutPreviewMarginOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
+        if (existing.previewMargin() == requested.previewMargin()) {
+            return false;
+        }
+        return settingsComparisonTag(existing, existing.id(), requested.previewMargin())
+                .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin()));
+    }
+
+    private boolean canSwapPaletteOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
+        if (existing.palette().toTag().equals(requested.palette().toTag())) {
+            return false;
+        }
+        return settingsComparisonTag(existing, existing.id(), existing.previewMargin(), requested.palette())
+                .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin(), requested.palette()));
+    }
+
+    private boolean canRenameIdentityOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
+        boolean identityChanged = !existing.namespace().equals(requested.namespace()) ||
+                !existing.structureName().equals(requested.structureName());
+        if (!identityChanged) {
+            return false;
+        }
+        return settingsComparisonTag(existing, existing.id(), existing.previewMargin(), existing.palette(),
+                requested.namespace(), requested.structureName())
+                .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin(),
+                        requested.palette(), requested.namespace(), requested.structureName()));
+    }
+
+    private boolean canExpandMarginsOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
+        boolean marginChanged = existing.shellMargin() != requested.shellMargin() ||
+                existing.exteriorAirMargin() != requested.exteriorAirMargin();
+        if (!marginChanged || requested.shellMargin() < existing.shellMargin() ||
+                requested.exteriorAirMargin() < existing.exteriorAirMargin()) {
+            return false;
+        }
+        return settingsComparisonTag(existing, existing.id(), existing.previewMargin(), existing.palette(),
+                existing.namespace(), existing.structureName(), requested.shellMargin(), requested.exteriorAirMargin())
+                .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin(),
+                        requested.palette(), requested.namespace(), requested.structureName(),
+                        requested.shellMargin(), requested.exteriorAirMargin()));
+    }
+
+    private CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, UUID id, int previewMargin) {
+        return settingsComparisonTag(workspace, id, previewMargin, workspace.palette());
+    }
+
+    private CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, UUID id, int previewMargin,
+                                              MKWorkspaceMaterialPalette palette) {
+        return settingsComparisonTag(workspace, id, previewMargin, palette, workspace.namespace(),
+                workspace.structureName());
+    }
+
+    private CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, UUID id, int previewMargin,
+                                              MKWorkspaceMaterialPalette palette, String namespace,
+                                              String structureName) {
+        return settingsComparisonTag(workspace, id, previewMargin, palette, namespace, structureName,
+                workspace.shellMargin(), workspace.exteriorAirMargin());
+    }
+
+    private CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, UUID id, int previewMargin,
+                                              MKWorkspaceMaterialPalette palette, String namespace,
+                                              String structureName, int shellMargin, int exteriorAirMargin) {
+        return new MKStructureWorkspace(
+                id,
+                workspace.anchor(),
+                namespace,
+                structureName,
+                workspace.familyType(),
+                workspace.dimensions(),
+                palette,
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                shellMargin,
+                exteriorAirMargin,
+                previewMargin,
+                workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
+                workspace.categoryProfiles(),
+                workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.hallwayFamilies(),
+                0,
+                0,
+                List.of()
+        ).toTag();
     }
 
     private MKStructureWorkspace buildWorkspaceDraft() {
