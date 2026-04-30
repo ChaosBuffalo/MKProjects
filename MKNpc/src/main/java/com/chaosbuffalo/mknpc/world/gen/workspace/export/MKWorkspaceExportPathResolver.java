@@ -27,7 +27,7 @@ public class MKWorkspaceExportPathResolver {
     public Path getBackupManifestPath(MinecraftServer server, MKStructureWorkspace workspace, String operation,
                                       Instant timestamp) {
         String safeOperation = sanitizePathSegment(operation);
-        String fileName = BACKUP_TIMESTAMP_FORMAT.format(timestamp) + "-before-" + safeOperation + ".json";
+        String fileName = BACKUP_TIMESTAMP_FORMAT.format(timestamp) + "-before-" + safeOperation + ".zip";
         return getBackupManifestDirectory(server, workspace)
                 .resolve(fileName);
     }
@@ -39,14 +39,6 @@ public class MKWorkspaceExportPathResolver {
                 .resolve("mk_workspace_exports")
                 .resolve("backups")
                 .resolve(workspace.structureName());
-    }
-
-    public Path getBackupBlockSnapshotPath(Path manifestPath) {
-        String fileName = manifestPath.getFileName().toString();
-        if (fileName.endsWith(".json")) {
-            fileName = fileName.substring(0, fileName.length() - ".json".length());
-        }
-        return manifestPath.resolveSibling(fileName + ".blocks.json");
     }
 
     private String sanitizePathSegment(String value) {

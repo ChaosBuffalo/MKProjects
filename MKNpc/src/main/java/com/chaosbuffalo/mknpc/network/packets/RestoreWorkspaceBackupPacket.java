@@ -71,8 +71,8 @@ public class RestoreWorkspaceBackupPacket implements CustomPacketPayload {
                 return;
             }
             String blockRestoreSuffix = result.blockRestoreStats()
-                    .map(stats -> " and " + stats.restoredBlockCount() + " saved blocks")
-                    .orElse(" metadata only; no block snapshot was present");
+                    .map(stats -> " and " + stats.restoredPieceCount() + " saved piece NBT files")
+                    .orElse(" metadata only; no piece snapshots were present");
             player.displayClientMessage(Component.literal("Restored workspace backup: " + packet.fileName +
                     blockRestoreSuffix), false);
             new MKStructureWorkspaceService().openWorkspaceScreen(player, packet.anchor);

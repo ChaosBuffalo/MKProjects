@@ -2,11 +2,8 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.export;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.google.gson.JsonParser;
-import com.mojang.serialization.JsonOps;
 import net.minecraft.server.MinecraftServer;
 
-import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -16,6 +13,7 @@ import java.util.stream.Stream;
 
 public class MKWorkspaceBackupManifestDiscovery {
     private final MKWorkspaceExportPathResolver pathResolver = new MKWorkspaceExportPathResolver();
+    private final MKWorkspaceBackupArchiveStore archiveStore = new MKWorkspaceBackupArchiveStore();
 
     public record BackupCandidate(String fileName, String operation, Instant lastModified, int schemaVersion,
                                   String namespace, String structureName, int pieceCount, Path path) {
@@ -28,8 +26,7 @@ public class MKWorkspaceBackupManifestDiscovery {
         }
         try (Stream<Path> stream = Files.list(backupDir)) {
             return stream.filter(Files::isRegularFile)
-                    .filter(path -> path.toString().endsWith(".json"))
-                    .filter(path -> !path.toString().endsWith(".blocks.json"))
+                    .filter(path -> path.toString().endsWith(".zip"))
                     .map(path -> loadCandidate(path, workspace))
                     .flatMap(Optional::stream)
                     .sorted((left, right) -> right.lastModified().compareTo(left.lastModified()))
@@ -60,13 +57,11 @@ public class MKWorkspaceBackupManifestDiscovery {
     }
 
     private Optional<MKWorkspaceExportManifest> readManifest(Path path) {
-        try (Reader reader = Files.newBufferedReader(path)) {
-            var json = JsonParser.parseReader(reader);
-            return Optional.of(MKWorkspaceExportManifest.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
-        } catch (Exception e) {
-            MKNpc.LOGGER.warn("Failed to load workspace backup manifest {}", path, e);
-            return Optional.empty();
+        Optional<MKWorkspaceExportManifest> manifest = archiveStore.readManifest(path);
+        if (manifest.isEmpty()) {
+            MKNpc.LOGGER.warn("Failed to load workspace backup manifest {}", path);
         }
+        return manifest;
     }
 
     private boolean matchesWorkspace(MKWorkspaceExportManifest manifest, MKStructureWorkspace workspace, Path path) {
@@ -89,7 +84,7 @@ public class MKWorkspaceBackupManifestDiscovery {
 
     private String operationFromFileName(String fileName) {
         int beforeIndex = fileName.indexOf("-before-");
-        int extensionIndex = fileName.endsWith(".json") ? fileName.length() - ".json".length() : fileName.length();
+        int extensionIndex = fileName.endsWith(".zip") ? fileName.length() - ".zip".length() : fileName.length();
         if (beforeIndex < 0 || beforeIndex + "-before-".length() >= extensionIndex) {
             return "unknown";
         }
