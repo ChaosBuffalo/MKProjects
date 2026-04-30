@@ -381,14 +381,12 @@ Implemented:
 - Preview-margin relayout service that snapshots each piece export area plus sidecar blocks, moves exact block states and block entities, remaps all absolute piece positions, and updates live workspace metadata.
 - Development command: `/mkworkspace setpreviewmargin <value>` applies the backed-up relayout to the nearest workspace.
 - `CreateWorkspacePacket` now detects preview-margin-only edits and skips the automatic regenerate so the form path can preserve data for that specific safe change.
-
-Next:
-
-- Add a block swap packet and UI entry point.
-- Add a backup browser/restore UI in the workspace dev block.
-- Add palette-swap presets that update workspace palette metadata while using the generic block swapper for old-to-new material replacement.
-- Add metadata-only rename support for live workspace identity, signs, structure blocks, and connector pools.
-- Add shell margin expansion and exterior air margin expansion with preflight collision checks.
+- `CreateWorkspacePacket` now detects palette-only edits, applies a backed-up palette swap through the generic block swapper, updates live workspace palette metadata, and skips automatic regeneration.
+- Workspace screen now exposes a generic block swap entry point backed by `SwapWorkspaceBlockPacket`.
+- Workspace screen now lists discovered backup manifests and can restore a selected backup through `RestoreWorkspaceBackupPacket`.
+- Metadata-only identity rename updates live workspace identity, structure block names, signs, jigsaw names/targets, and connector pool metadata with a backup manifest.
+- Shell margin and exterior air margin expansions now run through a backed-up expansion service with destination collision checks. Existing block states are mapped by interior-origin delta, new outer shell/structure-void regions are filled, and structure blocks, signs, markers, connector positions, and jigsaws are refreshed against the new bounds.
+- Decreasing margins, topology changes, family-count changes, and other unsafe form edits remain destructive-regenerate changes.
 
 ## Open Questions
 
