@@ -95,8 +95,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     protected FormulaContext.Builder baseFormulaContext(IMKEntityData casterData, float skillLevel) {
         return FormulaContext.builder()
-                .withSkillLevel(skillLevel)
-                .withBuffDurationMultiplier(casterData.getStats().getBuffDurationModifier());
+                .withSkillLevel(skillLevel);
     }
 
     protected FormulaContext.Builder damageFormulaContext(IMKEntityData casterData, MKDamageType damageType,
@@ -108,6 +107,15 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     protected FormulaContext.Builder healFormulaContext(IMKEntityData casterData, float skillLevel) {
         return baseFormulaContext(casterData, skillLevel)
                 .withHealBonus(casterData.getStats().getHealBonus());
+    }
+
+    protected FormulaContext.Builder buffFormulaContext(IMKEntityData casterData, float skillLevel) {
+        return baseFormulaContext(casterData, skillLevel)
+                .withBuffDurationMultiplier(casterData.getStats().getBuffDurationModifier());
+    }
+
+    protected FormulaContext.Builder debuffFormulaContext(IMKEntityData casterData, float skillLevel) {
+        return baseFormulaContext(casterData, skillLevel);
     }
 
     public Component getDamageDescription(IMKEntityData casterData, MKDamageType damageType, AbilityFormula damageFormula,
@@ -137,17 +145,6 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return desc;
     }
 
-    public Component getDamageDescription(IMKEntityData casterData, MKDamageType damageType, float damage,
-                                          float scale, float level, float modifierScaling) {
-        return getDamageDescription(casterData, damageType, AbilityFormula.linear(damage, scale), level, modifierScaling);
-    }
-
-    protected MutableComponent formatEffectValue(float damage, float levelScale, float level, float bonus, float scaleMod) {
-        FormulaContext context = FormulaContext.builder().withSkillLevel(level).build();
-        return FormulaTextRenderer.render(AbilityFormula.linear(damage, levelScale), AbilityFormula.constant(bonus * scaleMod),
-                context, FormulaTextStyle.DAMAGE);
-    }
-
     public Component getHealDescription(IMKEntityData casterData, AbilityFormula healingFormula,
                                         float skillLevel, float modifierScaling) {
         FormulaContext context = healFormulaContext(casterData, skillLevel)
@@ -168,26 +165,10 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return FormulaTextRenderer.render(healingFormula, parameters, context, FormulaTextStyle.HEAL);
     }
 
-    public Component getHealDescription(IMKEntityData casterData, float value,
-                                        float scale, float level, float modifierScaling) {
-        return getHealDescription(casterData, AbilityFormula.linear(value, scale), level, modifierScaling);
-    }
-
-    protected Component formatManaValue(IMKEntityData casterData, AbilityFormula valueFormula, float skillLevel,
-                                        float bonus, float modifierScaling) {
-        FormulaContext context = baseFormulaContext(casterData, skillLevel).build();
-        return FormulaTextRenderer.render(valueFormula, AbilityFormula.constant(bonus * modifierScaling), context, FormulaTextStyle.MANA);
-    }
-
     protected Component formatManaValue(IMKEntityData casterData, AbilityFormula valueFormula,
                                         FormulaParameters parameters, float skillLevel) {
         FormulaContext context = baseFormulaContext(casterData, skillLevel).build();
         return FormulaTextRenderer.render(valueFormula, parameters, context, FormulaTextStyle.MANA);
-    }
-
-    protected Component formatManaValue(IMKEntityData casterData, float value, float scale, float level,
-                                        float bonus, float modifierScaling) {
-        return formatManaValue(casterData, AbilityFormula.linear(value, scale), level, bonus, modifierScaling);
     }
 
     protected Component getSkillDescription(IMKEntityData casterData, AbilityContext context) {
@@ -478,19 +459,20 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     protected int getBuffDuration(IMKEntityData casterData, AbilityFormula durationFormula,
                                   FormulaParameters parameters, FormulaContext context) {
+        durationFormula = AbilityFormula.multiply(durationFormula, AbilityFormula.context(FormulaContextKey.BUFF_DURATION_MULTIPLIER));
         int duration = Math.round(durationFormula.bindParametersStrict(parameters).evaluate(context) * GameConstants.TICKS_PER_SECOND);
-        return MKCombatFormulas.applyBuffDurationModifier(casterData, duration);
+        return duration;
     }
 
     protected int getBuffDuration(IMKEntityData casterData, AbilityFormula durationFormula,
                                   FormulaParameters parameters, float skillLevel) {
-        FormulaContext context = baseFormulaContext(casterData, skillLevel).build();
+        FormulaContext context = buffFormulaContext(casterData, skillLevel).build();
         return getBuffDuration(casterData, durationFormula, parameters, context);
     }
 
     protected int getDebuffDuration(IMKEntityData casterData, AbilityFormula durationFormula,
                                     FormulaParameters parameters, float level) {
-        FormulaContext context = baseFormulaContext(casterData, level).build();
+        FormulaContext context = debuffFormulaContext(casterData, level).build();
         return getDebuffDuration(casterData, durationFormula, parameters, context);
     }
 

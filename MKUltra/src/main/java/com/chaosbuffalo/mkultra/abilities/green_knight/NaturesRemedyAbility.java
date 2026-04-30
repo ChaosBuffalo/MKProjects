@@ -85,7 +85,7 @@ public class NaturesRemedyAbility extends MKAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.RESTORATION);
-        FormulaContext formulaContext = baseFormulaContext(entityData, level).build();
+        FormulaContext formulaContext = buffFormulaContext(entityData, level).build();
         Component damageStr = getHealDescription(entityData, healing.value(), formulaParameters.value(), level);
         int duration = getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), formulaContext)
                 / GameConstants.TICKS_PER_SECOND;
@@ -99,7 +99,7 @@ public class NaturesRemedyAbility extends MKAbility {
     }
 
     public MKEffectBuilder<?> createNaturesRemedyEffect(IMKEntityData casterData, float level) {
-        FormulaContext formulaContext = baseFormulaContext(casterData, level).build();
+        FormulaContext formulaContext = buffFormulaContext(casterData, level).build();
         int duration = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), formulaContext);
         return NaturesRemedyEffect.from(casterData.getEntity(), healing.value(),
                         formulaParameters.value(), tick_particles.getValue())

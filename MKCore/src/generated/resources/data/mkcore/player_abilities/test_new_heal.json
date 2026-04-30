@@ -1,10 +1,44 @@
 {
   "attributes": {
-    "base": 5.0,
     "cast_animation_category": "mkcore:default",
     "casting_particles": "mkcore:fx.casting.empty",
-    "modifierScaling": 1.0,
-    "scale": 5.0
+    "formulaParameters": {
+      "mkcore:test_new_heal.heal.base": 5.0,
+      "mkcore:test_new_heal.heal.modifier_scaling": 1.0,
+      "mkcore:test_new_heal.heal.per_level": 5.0
+    },
+    "healing": {
+      "baseFormula": {
+        "type": "mkcore:parameter_value",
+        "key": "mkcore:test_new_heal.heal.base"
+      },
+      "bonusFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkcore:test_new_heal.heal.modifier_scaling"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:heal_bonus"
+          }
+        ]
+      },
+      "perStackFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkcore:test_new_heal.heal.per_level"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:skill_level"
+          }
+        ]
+      }
+    }
   },
   "castTime": 5,
   "cooldown": 120,

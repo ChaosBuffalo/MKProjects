@@ -10,7 +10,12 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.fx.ParticleEffects;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.ParticleEffectSpawnPacket;
-import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.formulas.FormulaContextKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameterKey;
+import com.chaosbuffalo.mkcore.formulas.FormulaParameters;
+import com.chaosbuffalo.mkcore.formulas.StackingBonusFormulaSpec;
+import com.chaosbuffalo.mkcore.serialization.attributes.FormulaParameterMapAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.StackingBonusFormulaSpecAttribute;
 import com.chaosbuffalo.mkcore.test.MKTestEffects;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
@@ -20,16 +25,28 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class NewHeal extends MKAbility {
-    protected final FloatAttribute base = new FloatAttribute("base", 5.0f);
-    protected final FloatAttribute scale = new FloatAttribute("scale", 5.0f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
+    private static final FormulaParameterKey HEAL_BASE_PARAMETER =
+            FormulaParameterKey.of(MKCore.id("test_new_heal.heal.base"));
+    private static final FormulaParameterKey HEAL_PER_LEVEL_PARAMETER =
+            FormulaParameterKey.of(MKCore.id("test_new_heal.heal.per_level"));
+    private static final FormulaParameterKey HEAL_MODIFIER_SCALING_PARAMETER =
+            FormulaParameterKey.of(MKCore.id("test_new_heal.heal.modifier_scaling"));
+    protected final FormulaParameterMapAttribute formulaParameters = new FormulaParameterMapAttribute("formulaParameters",
+            FormulaParameters.builder()
+                    .with(HEAL_BASE_PARAMETER, 5.0f)
+                    .with(HEAL_PER_LEVEL_PARAMETER, 5.0f)
+                    .with(HEAL_MODIFIER_SCALING_PARAMETER, 1.0f)
+                    .build());
+    protected final StackingBonusFormulaSpecAttribute healing = new StackingBonusFormulaSpecAttribute("healing",
+            StackingBonusFormulaSpec.skilledBonusScaled(HEAL_BASE_PARAMETER, HEAL_PER_LEVEL_PARAMETER,
+                    FormulaContextKey.HEAL_BONUS, HEAL_MODIFIER_SCALING_PARAMETER));
 
     public NewHeal() {
         super();
         setCooldownSeconds(6);
         setManaCost(4);
         setCastTime(GameConstants.TICKS_PER_SECOND / 4);
-        addAttributes(base, scale, modifierScaling);
+        addAttributes(formulaParameters, healing);
         addSkillAttribute(MKAttributes.RESTORATION);
 
     }
@@ -37,9 +54,7 @@ public class NewHeal extends MKAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.RESTORATION);
-        Component valueStr = getHealDescription(casterData, base.value(),
-                scale.value(), level,
-                modifierScaling.value());
+        Component valueStr = getHealDescription(casterData, healing.value(), formulaParameters.value(), level);
         return Component.translatable(getDescriptionTranslationKey(), valueStr);
     }
 
@@ -71,7 +86,7 @@ public class NewHeal extends MKAbility {
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> {
                 MKEffectBuilder<?> heal = MKTestEffects.NEW_HEAL.get().builder(castingEntity)
                         .ability(this)
-                        .state(s -> s.setHealingParameters(base.value(), scale.value(), modifierScaling.value()))
+                        .state(s -> s.setParameterizedHealingFormula(healing.value(), formulaParameters.value()))
                         .timed(200)
                         .skillLevel(level)
                         .periodic(40);

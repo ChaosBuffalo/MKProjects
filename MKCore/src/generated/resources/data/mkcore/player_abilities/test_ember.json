@@ -1,9 +1,73 @@
 {
   "attributes": {
-    "burnTime": 5,
+    "burnDurationFormula": {
+      "type": "mkcore:add",
+      "terms": [
+        {
+          "type": "mkcore:parameter_value",
+          "key": "mkcore:test_ember.burn_duration.base"
+        },
+        {
+          "type": "mkcore:multiply",
+          "factors": [
+            {
+              "type": "mkcore:parameter_value",
+              "key": "mkcore:test_ember.burn_duration.per_level"
+            },
+            {
+              "type": "mkcore:context_value",
+              "key": "mkcore:skill_level"
+            }
+          ]
+        }
+      ]
+    },
     "cast_animation_category": "mkcore:default",
     "casting_particles": "mkcore:fx.casting.empty",
-    "damage": 6.0
+    "damage": {
+      "baseFormula": {
+        "type": "mkcore:add",
+        "terms": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkcore:test_ember.damage.base"
+          },
+          {
+            "type": "mkcore:multiply",
+            "factors": [
+              {
+                "type": "mkcore:parameter_value",
+                "key": "mkcore:test_ember.damage.per_level"
+              },
+              {
+                "type": "mkcore:context_value",
+                "key": "mkcore:skill_level"
+              }
+            ]
+          }
+        ]
+      },
+      "bonusFormula": {
+        "type": "mkcore:multiply",
+        "factors": [
+          {
+            "type": "mkcore:parameter_value",
+            "key": "mkcore:test_ember.damage.modifier_scaling"
+          },
+          {
+            "type": "mkcore:context_value",
+            "key": "mkcore:damage_bonus"
+          }
+        ]
+      }
+    },
+    "formulaParameters": {
+      "mkcore:test_ember.burn_duration.base": 5.0,
+      "mkcore:test_ember.burn_duration.per_level": 0.0,
+      "mkcore:test_ember.damage.base": 6.0,
+      "mkcore:test_ember.damage.modifier_scaling": 1.0,
+      "mkcore:test_ember.damage.per_level": 0.0
+    }
   },
   "castTime": 10,
   "cooldown": 80,

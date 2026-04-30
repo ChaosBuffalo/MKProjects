@@ -67,7 +67,7 @@ public class AlacrityAbility extends MKAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.ENCHANTMENT);
-        FormulaContext formulaContext = baseFormulaContext(entityData, level).build();
+        FormulaContext formulaContext = buffFormulaContext(entityData, level).build();
         int duration = getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), formulaContext);
         String value = FormulaTextRenderer.format(valueFormula.value(), formulaParameters.value(), formulaContext,
                 FormulaTextStyle.PERCENT);

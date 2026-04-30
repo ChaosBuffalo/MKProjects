@@ -67,8 +67,8 @@ public class TorporAbility extends MKAbility {
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         float level = context.getSkill(MKAttributes.PHANTASM);
-        FormulaContext formulaContext = baseFormulaContext(entityData, level).build();
-        int duration = getBuffDuration(entityData, durationFormula.value(), formulaParameters.value(), formulaContext)
+        FormulaContext formulaContext = debuffFormulaContext(entityData, level).build();
+        int duration = getDebuffDuration(entityData, durationFormula.value(), formulaParameters.value(), formulaContext)
                 / GameConstants.TICKS_PER_SECOND;
         String value = FormulaTextRenderer.format(
                 AbilityFormula.multiply(AbilityFormula.constant(-1.0f), valueFormula.value()),
@@ -101,7 +101,7 @@ public class TorporAbility extends MKAbility {
         super.endCast(castingEntity, casterData, context);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
             float level = context.getSkill(MKAttributes.PHANTASM);
-            int duration = getBuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level);
+            int duration = getDebuffDuration(casterData, durationFormula.value(), formulaParameters.value(), level);
             MKEffectBuilder<?> effect = MKUEffects.ATTACK_SPEED_SLOW.get()
                     .from(castingEntity,
                             AbilityFormula.param(VALUE_BASE_PARAMETER),
