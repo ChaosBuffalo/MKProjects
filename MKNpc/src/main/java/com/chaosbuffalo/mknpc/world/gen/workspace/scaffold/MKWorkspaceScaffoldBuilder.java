@@ -99,7 +99,7 @@ public class MKWorkspaceScaffoldBuilder {
             throw new IllegalArgumentException("piece is not present in layout list");
         }
         PieceBuildContext context = createBuildContext(workspace, targetPiece, placements.get(index));
-        clearBounds(level, context.clearedBounds());
+        clearWorkspaceHeightBounds(level, context.clearedBounds());
         copyTemplateContents(level, templatePiece.exportBounds(), context.exportBounds());
         List<MKWorkspaceConnectorDefinition> connectors = recreateConnectorsFromTemplate(level, workspace, targetPiece,
                 templatePiece.connectors(), context.exportOrigin());
@@ -130,7 +130,7 @@ public class MKWorkspaceScaffoldBuilder {
                 workspace.palette().ceilingBlock(), Blocks.SMOOTH_STONE.defaultBlockState());
         boolean emptyScaffold = isEmptyScaffold(plannedPiece);
 
-        clearBounds(level, context.clearedBounds());
+        clearWorkspaceHeightBounds(level, context.clearedBounds());
         clearBounds(level, context.exportBounds());
         if (!emptyScaffold) {
             placeExteriorMargin(level, context.exportBounds(), context.geometryBounds());
@@ -343,8 +343,27 @@ public class MKWorkspaceScaffoldBuilder {
             workspaceBounds = workspaceBounds == null ? expanded : mergeBounds(workspaceBounds, expanded);
         }
         if (workspaceBounds != null) {
-            clearBounds(level, workspaceBounds);
+            clearWorkspaceHeightBounds(level, workspaceBounds);
         }
+    }
+
+    void clearWorkspaceHeightBounds(ServerLevel level, BoundingBox bounds) {
+        clearBounds(level, extendToWorkspaceClearHeight(level, bounds));
+    }
+
+    BoundingBox extendToWorkspaceClearHeight(ServerLevel level, BoundingBox bounds) {
+        return extendToWorkspaceClearHeight(bounds, level.getMinBuildHeight(), level.getMaxBuildHeight() - 1);
+    }
+
+    BoundingBox extendToWorkspaceClearHeight(BoundingBox bounds, int minBuildHeight, int maxBuildY) {
+        return new BoundingBox(
+                bounds.minX(),
+                Math.max(minBuildHeight, bounds.minY()),
+                bounds.minZ(),
+                bounds.maxX(),
+                maxBuildY,
+                bounds.maxZ()
+        );
     }
 
     private BoundingBox expandBounds(BoundingBox bounds, int margin) {
