@@ -277,7 +277,7 @@ Before applying any non-destructive mutation, write a backup manifest beside the
 
 Recommended path:
 
-- `data/<namespace>/mk_workspace_exports/backups/<structure_name>/<timestamp>-before-<operation>.json`
+- `generated/<namespace>/mk_workspace_exports/backups/<structure_name>/<timestamp>-before-<operation>.json`
 
 The backup should capture the pre-mutation workspace model, including piece placement, bounds, tags, connectors, generated stair positions, and settings. For operations that also affect exported structure NBT files later, the backup manifest is not a full asset backup by itself, but it provides the recovery map needed to understand what changed.
 
@@ -287,7 +287,7 @@ Backups should be discoverable and restorable from the workspace dev block.
 
 Discovery should scan:
 
-- `data/<namespace>/mk_workspace_exports/backups/<structure_name>/*.json`
+- `generated/<namespace>/mk_workspace_exports/backups/<structure_name>/*.json`
 
 The UI should expose:
 
@@ -366,20 +366,29 @@ This gives immediate value while keeping the high-risk topology surgery out of t
 
 ## Implementation Progress
 
-Started:
+Implemented:
 
 - Backup manifest path support under `mk_workspace_exports/backups/<structure_name>/`.
 - Backup manifest writer that serializes the same schema as normal workspace exports before a mutation.
+- Backup manifest discovery for the nearest live workspace.
+- Development command: `/mkworkspace backups list` shows recent backup manifests.
+- Backup restore service for same-anchor live metadata/layout restore.
+- Development commands: `/mkworkspace backups restorelatest` and `/mkworkspace backups restore <fileName>`.
 - Generic block-state mapper that transfers compatible property values by property name and serialized value.
 - Generic block swap service that scans a selected bounds, replaces configured source block ids, preserves compatible block state, preserves compatible block entity data, and reports replacement/dropped-property counts.
 - Workspace mutation service that writes a backup before applying generic block swaps across all existing pieces.
 - Development command: `/mkworkspace swapblock <source> <target>` applies a backed-up swap to the nearest workspace.
+- Preview-margin relayout service that snapshots each piece export area plus sidecar blocks, moves exact block states and block entities, remaps all absolute piece positions, and updates live workspace metadata.
+- Development command: `/mkworkspace setpreviewmargin <value>` applies the backed-up relayout to the nearest workspace.
+- `CreateWorkspacePacket` now detects preview-margin-only edits and skips the automatic regenerate so the form path can preserve data for that specific safe change.
 
 Next:
 
 - Add a block swap packet and UI entry point.
-- Add backup discovery and restore selection.
-- Add preview-margin relayout using raw block-state and block-entity copying.
+- Add a backup browser/restore UI in the workspace dev block.
+- Add palette-swap presets that update workspace palette metadata while using the generic block swapper for old-to-new material replacement.
+- Add metadata-only rename support for live workspace identity, signs, structure blocks, and connector pools.
+- Add shell margin expansion and exterior air margin expansion with preflight collision checks.
 
 ## Open Questions
 
