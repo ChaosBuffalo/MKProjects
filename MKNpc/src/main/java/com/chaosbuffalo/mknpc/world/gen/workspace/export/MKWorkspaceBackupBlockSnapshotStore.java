@@ -4,11 +4,11 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
@@ -23,9 +23,12 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 public class MKWorkspaceBackupBlockSnapshotStore {
     private static final int SCHEMA_VERSION = 1;
@@ -36,16 +39,36 @@ public class MKWorkspaceBackupBlockSnapshotStore {
     public record RestoreStats(int restoredBlockCount, int clearedBlockCount) {
     }
 
+    private record Snapshot(int schemaVersion, UUID workspaceId, String capturedAt, List<BlockEntry> blocks) {
+        private static final Codec<UUID> UUID_CODEC = Codec.STRING.xmap(UUID::fromString, UUID::toString);
+        private static final Codec<Snapshot> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.INT.fieldOf("schema_version").forGetter(Snapshot::schemaVersion),
+                UUID_CODEC.fieldOf("workspace_id").forGetter(Snapshot::workspaceId),
+                Codec.STRING.fieldOf("captured_at").forGetter(Snapshot::capturedAt),
+                BlockEntry.CODEC.listOf().fieldOf("blocks").forGetter(Snapshot::blocks)
+        ).apply(instance, Snapshot::new));
+    }
+
+    private record BlockEntry(int x, int y, int z, BlockState state, Optional<String> blockEntity) {
+        private static final Codec<BlockEntry> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.INT.fieldOf("x").forGetter(BlockEntry::x),
+                Codec.INT.fieldOf("y").forGetter(BlockEntry::y),
+                Codec.INT.fieldOf("z").forGetter(BlockEntry::z),
+                BlockState.CODEC.fieldOf("state").forGetter(BlockEntry::state),
+                Codec.STRING.optionalFieldOf("block_entity").forGetter(BlockEntry::blockEntity)
+        ).apply(instance, BlockEntry::new));
+
+        private BlockPos pos() {
+            return new BlockPos(x, y, z);
+        }
+    }
+
     public void writeSnapshot(Path manifestPath, ServerLevel level, MKStructureWorkspace workspace, String capturedAt)
             throws IOException {
         Path snapshotPath = pathResolver.getBackupBlockSnapshotPath(manifestPath);
         Files.createDirectories(snapshotPath.getParent());
 
-        JsonObject root = new JsonObject();
-        root.addProperty("schema_version", SCHEMA_VERSION);
-        root.addProperty("workspace_id", workspace.id().toString());
-        root.addProperty("captured_at", capturedAt);
-        JsonArray blocks = new JsonArray();
+        List<BlockEntry> blocks = new ArrayList<>();
         for (BlockPos pos : collectSnapshotPositions(workspace)) {
             BlockState state = level.getBlockState(pos);
             BlockEntity blockEntity = level.getBlockEntity(pos);
@@ -54,8 +77,9 @@ public class MKWorkspaceBackupBlockSnapshotStore {
             }
             blocks.add(encodeBlock(level, pos, state, blockEntity));
         }
-        root.add("blocks", blocks);
-        Files.writeString(snapshotPath, gson.toJson(root));
+        Snapshot snapshot = new Snapshot(SCHEMA_VERSION, workspace.id(), capturedAt, blocks);
+        JsonElement json = Snapshot.CODEC.encodeStart(JsonOps.INSTANCE, snapshot).getOrThrow();
+        Files.writeString(snapshotPath, gson.toJson(json));
     }
 
     public Optional<RestoreStats> restoreSnapshot(Path manifestPath, ServerLevel level,
@@ -66,39 +90,30 @@ public class MKWorkspaceBackupBlockSnapshotStore {
             return Optional.empty();
         }
 
-        JsonArray blocks;
+        Snapshot snapshot;
         try (Reader reader = Files.newBufferedReader(snapshotPath)) {
-            JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
-            blocks = root.getAsJsonArray("blocks");
+            JsonElement json = JsonParser.parseReader(reader);
+            snapshot = Snapshot.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
         }
         int clearedCount = clearWorkspaceBlocks(level, currentWorkspace, restoredWorkspace);
         int restoredCount = 0;
-        for (JsonElement element : blocks) {
-            restoreBlock(level, element.getAsJsonObject());
+        for (BlockEntry block : snapshot.blocks()) {
+            restoreBlock(level, block);
             restoredCount++;
         }
         return Optional.of(new RestoreStats(restoredCount, clearedCount));
     }
 
-    private JsonObject encodeBlock(ServerLevel level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
-        JsonObject block = new JsonObject();
-        block.addProperty("x", pos.getX());
-        block.addProperty("y", pos.getY());
-        block.addProperty("z", pos.getZ());
-        block.add("state", BlockState.CODEC.encodeStart(JsonOps.INSTANCE, state).getOrThrow());
-        if (blockEntity != null) {
-            block.addProperty("block_entity", blockEntity.saveWithFullMetadata(level.registryAccess()).toString());
-        }
-        return block;
+    private BlockEntry encodeBlock(ServerLevel level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
+        Optional<String> blockEntityTag = blockEntity == null ? Optional.empty() :
+                Optional.of(blockEntity.saveWithFullMetadata(level.registryAccess()).toString());
+        return new BlockEntry(pos.getX(), pos.getY(), pos.getZ(), state, blockEntityTag);
     }
 
-    private void restoreBlock(ServerLevel level, JsonObject block) {
-        BlockPos pos = new BlockPos(block.get("x").getAsInt(), block.get("y").getAsInt(), block.get("z").getAsInt());
-        BlockState state = BlockState.CODEC.parse(JsonOps.INSTANCE, block.get("state")).getOrThrow();
-        level.setBlock(pos, state, Block.UPDATE_ALL);
-        if (block.has("block_entity")) {
-            restoreBlockEntity(level, pos, state, block.get("block_entity").getAsString());
-        }
+    private void restoreBlock(ServerLevel level, BlockEntry block) {
+        BlockPos pos = block.pos();
+        level.setBlock(pos, block.state(), Block.UPDATE_ALL);
+        block.blockEntity().ifPresent(tag -> restoreBlockEntity(level, pos, block.state(), tag));
     }
 
     private void restoreBlockEntity(ServerLevel level, BlockPos pos, BlockState state, String tagString) {
