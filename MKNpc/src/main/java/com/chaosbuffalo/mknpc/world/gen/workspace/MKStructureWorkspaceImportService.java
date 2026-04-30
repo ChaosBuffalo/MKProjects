@@ -84,7 +84,7 @@ public class MKStructureWorkspaceImportService {
             return MKWorkspaceImportOutcome.failed();
         }
 
-        MKStructureWorkspace workspace = fromManifest(anchor, manifestOpt.get());
+        MKStructureWorkspace workspace = workspaceFromManifest(anchor, manifestOpt.get());
         List<String> validationErrors = workspace.validate();
         if (!validationErrors.isEmpty()) {
             return MKWorkspaceImportOutcome.validationFailed(validationErrors);
@@ -150,7 +150,12 @@ public class MKStructureWorkspaceImportService {
         return Optional.of(templatesByPieceName);
     }
 
-    private MKStructureWorkspace fromManifest(BlockPos anchor, MKWorkspaceExportManifest manifest) {
+    public MKStructureWorkspace workspaceFromManifest(BlockPos anchor, MKWorkspaceExportManifest manifest) {
+        return workspaceFromManifest(UUID.randomUUID(), anchor, System.currentTimeMillis(), manifest);
+    }
+
+    public MKStructureWorkspace workspaceFromManifest(UUID workspaceId, BlockPos anchor, long createdAt,
+                                                      MKWorkspaceExportManifest manifest) {
         MKWorkspaceExportManifest.ExportWorkspaceSettings settings = manifest.settings();
         MKWorkspaceExportManifest.ExportDimensions dimensions = settings.dimensions();
         MKWorkspaceExportManifest.ExportPalette palette = settings.palette();
@@ -263,7 +268,7 @@ public class MKStructureWorkspaceImportService {
                 .toList();
         long now = System.currentTimeMillis();
         return new MKStructureWorkspace(
-                UUID.randomUUID(),
+                workspaceId,
                 anchor,
                 manifest.namespace(),
                 manifest.structureName(),
@@ -285,10 +290,17 @@ public class MKStructureWorkspaceImportService {
                 familyDefinitions,
                 openingProfiles,
                 hallwayFamilies,
-                now,
+                createdAt,
                 now,
                 List.of()
         );
+    }
+
+    public List<MKWorkspacePieceDefinition> pieceDefinitionsFromManifest(MKStructureWorkspace workspace,
+                                                                         MKWorkspaceExportManifest manifest) {
+        return manifest.pieces().stream()
+                .map(piece -> pieceDefinitionFromManifest(workspace, piece))
+                .toList();
     }
 
     private List<MKPlannedPiece> toPlannedPieces(MKWorkspaceExportManifest manifest) {
@@ -382,6 +394,56 @@ public class MKStructureWorkspaceImportService {
                 connector.targetPool(),
                 connector.incomingPool()
         );
+    }
+
+    private MKWorkspacePieceDefinition pieceDefinitionFromManifest(MKStructureWorkspace workspace,
+                                                                   MKWorkspaceExportManifest.ExportPiece piece) {
+        MKWorkspaceExportManifest.ExportPiecePlacement placement = piece.placement();
+        return new MKWorkspacePieceDefinition(
+                piece.pieceId(),
+                workspace.id(),
+                piece.pieceName(),
+                piece.role(),
+                piece.variantIndex(),
+                dimensionsFromExport(piece.effectiveDimensions()),
+                piece.shellMargin(),
+                piece.connectors().stream().map(this::toConnectorDefinition).toList(),
+                offsetFromAnchor(workspace.anchor(), placement.worldOriginOffset()),
+                boundingBoxFromOffsets(workspace.anchor(), placement.exportBounds()),
+                boundingBoxFromOffsets(workspace.anchor(), placement.previewBounds()),
+                offsetFromAnchor(workspace.anchor(), placement.structureBlockOffset()),
+                offsetFromAnchor(workspace.anchor(), placement.signOffset()),
+                piece.markerPositions().stream()
+                        .map(position -> offsetFromAnchor(workspace.anchor(), position.offset()))
+                        .toList(),
+                piece.generatedStairPositions().stream()
+                        .map(position -> offsetFromAnchor(workspace.anchor(), position.offset()))
+                        .toList(),
+                new LinkedHashMap<>(piece.tags())
+        );
+    }
+
+    private MKWorkspaceDimensions dimensionsFromExport(MKWorkspaceExportManifest.ExportDimensions dimensions) {
+        return new MKWorkspaceDimensions(
+                dimensions.roomWidth(),
+                dimensions.roomLength(),
+                dimensions.entranceHeight(),
+                dimensions.roomHeight(),
+                dimensions.basementHeight(),
+                dimensions.hallwayWidth(),
+                dimensions.doorwayWidth(),
+                dimensions.doorwayHeight()
+        );
+    }
+
+    private BoundingBox boundingBoxFromOffsets(BlockPos anchor, MKWorkspaceExportManifest.ExportBoundingBox box) {
+        BlockPos min = offsetFromAnchor(anchor, box.minOffset());
+        BlockPos max = offsetFromAnchor(anchor, box.maxOffset());
+        return new BoundingBox(min.getX(), min.getY(), min.getZ(), max.getX(), max.getY(), max.getZ());
+    }
+
+    private BlockPos offsetFromAnchor(BlockPos anchor, MKWorkspaceExportManifest.ExportBlockPos offset) {
+        return anchor.offset(offset.x(), offset.y(), offset.z());
     }
 
     private List<BlockPos> remapGeneratedStairPositions(MKWorkspaceExportManifest.ExportPiece exportedPiece, BlockPos newOrigin) {

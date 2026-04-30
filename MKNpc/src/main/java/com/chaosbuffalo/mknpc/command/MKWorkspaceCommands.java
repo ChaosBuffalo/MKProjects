@@ -3,9 +3,11 @@ package com.chaosbuffalo.mknpc.command;
 import com.chaosbuffalo.mknpc.world.gen.workspace.MKStructureWorkspaceService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestDiscovery;
+import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupRestoreService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKStructureWorkspaceMutationService;
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -26,7 +28,12 @@ public class MKWorkspaceCommands {
         return Commands.literal("mkworkspace")
                 .then(Commands.literal("list").executes(MKWorkspaceCommands::listWorkspaces))
                 .then(Commands.literal("backups")
-                        .then(Commands.literal("list").executes(MKWorkspaceCommands::listBackupsAtNearestWorkspace)))
+                        .then(Commands.literal("list").executes(MKWorkspaceCommands::listBackupsAtNearestWorkspace))
+                        .then(Commands.literal("restorelatest")
+                                .executes(MKWorkspaceCommands::restoreLatestBackupAtNearestWorkspace))
+                        .then(Commands.literal("restore")
+                                .then(Commands.argument("fileName", StringArgumentType.word())
+                                        .executes(MKWorkspaceCommands::restoreSelectedBackupAtNearestWorkspace))))
                 .then(Commands.literal("regenerate").executes(MKWorkspaceCommands::regenerateAtPlayer))
                 .then(Commands.literal("swapblock")
                         .then(Commands.argument("source", ResourceLocationArgument.id())
@@ -90,6 +97,58 @@ public class MKWorkspaceCommands {
             player.sendSystemMessage(Component.literal("Showing 10 of " + backups.size() + " backups."));
         }
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static int restoreLatestBackupAtNearestWorkspace(CommandContext<CommandSourceStack> context)
+            throws CommandSyntaxException {
+        return restoreBackupAtNearestWorkspace(context, null);
+    }
+
+    private static int restoreSelectedBackupAtNearestWorkspace(CommandContext<CommandSourceStack> context)
+            throws CommandSyntaxException {
+        return restoreBackupAtNearestWorkspace(context, StringArgumentType.getString(context, "fileName"));
+    }
+
+    private static int restoreBackupAtNearestWorkspace(CommandContext<CommandSourceStack> context, String fileName)
+            throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        if (!player.isCreative()) {
+            player.sendSystemMessage(Component.literal("Only creative players can restore workspace backups."));
+            return Command.SINGLE_SUCCESS;
+        }
+        MKStructureWorkspace nearest = getNearestWorkspace(player);
+        if (nearest == null) {
+            player.sendSystemMessage(Component.literal("No structure workspaces to restore."));
+            return Command.SINGLE_SUCCESS;
+        }
+        try {
+            MKWorkspaceBackupRestoreService restoreService = new MKWorkspaceBackupRestoreService();
+            MKWorkspaceBackupRestoreService.RestoreResult result = fileName == null ?
+                    restoreService.restoreLatest(player.serverLevel(), nearest) :
+                    restoreService.restoreByFileName(player.serverLevel(), nearest, fileName);
+            if (!result.validationErrors().isEmpty()) {
+                player.sendSystemMessage(Component.literal("Backup restore failed validation: " +
+                        String.join("; ", result.validationErrors())));
+                result.beforeRestoreBackupPath().ifPresent(path ->
+                        player.sendSystemMessage(Component.literal("Before-restore backup manifest: " + path)));
+                return Command.SINGLE_SUCCESS;
+            }
+            if (result.workspace().isEmpty()) {
+                player.sendSystemMessage(Component.literal(fileName == null ?
+                        "No restorable backups found for " + nearest.namespace() + ":" + nearest.structureName() :
+                        "Backup file not found for " + nearest.namespace() + ":" + nearest.structureName() + ": " + fileName));
+                return Command.SINGLE_SUCCESS;
+            }
+            player.sendSystemMessage(Component.literal("Restored live workspace metadata/layout from " +
+                    result.selectedBackupPath().map(path -> path.getFileName().toString()).orElse("backup")));
+            result.beforeRestoreBackupPath().ifPresent(path ->
+                    player.sendSystemMessage(Component.literal("Before-restore backup manifest: " + path)));
+            player.sendSystemMessage(Component.literal("World blocks were not rewritten; export later when the live workspace is correct."));
+            return Command.SINGLE_SUCCESS;
+        } catch (IOException e) {
+            player.sendSystemMessage(Component.literal("Backup restore failed while writing backup manifest: " + e.getMessage()));
+            return Command.SINGLE_SUCCESS;
+        }
     }
 
     private static int swapBlockAtNearestWorkspace(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
