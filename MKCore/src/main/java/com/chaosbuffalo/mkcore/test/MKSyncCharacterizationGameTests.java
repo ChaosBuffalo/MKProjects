@@ -24,6 +24,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
@@ -373,6 +374,103 @@ public class MKSyncCharacterizationGameTests {
     }
 
     @GameTest(template = "player_data_phase0")
+    public static void syncGroupFullWriteDoesNotConsumeDirtyDirectMemberState(GameTestHelper helper) {
+        SyncContext context = new SyncContext(helper.getLevel().registryAccess());
+        SyncGroup group = new SyncGroup();
+        SnapshotDirtySyncObject object = new SnapshotDirtySyncObject(IntTag.valueOf(1), IntTag.valueOf(2));
+        group.addPublic("value", object);
+
+        group.clearDirty();
+        object.markDirty();
+        helper.assertTrue(group.isDirty(SyncVisibility.Public), "Marked direct member should make the group dirty");
+
+        CompoundTag fullPayload = group.writeFullValue(context, SyncVisibility.Public);
+        helper.assertTrue(fullPayload != null, "Full sync payload should be present for the direct member");
+        helper.assertTrue(fullPayload.contains("value", Tag.TAG_INT), "Full sync should include the direct member snapshot");
+        helper.assertTrue(group.isDirty(SyncVisibility.Public), "Full sync should not consume the direct member dirty state");
+
+        CompoundTag dirtyPayload = group.writeDirtyValue(context, SyncVisibility.Public);
+        helper.assertTrue(dirtyPayload != null, "Dirty payload should remain available after a full sync snapshot");
+        helper.assertValueEqual(dirtyPayload.getInt("value"), 2, "Dirty payload should still carry the pending direct member delta");
+        helper.assertFalse(group.isDirty(SyncVisibility.Public), "Writing the dirty payload should clear the direct member dirty state");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void syncGroupFullWriteDoesNotConsumeDirtyStateWhenMemberHasNoFullSnapshot(GameTestHelper helper) {
+        SyncContext context = new SyncContext(helper.getLevel().registryAccess());
+        SyncGroup group = new SyncGroup();
+        SnapshotDirtySyncObject object = new SnapshotDirtySyncObject(null, IntTag.valueOf(7));
+        group.addPrivate("delta_only", object);
+
+        object.markDirty();
+        helper.assertTrue(group.isDirty(SyncVisibility.Private), "Marked delta-only member should make the group dirty");
+
+        CompoundTag fullPayload = group.writeFullValue(context, SyncVisibility.Private);
+        helper.assertTrue(fullPayload == null, "Full sync should stay null when the member has no snapshot payload");
+        helper.assertTrue(group.isDirty(SyncVisibility.Private), "A null full snapshot should not consume the pending dirty state");
+
+        CompoundTag dirtyPayload = group.writeDirtyValue(context, SyncVisibility.Private);
+        helper.assertTrue(dirtyPayload != null, "Dirty payload should still be available after a null full snapshot");
+        helper.assertValueEqual(dirtyPayload.getInt("delta_only"), 7, "Dirty payload should contain the queued delta-only member value");
+        helper.assertFalse(group.isDirty(SyncVisibility.Private), "Writing the dirty delta should clear the private dirty state");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void syncGroupFullWriteDoesNotConsumeNestedDirtyStateAcrossVisibilities(GameTestHelper helper) {
+        SyncContext context = new SyncContext(helper.getLevel().registryAccess());
+        SyncGroup root = new SyncGroup();
+        SnapshotDirtySyncObject publicObject = new SnapshotDirtySyncObject(IntTag.valueOf(1), IntTag.valueOf(2));
+        SyncGroup child = new SyncGroup();
+        SnapshotDirtySyncObject privateObject = new SnapshotDirtySyncObject(IntTag.valueOf(10), IntTag.valueOf(11));
+
+        root.addPublic("publicValue", publicObject);
+        child.addPrivate("privateValue", privateObject);
+        root.addChild("child", child);
+        root.clearDirty();
+
+        publicObject.markDirty();
+        privateObject.markDirty();
+        helper.assertTrue(root.isDirty(SyncVisibility.Public), "Root should track dirty public state before full sync");
+        helper.assertTrue(root.isDirty(SyncVisibility.Private), "Root should track dirty private child state before full sync");
+
+        CompoundTag publicFullPayload = root.writeFullValue(context, SyncVisibility.Public);
+        helper.assertTrue(publicFullPayload != null, "Public full sync payload should be present");
+        helper.assertTrue(publicFullPayload.contains("publicValue", Tag.TAG_INT),
+                "Public full sync should include the public member snapshot");
+        helper.assertFalse(publicFullPayload.contains("child"), "Public full sync should not include private child data");
+        helper.assertTrue(root.isDirty(SyncVisibility.Public), "Public full sync should not consume public dirty state");
+        helper.assertTrue(root.isDirty(SyncVisibility.Private), "Public full sync should not disturb private child dirty state");
+
+        CompoundTag privateFullPayload = root.writeFullValue(context, SyncVisibility.Private);
+        helper.assertTrue(privateFullPayload != null, "Private full sync payload should be present");
+        helper.assertTrue(privateFullPayload.contains("child", Tag.TAG_COMPOUND),
+                "Private full sync should include the nested child snapshot");
+        helper.assertTrue(privateFullPayload.getCompound("child").contains("privateValue", Tag.TAG_INT),
+                "Private full sync should include the private child member snapshot");
+        helper.assertFalse(privateFullPayload.contains("publicValue"),
+                "Private full sync should not include unrelated public-only state");
+        helper.assertTrue(root.isDirty(SyncVisibility.Public), "Private full sync should not consume public dirty state");
+        helper.assertTrue(root.isDirty(SyncVisibility.Private), "Private full sync should not consume private child dirty state");
+
+        CompoundTag publicDirtyPayload = root.writeDirtyValue(context, SyncVisibility.Public);
+        helper.assertTrue(publicDirtyPayload != null, "Public dirty payload should still be available after full sync");
+        helper.assertValueEqual(publicDirtyPayload.getInt("publicValue"), 2, "Public dirty payload should preserve the queued public delta");
+        helper.assertFalse(root.isDirty(SyncVisibility.Public), "Writing public dirty state should clear only public dirtiness");
+        helper.assertTrue(root.isDirty(SyncVisibility.Private), "Writing public dirty state should leave private child dirtiness queued");
+
+        CompoundTag privateDirtyPayload = root.writeDirtyValue(context, SyncVisibility.Private);
+        helper.assertTrue(privateDirtyPayload != null, "Private dirty payload should still be available after full sync");
+        helper.assertTrue(privateDirtyPayload.getCompound("child").contains("privateValue", Tag.TAG_INT),
+                "Private dirty payload should preserve the queued child delta");
+        helper.assertValueEqual(privateDirtyPayload.getCompound("child").getInt("privateValue"), 11,
+                "Private dirty payload should preserve the queued private child delta value");
+        helper.assertFalse(root.isDirty(SyncVisibility.Private), "Writing private dirty state should clear the remaining child dirtiness");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
     public static void syncGroupRejectsDirtyMembersThatReturnNull(GameTestHelper helper) {
         SyncContext context = new SyncContext(helper.getLevel().registryAccess());
         SyncGroup group = new SyncGroup();
@@ -406,6 +504,56 @@ public class MKSyncCharacterizationGameTests {
             throw new IllegalStateException("Failed to learn test ability " + ability.getAbilityId());
         }
         return ability.getAbilityId();
+    }
+
+    private static class SnapshotDirtySyncObject implements ISyncObject {
+        private final Tag fullPayload;
+        private final Tag dirtyPayload;
+        private ISyncNotifier notifier = ISyncNotifier.NONE;
+        private boolean dirty;
+
+        private SnapshotDirtySyncObject(Tag fullPayload, Tag dirtyPayload) {
+            this.fullPayload = fullPayload;
+            this.dirtyPayload = dirtyPayload;
+        }
+
+        public void markDirty() {
+            dirty = true;
+            notifier.notifyUpdate();
+        }
+
+        @Override
+        public void setSyncUpdateNotifier(ISyncNotifier notifier) {
+            this.notifier = notifier;
+        }
+
+        @Override
+        public boolean isDirty() {
+            return dirty;
+        }
+
+        @Override
+        public void clearDirty() {
+            dirty = false;
+        }
+
+        @Override
+        public Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
+            return fullPayload;
+        }
+
+        @Override
+        public Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
+            if (!dirty) {
+                return null;
+            }
+            dirty = false;
+            return dirtyPayload;
+        }
+
+        @Override
+        public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
+        }
     }
 
     private static class NullDirtySyncObject implements ISyncObject {

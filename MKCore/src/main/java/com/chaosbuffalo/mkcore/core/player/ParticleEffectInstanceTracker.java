@@ -163,8 +163,6 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
                 effectsNbt.add(etag);
             }
             tag.put("effectInstances", effectsNbt);
-            toRemoveDirty.clear();
-            toAddDirty.clear();
             return tag;
         }
 
