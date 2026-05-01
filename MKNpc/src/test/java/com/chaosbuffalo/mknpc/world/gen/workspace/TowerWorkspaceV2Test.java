@@ -1311,6 +1311,106 @@ class TowerWorkspaceV2Test {
         assertEquals(workspace.pieces().get(0).tags(), decoded.pieces().get(0).tags());
     }
 
+    @Test
+    void backupSnapshotManifestAllowsTemplateOnlyWorkspaces() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKStructureWorkspace workspace = new MKStructureWorkspace(
+                UUID.randomUUID(),
+                new BlockPos(32, 80, 32),
+                "mkdev",
+                "template_only_backup",
+                MKStructureFamilyType.TOWER,
+                dimensions,
+                workspacePalette(),
+                MKWorkspaceStairAuthoringConfig.defaultConfig(),
+                MKVerticalAccessPlacement.CENTER,
+                1,
+                2,
+                4,
+                MKWorkspaceVerticalAccessSpec.defaultSpec(),
+                MKTowerWorkspaceFloorSettings.defaultSettings(),
+                MKTowerWorkspaceCategoryProfile.createDefaults(dimensions),
+                MKTowerWorkspaceFamilyDefinition.createDefaults(),
+                MKHorizontalOpeningProfile.createDefaults(dimensions),
+                List.of(),
+                100L,
+                200L,
+                List.of(new MKWorkspacePieceDefinition(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        "entry_template",
+                        MKWorkspacePieceRole.ENTRY,
+                        0,
+                        dimensions,
+                        1,
+                        List.of(),
+                        new BlockPos(40, 80, 40),
+                        new BoundingBox(40, 80, 40, 48, 87, 48),
+                        new BoundingBox(38, 78, 38, 50, 89, 50),
+                        new BlockPos(41, 80, 41),
+                        new BlockPos(42, 80, 42),
+                        List.of(),
+                        List.of(),
+                        Map.of("workspace_base_name", "entry", "workspace_piece_kind", "template")
+                ))
+        );
+
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.snapshotFromWorkspace(workspace, 1, "now");
+
+        assertEquals("", manifest.runtimeHints().startBaseName());
+        assertEquals(1, manifest.pieces().size());
+        assertEquals("entry_template", manifest.pieces().getFirst().pieceName());
+    }
+
+    @Test
+    void exportManifestStillRequiresRuntimeStartPiece() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKStructureWorkspace workspace = new MKStructureWorkspace(
+                UUID.randomUUID(),
+                new BlockPos(32, 80, 32),
+                "mkdev",
+                "template_only_export",
+                MKStructureFamilyType.TOWER,
+                dimensions,
+                workspacePalette(),
+                MKWorkspaceStairAuthoringConfig.defaultConfig(),
+                MKVerticalAccessPlacement.CENTER,
+                1,
+                2,
+                4,
+                MKWorkspaceVerticalAccessSpec.defaultSpec(),
+                MKTowerWorkspaceFloorSettings.defaultSettings(),
+                MKTowerWorkspaceCategoryProfile.createDefaults(dimensions),
+                MKTowerWorkspaceFamilyDefinition.createDefaults(),
+                MKHorizontalOpeningProfile.createDefaults(dimensions),
+                List.of(),
+                100L,
+                200L,
+                List.of(new MKWorkspacePieceDefinition(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        "entry_template",
+                        MKWorkspacePieceRole.ENTRY,
+                        0,
+                        dimensions,
+                        1,
+                        List.of(),
+                        new BlockPos(40, 80, 40),
+                        new BoundingBox(40, 80, 40, 48, 87, 48),
+                        new BoundingBox(38, 78, 38, 50, 89, 50),
+                        new BlockPos(41, 80, 41),
+                        new BlockPos(42, 80, 42),
+                        List.of(),
+                        List.of(),
+                        Map.of("workspace_base_name", "entry", "workspace_piece_kind", "template")
+                ))
+        );
+
+        IllegalStateException error = org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class,
+                () -> MKWorkspaceExportManifest.fromWorkspace(workspace, 1, "now"));
+        assertTrue(error.getMessage().contains("did not define a runtime start piece"));
+    }
+
     private static MKStructureWorkspace baseWorkspace(List<MKHorizontalOpeningProfile> openingProfiles,
                                                       List<MKHallwayFamilyDefinition> hallwayFamilies) {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();

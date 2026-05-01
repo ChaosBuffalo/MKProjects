@@ -71,6 +71,16 @@ public record MKWorkspaceExportManifest(
     ).apply(instance, MKWorkspaceExportManifest::new));
 
     public static MKWorkspaceExportManifest fromWorkspace(MKStructureWorkspace workspace, int schemaVersion, String exportedAt) {
+        return fromWorkspace(workspace, schemaVersion, exportedAt, ExportRuntimeHints.forWorkspace(workspace));
+    }
+
+    public static MKWorkspaceExportManifest snapshotFromWorkspace(MKStructureWorkspace workspace, int schemaVersion,
+                                                                  String exportedAt) {
+        return fromWorkspace(workspace, schemaVersion, exportedAt, ExportRuntimeHints.empty());
+    }
+
+    private static MKWorkspaceExportManifest fromWorkspace(MKStructureWorkspace workspace, int schemaVersion,
+                                                           String exportedAt, ExportRuntimeHints runtimeHints) {
         return new MKWorkspaceExportManifest(
                 schemaVersion,
                 workspace.id(),
@@ -107,7 +117,7 @@ public record MKWorkspaceExportManifest(
                         workspace.openingProfiles().stream().map(ExportOpeningProfile::from).toList(),
                         workspace.hallwayFamilies().stream().map(ExportHallwayFamily::from).toList()
                 ),
-                ExportRuntimeHints.forWorkspace(workspace),
+                runtimeHints,
                 buildCategories(workspace),
                 workspace.pieces().stream().map(piece -> ExportPiece.from(workspace, piece)).toList()
         );
@@ -530,6 +540,10 @@ public record MKWorkspaceExportManifest(
                     .toList();
             String startBaseName = findStartBaseName(workspace);
             return new ExportRuntimeHints(startBaseName, categories, buildRuntimePools(workspace));
+        }
+
+        public static ExportRuntimeHints empty() {
+            return new ExportRuntimeHints("", List.of(), List.of());
         }
     }
 
