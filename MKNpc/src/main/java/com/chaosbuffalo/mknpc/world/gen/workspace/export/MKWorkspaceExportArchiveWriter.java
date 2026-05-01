@@ -23,10 +23,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -43,7 +41,6 @@ public class MKWorkspaceExportArchiveWriter {
     public WrittenArchive write(ServerLevel level, MKStructureWorkspace workspace) throws IOException {
         Path path = pathResolver.getArchivePath(level.getServer(), workspace);
         Files.createDirectories(path.getParent());
-        deleteLegacyLooseExportFiles(path.getParent(), workspace);
         MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, SCHEMA_VERSION,
                 Instant.now().toString());
         try (ZipOutputStream output = new ZipOutputStream(Files.newOutputStream(path))) {
@@ -101,31 +98,6 @@ public class MKWorkspaceExportArchiveWriter {
             written++;
         }
         return written;
-    }
-
-    private void deleteLegacyLooseExportFiles(Path exportDirectory, MKStructureWorkspace workspace) throws IOException {
-        Path generatedNamespaceDirectory = exportDirectory.getParent();
-        if (generatedNamespaceDirectory == null) {
-            return;
-        }
-        deleteIfExists(exportDirectory.resolve(workspace.structureName() + ".json"));
-        deleteTree(generatedNamespaceDirectory.resolve("mk_jigsaw_piece_meta").resolve(workspace.structureName()));
-        deleteTree(generatedNamespaceDirectory.resolve("structure").resolve(workspace.structureName()));
-    }
-
-    private void deleteTree(Path path) throws IOException {
-        if (!Files.exists(path)) {
-            return;
-        }
-        try (Stream<Path> stream = Files.walk(path)) {
-            for (Path current : stream.sorted(Comparator.reverseOrder()).toList()) {
-                deleteIfExists(current);
-            }
-        }
-    }
-
-    private void deleteIfExists(Path path) throws IOException {
-        Files.deleteIfExists(path);
     }
 
     private void writeJson(ZipOutputStream output, String entryName, JsonElement json) throws IOException {
