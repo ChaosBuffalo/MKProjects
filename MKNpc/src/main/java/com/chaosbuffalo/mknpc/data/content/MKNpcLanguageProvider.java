@@ -100,7 +100,7 @@ public class MKNpcLanguageProvider extends NpcLanguageProvider {
         add("mknpc.workspace.button.close", "Close");
         add("mknpc.workspace.button.edit_template_settings", "Edit Template Settings");
         add("mknpc.workspace.button.back_to_workspace", "Back To Workspace");
-        add("mknpc.workspace.message.exported_pieces", "Exported %s workspace structure pieces, wrote manifest %s, and wrote piece metadata under %s.");
+        add("mknpc.workspace.message.exported_pieces", "Exported %s workspace structure pieces and %s metadata files to archive %s.");
         add("mknpc.workspace.message.export_failed", "Workspace export failed.");
         add("mknpc.workspace.field.namespace", "Namespace");
         add("mknpc.workspace.field.structure_name", "Structure Name");

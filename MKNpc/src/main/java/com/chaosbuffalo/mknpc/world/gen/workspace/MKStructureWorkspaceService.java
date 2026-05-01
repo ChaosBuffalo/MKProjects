@@ -11,8 +11,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAcces
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlanner;
-import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifestWriter;
-import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportPieceMetadataWriter;
+import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportArchiveWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportResult;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestDiscovery;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspaceIdentityRenameService;
@@ -26,7 +25,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.block.entity.StructureBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.io.IOException;
@@ -293,20 +291,13 @@ public class MKStructureWorkspaceService {
         }
 
         MKStructureWorkspace workspace = workspaceOpt.get();
-        int savedCount = 0;
-        for (MKWorkspacePieceDefinition piece : workspace.pieces()) {
-            BlockEntity blockEntity = level.getBlockEntity(piece.structureBlockPos());
-            if (blockEntity instanceof StructureBlockEntity structureBlock && structureBlock.saveStructure()) {
-                savedCount++;
-            }
-        }
         try {
-            MKWorkspaceExportManifestWriter writer = new MKWorkspaceExportManifestWriter();
-            var manifest = writer.write(level.getServer(), workspace);
-            var pieceMetaDir = new MKWorkspaceExportPieceMetadataWriter().writeAll(level.getServer(), manifest.manifest());
-            return Optional.of(new MKWorkspaceExportResult(savedCount, manifest.path(), pieceMetaDir));
+            MKWorkspaceExportArchiveWriter writer = new MKWorkspaceExportArchiveWriter();
+            var archive = writer.write(level, workspace);
+            return Optional.of(new MKWorkspaceExportResult(archive.structurePieceCount(), archive.metadataCount(),
+                    archive.path()));
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to export workspace manifest for " + workspace.namespace() + ":" +
+            throw new IllegalStateException("Failed to export workspace archive for " + workspace.namespace() + ":" +
                     workspace.structureName(), e);
         }
     }

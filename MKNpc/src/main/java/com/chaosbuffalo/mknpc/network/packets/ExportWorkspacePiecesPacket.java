@@ -49,6 +49,6 @@ public class ExportWorkspacePiecesPacket implements CustomPacketPayload {
             return;
         }
         player.displayClientMessage(Component.translatable("mknpc.workspace.message.exported_pieces",
-                result.savedPieceCount(), result.manifestPath().toString(), result.pieceMetadataDirectory().toString()), false);
+                result.savedPieceCount(), result.metadataCount(), result.archivePath().toString()), false);
     }
 }

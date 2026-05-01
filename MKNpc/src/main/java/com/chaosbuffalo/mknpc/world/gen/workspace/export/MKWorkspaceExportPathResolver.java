@@ -16,12 +16,12 @@ public class MKWorkspaceExportPathResolver {
             .withLocale(Locale.ROOT)
             .withZone(ZoneOffset.UTC);
 
-    public Path getManifestPath(MinecraftServer server, MKStructureWorkspace workspace) {
+    public Path getArchivePath(MinecraftServer server, MKStructureWorkspace workspace) {
         return server.getWorldPath(LevelResource.ROOT)
                 .resolve("generated")
                 .resolve(workspace.namespace())
                 .resolve("mk_workspace_exports")
-                .resolve(workspace.structureName() + ".json");
+                .resolve(workspace.structureName() + ".zip");
     }
 
     public Path getBackupManifestPath(MinecraftServer server, MKStructureWorkspace workspace, String operation,

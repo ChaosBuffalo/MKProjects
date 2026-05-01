@@ -26,7 +26,7 @@ public class MKWorkspaceBackupManifestWriter {
     private MKWorkspaceExportManifest createManifest(MKStructureWorkspace workspace, Instant timestamp) {
         return MKWorkspaceExportManifest.snapshotFromWorkspace(
                 workspace,
-                MKWorkspaceExportManifestWriter.SCHEMA_VERSION,
+                MKWorkspaceExportArchiveWriter.SCHEMA_VERSION,
                 timestamp.toString()
         );
     }
