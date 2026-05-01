@@ -12,6 +12,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -28,6 +29,8 @@ import java.util.function.Function;
 
 public class MKSinglePoolElement extends SinglePoolElement implements IMKPoolElement {
     private static final Holder<StructureProcessorList> EMPTY = Holder.direct(new StructureProcessorList(List.of()));
+    private static final BlockIgnoreProcessor STRUCTURE_VOID_IGNORE =
+            new BlockIgnoreProcessor(List.of(Blocks.STRUCTURE_VOID));
 
     public static final MapCodec<MKSinglePoolElement> codec = RecordCodecBuilder.mapCodec((builder) -> builder.group(
             templateCodec(),
@@ -97,6 +100,7 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKPoolEle
                            RandomSource pRandom, LiquidSettings liquidSettings, boolean pKeepJigsaws, ResourceLocation name, UUID instanceId) {
         StructureTemplate template = this.getTemplate(pStructureTemplateManager);
         StructurePlaceSettings settings = this.getSettings(pRotation, pBox, liquidSettings, pKeepJigsaws);
+        settings.addProcessor(STRUCTURE_VOID_IGNORE);
         if (!template.placeInWorld(pLevel, piecePosition, firstPieceBottomCenter, settings, pRandom, 18)) {
             return false;
         } else {
