@@ -47,7 +47,9 @@ Runtime `Structure` and `StructureSet` registration remain manually owned by the
 
 The current system already gives us the core inputs we need:
 
-- exported manifest at:
+- exported archive at:
+  - `generated/<namespace>/mk_workspace_exports/<structure_name>.zip`
+- after unpacking into mod resources, exported manifest at:
   - `data/<namespace>/mk_workspace_exports/<structure_name>.json`
 - structure templates at:
   - `data/<namespace>/structure/<structure_name>/<piece_name>.nbt`
@@ -391,14 +393,14 @@ That verifies:
 
 ## Suggested Implementation Order
 
-1. add manifest discovery service
-2. add import DTO/summary model for the UI
-3. add `MKStructureWorkspaceImportService`
-4. implement saved-template overlay path
-5. add dev block/UI entry point
-6. add packets
-7. validate with `test_tower`
-8. add diagnostics and failure messaging
+1. add manifest discovery service. Done.
+2. add import DTO/summary model for the UI. Done.
+3. add `MKStructureWorkspaceImportService`. Done.
+4. implement saved-template overlay path. Done.
+5. add dev block/UI entry point. Done.
+6. add packets. Done.
+7. validate with `test_tower`. Manual in-game validation still recommended.
+8. add diagnostics and failure messaging. Basic validation/failure messaging is present; richer diagnostics remain future polish.
 
 ## Main Files Likely To Change
 
@@ -411,16 +413,32 @@ That verifies:
 - dev block / dev block entity classes
 - packet registration and packet handlers
 
-New likely classes:
+Implemented classes:
 
-- `MKWorkspaceImportManifestDiscovery`
-- `MKStructureWorkspaceImportService`
-- `LoadWorkspaceFromManifestPacket`
+- `MKWorkspaceImportManifestDiscovery`. Added.
+- `MKStructureWorkspaceImportService`. Added.
+- `LoadWorkspaceFromManifestPacket`. Added and registered.
+
+## Implementation Status
+
+Implemented:
+
+- Manifest discovery reads exported workspace manifests from mod source resources through the codec-backed manifest loader.
+- The dev block home screen exposes `Create New Workspace` and `Load Existing Workspace` when import candidates exist.
+- The import list sends `LoadWorkspaceFromManifestPacket` with the selected manifest id.
+- Server import validates the manifest-backed workspace, rebuilds the preview layout at the new anchor, generates scaffold/structure block setup, overlays saved templates into each preview piece, persists the workspace capability entry, and reopens the workspace screen.
+- Imported workspaces remain live editable workspaces and can be exported through the normal zip export flow.
+
+Remaining validation:
+
+- Run the full in-game `mknpc:test_tower` rehydration path in a fresh dev save.
+- Verify imported base templates and variants can be edited, backed up, restored, and re-exported.
+- Improve import failure diagnostics for missing templates, unsupported manifests, and occupied destination areas if needed.
 
 ## Acceptance Criteria
 
-- The workspace dev block offers a clear path to load an existing exported workspace.
-- `mknpc:test_tower` can be rehydrated into a fresh development save from exported data.
-- Imported workspaces use the current preview grid and structure block setup.
-- All authored room contents are restored for base templates and all variants.
-- Imported workspaces are editable and can be re-exported through the normal workspace flow.
+- The workspace dev block offers a clear path to load an existing exported workspace. Implemented.
+- `mknpc:test_tower` can be rehydrated into a fresh development save from exported data. Needs final manual validation.
+- Imported workspaces use the current preview grid and structure block setup. Implemented.
+- All authored room contents are restored for base templates and all variants. Implemented by template overlay; needs final manual validation.
+- Imported workspaces are editable and can be re-exported through the normal workspace flow. Implemented.

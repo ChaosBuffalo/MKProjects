@@ -406,45 +406,62 @@ new MKCreativeBlockPickerSource(stack -> stack.getItem() instanceof BlockItem bl
 
 ### Phase 1: Picker Infrastructure
 
-- Add generic picker entry/category/source records.
-- Add `MKCreativeBlockPickerSource`.
-- Add virtualized `MKCreativeGridPicker`.
-- Support selection by click.
-- Support mouse wheel scrolling.
-- Support hover tooltips.
-- Compile and smoke test in a simple screen state.
+- Add generic picker entry/category/source records. Done.
+- Add `MKCreativeBlockPickerSource`. Done.
+- Add virtualized `MKCreativeGridPicker`. Done.
+- Support selection by click. Done.
+- Support mouse wheel scrolling. Done.
+- Support hover tooltips. Done.
+- Compile and smoke test in a simple screen state. Done.
 
 ### Phase 2: Workspace Picker Subpage
 
-- Add a pending block picker request to `MKWorkspaceScreen`.
-- Add `buildCreativeBlockPickerState`.
-- Add `chooseBlock(title, currentValue, callback, returnState)`.
-- Add cancel and clear behavior.
-- Preserve state stack behavior during picker return.
+- Add a pending block picker request to `MKWorkspaceScreen`. Done.
+- Add `buildCreativeBlockPickerState`. Done.
+- Add `chooseBlock(title, currentValue, callback, returnState)`. Done as `openBlockPicker(...)`.
+- Add cancel and clear behavior. Done.
+- Preserve state stack behavior during picker return. Done; picker close now pops back to the opener without a full screen setup fallback.
 
 ### Phase 3: Replace Materials Page Inline Picker
 
-- Remove `MKPlayerHotbar` from materials page.
-- Replace slots with field rows and `Choose` buttons.
-- Verify all six material values round trip through `formDraft`.
+- Remove `MKPlayerHotbar` from materials page. Done.
+- Replace slots with field rows and `Choose` buttons. Done.
+- Verify all six material values round trip through `formDraft`. Compile verified; manual validation still recommended.
 
 ### Phase 4: Replace Block Swap Inline Picker
 
-- Remove `MKPlayerHotbar` from block swap page.
-- Replace source/target slots with field rows.
-- Verify selected blocks feed `SwapWorkspaceBlockPacket`.
+- Remove `MKPlayerHotbar` from block swap page. Done.
+- Replace source/target slots with field rows. Done.
+- Verify selected blocks feed `SwapWorkspaceBlockPacket`. Compile verified; manual validation still recommended.
 
 ### Phase 5: Replace Stair Detail Inline Picker
 
-- Replace category/detail stair block selector area.
-- Confirm page layout no longer reserves hotbar/palette area.
-- Verify category edits still apply selected stair/slab/ladder ids.
+- Replace category/detail stair block selector area. Done.
+- Confirm page layout no longer reserves hotbar/palette area. Done.
+- Verify category edits still apply selected stair/slab/ladder ids. Compile verified; manual validation still recommended.
 
 ### Phase 6: Cleanup And Reuse
 
-- Remove unused `addPaletteSection` and `addBlockSwapPaletteSection` if no callers remain.
+- Remove unused `addPaletteSection` and `addBlockSwapPaletteSection` if no callers remain. Done.
 - Keep `MKPlayerHotbar` if other screens still need it; otherwise leave it as a small reusable widget.
-- Add translation keys for picker labels and messages.
+- Add translation keys for picker labels and messages. Future polish.
+
+## Implementation Status
+
+Implemented:
+
+- `MKCreativePickerEntry`, `MKCreativePickerCategory`, `MKCreativePickerSource`, and `MKCreativeBlockPickerSource` in `MKWidgets`.
+- `MKCreativeGridPicker` with virtualized rendering, scrolling, click selection, and hover tooltips.
+- `creative_block_picker` state in `MKWorkspaceScreen`.
+- Materials, block swap, and stair detail block selection now navigate to the picker subpage.
+- Picker category changes refresh the grid in-place.
+- Picker selection updates the opener row immediately and returns to the page that opened the picker.
+- Cancel and clear return through the same picker close path.
+
+Remaining polish:
+
+- Add translation keys for picker strings.
+- Manual in-game validation with large modded creative catalogs and operator-only blocks.
 
 ## Validation
 

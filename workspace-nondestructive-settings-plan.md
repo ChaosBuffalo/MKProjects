@@ -271,15 +271,15 @@ public final class MKStructureWorkspaceMutationService {
 
 This should be separate from `MKStructureWorkspaceService.generateTowerWorkspace` so generation remains the explicit scaffold creation path.
 
-### Backup Manifests
+### Backup Archives
 
-Before applying any non-destructive mutation, write a backup manifest beside the normal workspace exports.
+Before applying any non-destructive mutation, write a backup archive beside the normal workspace exports.
 
 Recommended path:
 
-- `generated/<namespace>/mk_workspace_exports/backups/<structure_name>/<timestamp>-before-<operation>.json`
+- `generated/<namespace>/mk_workspace_exports/backups/<structure_name>/<timestamp>-before-<operation>.zip`
 
-The backup should capture the pre-mutation workspace model, including piece placement, bounds, tags, connectors, generated stair positions, and settings. For operations that also affect exported structure NBT files later, the backup manifest is not a full asset backup by itself, but it provides the recovery map needed to understand what changed.
+The backup archive should capture the pre-mutation workspace model in `manifest.json`, including piece placement, bounds, tags, connectors, generated stair positions, and settings. It should also include one NBT template per live workspace piece under `pieces/`, storing only the authored block data needed to restore the live workspace. Manifest JSON is still serialized through the manifest codec; Gson is only used to write the codec-produced `JsonElement` in a readable form.
 
 ### Backup Restore
 
@@ -287,7 +287,7 @@ Backups should be discoverable and restorable from the workspace dev block.
 
 Discovery should scan:
 
-- `generated/<namespace>/mk_workspace_exports/backups/<structure_name>/*.json`
+- `generated/<namespace>/mk_workspace_exports/backups/<structure_name>/*.zip`
 
 The UI should expose:
 
@@ -300,13 +300,13 @@ The UI should expose:
 
 Restore modes:
 
-- `Restore Settings And Layout`: restores the workspace model, piece definitions, bounds, connectors, signs, markers, and structure block metadata from the backup manifest. This does not rewrite authored piece blocks unless a relayout is required by the target anchor.
-- `Restore And Rehydrate Templates`: restores the workspace model and then reloads saved structure NBT into each piece export area, using the same manifest-driven overlay approach as workspace import.
+- `Restore Backup`: restores the workspace model, piece definitions, bounds, connectors, signs, markers, and structure block metadata from the archive manifest, then reloads each archived piece NBT into its live export area.
+- Future restore modes can split metadata-only and template-overlay behavior if that distinction becomes useful.
 
 Recommended default:
 
-- If restoring at the same anchor and existing piece bounds still match, use `Restore Settings And Layout`.
-- If restoring into a fresh anchor or if current piece bounds do not match the backup, use `Restore And Rehydrate Templates` when all referenced structure NBT files exist.
+- Restore the live workspace at the current anchor from the selected backup archive.
+- Keep the restored workspace as the editable source of truth; the user exports later when they want resource files updated.
 
 Safety rules:
 
@@ -314,17 +314,18 @@ Safety rules:
 2. Validate backup schema version before restore.
 3. Validate piece names are unique and match the backup categories.
 4. Validate destination area is clear or is wholly owned by the current workspace.
-5. Do not delete exported structure NBT files during restore.
+5. Do not delete exported structure NBT files or old export archives during restore.
 6. After restore, keep the live workspace as the editable source of truth; the user still exports when they want resources updated.
 
 Likely implementation pieces:
 
 - `MKWorkspaceBackupManifestDiscovery`
-- `MKStructureWorkspaceBackupService`
+- `MKWorkspaceBackupArchiveStore`
+- `MKWorkspaceBackupRestoreService`
 - `RestoreWorkspaceBackupPacket`
 - a dev-block UI state for backup selection and restore confirmation
 
-Backup restore should reuse as much of the existing import path as possible. The main difference is that backup manifests live under `mk_workspace_exports/backups`, and same-anchor restore may apply metadata directly instead of rebuilding from external structure NBT.
+Backup restore should reuse as much of the existing import path as possible. The main difference is that backup archives live under `mk_workspace_exports/backups`, and restore reads piece NBT from the archive instead of from exported mod resources.
 
 ### Ownership Metadata
 
@@ -369,10 +370,10 @@ This gives immediate value while keeping the high-risk topology surgery out of t
 Implemented:
 
 - Backup manifest path support under `mk_workspace_exports/backups/<structure_name>/`.
-- Backup manifest writer that serializes the same schema as normal workspace exports before a mutation.
-- Backup manifest discovery for the nearest live workspace.
+- Backup archive writer that stores `manifest.json` plus per-piece NBT snapshots before a mutation.
+- Backup archive discovery for the nearest live workspace.
 - Development command: `/mkworkspace backups list` shows recent backup manifests.
-- Backup restore service for same-anchor live metadata/layout restore.
+- Backup restore service for same-anchor live metadata/layout and piece NBT restore.
 - Development commands: `/mkworkspace backups restorelatest` and `/mkworkspace backups restore <fileName>`.
 - Generic block-state mapper that transfers compatible property values by property name and serialized value.
 - Generic block swap service that scans a selected bounds, replaces configured source block ids, preserves compatible block state, preserves compatible block entity data, and reports replacement/dropped-property counts.
@@ -386,6 +387,9 @@ Implemented:
 - Workspace screen now lists discovered backup manifests and can restore a selected backup through `RestoreWorkspaceBackupPacket`.
 - Metadata-only identity rename updates live workspace identity, structure block names, signs, jigsaw names/targets, and connector pool metadata with a backup manifest.
 - Shell margin and exterior air margin expansions now run through a backed-up expansion service with destination collision checks. Existing block states are mapped by interior-origin delta, new outer shell/structure-void regions are filled, and structure blocks, signs, markers, connector positions, and jigsaws are refreshed against the new bounds.
+- Regular workspace export now writes a datapack-shaped zip archive instead of loose export files. Loose legacy files are intentionally left alone.
+- Structure void is preserved in workspace backups and exports, while MK runtime placement ignores structure void during in-world structure placement.
+- Destructive workspace regeneration is gated by a confirmation state in the workspace UI.
 - Decreasing margins, topology changes, family-count changes, and other unsafe form edits remain destructive-regenerate changes.
 
 ## Open Questions

@@ -16,9 +16,10 @@ The longer-term goal is:
 
 The current tower workspace flow now saves:
 
-- structure NBT through configured structure blocks
-- a workspace export manifest
-- exported `mk_jigsaw_piece_meta`
+- a datapack-shaped workspace export zip
+- fresh structure NBT captured from the live workspace during export
+- a workspace export manifest inside the archive
+- exported `mk_jigsaw_piece_meta` and template pool data in the same datapack layout
 
 Relevant code:
 
@@ -65,28 +66,30 @@ It should not depend on transient world positions except where explicitly needed
 
 The manifest must include a schema version from day one. We will evolve this format.
 
-## Proposed Artifact
+## Export Artifact
 
-On `Export All Structure Pieces`, write:
+On `Export All Structure Pieces`, write one zip archive:
 
-- all structure NBT files as today
-- one JSON manifest at a predictable path, for example:
-  - `data/<namespace>/mk_workspace_exports/<structure_name>.json`
+- `generated/<namespace>/mk_workspace_exports/<structure_name>.zip`
 
-Alternative:
+The archive contains the same file structure the user would unpack into a mod data folder:
 
-- write under a dedicated authoring export directory outside normal runtime resources
-  - `workspace_exports/<namespace>/<structure_name>.json`
+- `data/<namespace>/structure/<structure_name>/<piece_name>.nbt`
+- `data/<namespace>/mk_workspace_exports/<structure_name>.json`
+- generated runtime/template-pool metadata where applicable
 
-Recommended V1 choice:
+Export behavior:
 
-- write into the mod resources tree under `data/<namespace>/mk_workspace_exports/`
+- write all NBT fresh from the live workspace at export time
+- include structure void blocks in exported templates so authoring round trips do not silently lose them
+- keep the archive as the only new export artifact
+- do not clean up legacy loose export files automatically
 
 Reason:
 
-- data generation can read it easily
-- it lives next to authored content
-- it can be committed with the structure files
+- the user has one file to move or unpack
+- generated world files do not become accidental live data resources for the mod
+- rehydration and data generation still read the same datapack-shaped paths after unpacking
 
 ## Manifest Scope
 
@@ -202,7 +205,7 @@ Definition of done:
 
 ### Task 2. Add export path abstraction
 
-Create a small service that resolves where exported manifests go.
+Create a small service that resolves where exported archives and manifests go.
 
 Suggested class:
 
@@ -216,32 +219,32 @@ Responsibilities:
 
 Definition of done:
 
-- one call returns a stable output path for the manifest
+- one call returns a stable output path for the export archive
 
 ### Task 3. Extend workspace export service
 
 Update [MKStructureWorkspaceService.java](/E:/MinecraftDev/MKProjects/MKNpc/src/main/java/com/chaosbuffalo/mknpc/world/gen/workspace/MKStructureWorkspaceService.java:168) so `exportWorkspacePieces(...)` becomes a richer export operation.
 
-Recommended API change:
+Implemented API shape:
 
 ```java
-public record MKWorkspaceExportResult(int savedPieceCount, Path manifestPath) {}
+public record MKWorkspaceExportResult(int savedPieceCount, Path archivePath) {}
 
-public Optional<MKWorkspaceExportResult> exportWorkspaceArtifacts(ServerLevel level, BlockPos anchor)
+public Optional<MKWorkspaceExportResult> exportWorkspacePieces(ServerLevel level, BlockPos anchor)
 ```
 
 Flow:
 
 1. load workspace by anchor
-2. save all structure NBTs as today
+2. capture all piece NBT fresh from the live workspace
 3. build manifest from workspace capability data
-4. write manifest JSON
-5. return both piece count and manifest path
+4. write a datapack-shaped zip archive containing piece NBT, manifest JSON, and generated runtime data
+5. return both piece count and archive path
 
 Definition of done:
 
-- `Export All` saves pieces and writes manifest
-- player receives a message confirming both
+- `Export All` writes a single archive
+- player receives a message confirming the saved piece count and archive path
 
 ### Task 4. Update packet/UI messaging
 
@@ -465,13 +468,13 @@ This is illustrative, not final:
 
 ## Recommended Implementation Order
 
-1. Add manifest DTOs and writer.
-2. Extend export service to write the manifest beside NBT exports.
-3. Surface manifest path/result in the export packet/UI.
-4. Add runtime-hint fields for tower and verify `test_tower` export.
-5. Build datagen importer for pools and piece metadata.
-6. Add workspace import/rehydration flow for a new save.
-7. Add schema validation and migrations.
+1. Add manifest DTOs and writer. Done.
+2. Extend export service to write datapack-shaped zip archives. Done.
+3. Surface archive path/result in the export packet/UI. Done.
+4. Add runtime-hint fields for tower and verify `test_tower` export. Done.
+5. Build datagen importer for pools and piece metadata. Done.
+6. Add workspace import/rehydration flow for a new save. Done.
+7. Add schema validation and migrations. Basic validation is present; migration hooks are still future work.
 
 ## Main Risks
 
@@ -505,9 +508,11 @@ Mitigation:
 
 ## First Concrete Milestone
 
-The first useful milestone is:
+The first useful milestone has been completed:
 
-- clicking `Export All Structure Pieces` writes a manifest JSON for the workspace next to the authored assets
+- clicking `Export All Structure Pieces` writes a single datapack-shaped zip archive
+- the archive contains live-captured structure NBT and a codec-backed workspace manifest
 - the manifest contains enough information to regenerate `mk_jigsaw_piece_meta` and template pool JSON for `tower`
+- the archive can be unpacked into mod resources and used by the rehydration flow
 
 That milestone gives immediate value without waiting for full import/rehydration support.
