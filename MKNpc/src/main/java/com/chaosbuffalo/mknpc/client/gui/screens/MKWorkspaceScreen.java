@@ -703,7 +703,8 @@ public class MKWorkspaceScreen extends MKScreen {
             categoryButton.setEnabled(selectedCategory == null || !category.id().equals(selectedCategory.id()));
             categoryButton.setPressedCallback((button, mouseButton) -> {
                 blockPickerCategoryId = category.id();
-                flagNeedSetup();
+                grid.resetScroll();
+                grid.setEntries(blockPickerSource.entries(minecraft, category, searchField.getText()));
                 return true;
             });
             categoryContent.addWidget(categoryButton);
@@ -2261,7 +2262,12 @@ public class MKWorkspaceScreen extends MKScreen {
         choose.setY(y - 6);
         root.addWidget(choose);
         choose.setPressedCallback((button, mouseButton) -> {
-            openBlockPicker("Choose " + label + " Block", blockId, setter, allowClear);
+            openBlockPicker("Choose " + label + " Block", blockId, value -> {
+                setter.accept(value);
+                preview.setBlock(value);
+                idText.setText(Component.literal(shortBlockId(value)));
+                idText.setTooltip(value.toString());
+            }, allowClear);
             return true;
         });
     }
@@ -2281,7 +2287,6 @@ public class MKWorkspaceScreen extends MKScreen {
         if (getState().equals("creative_block_picker")) {
             popState();
         }
-        flagNeedSetup();
     }
 
     private MKCreativePickerCategory selectedBlockPickerCategory(List<MKCreativePickerCategory> categories) {
