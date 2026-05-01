@@ -77,7 +77,9 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
                             !nonDestructiveIdentityRename && !nonDestructiveMarginExpansion &&
                             service.generateTowerWorkspace(player.serverLevel(), created.anchor()).isEmpty()) {
                         MKWorkspaceValidationMessages.displayFailure(player, "Workspace generation failed.");
+                        return;
                     }
+                    service.openWorkspaceScreen(player, created.anchor());
                 }, () -> MKWorkspaceValidationMessages.displayFailure(player, "Workspace creation failed."));
     }
 }

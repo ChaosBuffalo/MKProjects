@@ -3466,6 +3466,12 @@ public class MKWorkspaceScreen extends MKScreen {
         if ("backups".equals(currentState) && updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
             return List.of("workspace", "backups");
         }
+        if ("utilities".equals(currentState) && updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
+            return List.of("workspace", "utilities");
+        }
+        if ("block_swap".equals(currentState) && updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
+            return List.of("workspace", "utilities", "block_swap");
+        }
         if ("form".equals(currentState)) {
             return updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()
                     ? List.of("workspace", "form")

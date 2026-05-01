@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.network.packets;
 
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.world.gen.workspace.MKStructureWorkspaceService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKStructureWorkspaceMutationService;
@@ -75,6 +76,7 @@ public class SwapWorkspaceBlockPacket implements CustomPacketPayload {
                             player.serverLevel(), workspaceOpt.get(), Map.of(packet.source, packet.target));
             player.displayClientMessage(Component.literal("Swapped " + result.replacedCount() + " blocks across " +
                     result.pieceCount() + " pieces. Backup manifest: " + result.backupPath()), false);
+            new MKStructureWorkspaceService().openWorkspaceScreen(player, packet.anchor);
         } catch (IOException e) {
             MKWorkspaceValidationMessages.displayFailure(player,
                     "Block swap failed while writing backup manifest: " + e.getMessage());
