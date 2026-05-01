@@ -29,6 +29,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
@@ -71,7 +72,7 @@ public record MKWorkspaceExportManifest(
     ).apply(instance, MKWorkspaceExportManifest::new));
 
     public static MKWorkspaceExportManifest fromWorkspace(MKStructureWorkspace workspace, int schemaVersion, String exportedAt) {
-        return fromWorkspace(workspace, schemaVersion, exportedAt, ExportRuntimeHints.forWorkspace(workspace));
+        return fromWorkspace(workspace, schemaVersion, exportedAt, ExportRuntimeHints.forWorkspaceIfValid(workspace));
     }
 
     public static MKWorkspaceExportManifest snapshotFromWorkspace(MKStructureWorkspace workspace, int schemaVersion,
@@ -121,6 +122,43 @@ public record MKWorkspaceExportManifest(
                 buildCategories(workspace),
                 workspace.pieces().stream().map(piece -> ExportPiece.from(workspace, piece)).toList()
         );
+    }
+
+    public List<String> validateRuntimeStructureExport() {
+        ArrayList<String> errors = new ArrayList<>();
+        Map<String, List<ExportPiece>> runtimePiecesByBaseName = pieces.stream()
+                .filter(piece -> !"template".equals(piece.workspacePieceKind()))
+                .collect(Collectors.groupingBy(ExportPiece::baseName, LinkedHashMap::new, Collectors.toList()));
+        if (runtimePiecesByBaseName.isEmpty()) {
+            errors.add("Workspace " + namespace + ":" + structureName + " does not define any runtime structure pieces");
+        }
+
+        LinkedHashSet<String> startBaseNames = pieces.stream()
+                .filter(piece -> !"template".equals(piece.workspacePieceKind()))
+                .filter(piece -> MKWorkspaceRuntimePieceInfo.fromTags(piece.tags())
+                        .map(MKWorkspaceRuntimePieceInfo::start)
+                        .orElse(false))
+                .map(ExportPiece::baseName)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        String hintedStartBaseName = runtimeHints.startBaseName();
+        if (!hintedStartBaseName.isBlank()) {
+            startBaseNames.add(hintedStartBaseName);
+        }
+
+        if (startBaseNames.isEmpty()) {
+            errors.add("Workspace " + namespace + ":" + structureName + " did not define a runtime start piece");
+        } else if (startBaseNames.size() > 1) {
+            errors.add("Workspace " + namespace + ":" + structureName + " defined multiple runtime start pieces " +
+                    startBaseNames);
+        } else {
+            String startBaseName = startBaseNames.getFirst();
+            if (runtimePiecesByBaseName.getOrDefault(startBaseName, List.of()).isEmpty()) {
+                errors.add("Workspace " + namespace + ":" + structureName + " runtime start piece " +
+                        startBaseName + " has no exported runtime variants");
+            }
+        }
+
+        return List.copyOf(errors);
     }
 
     private static List<ExportCategory> buildCategories(MKStructureWorkspace workspace) {
@@ -540,6 +578,14 @@ public record MKWorkspaceExportManifest(
                     .toList();
             String startBaseName = findStartBaseName(workspace);
             return new ExportRuntimeHints(startBaseName, categories, buildRuntimePools(workspace));
+        }
+
+        public static ExportRuntimeHints forWorkspaceIfValid(MKStructureWorkspace workspace) {
+            try {
+                return forWorkspace(workspace);
+            } catch (IllegalStateException ignored) {
+                return empty();
+            }
         }
 
         public static ExportRuntimeHints empty() {

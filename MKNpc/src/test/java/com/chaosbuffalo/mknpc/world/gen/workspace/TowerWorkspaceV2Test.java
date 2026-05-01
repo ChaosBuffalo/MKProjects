@@ -1363,7 +1363,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void exportManifestStillRequiresRuntimeStartPiece() {
+    void exportManifestAllowsTemplateOnlyWorkspacesUntilRuntimeStructureValidation() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKStructureWorkspace workspace = new MKStructureWorkspace(
                 UUID.randomUUID(),
@@ -1406,9 +1406,12 @@ class TowerWorkspaceV2Test {
                 ))
         );
 
-        IllegalStateException error = org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class,
-                () -> MKWorkspaceExportManifest.fromWorkspace(workspace, 1, "now"));
-        assertTrue(error.getMessage().contains("did not define a runtime start piece"));
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 1, "now");
+        List<String> validationErrors = manifest.validateRuntimeStructureExport();
+
+        assertEquals("", manifest.runtimeHints().startBaseName());
+        assertTrue(validationErrors.stream().anyMatch(error -> error.contains("runtime structure pieces")));
+        assertTrue(validationErrors.stream().anyMatch(error -> error.contains("did not define a runtime start piece")));
     }
 
     private static MKStructureWorkspace baseWorkspace(List<MKHorizontalOpeningProfile> openingProfiles,

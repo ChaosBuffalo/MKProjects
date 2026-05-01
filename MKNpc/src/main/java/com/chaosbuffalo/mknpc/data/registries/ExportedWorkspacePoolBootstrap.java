@@ -36,6 +36,13 @@ public final class ExportedWorkspacePoolBootstrap {
     private static void registerExportedTowerPools(BootstrapContext<StructureTemplatePool> context,
                                                    Holder<StructureTemplatePool> empty,
                                                    MKWorkspaceExportManifest manifest) {
+        List<String> validationErrors = manifest.validateRuntimeStructureExport();
+        if (!validationErrors.isEmpty()) {
+            throw new IllegalStateException("Workspace export " + manifest.namespace() + ":" +
+                    manifest.structureName() + " cannot be registered as a runtime structure: " +
+                    String.join("; ", validationErrors));
+        }
+
         Map<String, List<MKWorkspaceExportManifest.ExportPiece>> piecesByBaseName = manifest.pieces().stream()
                 .filter(piece -> !"template".equals(piece.workspacePieceKind()))
                 .collect(Collectors.groupingBy(MKWorkspaceExportManifest.ExportPiece::baseName));
