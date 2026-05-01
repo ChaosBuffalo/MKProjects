@@ -39,10 +39,12 @@ import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.StackConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
+import com.chaosbuffalo.mkwidgets.client.gui.pickers.MKCreativeBlockPickerSource;
+import com.chaosbuffalo.mkwidgets.client.gui.pickers.MKCreativePickerCategory;
 import com.chaosbuffalo.mkwidgets.client.gui.screens.MKScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKBlockSlot;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
-import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKPlayerHotbar;
+import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKCreativeGridPicker;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKTextFieldWidget;
@@ -61,6 +63,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class MKWorkspaceScreen extends MKScreen {
     private static final int PANEL_WIDTH = 380;
@@ -92,9 +95,19 @@ public class MKWorkspaceScreen extends MKScreen {
     private ResourceLocation detailSlabBlock;
     private ResourceLocation detailLadderBlock;
     private WorkspaceFormDraft formDraft;
+    private BlockPickerRequest blockPickerRequest;
+    private String blockPickerCategoryId;
+    private String blockPickerQuery = "";
+    private ResourceLocation blockSwapSourceBlock;
+    private ResourceLocation blockSwapTargetBlock;
     private boolean wasResized;
+    private final MKCreativeBlockPickerSource blockPickerSource = new MKCreativeBlockPickerSource();
 
     private record ScrollViewState(double offsetX, double offsetY) {
+    }
+
+    private record BlockPickerRequest(String title, ResourceLocation currentValue,
+                                      Consumer<ResourceLocation> selectionCallback, boolean allowClear) {
     }
 
     private static class WorkspaceFormDraft {
@@ -190,6 +203,7 @@ public class MKWorkspaceScreen extends MKScreen {
         addState("generate_confirm", this::buildGenerateConfirmState);
         addState("form_identity", this::buildFormIdentityState);
         addState("form_materials", this::buildFormMaterialsState);
+        addState("creative_block_picker", this::buildCreativeBlockPickerState);
         addState("form_categories", this::buildFormCategoriesState);
         addState("form_category_detail", this::buildFormCategoryDetailState);
         addState("form_families", this::buildFormFamiliesState);
@@ -581,36 +595,142 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
         root.addConstraintToWidget(new CenterXConstraint(), helpText);
 
-        MKBlockSlot floorSlot = new MKBlockSlot();
-        floorSlot.setBlock(formDraft.floorBlock);
-        MKBlockSlot wallSlot = new MKBlockSlot();
-        wallSlot.setBlock(formDraft.wallBlock);
-        MKBlockSlot ceilingSlot = new MKBlockSlot();
-        ceilingSlot.setBlock(formDraft.ceilingBlock);
-        MKBlockSlot stairBlockSlot = new MKBlockSlot();
-        stairBlockSlot.setBlock(formDraft.stairBlock);
-        MKBlockSlot slabBlockSlot = new MKBlockSlot();
-        slabBlockSlot.setBlock(formDraft.slabBlock);
-        MKBlockSlot ladderBlockSlot = new MKBlockSlot();
-        ladderBlockSlot.setBlock(formDraft.ladderBlock);
-        MKPlayerHotbar hotbar = new MKPlayerHotbar();
-        addPaletteSection(root, xPos, yPos + 120, hotbar, floorSlot, wallSlot, ceilingSlot, stairBlockSlot, slabBlockSlot,
-                ladderBlockSlot);
+        int rowTop = yPos + 96;
+        addBlockPickerRow(root, xPos, rowTop, "Floor", formDraft.floorBlock,
+                value -> formDraft.floorBlock = value, false);
+        addBlockPickerRow(root, xPos, rowTop + 34, "Wall", formDraft.wallBlock,
+                value -> formDraft.wallBlock = value, false);
+        addBlockPickerRow(root, xPos, rowTop + 68, "Ceiling", formDraft.ceilingBlock,
+                value -> formDraft.ceilingBlock = value, false);
+        addBlockPickerRow(root, xPos, rowTop + 102, "Stair", formDraft.stairBlock,
+                value -> formDraft.stairBlock = value, false);
+        addBlockPickerRow(root, xPos, rowTop + 136, "Slab", formDraft.slabBlock,
+                value -> formDraft.slabBlock = value, false);
+        addBlockPickerRow(root, xPos, rowTop + 170, "Ladder", formDraft.ladderBlock,
+                value -> formDraft.ladderBlock = value, false);
 
         MKButton back = new MKButton(Component.literal("Back"), 120, 20);
         root.addWidget(back);
         root.addConstraintToWidget(new CenterXConstraint(), back);
         back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
         back.setPressedCallback((button, mouseButton) -> {
-            formDraft.floorBlock = floorSlot.getBlockId();
-            formDraft.wallBlock = wallSlot.getBlockId();
-            formDraft.ceilingBlock = ceilingSlot.getBlockId();
-            formDraft.stairBlock = stairBlockSlot.getBlockId();
-            formDraft.slabBlock = slabBlockSlot.getBlockId();
-            formDraft.ladderBlock = ladderBlockSlot.getBlockId();
             switchToExistingState("form");
             return true;
         });
+        return root;
+    }
+
+    private MKLayout buildCreativeBlockPickerState() {
+        int xPos = width / 2 - PANEL_WIDTH / 2;
+        int yPos = height / 2 - PANEL_HEIGHT / 2;
+        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
+        root.setMargins(8, 8, 8, 8);
+        root.setPaddingTop(8).setPaddingBot(8);
+
+        if (blockPickerRequest == null) {
+            MKText title = makeWhiteText(Component.literal("Choose Block"));
+            root.addWidget(title);
+            root.addConstraintToWidget(MarginConstraint.TOP, title);
+            root.addConstraintToWidget(new CenterXConstraint(), title);
+
+            MKText message = makeWhiteText(Component.literal("No block picker request is active."));
+            message.setWidth(CONTENT_WIDTH);
+            message.setY(yPos + 64);
+            root.addWidget(message);
+            root.addConstraintToWidget(new CenterXConstraint(), message);
+
+            MKButton back = new MKButton(Component.literal("Back"), 120, BUTTON_HEIGHT);
+            back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
+            root.addWidget(back);
+            root.addConstraintToWidget(new CenterXConstraint(), back);
+            back.setPressedCallback((button, mouseButton) -> {
+                closeBlockPicker();
+                return true;
+            });
+            return root;
+        }
+
+        MKText title = makeWhiteText(Component.literal(blockPickerRequest.title()));
+        root.addWidget(title);
+        root.addConstraintToWidget(MarginConstraint.TOP, title);
+        root.addConstraintToWidget(new CenterXConstraint(), title);
+
+        List<MKCreativePickerCategory> categories = blockPickerSource.categories(minecraft);
+        MKCreativePickerCategory selectedCategory = selectedBlockPickerCategory(categories);
+
+        MKTextFieldWidget searchField = makeField("Search", blockPickerQuery);
+        searchField.setWidth(CONTENT_WIDTH);
+        searchField.setY(yPos + 34);
+        root.addWidget(searchField);
+        root.addConstraintToWidget(new CenterXConstraint(), searchField);
+
+        int footerY = yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT;
+        int pickerTop = yPos + 64;
+        int pickerHeight = footerY - pickerTop - 8;
+        int categoryWidth = 116;
+        int gridX = xPos + 18 + categoryWidth + 8;
+        int gridWidth = PANEL_WIDTH - categoryWidth - 44;
+
+        MKCreativeGridPicker grid = new MKCreativeGridPicker(gridX, pickerTop, gridWidth, pickerHeight);
+        grid.setSelectedId(blockPickerRequest.currentValue());
+        if (selectedCategory != null) {
+            grid.setEntries(blockPickerSource.entries(minecraft, selectedCategory, blockPickerQuery));
+        }
+        grid.setSelectionCallback(entry -> {
+            blockPickerRequest.selectionCallback().accept(entry.id());
+            closeBlockPicker();
+        });
+        root.addWidget(grid);
+
+        searchField.setTextChangeCallback((field, value) -> {
+            blockPickerQuery = value;
+            grid.resetScroll();
+            if (selectedCategory != null) {
+                grid.setEntries(blockPickerSource.entries(minecraft, selectedCategory, value));
+            }
+        });
+
+        MKScrollView categoryScroll = new MKScrollView(xPos + 12, pickerTop, categoryWidth, pickerHeight);
+        categoryScroll.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
+        root.addWidget(categoryScroll);
+
+        MKStackLayoutVertical categoryContent = new MKStackLayoutVertical(0, 0, categoryWidth - 4);
+        categoryContent.setPaddingTop(0).setPaddingBot(0);
+        categoryScroll.addWidget(categoryContent);
+        for (MKCreativePickerCategory category : categories) {
+            MKButton categoryButton = new MKButton(category.displayName(), categoryWidth - 8, BUTTON_HEIGHT);
+            categoryButton.setTooltip(category.displayName());
+            categoryButton.setEnabled(selectedCategory == null || !category.id().equals(selectedCategory.id()));
+            categoryButton.setPressedCallback((button, mouseButton) -> {
+                blockPickerCategoryId = category.id();
+                flagNeedSetup();
+                return true;
+            });
+            categoryContent.addWidget(categoryButton);
+        }
+        finalizeScrollView(categoryScroll, "creative_block_picker", false);
+
+        MKButton cancel = new MKButton(Component.literal("Cancel"), 100, BUTTON_HEIGHT);
+        cancel.setX(xPos + (PANEL_WIDTH / 2) - 104);
+        cancel.setY(footerY);
+        root.addWidget(cancel);
+        cancel.setPressedCallback((button, mouseButton) -> {
+            closeBlockPicker();
+            return true;
+        });
+
+        if (blockPickerRequest.allowClear()) {
+            MKButton clear = new MKButton(Component.literal("Clear"), 100, BUTTON_HEIGHT);
+            clear.setX(xPos + (PANEL_WIDTH / 2) + 4);
+            clear.setY(footerY);
+            root.addWidget(clear);
+            clear.setPressedCallback((button, mouseButton) -> {
+                blockPickerRequest.selectionCallback().accept(ResourceLocation.withDefaultNamespace("air"));
+                closeBlockPicker();
+                return true;
+            });
+        }
+
         return root;
     }
 
@@ -1765,27 +1885,33 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(MarginConstraint.TOP, title);
         root.addConstraintToWidget(new CenterXConstraint(), title);
 
-        MKText summary = makeWhiteText(Component.literal("Choose source and target blocks from the hotbar."));
+        if (blockSwapSourceBlock == null) {
+            blockSwapSourceBlock = workspace.palette().wallBlock();
+        }
+        if (blockSwapTargetBlock == null) {
+            blockSwapTargetBlock = workspace.palette().floorBlock();
+        }
+
+        MKText summary = makeWhiteText(Component.literal("Choose source and target blocks to replace across the live workspace."));
         summary.setWidth(CONTENT_WIDTH);
         summary.setMultiline(true);
         root.addWidget(summary);
         root.addConstraintToWidget(StackConstraint.VERTICAL, summary);
         root.addConstraintToWidget(new CenterXConstraint(), summary);
 
-        MKPlayerHotbar hotbar = new MKPlayerHotbar();
-        MKBlockSlot sourceSlot = new MKBlockSlot();
-        sourceSlot.setBlock(workspace.palette().wallBlock());
-        MKBlockSlot targetSlot = new MKBlockSlot();
-        targetSlot.setBlock(workspace.palette().floorBlock());
-        addBlockSwapPaletteSection(root, xPos, yPos + 92, hotbar, sourceSlot, targetSlot);
+        int rowTop = yPos + 112;
+        addBlockPickerRow(root, xPos, rowTop, "Source", blockSwapSourceBlock,
+                value -> blockSwapSourceBlock = value, false);
+        addBlockPickerRow(root, xPos, rowTop + 42, "Target", blockSwapTargetBlock,
+                value -> blockSwapTargetBlock = value, false);
 
         MKButton swapBlocks = new MKButton(Component.literal("Swap Blocks"), 180, 20);
         root.addWidget(swapBlocks);
         root.addConstraintToWidget(new CenterXConstraint(), swapBlocks);
         swapBlocks.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT);
         swapBlocks.setPressedCallback((button, mouseButton) -> {
-            ResourceLocation sourceBlock = sourceSlot.getBlockId();
-            ResourceLocation targetBlock = targetSlot.getBlockId();
+            ResourceLocation sourceBlock = blockSwapSourceBlock;
+            ResourceLocation targetBlock = blockSwapTargetBlock;
             if (!sourceBlock.equals(ResourceLocation.withDefaultNamespace("air")) && !sourceBlock.equals(targetBlock)) {
                 PacketDistributor.sendToServer(new SwapWorkspaceBlockPacket(anchor, sourceBlock, targetBlock));
             }
@@ -1915,7 +2041,7 @@ public class MKWorkspaceScreen extends MKScreen {
 
         int buttonCount = stairCategory ? 3 : 2;
         int buttonAreaHeight = (buttonCount * BUTTON_HEIGHT) + BUTTON_GAP + BOTTOM_PADDING;
-        int paletteAreaHeight = stairCategory ? 74 : 0;
+        int paletteAreaHeight = stairCategory ? 112 : 0;
         int scrollTop = scrollTopAfterHeader(root, summary);
         int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - paletteAreaHeight - 12 - scrollTop;
         MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
@@ -2008,23 +2134,18 @@ public class MKWorkspaceScreen extends MKScreen {
         if (stairCategory) {
             String baseName = getBaseName(templatePiece);
             int paletteTop = scrollTop + scrollHeight + 6;
-            MKPlayerHotbar hotbar = new MKPlayerHotbar();
-            MKBlockSlot stairBlockSlot = new MKBlockSlot();
-            stairBlockSlot.setBlock(detailStairBlock);
-            MKBlockSlot slabBlockSlot = new MKBlockSlot();
-            slabBlockSlot.setBlock(detailSlabBlock);
-            MKBlockSlot ladderBlockSlot = new MKBlockSlot();
-            ladderBlockSlot.setBlock(detailLadderBlock);
-            addPaletteSection(root, xPos, paletteTop, hotbar, null, null, null, stairBlockSlot, slabBlockSlot, ladderBlockSlot);
+            addBlockPickerRow(root, xPos, paletteTop + 8, "Stair", detailStairBlock,
+                    value -> detailStairBlock = value, false);
+            addBlockPickerRow(root, xPos, paletteTop + 42, "Slab", detailSlabBlock,
+                    value -> detailSlabBlock = value, false);
+            addBlockPickerRow(root, xPos, paletteTop + 76, "Ladder", detailLadderBlock,
+                    value -> detailLadderBlock = value, false);
 
             MKButton back = new MKButton(Component.literal("Back"), 120, 20);
             root.addWidget(back);
             root.addConstraintToWidget(new CenterXConstraint(), back);
             back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
             back.setPressedCallback((button, mouseButton) -> {
-                detailStairBlock = stairBlockSlot.getBlockId();
-                detailSlabBlock = slabBlockSlot.getBlockId();
-                detailLadderBlock = ladderBlockSlot.getBlockId();
                 selectedTopologyKey = null;
                 switchToExistingState("workspace");
                 return true;
@@ -2111,61 +2232,80 @@ public class MKWorkspaceScreen extends MKScreen {
         return Math.max(root.getY() + TOP_CONTENT_Y, headerText.getBottom() + HEADER_SCROLL_GAP);
     }
 
-    private void addPaletteSection(MKLayout root, int xPos, int paletteTop, MKPlayerHotbar hotbar,
-                                   MKBlockSlot floorSlot, MKBlockSlot wallSlot, MKBlockSlot ceilingSlot,
-                                   MKBlockSlot stairBlockSlot, MKBlockSlot slabBlockSlot, MKBlockSlot ladderBlockSlot) {
-        MKText hotbarLabel = makeLabel("mknpc.workspace.field.hotbar");
-        hotbarLabel.setWidth(CONTENT_WIDTH);
-        hotbarLabel.setY(paletteTop);
-        root.addWidget(hotbarLabel);
-        root.addConstraintToWidget(new CenterXConstraint(), hotbarLabel);
+    private void addBlockPickerRow(MKLayout root, int xPos, int y, String label, ResourceLocation blockId,
+                                   Consumer<ResourceLocation> setter, boolean allowClear) {
+        int rowX = xPos + 22;
 
-        hotbar.setY(paletteTop + 12);
-        root.addWidget(hotbar);
-        root.addConstraintToWidget(new CenterXConstraint(), hotbar);
+        MKText labelText = makeWhiteText(Component.literal(label));
+        labelText.setX(rowX);
+        labelText.setY(y);
+        labelText.setWidth(66);
+        root.addWidget(labelText);
 
-        int firstRowY = paletteTop + 36;
-        int slotGroupWidth = (3 * 18) + (2 * 20);
-        int firstRowX = xPos + (PANEL_WIDTH / 2) - slotGroupWidth - 14;
-        int secondRowX = xPos + (PANEL_WIDTH / 2) + 14;
+        MKBlockSlot preview = new MKBlockSlot();
+        preview.setBlock(blockId);
+        preview.setEnabled(false);
+        preview.setX(rowX + 72);
+        preview.setY(y - 5);
+        root.addWidget(preview);
 
-        if (floorSlot != null && wallSlot != null && ceilingSlot != null) {
-            addSlotWithLabel(root, floorSlot, "Floor", firstRowX, firstRowY);
-            addSlotWithLabel(root, wallSlot, "Wall", firstRowX + 38, firstRowY);
-            addSlotWithLabel(root, ceilingSlot, "Ceiling", firstRowX + 76, firstRowY);
+        MKText idText = makeWhiteText(Component.literal(shortBlockId(blockId)));
+        idText.setX(rowX + 96);
+        idText.setY(y);
+        idText.setWidth(130);
+        idText.setTooltip(blockId.toString());
+        root.addWidget(idText);
+
+        MKButton choose = new MKButton(Component.literal("Choose"), 82, BUTTON_HEIGHT);
+        choose.setX(xPos + PANEL_WIDTH - 106);
+        choose.setY(y - 6);
+        root.addWidget(choose);
+        choose.setPressedCallback((button, mouseButton) -> {
+            openBlockPicker("Choose " + label + " Block", blockId, setter, allowClear);
+            return true;
+        });
+    }
+
+    private void openBlockPicker(String title, ResourceLocation currentValue, Consumer<ResourceLocation> setter,
+                                 boolean allowClear) {
+        blockPickerRequest = new BlockPickerRequest(title, currentValue, setter, allowClear);
+        blockPickerCategoryId = null;
+        blockPickerQuery = "";
+        pushState("creative_block_picker");
+    }
+
+    private void closeBlockPicker() {
+        blockPickerRequest = null;
+        blockPickerCategoryId = null;
+        blockPickerQuery = "";
+        if (getState().equals("creative_block_picker")) {
+            popState();
         }
-        addSlotWithLabel(root, stairBlockSlot, "Stair", secondRowX, firstRowY);
-        addSlotWithLabel(root, slabBlockSlot, "Slab", secondRowX + 38, firstRowY);
-        addSlotWithLabel(root, ladderBlockSlot, "Ladder", secondRowX + 76, firstRowY);
+        flagNeedSetup();
     }
 
-    private void addBlockSwapPaletteSection(MKLayout root, int xPos, int paletteTop, MKPlayerHotbar hotbar,
-                                            MKBlockSlot sourceSlot, MKBlockSlot targetSlot) {
-        MKText hotbarLabel = makeLabel("mknpc.workspace.field.hotbar");
-        hotbarLabel.setWidth(CONTENT_WIDTH);
-        hotbarLabel.setY(paletteTop);
-        root.addWidget(hotbarLabel);
-        root.addConstraintToWidget(new CenterXConstraint(), hotbarLabel);
-
-        hotbar.setY(paletteTop + 12);
-        root.addWidget(hotbar);
-        root.addConstraintToWidget(new CenterXConstraint(), hotbar);
-
-        int slotY = paletteTop + 42;
-        int slotGroupWidth = (2 * 18) + 56;
-        int slotX = xPos + (PANEL_WIDTH / 2) - (slotGroupWidth / 2);
-        addSlotWithLabel(root, sourceSlot, "Source", slotX, slotY);
-        addSlotWithLabel(root, targetSlot, "Target", slotX + 56, slotY);
+    private MKCreativePickerCategory selectedBlockPickerCategory(List<MKCreativePickerCategory> categories) {
+        if (categories.isEmpty()) {
+            return null;
+        }
+        if (blockPickerCategoryId != null) {
+            for (MKCreativePickerCategory category : categories) {
+                if (category.id().equals(blockPickerCategoryId)) {
+                    return category;
+                }
+            }
+        }
+        MKCreativePickerCategory selected = categories.getFirst();
+        blockPickerCategoryId = selected.id();
+        return selected;
     }
 
-    private void addSlotWithLabel(MKLayout root, MKBlockSlot slot, String label, int x, int y) {
-        MKText slotLabel = makeWhiteText(Component.literal(label));
-        slotLabel.setY(y);
-        slotLabel.setX(x);
-        root.addWidget(slotLabel);
-        slot.setX(x);
-        slot.setY(y + 10);
-        root.addWidget(slot);
+    private String shortBlockId(ResourceLocation blockId) {
+        String value = blockId.toString();
+        if (value.length() <= 25) {
+            return value;
+        }
+        return "..." + value.substring(value.length() - 22);
     }
 
     private MKTextFieldWidget makeField(String label, String value) {
