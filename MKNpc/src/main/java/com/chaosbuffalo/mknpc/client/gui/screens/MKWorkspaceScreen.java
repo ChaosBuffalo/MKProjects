@@ -45,6 +45,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.screens.MKScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKBlockSlot;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKCreativeGridPicker;
+import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKModal;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKTextFieldWidget;
@@ -96,6 +97,7 @@ public class MKWorkspaceScreen extends MKScreen {
     private ResourceLocation detailLadderBlock;
     private WorkspaceFormDraft formDraft;
     private BlockPickerRequest blockPickerRequest;
+    private MKModal blockPickerModal;
     private String blockPickerCategoryId;
     private String blockPickerQuery = "";
     private ResourceLocation blockSwapSourceBlock;
@@ -108,6 +110,30 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private record BlockPickerRequest(String title, ResourceLocation currentValue,
                                       Consumer<ResourceLocation> selectionCallback, boolean allowClear) {
+    }
+
+    private static class BlockingModal extends MKModal {
+        @Override
+        public boolean onMousePressed(Minecraft minecraft, double mouseX, double mouseY, int mouseButton) {
+            return true;
+        }
+
+        @Override
+        public boolean onMouseScrollWheel(Minecraft minecraft, double mouseX, double mouseY, double pScrollX,
+                                          double pScrollY) {
+            return true;
+        }
+
+        @Override
+        public boolean onMouseDragged(Minecraft minecraft, double mouseX, double mouseY, int mouseButton,
+                                      double dX, double dY) {
+            return true;
+        }
+
+        @Override
+        public boolean onMouseRelease(double mouseX, double mouseY, int mouseButton) {
+            return true;
+        }
     }
 
     private static class WorkspaceFormDraft {
@@ -203,7 +229,6 @@ public class MKWorkspaceScreen extends MKScreen {
         addState("generate_confirm", this::buildGenerateConfirmState);
         addState("form_identity", this::buildFormIdentityState);
         addState("form_materials", this::buildFormMaterialsState);
-        addState("creative_block_picker", this::buildCreativeBlockPickerState);
         addState("form_categories", this::buildFormCategoriesState);
         addState("form_category_detail", this::buildFormCategoryDetailState);
         addState("form_families", this::buildFormFamiliesState);
@@ -620,10 +645,9 @@ public class MKWorkspaceScreen extends MKScreen {
         return root;
     }
 
-    private MKLayout buildCreativeBlockPickerState() {
-        int xPos = width / 2 - PANEL_WIDTH / 2;
-        int yPos = height / 2 - PANEL_HEIGHT / 2;
-        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
+    private MKLayout buildCreativeBlockPickerContent(int xPos, int yPos, int pickerWidth, int pickerHeight) {
+        int contentWidth = pickerWidth - 42;
+        MKLayout root = new MKLayout(xPos, yPos, pickerWidth, pickerHeight);
         root.setMargins(8, 8, 8, 8);
         root.setPaddingTop(8).setPaddingBot(8);
 
@@ -634,13 +658,13 @@ public class MKWorkspaceScreen extends MKScreen {
             root.addConstraintToWidget(new CenterXConstraint(), title);
 
             MKText message = makeWhiteText(Component.literal("No block picker request is active."));
-            message.setWidth(CONTENT_WIDTH);
+            message.setWidth(contentWidth);
             message.setY(yPos + 64);
             root.addWidget(message);
             root.addConstraintToWidget(new CenterXConstraint(), message);
 
             MKButton back = new MKButton(Component.literal("Back"), 120, BUTTON_HEIGHT);
-            back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
+            back.setY(yPos + pickerHeight - BOTTOM_PADDING - BUTTON_HEIGHT);
             root.addWidget(back);
             root.addConstraintToWidget(new CenterXConstraint(), back);
             back.setPressedCallback((button, mouseButton) -> {
@@ -659,19 +683,19 @@ public class MKWorkspaceScreen extends MKScreen {
         MKCreativePickerCategory selectedCategory = selectedBlockPickerCategory(categories);
 
         MKTextFieldWidget searchField = makeField("Search", blockPickerQuery);
-        searchField.setWidth(CONTENT_WIDTH);
+        searchField.setWidth(contentWidth);
         searchField.setY(yPos + 34);
         root.addWidget(searchField);
         root.addConstraintToWidget(new CenterXConstraint(), searchField);
 
-        int footerY = yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT;
+        int footerY = yPos + pickerHeight - BOTTOM_PADDING - BUTTON_HEIGHT;
         int pickerTop = yPos + 64;
-        int pickerHeight = footerY - pickerTop - 8;
+        int pickerAreaHeight = footerY - pickerTop - 8;
         int categoryWidth = 116;
         int gridX = xPos + 18 + categoryWidth + 8;
-        int gridWidth = PANEL_WIDTH - categoryWidth - 44;
+        int gridWidth = pickerWidth - categoryWidth - 44;
 
-        MKCreativeGridPicker grid = new MKCreativeGridPicker(gridX, pickerTop, gridWidth, pickerHeight);
+        MKCreativeGridPicker grid = new MKCreativeGridPicker(gridX, pickerTop, gridWidth, pickerAreaHeight);
         grid.setSelectedId(blockPickerRequest.currentValue());
         if (selectedCategory != null) {
             grid.setEntries(blockPickerSource.entries(minecraft, selectedCategory, blockPickerQuery));
@@ -690,7 +714,7 @@ public class MKWorkspaceScreen extends MKScreen {
             }
         });
 
-        MKScrollView categoryScroll = new MKScrollView(xPos + 12, pickerTop, categoryWidth, pickerHeight);
+        MKScrollView categoryScroll = new MKScrollView(xPos + 12, pickerTop, categoryWidth, pickerAreaHeight);
         categoryScroll.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
         root.addWidget(categoryScroll);
 
@@ -712,7 +736,7 @@ public class MKWorkspaceScreen extends MKScreen {
         finalizeScrollView(categoryScroll, "creative_block_picker", false);
 
         MKButton cancel = new MKButton(Component.literal("Cancel"), 100, BUTTON_HEIGHT);
-        cancel.setX(xPos + (PANEL_WIDTH / 2) - 104);
+        cancel.setX(xPos + (pickerWidth / 2) - 104);
         cancel.setY(footerY);
         root.addWidget(cancel);
         cancel.setPressedCallback((button, mouseButton) -> {
@@ -722,7 +746,7 @@ public class MKWorkspaceScreen extends MKScreen {
 
         if (blockPickerRequest.allowClear()) {
             MKButton clear = new MKButton(Component.literal("Clear"), 100, BUTTON_HEIGHT);
-            clear.setX(xPos + (PANEL_WIDTH / 2) + 4);
+            clear.setX(xPos + (pickerWidth / 2) + 4);
             clear.setY(footerY);
             root.addWidget(clear);
             clear.setPressedCallback((button, mouseButton) -> {
@@ -2274,19 +2298,43 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private void openBlockPicker(String title, ResourceLocation currentValue, Consumer<ResourceLocation> setter,
                                  boolean allowClear) {
+        if (blockPickerModal != null) {
+            closeBlockPicker();
+        }
         blockPickerRequest = new BlockPickerRequest(title, currentValue, setter, allowClear);
         blockPickerCategoryId = null;
         blockPickerQuery = "";
-        pushState("creative_block_picker");
+
+        int pickerWidth = Math.min(560, Math.max(320, width - 32));
+        int pickerHeight = Math.min(440, Math.max(300, height - 32));
+        int pickerX = width / 2 - pickerWidth / 2;
+        int pickerY = height / 2 - pickerHeight / 2;
+
+        MKModal modal = new BlockingModal();
+        modal.setCloseOnClickOutside(false);
+        modal.addWidget(buildCreativeBlockPickerContent(pickerX, pickerY, pickerWidth, pickerHeight));
+        modal.setOnCloseCallback(() -> {
+            if (blockPickerModal == modal) {
+                blockPickerModal = null;
+                clearBlockPickerState();
+            }
+        });
+        blockPickerModal = modal;
+        addModal(modal);
     }
 
     private void closeBlockPicker() {
+        if (blockPickerModal != null) {
+            closeModal(blockPickerModal);
+            return;
+        }
+        clearBlockPickerState();
+    }
+
+    private void clearBlockPickerState() {
         blockPickerRequest = null;
         blockPickerCategoryId = null;
         blockPickerQuery = "";
-        if (getState().equals("creative_block_picker")) {
-            popState();
-        }
     }
 
     private MKCreativePickerCategory selectedBlockPickerCategory(List<MKCreativePickerCategory> categories) {
