@@ -11,7 +11,7 @@ The goal is to let categories, room families, and hallway families optionally ov
 - Add optional palette overrides to tower category profiles.
 - Add optional palette overrides to tower room family definitions.
 - Convert hallway family material settings into optional palette overrides.
-- Resolve palettes consistently through this precedence:
+- Resolve palettes consistently through one family-aware precedence:
   1. family override
   2. category override
   3. workspace base palette
@@ -86,7 +86,7 @@ to `MKTowerWorkspaceCategoryProfile`.
 
 Default category profiles should use `Optional.empty()`.
 
-### Room Family Definitions
+### Family Definitions
 
 Add:
 
@@ -96,25 +96,13 @@ Optional<MKWorkspacePaletteOverride> paletteOverride;
 
 to `MKTowerWorkspaceFamilyDefinition`.
 
-Family definitions inherit from their category. A family override is applied over the resolved category palette.
+Family definitions inherit from their category when they have one. A family override is applied over the resolved category palette. Families without category membership inherit directly from the workspace base palette.
 
 ### Hallway Family Definitions
 
-Replace required direct block fields with:
+Hallway families should use the same palette override field and resolver path as every other family definition. If we keep `MKHallwayFamilyDefinition` as a separate Java class for now, it should still implement the same palette-bearing family contract used by room families.
 
-```java
-Optional<MKWorkspacePaletteOverride> paletteOverride;
-```
-
-For the first implementation we can keep convenience accessors:
-
-```java
-ResourceLocation floorBlock(MKWorkspaceMaterialPalette basePalette);
-ResourceLocation wallBlock(MKWorkspaceMaterialPalette basePalette);
-ResourceLocation ceilingBlock(MKWorkspaceMaterialPalette basePalette);
-```
-
-Those accessors should resolve against the workspace base palette. Hallway families do not belong to room categories today, so their fallback chain is hallway override -> workspace base palette.
+If hallway families become entries in a unified family-definition model, they should have `pieceRole = HALLWAY` and no category, unless we later add an explicit hallway category concept. Their fallback chain is therefore family override -> workspace base palette.
 
 Because this feature is still under active development, backward compatibility with the current required hallway `floorBlock/wallBlock/ceilingBlock` fields is optional. If we want a smoother transition, the hallway codec can accept legacy fields and convert them into a full override.
 
@@ -128,17 +116,20 @@ public final class MKWorkspacePaletteResolver {
                                                MKTowerWorkspaceCategory category);
 
     MKWorkspaceMaterialPalette resolveFamily(MKStructureWorkspace workspace,
-                                             MKTowerWorkspaceFamilyDefinition family);
-
-    MKWorkspaceMaterialPalette resolveHallway(MKStructureWorkspace workspace,
-                                              MKHallwayFamilyDefinition hallway);
+                                             MKWorkspacePaletteFamily family);
 
     Optional<MKWorkspaceMaterialPalette> resolvePiece(MKStructureWorkspace workspace,
                                                       MKWorkspacePieceDefinition piece);
 }
 ```
 
-`resolvePiece` should use piece tags to locate `workspace_family_id`, `workspace_category`, or `workspace_hallway_family_id`. It is useful for mutation and export validation, but scaffold generation should generally resolve from planned family data before creating tags.
+`MKWorkspacePaletteFamily` can be an interface or small adapter record with:
+
+- family id
+- optional category
+- optional palette override
+
+`resolvePiece` should use piece tags to locate the owning family id and optional category. Hallway pieces can still carry `workspace_hallway_family_id` for diagnostics or pool naming, but palette resolution should not need a separate hallway-specific method. It is useful for mutation and export validation, but scaffold generation should generally resolve from planned family data before creating tags.
 
 Add shared constants for palette tags:
 
@@ -164,7 +155,7 @@ For every room family planned piece:
 
 For hallway pieces:
 
-1. Resolve the hallway palette through `MKWorkspacePaletteResolver`.
+1. Resolve the hallway family palette through the same `resolveFamily(...)` path.
 2. Write resolved palette tags only when a role differs from base, or always write them if simpler.
 
 Writing only differing tags keeps piece metadata cleaner. Writing all resolved tags makes exported/runtime hints easier to inspect. The safer first pass is to write all resolved tags for any piece whose resolved palette is not equal to the base palette.
@@ -233,7 +224,7 @@ This handles all cases:
 - base palette changes affect only pieces that inherit the changed roles
 - category override changes affect families in that category unless a family overrides that role
 - family override changes affect only pieces for that family
-- hallway override changes affect only pieces for that hallway family
+- hallway family override changes affect only pieces for that hallway family
 
 ### User-Placed Blocks
 
@@ -319,7 +310,7 @@ Add unit tests for:
 - partial override preserves inherited roles
 - category override applies to families in that category
 - family override beats category override for only the roles it defines
-- hallway override resolves against the base workspace palette
+- hallway family override uses the same family resolver and resolves against the base workspace palette when it has no category
 - planner writes expected palette tags for category/family/hallway resolved palettes
 - scoped palette mutation does not affect a family that overrides the changed base role
 - export/import round trips override fields through codecs
@@ -331,7 +322,7 @@ Where Minecraft bootstrap makes direct `BlockState` tests awkward, keep tests at
 ### Phase 1: Model And Resolver
 
 - Add `MKWorkspacePaletteOverride`.
-- Add optional override fields to category profiles, family definitions, and hallway families.
+- Add optional override fields to category profiles and the shared family definition contract.
 - Add `MKWorkspacePaletteResolver`.
 - Add shared `MKWorkspacePaletteTags` constants.
 - Update constructors, defaults, normalization, and form draft copy logic.
@@ -340,7 +331,7 @@ Where Minecraft bootstrap makes direct `BlockState` tests awkward, keep tests at
 ### Phase 2: Generation
 
 - Update `MKTowerWorkspacePlanner` to resolve and tag room family palettes.
-- Update hallway planning to use the resolver instead of direct hallway block fields.
+- Update hallway planning to use the same family resolver instead of direct hallway block fields.
 - Update `MKWorkspaceScaffoldBuilder` and `MKWorkspaceMarginExpansionService` to use shared constants and resolved tags.
 - Add planner/tag tests.
 
@@ -380,7 +371,7 @@ Start with the model/resolver and planner tagging only:
 
 - `MKWorkspacePaletteOverride`
 - resolver and shared tag constants
-- optional override fields on category/family/hallway models
+- optional override fields on category profiles and the shared family contract
 - planner/scaffold updates
 - unit tests for resolution and planned tags
 
