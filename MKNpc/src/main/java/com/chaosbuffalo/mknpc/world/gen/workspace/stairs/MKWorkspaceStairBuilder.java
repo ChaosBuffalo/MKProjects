@@ -110,6 +110,8 @@ public class MKWorkspaceStairBuilder {
         }
         int startIndex = MKWorkspaceVerticalAccessGeometry.findClosestIndex(perimeter,
                 clampToBounds(MKWorkspaceVerticalAccessGeometry.getPreferredStart(geometry), centerlineBounds, geometry.interiorMinY()));
+        planEntryLanding(planned, perimeter, startIndex, geometry.interiorMinY(), centerlineBounds,
+                geometry.shaftBounds(), stairWidth, resolveLandingFillState(stairConfig), generated);
         Direction previousMovement = null;
         int halfHeight = 0;
         int step = 0;
@@ -408,6 +410,25 @@ public class MKWorkspaceStairBuilder {
                     MKResolvedVerticalAccessProfile.RiseStepKind.SLAB_TOP);
         }
         return List.of(MKResolvedVerticalAccessProfile.RiseStepKind.STAIR);
+    }
+
+    void planEntryLanding(Map<BlockPos, BlockState> planned, List<BlockPos> perimeter, int startIndex, int y,
+                          BoundingBox centerlineBounds, BoundingBox outerBounds, int width, BlockState landingState,
+                          LinkedHashSet<BlockPos> generated) {
+        if (perimeter.isEmpty()) {
+            return;
+        }
+        BlockPos base = perimeter.get(Math.floorMod(startIndex, perimeter.size()));
+        BlockPos preLandingPos = perimeter.get(Math.floorMod(startIndex - 2, perimeter.size()));
+        BlockPos landingPos = perimeter.get(Math.floorMod(startIndex - 1, perimeter.size()));
+        BlockPos landingAtY = new BlockPos(landingPos.getX(), y, landingPos.getZ());
+        planGeneratedBand(planned, landingAtY, landingState, centerlineBounds, outerBounds, width, generated);
+        Direction landingMovementIn = getHorizontalDirection(preLandingPos, landingPos);
+        Direction landingMovementOut = getHorizontalDirection(landingPos, base);
+        if (landingMovementIn != null && landingMovementOut != null && landingMovementIn != landingMovementOut) {
+            planCornerLanding(planned, landingAtY, landingMovementIn, landingMovementOut, width, outerBounds,
+                    landingState, generated);
+        }
     }
 
     private MKWorkspaceStairMode modeForRiseStrategy(MKWorkspaceStairRiseType riseStrategy) {

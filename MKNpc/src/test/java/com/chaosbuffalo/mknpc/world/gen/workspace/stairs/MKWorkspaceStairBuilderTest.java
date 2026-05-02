@@ -13,14 +13,18 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAcces
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.junit.jupiter.api.Test;
 
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MKWorkspaceStairBuilderTest {
     @Test
@@ -90,6 +94,36 @@ class MKWorkspaceStairBuilderTest {
                         com.chaosbuffalo.mknpc.world.gen.workspace.model.MKResolvedVerticalAccessProfile.RiseStepKind.SLAB_BOTTOM,
                         com.chaosbuffalo.mknpc.world.gen.workspace.model.MKResolvedVerticalAccessProfile.RiseStepKind.SLAB_TOP),
                 builder.getTopCapContinuationPattern(slabConfig, null));
+    }
+
+    @Test
+    void topCapContinuationAddsEntryLandingBeforeFirstStep() {
+        MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
+        List<BlockPos> perimeter = List.of(
+                new BlockPos(0, 0, 0),
+                new BlockPos(1, 0, 0),
+                new BlockPos(2, 0, 0),
+                new BlockPos(2, 0, 1),
+                new BlockPos(2, 0, 2),
+                new BlockPos(1, 0, 2),
+                new BlockPos(0, 0, 2),
+                new BlockPos(0, 0, 1)
+        );
+        LinkedHashMap<BlockPos, BlockState> planned = new LinkedHashMap<>();
+        LinkedHashSet<BlockPos> generated = new LinkedHashSet<>();
+        BlockState landingState = null;
+
+        builder.planEntryLanding(planned, perimeter, 5, 0,
+                new BoundingBox(0, 0, 0, 2, 0, 2),
+                new BoundingBox(0, 0, 0, 2, 0, 2),
+                1,
+                landingState,
+                generated);
+
+        BlockPos expectedLanding = new BlockPos(2, 0, 2);
+        assertTrue(planned.containsKey(expectedLanding));
+        assertEquals(landingState, planned.get(expectedLanding));
+        assertEquals(List.of(expectedLanding), List.copyOf(generated));
     }
 
     @Test
