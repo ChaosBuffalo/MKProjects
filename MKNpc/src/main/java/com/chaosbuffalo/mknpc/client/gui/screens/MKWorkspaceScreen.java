@@ -25,6 +25,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
@@ -63,6 +64,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -1130,7 +1132,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 text.trim().isBlank() ? family.baseName() : text.trim(),
                 family.category(), family.pieceRole(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
-                family.horizontalExits())));
+                family.horizontalExits(), family.paletteOverride())));
         MKButton categoryButton = new MKButton(Component.literal(formatTopologyLabel(family.category().getSerializedName())), 180, 20);
         categoryButton.setPressedCallback((button, mouseButton) -> {
             MKTowerWorkspaceCategory nextCategory = cycleCategory(family.category(), isReverseClick(mouseButton));
@@ -1142,7 +1144,8 @@ public class MKWorkspaceScreen extends MKScreen {
                     normalizeFamilyLengthForCategory(family.roomLength(), family.supportsVerticalAccess(), nextProfile),
                     normalizeFamilyHeightForCategory(family.roomHeight(), family.supportsVerticalAccess(), nextProfile),
                     family.horizontalExtrusionMode(),
-                    family.horizontalExits()));
+                    family.horizontalExits(),
+                    family.paletteOverride()));
             selectedFormCategory = nextCategory;
             flagNeedSetup();
             return true;
@@ -1153,7 +1156,8 @@ public class MKWorkspaceScreen extends MKScreen {
                     family.baseName(), family.category(), cycleFamilyRole(family.pieceRole(), isReverseClick(mouseButton)),
                     family.supportsVerticalAccess(),
                     family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
-                    family.horizontalExits()));
+                    family.horizontalExits(),
+                    family.paletteOverride()));
             flagNeedSetup();
             return true;
         });
@@ -1168,7 +1172,8 @@ public class MKWorkspaceScreen extends MKScreen {
                     normalizeFamilyLengthForCategory(family.roomLength(), supportsVerticalAccess, categoryProfile),
                     normalizeFamilyHeightForCategory(family.roomHeight(), supportsVerticalAccess, categoryProfile),
                     family.horizontalExtrusionMode(),
-                    family.horizontalExits()));
+                    family.horizontalExits(),
+                    family.paletteOverride()));
             flagNeedSetup();
             return true;
         });
@@ -1179,7 +1184,8 @@ public class MKWorkspaceScreen extends MKScreen {
                     family.roomWidth(), family.roomLength(), family.roomHeight(),
                     cycleValue(List.of(MKWorkspaceHorizontalExtrusionMode.values()), family.horizontalExtrusionMode(),
                             isReverseClick(mouseButton)),
-                    family.horizontalExits()));
+                    family.horizontalExits(),
+                    family.paletteOverride()));
             flagNeedSetup();
             return true;
         });
@@ -1188,13 +1194,13 @@ public class MKWorkspaceScreen extends MKScreen {
                         new MKTowerWorkspaceFamilyDefinition(
                                 family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
                                 value, family.roomLength(), family.roomHeight(),
-                                family.horizontalExtrusionMode(), family.horizontalExits()))));
+                                family.horizontalExtrusionMode(), family.horizontalExits(), family.paletteOverride()))));
         MKIntegerSlider roomLengthSlider = new MKIntegerSlider("Length", 180, 20, 1, 45, 2, family.roomLength(),
                 value -> replaceFamilyDefinition(index, normalizeFamilyDefinition(
                         new MKTowerWorkspaceFamilyDefinition(
                                 family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
                                 family.roomWidth(), value, family.roomHeight(),
-                                family.horizontalExtrusionMode(), family.horizontalExits()))));
+                                family.horizontalExtrusionMode(), family.horizontalExits(), family.paletteOverride()))));
 
         addRow(content, makeWhiteText(Component.literal("Base Name")), baseNameField);
         addRow(content, makeWhiteText(Component.literal("Category")), categoryButton);
@@ -1217,9 +1223,11 @@ public class MKWorkspaceScreen extends MKScreen {
                     new MKTowerWorkspaceFamilyDefinition(
                             family.baseName(), family.category(), family.pieceRole(), false,
                             family.roomWidth(), family.roomLength(), parseInt(text, family.roomHeight()),
-                            family.horizontalExtrusionMode(), family.horizontalExits()))));
+                            family.horizontalExtrusionMode(), family.horizontalExits(), family.paletteOverride()))));
             addRow(content, makeWhiteText(Component.literal("Room Height")), roomHeightField);
         }
+        addPaletteOverrideRows(content, "Palette Overrides", resolveCategoryPalette(family.category()),
+                family.paletteOverride(), override -> replaceFamilyDefinition(index, copyFamilyDefinition(family, override)));
         MKText exitLabel = makeWhiteText(Component.literal("Horizontal Exits"));
         content.addWidget(exitLabel);
         content.addConstraintToWidget(MarginConstraint.LEFT, exitLabel);
@@ -1606,71 +1614,47 @@ public class MKWorkspaceScreen extends MKScreen {
                 text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
                         text.trim().isBlank() ? hallway.hallwayId() : text.trim(), hallway.openingProfileId(),
                         hallway.length(), hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
-                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.floorBlock(),
-                        hallway.wallBlock(), hallway.ceilingBlock())));
+                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.paletteOverride())));
         addHallwayFieldRow(content, "Opening Profile Id", hallway.openingProfileId(),
                 text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
                         hallway.hallwayId(), text.trim().isBlank() ? hallway.openingProfileId() : text.trim(),
                         hallway.length(), hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
-                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.floorBlock(),
-                        hallway.wallBlock(), hallway.ceilingBlock())));
+                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.paletteOverride())));
         addHallwayFieldRow(content, "Length", Integer.toString(hallway.length()),
                 text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
                         hallway.hallwayId(), hallway.openingProfileId(), parseInt(text, hallway.length()),
                         hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
-                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.floorBlock(),
-                        hallway.wallBlock(), hallway.ceilingBlock())));
+                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.paletteOverride())));
         addHallwayFieldRow(content, "Interior Width", Integer.toString(hallway.interiorWidth()),
                 text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
                         hallway.hallwayId(), hallway.openingProfileId(), hallway.length(),
                         parseInt(text, hallway.interiorWidth()), hallway.interiorHeight(), hallway.slopeDelta(),
-                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.floorBlock(),
-                        hallway.wallBlock(), hallway.ceilingBlock())));
+                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.paletteOverride())));
         addHallwayFieldRow(content, "Interior Height", Integer.toString(hallway.interiorHeight()),
                 text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
                         hallway.hallwayId(), hallway.openingProfileId(), hallway.length(),
                         hallway.interiorWidth(), parseInt(text, hallway.interiorHeight()), hallway.slopeDelta(),
-                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.floorBlock(),
-                        hallway.wallBlock(), hallway.ceilingBlock())));
+                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.paletteOverride())));
         addHallwayFieldRow(content, "Slope Delta", Integer.toString(hallway.slopeDelta()),
                 text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
                         hallway.hallwayId(), hallway.openingProfileId(), hallway.length(),
                         hallway.interiorWidth(), hallway.interiorHeight(), parseInt(text, hallway.slopeDelta()),
-                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.floorBlock(),
-                        hallway.wallBlock(), hallway.ceilingBlock())));
-        addHallwayFieldRow(content, "Floor Block", hallway.floorBlock().toString(),
-                text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
-                        hallway.hallwayId(), hallway.openingProfileId(), hallway.length(),
-                        hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
-                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(),
-                        parseResourceLocation(text, hallway.floorBlock()), hallway.wallBlock(), hallway.ceilingBlock())));
-        addHallwayFieldRow(content, "Wall Block", hallway.wallBlock().toString(),
-                text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
-                        hallway.hallwayId(), hallway.openingProfileId(), hallway.length(),
-                        hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
-                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(),
-                        hallway.floorBlock(), parseResourceLocation(text, hallway.wallBlock()), hallway.ceilingBlock())));
-        addHallwayFieldRow(content, "Ceiling Block", hallway.ceilingBlock().toString(),
-                text -> replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
-                        hallway.hallwayId(), hallway.openingProfileId(), hallway.length(),
-                        hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
-                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(),
-                        hallway.floorBlock(), hallway.wallBlock(), parseResourceLocation(text, hallway.ceilingBlock()))));
+                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.paletteOverride())));
+        addPaletteOverrideRows(content, "Palette Overrides", draftBasePalette(), hallway.paletteOverride(),
+                override -> replaceHallwayFamily(index, copyHallwayFamily(hallway, override)));
 
         addToggleRow(content, "Allow On Main Path", hallway.allowOnMainPath(), () -> {
             replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
                     hallway.hallwayId(), hallway.openingProfileId(), hallway.length(),
                     hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
-                    !hallway.allowOnMainPath(), hallway.allowOnBranchPath(),
-                    hallway.floorBlock(), hallway.wallBlock(), hallway.ceilingBlock()));
+                    !hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.paletteOverride()));
             flagNeedSetup();
         });
         addToggleRow(content, "Allow On Branch Path", hallway.allowOnBranchPath(), () -> {
             replaceHallwayFamily(index, new MKHallwayFamilyDefinition(
                     hallway.hallwayId(), hallway.openingProfileId(), hallway.length(),
                     hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
-                    hallway.allowOnMainPath(), !hallway.allowOnBranchPath(),
-                    hallway.floorBlock(), hallway.wallBlock(), hallway.ceilingBlock()));
+                    hallway.allowOnMainPath(), !hallway.allowOnBranchPath(), hallway.paletteOverride()));
             flagNeedSetup();
         });
 
@@ -2242,6 +2226,54 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), slider);
     }
 
+    private void addPaletteOverrideRows(MKStackLayoutVertical root, String title,
+                                        MKWorkspaceMaterialPalette inheritedPalette,
+                                        Optional<MKWorkspacePaletteOverride> overrideOpt,
+                                        Consumer<Optional<MKWorkspacePaletteOverride>> updater) {
+        MKText header = makeWhiteText(Component.literal(title));
+        root.addWidget(header);
+        root.addConstraintToWidget(MarginConstraint.LEFT, header);
+        MKWorkspacePaletteOverride override = overrideOpt.orElse(MKWorkspacePaletteOverride.EMPTY);
+        addPaletteOverrideRow(root, "Floor", inheritedPalette.floorBlock(), override.floorBlock(),
+                value -> updater.accept(Optional.of(override.withFloorBlock(Optional.of(value)))));
+        addPaletteOverrideRow(root, "Wall", inheritedPalette.wallBlock(), override.wallBlock(),
+                value -> updater.accept(Optional.of(override.withWallBlock(Optional.of(value)))));
+        addPaletteOverrideRow(root, "Ceiling", inheritedPalette.ceilingBlock(), override.ceilingBlock(),
+                value -> updater.accept(Optional.of(override.withCeilingBlock(Optional.of(value)))));
+        addPaletteOverrideRow(root, "Stair", inheritedPalette.stairBlock(), override.stairBlock(),
+                value -> updater.accept(Optional.of(override.withStairBlock(Optional.of(value)))));
+        addPaletteOverrideRow(root, "Slab", inheritedPalette.slabBlock(), override.slabBlock(),
+                value -> updater.accept(Optional.of(override.withSlabBlock(Optional.of(value)))));
+        addPaletteOverrideRow(root, "Ladder", inheritedPalette.ladderBlock(), override.ladderBlock(),
+                value -> updater.accept(Optional.of(override.withLadderBlock(Optional.of(value)))));
+        if (overrideOpt.isPresent()) {
+            MKButton clear = new MKButton(Component.literal("Inherit All Materials"), 180, 20);
+            clear.setPressedCallback((button, mouseButton) -> {
+                updater.accept(Optional.empty());
+                refreshPreservingActiveScroll();
+                return true;
+            });
+            addRow(root, makeWhiteText(Component.literal("Overrides")), clear);
+        }
+    }
+
+    private void addPaletteOverrideRow(MKStackLayoutVertical root, String label, ResourceLocation inheritedBlock,
+                                       Optional<ResourceLocation> overrideBlock,
+                                       Consumer<ResourceLocation> setter) {
+        ResourceLocation displayedBlock = overrideBlock.orElse(inheritedBlock);
+        MKButton button = new MKButton(Component.literal((overrideBlock.isPresent() ? "" : "Inherit ") +
+                shortBlockId(displayedBlock)), 180, 20);
+        button.setTooltip(displayedBlock.toString());
+        button.setPressedCallback((pressed, mouseButton) -> {
+            openBlockPicker("Choose " + label + " Block", displayedBlock, value -> {
+                setter.accept(value);
+                refreshPreservingActiveScroll();
+            }, false);
+            return true;
+        });
+        addRow(root, makeWhiteText(Component.literal(label)), button);
+    }
+
     private MKText makeLabel(String translationKey) {
         MKText text = makeWhiteText(Component.translatable(translationKey));
         text.setWidth(CONTENT_WIDTH);
@@ -2397,9 +2429,9 @@ public class MKWorkspaceScreen extends MKScreen {
         formDraft.stairMode = workspace != null ? workspace.stairConfig().mode() : MKWorkspaceStairMode.AUTO;
         formDraft.stairRiseType = workspace != null ? workspace.stairConfig().riseType() : MKWorkspaceStairRiseType.MIXED;
         formDraft.stairWidth = workspace != null ? workspace.stairConfig().stairWidth() : 1;
-        formDraft.stairBlock = workspace != null ? workspace.stairConfig().stairBlock() : ResourceLocation.parse("minecraft:stone_brick_stairs");
-        formDraft.slabBlock = workspace != null ? workspace.stairConfig().slabBlock() : ResourceLocation.parse("minecraft:stone_brick_slab");
-        formDraft.ladderBlock = workspace != null ? workspace.stairConfig().ladderBlock() : ResourceLocation.parse("minecraft:ladder");
+        formDraft.stairBlock = workspace != null ? workspace.palette().stairBlock() : ResourceLocation.parse("minecraft:stone_brick_stairs");
+        formDraft.slabBlock = workspace != null ? workspace.palette().slabBlock() : ResourceLocation.parse("minecraft:stone_brick_slab");
+        formDraft.ladderBlock = workspace != null ? workspace.palette().ladderBlock() : ResourceLocation.parse("minecraft:ladder");
         formDraft.verticalAccessPlacement = workspace != null ? workspace.verticalAccessSpec().placement() : MKVerticalAccessPlacement.CENTER;
         formDraft.shellMargin = workspace != null ? workspace.shellMargin() : 1;
         formDraft.exteriorAirMargin = workspace != null ? workspace.exteriorAirMargin() : 2;
@@ -2480,11 +2512,13 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     private boolean canSwapPaletteOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
-        if (existing.palette().toTag().equals(requested.palette().toTag())) {
+        MKStructureWorkspace existingWithRequestedMaterials = withMaterialSettings(existing, requested);
+        if (settingsComparisonTag(existing, existing.id(), existing.previewMargin())
+                .equals(settingsComparisonTag(existingWithRequestedMaterials, existing.id(), existing.previewMargin()))) {
             return false;
         }
-        return settingsComparisonTag(existing, existing.id(), existing.previewMargin(), requested.palette())
-                .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin(), requested.palette()));
+        return settingsComparisonTag(existingWithRequestedMaterials, existing.id(), existing.previewMargin())
+                .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin()));
     }
 
     private boolean canRenameIdentityOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
@@ -2541,12 +2575,12 @@ public class MKWorkspaceScreen extends MKScreen {
                 workspace.familyType(),
                 workspace.dimensions(),
                 palette,
-                workspace.stairConfig(),
+                alignStairMaterials(workspace.stairConfig(), palette),
                 workspace.verticalAccessPlacement(),
                 shellMargin,
                 exteriorAirMargin,
                 previewMargin,
-                workspace.verticalAccessSpec(),
+                alignVerticalAccessMaterials(workspace.verticalAccessSpec(), palette),
                 workspace.floorSettings(),
                 workspace.categoryProfiles(),
                 workspace.familyDefinitions(),
@@ -2556,6 +2590,69 @@ public class MKWorkspaceScreen extends MKScreen {
                 0,
                 List.of()
         ).toTag();
+    }
+
+    private MKStructureWorkspace withMaterialSettings(MKStructureWorkspace source, MKStructureWorkspace materialSource) {
+        return new MKStructureWorkspace(
+                source.id(),
+                source.anchor(),
+                source.namespace(),
+                source.structureName(),
+                source.familyType(),
+                source.dimensions(),
+                materialSource.palette(),
+                alignStairMaterials(source.stairConfig(), materialSource.palette()),
+                source.verticalAccessPlacement(),
+                source.shellMargin(),
+                source.exteriorAirMargin(),
+                source.previewMargin(),
+                alignVerticalAccessMaterials(source.verticalAccessSpec(), materialSource.palette()),
+                source.floorSettings(),
+                source.categoryProfiles().stream()
+                        .map(profile -> materialSource.categoryProfile(profile.category())
+                                .map(requested -> copyCategoryProfile(profile, requested.paletteOverride()))
+                                .orElse(profile))
+                        .toList(),
+                source.familyDefinitions().stream()
+                        .map(family -> materialSource.familyDefinitions().stream()
+                                .filter(requested -> requested.baseName().equals(family.baseName()))
+                                .findFirst()
+                                .map(requested -> copyFamilyDefinition(family, requested.paletteOverride()))
+                                .orElse(family))
+                        .toList(),
+                source.openingProfiles(),
+                source.hallwayFamilies().stream()
+                        .map(hallway -> materialSource.hallwayFamilies().stream()
+                                .filter(requested -> requested.hallwayId().equals(hallway.hallwayId()))
+                                .findFirst()
+                                .map(requested -> copyHallwayFamily(hallway, requested.paletteOverride()))
+                                .orElse(hallway))
+                        .toList(),
+                source.createdAt(),
+                source.updatedAt(),
+                source.pieces()
+        );
+    }
+
+    private MKWorkspaceStairAuthoringConfig alignStairMaterials(MKWorkspaceStairAuthoringConfig stairConfig,
+                                                                MKWorkspaceMaterialPalette palette) {
+        return new MKWorkspaceStairAuthoringConfig(
+                stairConfig.mode(),
+                stairConfig.riseType(),
+                stairConfig.stairWidth(),
+                palette.stairBlock(),
+                palette.slabBlock(),
+                palette.ladderBlock()
+        );
+    }
+
+    private MKWorkspaceVerticalAccessSpec alignVerticalAccessMaterials(MKWorkspaceVerticalAccessSpec spec,
+                                                                       MKWorkspaceMaterialPalette palette) {
+        return new MKWorkspaceVerticalAccessSpec(
+                spec.shaftSize(),
+                spec.placement(),
+                alignStairMaterials(spec.stairConfig(), palette)
+        );
     }
 
     private MKStructureWorkspace buildWorkspaceDraft() {
@@ -2574,7 +2671,14 @@ public class MKWorkspaceScreen extends MKScreen {
                 deriveLegacyDoorwayWidth(),
                 deriveLegacyDoorwayHeight()
         );
-        MKWorkspaceMaterialPalette palette = new MKWorkspaceMaterialPalette(formDraft.floorBlock, formDraft.wallBlock, formDraft.ceilingBlock);
+        MKWorkspaceMaterialPalette palette = new MKWorkspaceMaterialPalette(
+                formDraft.floorBlock,
+                formDraft.wallBlock,
+                formDraft.ceilingBlock,
+                formDraft.stairBlock,
+                formDraft.slabBlock,
+                formDraft.ladderBlock
+        );
         MKWorkspaceStairAuthoringConfig stairConfig = makeDraftStairConfig();
         MKWorkspaceVerticalAccessSpec verticalAccessSpec = new MKWorkspaceVerticalAccessSpec(formDraft.shaftSize,
                 formDraft.verticalAccessPlacement, stairConfig);
@@ -2676,7 +2780,8 @@ public class MKWorkspaceScreen extends MKScreen {
                 Math.max(0, profile.minMainPathPieces()),
                 Math.max(Math.max(0, profile.minMainPathPieces()), profile.maxMainPathPieces()),
                 Math.max(0, Math.min(MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP,
-                        profile.maxBranchPiecesBeforeCap()))
+                        profile.maxBranchPiecesBeforeCap())),
+                profile.paletteOverride()
         );
     }
 
@@ -2698,6 +2803,69 @@ public class MKWorkspaceScreen extends MKScreen {
         java.util.ArrayList<MKTowerWorkspaceFamilyDefinition> updated = new java.util.ArrayList<>(formDraft.familyDefinitions);
         updated.set(index, normalizeFamilyDefinition(updatedFamily));
         formDraft.familyDefinitions = List.copyOf(updated);
+    }
+
+    private MKTowerWorkspaceCategoryProfile copyCategoryProfile(MKTowerWorkspaceCategoryProfile profile,
+                                                               Optional<MKWorkspacePaletteOverride> paletteOverride) {
+        return new MKTowerWorkspaceCategoryProfile(
+                profile.category(),
+                profile.roomWidth(),
+                profile.roomLength(),
+                profile.fullHeight(),
+                profile.minMainPathPieces(),
+                profile.maxMainPathPieces(),
+                profile.maxBranchPiecesBeforeCap(),
+                paletteOverride
+        );
+    }
+
+    private MKTowerWorkspaceFamilyDefinition copyFamilyDefinition(MKTowerWorkspaceFamilyDefinition family,
+                                                                  Optional<MKWorkspacePaletteOverride> paletteOverride) {
+        return new MKTowerWorkspaceFamilyDefinition(
+                family.baseName(),
+                family.category(),
+                family.pieceRole(),
+                family.supportsVerticalAccess(),
+                family.roomWidth(),
+                family.roomLength(),
+                family.roomHeight(),
+                family.horizontalExtrusionMode(),
+                family.horizontalExits(),
+                paletteOverride
+        );
+    }
+
+    private MKHallwayFamilyDefinition copyHallwayFamily(MKHallwayFamilyDefinition hallway,
+                                                        Optional<MKWorkspacePaletteOverride> paletteOverride) {
+        return new MKHallwayFamilyDefinition(
+                hallway.hallwayId(),
+                hallway.openingProfileId(),
+                hallway.length(),
+                hallway.interiorWidth(),
+                hallway.interiorHeight(),
+                hallway.slopeDelta(),
+                hallway.allowOnMainPath(),
+                hallway.allowOnBranchPath(),
+                paletteOverride
+        );
+    }
+
+    private MKWorkspaceMaterialPalette draftBasePalette() {
+        return new MKWorkspaceMaterialPalette(
+                formDraft.floorBlock,
+                formDraft.wallBlock,
+                formDraft.ceilingBlock,
+                formDraft.stairBlock,
+                formDraft.slabBlock,
+                formDraft.ladderBlock
+        );
+    }
+
+    private MKWorkspaceMaterialPalette resolveCategoryPalette(MKTowerWorkspaceCategory category) {
+        MKWorkspaceMaterialPalette basePalette = draftBasePalette();
+        return getDraftCategoryProfile(category).paletteOverride()
+                .map(override -> override.resolve(basePalette))
+                .orElse(basePalette);
     }
 
     private void removeFamilyDefinition(int index) {
@@ -2758,7 +2926,8 @@ public class MKWorkspaceScreen extends MKScreen {
         }
         replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
-                family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits
+                family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits,
+                family.paletteOverride()
         ));
     }
 
@@ -2783,7 +2952,8 @@ public class MKWorkspaceScreen extends MKScreen {
         exits.remove(exitIndex);
         replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
-                family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits
+                family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits,
+                family.paletteOverride()
         ));
     }
 
@@ -2802,7 +2972,8 @@ public class MKWorkspaceScreen extends MKScreen {
         ));
         replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
-                family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits
+                family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits,
+                family.paletteOverride()
         ));
         return exits.size() - 1;
     }
@@ -2860,9 +3031,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 0,
                 false,
                 true,
-                formDraft.floorBlock,
-                formDraft.wallBlock,
-                formDraft.ceilingBlock
+                Optional.empty()
         ));
         formDraft.hallwayFamilies = List.copyOf(updated);
     }
@@ -2887,12 +3056,12 @@ public class MKWorkspaceScreen extends MKScreen {
                 value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                         profile.category(), value, profile.roomLength(), profile.fullHeight(),
                         profile.minMainPathPieces(), profile.maxMainPathPieces(),
-                        profile.maxBranchPiecesBeforeCap())));
+                        profile.maxBranchPiecesBeforeCap(), profile.paletteOverride())));
         MKIntegerSlider roomLengthSlider = new MKIntegerSlider("Length", 180, 20, 1, 45, 2, profile.roomLength(),
                 value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                         profile.category(), profile.roomWidth(), value, profile.fullHeight(),
                         profile.minMainPathPieces(), profile.maxMainPathPieces(),
-                        profile.maxBranchPiecesBeforeCap())));
+                        profile.maxBranchPiecesBeforeCap(), profile.paletteOverride())));
 
         addRow(content, makeWhiteText(Component.literal("Room Width")), roomWidthSlider);
         addRow(content, makeWhiteText(Component.literal("Room Length")), roomLengthSlider);
@@ -2900,11 +3069,13 @@ public class MKWorkspaceScreen extends MKScreen {
             MKIntegerSlider minPathSlider = new MKIntegerSlider("Min", 180, 20, 0, 10, 1,
                     profile.minMainPathPieces(), value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                     profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
-                    value, Math.max(value, profile.maxMainPathPieces()), profile.maxBranchPiecesBeforeCap())));
+                    value, Math.max(value, profile.maxMainPathPieces()), profile.maxBranchPiecesBeforeCap(),
+                    profile.paletteOverride())));
             MKIntegerSlider maxPathSlider = new MKIntegerSlider("Max", 180, 20, 0, 10, 1,
                     profile.maxMainPathPieces(), value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                     profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
-                    Math.min(profile.minMainPathPieces(), value), value, profile.maxBranchPiecesBeforeCap())));
+                    Math.min(profile.minMainPathPieces(), value), value, profile.maxBranchPiecesBeforeCap(),
+                    profile.paletteOverride())));
             addRow(content, makeWhiteText(Component.literal("Main Path Min")), minPathSlider);
             addRow(content, makeWhiteText(Component.literal("Main Path Max")), maxPathSlider);
         }
@@ -2912,8 +3083,10 @@ public class MKWorkspaceScreen extends MKScreen {
                 MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP, 1,
                 profile.maxBranchPiecesBeforeCap(), value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                 profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
-                profile.minMainPathPieces(), profile.maxMainPathPieces(), value)));
+                profile.minMainPathPieces(), profile.maxMainPathPieces(), value, profile.paletteOverride())));
         addRow(content, makeWhiteText(Component.literal("Branch Cap Max")), maxBranchBeforeCapSlider);
+        addPaletteOverrideRows(content, "Palette Overrides", draftBasePalette(), profile.paletteOverride(),
+                override -> replaceCategoryProfile(copyCategoryProfile(profile, override)));
     }
 
     private void addCategoryHeightRow(MKStackLayoutVertical content, MKTowerWorkspaceCategory category) {
@@ -2924,7 +3097,8 @@ public class MKWorkspaceScreen extends MKScreen {
                     profile.category(), profile.roomWidth(), profile.roomLength(),
                     value,
                     profile.minMainPathPieces(), profile.maxMainPathPieces(),
-                    profile.maxBranchPiecesBeforeCap()));
+                    profile.maxBranchPiecesBeforeCap(),
+                    profile.paletteOverride()));
             flagNeedSetup();
         });
         addRow(content,
@@ -3134,7 +3308,8 @@ public class MKWorkspaceScreen extends MKScreen {
                 roomLength,
                 roomHeight,
                 family.horizontalExtrusionMode(),
-                family.horizontalExits()
+                family.horizontalExits(),
+                family.paletteOverride()
         );
         return new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(),
@@ -3154,7 +3329,8 @@ public class MKWorkspaceScreen extends MKScreen {
                                 clampSideOffset(normalizedGeometry, exit.direction(), exit.openingProfileId(), exit.sideOffset()),
                                 clampVerticalOffset(normalizedGeometry, exit.openingProfileId(), exit.verticalOffset())
                         ))
-                        .toList()
+                        .toList(),
+                family.paletteOverride()
         );
     }
 
@@ -3707,9 +3883,9 @@ public class MKWorkspaceScreen extends MKScreen {
         detailStairMode = workspace.stairConfig().mode();
         detailStairRiseType = workspace.stairConfig().riseType();
         detailStairWidth = workspace.stairConfig().stairWidth();
-        detailStairBlock = workspace.stairConfig().stairBlock();
-        detailSlabBlock = workspace.stairConfig().slabBlock();
-        detailLadderBlock = workspace.stairConfig().ladderBlock();
+        detailStairBlock = workspace.palette().stairBlock();
+        detailSlabBlock = workspace.palette().slabBlock();
+        detailLadderBlock = workspace.palette().ladderBlock();
     }
 
     private void ensureCategoryOverridesInitialized() {

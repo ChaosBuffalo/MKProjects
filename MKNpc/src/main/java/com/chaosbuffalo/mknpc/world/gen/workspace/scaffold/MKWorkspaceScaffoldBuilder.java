@@ -6,6 +6,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacemen
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
@@ -43,9 +44,6 @@ public class MKWorkspaceScaffoldBuilder {
     public static final int GRID_COLUMNS = 4;
     public static final int CELL_PADDING = 4;
     public static final int CLEAR_MARGIN = 4;
-    private static final String FLOOR_BLOCK_TAG = "workspace_palette_floor";
-    private static final String WALL_BLOCK_TAG = "workspace_palette_wall";
-    private static final String CEILING_BLOCK_TAG = "workspace_palette_ceiling";
     private static final String HALLWAY_SLOPE_DELTA_TAG = "workspace_hallway_slope_delta";
     private static final String HORIZONTAL_EXTRUSION_MODE_TAG = "workspace_horizontal_extrusion_mode";
 
@@ -122,11 +120,11 @@ public class MKWorkspaceScaffoldBuilder {
         PieceBuildContext context = createBuildContext(workspace, plannedPiece, placement);
         int effectiveShellMargin = getShellMargin(plannedPiece, workspace.shellMargin());
 
-        BlockState floorState = resolvePaletteState(workspace, plannedPiece, FLOOR_BLOCK_TAG,
+        BlockState floorState = resolvePaletteState(workspace, plannedPiece, MKWorkspacePaletteTags.FLOOR_BLOCK_TAG,
                 workspace.palette().floorBlock(), Blocks.SMOOTH_STONE.defaultBlockState());
-        BlockState wallState = resolvePaletteState(workspace, plannedPiece, WALL_BLOCK_TAG,
+        BlockState wallState = resolvePaletteState(workspace, plannedPiece, MKWorkspacePaletteTags.WALL_BLOCK_TAG,
                 workspace.palette().wallBlock(), Blocks.STONE_BRICKS.defaultBlockState());
-        BlockState ceilingState = resolvePaletteState(workspace, plannedPiece, CEILING_BLOCK_TAG,
+        BlockState ceilingState = resolvePaletteState(workspace, plannedPiece, MKWorkspacePaletteTags.CEILING_BLOCK_TAG,
                 workspace.palette().ceilingBlock(), Blocks.SMOOTH_STONE.defaultBlockState());
         boolean emptyScaffold = isEmptyScaffold(plannedPiece);
 

@@ -77,7 +77,7 @@ public class MKStructureWorkspaceService {
             }
             if (canSwapPaletteOnly(existing, workspace)) {
                 try {
-                    mutationService.swapPalette(level, existing, workspace.palette());
+                    mutationService.swapMaterialPalettes(level, existing, workspace);
                     return data.getWorkspace(existing.id());
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to write workspace backup before palette swap", e);
@@ -465,11 +465,16 @@ public class MKStructureWorkspaceService {
     }
 
     private boolean canSwapPaletteOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
-        if (existing.pieces().isEmpty() || existing.palette().toTag().equals(requested.palette().toTag())) {
+        if (existing.pieces().isEmpty()) {
             return false;
         }
-        return settingsComparisonTag(existing, existing.id(), existing.previewMargin(), requested.palette())
-                .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin(), requested.palette()));
+        MKStructureWorkspace existingWithRequestedMaterials = withMaterialSettings(existing, requested);
+        if (settingsComparisonTag(existing, existing.id(), existing.previewMargin())
+                .equals(settingsComparisonTag(existingWithRequestedMaterials, existing.id(), existing.previewMargin()))) {
+            return false;
+        }
+        return settingsComparisonTag(existingWithRequestedMaterials, existing.id(), existing.previewMargin())
+                .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin()));
     }
 
     private boolean canRenameIdentityOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
@@ -536,12 +541,12 @@ public class MKStructureWorkspaceService {
                 workspace.familyType(),
                 workspace.dimensions(),
                 palette,
-                workspace.stairConfig(),
+                alignStairMaterials(workspace.stairConfig(), palette),
                 workspace.verticalAccessPlacement(),
                 shellMargin,
                 exteriorAirMargin,
                 previewMargin,
-                workspace.verticalAccessSpec(),
+                alignVerticalAccessMaterials(workspace.verticalAccessSpec(), palette),
                 workspace.floorSettings(),
                 workspace.categoryProfiles(),
                 workspace.familyDefinitions(),
@@ -551,6 +556,98 @@ public class MKStructureWorkspaceService {
                 0,
                 List.of()
         ).toTag();
+    }
+
+    private MKStructureWorkspace withMaterialSettings(MKStructureWorkspace source, MKStructureWorkspace materialSource) {
+        return new MKStructureWorkspace(
+                source.id(),
+                source.anchor(),
+                source.namespace(),
+                source.structureName(),
+                source.familyType(),
+                source.dimensions(),
+                materialSource.palette(),
+                alignStairMaterials(source.stairConfig(), materialSource.palette()),
+                source.verticalAccessPlacement(),
+                source.shellMargin(),
+                source.exteriorAirMargin(),
+                source.previewMargin(),
+                alignVerticalAccessMaterials(source.verticalAccessSpec(), materialSource.palette()),
+                source.floorSettings(),
+                source.categoryProfiles().stream()
+                        .map(profile -> materialSource.categoryProfile(profile.category())
+                                .map(requested -> new com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile(
+                                        profile.category(),
+                                        profile.roomWidth(),
+                                        profile.roomLength(),
+                                        profile.fullHeight(),
+                                        profile.minMainPathPieces(),
+                                        profile.maxMainPathPieces(),
+                                        profile.maxBranchPiecesBeforeCap(),
+                                        requested.paletteOverride()))
+                                .orElse(profile))
+                        .toList(),
+                source.familyDefinitions().stream()
+                        .map(family -> materialSource.familyDefinitions().stream()
+                                .filter(requested -> requested.baseName().equals(family.baseName()))
+                                .findFirst()
+                                .map(requested -> new com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition(
+                                        family.baseName(),
+                                        family.category(),
+                                        family.pieceRole(),
+                                        family.supportsVerticalAccess(),
+                                        family.roomWidth(),
+                                        family.roomLength(),
+                                        family.roomHeight(),
+                                        family.horizontalExtrusionMode(),
+                                        family.horizontalExits(),
+                                        requested.paletteOverride()))
+                                .orElse(family))
+                        .toList(),
+                source.openingProfiles(),
+                source.hallwayFamilies().stream()
+                        .map(hallway -> materialSource.hallwayFamilies().stream()
+                                .filter(requested -> requested.hallwayId().equals(hallway.hallwayId()))
+                                .findFirst()
+                                .map(requested -> new com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition(
+                                        hallway.hallwayId(),
+                                        hallway.openingProfileId(),
+                                        hallway.length(),
+                                        hallway.interiorWidth(),
+                                        hallway.interiorHeight(),
+                                        hallway.slopeDelta(),
+                                        hallway.allowOnMainPath(),
+                                        hallway.allowOnBranchPath(),
+                                        requested.paletteOverride()))
+                                .orElse(hallway))
+                        .toList(),
+                source.createdAt(),
+                source.updatedAt(),
+                source.pieces()
+        );
+    }
+
+    private com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig alignStairMaterials(
+            com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig stairConfig,
+            com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette palette) {
+        return new com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig(
+                stairConfig.mode(),
+                stairConfig.riseType(),
+                stairConfig.stairWidth(),
+                palette.stairBlock(),
+                palette.slabBlock(),
+                palette.ladderBlock()
+        );
+    }
+
+    private com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec alignVerticalAccessMaterials(
+            com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec spec,
+            com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette palette) {
+        return new com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec(
+                spec.shaftSize(),
+                spec.placement(),
+                alignStairMaterials(spec.stairConfig(), palette)
+        );
     }
 }
 

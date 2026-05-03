@@ -14,6 +14,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
@@ -30,9 +32,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     private static final String EMPTY_POOL = "minecraft:empty";
     private static final String HALLWAY_POOL_PREFIX = "hallways";
     private static final String ROOM_POOL_PREFIX = "rooms";
-    private static final String FLOOR_BLOCK_TAG = "workspace_palette_floor";
-    private static final String WALL_BLOCK_TAG = "workspace_palette_wall";
-    private static final String CEILING_BLOCK_TAG = "workspace_palette_ceiling";
+    private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
 
     private record ResolvedOpeningProfile(String profileId, int openingWidth, int openingHeight) {
     }
@@ -94,7 +94,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             family,
                             workspace
                     ),
-                    buildRoomTags("entry", family, stairPlacement, "both",
+                    buildRoomTags(workspace, "entry", family, stairPlacement, "both",
                             roomRuntimeInfo(true, MKJigsawPieceRole.ROOM, 0, 0, false, false, family))
             );
             case FLOOR_MAIN -> new MKPlannedPiece(
@@ -113,7 +113,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             family,
                             workspace
                     ),
-                    buildRoomTags("floor", family, stairPlacement, "both",
+                    buildRoomTags(workspace, "floor", family, stairPlacement, "both",
                             roomRuntimeInfo(false, MKJigsawPieceRole.ROOM, 1, 1, false, false, family))
             );
             case TOP_CAP_APPROACH -> new MKPlannedPiece(
@@ -132,7 +132,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             family,
                             workspace
                     ),
-                    buildRoomTags("top_cap_approach", family, stairPlacement, "up",
+                    buildRoomTags(workspace, "top_cap_approach", family, stairPlacement, "up",
                             roomRuntimeInfo(false, MKJigsawPieceRole.TOP_CAP_APPROACH, 1, 1, false, true, family))
             );
             case TOP_CAP -> new MKPlannedPiece(
@@ -147,7 +147,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             family,
                             workspace
                     ),
-                    buildRoomTags("top_cap", family, stairPlacement, "up", true, false,
+                    buildRoomTags(workspace, "top_cap", family, stairPlacement, "up", true, false,
                             topCapRuntimeInfo(workspace, family))
             );
             case BASEMENT_ENTRY -> new MKPlannedPiece(
@@ -166,7 +166,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             family,
                             workspace
                     ),
-                    buildRoomTags("basement_entry", family, stairPlacement, "down",
+                    buildRoomTags(workspace, "basement_entry", family, stairPlacement, "down",
                             roomRuntimeInfo(false, MKJigsawPieceRole.ROOM, 1, -1, false, false, family))
             );
             case BASEMENT_MAIN -> new MKPlannedPiece(
@@ -185,7 +185,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             family,
                             workspace
                     ),
-                    buildRoomTags("basement_main", family, stairPlacement, "down",
+                    buildRoomTags(workspace, "basement_main", family, stairPlacement, "down",
                             roomRuntimeInfo(false, MKJigsawPieceRole.ROOM, 1, -1, false, false, family))
             );
             case BASEMENT_CAP_APPROACH -> new MKPlannedPiece(
@@ -204,7 +204,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             family,
                             workspace
                     ),
-                    buildRoomTags("basement_cap_approach", family, stairPlacement, "down",
+                    buildRoomTags(workspace, "basement_cap_approach", family, stairPlacement, "down",
                             roomRuntimeInfo(false, MKJigsawPieceRole.BASEMENT_CAP_APPROACH, 1, -1, false, true, family))
             );
             case BASEMENT_CAP -> new MKPlannedPiece(
@@ -219,7 +219,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                             family,
                             workspace
                     ),
-                    buildRoomTags("basement_cap", family, stairPlacement, "down", false, true,
+                    buildRoomTags(workspace, "basement_cap", family, stairPlacement, "down", false, true,
                             basementCapRuntimeInfo(workspace, family))
             );
             case HALLWAY -> throw new IllegalStateException("tower families do not directly create hallway pieces");
@@ -293,9 +293,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         tags.put("workspace_hallway_family_id", hallway.hallwayId());
         tags.put("workspace_hallway_path_kind", pathKind.serializedName);
         tags.put("workspace_hallway_slope_delta", Integer.toString(hallway.slopeDelta()));
-        tags.put(FLOOR_BLOCK_TAG, hallway.floorBlock().toString());
-        tags.put(WALL_BLOCK_TAG, hallway.wallBlock().toString());
-        tags.put(CEILING_BLOCK_TAG, hallway.ceilingBlock().toString());
+        MKWorkspacePaletteTags.apply(tags, paletteResolver.resolveFamily(workspace, hallway));
         new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
                 pathKind == HallwayPathKind.MAIN, pathKind == HallwayPathKind.BRANCH, false, false).applyToTags(tags);
         String hallwayPool = hallwayPoolName(hallway.openingProfileId(), pathKind);
@@ -437,12 +435,14 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         );
     }
 
-    private Map<String, String> buildRoomTags(String topologyRole, MKTowerWorkspaceFamilyDefinition family, String stairPlacement,
+    private Map<String, String> buildRoomTags(MKStructureWorkspace workspace, String topologyRole,
+                                              MKTowerWorkspaceFamilyDefinition family, String stairPlacement,
                                               String stairDirection, MKWorkspaceRuntimePieceInfo runtimeInfo) {
-        return buildRoomTags(topologyRole, family, stairPlacement, stairDirection, false, false, runtimeInfo);
+        return buildRoomTags(workspace, topologyRole, family, stairPlacement, stairDirection, false, false, runtimeInfo);
     }
 
-    private Map<String, String> buildRoomTags(String topologyRole, MKTowerWorkspaceFamilyDefinition family, String stairPlacement,
+    private Map<String, String> buildRoomTags(MKStructureWorkspace workspace, String topologyRole,
+                                              MKTowerWorkspaceFamilyDefinition family, String stairPlacement,
                                               String stairDirection, boolean topCap, boolean bottomCap,
                                               MKWorkspaceRuntimePieceInfo runtimeInfo) {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>();
@@ -465,6 +465,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
             tags.put(MKWorkspaceVerticalAccessTags.BOTTOM_CAP_TAG, "true");
         }
         runtimeInfo.applyToTags(tags);
+        MKWorkspacePaletteTags.apply(tags, paletteResolver.resolveFamily(workspace, family));
         return tags;
     }
 }

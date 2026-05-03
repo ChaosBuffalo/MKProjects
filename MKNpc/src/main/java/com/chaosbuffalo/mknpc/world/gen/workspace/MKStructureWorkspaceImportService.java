@@ -204,7 +204,8 @@ public class MKStructureWorkspaceImportService {
                         profile.fullHeight().orElse(profile.defaultHeight().orElse(profile.maxHeight().orElse(3))),
                         profile.minMainPathPieces(),
                         profile.maxMainPathPieces(),
-                        profile.maxBranchPiecesBeforeCap()
+                        profile.maxBranchPiecesBeforeCap(),
+                        profile.paletteOverride()
                 ))
                 .toList();
         if (categoryProfiles.isEmpty()) {
@@ -235,7 +236,8 @@ public class MKStructureWorkspaceImportService {
                                         exit.sideOffset(),
                                         exit.verticalOffset()
                                 ))
-                                .toList()
+                                .toList(),
+                        family.paletteOverride()
                 ))
                 .toList();
         familyDefinitions = MKTowerWorkspaceFamilyDefinition.normalize(familyDefinitions, categoryProfiles);
@@ -261,9 +263,20 @@ public class MKStructureWorkspaceImportService {
                         hallway.slopeDelta(),
                         hallway.allowOnMainPath(),
                         hallway.allowOnBranchPath(),
-                        hallway.floorBlock(),
-                        hallway.wallBlock(),
-                        hallway.ceilingBlock()
+                        hallway.paletteOverride().or(() -> {
+                            if (hallway.legacyFloorBlock().isEmpty() && hallway.legacyWallBlock().isEmpty() &&
+                                    hallway.legacyCeilingBlock().isEmpty()) {
+                                return java.util.Optional.empty();
+                            }
+                            return java.util.Optional.of(new com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride(
+                                    hallway.legacyFloorBlock(),
+                                    hallway.legacyWallBlock(),
+                                    hallway.legacyCeilingBlock(),
+                                    java.util.Optional.empty(),
+                                    java.util.Optional.empty(),
+                                    java.util.Optional.empty()
+                            ));
+                        })
                 ))
                 .toList();
         long now = System.currentTimeMillis();
@@ -277,7 +290,10 @@ public class MKStructureWorkspaceImportService {
                 new MKWorkspaceMaterialPalette(
                         palette.floorBlock(),
                         palette.wallBlock(),
-                        palette.ceilingBlock()
+                        palette.ceilingBlock(),
+                        palette.stairBlock(),
+                        palette.slabBlock(),
+                        palette.ladderBlock()
                 ),
                 workspaceStairConfig,
                 settings.verticalAccessPlacement(),

@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManife
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
@@ -44,10 +45,6 @@ import java.util.Optional;
 import java.util.Set;
 
 public class MKWorkspaceMarginExpansionService {
-    private static final String FLOOR_BLOCK_TAG = "workspace_palette_floor";
-    private static final String WALL_BLOCK_TAG = "workspace_palette_wall";
-    private static final String CEILING_BLOCK_TAG = "workspace_palette_ceiling";
-
     private final MKWorkspaceBackupManifestWriter backupWriter = new MKWorkspaceBackupManifestWriter();
     private final MKWorkspaceGridLayout gridLayout = new MKWorkspaceGridLayout();
 
@@ -280,11 +277,11 @@ public class MKWorkspaceMarginExpansionService {
         for (PieceExpansion expansion : expansions) {
             PieceContext context = createContext(workspace, toPlannedPiece(expansion.expanded()), null,
                     expansion.expanded().previewBounds(), expansion.expanded().worldOrigin());
-            BlockState floor = resolvePaletteState(workspace, expansion.expanded(), FLOOR_BLOCK_TAG,
+            BlockState floor = resolvePaletteState(workspace, expansion.expanded(), MKWorkspacePaletteTags.FLOOR_BLOCK_TAG,
                     workspace.palette().floorBlock(), Blocks.SMOOTH_STONE.defaultBlockState());
-            BlockState wall = resolvePaletteState(workspace, expansion.expanded(), WALL_BLOCK_TAG,
+            BlockState wall = resolvePaletteState(workspace, expansion.expanded(), MKWorkspacePaletteTags.WALL_BLOCK_TAG,
                     workspace.palette().wallBlock(), Blocks.STONE_BRICKS.defaultBlockState());
-            BlockState ceiling = resolvePaletteState(workspace, expansion.expanded(), CEILING_BLOCK_TAG,
+            BlockState ceiling = resolvePaletteState(workspace, expansion.expanded(), MKWorkspacePaletteTags.CEILING_BLOCK_TAG,
                     workspace.palette().ceilingBlock(), Blocks.SMOOTH_STONE.defaultBlockState());
             forEachPos(expansion.expanded().exportBounds(), pos -> {
                 if (!mappedPositions.contains(pos)) {

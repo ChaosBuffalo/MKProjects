@@ -7,9 +7,10 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
-public class MKHallwayFamilyDefinition {
+public class MKHallwayFamilyDefinition implements MKWorkspacePaletteFamily {
     public static final Codec<MKHallwayFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("hallwayId").forGetter(MKHallwayFamilyDefinition::hallwayId),
             Codec.STRING.fieldOf("openingProfileId").forGetter(MKHallwayFamilyDefinition::openingProfileId),
@@ -19,10 +20,12 @@ public class MKHallwayFamilyDefinition {
             Codec.INT.optionalFieldOf("slopeDelta", 0).forGetter(MKHallwayFamilyDefinition::slopeDelta),
             Codec.BOOL.optionalFieldOf("allowOnMainPath", false).forGetter(MKHallwayFamilyDefinition::allowOnMainPath),
             Codec.BOOL.optionalFieldOf("allowOnBranchPath", true).forGetter(MKHallwayFamilyDefinition::allowOnBranchPath),
-            ResourceLocation.CODEC.fieldOf("floorBlock").forGetter(MKHallwayFamilyDefinition::floorBlock),
-            ResourceLocation.CODEC.fieldOf("wallBlock").forGetter(MKHallwayFamilyDefinition::wallBlock),
-            ResourceLocation.CODEC.fieldOf("ceilingBlock").forGetter(MKHallwayFamilyDefinition::ceilingBlock)
-    ).apply(instance, MKHallwayFamilyDefinition::new));
+            ResourceLocation.CODEC.optionalFieldOf("floorBlock").forGetter(hallway -> hallway.legacyFloorBlock),
+            ResourceLocation.CODEC.optionalFieldOf("wallBlock").forGetter(hallway -> hallway.legacyWallBlock),
+            ResourceLocation.CODEC.optionalFieldOf("ceilingBlock").forGetter(hallway -> hallway.legacyCeilingBlock),
+            MKWorkspacePaletteOverride.CODEC.optionalFieldOf("paletteOverride")
+                    .forGetter(MKHallwayFamilyDefinition::paletteOverride)
+    ).apply(instance, MKHallwayFamilyDefinition::fromSerializedData));
 
     private final String hallwayId;
     private final String openingProfileId;
@@ -32,14 +35,23 @@ public class MKHallwayFamilyDefinition {
     private final int slopeDelta;
     private final boolean allowOnMainPath;
     private final boolean allowOnBranchPath;
-    private final ResourceLocation floorBlock;
-    private final ResourceLocation wallBlock;
-    private final ResourceLocation ceilingBlock;
+    private final Optional<ResourceLocation> legacyFloorBlock;
+    private final Optional<ResourceLocation> legacyWallBlock;
+    private final Optional<ResourceLocation> legacyCeilingBlock;
+    private final Optional<MKWorkspacePaletteOverride> paletteOverride;
 
     public MKHallwayFamilyDefinition(String hallwayId, String openingProfileId, int length, int interiorWidth,
                                      int interiorHeight, int slopeDelta, boolean allowOnMainPath,
                                      boolean allowOnBranchPath, ResourceLocation floorBlock,
                                      ResourceLocation wallBlock, ResourceLocation ceilingBlock) {
+        this(hallwayId, openingProfileId, length, interiorWidth, interiorHeight, slopeDelta, allowOnMainPath,
+                allowOnBranchPath, Optional.of(MKWorkspacePaletteOverride.of(floorBlock, wallBlock, ceilingBlock)));
+    }
+
+    public MKHallwayFamilyDefinition(String hallwayId, String openingProfileId, int length, int interiorWidth,
+                                     int interiorHeight, int slopeDelta, boolean allowOnMainPath,
+                                     boolean allowOnBranchPath,
+                                     Optional<MKWorkspacePaletteOverride> paletteOverride) {
         this.hallwayId = hallwayId;
         this.openingProfileId = openingProfileId;
         this.length = length;
@@ -48,9 +60,10 @@ public class MKHallwayFamilyDefinition {
         this.slopeDelta = slopeDelta;
         this.allowOnMainPath = allowOnMainPath;
         this.allowOnBranchPath = allowOnBranchPath;
-        this.floorBlock = floorBlock;
-        this.wallBlock = wallBlock;
-        this.ceilingBlock = ceilingBlock;
+        this.legacyFloorBlock = Optional.empty();
+        this.legacyWallBlock = Optional.empty();
+        this.legacyCeilingBlock = Optional.empty();
+        this.paletteOverride = paletteOverride.filter(override -> !override.isEmpty());
     }
 
     public static MKHallwayFamilyDefinition fromTag(CompoundTag tag) {
@@ -69,9 +82,7 @@ public class MKHallwayFamilyDefinition {
                         0,
                         true,
                         false,
-                        palette.floorBlock(),
-                        palette.wallBlock(),
-                        palette.ceilingBlock()
+                        Optional.empty()
                 ),
                 new MKHallwayFamilyDefinition(
                         "branch",
@@ -82,9 +93,7 @@ public class MKHallwayFamilyDefinition {
                         0,
                         false,
                         true,
-                        palette.floorBlock(),
-                        palette.wallBlock(),
-                        palette.ceilingBlock()
+                        Optional.empty()
                 )
         );
     }
@@ -154,14 +163,54 @@ public class MKHallwayFamilyDefinition {
     }
 
     public ResourceLocation floorBlock() {
-        return floorBlock;
+        return paletteOverride.flatMap(MKWorkspacePaletteOverride::floorBlock)
+                .orElseGet(() -> legacyFloorBlock.orElse(MKWorkspaceMaterialPalette.defaultPalette().floorBlock()));
     }
 
     public ResourceLocation wallBlock() {
-        return wallBlock;
+        return paletteOverride.flatMap(MKWorkspacePaletteOverride::wallBlock)
+                .orElseGet(() -> legacyWallBlock.orElse(MKWorkspaceMaterialPalette.defaultPalette().wallBlock()));
     }
 
     public ResourceLocation ceilingBlock() {
-        return ceilingBlock;
+        return paletteOverride.flatMap(MKWorkspacePaletteOverride::ceilingBlock)
+                .orElseGet(() -> legacyCeilingBlock.orElse(MKWorkspaceMaterialPalette.defaultPalette().ceilingBlock()));
+    }
+
+    @Override
+    public String paletteFamilyId() {
+        return hallwayId;
+    }
+
+    @Override
+    public Optional<MKTowerWorkspaceCategory> paletteCategory() {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<MKWorkspacePaletteOverride> paletteOverride() {
+        return paletteOverride;
+    }
+
+    private static MKHallwayFamilyDefinition fromSerializedData(String hallwayId, String openingProfileId, int length,
+                                                                int interiorWidth, int interiorHeight, int slopeDelta,
+                                                                boolean allowOnMainPath, boolean allowOnBranchPath,
+                                                                Optional<ResourceLocation> floorBlock,
+                                                                Optional<ResourceLocation> wallBlock,
+                                                                Optional<ResourceLocation> ceilingBlock,
+                                                                Optional<MKWorkspacePaletteOverride> paletteOverride) {
+        Optional<MKWorkspacePaletteOverride> resolvedOverride = paletteOverride;
+        if (resolvedOverride.isEmpty() && (floorBlock.isPresent() || wallBlock.isPresent() || ceilingBlock.isPresent())) {
+            resolvedOverride = Optional.of(new MKWorkspacePaletteOverride(
+                    floorBlock,
+                    wallBlock,
+                    ceilingBlock,
+                    Optional.empty(),
+                    Optional.empty(),
+                    Optional.empty()
+            ));
+        }
+        return new MKHallwayFamilyDefinition(hallwayId, openingProfileId, length, interiorWidth, interiorHeight,
+                slopeDelta, allowOnMainPath, allowOnBranchPath, resolvedOverride);
     }
 }

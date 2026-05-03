@@ -16,6 +16,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExt
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
@@ -101,7 +103,10 @@ public record MKWorkspaceExportManifest(
                         new ExportPalette(
                                 workspace.palette().floorBlock(),
                                 workspace.palette().wallBlock(),
-                                workspace.palette().ceilingBlock()
+                                workspace.palette().ceilingBlock(),
+                                workspace.palette().stairBlock(),
+                                workspace.palette().slabBlock(),
+                                workspace.palette().ladderBlock()
                         ),
                         new ExportStairConfig(
                                 workspace.stairConfig().mode(),
@@ -268,11 +273,19 @@ public record MKWorkspaceExportManifest(
         }
     }
 
-    public record ExportPalette(ResourceLocation floorBlock, ResourceLocation wallBlock, ResourceLocation ceilingBlock) {
+    public record ExportPalette(ResourceLocation floorBlock, ResourceLocation wallBlock, ResourceLocation ceilingBlock,
+                                ResourceLocation stairBlock, ResourceLocation slabBlock,
+                                ResourceLocation ladderBlock) {
         public static final Codec<ExportPalette> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ResourceLocation.CODEC.fieldOf("floor_block").forGetter(ExportPalette::floorBlock),
                 ResourceLocation.CODEC.fieldOf("wall_block").forGetter(ExportPalette::wallBlock),
-                ResourceLocation.CODEC.fieldOf("ceiling_block").forGetter(ExportPalette::ceilingBlock)
+                ResourceLocation.CODEC.fieldOf("ceiling_block").forGetter(ExportPalette::ceilingBlock),
+                ResourceLocation.CODEC.optionalFieldOf("stair_block", MKWorkspaceMaterialPalette.defaultPalette().stairBlock())
+                        .forGetter(ExportPalette::stairBlock),
+                ResourceLocation.CODEC.optionalFieldOf("slab_block", MKWorkspaceMaterialPalette.defaultPalette().slabBlock())
+                        .forGetter(ExportPalette::slabBlock),
+                ResourceLocation.CODEC.optionalFieldOf("ladder_block", MKWorkspaceMaterialPalette.defaultPalette().ladderBlock())
+                        .forGetter(ExportPalette::ladderBlock)
         ).apply(instance, ExportPalette::new));
     }
 
@@ -372,7 +385,8 @@ public record MKWorkspaceExportManifest(
             Optional<Integer> legacyMainOpeningWidth,
             Optional<Integer> legacyMainOpeningHeight,
             Optional<Integer> legacyBranchOpeningWidth,
-            Optional<Integer> legacyBranchOpeningHeight
+            Optional<Integer> legacyBranchOpeningHeight,
+            Optional<MKWorkspacePaletteOverride> paletteOverride
     ) {
         public static final Codec<ExportCategoryProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 towerCategoryCodec().fieldOf("category").forGetter(ExportCategoryProfile::category),
@@ -392,7 +406,9 @@ public record MKWorkspaceExportManifest(
                 Codec.INT.optionalFieldOf("main_opening_width").forGetter(ExportCategoryProfile::legacyMainOpeningWidth),
                 Codec.INT.optionalFieldOf("main_opening_height").forGetter(ExportCategoryProfile::legacyMainOpeningHeight),
                 Codec.INT.optionalFieldOf("branch_opening_width").forGetter(ExportCategoryProfile::legacyBranchOpeningWidth),
-                Codec.INT.optionalFieldOf("branch_opening_height").forGetter(ExportCategoryProfile::legacyBranchOpeningHeight)
+                Codec.INT.optionalFieldOf("branch_opening_height").forGetter(ExportCategoryProfile::legacyBranchOpeningHeight),
+                MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
+                        .forGetter(ExportCategoryProfile::paletteOverride)
         ).apply(instance, ExportCategoryProfile::new));
 
         public static ExportCategoryProfile from(MKTowerWorkspaceCategoryProfile profile) {
@@ -410,7 +426,8 @@ public record MKWorkspaceExportManifest(
                     Optional.empty(),
                     Optional.empty(),
                     Optional.empty(),
-                    Optional.empty()
+                    Optional.empty(),
+                    profile.paletteOverride()
             );
         }
     }
@@ -425,7 +442,8 @@ public record MKWorkspaceExportManifest(
             Optional<Integer> roomHeight,
             Optional<MKWorkspaceHorizontalExtrusionMode> horizontalExtrusionMode,
             List<ExportFamilyHorizontalExit> horizontalExits,
-            Optional<String> legacyBranchExitMask
+            Optional<String> legacyBranchExitMask,
+            Optional<MKWorkspacePaletteOverride> paletteOverride
     ) {
         public static final Codec<ExportFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("base_name").forGetter(ExportFamilyDefinition::baseName),
@@ -439,7 +457,9 @@ public record MKWorkspaceExportManifest(
                     .forGetter(ExportFamilyDefinition::horizontalExtrusionMode),
             ExportFamilyHorizontalExit.CODEC.listOf().optionalFieldOf("horizontal_exits", List.of())
                     .forGetter(ExportFamilyDefinition::horizontalExits),
-            Codec.STRING.optionalFieldOf("branch_exit_mask").forGetter(ExportFamilyDefinition::legacyBranchExitMask)
+            Codec.STRING.optionalFieldOf("branch_exit_mask").forGetter(ExportFamilyDefinition::legacyBranchExitMask),
+            MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
+                    .forGetter(ExportFamilyDefinition::paletteOverride)
         ).apply(instance, ExportFamilyDefinition::new));
 
         public static ExportFamilyDefinition from(MKTowerWorkspaceFamilyDefinition familyDefinition) {
@@ -453,7 +473,8 @@ public record MKWorkspaceExportManifest(
                     Optional.of(familyDefinition.roomHeight()),
                     Optional.of(familyDefinition.horizontalExtrusionMode()),
                     familyDefinition.horizontalExits().stream().map(ExportFamilyHorizontalExit::from).toList(),
-                    Optional.of(familyDefinition.legacyBranchExitMask().getSerializedName())
+                    Optional.of(familyDefinition.legacyBranchExitMask().getSerializedName()),
+                    familyDefinition.paletteOverride()
             );
         }
     }
@@ -525,9 +546,10 @@ public record MKWorkspaceExportManifest(
             int slopeDelta,
             boolean allowOnMainPath,
             boolean allowOnBranchPath,
-            ResourceLocation floorBlock,
-            ResourceLocation wallBlock,
-            ResourceLocation ceilingBlock
+            Optional<ResourceLocation> legacyFloorBlock,
+            Optional<ResourceLocation> legacyWallBlock,
+            Optional<ResourceLocation> legacyCeilingBlock,
+            Optional<MKWorkspacePaletteOverride> paletteOverride
     ) {
         public static final Codec<ExportHallwayFamily> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("hallway_id").forGetter(ExportHallwayFamily::hallwayId),
@@ -538,9 +560,11 @@ public record MKWorkspaceExportManifest(
                 Codec.INT.fieldOf("slope_delta").forGetter(ExportHallwayFamily::slopeDelta),
                 Codec.BOOL.fieldOf("allow_on_main_path").forGetter(ExportHallwayFamily::allowOnMainPath),
                 Codec.BOOL.fieldOf("allow_on_branch_path").forGetter(ExportHallwayFamily::allowOnBranchPath),
-                ResourceLocation.CODEC.fieldOf("floor_block").forGetter(ExportHallwayFamily::floorBlock),
-                ResourceLocation.CODEC.fieldOf("wall_block").forGetter(ExportHallwayFamily::wallBlock),
-                ResourceLocation.CODEC.fieldOf("ceiling_block").forGetter(ExportHallwayFamily::ceilingBlock)
+                ResourceLocation.CODEC.optionalFieldOf("floor_block").forGetter(ExportHallwayFamily::legacyFloorBlock),
+                ResourceLocation.CODEC.optionalFieldOf("wall_block").forGetter(ExportHallwayFamily::legacyWallBlock),
+                ResourceLocation.CODEC.optionalFieldOf("ceiling_block").forGetter(ExportHallwayFamily::legacyCeilingBlock),
+                MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
+                        .forGetter(ExportHallwayFamily::paletteOverride)
         ).apply(instance, ExportHallwayFamily::new));
 
         public static ExportHallwayFamily from(MKHallwayFamilyDefinition hallwayFamily) {
@@ -553,9 +577,10 @@ public record MKWorkspaceExportManifest(
                     hallwayFamily.slopeDelta(),
                     hallwayFamily.allowOnMainPath(),
                     hallwayFamily.allowOnBranchPath(),
-                    hallwayFamily.floorBlock(),
-                    hallwayFamily.wallBlock(),
-                    hallwayFamily.ceilingBlock()
+                    Optional.empty(),
+                    Optional.empty(),
+                    Optional.empty(),
+                    hallwayFamily.paletteOverride()
             );
         }
     }

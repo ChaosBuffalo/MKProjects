@@ -3,8 +3,6 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.export;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.core.BlockPos;
@@ -35,7 +33,6 @@ public class MKWorkspaceExportArchiveWriter {
                                  int metadataCount) {
     }
 
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     private final MKWorkspaceExportPathResolver pathResolver = new MKWorkspaceExportPathResolver();
 
     public WrittenArchive write(ServerLevel level, MKStructureWorkspace workspace) throws IOException {
@@ -103,7 +100,7 @@ public class MKWorkspaceExportArchiveWriter {
     private void writeJson(ZipOutputStream output, String entryName, JsonElement json) throws IOException {
         output.putNextEntry(new ZipEntry(entryName));
         Writer writer = new OutputStreamWriter(output, StandardCharsets.UTF_8);
-        gson.toJson(json, writer);
+        writer.write(json.toString());
         writer.flush();
         output.closeEntry();
     }

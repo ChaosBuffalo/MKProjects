@@ -5,7 +5,10 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspa
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -24,6 +27,7 @@ public class MKStructureWorkspaceMutationService {
 
     private final MKWorkspaceBackupManifestWriter backupManifestWriter = new MKWorkspaceBackupManifestWriter();
     private final MKWorkspaceBlockSwapService blockSwapService = new MKWorkspaceBlockSwapService();
+    private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
 
     public WorkspaceBlockSwapResult swapBlocks(ServerLevel level, MKStructureWorkspace workspace,
                                                Map<ResourceLocation, ResourceLocation> replacements)
@@ -34,13 +38,54 @@ public class MKStructureWorkspaceMutationService {
     public WorkspaceBlockSwapResult swapPalette(ServerLevel level, MKStructureWorkspace workspace,
                                                 MKWorkspaceMaterialPalette targetPalette)
             throws IOException {
+        MKStructureWorkspace targetWorkspace = withPalette(workspace, targetPalette);
+        return swapMaterialPalettes(level, workspace, targetWorkspace);
+    }
+
+    public WorkspaceBlockSwapResult swapMaterialPalettes(ServerLevel level, MKStructureWorkspace existing,
+                                                         MKStructureWorkspace requested)
+            throws IOException {
+        MKStructureWorkspace requestedWithPieces = withPiecesAndIdentity(requested, existing);
+        MKWorkspaceBackupManifestWriter.WrittenBackup backup = backupManifestWriter.writeBeforeMutation(
+                level, existing, "palette-swap");
+        Map<ResourceLocation, MutableStats> aggregateStats = new LinkedHashMap<>();
+        int pieceCount = 0;
+        int replacedCount = 0;
+        for (MKWorkspacePieceDefinition piece : existing.pieces()) {
+            MKWorkspaceMaterialPalette sourcePalette = paletteResolver.resolvePiece(existing, piece)
+                    .orElse(existing.palette());
+            MKWorkspaceMaterialPalette targetPalette = paletteResolver.resolvePiece(requestedWithPieces, piece)
+                    .orElse(requestedWithPieces.palette());
+            LinkedHashMap<ResourceLocation, ResourceLocation> replacements = replacementsFor(sourcePalette, targetPalette);
+            if (replacements.isEmpty()) {
+                continue;
+            }
+            MKWorkspaceBlockSwapService.BlockSwapResult pieceResult = blockSwapService.swapBlocks(
+                    level,
+                    piece.exportBounds(),
+                    replacements,
+                    getExcludedPositions(piece)
+            );
+            if (pieceResult.totalReplaced() > 0) {
+                pieceCount++;
+                replacedCount += pieceResult.totalReplaced();
+                mergeStats(aggregateStats, pieceResult.statsBySource());
+            }
+        }
+        IMKStructureWorkspaceData.get(level).updateWorkspace(requestedWithPieces);
+        return new WorkspaceBlockSwapResult(backup.path(), pieceCount, replacedCount, freezeStats(aggregateStats));
+    }
+
+    private LinkedHashMap<ResourceLocation, ResourceLocation> replacementsFor(MKWorkspaceMaterialPalette sourcePalette,
+                                                                              MKWorkspaceMaterialPalette targetPalette) {
         LinkedHashMap<ResourceLocation, ResourceLocation> replacements = new LinkedHashMap<>();
-        addReplacement(replacements, workspace.palette().floorBlock(), targetPalette.floorBlock());
-        addReplacement(replacements, workspace.palette().wallBlock(), targetPalette.wallBlock());
-        addReplacement(replacements, workspace.palette().ceilingBlock(), targetPalette.ceilingBlock());
-        WorkspaceBlockSwapResult result = swapBlocks(level, workspace, replacements, "palette-swap");
-        IMKStructureWorkspaceData.get(level).updateWorkspace(withPalette(workspace, targetPalette));
-        return result;
+        addReplacement(replacements, sourcePalette.floorBlock(), targetPalette.floorBlock());
+        addReplacement(replacements, sourcePalette.wallBlock(), targetPalette.wallBlock());
+        addReplacement(replacements, sourcePalette.ceilingBlock(), targetPalette.ceilingBlock());
+        addReplacement(replacements, sourcePalette.stairBlock(), targetPalette.stairBlock());
+        addReplacement(replacements, sourcePalette.slabBlock(), targetPalette.slabBlock());
+        addReplacement(replacements, sourcePalette.ladderBlock(), targetPalette.ladderBlock());
+        return replacements;
     }
 
     private WorkspaceBlockSwapResult swapBlocks(ServerLevel level, MKStructureWorkspace workspace,
@@ -49,6 +94,12 @@ public class MKStructureWorkspaceMutationService {
             throws IOException {
         MKWorkspaceBackupManifestWriter.WrittenBackup backup = backupManifestWriter.writeBeforeMutation(
                 level, workspace, operation);
+        return swapBlocksWithoutBackup(level, workspace, replacements, backup.path());
+    }
+
+    private WorkspaceBlockSwapResult swapBlocksWithoutBackup(ServerLevel level, MKStructureWorkspace workspace,
+                                                             Map<ResourceLocation, ResourceLocation> replacements,
+                                                             Path backupPath) {
         Map<ResourceLocation, MutableStats> aggregateStats = new LinkedHashMap<>();
         int pieceCount = 0;
         int replacedCount = 0;
@@ -65,7 +116,7 @@ public class MKStructureWorkspaceMutationService {
                 mergeStats(aggregateStats, pieceResult.statsBySource());
             }
         }
-        return new WorkspaceBlockSwapResult(backup.path(), pieceCount, replacedCount, freezeStats(aggregateStats));
+        return new WorkspaceBlockSwapResult(backupPath, pieceCount, replacedCount, freezeStats(aggregateStats));
     }
 
     private void addReplacement(Map<ResourceLocation, ResourceLocation> replacements, ResourceLocation source,
@@ -84,12 +135,12 @@ public class MKStructureWorkspaceMutationService {
                 workspace.familyType(),
                 workspace.dimensions(),
                 palette,
-                workspace.stairConfig(),
+                alignStairMaterials(workspace.stairConfig(), palette),
                 workspace.verticalAccessPlacement(),
                 workspace.shellMargin(),
                 workspace.exteriorAirMargin(),
                 workspace.previewMargin(),
-                workspace.verticalAccessSpec(),
+                alignVerticalAccessMaterials(workspace.verticalAccessSpec(), palette),
                 workspace.floorSettings(),
                 workspace.categoryProfiles(),
                 workspace.familyDefinitions(),
@@ -98,6 +149,53 @@ public class MKStructureWorkspaceMutationService {
                 workspace.createdAt(),
                 System.currentTimeMillis(),
                 workspace.pieces()
+        );
+    }
+
+    private MKStructureWorkspace withPiecesAndIdentity(MKStructureWorkspace requested, MKStructureWorkspace existing) {
+        return new MKStructureWorkspace(
+                existing.id(),
+                existing.anchor(),
+                requested.namespace(),
+                requested.structureName(),
+                requested.familyType(),
+                requested.dimensions(),
+                requested.palette(),
+                alignStairMaterials(requested.stairConfig(), requested.palette()),
+                requested.verticalAccessPlacement(),
+                requested.shellMargin(),
+                requested.exteriorAirMargin(),
+                requested.previewMargin(),
+                alignVerticalAccessMaterials(requested.verticalAccessSpec(), requested.palette()),
+                requested.floorSettings(),
+                requested.categoryProfiles(),
+                requested.familyDefinitions(),
+                requested.openingProfiles(),
+                requested.hallwayFamilies(),
+                existing.createdAt(),
+                System.currentTimeMillis(),
+                existing.pieces()
+        );
+    }
+
+    private MKWorkspaceStairAuthoringConfig alignStairMaterials(MKWorkspaceStairAuthoringConfig stairConfig,
+                                                                MKWorkspaceMaterialPalette palette) {
+        return new MKWorkspaceStairAuthoringConfig(
+                stairConfig.mode(),
+                stairConfig.riseType(),
+                stairConfig.stairWidth(),
+                palette.stairBlock(),
+                palette.slabBlock(),
+                palette.ladderBlock()
+        );
+    }
+
+    private MKWorkspaceVerticalAccessSpec alignVerticalAccessMaterials(MKWorkspaceVerticalAccessSpec spec,
+                                                                       MKWorkspaceMaterialPalette palette) {
+        return new MKWorkspaceVerticalAccessSpec(
+                spec.shaftSize(),
+                spec.placement(),
+                alignStairMaterials(spec.stairConfig(), palette)
         );
     }
 

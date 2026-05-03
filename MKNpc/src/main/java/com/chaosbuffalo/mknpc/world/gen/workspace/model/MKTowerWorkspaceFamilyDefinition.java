@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public class MKTowerWorkspaceFamilyDefinition {
+public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamily {
     public static final Codec<MKTowerWorkspaceFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("baseName").forGetter(MKTowerWorkspaceFamilyDefinition::baseName),
             MKWorkspaceCodecs.TOWER_CATEGORY_CODEC.fieldOf("category").forGetter(MKTowerWorkspaceFamilyDefinition::category),
@@ -28,7 +28,9 @@ public class MKTowerWorkspaceFamilyDefinition {
             MKWorkspaceFamilyHorizontalExitDefinition.CODEC.listOf().optionalFieldOf("horizontalExits", List.of())
                     .forGetter(MKTowerWorkspaceFamilyDefinition::horizontalExits),
             MKWorkspaceCodecs.BRANCH_EXIT_MASK_CODEC.optionalFieldOf("branchExitMask")
-                    .forGetter(family -> Optional.empty())
+                    .forGetter(family -> Optional.empty()),
+            MKWorkspacePaletteOverride.CODEC.optionalFieldOf("paletteOverride")
+                    .forGetter(MKTowerWorkspaceFamilyDefinition::paletteOverride)
     ).apply(instance, MKTowerWorkspaceFamilyDefinition::fromSerializedData));
 
     private final String baseName;
@@ -40,6 +42,7 @@ public class MKTowerWorkspaceFamilyDefinition {
     private final int roomHeight;
     private final MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode;
     private final List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits;
+    private final Optional<MKWorkspacePaletteOverride> paletteOverride;
 
     public MKTowerWorkspaceFamilyDefinition(String baseName, MKTowerWorkspaceCategory category,
                                             MKWorkspacePieceRole pieceRole, boolean supportsVerticalAccess,
@@ -54,6 +57,16 @@ public class MKTowerWorkspaceFamilyDefinition {
                                             int roomWidth, int roomLength, int roomHeight,
                                             MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
                                             List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits) {
+        this(baseName, category, pieceRole, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
+                horizontalExtrusionMode, horizontalExits, Optional.empty());
+    }
+
+    public MKTowerWorkspaceFamilyDefinition(String baseName, MKTowerWorkspaceCategory category,
+                                            MKWorkspacePieceRole pieceRole, boolean supportsVerticalAccess,
+                                            int roomWidth, int roomLength, int roomHeight,
+                                            MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
+                                            List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
+                                            Optional<MKWorkspacePaletteOverride> paletteOverride) {
         this.baseName = baseName;
         this.category = category;
         this.pieceRole = pieceRole;
@@ -63,6 +76,7 @@ public class MKTowerWorkspaceFamilyDefinition {
         this.roomHeight = roomHeight;
         this.horizontalExtrusionMode = horizontalExtrusionMode;
         this.horizontalExits = List.copyOf(horizontalExits);
+        this.paletteOverride = paletteOverride.filter(override -> !override.isEmpty());
     }
 
     public static List<MKTowerWorkspaceFamilyDefinition> createDefaults() {
@@ -292,6 +306,21 @@ public class MKTowerWorkspaceFamilyDefinition {
         return horizontalExits;
     }
 
+    @Override
+    public String paletteFamilyId() {
+        return baseName;
+    }
+
+    @Override
+    public Optional<MKTowerWorkspaceCategory> paletteCategory() {
+        return Optional.of(category);
+    }
+
+    @Override
+    public Optional<MKWorkspacePaletteOverride> paletteOverride() {
+        return paletteOverride;
+    }
+
     public Optional<MKWorkspaceFamilyHorizontalExitDefinition> mainEntry() {
         return horizontalExits.stream()
                 .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY)
@@ -355,17 +384,20 @@ public class MKTowerWorkspaceFamilyDefinition {
                                                                        Optional<Integer> roomHeight,
                                                                        MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
                                                                        List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
-                                                                       Optional<MKTowerBranchExitMask> branchExitMask) {
+                                                                       Optional<MKTowerBranchExitMask> branchExitMask,
+                                                                       Optional<MKWorkspacePaletteOverride> paletteOverride) {
         if (!horizontalExits.isEmpty()) {
             return new MKTowerWorkspaceFamilyDefinition(baseName, category, pieceRole, supportsVerticalAccess,
                     roomWidth.orElse(0), roomLength.orElse(0), roomHeight.orElse(0),
                     horizontalExtrusionMode,
-                    horizontalExits);
+                    horizontalExits,
+                    paletteOverride);
         }
         return new MKTowerWorkspaceFamilyDefinition(baseName, category, pieceRole, supportsVerticalAccess,
                 roomWidth.orElse(0), roomLength.orElse(0), roomHeight.orElse(0),
                 horizontalExtrusionMode,
-                buildLegacyHorizontalExits(category, pieceRole, branchExitMask.orElse(MKTowerBranchExitMask.NONE)));
+                buildLegacyHorizontalExits(category, pieceRole, branchExitMask.orElse(MKTowerBranchExitMask.NONE)),
+                paletteOverride);
     }
 
     private static List<MKWorkspaceFamilyHorizontalExitDefinition> buildLegacyHorizontalExits(MKTowerWorkspaceCategory category,
@@ -404,7 +436,8 @@ public class MKTowerWorkspaceFamilyDefinition {
                 roomLength > 0 ? roomLength : profile.roomLength(),
                 roomHeight > 0 ? roomHeight : profile.fullHeight(),
                 horizontalExtrusionMode,
-                horizontalExits
+                horizontalExits,
+                paletteOverride
         );
     }
 

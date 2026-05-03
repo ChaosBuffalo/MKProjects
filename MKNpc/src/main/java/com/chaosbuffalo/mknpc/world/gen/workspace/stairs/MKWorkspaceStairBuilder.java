@@ -3,6 +3,8 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.stairs;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKResolvedVerticalAccessProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
@@ -34,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 
 public class MKWorkspaceStairBuilder {
+    private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
+
     public MKWorkspacePieceDefinition generateForPiece(ServerLevel level, MKStructureWorkspace workspace,
                                                        MKWorkspacePieceDefinition piece) {
         return generateForPiece(level, workspace, piece, workspace.stairConfig());
@@ -42,28 +46,30 @@ public class MKWorkspaceStairBuilder {
     public MKWorkspacePieceDefinition generateForPiece(ServerLevel level, MKStructureWorkspace workspace,
                                                        MKWorkspacePieceDefinition piece,
                                                        MKWorkspaceStairAuthoringConfig stairConfig) {
-        if (!isEligible(piece) || stairConfig.mode() == MKWorkspaceStairMode.NONE) {
+        MKWorkspaceStairAuthoringConfig effectiveStairConfig = withPaletteMaterials(stairConfig,
+                paletteResolver.resolvePiece(workspace, piece).orElse(workspace.palette()));
+        if (!isEligible(piece) || effectiveStairConfig.mode() == MKWorkspaceStairMode.NONE) {
             clearGenerated(level, workspace, piece);
             return updateGeneratedState(piece, List.of(), MKWorkspaceStairMode.NONE);
         }
 
         MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry = getGenerationGeometry(workspace, piece);
-        MKWorkspaceStairMode resolvedMode = resolveMode(stairConfig, geometry);
+        MKWorkspaceStairMode resolvedMode = resolveMode(effectiveStairConfig, geometry);
         if (resolvedMode == MKWorkspaceStairMode.LADDER) {
-            return generateLadder(level, piece, geometry, stairConfig);
+            return generateLadder(level, piece, geometry, effectiveStairConfig);
         }
         if (MKWorkspaceVerticalAccessTags.isTopCap(piece.tags())) {
-            return generateTopCapContinuation(level, piece, geometry, stairConfig, resolvedMode);
+            return generateTopCapContinuation(level, piece, geometry, effectiveStairConfig, resolvedMode);
         }
-        MKWorkspaceStairAuthoringConfig resolvedConfig = normalizeConfigForMode(stairConfig, resolvedMode);
+        MKWorkspaceStairAuthoringConfig resolvedConfig = normalizeConfigForMode(effectiveStairConfig, resolvedMode);
         int interiorHeight = getProfileInteriorHeight(piece);
         return MKResolvedVerticalAccessProfile.resolve(resolvedConfig, geometry.width(), geometry.length(), interiorHeight)
                 .map(resolvedProfile -> switch (resolvedProfile.riseStrategy()) {
-                    case SLAB -> generateSlabSpiral(level, workspace, piece, geometry, stairConfig,
+                    case SLAB -> generateSlabSpiral(level, workspace, piece, geometry, effectiveStairConfig,
                             resolvedProfile.asUniformProfile(), resolvedProfile);
-                    case STAIR -> generateStairSpiral(level, workspace, piece, geometry, stairConfig,
+                    case STAIR -> generateStairSpiral(level, workspace, piece, geometry, effectiveStairConfig,
                             resolvedProfile.asUniformProfile(), resolvedProfile);
-                    case MIXED -> generateMixedSpiral(level, workspace, piece, geometry, stairConfig, resolvedProfile);
+                    case MIXED -> generateMixedSpiral(level, workspace, piece, geometry, effectiveStairConfig, resolvedProfile);
                 })
                 .orElseGet(() -> updateGeneratedState(piece, piece.generatedStairPositions(), MKWorkspaceStairMode.NONE));
     }
@@ -437,7 +443,8 @@ public class MKWorkspaceStairBuilder {
     }
 
     private void clearGenerated(ServerLevel level, MKStructureWorkspace workspace, MKWorkspacePieceDefinition piece) {
-        BlockState protectedBottomState = resolveSolidState(workspace.palette().floorBlock(),
+        MKWorkspaceMaterialPalette palette = paletteResolver.resolvePiece(workspace, piece).orElse(workspace.palette());
+        BlockState protectedBottomState = resolveSolidState(palette.floorBlock(),
                 Blocks.STONE_BRICKS.defaultBlockState());
         clearGenerated(level, piece, protectedBottomState);
     }
@@ -543,6 +550,18 @@ public class MKWorkspaceStairBuilder {
                     stairConfig.ladderBlock());
         }
         return stairConfig;
+    }
+
+    private MKWorkspaceStairAuthoringConfig withPaletteMaterials(MKWorkspaceStairAuthoringConfig stairConfig,
+                                                                 MKWorkspaceMaterialPalette palette) {
+        return new MKWorkspaceStairAuthoringConfig(
+                stairConfig.mode(),
+                stairConfig.riseType(),
+                stairConfig.stairWidth(),
+                palette.stairBlock(),
+                palette.slabBlock(),
+                palette.ladderBlock()
+        );
     }
 
     private MKWorkspacePieceDefinition updateGeneratedState(MKWorkspacePieceDefinition piece, List<BlockPos> generated,

@@ -2,8 +2,6 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.export;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.core.BlockPos;
@@ -40,8 +38,6 @@ import java.util.zip.ZipOutputStream;
 public class MKWorkspaceBackupArchiveStore {
     private static final String MANIFEST_ENTRY = "manifest.json";
     private static final String PIECE_DIR = "pieces/";
-
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
     public record RestoreStats(int restoredPieceCount, int clearedBlockCount) {
     }
@@ -102,7 +98,7 @@ public class MKWorkspaceBackupArchiveStore {
         output.putNextEntry(new ZipEntry(MANIFEST_ENTRY));
         JsonElement json = MKWorkspaceExportManifest.CODEC.encodeStart(JsonOps.INSTANCE, manifest).getOrThrow();
         Writer writer = new OutputStreamWriter(output, StandardCharsets.UTF_8);
-        gson.toJson(json, writer);
+        writer.write(json.toString());
         writer.flush();
         output.closeEntry();
     }
