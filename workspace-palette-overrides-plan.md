@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Workspace generation currently has one base structure palette on `MKStructureWorkspace`, while hallway families store their own direct floor, wall, and ceiling block ids. Stair and slab materials live beside the stair authoring config instead of in the palette. Categories and room families cannot express material intent, so every non-hallway room inherits the same workspace palette unless planned-piece tags are manually populated.
+Workspace generation currently has one base structure palette on `MKStructureWorkspace`, while hallway families store their own direct floor, wall, and ceiling block ids. Stair, slab, and ladder materials live beside the stair authoring config instead of in the palette. Categories and room families cannot express material intent, so every non-hallway room inherits the same workspace palette unless planned-piece tags are manually populated.
 
 The goal is to let categories, room families, and hallway families optionally override the base workspace palette, while keeping the base palette as the default source of truth.
 
@@ -11,7 +11,7 @@ The goal is to let categories, room families, and hallway families optionally ov
 - Add optional palette overrides to tower category profiles.
 - Add optional palette overrides to tower room family definitions.
 - Convert hallway family material settings into optional palette overrides.
-- Treat stair and slab materials as palette roles, with the same inheritance and override behavior as floor, wall, and ceiling.
+- Treat stair, slab, and ladder materials as palette roles, with the same inheritance and override behavior as floor, wall, and ceiling.
 - Resolve palettes consistently through one family-aware precedence:
   1. family override
   2. category override
@@ -23,7 +23,6 @@ The goal is to let categories, room families, and hallway families optionally ov
 ## Non-Goals
 
 - Do not introduce per-piece or per-variant palette editing in this pass.
-- Do not fold ladder behavior into the palette in this pass unless we explicitly decide ladders are material variants instead of traversal/access blocks.
 - Do not require existing authored blocks to be scaffold-owned before material substitution. Palette changes should still replace matching user-placed blocks inside the affected piece bounds, consistent with generic block swap behavior.
 - Do not clean up old loose export files or old generated resources as part of this feature.
 
@@ -43,7 +42,7 @@ Relevant generation flow:
 - Hallway pieces currently get `workspace_palette_floor`, `workspace_palette_wall`, and `workspace_palette_ceiling` tags from `MKHallwayFamilyDefinition`.
 - `MKWorkspaceScaffoldBuilder` resolves those planned-piece palette tags and falls back to `workspace.palette()`.
 - `MKWorkspaceMarginExpansionService` has parallel palette-tag constants and resolves material state during shell expansion.
-- Palette-only form edits currently route through `MKStructureWorkspaceMutationService.swapPalette`, which swaps old base floor/wall/ceiling blocks to the new base palette across all pieces. Stair and slab materials are not included yet, which is the behavior this plan should change.
+- Palette-only form edits currently route through `MKStructureWorkspaceMutationService.swapPalette`, which swaps old base floor/wall/ceiling blocks to the new base palette across all pieces. Stair, slab, and ladder materials are not included yet, which is the behavior this plan should change.
 
 The scaffold path already has the right low-level mechanism: generated pieces can carry resolved palette tags. What is missing is a first-class inherited palette model and mutation logic that can reason about old and new resolved palettes per affected piece.
 
@@ -51,7 +50,7 @@ The scaffold path already has the right low-level mechanism: generated pieces ca
 
 ### Base Material Palette
 
-Extend `MKWorkspaceMaterialPalette` from three roles to five:
+Extend `MKWorkspaceMaterialPalette` from three roles to six:
 
 ```java
 ResourceLocation floorBlock();
@@ -59,6 +58,7 @@ ResourceLocation wallBlock();
 ResourceLocation ceilingBlock();
 ResourceLocation stairBlock();
 ResourceLocation slabBlock();
+ResourceLocation ladderBlock();
 ```
 
 Default values should be coherent with the existing stone palette:
@@ -68,8 +68,9 @@ Default values should be coherent with the existing stone palette:
 - ceiling: `minecraft:smooth_stone`
 - stair: `minecraft:stone_brick_stairs`
 - slab: `minecraft:stone_brick_slab`
+- ladder: `minecraft:ladder`
 
-`MKWorkspaceStairAuthoringConfig` should stop being the source of default stair and slab material ids. It can keep legacy material fields during migration if that is the lowest-risk path, but the resolved palette should be the material source used by generation and non-destructive swaps.
+`MKWorkspaceStairAuthoringConfig` should stop being the source of default stair, slab, and ladder material ids. It can keep legacy material fields during migration if that is the lowest-risk path, but the resolved palette should be the material source used by generation and non-destructive swaps.
 
 ### Partial Palette Override
 
@@ -82,6 +83,7 @@ public class MKWorkspacePaletteOverride {
     Optional<ResourceLocation> ceilingBlock();
     Optional<ResourceLocation> stairBlock();
     Optional<ResourceLocation> slabBlock();
+    Optional<ResourceLocation> ladderBlock();
 }
 ```
 
@@ -92,6 +94,7 @@ Codec fields:
 - `ceilingBlock`
 - `stairBlock`
 - `slabBlock`
+- `ladderBlock`
 
 All fields are optional. An empty override means "inherit everything" and should usually serialize as absent at the parent object level.
 
@@ -165,6 +168,7 @@ Add shared constants for palette tags:
 - `workspace_palette_ceiling`
 - `workspace_palette_stair`
 - `workspace_palette_slab`
+- `workspace_palette_ladder`
 
 Suggested location:
 
@@ -199,16 +203,17 @@ Keep the current behavior:
 
 Change only the constants/import path and ensure all room pieces can now receive tags, not just hallways.
 
-### Stair Generation
+### Vertical Access Generation
 
-Stair and slab block ids should come from the resolved piece palette by default.
+Stair, slab, and ladder block ids should come from the resolved piece palette by default.
 
 Rules:
 
 - generated stair blocks use resolved `stairBlock`
 - generated slab blocks and landing fills use resolved `slabBlock`
-- if a stair detail page still exposes per-category or per-family stair/slab controls, those controls should write palette overrides rather than a separate stair material override model
-- existing stair authoring config keeps geometry and behavior settings such as mode, rise type, stair width, shaft placement, and ladder fallback
+- generated ladder blocks use resolved `ladderBlock`
+- if a stair detail page still exposes per-category or per-family stair/slab/ladder controls, those controls should write palette overrides rather than a separate material override model
+- existing stair authoring config keeps geometry and behavior settings such as mode, rise type, stair width, and shaft placement
 
 This keeps the source of material truth consistent: palette controls materials, stair config controls geometry/behavior.
 
@@ -222,12 +227,12 @@ Update `MKWorkspaceMarginExpansionService` to use the same palette tag constants
 
 Extend export settings:
 
-- `ExportPalette` gets `stair_block` and `slab_block`.
+- `ExportPalette` gets `stair_block`, `slab_block`, and `ladder_block`.
 - `ExportCategoryProfile` gets optional `palette_override`.
 - `ExportFamilyDefinition` gets optional `palette_override`.
 - `ExportHallwayFamily` gets optional `palette_override`.
 
-The base `palette` field remains the root palette object, but its schema expands to include stair and slab roles.
+The base `palette` field remains the root palette object, but its schema expands to include stair, slab, and ladder roles.
 
 All new fields must be serialized through codecs. Do not add direct Gson parsing or ad hoc JSON reads.
 
@@ -261,6 +266,7 @@ For each existing piece:
    - old ceiling -> new ceiling
    - old stair -> new stair
    - old slab -> new slab
+   - old ladder -> new ladder
 4. If no replacements are needed, skip the piece.
 5. Run `MKWorkspaceBlockSwapService` inside that piece's export bounds, excluding connector blocks as today.
 
@@ -315,6 +321,7 @@ Each override editor should show inherited values and explicit values separately
 - Ceiling: inherited `minecraft:smooth_stone` or explicit selected block
 - Stair: inherited `minecraft:stone_brick_stairs` or explicit selected block
 - Slab: inherited `minecraft:stone_brick_slab` or explicit selected block
+- Ladder: inherited `minecraft:ladder` or explicit selected block
 
 Controls:
 
@@ -330,7 +337,7 @@ When editing a category, include a compact palette override section after geomet
 
 When editing a family, include a compact palette override section after family geometry and exits. Show the resolved category palette as the inherited source.
 
-The existing stair detail material controls should be treated as family or category palette override editors for the `stairBlock` and `slabBlock` roles. They should not maintain a separate material source that can diverge from the palette.
+The existing stair detail material controls should be treated as family or category palette override editors for the `stairBlock`, `slabBlock`, and `ladderBlock` roles. They should not maintain a separate material source that can diverge from the palette.
 
 ### Hallway Page
 
@@ -343,6 +350,7 @@ Model validation should verify:
 - override block ids exist in `BuiltInRegistries.BLOCK`
 - `stairBlock` values are stair-compatible when used by stair generation
 - `slabBlock` values are slab-compatible when used by stair generation or landing fills
+- `ladderBlock` values are ladder-compatible when used by ladder vertical access generation
 - override fields are allowed to be empty
 - family overrides do not require a category override
 - hallway overrides do not require category membership
@@ -353,6 +361,7 @@ Validation should report the parent object in the error message:
 - `family floor_main palette floor block is not registered: ...`
 - `hallway family branch palette ceiling block is not registered: ...`
 - `family floor_main palette stair block is not a stair block: ...`
+- `family floor_main palette ladder block is not ladder-compatible: ...`
 
 ## Tests
 
@@ -364,9 +373,9 @@ Add unit tests for:
 - family override beats category override for only the roles it defines
 - hallway family override uses the same family resolver and resolves against the base workspace palette when it has no category
 - planner writes expected palette tags for category/family/hallway resolved palettes
-- generated stair planning/building uses resolved stair and slab palette roles
+- generated vertical access planning/building uses resolved stair, slab, and ladder palette roles
 - scoped palette mutation does not affect a family that overrides the changed base role
-- scoped palette mutation includes generated stair and slab occurrences
+- scoped palette mutation includes generated stair, slab, and ladder occurrences
 - export/import round trips override fields through codecs
 
 Where Minecraft bootstrap makes direct `BlockState` tests awkward, keep tests at the `ResourceLocation` and tag level.
@@ -386,7 +395,7 @@ Where Minecraft bootstrap makes direct `BlockState` tests awkward, keep tests at
 
 - Update `MKTowerWorkspacePlanner` to resolve and tag room family palettes.
 - Update hallway planning to use the same family resolver instead of direct hallway block fields.
-- Update stair generation to read resolved stair/slab roles from the piece palette.
+- Update vertical access generation to read resolved stair/slab/ladder roles from the piece palette.
 - Update `MKWorkspaceScaffoldBuilder` and `MKWorkspaceMarginExpansionService` to use shared constants and resolved tags.
 - Add planner/tag tests.
 
@@ -402,8 +411,8 @@ Where Minecraft bootstrap makes direct `BlockState` tests awkward, keep tests at
 - Add reusable palette override rows using the existing block picker modal.
 - Replace hallway direct block id text fields.
 - Add category and family override controls.
-- Convert stair/slab material controls to edit palette override roles.
-- Extend base palette editing to include stair and slab roles.
+- Convert stair/slab/ladder material controls to edit palette override roles.
+- Extend base palette editing to include stair, slab, and ladder roles.
 - Compile `:MKWidgets:compileJava :MKNpc:compileJava`.
 
 ### Phase 5: Non-Destructive Mutation
