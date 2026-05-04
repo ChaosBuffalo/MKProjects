@@ -20,6 +20,7 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormFamilies
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormHallwaysPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormMaterialsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormOpeningsPage;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceManagePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePageContext;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceUtilitiesPage;
@@ -253,7 +254,7 @@ public class MKWorkspaceScreen extends MKScreen {
         addState("form_opening_detail", this::buildFormOpeningDetailState);
         addWorkspacePage(new WorkspaceFormHallwaysPage());
         addState("form_hallway_detail", this::buildFormHallwayDetailState);
-        addState("workspace", this::buildWorkspaceState);
+        addWorkspacePage(new WorkspaceManagePage());
         addWorkspacePage(new WorkspaceUtilitiesPage());
         addWorkspacePage(new WorkspaceBlockSwapPage());
         addWorkspacePage(new WorkspaceBackupPage());
@@ -290,11 +291,18 @@ public class MKWorkspaceScreen extends MKScreen {
     private WorkspacePageContext createPageContext() {
         return new WorkspacePageContext(font, anchor, workspace, width, height, PANEL_WIDTH, PANEL_HEIGHT, SCROLL_WIDTH,
                 CONTENT_WIDTH, BUTTON_HEIGHT, BUTTON_GAP, BOTTOM_PADDING, TOP_CONTENT_Y, HEADER_SCROLL_GAP, TEXT_COLOR,
-                importManifestIds, backupManifestFiles, this::pushState, this::switchToExistingState, this::flagNeedSetup,
-                createDraftEditor(), this::addPaletteBlockPickerRow,
+                importManifestIds, backupManifestFiles, this::onClose, this::pushState, this::switchToExistingState,
+                this::flagNeedSetup, this::openWorkspaceCategory, createDraftEditor(), this::addPaletteBlockPickerRow,
                 () -> blockSwapSourceBlock, value -> blockSwapSourceBlock = value,
                 () -> blockSwapTargetBlock, value -> blockSwapTargetBlock = value,
                 this::addBlockPickerRow, this::supportsStairGeneration, this::finalizeScrollView);
+    }
+
+    private void openWorkspaceCategory(String topologyKey) {
+        selectedTopologyKey = topologyKey;
+        resetCategoryOverrides();
+        pushState("category");
+        flagNeedSetup();
     }
 
     private WorkspaceFormDraftEditor createDraftEditor() {
@@ -1323,126 +1331,10 @@ public class MKWorkspaceScreen extends MKScreen {
         return root;
     }
 
-    private MKLayout buildWorkspaceState() {
-        int xPos = width / 2 - PANEL_WIDTH / 2;
-        int yPos = height / 2 - PANEL_HEIGHT / 2;
-        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
-        root.setMargins(8, 8, 8, 8);
-        root.setPaddingTop(8).setPaddingBot(8);
-
-        MKText title = makeWhiteText(Component.translatable("mknpc.workspace.screen.manage_title"));
-        root.addWidget(title);
-        root.addConstraintToWidget(MarginConstraint.TOP, title);
-        root.addConstraintToWidget(new CenterXConstraint(), title);
-
-        MKText summary = makeWhiteText(Component.translatable("mknpc.workspace.screen.manage_summary",
-                workspace.namespace(), workspace.structureName(), workspace.pieces().size()));
-        summary.setWidth(CONTENT_WIDTH);
-        summary.setMultiline(true);
-        root.addWidget(summary);
-        root.addConstraintToWidget(StackConstraint.VERTICAL, summary);
-        root.addConstraintToWidget(new CenterXConstraint(), summary);
-
-        int buttonCount = 4;
-        int buttonAreaHeight = (buttonCount * BUTTON_HEIGHT) + ((buttonCount - 1) * BUTTON_GAP) + BOTTOM_PADDING;
-        int scrollTop = scrollTopAfterHeader(root, summary);
-        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 8 - scrollTop;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
-        scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
-        root.addWidget(scrollView);
-
-        MKStackLayoutVertical content = new MKStackLayoutVertical(0, 0, CONTENT_WIDTH);
-        content.setMargins(4, 4, 4, 4);
-        content.setPaddingTop(4).setPaddingBot(4);
-
-        for (Map.Entry<String, List<MKWorkspacePieceDefinition>> entry : groupPiecesByTopology().entrySet()) {
-            String topologyKey = entry.getKey();
-            List<MKWorkspacePieceDefinition> pieces = entry.getValue();
-            MKWorkspacePieceDefinition templatePiece = pieces.stream()
-                    .filter(piece -> piece.variantIndex() == 0)
-                    .findFirst()
-                    .orElse(pieces.get(0));
-
-            MKText header = makeWhiteText(Component.literal(buildWorkspaceGroupLabel(templatePiece)));
-            header.setWidth(CONTENT_WIDTH);
-            content.addWidget(header);
-            content.addConstraintToWidget(MarginConstraint.LEFT, header);
-
-            int variantCount = countVariants(pieces);
-            long generatedCount = pieces.stream().filter(this::hasGeneratedStairs).count();
-            MKText details = makeWhiteText(Component.literal(
-                    pieces.size() + " piece" + (pieces.size() == 1 ? "" : "s") + " - " +
-                            variantCount + " variant" + (variantCount == 1 ? "" : "s") +
-                            " - template " + getBaseName(templatePiece) +
-                            (supportsStairGeneration(pieces) ? " - stairs " + generatedCount + "/" + pieces.size() : "")));
-            details.setWidth(CONTENT_WIDTH);
-            content.addWidget(details);
-            content.addConstraintToWidget(MarginConstraint.LEFT, details);
-
-            MKButton openCategory = new MKButton(Component.literal("Open Category"), 180, 20);
-            content.addWidget(openCategory);
-            content.addConstraintToWidget(new CenterXConstraint(), openCategory);
-            openCategory.setPressedCallback((button, mouseButton) -> {
-                selectedTopologyKey = topologyKey;
-                resetCategoryOverrides();
-                pushState("category");
-                flagNeedSetup();
-                return true;
-            });
-        }
-
-        content.manualRecompute();
-        scrollView.addWidget(content);
-        scrollView.centerContentX();
-        finalizeScrollView(scrollView, "workspace");
-
-        MKButton close = new MKButton(Component.translatable("mknpc.workspace.button.close"), 120, 20);
-        root.addWidget(close);
-        root.addConstraintToWidget(new CenterXConstraint(), close);
-        close.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
-        close.setPressedCallback((button, mouseButton) -> {
-            onClose();
-            return true;
-        });
-
-        MKButton utilities = new MKButton(Component.literal("Utilities"), 180, 20);
-        root.addWidget(utilities);
-        root.addConstraintToWidget(new CenterXConstraint(), utilities);
-        utilities.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT);
-        utilities.setPressedCallback((button, mouseButton) -> {
-            pushState("utilities");
-            flagNeedSetup();
-            return true;
-        });
-
-        MKButton exportAll = new MKButton(Component.translatable("mknpc.workspace.button.export_all"), 180, 20);
-        root.addWidget(exportAll);
-        root.addConstraintToWidget(new CenterXConstraint(), exportAll);
-        exportAll.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT
-                - BUTTON_GAP - BUTTON_HEIGHT);
-        exportAll.setPressedCallback((button, mouseButton) -> {
-            PacketDistributor.sendToServer(new ExportWorkspacePiecesPacket(anchor));
-            return true;
-        });
-
-        MKButton editTemplates = new MKButton(Component.translatable("mknpc.workspace.button.edit_template_settings"), 180, 20);
-        root.addWidget(editTemplates);
-        root.addConstraintToWidget(new CenterXConstraint(), editTemplates);
-        editTemplates.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT
-                - BUTTON_GAP - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT);
-        editTemplates.setPressedCallback((button, mouseButton) -> {
-            pushState("form");
-            flagNeedSetup();
-            return true;
-        });
-
-        return root;
-    }
-
     private MKLayout buildCategoryState() {
         if (selectedTopologyKey == null) {
             switchToExistingState("workspace");
-            return buildWorkspaceState();
+            return new WorkspaceManagePage().build(createPageContext());
         }
         int xPos = width / 2 - PANEL_WIDTH / 2;
         int yPos = height / 2 - PANEL_HEIGHT / 2;
@@ -1454,7 +1346,7 @@ public class MKWorkspaceScreen extends MKScreen {
         if (pieces.isEmpty()) {
             selectedTopologyKey = null;
             switchToExistingState("workspace");
-            return buildWorkspaceState();
+            return new WorkspaceManagePage().build(createPageContext());
         }
         boolean stairCategory = supportsStairGeneration(pieces);
         MKWorkspacePieceDefinition templatePiece = pieces.stream()
