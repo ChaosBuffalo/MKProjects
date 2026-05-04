@@ -55,8 +55,8 @@ public class WorkspaceFormHallwaysPage extends WorkspacePageBase {
             content.addConstraintToWidget(new CenterXConstraint(), openButton);
             openButton.setPressedCallback((button, mouseButton) -> {
                 editor.selectedHallwayIndex(index);
-                context.pushState().accept("form_hallway_detail");
-                context.flagNeedSetup().run();
+                context.pushState("form_hallway_detail");
+                context.flagNeedSetup();
                 return true;
             });
         }
@@ -66,8 +66,8 @@ public class WorkspaceFormHallwaysPage extends WorkspacePageBase {
         MKButton addHallway = addBottomButton(context, root, Component.literal("Add Hallway"), 180, 1);
         addHallway.setPressedCallback((button, mouseButton) -> {
             editor.selectedHallwayIndex(editor.addHallwayFamily());
-            context.pushState().accept("form_hallway_detail");
-            context.flagNeedSetup().run();
+            context.pushState("form_hallway_detail");
+            context.flagNeedSetup();
             return true;
         });
 

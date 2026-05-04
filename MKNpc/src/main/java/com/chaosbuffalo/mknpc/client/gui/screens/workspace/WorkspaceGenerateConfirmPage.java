@@ -29,7 +29,7 @@ public class WorkspaceGenerateConfirmPage extends WorkspacePageBase {
 
         MKButton cancel = addBottomButton(context, root, Component.literal("Cancel"), 120, 0);
         cancel.setPressedCallback((button, mouseButton) -> {
-            context.switchToExistingState().accept("form");
+            context.switchToExistingState("form");
             return true;
         });
         return root;

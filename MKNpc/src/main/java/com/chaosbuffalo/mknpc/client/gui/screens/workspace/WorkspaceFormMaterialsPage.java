@@ -23,17 +23,17 @@ public class WorkspaceFormMaterialsPage extends WorkspacePageBase {
         int rowTop = context.panelY() + 96;
         MKWorkspaceMaterialPalette defaultPalette = MKWorkspaceMaterialPalette.defaultPalette();
         WorkspaceFormDraftEditor editor = context.draftEditor();
-        context.addPaletteBlockPickerRow().add(root, context.panelX(), rowTop, "Floor",
+        context.addPaletteBlockPickerRow(root, context.panelX(), rowTop, "Floor",
                 editor.floorBlock(), defaultPalette.floorBlock(), editor::floorBlock);
-        context.addPaletteBlockPickerRow().add(root, context.panelX(), rowTop + 34, "Wall",
+        context.addPaletteBlockPickerRow(root, context.panelX(), rowTop + 34, "Wall",
                 editor.wallBlock(), defaultPalette.wallBlock(), editor::wallBlock);
-        context.addPaletteBlockPickerRow().add(root, context.panelX(), rowTop + 68, "Ceiling",
+        context.addPaletteBlockPickerRow(root, context.panelX(), rowTop + 68, "Ceiling",
                 editor.ceilingBlock(), defaultPalette.ceilingBlock(), editor::ceilingBlock);
-        context.addPaletteBlockPickerRow().add(root, context.panelX(), rowTop + 102, "Stair",
+        context.addPaletteBlockPickerRow(root, context.panelX(), rowTop + 102, "Stair",
                 editor.stairBlock(), defaultPalette.stairBlock(), editor::stairBlock);
-        context.addPaletteBlockPickerRow().add(root, context.panelX(), rowTop + 136, "Slab",
+        context.addPaletteBlockPickerRow(root, context.panelX(), rowTop + 136, "Slab",
                 editor.slabBlock(), defaultPalette.slabBlock(), editor::slabBlock);
-        context.addPaletteBlockPickerRow().add(root, context.panelX(), rowTop + 170, "Ladder",
+        context.addPaletteBlockPickerRow(root, context.panelX(), rowTop + 170, "Ladder",
                 editor.ladderBlock(), defaultPalette.ladderBlock(), editor::ladderBlock);
 
         addBackButton(context, root, WorkspaceFormPage.ID);

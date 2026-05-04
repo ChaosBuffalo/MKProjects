@@ -24,26 +24,26 @@ public class WorkspaceBlockSwapPage extends WorkspacePageBase {
 
         addTitle(context, root, Component.literal("Block Swap"));
 
-        if (context.blockSwapSourceBlock().get() == null) {
-            context.setBlockSwapSourceBlock().accept(context.workspace().palette().wallBlock());
+        if (context.blockSwapSourceBlock() == null) {
+            context.setBlockSwapSourceBlock(context.workspace().palette().wallBlock());
         }
-        if (context.blockSwapTargetBlock().get() == null) {
-            context.setBlockSwapTargetBlock().accept(context.workspace().palette().floorBlock());
+        if (context.blockSwapTargetBlock() == null) {
+            context.setBlockSwapTargetBlock(context.workspace().palette().floorBlock());
         }
 
         addHeaderText(context, root, Component.literal(
                 "Choose source and target blocks to replace across the live workspace."));
 
         int rowTop = yPos + 112;
-        context.addBlockPickerRow().add(root, xPos, rowTop, "Source", context.blockSwapSourceBlock().get(),
-                context.setBlockSwapSourceBlock(), false);
-        context.addBlockPickerRow().add(root, xPos, rowTop + 42, "Target", context.blockSwapTargetBlock().get(),
-                context.setBlockSwapTargetBlock(), false);
+        context.addBlockPickerRow(root, xPos, rowTop, "Source", context.blockSwapSourceBlock(),
+                context::setBlockSwapSourceBlock, false);
+        context.addBlockPickerRow(root, xPos, rowTop + 42, "Target", context.blockSwapTargetBlock(),
+                context::setBlockSwapTargetBlock, false);
 
         MKButton swapBlocks = addBottomButton(context, root, Component.literal("Swap Blocks"), 180, 1);
         swapBlocks.setPressedCallback((button, mouseButton) -> {
-            ResourceLocation sourceBlock = context.blockSwapSourceBlock().get();
-            ResourceLocation targetBlock = context.blockSwapTargetBlock().get();
+            ResourceLocation sourceBlock = context.blockSwapSourceBlock();
+            ResourceLocation targetBlock = context.blockSwapTargetBlock();
             if (!sourceBlock.equals(ResourceLocation.withDefaultNamespace("air")) &&
                     !sourceBlock.equals(targetBlock)) {
                 PacketDistributor.sendToServer(new SwapWorkspaceBlockPacket(

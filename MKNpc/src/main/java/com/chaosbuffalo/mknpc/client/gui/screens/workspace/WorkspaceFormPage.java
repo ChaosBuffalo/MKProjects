@@ -39,7 +39,7 @@ public class WorkspaceFormPage extends WorkspacePageBase {
             MKButton backToWorkspace = addBottomButton(context, root,
                     Component.translatable("mknpc.workspace.button.back_to_workspace"), 180, 1);
             backToWorkspace.setPressedCallback((button, mouseButton) -> {
-                context.switchToExistingState().accept("workspace");
+                context.switchToExistingState("workspace");
                 return true;
             });
         }
@@ -61,8 +61,8 @@ public class WorkspaceFormPage extends WorkspacePageBase {
         root.addConstraintToWidget(new CenterXConstraint(), button);
         button.setY(y);
         button.setPressedCallback((pressedButton, mouseButton) -> {
-            context.pushState().accept(targetState);
-            context.flagNeedSetup().run();
+            context.pushState(targetState);
+            context.flagNeedSetup();
             return true;
         });
     }

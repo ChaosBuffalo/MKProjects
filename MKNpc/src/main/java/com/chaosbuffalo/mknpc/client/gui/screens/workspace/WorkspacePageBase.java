@@ -60,7 +60,7 @@ public abstract class WorkspacePageBase implements WorkspacePage {
         content.manualRecompute();
         scrollView.addWidget(content);
         scrollView.centerContentX();
-        context.finalizeScrollView().accept(scrollView, id());
+        context.finalizeScrollView(scrollView, id());
     }
 
     protected MKButton addBottomButton(WorkspacePageContext context, MKLayout root, Component label,
@@ -77,7 +77,7 @@ public abstract class WorkspacePageBase implements WorkspacePage {
     protected MKButton addBackButton(WorkspacePageContext context, MKLayout root, String targetState) {
         MKButton back = addBottomButton(context, root, Component.literal("Back"), 120, 0);
         back.setPressedCallback((button, mouseButton) -> {
-            context.switchToExistingState().accept(targetState);
+            context.switchToExistingState(targetState);
             return true;
         });
         return back;

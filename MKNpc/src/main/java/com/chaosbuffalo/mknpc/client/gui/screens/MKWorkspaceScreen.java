@@ -62,7 +62,9 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKTextFieldWidget;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -77,7 +79,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public class MKWorkspaceScreen extends MKScreen {
+public class MKWorkspaceScreen extends MKScreen implements WorkspacePageContext {
     private static final int PANEL_WIDTH = 380;
     private static final int PANEL_HEIGHT = 390;
     private static final int SCROLL_WIDTH = PANEL_WIDTH - 20;
@@ -262,7 +264,7 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     private void addWorkspacePage(WorkspacePage page) {
-        addState(page.id(), () -> page.build(createPageContext()));
+        addState(page.id(), () -> page.build(this));
     }
 
     private String draftWorkspaceId() {
@@ -284,22 +286,132 @@ public class MKWorkspaceScreen extends MKScreen {
         return workspace != null && !workspace.pieces().isEmpty();
     }
 
-    private WorkspacePageContext createPageContext() {
-        return new WorkspacePageContext(font, anchor, workspace, width, height, PANEL_WIDTH, PANEL_HEIGHT, SCROLL_WIDTH,
-                CONTENT_WIDTH, BUTTON_HEIGHT, BUTTON_GAP, BOTTOM_PADDING, TOP_CONTENT_Y, HEADER_SCROLL_GAP, TEXT_COLOR,
-                importManifestIds, backupManifestFiles, this::onClose, this::pushState, this::switchToExistingState,
-                this::flagNeedSetup, this::openWorkspaceCategory, createCategoryEditor(), createDraftEditor(),
-                this::addPaletteBlockPickerRow,
-                () -> blockSwapSourceBlock, value -> blockSwapSourceBlock = value,
-                () -> blockSwapTargetBlock, value -> blockSwapTargetBlock = value,
-                this::addBlockPickerRow, this::supportsStairGeneration, this::finalizeScrollView);
+    @Override
+    public Font font() {
+        return font;
     }
 
-    private void openWorkspaceCategory(String topologyKey) {
+    @Override
+    public BlockPos anchor() {
+        return anchor;
+    }
+
+    @Override
+    public MKStructureWorkspace workspace() {
+        return workspace;
+    }
+
+    @Override
+    public int screenWidth() {
+        return width;
+    }
+
+    @Override
+    public int screenHeight() {
+        return height;
+    }
+
+    @Override
+    public int panelWidth() {
+        return PANEL_WIDTH;
+    }
+
+    @Override
+    public int panelHeight() {
+        return PANEL_HEIGHT;
+    }
+
+    @Override
+    public int scrollWidth() {
+        return SCROLL_WIDTH;
+    }
+
+    @Override
+    public int contentWidth() {
+        return CONTENT_WIDTH;
+    }
+
+    @Override
+    public int buttonHeight() {
+        return BUTTON_HEIGHT;
+    }
+
+    @Override
+    public int buttonGap() {
+        return BUTTON_GAP;
+    }
+
+    @Override
+    public int bottomPadding() {
+        return BOTTOM_PADDING;
+    }
+
+    @Override
+    public int topContentY() {
+        return TOP_CONTENT_Y;
+    }
+
+    @Override
+    public int headerScrollGap() {
+        return HEADER_SCROLL_GAP;
+    }
+
+    @Override
+    public int textColor() {
+        return TEXT_COLOR;
+    }
+
+    @Override
+    public List<String> importManifestIds() {
+        return importManifestIds;
+    }
+
+    @Override
+    public List<String> backupManifestFiles() {
+        return backupManifestFiles;
+    }
+
+    @Override
+    public ResourceLocation blockSwapSourceBlock() {
+        return blockSwapSourceBlock;
+    }
+
+    @Override
+    public void setBlockSwapSourceBlock(ResourceLocation value) {
+        blockSwapSourceBlock = value;
+    }
+
+    @Override
+    public ResourceLocation blockSwapTargetBlock() {
+        return blockSwapTargetBlock;
+    }
+
+    @Override
+    public void setBlockSwapTargetBlock(ResourceLocation value) {
+        blockSwapTargetBlock = value;
+    }
+
+    @Override
+    public void closeScreen() {
+        onClose();
+    }
+
+    @Override
+    public void openWorkspaceCategory(String topologyKey) {
         selectedTopologyKey = topologyKey;
         resetCategoryOverrides();
         pushState("category");
         flagNeedSetup();
+    }
+
+    @Override
+    public WorkspaceCategoryEditor categoryEditor() {
+        return createCategoryEditor();
+    }
+
+    @Override
+    public WorkspaceFormDraftEditor draftEditor() {
+        return createDraftEditor();
     }
 
     private WorkspaceCategoryEditor createCategoryEditor() {
@@ -1216,7 +1328,7 @@ public class MKWorkspaceScreen extends MKScreen {
         ensureFormDraftInitialized();
         if (selectedOpeningIndex < 0 || selectedOpeningIndex >= formDraft.openingProfiles.size()) {
             switchToExistingState("form_openings");
-            return new WorkspaceFormOpeningsPage().build(createPageContext());
+            return new WorkspaceFormOpeningsPage().build(this);
         }
         int xPos = width / 2 - PANEL_WIDTH / 2;
         int yPos = height / 2 - PANEL_HEIGHT / 2;
@@ -1315,7 +1427,7 @@ public class MKWorkspaceScreen extends MKScreen {
         ensureFormDraftInitialized();
         if (selectedHallwayIndex < 0 || selectedHallwayIndex >= formDraft.hallwayFamilies.size()) {
             switchToExistingState("form_hallways");
-            return new WorkspaceFormHallwaysPage().build(createPageContext());
+            return new WorkspaceFormHallwaysPage().build(this);
         }
         int xPos = width / 2 - PANEL_WIDTH / 2;
         int yPos = height / 2 - PANEL_HEIGHT / 2;
@@ -1554,8 +1666,9 @@ public class MKWorkspaceScreen extends MKScreen {
         grid.addEntry(labelText, slot, idText);
     }
 
-    private void addPaletteBlockPickerRow(MKLayout root, int xPos, int y, String label, ResourceLocation blockId,
-                                          ResourceLocation defaultBlock, Consumer<ResourceLocation> setter) {
+    @Override
+    public void addPaletteBlockPickerRow(MKLayout root, int xPos, int y, String label, ResourceLocation blockId,
+                                         ResourceLocation defaultBlock, Consumer<ResourceLocation> setter) {
         int rowX = xPos + 22;
 
         MKText labelText = makeWhiteText(Component.literal(label));
@@ -1592,17 +1705,20 @@ public class MKWorkspaceScreen extends MKScreen {
         return text;
     }
 
-    private MKText makeWhiteText(Component text) {
+    @Override
+    public MKText makeWhiteText(Component text) {
         return new MKText(font, text).setColor(TEXT_COLOR);
     }
 
-    private int scrollTopAfterHeader(MKLayout root, MKText headerText) {
+    @Override
+    public int scrollTopAfterHeader(MKLayout root, MKText headerText) {
         root.manualRecompute();
         return Math.max(root.getY() + TOP_CONTENT_Y, headerText.getBottom() + HEADER_SCROLL_GAP);
     }
 
-    private void addBlockPickerRow(MKLayout root, int xPos, int y, String label, ResourceLocation blockId,
-                                   Consumer<ResourceLocation> setter, boolean allowClear) {
+    @Override
+    public void addBlockPickerRow(MKLayout root, int xPos, int y, String label, ResourceLocation blockId,
+                                  Consumer<ResourceLocation> setter, boolean allowClear) {
         int rowX = xPos + 22;
 
         MKText labelText = makeWhiteText(Component.literal(label));
@@ -2989,7 +3105,8 @@ public class MKWorkspaceScreen extends MKScreen {
         return WorkspacePieceDisplay.countVariants(pieces);
     }
 
-    private void finalizeScrollView(MKScrollView scrollView, String stateName) {
+    @Override
+    public void finalizeScrollView(MKScrollView scrollView, String stateName) {
         finalizeScrollView(scrollView, stateName, true);
     }
 
@@ -3111,7 +3228,8 @@ public class MKWorkspaceScreen extends MKScreen {
         return WorkspacePieceDisplay.supportsStairGeneration(pieces);
     }
 
-    private boolean supportsStairGeneration(MKWorkspacePieceDefinition piece) {
+    @Override
+    public boolean supportsStairGeneration(MKWorkspacePieceDefinition piece) {
         return WorkspacePieceDisplay.supportsStairGeneration(piece);
     }
 
@@ -3155,7 +3273,8 @@ public class MKWorkspaceScreen extends MKScreen {
                 : List.of("form");
     }
 
-    private void switchToExistingState(String stateName) {
+    @Override
+    public void switchToExistingState(String stateName) {
         if (stateName.equals(getState())) {
             flagNeedSetup();
             return;

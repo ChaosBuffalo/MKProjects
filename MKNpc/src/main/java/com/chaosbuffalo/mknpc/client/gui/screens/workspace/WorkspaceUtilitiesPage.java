@@ -35,8 +35,8 @@ public class WorkspaceUtilitiesPage extends WorkspacePageBase {
         content.addWidget(blockSwap);
         content.addConstraintToWidget(new CenterXConstraint(), blockSwap);
         blockSwap.setPressedCallback((button, mouseButton) -> {
-            context.pushState().accept("block_swap");
-            context.flagNeedSetup().run();
+            context.pushState("block_swap");
+            context.flagNeedSetup();
             return true;
         });
 
@@ -45,12 +45,12 @@ public class WorkspaceUtilitiesPage extends WorkspacePageBase {
         content.addWidget(backups);
         content.addConstraintToWidget(new CenterXConstraint(), backups);
         backups.setPressedCallback((button, mouseButton) -> {
-            context.pushState().accept(WorkspaceBackupPage.ID);
-            context.flagNeedSetup().run();
+            context.pushState(WorkspaceBackupPage.ID);
+            context.flagNeedSetup();
             return true;
         });
 
-        if (context.workspace().pieces().stream().anyMatch(context.supportsStairGeneration())) {
+        if (context.workspace().pieces().stream().anyMatch(context::supportsStairGeneration)) {
             MKButton generateAllStairs = new MKButton(Component.literal("Generate All Stairs"), 180, 20);
             content.addWidget(generateAllStairs);
             content.addConstraintToWidget(new CenterXConstraint(), generateAllStairs);

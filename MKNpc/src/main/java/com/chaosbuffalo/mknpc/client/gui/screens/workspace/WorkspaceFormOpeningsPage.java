@@ -53,8 +53,8 @@ public class WorkspaceFormOpeningsPage extends WorkspacePageBase {
             content.addConstraintToWidget(new CenterXConstraint(), openButton);
             openButton.setPressedCallback((button, mouseButton) -> {
                 editor.selectedOpeningIndex(index);
-                context.pushState().accept("form_opening_detail");
-                context.flagNeedSetup().run();
+                context.pushState("form_opening_detail");
+                context.flagNeedSetup();
                 return true;
             });
         }
@@ -64,8 +64,8 @@ public class WorkspaceFormOpeningsPage extends WorkspacePageBase {
         MKButton addProfile = addBottomButton(context, root, Component.literal("Add Opening"), 180, 1);
         addProfile.setPressedCallback((button, mouseButton) -> {
             editor.selectedOpeningIndex(editor.addOpeningProfile());
-            context.pushState().accept("form_opening_detail");
-            context.flagNeedSetup().run();
+            context.pushState("form_opening_detail");
+            context.flagNeedSetup();
             return true;
         });
 

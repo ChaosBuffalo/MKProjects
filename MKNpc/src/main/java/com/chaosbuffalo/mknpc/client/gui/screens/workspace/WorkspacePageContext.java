@@ -11,70 +11,89 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
-public record WorkspacePageContext(Font font,
-                                   BlockPos anchor,
-                                   MKStructureWorkspace workspace,
-                                   int screenWidth,
-                                   int screenHeight,
-                                   int panelWidth,
-                                   int panelHeight,
-                                   int scrollWidth,
-                                   int contentWidth,
-                                   int buttonHeight,
-                                   int buttonGap,
-                                   int bottomPadding,
-                                   int topContentY,
-                                   int headerScrollGap,
-                                   int textColor,
-                                   List<String> importManifestIds,
-                                   List<String> backupManifestFiles,
-                                   Runnable closeScreen,
-                                   Consumer<String> pushState,
-                                   Consumer<String> switchToExistingState,
-                                   Runnable flagNeedSetup,
-                                   Consumer<String> openWorkspaceCategory,
-                                   WorkspaceCategoryEditor categoryEditor,
-                                   WorkspaceFormDraftEditor draftEditor,
-                                   PaletteBlockPickerRowAdder addPaletteBlockPickerRow,
-                                   Supplier<ResourceLocation> blockSwapSourceBlock,
-                                   Consumer<ResourceLocation> setBlockSwapSourceBlock,
-                                   Supplier<ResourceLocation> blockSwapTargetBlock,
-                                   Consumer<ResourceLocation> setBlockSwapTargetBlock,
-                                   BlockPickerRowAdder addBlockPickerRow,
-                                   Predicate<MKWorkspacePieceDefinition> supportsStairGeneration,
-                                   BiConsumer<MKScrollView, String> finalizeScrollView) {
-    @FunctionalInterface
-    public interface BlockPickerRowAdder {
-        void add(MKLayout root, int xPos, int y, String label, ResourceLocation blockId,
-                 Consumer<ResourceLocation> setter, boolean allowClear);
+public interface WorkspacePageContext {
+    Font font();
+
+    BlockPos anchor();
+
+    MKStructureWorkspace workspace();
+
+    int screenWidth();
+
+    int screenHeight();
+
+    int panelWidth();
+
+    int panelHeight();
+
+    int scrollWidth();
+
+    int contentWidth();
+
+    int buttonHeight();
+
+    int buttonGap();
+
+    int bottomPadding();
+
+    int topContentY();
+
+    int headerScrollGap();
+
+    int textColor();
+
+    List<String> importManifestIds();
+
+    List<String> backupManifestFiles();
+
+    WorkspaceCategoryEditor categoryEditor();
+
+    WorkspaceFormDraftEditor draftEditor();
+
+    ResourceLocation blockSwapSourceBlock();
+
+    void setBlockSwapSourceBlock(ResourceLocation value);
+
+    ResourceLocation blockSwapTargetBlock();
+
+    void setBlockSwapTargetBlock(ResourceLocation value);
+
+    void closeScreen();
+
+    void pushState(String state);
+
+    void switchToExistingState(String state);
+
+    void flagNeedSetup();
+
+    void openWorkspaceCategory(String topologyKey);
+
+    boolean supportsStairGeneration(MKWorkspacePieceDefinition piece);
+
+    void finalizeScrollView(MKScrollView scrollView, String stateName);
+
+    void addBlockPickerRow(MKLayout root, int xPos, int y, String label, ResourceLocation blockId,
+                           Consumer<ResourceLocation> setter, boolean allowClear);
+
+    void addPaletteBlockPickerRow(MKLayout root, int xPos, int y, String label, ResourceLocation blockId,
+                                  ResourceLocation defaultBlock, Consumer<ResourceLocation> setter);
+
+    default int panelX() {
+        return screenWidth() / 2 - panelWidth() / 2;
     }
 
-    @FunctionalInterface
-    public interface PaletteBlockPickerRowAdder {
-        void add(MKLayout root, int xPos, int y, String label, ResourceLocation blockId,
-                 ResourceLocation defaultBlock, Consumer<ResourceLocation> setter);
+    default int panelY() {
+        return screenHeight() / 2 - panelHeight() / 2;
     }
 
-    public int panelX() {
-        return screenWidth / 2 - panelWidth / 2;
+    default MKText makeWhiteText(Component text) {
+        return new MKText(font(), text).setColor(textColor());
     }
 
-    public int panelY() {
-        return screenHeight / 2 - panelHeight / 2;
-    }
-
-    public MKText makeWhiteText(Component text) {
-        return new MKText(font, text).setColor(textColor);
-    }
-
-    public int scrollTopAfterHeader(MKLayout root, MKText headerText) {
+    default int scrollTopAfterHeader(MKLayout root, MKText headerText) {
         root.manualRecompute();
-        return Math.max(root.getY() + topContentY, headerText.getBottom() + headerScrollGap);
+        return Math.max(root.getY() + topContentY(), headerText.getBottom() + headerScrollGap());
     }
-
 }

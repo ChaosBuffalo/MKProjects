@@ -27,7 +27,7 @@ public class WorkspaceHomePage extends WorkspacePageBase {
         root.addConstraintToWidget(new CenterXConstraint(), createNew);
         createNew.setY(yPos + 120);
         createNew.setPressedCallback((button, mouseButton) -> {
-            context.switchToExistingState().accept("form");
+            context.switchToExistingState("form");
             return true;
         });
 
@@ -37,7 +37,7 @@ public class WorkspaceHomePage extends WorkspacePageBase {
         loadExisting.setY(yPos + 120 + context.buttonHeight() + context.buttonGap());
         loadExisting.setPressedCallback((button, mouseButton) -> {
             if (!context.importManifestIds().isEmpty()) {
-                context.switchToExistingState().accept(WorkspaceImportPage.ID);
+                context.switchToExistingState(WorkspaceImportPage.ID);
             }
             return true;
         });

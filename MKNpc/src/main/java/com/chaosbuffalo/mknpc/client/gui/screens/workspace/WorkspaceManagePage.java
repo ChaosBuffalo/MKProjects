@@ -75,7 +75,7 @@ public class WorkspaceManagePage extends WorkspacePageBase {
             content.addWidget(openCategory);
             content.addConstraintToWidget(new CenterXConstraint(), openCategory);
             openCategory.setPressedCallback((button, mouseButton) -> {
-                context.openWorkspaceCategory().accept(topologyKey);
+                context.openWorkspaceCategory(topologyKey);
                 return true;
             });
         }
@@ -84,14 +84,14 @@ public class WorkspaceManagePage extends WorkspacePageBase {
 
         MKButton close = addBottomButton(context, root, Component.translatable("mknpc.workspace.button.close"), 120, 0);
         close.setPressedCallback((button, mouseButton) -> {
-            context.closeScreen().run();
+            context.closeScreen();
             return true;
         });
 
         MKButton utilities = addBottomButton(context, root, Component.literal("Utilities"), 180, 1);
         utilities.setPressedCallback((button, mouseButton) -> {
-            context.pushState().accept(WorkspaceUtilitiesPage.ID);
-            context.flagNeedSetup().run();
+            context.pushState(WorkspaceUtilitiesPage.ID);
+            context.flagNeedSetup();
             return true;
         });
 
@@ -105,8 +105,8 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         MKButton editTemplates = addBottomButton(context, root,
                 Component.translatable("mknpc.workspace.button.edit_template_settings"), 180, 3);
         editTemplates.setPressedCallback((button, mouseButton) -> {
-            context.pushState().accept(WorkspaceFormPage.ID);
-            context.flagNeedSetup().run();
+            context.pushState(WorkspaceFormPage.ID);
+            context.flagNeedSetup();
             return true;
         });
 

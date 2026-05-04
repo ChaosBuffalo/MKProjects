@@ -32,14 +32,14 @@ public class WorkspaceCategoryPage extends WorkspacePageBase {
     public MKLayout build(WorkspacePageContext context) {
         WorkspaceCategoryEditor editor = context.categoryEditor();
         if (editor.selectedTopologyKey() == null) {
-            context.switchToExistingState().accept(WorkspaceManagePage.ID);
+            context.switchToExistingState(WorkspaceManagePage.ID);
             return new WorkspaceManagePage().build(context);
         }
 
         List<MKWorkspacePieceDefinition> pieces = editor.selectedPieces();
         if (pieces.isEmpty()) {
             editor.clearSelection();
-            context.switchToExistingState().accept(WorkspaceManagePage.ID);
+            context.switchToExistingState(WorkspaceManagePage.ID);
             return new WorkspaceManagePage().build(context);
         }
 
@@ -92,17 +92,17 @@ public class WorkspaceCategoryPage extends WorkspacePageBase {
         String baseName = WorkspacePieceDisplay.getBaseName(templatePiece);
         if (stairCategory) {
             int paletteTop = scrollTop + scrollHeight + 6;
-            context.addBlockPickerRow().add(root, context.panelX(), paletteTop + 8, "Stair", editor.stairBlock(),
+            context.addBlockPickerRow(root, context.panelX(), paletteTop + 8, "Stair", editor.stairBlock(),
                     editor::stairBlock, false);
-            context.addBlockPickerRow().add(root, context.panelX(), paletteTop + 42, "Slab", editor.slabBlock(),
+            context.addBlockPickerRow(root, context.panelX(), paletteTop + 42, "Slab", editor.slabBlock(),
                     editor::slabBlock, false);
-            context.addBlockPickerRow().add(root, context.panelX(), paletteTop + 76, "Ladder", editor.ladderBlock(),
+            context.addBlockPickerRow(root, context.panelX(), paletteTop + 76, "Ladder", editor.ladderBlock(),
                     editor::ladderBlock, false);
 
             MKButton reset = addBottomButton(context, root, Component.literal("Use Workspace Defaults"), 180, 1);
             reset.setPressedCallback((button, mouseButton) -> {
                 editor.resetOverrides();
-                context.flagNeedSetup().run();
+                context.flagNeedSetup();
                 return true;
             });
 
@@ -124,7 +124,7 @@ public class WorkspaceCategoryPage extends WorkspacePageBase {
         MKButton back = addBottomButton(context, root, Component.literal("Back"), 120, 0);
         back.setPressedCallback((button, mouseButton) -> {
             editor.clearSelection();
-            context.switchToExistingState().accept(WorkspaceManagePage.ID);
+            context.switchToExistingState(WorkspaceManagePage.ID);
             return true;
         });
 

@@ -45,8 +45,8 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
             content.addConstraintToWidget(new CenterXConstraint(), openButton);
             openButton.setPressedCallback((button, mouseButton) -> {
                 editor.selectedFamilyCategory(category);
-                context.pushState().accept("form_family_category");
-                context.flagNeedSetup().run();
+                context.pushState("form_family_category");
+                context.flagNeedSetup();
                 return true;
             });
         }
