@@ -13,6 +13,7 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceBackupPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceHomePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceImportPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceGenerateConfirmPage;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePageContext;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceUtilitiesPage;
@@ -232,7 +233,7 @@ public class MKWorkspaceScreen extends MKScreen {
         super.setupScreen();
         addWorkspacePage(new WorkspaceHomePage());
         addWorkspacePage(new WorkspaceImportPage());
-        addState("form", this::buildFormState);
+        addWorkspacePage(new WorkspaceFormPage());
         addWorkspacePage(new WorkspaceGenerateConfirmPage());
         addState("form_identity", this::buildFormIdentityState);
         addState("form_materials", this::buildFormMaterialsState);
@@ -266,10 +267,25 @@ public class MKWorkspaceScreen extends MKScreen {
         return formDraft.namespace + ":" + formDraft.structureName;
     }
 
+    private String workspaceFormSummary() {
+        ensureFormDraftInitialized();
+        return formDraft.namespace + ":" + formDraft.structureName + "  |  " +
+                "shaft " + formDraft.shaftSize +
+                "  |  categories " + formDraft.categoryProfiles.size() +
+                "  |  families " + formDraft.familyDefinitions.size() +
+                "  |  openings " + formDraft.openingProfiles.size() +
+                "  |  hallways " + formDraft.hallwayFamilies.size();
+    }
+
+    private boolean hasExistingWorkspacePieces() {
+        return workspace != null && !workspace.pieces().isEmpty();
+    }
+
     private WorkspacePageContext createPageContext() {
         return new WorkspacePageContext(font, anchor, workspace, width, height, PANEL_WIDTH, PANEL_HEIGHT, SCROLL_WIDTH,
                 CONTENT_WIDTH, BUTTON_HEIGHT, BUTTON_GAP, BOTTOM_PADDING, TOP_CONTENT_Y, HEADER_SCROLL_GAP, TEXT_COLOR,
                 importManifestIds, backupManifestFiles, this::pushState, this::switchToExistingState, this::flagNeedSetup,
+                this::workspaceFormSummary, this::hasExistingWorkspacePieces, this::submitWorkspaceDraft,
                 this::draftWorkspaceId, this::sendWorkspaceDraft,
                 () -> blockSwapSourceBlock, value -> blockSwapSourceBlock = value,
                 () -> blockSwapTargetBlock, value -> blockSwapTargetBlock = value,
@@ -292,124 +308,6 @@ public class MKWorkspaceScreen extends MKScreen {
     public void resize(Minecraft minecraft, int width, int height) {
         super.resize(minecraft, width, height);
         wasResized = true;
-    }
-
-    private MKLayout buildFormState() {
-        ensureFormDraftInitialized();
-        int xPos = width / 2 - PANEL_WIDTH / 2;
-        int yPos = height / 2 - PANEL_HEIGHT / 2;
-        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
-        root.setMargins(8, 8, 8, 8);
-        root.setPaddingTop(8).setPaddingBot(8);
-
-        MKText title = makeWhiteText(Component.literal("Workspace Configuration"));
-        root.addWidget(title);
-        root.addConstraintToWidget(MarginConstraint.TOP, title);
-        root.addConstraintToWidget(new CenterXConstraint(), title);
-
-        MKText helpText = makeWhiteText(Component.literal(
-                "Edit the workspace through focused v2 sections. Global screens handle naming, margins, materials, categories, family variants, openings, and hallway data."));
-        helpText.setWidth(CONTENT_WIDTH);
-        helpText.setMultiline(true);
-        root.addWidget(helpText);
-        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
-        root.addConstraintToWidget(new CenterXConstraint(), helpText);
-
-        MKText summary = makeWhiteText(Component.literal(
-                formDraft.namespace + ":" + formDraft.structureName + "  |  " +
-                        "shaft " + formDraft.shaftSize +
-                        "  |  categories " + formDraft.categoryProfiles.size() +
-                        "  |  families " + formDraft.familyDefinitions.size() +
-                        "  |  openings " + formDraft.openingProfiles.size() +
-                        "  |  hallways " + formDraft.hallwayFamilies.size()));
-        summary.setWidth(CONTENT_WIDTH);
-        summary.setMultiline(true);
-        root.addWidget(summary);
-        root.addConstraintToWidget(StackConstraint.VERTICAL, summary);
-        root.addConstraintToWidget(new CenterXConstraint(), summary);
-
-        int firstButtonY = yPos + 130;
-        MKButton identity = new MKButton(Component.literal("Identity & Bounds"), 220, 20);
-        root.addWidget(identity);
-        root.addConstraintToWidget(new CenterXConstraint(), identity);
-        identity.setY(firstButtonY);
-        identity.setPressedCallback((button, mouseButton) -> {
-            pushState("form_identity");
-            flagNeedSetup();
-            return true;
-        });
-
-        MKButton materials = new MKButton(Component.literal("Materials"), 220, 20);
-        root.addWidget(materials);
-        root.addConstraintToWidget(new CenterXConstraint(), materials);
-        materials.setY(firstButtonY + BUTTON_HEIGHT + BUTTON_GAP);
-        materials.setPressedCallback((button, mouseButton) -> {
-            pushState("form_materials");
-            flagNeedSetup();
-            return true;
-        });
-
-        MKButton categories = new MKButton(Component.literal("Category Profiles"), 220, 20);
-        root.addWidget(categories);
-        root.addConstraintToWidget(new CenterXConstraint(), categories);
-        categories.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 2));
-        categories.setPressedCallback((button, mouseButton) -> {
-            pushState("form_categories");
-            flagNeedSetup();
-            return true;
-        });
-
-        MKButton families = new MKButton(Component.literal("Branch Variants"), 220, 20);
-        root.addWidget(families);
-        root.addConstraintToWidget(new CenterXConstraint(), families);
-        families.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 3));
-        families.setPressedCallback((button, mouseButton) -> {
-            pushState("form_families");
-            flagNeedSetup();
-            return true;
-        });
-
-        MKButton openings = new MKButton(Component.literal("Opening Profiles"), 220, 20);
-        root.addWidget(openings);
-        root.addConstraintToWidget(new CenterXConstraint(), openings);
-        openings.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 4));
-        openings.setPressedCallback((button, mouseButton) -> {
-            pushState("form_openings");
-            flagNeedSetup();
-            return true;
-        });
-
-        MKButton hallways = new MKButton(Component.literal("Hallway Families"), 220, 20);
-        root.addWidget(hallways);
-        root.addConstraintToWidget(new CenterXConstraint(), hallways);
-        hallways.setY(firstButtonY + ((BUTTON_HEIGHT + BUTTON_GAP) * 5));
-        hallways.setPressedCallback((button, mouseButton) -> {
-            pushState("form_hallways");
-            flagNeedSetup();
-            return true;
-        });
-
-        if (workspace != null && !workspace.pieces().isEmpty()) {
-            MKButton backToWorkspace = new MKButton(Component.translatable("mknpc.workspace.button.back_to_workspace"), 180, 20);
-            root.addWidget(backToWorkspace);
-            root.addConstraintToWidget(new CenterXConstraint(), backToWorkspace);
-            backToWorkspace.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT);
-            backToWorkspace.setPressedCallback((button, mouseButton) -> {
-                switchToExistingState("workspace");
-                return true;
-            });
-        }
-
-        MKButton generate = new MKButton(Component.translatable("mknpc.workspace.screen.generate"), 200, 20);
-        root.addWidget(generate);
-        root.addConstraintToWidget(new CenterXConstraint(), generate);
-        generate.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
-        generate.setPressedCallback((button, mouseButton) -> {
-            submitWorkspaceDraft();
-            return true;
-        });
-
-        return root;
     }
 
     private MKLayout buildFormIdentityState() {

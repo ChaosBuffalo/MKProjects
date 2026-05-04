@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -36,6 +37,9 @@ public record WorkspacePageContext(Font font,
                                    Consumer<String> pushState,
                                    Consumer<String> switchToExistingState,
                                    Runnable flagNeedSetup,
+                                   Supplier<String> workspaceFormSummary,
+                                   BooleanSupplier hasExistingWorkspacePieces,
+                                   Runnable submitWorkspaceDraft,
                                    Supplier<String> draftWorkspaceId,
                                    Runnable sendWorkspaceDraft,
                                    Supplier<ResourceLocation> blockSwapSourceBlock,
