@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
+import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
+
 import com.chaosbuffalo.mknpc.network.packets.SwapWorkspaceBlockPacket;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
@@ -17,42 +19,42 @@ public class WorkspaceBlockSwapPage extends WorkspacePageBase {
     }
 
     @Override
-    public MKLayout build(WorkspacePageContext context) {
-        int xPos = context.panelX();
-        int yPos = context.panelY();
-        MKLayout root = createPanel(context);
+    public MKLayout build(MKWorkspaceScreen screen) {
+        int xPos = screen.panelX();
+        int yPos = screen.panelY();
+        MKLayout root = createPanel(screen);
 
-        addTitle(context, root, Component.literal("Block Swap"));
+        addTitle(screen, root, Component.literal("Block Swap"));
 
-        if (context.blockSwapSourceBlock() == null) {
-            context.setBlockSwapSourceBlock(context.workspace().palette().wallBlock());
+        if (screen.blockSwapSourceBlock() == null) {
+            screen.setBlockSwapSourceBlock(screen.workspace().palette().wallBlock());
         }
-        if (context.blockSwapTargetBlock() == null) {
-            context.setBlockSwapTargetBlock(context.workspace().palette().floorBlock());
+        if (screen.blockSwapTargetBlock() == null) {
+            screen.setBlockSwapTargetBlock(screen.workspace().palette().floorBlock());
         }
 
-        addHeaderText(context, root, Component.literal(
+        addHeaderText(screen, root, Component.literal(
                 "Choose source and target blocks to replace across the live workspace."));
 
         int rowTop = yPos + 112;
-        context.addBlockPickerRow(root, xPos, rowTop, "Source", context.blockSwapSourceBlock(),
-                context::setBlockSwapSourceBlock, false);
-        context.addBlockPickerRow(root, xPos, rowTop + 42, "Target", context.blockSwapTargetBlock(),
-                context::setBlockSwapTargetBlock, false);
+        screen.addBlockPickerRow(root, xPos, rowTop, "Source", screen.blockSwapSourceBlock(),
+                screen::setBlockSwapSourceBlock, false);
+        screen.addBlockPickerRow(root, xPos, rowTop + 42, "Target", screen.blockSwapTargetBlock(),
+                screen::setBlockSwapTargetBlock, false);
 
-        MKButton swapBlocks = addBottomButton(context, root, Component.literal("Swap Blocks"), 180, 1);
+        MKButton swapBlocks = addBottomButton(screen, root, Component.literal("Swap Blocks"), 180, 1);
         swapBlocks.setPressedCallback((button, mouseButton) -> {
-            ResourceLocation sourceBlock = context.blockSwapSourceBlock();
-            ResourceLocation targetBlock = context.blockSwapTargetBlock();
+            ResourceLocation sourceBlock = screen.blockSwapSourceBlock();
+            ResourceLocation targetBlock = screen.blockSwapTargetBlock();
             if (!sourceBlock.equals(ResourceLocation.withDefaultNamespace("air")) &&
                     !sourceBlock.equals(targetBlock)) {
                 PacketDistributor.sendToServer(new SwapWorkspaceBlockPacket(
-                        context.anchor(), sourceBlock, targetBlock));
+                        screen.anchor(), sourceBlock, targetBlock));
             }
             return true;
         });
 
-        addBackButton(context, root, WorkspaceUtilitiesPage.ID);
+        addBackButton(screen, root, WorkspaceUtilitiesPage.ID);
         return root;
     }
 }

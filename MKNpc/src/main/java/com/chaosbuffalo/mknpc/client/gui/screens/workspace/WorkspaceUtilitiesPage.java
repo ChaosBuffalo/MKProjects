@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
+import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
+
 import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantsForAllPacket;
 import com.chaosbuffalo.mknpc.network.packets.GenerateAllWorkspaceStairsPacket;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
@@ -20,42 +22,42 @@ public class WorkspaceUtilitiesPage extends WorkspacePageBase {
     }
 
     @Override
-    public MKLayout build(WorkspacePageContext context) {
-        MKLayout root = createPanel(context);
+    public MKLayout build(MKWorkspaceScreen screen) {
+        MKLayout root = createPanel(screen);
 
-        addTitle(context, root, Component.literal("Utilities"));
-        MKText summary = addHeaderText(context, root, Component.literal(
+        addTitle(screen, root, Component.literal("Utilities"));
+        MKText summary = addHeaderText(screen, root, Component.literal(
                 "Workspace-wide tools for live workspace maintenance."));
 
-        MKScrollView scrollView = addScrollBelowHeader(context, root, summary);
+        MKScrollView scrollView = addScrollBelowHeader(screen, root, summary);
 
-        MKStackLayoutVertical content = createContentStack(context);
+        MKStackLayoutVertical content = createContentStack(screen);
 
         MKButton blockSwap = new MKButton(Component.literal("Block Swap"), 180, 20);
         content.addWidget(blockSwap);
         content.addConstraintToWidget(new CenterXConstraint(), blockSwap);
         blockSwap.setPressedCallback((button, mouseButton) -> {
-            context.pushState("block_swap");
-            context.flagNeedSetup();
+            screen.pushState("block_swap");
+            screen.flagNeedSetup();
             return true;
         });
 
         MKButton backups = new MKButton(Component.literal("Backups (" +
-                context.backupManifestFiles().size() + ")"), 180, 20);
+                screen.backupManifestFiles().size() + ")"), 180, 20);
         content.addWidget(backups);
         content.addConstraintToWidget(new CenterXConstraint(), backups);
         backups.setPressedCallback((button, mouseButton) -> {
-            context.pushState(WorkspaceBackupPage.ID);
-            context.flagNeedSetup();
+            screen.pushState(WorkspaceBackupPage.ID);
+            screen.flagNeedSetup();
             return true;
         });
 
-        if (context.workspace().pieces().stream().anyMatch(context::supportsStairGeneration)) {
+        if (screen.workspace().pieces().stream().anyMatch(screen::supportsStairGeneration)) {
             MKButton generateAllStairs = new MKButton(Component.literal("Generate All Stairs"), 180, 20);
             content.addWidget(generateAllStairs);
             content.addConstraintToWidget(new CenterXConstraint(), generateAllStairs);
             generateAllStairs.setPressedCallback((button, mouseButton) -> {
-                PacketDistributor.sendToServer(new GenerateAllWorkspaceStairsPacket(context.anchor()));
+                PacketDistributor.sendToServer(new GenerateAllWorkspaceStairsPacket(screen.anchor()));
                 return true;
             });
         }
@@ -65,13 +67,13 @@ public class WorkspaceUtilitiesPage extends WorkspacePageBase {
         content.addWidget(addCopyForAll);
         content.addConstraintToWidget(new CenterXConstraint(), addCopyForAll);
         addCopyForAll.setPressedCallback((button, mouseButton) -> {
-            PacketDistributor.sendToServer(new AddWorkspaceVariantsForAllPacket(context.anchor()));
+            PacketDistributor.sendToServer(new AddWorkspaceVariantsForAllPacket(screen.anchor()));
             return true;
         });
 
-        finishScrollContent(context, scrollView, content);
+        finishScrollContent(screen, scrollView, content);
 
-        addBackButton(context, root, "workspace");
+        addBackButton(screen, root, "workspace");
         return root;
     }
 }

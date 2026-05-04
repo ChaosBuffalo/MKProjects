@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
+import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
+
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
@@ -19,40 +21,40 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
     }
 
     @Override
-    public MKLayout build(WorkspacePageContext context) {
-        MKLayout root = createPanel(context);
+    public MKLayout build(MKWorkspaceScreen screen) {
+        MKLayout root = createPanel(screen);
 
-        addTitle(context, root, Component.literal("Branch Variants"));
-        MKText helpText = addHeaderText(context, root, Component.literal(
+        addTitle(screen, root, Component.literal("Branch Variants"));
+        MKText helpText = addHeaderText(screen, root, Component.literal(
                 "Choose a category first, then edit only the families that belong to that band."));
 
-        MKScrollView scrollView = addScrollBelowHeader(context, root, helpText);
-        MKStackLayoutVertical content = createContentStack(context);
-        WorkspaceFormDraftEditor editor = context.draftEditor();
+        MKScrollView scrollView = addScrollBelowHeader(screen, root, helpText);
+        MKStackLayoutVertical content = createContentStack(screen);
+        WorkspaceDraftSession editor = screen.draftSession();
 
         for (MKTowerWorkspaceCategory category : MKTowerWorkspaceCategory.values()) {
-            MKText header = context.makeWhiteText(Component.literal(formatTopologyLabel(category.getSerializedName())));
+            MKText header = screen.makeWhiteText(Component.literal(formatTopologyLabel(category.getSerializedName())));
             content.addWidget(header);
             content.addConstraintToWidget(MarginConstraint.LEFT, header);
 
-            MKText summary = context.makeWhiteText(Component.literal(editor.familyCount(category) + " families"));
-            summary.setWidth(context.contentWidth());
+            MKText summary = screen.makeWhiteText(Component.literal(editor.familyCount(category) + " families"));
+            summary.setWidth(screen.contentWidth());
             content.addWidget(summary);
             content.addConstraintToWidget(MarginConstraint.LEFT, summary);
 
-            MKButton openButton = new MKButton(Component.literal("Open Category"), 180, context.buttonHeight());
+            MKButton openButton = new MKButton(Component.literal("Open Category"), 180, screen.buttonHeight());
             content.addWidget(openButton);
             content.addConstraintToWidget(new CenterXConstraint(), openButton);
             openButton.setPressedCallback((button, mouseButton) -> {
                 editor.selectedFamilyCategory(category);
-                context.pushState("form_family_category");
-                context.flagNeedSetup();
+                screen.pushState("form_family_category");
+                screen.flagNeedSetup();
                 return true;
             });
         }
 
-        finishScrollContent(context, scrollView, content);
-        addBackButton(context, root, WorkspaceFormPage.ID);
+        finishScrollContent(screen, scrollView, content);
+        addBackButton(screen, root, WorkspaceFormPage.ID);
         return root;
     }
 
@@ -73,3 +75,5 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
         return builder.toString();
     }
 }
+
+

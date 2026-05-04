@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
+import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
+
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import net.minecraft.network.chat.Component;
@@ -13,30 +15,32 @@ public class WorkspaceFormMaterialsPage extends WorkspacePageBase {
     }
 
     @Override
-    public MKLayout build(WorkspacePageContext context) {
-        MKLayout root = createPanel(context);
+    public MKLayout build(MKWorkspaceScreen screen) {
+        MKLayout root = createPanel(screen);
 
-        addTitle(context, root, Component.literal("Materials"));
-        addHeaderText(context, root, Component.literal(
+        addTitle(screen, root, Component.literal("Materials"));
+        addHeaderText(screen, root, Component.literal(
                 "Edit the room shell and stair palette without the rest of the layout controls in view."));
 
-        int rowTop = context.panelY() + 96;
+        int rowTop = screen.panelY() + 96;
         MKWorkspaceMaterialPalette defaultPalette = MKWorkspaceMaterialPalette.defaultPalette();
-        WorkspaceFormDraftEditor editor = context.draftEditor();
-        context.addPaletteBlockPickerRow(root, context.panelX(), rowTop, "Floor",
+        WorkspaceDraftSession editor = screen.draftSession();
+        screen.addPaletteBlockPickerRow(root, screen.panelX(), rowTop, "Floor",
                 editor.floorBlock(), defaultPalette.floorBlock(), editor::floorBlock);
-        context.addPaletteBlockPickerRow(root, context.panelX(), rowTop + 34, "Wall",
+        screen.addPaletteBlockPickerRow(root, screen.panelX(), rowTop + 34, "Wall",
                 editor.wallBlock(), defaultPalette.wallBlock(), editor::wallBlock);
-        context.addPaletteBlockPickerRow(root, context.panelX(), rowTop + 68, "Ceiling",
+        screen.addPaletteBlockPickerRow(root, screen.panelX(), rowTop + 68, "Ceiling",
                 editor.ceilingBlock(), defaultPalette.ceilingBlock(), editor::ceilingBlock);
-        context.addPaletteBlockPickerRow(root, context.panelX(), rowTop + 102, "Stair",
+        screen.addPaletteBlockPickerRow(root, screen.panelX(), rowTop + 102, "Stair",
                 editor.stairBlock(), defaultPalette.stairBlock(), editor::stairBlock);
-        context.addPaletteBlockPickerRow(root, context.panelX(), rowTop + 136, "Slab",
+        screen.addPaletteBlockPickerRow(root, screen.panelX(), rowTop + 136, "Slab",
                 editor.slabBlock(), defaultPalette.slabBlock(), editor::slabBlock);
-        context.addPaletteBlockPickerRow(root, context.panelX(), rowTop + 170, "Ladder",
+        screen.addPaletteBlockPickerRow(root, screen.panelX(), rowTop + 170, "Ladder",
                 editor.ladderBlock(), defaultPalette.ladderBlock(), editor::ladderBlock);
 
-        addBackButton(context, root, WorkspaceFormPage.ID);
+        addBackButton(screen, root, WorkspaceFormPage.ID);
         return root;
     }
 }
+
+

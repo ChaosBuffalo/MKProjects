@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
+import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
+
 import com.chaosbuffalo.mknpc.network.packets.RestoreWorkspaceBackupPacket;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
@@ -20,27 +22,27 @@ public class WorkspaceBackupPage extends WorkspacePageBase {
     }
 
     @Override
-    public MKLayout build(WorkspacePageContext context) {
-        MKLayout root = createPanel(context);
+    public MKLayout build(MKWorkspaceScreen screen) {
+        MKLayout root = createPanel(screen);
 
-        addTitle(context, root, Component.literal("Workspace Backups"));
-        MKText summary = addHeaderText(context, root, Component.literal(
+        addTitle(screen, root, Component.literal("Workspace Backups"));
+        MKText summary = addHeaderText(screen, root, Component.literal(
                 "Restore live workspace metadata from a backup manifest."));
 
-        MKScrollView scrollView = addScrollBelowHeader(context, root, summary);
+        MKScrollView scrollView = addScrollBelowHeader(screen, root, summary);
 
-        MKStackLayoutVertical content = createContentStack(context);
+        MKStackLayoutVertical content = createContentStack(screen);
 
-        if (context.backupManifestFiles().isEmpty()) {
-            MKText empty = context.makeWhiteText(Component.literal("No backups found for this workspace."));
-            empty.setWidth(context.contentWidth());
+        if (screen.backupManifestFiles().isEmpty()) {
+            MKText empty = screen.makeWhiteText(Component.literal("No backups found for this workspace."));
+            empty.setWidth(screen.contentWidth());
             empty.setMultiline(true);
             content.addWidget(empty);
             content.addConstraintToWidget(MarginConstraint.LEFT, empty);
         } else {
-            for (String fileName : context.backupManifestFiles()) {
-                MKText fileLabel = context.makeWhiteText(Component.literal(fileName));
-                fileLabel.setWidth(context.contentWidth());
+            for (String fileName : screen.backupManifestFiles()) {
+                MKText fileLabel = screen.makeWhiteText(Component.literal(fileName));
+                fileLabel.setWidth(screen.contentWidth());
                 fileLabel.setMultiline(true);
                 content.addWidget(fileLabel);
                 content.addConstraintToWidget(MarginConstraint.LEFT, fileLabel);
@@ -49,15 +51,15 @@ public class WorkspaceBackupPage extends WorkspacePageBase {
                 content.addWidget(restore);
                 content.addConstraintToWidget(new CenterXConstraint(), restore);
                 restore.setPressedCallback((button, mouseButton) -> {
-                    PacketDistributor.sendToServer(new RestoreWorkspaceBackupPacket(context.anchor(), fileName));
+                    PacketDistributor.sendToServer(new RestoreWorkspaceBackupPacket(screen.anchor(), fileName));
                     return true;
                 });
             }
         }
 
-        finishScrollContent(context, scrollView, content);
+        finishScrollContent(screen, scrollView, content);
 
-        addBackButton(context, root, WorkspaceUtilitiesPage.ID);
+        addBackButton(screen, root, WorkspaceUtilitiesPage.ID);
         return root;
     }
 }

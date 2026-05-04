@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
+import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
+
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
@@ -15,38 +17,38 @@ public class WorkspaceHomePage extends WorkspacePageBase {
     }
 
     @Override
-    public MKLayout build(WorkspacePageContext context) {
-        int yPos = context.panelY();
-        MKLayout root = createPanel(context);
+    public MKLayout build(MKWorkspaceScreen screen) {
+        int yPos = screen.panelY();
+        MKLayout root = createPanel(screen);
 
-        addTitle(context, root, Component.translatable("mknpc.workspace.screen.title"));
-        addHeaderText(context, root, Component.literal("Create a new workspace or load an exported one."));
+        addTitle(screen, root, Component.translatable("mknpc.workspace.screen.title"));
+        addHeaderText(screen, root, Component.literal("Create a new workspace or load an exported one."));
 
         MKButton createNew = new MKButton(Component.literal("Create New Workspace"), 220, 20);
         root.addWidget(createNew);
         root.addConstraintToWidget(new CenterXConstraint(), createNew);
         createNew.setY(yPos + 120);
         createNew.setPressedCallback((button, mouseButton) -> {
-            context.switchToExistingState("form");
+            screen.switchToExistingState("form");
             return true;
         });
 
         MKButton loadExisting = new MKButton(Component.literal("Load Existing Workspace"), 220, 20);
         root.addWidget(loadExisting);
         root.addConstraintToWidget(new CenterXConstraint(), loadExisting);
-        loadExisting.setY(yPos + 120 + context.buttonHeight() + context.buttonGap());
+        loadExisting.setY(yPos + 120 + screen.buttonHeight() + screen.buttonGap());
         loadExisting.setPressedCallback((button, mouseButton) -> {
-            if (!context.importManifestIds().isEmpty()) {
-                context.switchToExistingState(WorkspaceImportPage.ID);
+            if (!screen.importManifestIds().isEmpty()) {
+                screen.switchToExistingState(WorkspaceImportPage.ID);
             }
             return true;
         });
 
-        if (context.importManifestIds().isEmpty()) {
-            MKText emptyText = context.makeWhiteText(Component.literal("No exported workspace manifests found."));
-            emptyText.setWidth(context.contentWidth());
+        if (screen.importManifestIds().isEmpty()) {
+            MKText emptyText = screen.makeWhiteText(Component.literal("No exported workspace manifests found."));
+            emptyText.setWidth(screen.contentWidth());
             emptyText.setMultiline(true);
-            emptyText.setY(yPos + 120 + ((context.buttonHeight() + context.buttonGap()) * 2));
+            emptyText.setY(yPos + 120 + ((screen.buttonHeight() + screen.buttonGap()) * 2));
             root.addWidget(emptyText);
             root.addConstraintToWidget(new CenterXConstraint(), emptyText);
         }

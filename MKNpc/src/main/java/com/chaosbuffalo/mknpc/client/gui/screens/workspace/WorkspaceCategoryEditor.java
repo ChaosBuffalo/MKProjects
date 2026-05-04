@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
+import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
@@ -7,40 +8,82 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
-public interface WorkspaceCategoryEditor {
-    String selectedTopologyKey();
+public class WorkspaceCategoryEditor {
+    private final MKWorkspaceScreen screen;
 
-    List<MKWorkspacePieceDefinition> selectedPieces();
+    public WorkspaceCategoryEditor(MKWorkspaceScreen screen) {
+        this.screen = screen;
+    }
 
-    void clearSelection();
+    public String selectedTopologyKey() {
+        return screen.selectedTopologyKey();
+    }
 
-    void ensureOverridesInitialized();
+    public List<MKWorkspacePieceDefinition> selectedPieces() {
+        return screen.selectedCategoryPieces();
+    }
 
-    void resetOverrides();
+    public void clearSelection() {
+        screen.clearSelectedTopologyKey();
+    }
 
-    int hallwayWidth();
+    public void ensureOverridesInitialized() {
+        screen.ensureCategoryOverridesInitialized();
+    }
 
-    MKWorkspaceStairMode stairMode();
+    public void resetOverrides() {
+        screen.resetCategoryOverrides();
+    }
 
-    void stairMode(MKWorkspaceStairMode value);
+    public int hallwayWidth() {
+        return screen.categoryHallwayWidth();
+    }
 
-    MKWorkspaceStairRiseType stairRiseType();
+    public MKWorkspaceStairMode stairMode() {
+        return screen.categoryStairMode();
+    }
 
-    void stairRiseType(MKWorkspaceStairRiseType value);
+    public void stairMode(MKWorkspaceStairMode value) {
+        screen.categoryStairMode(value);
+    }
 
-    int stairWidth();
+    public MKWorkspaceStairRiseType stairRiseType() {
+        return screen.categoryStairRiseType();
+    }
 
-    void stairWidth(int value);
+    public void stairRiseType(MKWorkspaceStairRiseType value) {
+        screen.categoryStairRiseType(value);
+    }
 
-    ResourceLocation stairBlock();
+    public int stairWidth() {
+        return screen.categoryStairWidth();
+    }
 
-    void stairBlock(ResourceLocation value);
+    public void stairWidth(int value) {
+        screen.categoryStairWidth(value);
+    }
 
-    ResourceLocation slabBlock();
+    public ResourceLocation stairBlock() {
+        return screen.categoryStairBlock();
+    }
 
-    void slabBlock(ResourceLocation value);
+    public void stairBlock(ResourceLocation value) {
+        screen.categoryStairBlock(value);
+    }
 
-    ResourceLocation ladderBlock();
+    public ResourceLocation slabBlock() {
+        return screen.categorySlabBlock();
+    }
 
-    void ladderBlock(ResourceLocation value);
+    public void slabBlock(ResourceLocation value) {
+        screen.categorySlabBlock(value);
+    }
+
+    public ResourceLocation ladderBlock() {
+        return screen.categoryLadderBlock();
+    }
+
+    public void ladderBlock(ResourceLocation value) {
+        screen.categoryLadderBlock(value);
+    }
 }

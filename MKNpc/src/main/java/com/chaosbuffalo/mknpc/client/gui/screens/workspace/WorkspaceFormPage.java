@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
+import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
+
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
@@ -14,56 +16,57 @@ public class WorkspaceFormPage extends WorkspacePageBase {
     }
 
     @Override
-    public MKLayout build(WorkspacePageContext context) {
-        MKLayout root = createPanel(context);
+    public MKLayout build(MKWorkspaceScreen screen) {
+        MKLayout root = createPanel(screen);
 
-        addTitle(context, root, Component.literal("Workspace Configuration"));
-        addHeaderText(context, root, Component.literal(
+        addTitle(screen, root, Component.literal("Workspace Configuration"));
+        addHeaderText(screen, root, Component.literal(
                 "Edit the workspace through focused v2 sections. Global screens handle naming, margins, materials, categories, family variants, openings, and hallway data."));
-        addHeaderText(context, root, Component.literal(context.draftEditor().summary()));
+        addHeaderText(screen, root, Component.literal(screen.draftSession().summary()));
 
-        int firstButtonY = context.panelY() + 130;
-        addNavigationButton(context, root, firstButtonY, "Identity & Bounds", "form_identity");
-        addNavigationButton(context, root, firstButtonY + context.buttonHeight() + context.buttonGap(),
+        int firstButtonY = screen.panelY() + 130;
+        addNavigationButton(screen, root, firstButtonY, "Identity & Bounds", "form_identity");
+        addNavigationButton(screen, root, firstButtonY + screen.buttonHeight() + screen.buttonGap(),
                 "Materials", "form_materials");
-        addNavigationButton(context, root, firstButtonY + ((context.buttonHeight() + context.buttonGap()) * 2),
+        addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 2),
                 "Category Profiles", "form_categories");
-        addNavigationButton(context, root, firstButtonY + ((context.buttonHeight() + context.buttonGap()) * 3),
+        addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 3),
                 "Branch Variants", "form_families");
-        addNavigationButton(context, root, firstButtonY + ((context.buttonHeight() + context.buttonGap()) * 4),
+        addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 4),
                 "Opening Profiles", "form_openings");
-        addNavigationButton(context, root, firstButtonY + ((context.buttonHeight() + context.buttonGap()) * 5),
+        addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 5),
                 "Hallway Families", "form_hallways");
 
-        if (context.draftEditor().hasExistingWorkspacePieces()) {
-            MKButton backToWorkspace = addBottomButton(context, root,
+        if (screen.draftSession().hasExistingWorkspacePieces()) {
+            MKButton backToWorkspace = addBottomButton(screen, root,
                     Component.translatable("mknpc.workspace.button.back_to_workspace"), 180, 1);
             backToWorkspace.setPressedCallback((button, mouseButton) -> {
-                context.switchToExistingState("workspace");
+                screen.switchToExistingState("workspace");
                 return true;
             });
         }
 
-        MKButton generate = addBottomButton(context, root,
+        MKButton generate = addBottomButton(screen, root,
                 Component.translatable("mknpc.workspace.screen.generate"), 200, 0);
         generate.setPressedCallback((button, mouseButton) -> {
-            context.draftEditor().submit();
+            screen.draftSession().submit();
             return true;
         });
 
         return root;
     }
 
-    private void addNavigationButton(WorkspacePageContext context, MKLayout root, int y, String label,
+    private void addNavigationButton(MKWorkspaceScreen screen, MKLayout root, int y, String label,
                                      String targetState) {
-        MKButton button = new MKButton(Component.literal(label), 220, context.buttonHeight());
+        MKButton button = new MKButton(Component.literal(label), 220, screen.buttonHeight());
         root.addWidget(button);
         root.addConstraintToWidget(new CenterXConstraint(), button);
         button.setY(y);
         button.setPressedCallback((pressedButton, mouseButton) -> {
-            context.pushState(targetState);
-            context.flagNeedSetup();
+            screen.pushState(targetState);
+            screen.flagNeedSetup();
             return true;
         });
     }
 }
+
