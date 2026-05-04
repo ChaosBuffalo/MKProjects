@@ -23,6 +23,7 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormOpenings
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceManagePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePageContext;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePieceDisplay;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceUtilitiesPage;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
@@ -46,7 +47,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.StackConstraint;
@@ -73,8 +73,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -3090,7 +3088,7 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     private int countVariants(List<MKWorkspacePieceDefinition> pieces) {
-        return (int) pieces.stream().filter(piece -> piece.variantIndex() > 0).count();
+        return WorkspacePieceDisplay.countVariants(pieces);
     }
 
     private void finalizeScrollView(MKScrollView scrollView, String stateName) {
@@ -3176,71 +3174,27 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     private Map<String, List<MKWorkspacePieceDefinition>> groupPiecesByTopology() {
-        Map<String, List<MKWorkspacePieceDefinition>> grouped = new LinkedHashMap<>();
-        List<MKWorkspacePieceDefinition> sortedPieces = workspace.pieces().stream()
-                .sorted(Comparator
-                        .comparing(this::buildWorkspaceGroupLabel)
-                        .thenComparingInt(MKWorkspacePieceDefinition::variantIndex))
-                .toList();
-        for (MKWorkspacePieceDefinition piece : sortedPieces) {
-            String topologyKey = buildWorkspaceGroupKey(piece);
-            grouped.computeIfAbsent(topologyKey, ignored -> new java.util.ArrayList<>()).add(piece);
-        }
-        return grouped;
+        return WorkspacePieceDisplay.groupPiecesByTopology(workspace);
     }
 
     private String buildWorkspaceGroupKey(MKWorkspacePieceDefinition piece) {
-        String hallwayFamilyId = piece.tags().get("workspace_hallway_family_id");
-        if (hallwayFamilyId != null) {
-            return "hallway:" + hallwayFamilyId + ":" + piece.tags().getOrDefault("workspace_hallway_path_kind", "branch");
-        }
-        String familyId = piece.tags().get("workspace_family_id");
-        if (familyId != null) {
-            return "room:" + piece.tags().getOrDefault("workspace_category", "main") + ":" +
-                    familyId + ":" + piece.tags().getOrDefault("workspace_horizontal_exits", "none");
-        }
-        return "role:" + piece.role().getSerializedName();
+        return WorkspacePieceDisplay.buildWorkspaceGroupKey(piece);
     }
 
     private String buildWorkspaceGroupLabel(MKWorkspacePieceDefinition piece) {
-        String hallwayFamilyId = piece.tags().get("workspace_hallway_family_id");
-        if (hallwayFamilyId != null) {
-            return "Hallway / " + hallwayFamilyId + " / " +
-                    formatTopologyLabel(piece.tags().getOrDefault("workspace_hallway_path_kind", "branch"));
-        }
-        String familyId = piece.tags().get("workspace_family_id");
-        if (familyId != null) {
-            return formatTopologyLabel(piece.tags().getOrDefault("workspace_category", "main")) +
-                    " / " + familyId +
-                    " / exits " + piece.tags().getOrDefault("workspace_horizontal_exits", "none");
-        }
-        return formatTopologyLabel(piece.role().getSerializedName());
+        return WorkspacePieceDisplay.buildWorkspaceGroupLabel(piece);
     }
 
     private String getBaseName(MKWorkspacePieceDefinition piece) {
-        return piece.tags().getOrDefault("workspace_base_name", piece.pieceName());
+        return WorkspacePieceDisplay.getBaseName(piece);
     }
 
     private String describePiece(MKWorkspacePieceDefinition piece) {
-        String label = piece.variantIndex() == 0 ? "template" : "variant " + piece.variantIndex();
-        return label + ": " + piece.pieceName();
+        return WorkspacePieceDisplay.describePiece(piece);
     }
 
     private String formatTopologyLabel(String key) {
-        String[] parts = key.split("_");
-        StringBuilder builder = new StringBuilder();
-        for (String part : parts) {
-            if (builder.length() > 0) {
-                builder.append(' ');
-            }
-            if (!part.isEmpty()) {
-                builder.append(Character.toUpperCase(part.charAt(0)));
-                if (part.length() > 1) {
-                    builder.append(part.substring(1));
-                }
-            }
-        }
-        return builder.toString();
+        return WorkspacePieceDisplay.formatTopologyLabel(key);
     }
 
     private Component getStairPlacementComponent(MKVerticalAccessPlacement placement) {
@@ -3256,16 +3210,15 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     private boolean supportsStairGeneration(List<MKWorkspacePieceDefinition> pieces) {
-        return pieces.stream().anyMatch(this::supportsStairGeneration);
+        return WorkspacePieceDisplay.supportsStairGeneration(pieces);
     }
 
     private boolean supportsStairGeneration(MKWorkspacePieceDefinition piece) {
-        return MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags());
+        return WorkspacePieceDisplay.supportsStairGeneration(piece);
     }
 
     private boolean hasGeneratedStairs(MKWorkspacePieceDefinition piece) {
-        return !piece.generatedStairPositions().isEmpty() &&
-                !"none".equals(piece.tags().getOrDefault("generated_stair_mode", "none"));
+        return WorkspacePieceDisplay.hasGeneratedStairs(piece);
     }
 
     private List<String> getDefaultInitialStates() {
