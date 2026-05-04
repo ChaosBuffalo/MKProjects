@@ -18,6 +18,7 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormDraftEditor;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormFamiliesPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormMaterialsPage;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormOpeningsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePageContext;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceUtilitiesPage;
@@ -247,7 +248,7 @@ public class MKWorkspaceScreen extends MKScreen {
         addState("form_family_category", this::buildFormFamilyCategoryState);
         addState("form_family_detail", this::buildFormFamilyDetailState);
         addState("form_family_exit_detail", this::buildFormFamilyExitDetailState);
-        addState("form_openings", this::buildFormOpeningsState);
+        addWorkspacePage(new WorkspaceFormOpeningsPage());
         addState("form_opening_detail", this::buildFormOpeningDetailState);
         addState("form_hallways", this::buildFormHallwaysState);
         addState("form_hallway_detail", this::buildFormHallwayDetailState);
@@ -465,6 +466,24 @@ public class MKWorkspaceScreen extends MKScreen {
             @Override
             public void selectedFamilyCategory(MKTowerWorkspaceCategory category) {
                 selectedFormCategory = category;
+            }
+
+            @Override
+            public List<MKHorizontalOpeningProfile> openingProfiles() {
+                ensureFormDraftInitialized();
+                return List.copyOf(formDraft.openingProfiles);
+            }
+
+            @Override
+            public void selectedOpeningIndex(int index) {
+                selectedOpeningIndex = index;
+            }
+
+            @Override
+            public int addOpeningProfile() {
+                ensureFormDraftInitialized();
+                MKWorkspaceScreen.this.addOpeningProfile();
+                return formDraft.openingProfiles.size() - 1;
             }
         };
     }
@@ -1072,96 +1091,11 @@ public class MKWorkspaceScreen extends MKScreen {
         return buildFormFamilyDetailState();
     }
 
-    private MKLayout buildFormOpeningsState() {
-        ensureFormDraftInitialized();
-        int xPos = width / 2 - PANEL_WIDTH / 2;
-        int yPos = height / 2 - PANEL_HEIGHT / 2;
-        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
-        root.setMargins(8, 8, 8, 8);
-        root.setPaddingTop(8).setPaddingBot(8);
-
-        MKText title = makeWhiteText(Component.literal("Opening Profiles"));
-        root.addWidget(title);
-        root.addConstraintToWidget(MarginConstraint.TOP, title);
-        root.addConstraintToWidget(new CenterXConstraint(), title);
-
-        MKText helpText = makeWhiteText(Component.literal(
-                "Choose an opening profile and edit it on its own screen. Opening sizes and path compatibility are authored per profile."));
-        helpText.setWidth(CONTENT_WIDTH);
-        helpText.setMultiline(true);
-        root.addWidget(helpText);
-        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
-        root.addConstraintToWidget(new CenterXConstraint(), helpText);
-
-        int buttonAreaHeight = (2 * BUTTON_HEIGHT) + BUTTON_GAP + BOTTOM_PADDING;
-        int scrollTop = scrollTopAfterHeader(root, helpText);
-        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 12 - scrollTop;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
-        scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
-        root.addWidget(scrollView);
-
-        MKStackLayoutVertical content = new MKStackLayoutVertical(0, 0, CONTENT_WIDTH);
-        content.setMargins(4, 4, 4, 4);
-        content.setPaddingTop(4).setPaddingBot(4);
-
-        for (int i = 0; i < formDraft.openingProfiles.size(); i++) {
-            int index = i;
-            MKHorizontalOpeningProfile opening = formDraft.openingProfiles.get(index);
-            MKText header = makeWhiteText(Component.literal(opening.profileId()));
-            content.addWidget(header);
-            content.addConstraintToWidget(MarginConstraint.LEFT, header);
-            MKText summary = makeWhiteText(Component.literal(
-                    opening.openingWidth() + "x" + opening.openingHeight() + "  |  " +
-                            describePathAccess(opening.allowOnMainPath(), opening.allowOnBranchPath())));
-            summary.setWidth(CONTENT_WIDTH);
-            summary.setMultiline(true);
-            content.addWidget(summary);
-            content.addConstraintToWidget(MarginConstraint.LEFT, summary);
-
-            MKButton openButton = new MKButton(Component.literal("Edit Opening"), 180, 20);
-            content.addWidget(openButton);
-            content.addConstraintToWidget(new CenterXConstraint(), openButton);
-            openButton.setPressedCallback((button, mouseButton) -> {
-                selectedOpeningIndex = index;
-                pushState("form_opening_detail");
-                flagNeedSetup();
-                return true;
-            });
-        }
-
-        content.manualRecompute();
-        scrollView.addWidget(content);
-        scrollView.centerContentX();
-        finalizeScrollView(scrollView, "form_family_detail");
-
-        MKButton addProfile = new MKButton(Component.literal("Add Opening"), 180, 20);
-        root.addWidget(addProfile);
-        root.addConstraintToWidget(new CenterXConstraint(), addProfile);
-        addProfile.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT);
-        addProfile.setPressedCallback((button, mouseButton) -> {
-            addOpeningProfile();
-            selectedOpeningIndex = formDraft.openingProfiles.size() - 1;
-            pushState("form_opening_detail");
-            flagNeedSetup();
-            return true;
-        });
-
-        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
-        root.addWidget(back);
-        root.addConstraintToWidget(new CenterXConstraint(), back);
-        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
-        back.setPressedCallback((button, mouseButton) -> {
-            switchToExistingState("form");
-            return true;
-        });
-        return root;
-    }
-
     private MKLayout buildFormOpeningDetailState() {
         ensureFormDraftInitialized();
         if (selectedOpeningIndex < 0 || selectedOpeningIndex >= formDraft.openingProfiles.size()) {
             switchToExistingState("form_openings");
-            return buildFormOpeningsState();
+            return new WorkspaceFormOpeningsPage().build(createPageContext());
         }
         int xPos = width / 2 - PANEL_WIDTH / 2;
         int yPos = height / 2 - PANEL_HEIGHT / 2;

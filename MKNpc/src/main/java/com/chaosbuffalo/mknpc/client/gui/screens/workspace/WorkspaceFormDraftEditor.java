@@ -1,7 +1,10 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import net.minecraft.resources.ResourceLocation;
+
+import java.util.List;
 
 public interface WorkspaceFormDraftEditor {
     String summary();
@@ -61,4 +64,10 @@ public interface WorkspaceFormDraftEditor {
     long familyCount(MKTowerWorkspaceCategory category);
 
     void selectedFamilyCategory(MKTowerWorkspaceCategory category);
+
+    List<MKHorizontalOpeningProfile> openingProfiles();
+
+    void selectedOpeningIndex(int index);
+
+    int addOpeningProfile();
 }
