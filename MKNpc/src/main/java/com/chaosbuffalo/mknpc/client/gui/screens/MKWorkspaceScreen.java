@@ -13,6 +13,7 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceBackupPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceHomePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceImportPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceGenerateConfirmPage;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormIdentityPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormMaterialsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePage;
@@ -236,7 +237,7 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(new WorkspaceImportPage());
         addWorkspacePage(new WorkspaceFormPage());
         addWorkspacePage(new WorkspaceGenerateConfirmPage());
-        addState("form_identity", this::buildFormIdentityState);
+        addWorkspacePage(new WorkspaceFormIdentityPage());
         addWorkspacePage(new WorkspaceFormMaterialsPage());
         addState("form_categories", this::buildFormCategoriesState);
         addState("form_category_detail", this::buildFormCategoryDetailState);
@@ -287,6 +288,41 @@ public class MKWorkspaceScreen extends MKScreen {
                 CONTENT_WIDTH, BUTTON_HEIGHT, BUTTON_GAP, BOTTOM_PADDING, TOP_CONTENT_Y, HEADER_SCROLL_GAP, TEXT_COLOR,
                 importManifestIds, backupManifestFiles, this::pushState, this::switchToExistingState, this::flagNeedSetup,
                 this::workspaceFormSummary, this::hasExistingWorkspacePieces, this::submitWorkspaceDraft,
+                () -> {
+                    ensureFormDraftInitialized();
+                    return formDraft.namespace;
+                }, value -> {
+                    ensureFormDraftInitialized();
+                    formDraft.namespace = value;
+                },
+                () -> {
+                    ensureFormDraftInitialized();
+                    return formDraft.structureName;
+                }, value -> {
+                    ensureFormDraftInitialized();
+                    formDraft.structureName = value;
+                },
+                () -> {
+                    ensureFormDraftInitialized();
+                    return formDraft.shellMargin;
+                }, value -> {
+                    ensureFormDraftInitialized();
+                    formDraft.shellMargin = value;
+                },
+                () -> {
+                    ensureFormDraftInitialized();
+                    return formDraft.exteriorAirMargin;
+                }, value -> {
+                    ensureFormDraftInitialized();
+                    formDraft.exteriorAirMargin = value;
+                },
+                () -> {
+                    ensureFormDraftInitialized();
+                    return formDraft.previewMargin;
+                }, value -> {
+                    ensureFormDraftInitialized();
+                    formDraft.previewMargin = value;
+                },
                 this::draftWorkspaceId, this::sendWorkspaceDraft,
                 this::addPaletteBlockPickerRow,
                 () -> {
@@ -352,71 +388,6 @@ public class MKWorkspaceScreen extends MKScreen {
     public void resize(Minecraft minecraft, int width, int height) {
         super.resize(minecraft, width, height);
         wasResized = true;
-    }
-
-    private MKLayout buildFormIdentityState() {
-        ensureFormDraftInitialized();
-        int xPos = width / 2 - PANEL_WIDTH / 2;
-        int yPos = height / 2 - PANEL_HEIGHT / 2;
-        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
-        root.setMargins(8, 8, 8, 8);
-        root.setPaddingTop(8).setPaddingBot(8);
-
-        MKText title = makeWhiteText(Component.literal("Identity & Bounds"));
-        root.addWidget(title);
-        root.addConstraintToWidget(MarginConstraint.TOP, title);
-        root.addConstraintToWidget(new CenterXConstraint(), title);
-
-        MKText helpText = makeWhiteText(Component.literal(
-                "Configure workspace naming and scaffold/export margins. Room geometry now lives entirely in category profiles."));
-        helpText.setWidth(CONTENT_WIDTH);
-        helpText.setMultiline(true);
-        root.addWidget(helpText);
-        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
-        root.addConstraintToWidget(new CenterXConstraint(), helpText);
-
-        int buttonAreaHeight = BUTTON_HEIGHT + BOTTOM_PADDING;
-        int scrollTop = scrollTopAfterHeader(root, helpText);
-        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 12 - scrollTop;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
-        scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
-        root.addWidget(scrollView);
-
-        MKStackLayoutVertical content = new MKStackLayoutVertical(0, 0, CONTENT_WIDTH);
-        content.setMargins(4, 4, 4, 4);
-        content.setPaddingTop(4).setPaddingBot(4);
-
-        MKTextFieldWidget namespaceField = makeField("Namespace", formDraft.namespace);
-        namespaceField.setTextChangeCallback((field, text) -> formDraft.namespace = text.trim().isBlank() ? "mkdev" : text.trim());
-        MKTextFieldWidget structureNameField = makeField("Structure Name", formDraft.structureName);
-        structureNameField.setTextChangeCallback((field, text) -> formDraft.structureName = text.trim().isBlank() ? "tower_workspace" : text.trim());
-        MKTextFieldWidget shellMarginField = makeField("Shell Margin", Integer.toString(formDraft.shellMargin));
-        shellMarginField.setTextChangeCallback((field, text) -> formDraft.shellMargin = parseInt(text, formDraft.shellMargin));
-        MKTextFieldWidget exteriorAirMarginField = makeField("Exterior Air Margin", Integer.toString(formDraft.exteriorAirMargin));
-        exteriorAirMarginField.setTextChangeCallback((field, text) -> formDraft.exteriorAirMargin = parseInt(text, formDraft.exteriorAirMargin));
-        MKTextFieldWidget previewMarginField = makeField("Preview Margin", Integer.toString(formDraft.previewMargin));
-        previewMarginField.setTextChangeCallback((field, text) -> formDraft.previewMargin = parseInt(text, formDraft.previewMargin));
-
-        addRow(content, makeLabel("mknpc.workspace.field.namespace"), namespaceField);
-        addRow(content, makeLabel("mknpc.workspace.field.structure_name"), structureNameField);
-        addRow(content, makeLabel("mknpc.workspace.field.shell_margin"), shellMarginField);
-        addRow(content, makeLabel("mknpc.workspace.field.exterior_air_margin"), exteriorAirMarginField);
-        addRow(content, makeLabel("mknpc.workspace.field.preview_margin"), previewMarginField);
-
-        content.manualRecompute();
-        scrollView.addWidget(content);
-        scrollView.centerContentX();
-        finalizeScrollView(scrollView, "import");
-
-        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
-        root.addWidget(back);
-        root.addConstraintToWidget(new CenterXConstraint(), back);
-        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
-        back.setPressedCallback((button, mouseButton) -> {
-            switchToExistingState("form");
-            return true;
-        });
-        return root;
     }
 
     private MKLayout buildCreativeBlockPickerContent(int xPos, int yPos, int pickerWidth, int pickerHeight) {
