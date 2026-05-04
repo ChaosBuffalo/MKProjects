@@ -8,9 +8,10 @@ import com.chaosbuffalo.mknpc.network.packets.ClearWorkspaceStairsPacket;
 import com.chaosbuffalo.mknpc.network.packets.CreateWorkspacePacket;
 import com.chaosbuffalo.mknpc.network.packets.ExportWorkspacePiecesPacket;
 import com.chaosbuffalo.mknpc.network.packets.GenerateWorkspaceStairsPacket;
-import com.chaosbuffalo.mknpc.network.packets.LoadWorkspaceFromManifestPacket;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceBlockSwapPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceBackupPage;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceHomePage;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceImportPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePageContext;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceUtilitiesPage;
@@ -228,8 +229,8 @@ public class MKWorkspaceScreen extends MKScreen {
     @Override
     public void setupScreen() {
         super.setupScreen();
-        addState("home", this::buildHomeState);
-        addState("import", this::buildImportState);
+        addWorkspacePage(new WorkspaceHomePage());
+        addWorkspacePage(new WorkspaceImportPage());
         addState("form", this::buildFormState);
         addState("generate_confirm", this::buildGenerateConfirmState);
         addState("form_identity", this::buildFormIdentityState);
@@ -262,7 +263,7 @@ public class MKWorkspaceScreen extends MKScreen {
     private WorkspacePageContext createPageContext() {
         return new WorkspacePageContext(font, anchor, workspace, width, height, PANEL_WIDTH, PANEL_HEIGHT, SCROLL_WIDTH,
                 CONTENT_WIDTH, BUTTON_HEIGHT, BUTTON_GAP, BOTTOM_PADDING, TOP_CONTENT_Y, HEADER_SCROLL_GAP, TEXT_COLOR,
-                backupManifestFiles, this::pushState, this::switchToExistingState, this::flagNeedSetup,
+                importManifestIds, backupManifestFiles, this::pushState, this::switchToExistingState, this::flagNeedSetup,
                 () -> blockSwapSourceBlock, value -> blockSwapSourceBlock = value,
                 () -> blockSwapTargetBlock, value -> blockSwapTargetBlock = value,
                 this::addBlockPickerRow, this::supportsStairGeneration, this::finalizeScrollView);
@@ -284,107 +285,6 @@ public class MKWorkspaceScreen extends MKScreen {
     public void resize(Minecraft minecraft, int width, int height) {
         super.resize(minecraft, width, height);
         wasResized = true;
-    }
-
-    private MKLayout buildHomeState() {
-        int xPos = width / 2 - PANEL_WIDTH / 2;
-        int yPos = height / 2 - PANEL_HEIGHT / 2;
-        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
-        root.setMargins(8, 8, 8, 8);
-        root.setPaddingTop(8).setPaddingBot(8);
-
-        MKText title = makeWhiteText(Component.translatable("mknpc.workspace.screen.title"));
-        root.addWidget(title);
-        root.addConstraintToWidget(MarginConstraint.TOP, title);
-        root.addConstraintToWidget(new CenterXConstraint(), title);
-
-        MKText helpText = makeWhiteText(Component.literal("Create a new workspace or load an exported one."));
-        helpText.setWidth(CONTENT_WIDTH);
-        helpText.setMultiline(true);
-        root.addWidget(helpText);
-        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
-        root.addConstraintToWidget(new CenterXConstraint(), helpText);
-
-        MKButton createNew = new MKButton(Component.literal("Create New Workspace"), 220, 20);
-        root.addWidget(createNew);
-        root.addConstraintToWidget(new CenterXConstraint(), createNew);
-        createNew.setY(yPos + 120);
-        createNew.setPressedCallback((button, mouseButton) -> {
-            switchToExistingState("form");
-            return true;
-        });
-
-        MKButton loadExisting = new MKButton(Component.literal("Load Existing Workspace"), 220, 20);
-        root.addWidget(loadExisting);
-        root.addConstraintToWidget(new CenterXConstraint(), loadExisting);
-        loadExisting.setY(yPos + 120 + BUTTON_HEIGHT + BUTTON_GAP);
-        loadExisting.setPressedCallback((button, mouseButton) -> {
-            if (!importManifestIds.isEmpty()) {
-                switchToExistingState("import");
-            }
-            return true;
-        });
-
-        if (importManifestIds.isEmpty()) {
-            MKText emptyText = makeWhiteText(Component.literal("No exported workspace manifests found."));
-            emptyText.setWidth(CONTENT_WIDTH);
-            emptyText.setMultiline(true);
-            emptyText.setY(yPos + 120 + ((BUTTON_HEIGHT + BUTTON_GAP) * 2));
-            root.addWidget(emptyText);
-            root.addConstraintToWidget(new CenterXConstraint(), emptyText);
-        }
-
-        return root;
-    }
-
-    private MKLayout buildImportState() {
-        int xPos = width / 2 - PANEL_WIDTH / 2;
-        int yPos = height / 2 - PANEL_HEIGHT / 2;
-        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
-        root.setMargins(8, 8, 8, 8);
-        root.setPaddingTop(8).setPaddingBot(8);
-
-        MKText title = makeWhiteText(Component.literal("Load Existing Workspace"));
-        root.addWidget(title);
-        root.addConstraintToWidget(MarginConstraint.TOP, title);
-        root.addConstraintToWidget(new CenterXConstraint(), title);
-
-        MKText helpText = makeWhiteText(Component.literal("Choose an exported workspace manifest to rehydrate at this dev block."));
-        helpText.setWidth(CONTENT_WIDTH);
-        helpText.setMultiline(true);
-        root.addWidget(helpText);
-        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
-        root.addConstraintToWidget(new CenterXConstraint(), helpText);
-
-        int buttonAreaHeight = BUTTON_HEIGHT + BOTTOM_PADDING;
-        int scrollTop = scrollTopAfterHeader(root, helpText);
-        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 12 - scrollTop;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
-        scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
-        root.addWidget(scrollView);
-
-        MKStackLayoutVertical content = new MKStackLayoutVertical(0, 0, CONTENT_WIDTH);
-        content.setMargins(4, 4, 4, 4);
-        content.setPaddingTop(4).setPaddingBot(4);
-        for (String manifestId : importManifestIds) {
-            MKButton manifestButton = new MKButton(Component.literal(manifestId), CONTENT_WIDTH - 8, 20);
-            content.addWidget(manifestButton);
-            manifestButton.setPressedCallback((button, mouseButton) -> {
-                PacketDistributor.sendToServer(new LoadWorkspaceFromManifestPacket(anchor, ResourceLocation.parse(manifestId)));
-                return true;
-            });
-        }
-        scrollView.addWidget(content);
-
-        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
-        root.addWidget(back);
-        root.addConstraintToWidget(new CenterXConstraint(), back);
-        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
-        back.setPressedCallback((button, mouseButton) -> {
-            switchToExistingState("home");
-            return true;
-        });
-        return root;
     }
 
     private MKLayout buildFormState() {
