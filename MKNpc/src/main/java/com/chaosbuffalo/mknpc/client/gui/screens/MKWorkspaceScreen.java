@@ -14,6 +14,7 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceHomePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceImportPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceGenerateConfirmPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormPage;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormMaterialsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePageContext;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceUtilitiesPage;
@@ -236,7 +237,7 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(new WorkspaceFormPage());
         addWorkspacePage(new WorkspaceGenerateConfirmPage());
         addState("form_identity", this::buildFormIdentityState);
-        addState("form_materials", this::buildFormMaterialsState);
+        addWorkspacePage(new WorkspaceFormMaterialsPage());
         addState("form_categories", this::buildFormCategoriesState);
         addState("form_category_detail", this::buildFormCategoryDetailState);
         addState("form_families", this::buildFormFamiliesState);
@@ -287,6 +288,49 @@ public class MKWorkspaceScreen extends MKScreen {
                 importManifestIds, backupManifestFiles, this::pushState, this::switchToExistingState, this::flagNeedSetup,
                 this::workspaceFormSummary, this::hasExistingWorkspacePieces, this::submitWorkspaceDraft,
                 this::draftWorkspaceId, this::sendWorkspaceDraft,
+                this::addPaletteBlockPickerRow,
+                () -> {
+                    ensureFormDraftInitialized();
+                    return formDraft.floorBlock;
+                }, value -> {
+                    ensureFormDraftInitialized();
+                    formDraft.floorBlock = value;
+                },
+                () -> {
+                    ensureFormDraftInitialized();
+                    return formDraft.wallBlock;
+                }, value -> {
+                    ensureFormDraftInitialized();
+                    formDraft.wallBlock = value;
+                },
+                () -> {
+                    ensureFormDraftInitialized();
+                    return formDraft.ceilingBlock;
+                }, value -> {
+                    ensureFormDraftInitialized();
+                    formDraft.ceilingBlock = value;
+                },
+                () -> {
+                    ensureFormDraftInitialized();
+                    return formDraft.stairBlock;
+                }, value -> {
+                    ensureFormDraftInitialized();
+                    formDraft.stairBlock = value;
+                },
+                () -> {
+                    ensureFormDraftInitialized();
+                    return formDraft.slabBlock;
+                }, value -> {
+                    ensureFormDraftInitialized();
+                    formDraft.slabBlock = value;
+                },
+                () -> {
+                    ensureFormDraftInitialized();
+                    return formDraft.ladderBlock;
+                }, value -> {
+                    ensureFormDraftInitialized();
+                    formDraft.ladderBlock = value;
+                },
                 () -> blockSwapSourceBlock, value -> blockSwapSourceBlock = value,
                 () -> blockSwapTargetBlock, value -> blockSwapTargetBlock = value,
                 this::addBlockPickerRow, this::supportsStairGeneration, this::finalizeScrollView);
@@ -363,53 +407,6 @@ public class MKWorkspaceScreen extends MKScreen {
         scrollView.addWidget(content);
         scrollView.centerContentX();
         finalizeScrollView(scrollView, "import");
-
-        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
-        root.addWidget(back);
-        root.addConstraintToWidget(new CenterXConstraint(), back);
-        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
-        back.setPressedCallback((button, mouseButton) -> {
-            switchToExistingState("form");
-            return true;
-        });
-        return root;
-    }
-
-    private MKLayout buildFormMaterialsState() {
-        ensureFormDraftInitialized();
-        int xPos = width / 2 - PANEL_WIDTH / 2;
-        int yPos = height / 2 - PANEL_HEIGHT / 2;
-        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
-        root.setMargins(8, 8, 8, 8);
-        root.setPaddingTop(8).setPaddingBot(8);
-
-        MKText title = makeWhiteText(Component.literal("Materials"));
-        root.addWidget(title);
-        root.addConstraintToWidget(MarginConstraint.TOP, title);
-        root.addConstraintToWidget(new CenterXConstraint(), title);
-
-        MKText helpText = makeWhiteText(Component.literal(
-                "Edit the room shell and stair palette without the rest of the layout controls in view."));
-        helpText.setWidth(CONTENT_WIDTH);
-        helpText.setMultiline(true);
-        root.addWidget(helpText);
-        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
-        root.addConstraintToWidget(new CenterXConstraint(), helpText);
-
-        int rowTop = yPos + 96;
-        MKWorkspaceMaterialPalette defaultPalette = MKWorkspaceMaterialPalette.defaultPalette();
-        addPaletteBlockPickerRow(root, xPos, rowTop, "Floor", formDraft.floorBlock, defaultPalette.floorBlock(),
-                value -> formDraft.floorBlock = value);
-        addPaletteBlockPickerRow(root, xPos, rowTop + 34, "Wall", formDraft.wallBlock, defaultPalette.wallBlock(),
-                value -> formDraft.wallBlock = value);
-        addPaletteBlockPickerRow(root, xPos, rowTop + 68, "Ceiling", formDraft.ceilingBlock,
-                defaultPalette.ceilingBlock(), value -> formDraft.ceilingBlock = value);
-        addPaletteBlockPickerRow(root, xPos, rowTop + 102, "Stair", formDraft.stairBlock,
-                defaultPalette.stairBlock(), value -> formDraft.stairBlock = value);
-        addPaletteBlockPickerRow(root, xPos, rowTop + 136, "Slab", formDraft.slabBlock,
-                defaultPalette.slabBlock(), value -> formDraft.slabBlock = value);
-        addPaletteBlockPickerRow(root, xPos, rowTop + 170, "Ladder", formDraft.ladderBlock,
-                defaultPalette.ladderBlock(), value -> formDraft.ladderBlock = value);
 
         MKButton back = new MKButton(Component.literal("Back"), 120, 20);
         root.addWidget(back);

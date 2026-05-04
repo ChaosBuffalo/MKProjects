@@ -42,6 +42,19 @@ public record WorkspacePageContext(Font font,
                                    Runnable submitWorkspaceDraft,
                                    Supplier<String> draftWorkspaceId,
                                    Runnable sendWorkspaceDraft,
+                                   PaletteBlockPickerRowAdder addPaletteBlockPickerRow,
+                                   Supplier<ResourceLocation> draftFloorBlock,
+                                   Consumer<ResourceLocation> setDraftFloorBlock,
+                                   Supplier<ResourceLocation> draftWallBlock,
+                                   Consumer<ResourceLocation> setDraftWallBlock,
+                                   Supplier<ResourceLocation> draftCeilingBlock,
+                                   Consumer<ResourceLocation> setDraftCeilingBlock,
+                                   Supplier<ResourceLocation> draftStairBlock,
+                                   Consumer<ResourceLocation> setDraftStairBlock,
+                                   Supplier<ResourceLocation> draftSlabBlock,
+                                   Consumer<ResourceLocation> setDraftSlabBlock,
+                                   Supplier<ResourceLocation> draftLadderBlock,
+                                   Consumer<ResourceLocation> setDraftLadderBlock,
                                    Supplier<ResourceLocation> blockSwapSourceBlock,
                                    Consumer<ResourceLocation> setBlockSwapSourceBlock,
                                    Supplier<ResourceLocation> blockSwapTargetBlock,
@@ -53,6 +66,12 @@ public record WorkspacePageContext(Font font,
     public interface BlockPickerRowAdder {
         void add(MKLayout root, int xPos, int y, String label, ResourceLocation blockId,
                  Consumer<ResourceLocation> setter, boolean allowClear);
+    }
+
+    @FunctionalInterface
+    public interface PaletteBlockPickerRowAdder {
+        void add(MKLayout root, int xPos, int y, String label, ResourceLocation blockId,
+                 ResourceLocation defaultBlock, Consumer<ResourceLocation> setter);
     }
 
     public int panelX() {
