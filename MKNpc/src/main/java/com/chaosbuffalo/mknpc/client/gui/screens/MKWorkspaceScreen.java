@@ -12,6 +12,7 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceBlockSwapPag
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceBackupPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceHomePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceImportPage;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceGenerateConfirmPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePageContext;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceUtilitiesPage;
@@ -232,7 +233,7 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(new WorkspaceHomePage());
         addWorkspacePage(new WorkspaceImportPage());
         addState("form", this::buildFormState);
-        addState("generate_confirm", this::buildGenerateConfirmState);
+        addWorkspacePage(new WorkspaceGenerateConfirmPage());
         addState("form_identity", this::buildFormIdentityState);
         addState("form_materials", this::buildFormMaterialsState);
         addState("form_categories", this::buildFormCategoriesState);
@@ -260,10 +261,16 @@ public class MKWorkspaceScreen extends MKScreen {
         addState(page.id(), () -> page.build(createPageContext()));
     }
 
+    private String draftWorkspaceId() {
+        ensureFormDraftInitialized();
+        return formDraft.namespace + ":" + formDraft.structureName;
+    }
+
     private WorkspacePageContext createPageContext() {
         return new WorkspacePageContext(font, anchor, workspace, width, height, PANEL_WIDTH, PANEL_HEIGHT, SCROLL_WIDTH,
                 CONTENT_WIDTH, BUTTON_HEIGHT, BUTTON_GAP, BOTTOM_PADDING, TOP_CONTENT_Y, HEADER_SCROLL_GAP, TEXT_COLOR,
                 importManifestIds, backupManifestFiles, this::pushState, this::switchToExistingState, this::flagNeedSetup,
+                this::draftWorkspaceId, this::sendWorkspaceDraft,
                 () -> blockSwapSourceBlock, value -> blockSwapSourceBlock = value,
                 () -> blockSwapTargetBlock, value -> blockSwapTargetBlock = value,
                 this::addBlockPickerRow, this::supportsStairGeneration, this::finalizeScrollView);
@@ -464,53 +471,6 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), back);
         back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
         back.setPressedCallback((button, mouseButton) -> {
-            switchToExistingState("form");
-            return true;
-        });
-        return root;
-    }
-
-    private MKLayout buildGenerateConfirmState() {
-        int xPos = width / 2 - PANEL_WIDTH / 2;
-        int yPos = height / 2 - PANEL_HEIGHT / 2;
-        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
-        root.setMargins(8, 8, 8, 8);
-        root.setPaddingTop(8).setPaddingBot(8);
-
-        MKText title = makeWhiteText(Component.literal("Confirm Regenerate"));
-        root.addWidget(title);
-        root.addConstraintToWidget(MarginConstraint.TOP, title);
-        root.addConstraintToWidget(new CenterXConstraint(), title);
-
-        MKText warning = makeWhiteText(Component.literal(
-                "This change is not covered by a safe live mutation. Regenerating will rebuild the workspace scaffold and overwrite existing authored workspace blocks."));
-        warning.setWidth(CONTENT_WIDTH);
-        warning.setMultiline(true);
-        root.addWidget(warning);
-        root.addConstraintToWidget(StackConstraint.VERTICAL, warning);
-        root.addConstraintToWidget(new CenterXConstraint(), warning);
-
-        MKText target = makeWhiteText(Component.literal(formDraft.namespace + ":" + formDraft.structureName));
-        target.setWidth(CONTENT_WIDTH);
-        target.setMultiline(true);
-        root.addWidget(target);
-        root.addConstraintToWidget(StackConstraint.VERTICAL, target);
-        root.addConstraintToWidget(new CenterXConstraint(), target);
-
-        MKButton confirm = new MKButton(Component.literal("Regenerate Workspace"), 200, 20);
-        root.addWidget(confirm);
-        root.addConstraintToWidget(new CenterXConstraint(), confirm);
-        confirm.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT);
-        confirm.setPressedCallback((button, mouseButton) -> {
-            sendWorkspaceDraft();
-            return true;
-        });
-
-        MKButton cancel = new MKButton(Component.literal("Cancel"), 120, 20);
-        root.addWidget(cancel);
-        root.addConstraintToWidget(new CenterXConstraint(), cancel);
-        cancel.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
-        cancel.setPressedCallback((button, mouseButton) -> {
             switchToExistingState("form");
             return true;
         });
