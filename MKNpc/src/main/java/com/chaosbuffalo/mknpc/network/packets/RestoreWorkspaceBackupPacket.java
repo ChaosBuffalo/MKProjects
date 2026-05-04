@@ -65,12 +65,12 @@ public class RestoreWorkspaceBackupPacket implements CustomPacketPayload {
                 MKWorkspaceValidationMessages.displayValidationErrors(player, result.validationErrors());
                 return;
             }
-            if (result.workspace().isEmpty()) {
+            if (result.workspaceOpt().isEmpty()) {
                 MKWorkspaceValidationMessages.displayFailure(player,
                         "Backup file not found for this workspace: " + packet.fileName);
                 return;
             }
-            String blockRestoreSuffix = result.blockRestoreStats()
+            String blockRestoreSuffix = result.blockRestoreStatsOpt()
                     .map(stats -> " and " + stats.restoredPieceCount() + " saved piece NBT files")
                     .orElse(" metadata only; no piece snapshots were present");
             player.displayClientMessage(Component.literal("Restored workspace backup: " + packet.fileName +

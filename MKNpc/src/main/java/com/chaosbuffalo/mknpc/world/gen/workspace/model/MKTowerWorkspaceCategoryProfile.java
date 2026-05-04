@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +14,8 @@ public class MKTowerWorkspaceCategoryProfile {
     public static final int DEFAULT_MIN_MAIN_PATH_PIECES = 1;
     public static final int DEFAULT_MAX_MAIN_PATH_PIECES = 2;
     public static final int DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP = 10;
+    public static final String TOP_VOID_MARGIN_TAG = "workspace_top_void_margin";
+    public static final String BOTTOM_VOID_MARGIN_TAG = "workspace_bottom_void_margin";
 
     public static final Codec<MKTowerWorkspaceCategoryProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             MKWorkspaceCodecs.TOWER_CATEGORY_CODEC.fieldOf("category").forGetter(MKTowerWorkspaceCategoryProfile::category),
@@ -24,35 +27,37 @@ public class MKTowerWorkspaceCategoryProfile {
                     .forGetter(MKTowerWorkspaceCategoryProfile::maxMainPathPieces),
             Codec.INT.optionalFieldOf("maxBranchPiecesBeforeCap", DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP)
                     .forGetter(MKTowerWorkspaceCategoryProfile::maxBranchPiecesBeforeCap),
-            Codec.INT.optionalFieldOf("fullHeight").forGetter(profile -> java.util.Optional.of(profile.fullHeight())),
-            Codec.INT.optionalFieldOf("defaultHeight").forGetter(profile -> java.util.Optional.of(profile.fullHeight())),
-            Codec.INT.optionalFieldOf("minHeight").forGetter(profile -> java.util.Optional.<Integer>empty()),
-            Codec.INT.optionalFieldOf("maxHeight").forGetter(profile -> java.util.Optional.of(profile.fullHeight())),
-            Codec.BOOL.optionalFieldOf("supportsVerticalAccess", true)
-                    .forGetter(profile -> true),
+            Codec.INT.fieldOf("fullHeight").forGetter(MKTowerWorkspaceCategoryProfile::fullHeight),
+            Codec.INT.optionalFieldOf("topVoidMargin", 0).forGetter(MKTowerWorkspaceCategoryProfile::topVoidMargin),
+            Codec.INT.optionalFieldOf("bottomVoidMargin", 0).forGetter(MKTowerWorkspaceCategoryProfile::bottomVoidMargin),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("paletteOverride")
-                    .forGetter(MKTowerWorkspaceCategoryProfile::paletteOverride)
+                    .forGetter(MKTowerWorkspaceCategoryProfile::paletteOverrideOpt)
     ).apply(instance, (category, roomWidth, roomLength, minMainPathPieces, maxMainPathPieces, maxBranchPiecesBeforeCap,
-                       fullHeight, defaultHeight, minHeight, maxHeight, supportsVerticalAccess, paletteOverride) ->
+                       fullHeight, topVoidMargin, bottomVoidMargin, paletteOverride) ->
             new MKTowerWorkspaceCategoryProfile(
                     category,
                     roomWidth,
                     roomLength,
-                    fullHeight.orElseGet(() -> defaultHeight.orElseGet(() -> maxHeight.orElse(3))),
+                    fullHeight,
                     minMainPathPieces,
                     maxMainPathPieces,
                     maxBranchPiecesBeforeCap,
-                    paletteOverride
+                    topVoidMargin,
+                    bottomVoidMargin,
+                    paletteOverride.orElse(null)
             )));
 
     private final MKTowerWorkspaceCategory category;
     private final int roomWidth;
     private final int roomLength;
     private final int fullHeight;
+    private final int topVoidMargin;
+    private final int bottomVoidMargin;
     private final int minMainPathPieces;
     private final int maxMainPathPieces;
     private final int maxBranchPiecesBeforeCap;
-    private final Optional<MKWorkspacePaletteOverride> paletteOverride;
+    @Nullable
+    private final MKWorkspacePaletteOverride paletteOverride;
 
     public MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory category, int roomWidth, int roomLength,
                                            int fullHeight) {
@@ -70,21 +75,31 @@ public class MKTowerWorkspaceCategoryProfile {
                                            int fullHeight, int minMainPathPieces, int maxMainPathPieces,
                                            int maxBranchPiecesBeforeCap) {
         this(category, roomWidth, roomLength, fullHeight, minMainPathPieces, maxMainPathPieces,
-                maxBranchPiecesBeforeCap, Optional.empty());
+                maxBranchPiecesBeforeCap, null);
     }
 
     public MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory category, int roomWidth, int roomLength,
                                            int fullHeight, int minMainPathPieces, int maxMainPathPieces,
                                            int maxBranchPiecesBeforeCap,
-                                           Optional<MKWorkspacePaletteOverride> paletteOverride) {
+                                           @Nullable MKWorkspacePaletteOverride paletteOverride) {
+        this(category, roomWidth, roomLength, fullHeight, minMainPathPieces, maxMainPathPieces,
+                maxBranchPiecesBeforeCap, 0, 0, paletteOverride);
+    }
+
+    public MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory category, int roomWidth, int roomLength,
+                                           int fullHeight, int minMainPathPieces, int maxMainPathPieces,
+                                           int maxBranchPiecesBeforeCap, int topVoidMargin, int bottomVoidMargin,
+                                           @Nullable MKWorkspacePaletteOverride paletteOverride) {
         this.category = category;
         this.roomWidth = roomWidth;
         this.roomLength = roomLength;
         this.fullHeight = fullHeight;
+        this.topVoidMargin = Math.max(0, topVoidMargin);
+        this.bottomVoidMargin = Math.max(0, bottomVoidMargin);
         this.minMainPathPieces = minMainPathPieces;
         this.maxMainPathPieces = maxMainPathPieces;
         this.maxBranchPiecesBeforeCap = maxBranchPiecesBeforeCap;
-        this.paletteOverride = paletteOverride.filter(override -> !override.isEmpty());
+        this.paletteOverride = paletteOverride != null && !paletteOverride.isEmpty() ? paletteOverride : null;
     }
 
     public static List<MKTowerWorkspaceCategoryProfile> createDefaults(MKWorkspaceDimensions dimensions) {
@@ -116,6 +131,18 @@ public class MKTowerWorkspaceCategoryProfile {
         validateOdd(errors, category.getSerializedName() + " room length", roomLength, 3);
         if (fullHeight < 3) {
             errors.add(category.getSerializedName() + " full height must be at least 3");
+        }
+        if (topVoidMargin < 0) {
+            errors.add(category.getSerializedName() + " top void margin must be at least 0");
+        }
+        if (bottomVoidMargin < 0) {
+            errors.add(category.getSerializedName() + " bottom void margin must be at least 0");
+        }
+        if (category != MKTowerWorkspaceCategory.TOP_CAP && topVoidMargin > 0) {
+            errors.add(category.getSerializedName() + " top void margin is only supported on top_cap");
+        }
+        if (category != MKTowerWorkspaceCategory.BASEMENT_CAP && bottomVoidMargin > 0) {
+            errors.add(category.getSerializedName() + " bottom void margin is only supported on basement_cap");
         }
         if (verticalAccessSpec.shaftSize() > roomWidth) {
             errors.add(category.getSerializedName() + " room width must be at least the shared shaft size");
@@ -167,6 +194,18 @@ public class MKTowerWorkspaceCategoryProfile {
         return fullHeight;
     }
 
+    public int topVoidMargin() {
+        return topVoidMargin;
+    }
+
+    public int bottomVoidMargin() {
+        return bottomVoidMargin;
+    }
+
+    public int exportedFullHeight() {
+        return fullHeight + topVoidMargin + bottomVoidMargin;
+    }
+
     public int minMainPathPieces() {
         return minMainPathPieces;
     }
@@ -179,8 +218,13 @@ public class MKTowerWorkspaceCategoryProfile {
         return maxBranchPiecesBeforeCap;
     }
 
-    public Optional<MKWorkspacePaletteOverride> paletteOverride() {
+    @Nullable
+    public MKWorkspacePaletteOverride paletteOverride() {
         return paletteOverride;
+    }
+
+    public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {
+        return Optional.ofNullable(paletteOverride);
     }
 }
 

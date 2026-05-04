@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.scaffold;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
@@ -224,11 +225,14 @@ public class MKWorkspaceScaffoldBuilder {
         int verticalShellThickness = getVerticalShellThickness(plannedPiece);
         boolean emptyScaffold = isEmptyScaffold(plannedPiece);
         int exteriorAirMargin = emptyScaffold ? 0 : workspace.exteriorAirMargin();
+        int topVoidMargin = emptyScaffold ? 0 : getTopVoidMargin(plannedPiece);
+        int bottomVoidMargin = emptyScaffold ? 0 : getBottomVoidMargin(plannedPiece);
         int exportWidth = plannedPiece.interiorWidth() + (2 * shellMargin) + (2 * exteriorAirMargin);
         int exportLength = plannedPiece.interiorLength() + (2 * shellMargin) + (2 * exteriorAirMargin);
-        int exportHeight = plannedPiece.interiorHeight() + (2 * verticalShellThickness);
+        int bodyHeight = plannedPiece.interiorHeight() + (2 * verticalShellThickness);
+        int exportHeight = bodyHeight + topVoidMargin + bottomVoidMargin;
         BlockPos exportOrigin = placement.previewOrigin().offset(workspace.previewMargin(), 0, workspace.previewMargin());
-        BlockPos geometryOrigin = exportOrigin.offset(exteriorAirMargin, 0, exteriorAirMargin);
+        BlockPos geometryOrigin = exportOrigin.offset(exteriorAirMargin, bottomVoidMargin, exteriorAirMargin);
         BoundingBox exportBounds = new BoundingBox(
                 exportOrigin.getX(),
                 exportOrigin.getY(),
@@ -242,7 +246,7 @@ public class MKWorkspaceScaffoldBuilder {
                 geometryOrigin.getY(),
                 geometryOrigin.getZ(),
                 geometryOrigin.getX() + plannedPiece.interiorWidth() + (2 * shellMargin) - 1,
-                geometryOrigin.getY() + exportHeight - 1,
+                geometryOrigin.getY() + bodyHeight - 1,
                 geometryOrigin.getZ() + plannedPiece.interiorLength() + (2 * shellMargin) - 1
         );
         BoundingBox clearedBounds = new BoundingBox(
@@ -981,6 +985,14 @@ public class MKWorkspaceScaffoldBuilder {
         } catch (NumberFormatException ignored) {
             return fallback;
         }
+    }
+
+    private int getTopVoidMargin(MKPlannedPiece piece) {
+        return Math.max(0, parseIntTag(piece.tags(), MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG, 0));
+    }
+
+    private int getBottomVoidMargin(MKPlannedPiece piece) {
+        return Math.max(0, parseIntTag(piece.tags(), MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG, 0));
     }
 
     private int getHallwayRiseForColumn(int slopeDelta, int columnIndex, int hallwayLength) {

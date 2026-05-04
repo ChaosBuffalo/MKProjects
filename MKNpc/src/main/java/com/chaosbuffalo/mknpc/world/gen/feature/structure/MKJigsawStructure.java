@@ -42,7 +42,7 @@ public class MKJigsawStructure extends MKStructure {
                     StructureTemplatePool.CODEC.fieldOf("start_pool")
                             .forGetter(s -> s.startPool),
                     ResourceLocation.CODEC.optionalFieldOf("start_jigsaw_name")
-                            .forGetter(s -> s.startJigsawName),
+                            .forGetter(s -> Optional.ofNullable(s.startJigsawName)),
                     Codec.intRange(0, 20).fieldOf("size")
                             .forGetter(s -> s.maxDepth),
                     HeightProvider.CODEC.fieldOf("start_height")
@@ -50,7 +50,7 @@ public class MKJigsawStructure extends MKStructure {
                     Codec.BOOL.fieldOf("use_expansion_hack")
                             .forGetter(s -> s.useExpansionHack),
                     Heightmap.Types.CODEC.optionalFieldOf("project_start_to_heightmap")
-                            .forGetter(s -> s.projectStartToHeightmap),
+                            .forGetter(s -> Optional.ofNullable(s.projectStartToHeightmap)),
                     Codec.intRange(1, 128).fieldOf("max_distance_from_center")
                             .forGetter(s -> s.maxDistanceFromCenter),
                     Codec.list(PoolAliasBinding.CODEC).optionalFieldOf("pool_aliases", List.of()).forGetter(p_307187_ -> p_307187_.poolAliases),
@@ -58,12 +58,19 @@ public class MKJigsawStructure extends MKStructure {
                             .optionalFieldOf("dimension_padding", JigsawStructure.DEFAULT_DIMENSION_PADDING)
                             .forGetter(p_348455_ -> p_348455_.dimensionPadding),
                     LiquidSettings.CODEC.optionalFieldOf("liquid_settings", JigsawStructure.DEFAULT_LIQUID_SETTINGS).forGetter(p_352036_ -> p_352036_.liquidSettings),
-                    MKDungeonLayoutSettings.CODEC.optionalFieldOf("dungeon_layout").forGetter(s -> s.dungeonLayout),
+                    MKDungeonLayoutSettings.CODEC.optionalFieldOf("dungeon_layout")
+                            .forGetter(s -> Optional.ofNullable(s.dungeonLayout)),
                     CompoundTag.CODEC.fieldOf("structure_events")
                             .forGetter(MKJigsawStructure::getNbt),
                     Codec.BOOL.fieldOf("fill_floor").forGetter(s -> s.fillFloor),
                     BlockState.CODEC.optionalFieldOf("fill_state").forGetter(s -> Optional.ofNullable(s.fillState))
-            ).apply(builder, MKJigsawStructure::new)).flatXmap(verifyRange(), verifyRange());
+            ).apply(builder, (settings, startPool, startJigsawName, maxDepth, startHeight, useExpansionHack,
+                              projectStartToHeightmap, maxDistanceFromCenter, poolAliases, dimensionPadding,
+                              liquidSettings, dungeonLayout, structureEvents, fillFloor, fillState) ->
+                    new MKJigsawStructure(settings, startPool, startJigsawName.orElse(null), maxDepth, startHeight,
+                            useExpansionHack, projectStartToHeightmap.orElse(null), maxDistanceFromCenter,
+                            poolAliases, dimensionPadding, liquidSettings, dungeonLayout.orElse(null),
+                            structureEvents, fillFloor, fillState))).flatXmap(verifyRange(), verifyRange());
 
     private static Function<MKJigsawStructure, DataResult<MKJigsawStructure>> verifyRange() {
         return structure -> {
@@ -78,27 +85,30 @@ public class MKJigsawStructure extends MKStructure {
     }
 
     private final Holder<StructureTemplatePool> startPool;
-    private final Optional<ResourceLocation> startJigsawName;
+    @Nullable
+    private final ResourceLocation startJigsawName;
     private final int maxDepth;
     private final HeightProvider startHeight;
     private final boolean useExpansionHack;
-    private final Optional<Heightmap.Types> projectStartToHeightmap;
+    @Nullable
+    private final Heightmap.Types projectStartToHeightmap;
     private final int maxDistanceFromCenter;
     private final List<PoolAliasBinding> poolAliases;
     private final DimensionPadding dimensionPadding;
     private final LiquidSettings liquidSettings;
-    private final Optional<MKDungeonLayoutSettings> dungeonLayout;
+    @Nullable
+    private final MKDungeonLayoutSettings dungeonLayout;
     private final boolean fillFloor;
     @Nullable
     private final BlockState fillState;
 
     public MKJigsawStructure(StructureSettings pSettings, Holder<StructureTemplatePool> templatePool,
-                             Optional<ResourceLocation> startJigsawName, int maxDepth, HeightProvider heightProvider,
-                             boolean useExpansionHack, Optional<Heightmap.Types> heightmapTypes, int maxDistanceFromCenter,
+                             @Nullable ResourceLocation startJigsawName, int maxDepth, HeightProvider heightProvider,
+                             boolean useExpansionHack, @Nullable Heightmap.Types heightmapTypes, int maxDistanceFromCenter,
                              List<PoolAliasBinding> poolAliases,
                              DimensionPadding dimensionPadding,
                              LiquidSettings liquidSettings,
-                             Optional<MKDungeonLayoutSettings> dungeonLayout,
+                             @Nullable MKDungeonLayoutSettings dungeonLayout,
                              CompoundTag structureNbt,
                              boolean fillFloor,
                              Optional<BlockState> fillState) {
@@ -155,13 +165,15 @@ public class MKJigsawStructure extends MKStructure {
         int startY = this.startHeight.sample(pContext.random(), new WorldGenerationContext(pContext.chunkGenerator(), pContext.heightAccessor()));
         BlockPos startPos = new BlockPos(chunkpos.getMinBlockX(), startY, chunkpos.getMinBlockZ());
         PoolAliasLookup aliasLookup = PoolAliasLookup.create(this.poolAliases, startPos, pContext.seed());
-        if (dungeonLayout.isPresent()) {
-            return MKJigsawPlacement.addPieces(pContext, startPool, startJigsawName, maxDepth, startPos,
-                    useExpansionHack, projectStartToHeightmap, maxDistanceFromCenter, aliasLookup,
-                    this.dimensionPadding, this.liquidSettings, dungeonLayout.get());
+        Optional<ResourceLocation> startJigsawNameOpt = Optional.ofNullable(startJigsawName);
+        Optional<Heightmap.Types> projectStartToHeightmapOpt = Optional.ofNullable(projectStartToHeightmap);
+        if (dungeonLayout != null) {
+            return MKJigsawPlacement.addPieces(pContext, startPool, startJigsawNameOpt, maxDepth, startPos,
+                    useExpansionHack, projectStartToHeightmapOpt, maxDistanceFromCenter, aliasLookup,
+                    this.dimensionPadding, this.liquidSettings, dungeonLayout);
         }
-        return net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement.addPieces(pContext, startPool, startJigsawName, maxDepth, startPos,
-                useExpansionHack, projectStartToHeightmap, maxDistanceFromCenter, aliasLookup,
+        return net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement.addPieces(pContext, startPool, startJigsawNameOpt, maxDepth, startPos,
+                useExpansionHack, projectStartToHeightmapOpt, maxDistanceFromCenter, aliasLookup,
                 this.dimensionPadding, this.liquidSettings);
     }
 }

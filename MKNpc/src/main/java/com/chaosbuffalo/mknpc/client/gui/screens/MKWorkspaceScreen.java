@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens;
 
 import com.chaosbuffalo.mknpc.client.gui.widgets.MKBranchExitMaskWidget;
+import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKBlockingModal;
 import com.chaosbuffalo.mknpc.client.gui.widgets.MKIntegerSlider;
 import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantPacket;
 import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantsForAllPacket;
@@ -54,13 +55,14 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.Comparator;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,27 +116,27 @@ public class MKWorkspaceScreen extends MKScreen {
                                       Consumer<ResourceLocation> selectionCallback, boolean allowClear) {
     }
 
-    private static class BlockingModal extends MKModal {
+    private static class PaletteBlockSlot extends MKBlockSlot {
+        private final Runnable onPick;
+        private final Runnable onReset;
+
+        private PaletteBlockSlot(ResourceLocation blockId, Runnable onPick, Runnable onReset) {
+            this.onPick = onPick;
+            this.onReset = onReset;
+            setBlock(blockId);
+        }
+
         @Override
         public boolean onMousePressed(Minecraft minecraft, double mouseX, double mouseY, int mouseButton) {
-            return true;
-        }
-
-        @Override
-        public boolean onMouseScrollWheel(Minecraft minecraft, double mouseX, double mouseY, double pScrollX,
-                                          double pScrollY) {
-            return true;
-        }
-
-        @Override
-        public boolean onMouseDragged(Minecraft minecraft, double mouseX, double mouseY, int mouseButton,
-                                      double dX, double dY) {
-            return true;
-        }
-
-        @Override
-        public boolean onMouseRelease(double mouseX, double mouseY, int mouseButton) {
-            return true;
+            if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+                onPick.run();
+                return true;
+            }
+            if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+                onReset.run();
+                return true;
+            }
+            return false;
         }
     }
 
@@ -623,18 +625,19 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), helpText);
 
         int rowTop = yPos + 96;
-        addBlockPickerRow(root, xPos, rowTop, "Floor", formDraft.floorBlock,
-                value -> formDraft.floorBlock = value, false);
-        addBlockPickerRow(root, xPos, rowTop + 34, "Wall", formDraft.wallBlock,
-                value -> formDraft.wallBlock = value, false);
-        addBlockPickerRow(root, xPos, rowTop + 68, "Ceiling", formDraft.ceilingBlock,
-                value -> formDraft.ceilingBlock = value, false);
-        addBlockPickerRow(root, xPos, rowTop + 102, "Stair", formDraft.stairBlock,
-                value -> formDraft.stairBlock = value, false);
-        addBlockPickerRow(root, xPos, rowTop + 136, "Slab", formDraft.slabBlock,
-                value -> formDraft.slabBlock = value, false);
-        addBlockPickerRow(root, xPos, rowTop + 170, "Ladder", formDraft.ladderBlock,
-                value -> formDraft.ladderBlock = value, false);
+        MKWorkspaceMaterialPalette defaultPalette = MKWorkspaceMaterialPalette.defaultPalette();
+        addPaletteBlockPickerRow(root, xPos, rowTop, "Floor", formDraft.floorBlock, defaultPalette.floorBlock(),
+                value -> formDraft.floorBlock = value);
+        addPaletteBlockPickerRow(root, xPos, rowTop + 34, "Wall", formDraft.wallBlock, defaultPalette.wallBlock(),
+                value -> formDraft.wallBlock = value);
+        addPaletteBlockPickerRow(root, xPos, rowTop + 68, "Ceiling", formDraft.ceilingBlock,
+                defaultPalette.ceilingBlock(), value -> formDraft.ceilingBlock = value);
+        addPaletteBlockPickerRow(root, xPos, rowTop + 102, "Stair", formDraft.stairBlock,
+                defaultPalette.stairBlock(), value -> formDraft.stairBlock = value);
+        addPaletteBlockPickerRow(root, xPos, rowTop + 136, "Slab", formDraft.slabBlock,
+                defaultPalette.slabBlock(), value -> formDraft.slabBlock = value);
+        addPaletteBlockPickerRow(root, xPos, rowTop + 170, "Ladder", formDraft.ladderBlock,
+                defaultPalette.ladderBlock(), value -> formDraft.ladderBlock = value);
 
         MKButton back = new MKButton(Component.literal("Back"), 120, 20);
         root.addWidget(back);
@@ -1227,7 +1230,7 @@ public class MKWorkspaceScreen extends MKScreen {
             addRow(content, makeWhiteText(Component.literal("Room Height")), roomHeightField);
         }
         addPaletteOverrideRows(content, "Palette Overrides", resolveCategoryPalette(family.category()),
-                family.paletteOverride(), override -> replaceFamilyDefinition(index, copyFamilyDefinition(family, override)));
+                family.paletteOverrideOpt(), override -> replaceFamilyDefinition(index, copyFamilyDefinition(family, override)));
         MKText exitLabel = makeWhiteText(Component.literal("Horizontal Exits"));
         content.addWidget(exitLabel);
         content.addConstraintToWidget(MarginConstraint.LEFT, exitLabel);
@@ -1640,7 +1643,7 @@ public class MKWorkspaceScreen extends MKScreen {
                         hallway.hallwayId(), hallway.openingProfileId(), hallway.length(),
                         hallway.interiorWidth(), hallway.interiorHeight(), parseInt(text, hallway.slopeDelta()),
                         hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.paletteOverride())));
-        addPaletteOverrideRows(content, "Palette Overrides", draftBasePalette(), hallway.paletteOverride(),
+        addPaletteOverrideRows(content, "Palette Overrides", draftBasePalette(), hallway.paletteOverrideOpt(),
                 override -> replaceHallwayFamily(index, copyHallwayFamily(hallway, override)));
 
         addToggleRow(content, "Allow On Main Path", hallway.allowOnMainPath(), () -> {
@@ -2226,6 +2229,52 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addConstraintToWidget(new CenterXConstraint(), slider);
     }
 
+    private class PaletteOverrideGrid extends MKLayout {
+        private static final int COLUMN_COUNT = 2;
+        private static final int WIDGETS_PER_ENTRY = 3;
+        private static final int ROW_HEIGHT = 36;
+        private static final int LABEL_HEIGHT = 11;
+
+        private PaletteOverrideGrid() {
+            super(0, 0, CONTENT_WIDTH, ROW_HEIGHT * 3);
+        }
+
+        private void addEntry(MKText labelText, PaletteBlockSlot slot, MKText idText) {
+            int columnWidth = getColumnWidth();
+            labelText.setWidth(columnWidth - 8);
+            idText.setWidth(columnWidth - 28);
+            addWidget(labelText);
+            addWidget(slot);
+            addWidget(idText);
+        }
+
+        private int getColumnWidth() {
+            return getWidth() / COLUMN_COUNT;
+        }
+
+        @Override
+        public void layoutWidget(IMKWidget widget, int index) {
+            int columnWidth = getColumnWidth();
+            int entryIndex = index / WIDGETS_PER_ENTRY;
+            int entryPart = index % WIDGETS_PER_ENTRY;
+            int column = entryIndex % COLUMN_COUNT;
+            int row = entryIndex / COLUMN_COUNT;
+            int left = getX() + column * columnWidth;
+            int top = getY() + row * ROW_HEIGHT;
+            if (entryPart == 0) {
+                widget.setX(left);
+                widget.setY(top);
+            } else if (entryPart == 1) {
+                widget.setX(left);
+                widget.setY(top + LABEL_HEIGHT + 1);
+            } else {
+                IMKWidget slot = getChild(index - 1);
+                widget.setX(left + slot.getWidth() + 5);
+                widget.setY(top + LABEL_HEIGHT + 5);
+            }
+        }
+    }
+
     private void addPaletteOverrideRows(MKStackLayoutVertical root, String title,
                                         MKWorkspaceMaterialPalette inheritedPalette,
                                         Optional<MKWorkspacePaletteOverride> overrideOpt,
@@ -2234,18 +2283,29 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addWidget(header);
         root.addConstraintToWidget(MarginConstraint.LEFT, header);
         MKWorkspacePaletteOverride override = overrideOpt.orElse(MKWorkspacePaletteOverride.EMPTY);
-        addPaletteOverrideRow(root, "Floor", inheritedPalette.floorBlock(), override.floorBlock(),
-                value -> updater.accept(Optional.of(override.withFloorBlock(Optional.of(value)))));
-        addPaletteOverrideRow(root, "Wall", inheritedPalette.wallBlock(), override.wallBlock(),
-                value -> updater.accept(Optional.of(override.withWallBlock(Optional.of(value)))));
-        addPaletteOverrideRow(root, "Ceiling", inheritedPalette.ceilingBlock(), override.ceilingBlock(),
-                value -> updater.accept(Optional.of(override.withCeilingBlock(Optional.of(value)))));
-        addPaletteOverrideRow(root, "Stair", inheritedPalette.stairBlock(), override.stairBlock(),
-                value -> updater.accept(Optional.of(override.withStairBlock(Optional.of(value)))));
-        addPaletteOverrideRow(root, "Slab", inheritedPalette.slabBlock(), override.slabBlock(),
-                value -> updater.accept(Optional.of(override.withSlabBlock(Optional.of(value)))));
-        addPaletteOverrideRow(root, "Ladder", inheritedPalette.ladderBlock(), override.ladderBlock(),
-                value -> updater.accept(Optional.of(override.withLadderBlock(Optional.of(value)))));
+        Consumer<MKWorkspacePaletteOverride> overrideUpdater = nextOverride ->
+                updater.accept(nextOverride.isEmpty() ? Optional.empty() : Optional.of(nextOverride));
+        PaletteOverrideGrid grid = new PaletteOverrideGrid();
+        addPaletteOverrideEntry(grid, "Floor", inheritedPalette.floorBlock(), override.floorBlockOpt(),
+                value -> overrideUpdater.accept(override.withFloorBlock(value)),
+                () -> overrideUpdater.accept(override.withFloorBlock(null)));
+        addPaletteOverrideEntry(grid, "Wall", inheritedPalette.wallBlock(), override.wallBlockOpt(),
+                value -> overrideUpdater.accept(override.withWallBlock(value)),
+                () -> overrideUpdater.accept(override.withWallBlock(null)));
+        addPaletteOverrideEntry(grid, "Ceiling", inheritedPalette.ceilingBlock(), override.ceilingBlockOpt(),
+                value -> overrideUpdater.accept(override.withCeilingBlock(value)),
+                () -> overrideUpdater.accept(override.withCeilingBlock(null)));
+        addPaletteOverrideEntry(grid, "Stair", inheritedPalette.stairBlock(), override.stairBlockOpt(),
+                value -> overrideUpdater.accept(override.withStairBlock(value)),
+                () -> overrideUpdater.accept(override.withStairBlock(null)));
+        addPaletteOverrideEntry(grid, "Slab", inheritedPalette.slabBlock(), override.slabBlockOpt(),
+                value -> overrideUpdater.accept(override.withSlabBlock(value)),
+                () -> overrideUpdater.accept(override.withSlabBlock(null)));
+        addPaletteOverrideEntry(grid, "Ladder", inheritedPalette.ladderBlock(), override.ladderBlockOpt(),
+                value -> overrideUpdater.accept(override.withLadderBlock(value)),
+                () -> overrideUpdater.accept(override.withLadderBlock(null)));
+        root.addWidget(grid);
+        root.addConstraintToWidget(MarginConstraint.LEFT, grid);
         if (overrideOpt.isPresent()) {
             MKButton clear = new MKButton(Component.literal("Inherit All Materials"), 180, 20);
             clear.setPressedCallback((button, mouseButton) -> {
@@ -2257,21 +2317,56 @@ public class MKWorkspaceScreen extends MKScreen {
         }
     }
 
-    private void addPaletteOverrideRow(MKStackLayoutVertical root, String label, ResourceLocation inheritedBlock,
-                                       Optional<ResourceLocation> overrideBlock,
-                                       Consumer<ResourceLocation> setter) {
+    private void addPaletteOverrideEntry(PaletteOverrideGrid grid, String label, ResourceLocation inheritedBlock,
+                                         Optional<ResourceLocation> overrideBlock,
+                                         Consumer<ResourceLocation> setter, Runnable resetter) {
         ResourceLocation displayedBlock = overrideBlock.orElse(inheritedBlock);
-        MKButton button = new MKButton(Component.literal((overrideBlock.isPresent() ? "" : "Inherit ") +
-                shortBlockId(displayedBlock)), 180, 20);
-        button.setTooltip(displayedBlock.toString());
-        button.setPressedCallback((pressed, mouseButton) -> {
-            openBlockPicker("Choose " + label + " Block", displayedBlock, value -> {
-                setter.accept(value);
-                refreshPreservingActiveScroll();
-            }, false);
-            return true;
-        });
-        addRow(root, makeWhiteText(Component.literal(label)), button);
+        MKText labelText = makeWhiteText(Component.literal(label));
+        PaletteBlockSlot slot = new PaletteBlockSlot(displayedBlock,
+                () -> openBlockPicker("Choose " + label + " Block", displayedBlock, value -> {
+                    setter.accept(value);
+                    refreshPreservingActiveScroll();
+                }, false),
+                () -> {
+                    resetter.run();
+                    refreshPreservingActiveScroll();
+                });
+        slot.setTooltip(Component.literal(displayedBlock + "\nLeft-click to choose. Right-click to reset."));
+        MKText idText = makeWhiteText(blockDisplayName(displayedBlock));
+        idText.setTooltip(displayedBlock.toString());
+        grid.addEntry(labelText, slot, idText);
+    }
+
+    private void addPaletteBlockPickerRow(MKLayout root, int xPos, int y, String label, ResourceLocation blockId,
+                                          ResourceLocation defaultBlock, Consumer<ResourceLocation> setter) {
+        int rowX = xPos + 22;
+
+        MKText labelText = makeWhiteText(Component.literal(label));
+        labelText.setX(rowX);
+        labelText.setY(y);
+        labelText.setWidth(66);
+        root.addWidget(labelText);
+
+        PaletteBlockSlot slot = new PaletteBlockSlot(blockId,
+                () -> openBlockPicker("Choose " + label + " Block", blockId, value -> {
+                    setter.accept(value);
+                    flagNeedSetup();
+                }, false),
+                () -> {
+                    setter.accept(defaultBlock);
+                    flagNeedSetup();
+                });
+        slot.setTooltip(Component.literal(blockId + "\nLeft-click to choose. Right-click to reset."));
+        slot.setX(rowX + 72);
+        slot.setY(y - 5);
+        root.addWidget(slot);
+
+        MKText idText = makeWhiteText(blockDisplayName(blockId));
+        idText.setX(rowX + 96);
+        idText.setY(y);
+        idText.setWidth(180);
+        idText.setTooltip(blockId.toString());
+        root.addWidget(idText);
     }
 
     private MKText makeLabel(String translationKey) {
@@ -2306,7 +2401,7 @@ public class MKWorkspaceScreen extends MKScreen {
         preview.setY(y - 5);
         root.addWidget(preview);
 
-        MKText idText = makeWhiteText(Component.literal(shortBlockId(blockId)));
+        MKText idText = makeWhiteText(blockDisplayName(blockId));
         idText.setX(rowX + 96);
         idText.setY(y);
         idText.setWidth(130);
@@ -2321,11 +2416,17 @@ public class MKWorkspaceScreen extends MKScreen {
             openBlockPicker("Choose " + label + " Block", blockId, value -> {
                 setter.accept(value);
                 preview.setBlock(value);
-                idText.setText(Component.literal(shortBlockId(value)));
+                idText.setText(blockDisplayName(value));
                 idText.setTooltip(value.toString());
             }, allowClear);
             return true;
         });
+    }
+
+    private Component blockDisplayName(ResourceLocation blockId) {
+        return BuiltInRegistries.BLOCK.getOptional(blockId)
+                .map(block -> block.getName())
+                .orElse(Component.literal(shortBlockId(blockId)));
     }
 
     private void openBlockPicker(String title, ResourceLocation currentValue, Consumer<ResourceLocation> setter,
@@ -2342,7 +2443,7 @@ public class MKWorkspaceScreen extends MKScreen {
         int pickerX = width / 2 - pickerWidth / 2;
         int pickerY = height / 2 - pickerHeight / 2;
 
-        MKModal modal = new BlockingModal();
+        MKModal modal = new MKBlockingModal();
         modal.setCloseOnClickOutside(false);
         modal.addWidget(buildCreativeBlockPickerContent(pickerX, pickerY, pickerWidth, pickerHeight));
         modal.setOnCloseCallback(() -> {
@@ -2610,14 +2711,14 @@ public class MKWorkspaceScreen extends MKScreen {
                 source.floorSettings(),
                 source.categoryProfiles().stream()
                         .map(profile -> materialSource.categoryProfile(profile.category())
-                                .map(requested -> copyCategoryProfile(profile, requested.paletteOverride()))
+                                .map(requested -> copyCategoryProfile(profile, requested.paletteOverrideOpt()))
                                 .orElse(profile))
                         .toList(),
                 source.familyDefinitions().stream()
                         .map(family -> materialSource.familyDefinitions().stream()
                                 .filter(requested -> requested.baseName().equals(family.baseName()))
                                 .findFirst()
-                                .map(requested -> copyFamilyDefinition(family, requested.paletteOverride()))
+                                .map(requested -> copyFamilyDefinition(family, requested.paletteOverrideOpt()))
                                 .orElse(family))
                         .toList(),
                 source.openingProfiles(),
@@ -2625,7 +2726,7 @@ public class MKWorkspaceScreen extends MKScreen {
                         .map(hallway -> materialSource.hallwayFamilies().stream()
                                 .filter(requested -> requested.hallwayId().equals(hallway.hallwayId()))
                                 .findFirst()
-                                .map(requested -> copyHallwayFamily(hallway, requested.paletteOverride()))
+                                .map(requested -> copyHallwayFamily(hallway, requested.paletteOverrideOpt()))
                                 .orElse(hallway))
                         .toList(),
                 source.createdAt(),
@@ -2668,8 +2769,8 @@ public class MKWorkspaceScreen extends MKScreen {
                 mainProfile.fullHeight(),
                 basementProfile.fullHeight(),
                 formDraft.shaftSize,
-                deriveLegacyDoorwayWidth(),
-                deriveLegacyDoorwayHeight()
+                deriveDoorwayWidth(),
+                deriveDoorwayHeight()
         );
         MKWorkspaceMaterialPalette palette = new MKWorkspaceMaterialPalette(
                 formDraft.floorBlock,
@@ -2723,14 +2824,14 @@ public class MKWorkspaceScreen extends MKScreen {
         snapDraftVerticalAccess();
     }
 
-    private int deriveLegacyDoorwayWidth() {
+    private int deriveDoorwayWidth() {
         return getDraftOpeningProfile("main_opening")
                 .or(() -> firstCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind.MAIN_EXIT))
                 .map(MKHorizontalOpeningProfile::openingWidth)
                 .orElse(workspace != null ? workspace.dimensions().doorwayWidth() : 3);
     }
 
-    private int deriveLegacyDoorwayHeight() {
+    private int deriveDoorwayHeight() {
         return getDraftOpeningProfile("main_opening")
                 .or(() -> firstCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind.MAIN_EXIT))
                 .map(MKHorizontalOpeningProfile::openingHeight)
@@ -2772,6 +2873,9 @@ public class MKWorkspaceScreen extends MKScreen {
         int roomWidth = Math.max(3, makeOdd(profile.roomWidth()));
         int roomLength = Math.max(3, makeOdd(profile.roomLength()));
         int fullHeight = normalizeCategoryFullHeight(profile.category(), profile.fullHeight(), verticalAccessSpec, normalizedMainHeight);
+        int topVoidMargin = profile.category() == MKTowerWorkspaceCategory.TOP_CAP ? Math.max(0, profile.topVoidMargin()) : 0;
+        int bottomVoidMargin = profile.category() == MKTowerWorkspaceCategory.BASEMENT_CAP ?
+                Math.max(0, profile.bottomVoidMargin()) : 0;
         return new MKTowerWorkspaceCategoryProfile(
                 profile.category(),
                 roomWidth,
@@ -2781,6 +2885,8 @@ public class MKWorkspaceScreen extends MKScreen {
                 Math.max(Math.max(0, profile.minMainPathPieces()), profile.maxMainPathPieces()),
                 Math.max(0, Math.min(MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP,
                         profile.maxBranchPiecesBeforeCap())),
+                topVoidMargin,
+                bottomVoidMargin,
                 profile.paletteOverride()
         );
     }
@@ -2815,7 +2921,9 @@ public class MKWorkspaceScreen extends MKScreen {
                 profile.minMainPathPieces(),
                 profile.maxMainPathPieces(),
                 profile.maxBranchPiecesBeforeCap(),
-                paletteOverride
+                profile.topVoidMargin(),
+                profile.bottomVoidMargin(),
+                paletteOverride.orElse(null)
         );
     }
 
@@ -2831,7 +2939,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 family.roomHeight(),
                 family.horizontalExtrusionMode(),
                 family.horizontalExits(),
-                paletteOverride
+                paletteOverride.orElse(null)
         );
     }
 
@@ -2846,7 +2954,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 hallway.slopeDelta(),
                 hallway.allowOnMainPath(),
                 hallway.allowOnBranchPath(),
-                paletteOverride
+                paletteOverride.orElse(null)
         );
     }
 
@@ -2863,7 +2971,7 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private MKWorkspaceMaterialPalette resolveCategoryPalette(MKTowerWorkspaceCategory category) {
         MKWorkspaceMaterialPalette basePalette = draftBasePalette();
-        return getDraftCategoryProfile(category).paletteOverride()
+        return getDraftCategoryProfile(category).paletteOverrideOpt()
                 .map(override -> override.resolve(basePalette))
                 .orElse(basePalette);
     }
@@ -3031,7 +3139,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 0,
                 false,
                 true,
-                Optional.empty()
+                null
         ));
         formDraft.hallwayFamilies = List.copyOf(updated);
     }
@@ -3056,12 +3164,14 @@ public class MKWorkspaceScreen extends MKScreen {
                 value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                         profile.category(), value, profile.roomLength(), profile.fullHeight(),
                         profile.minMainPathPieces(), profile.maxMainPathPieces(),
-                        profile.maxBranchPiecesBeforeCap(), profile.paletteOverride())));
+                        profile.maxBranchPiecesBeforeCap(), profile.topVoidMargin(), profile.bottomVoidMargin(),
+                        profile.paletteOverride())));
         MKIntegerSlider roomLengthSlider = new MKIntegerSlider("Length", 180, 20, 1, 45, 2, profile.roomLength(),
                 value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                         profile.category(), profile.roomWidth(), value, profile.fullHeight(),
                         profile.minMainPathPieces(), profile.maxMainPathPieces(),
-                        profile.maxBranchPiecesBeforeCap(), profile.paletteOverride())));
+                        profile.maxBranchPiecesBeforeCap(), profile.topVoidMargin(), profile.bottomVoidMargin(),
+                        profile.paletteOverride())));
 
         addRow(content, makeWhiteText(Component.literal("Room Width")), roomWidthSlider);
         addRow(content, makeWhiteText(Component.literal("Room Length")), roomLengthSlider);
@@ -3070,12 +3180,12 @@ public class MKWorkspaceScreen extends MKScreen {
                     profile.minMainPathPieces(), value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                     profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
                     value, Math.max(value, profile.maxMainPathPieces()), profile.maxBranchPiecesBeforeCap(),
-                    profile.paletteOverride())));
+                    profile.topVoidMargin(), profile.bottomVoidMargin(), profile.paletteOverride())));
             MKIntegerSlider maxPathSlider = new MKIntegerSlider("Max", 180, 20, 0, 10, 1,
                     profile.maxMainPathPieces(), value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                     profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
                     Math.min(profile.minMainPathPieces(), value), value, profile.maxBranchPiecesBeforeCap(),
-                    profile.paletteOverride())));
+                    profile.topVoidMargin(), profile.bottomVoidMargin(), profile.paletteOverride())));
             addRow(content, makeWhiteText(Component.literal("Main Path Min")), minPathSlider);
             addRow(content, makeWhiteText(Component.literal("Main Path Max")), maxPathSlider);
         }
@@ -3083,9 +3193,26 @@ public class MKWorkspaceScreen extends MKScreen {
                 MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP, 1,
                 profile.maxBranchPiecesBeforeCap(), value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                 profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
-                profile.minMainPathPieces(), profile.maxMainPathPieces(), value, profile.paletteOverride())));
+                profile.minMainPathPieces(), profile.maxMainPathPieces(), value, profile.topVoidMargin(),
+                profile.bottomVoidMargin(), profile.paletteOverride())));
         addRow(content, makeWhiteText(Component.literal("Branch Cap Max")), maxBranchBeforeCapSlider);
-        addPaletteOverrideRows(content, "Palette Overrides", draftBasePalette(), profile.paletteOverride(),
+        if (category == MKTowerWorkspaceCategory.TOP_CAP) {
+            MKIntegerSlider topVoidMarginSlider = new MKIntegerSlider("Margin", 180, 20, 0, 32, 1,
+                    profile.topVoidMargin(), value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                    profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
+                    profile.minMainPathPieces(), profile.maxMainPathPieces(), profile.maxBranchPiecesBeforeCap(),
+                    value, profile.bottomVoidMargin(), profile.paletteOverride())));
+            addRow(content, makeWhiteText(Component.literal("Top Void Margin")), topVoidMarginSlider);
+        }
+        if (category == MKTowerWorkspaceCategory.BASEMENT_CAP) {
+            MKIntegerSlider bottomVoidMarginSlider = new MKIntegerSlider("Margin", 180, 20, 0, 32, 1,
+                    profile.bottomVoidMargin(), value -> replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
+                    profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
+                    profile.minMainPathPieces(), profile.maxMainPathPieces(), profile.maxBranchPiecesBeforeCap(),
+                    profile.topVoidMargin(), value, profile.paletteOverride())));
+            addRow(content, makeWhiteText(Component.literal("Bottom Void Margin")), bottomVoidMarginSlider);
+        }
+        addPaletteOverrideRows(content, "Palette Overrides", draftBasePalette(), profile.paletteOverrideOpt(),
                 override -> replaceCategoryProfile(copyCategoryProfile(profile, override)));
     }
 
@@ -3098,6 +3225,8 @@ public class MKWorkspaceScreen extends MKScreen {
                     value,
                     profile.minMainPathPieces(), profile.maxMainPathPieces(),
                     profile.maxBranchPiecesBeforeCap(),
+                    profile.topVoidMargin(),
+                    profile.bottomVoidMargin(),
                     profile.paletteOverride()));
             flagNeedSetup();
         });
@@ -3747,10 +3876,9 @@ public class MKWorkspaceScreen extends MKScreen {
         String familyId = piece.tags().get("workspace_family_id");
         if (familyId != null) {
             return "room:" + piece.tags().getOrDefault("workspace_category", "main") + ":" +
-                    familyId + ":" + piece.tags().getOrDefault("workspace_horizontal_exits",
-                    piece.tags().getOrDefault("workspace_branch_exit_mask", "none"));
+                    familyId + ":" + piece.tags().getOrDefault("workspace_horizontal_exits", "none");
         }
-        return "legacy:" + piece.tags().getOrDefault("topology_role", piece.role().getSerializedName());
+        return "role:" + piece.role().getSerializedName();
     }
 
     private String buildWorkspaceGroupLabel(MKWorkspacePieceDefinition piece) {
@@ -3763,10 +3891,9 @@ public class MKWorkspaceScreen extends MKScreen {
         if (familyId != null) {
             return formatTopologyLabel(piece.tags().getOrDefault("workspace_category", "main")) +
                     " / " + familyId +
-                    " / exits " + piece.tags().getOrDefault("workspace_horizontal_exits",
-                    piece.tags().getOrDefault("workspace_branch_exit_mask", "none"));
+                    " / exits " + piece.tags().getOrDefault("workspace_horizontal_exits", "none");
         }
-        return formatTopologyLabel(piece.tags().getOrDefault("topology_role", piece.role().getSerializedName()));
+        return formatTopologyLabel(piece.role().getSerializedName());
     }
 
     private String getBaseName(MKWorkspacePieceDefinition piece) {

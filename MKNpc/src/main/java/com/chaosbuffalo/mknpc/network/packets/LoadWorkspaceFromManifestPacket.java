@@ -51,7 +51,7 @@ public class LoadWorkspaceFromManifestPacket implements CustomPacketPayload {
             MKWorkspaceValidationMessages.displayValidationErrors(player, response.validationErrors());
             return;
         }
-        if (response.workspace().isPresent()) {
+        if (response.workspaceOpt().isPresent()) {
             service.openWorkspaceScreen(player, packet.anchor);
         } else {
             MKWorkspaceValidationMessages.displayFailure(player, "Workspace import failed.");

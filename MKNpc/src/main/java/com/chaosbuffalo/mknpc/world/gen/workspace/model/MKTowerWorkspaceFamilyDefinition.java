@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
@@ -17,21 +18,22 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
             Codec.STRING.fieldOf("baseName").forGetter(MKTowerWorkspaceFamilyDefinition::baseName),
             MKWorkspaceCodecs.TOWER_CATEGORY_CODEC.fieldOf("category").forGetter(MKTowerWorkspaceFamilyDefinition::category),
             MKWorkspaceCodecs.PIECE_ROLE_CODEC.fieldOf("pieceRole").forGetter(MKTowerWorkspaceFamilyDefinition::pieceRole),
-            Codec.BOOL.optionalFieldOf("supportsVerticalAccess", true)
+            Codec.BOOL.fieldOf("supportsVerticalAccess")
                     .forGetter(MKTowerWorkspaceFamilyDefinition::supportsVerticalAccess),
-            Codec.INT.optionalFieldOf("roomWidth").forGetter(family -> Optional.of(family.roomWidth())),
-            Codec.INT.optionalFieldOf("roomLength").forGetter(family -> Optional.of(family.roomLength())),
-            Codec.INT.optionalFieldOf("roomHeight").forGetter(family -> Optional.of(family.roomHeight())),
-            MKWorkspaceCodecs.HORIZONTAL_EXTRUSION_MODE_CODEC.optionalFieldOf("horizontalExtrusionMode",
-                            MKWorkspaceHorizontalExtrusionMode.FULL_BODY)
+            Codec.INT.optionalFieldOf("roomWidth", 0).forGetter(MKTowerWorkspaceFamilyDefinition::roomWidth),
+            Codec.INT.optionalFieldOf("roomLength", 0).forGetter(MKTowerWorkspaceFamilyDefinition::roomLength),
+            Codec.INT.optionalFieldOf("roomHeight", 0).forGetter(MKTowerWorkspaceFamilyDefinition::roomHeight),
+            MKWorkspaceCodecs.HORIZONTAL_EXTRUSION_MODE_CODEC.fieldOf("horizontalExtrusionMode")
                     .forGetter(MKTowerWorkspaceFamilyDefinition::horizontalExtrusionMode),
             MKWorkspaceFamilyHorizontalExitDefinition.CODEC.listOf().optionalFieldOf("horizontalExits", List.of())
                     .forGetter(MKTowerWorkspaceFamilyDefinition::horizontalExits),
-            MKWorkspaceCodecs.BRANCH_EXIT_MASK_CODEC.optionalFieldOf("branchExitMask")
-                    .forGetter(family -> Optional.empty()),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("paletteOverride")
-                    .forGetter(MKTowerWorkspaceFamilyDefinition::paletteOverride)
-    ).apply(instance, MKTowerWorkspaceFamilyDefinition::fromSerializedData));
+                    .forGetter(MKTowerWorkspaceFamilyDefinition::paletteOverrideOpt)
+    ).apply(instance, (baseName, category, pieceRole, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
+                       horizontalExtrusionMode, horizontalExits, paletteOverride) ->
+            new MKTowerWorkspaceFamilyDefinition(baseName, category, pieceRole, supportsVerticalAccess,
+                    roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
+                    paletteOverride.orElse(null))));
 
     private final String baseName;
     private final MKTowerWorkspaceCategory category;
@@ -42,7 +44,8 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
     private final int roomHeight;
     private final MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode;
     private final List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits;
-    private final Optional<MKWorkspacePaletteOverride> paletteOverride;
+    @Nullable
+    private final MKWorkspacePaletteOverride paletteOverride;
 
     public MKTowerWorkspaceFamilyDefinition(String baseName, MKTowerWorkspaceCategory category,
                                             MKWorkspacePieceRole pieceRole, boolean supportsVerticalAccess,
@@ -58,7 +61,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                                             MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
                                             List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits) {
         this(baseName, category, pieceRole, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
-                horizontalExtrusionMode, horizontalExits, Optional.empty());
+                horizontalExtrusionMode, horizontalExits, null);
     }
 
     public MKTowerWorkspaceFamilyDefinition(String baseName, MKTowerWorkspaceCategory category,
@@ -66,7 +69,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                                             int roomWidth, int roomLength, int roomHeight,
                                             MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
                                             List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
-                                            Optional<MKWorkspacePaletteOverride> paletteOverride) {
+                                            @Nullable MKWorkspacePaletteOverride paletteOverride) {
         this.baseName = baseName;
         this.category = category;
         this.pieceRole = pieceRole;
@@ -76,7 +79,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         this.roomHeight = roomHeight;
         this.horizontalExtrusionMode = horizontalExtrusionMode;
         this.horizontalExits = List.copyOf(horizontalExits);
-        this.paletteOverride = paletteOverride.filter(override -> !override.isEmpty());
+        this.paletteOverride = paletteOverride != null && !paletteOverride.isEmpty() ? paletteOverride : null;
     }
 
     public static List<MKTowerWorkspaceFamilyDefinition> createDefaults() {
@@ -255,7 +258,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
     public static List<MKTowerWorkspaceFamilyDefinition> normalize(List<MKTowerWorkspaceFamilyDefinition> families,
                                                                    List<MKTowerWorkspaceCategoryProfile> categoryProfiles) {
         if (families.isEmpty()) {
-            return categoryProfiles.isEmpty() ? createDefaults() : createDefaults(toLegacyDimensions(categoryProfiles));
+            return createDefaults();
         }
         LinkedHashSet<String> seen = new LinkedHashSet<>();
         List<MKTowerWorkspaceFamilyDefinition> normalized = new ArrayList<>();
@@ -265,7 +268,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
             }
         }
         if (normalized.isEmpty()) {
-            return categoryProfiles.isEmpty() ? createDefaults() : createDefaults(toLegacyDimensions(categoryProfiles));
+            return createDefaults();
         }
         return List.copyOf(normalized);
     }
@@ -312,12 +315,17 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
     }
 
     @Override
-    public Optional<MKTowerWorkspaceCategory> paletteCategory() {
+    public Optional<MKTowerWorkspaceCategory> paletteCategoryOpt() {
         return Optional.of(category);
     }
 
     @Override
-    public Optional<MKWorkspacePaletteOverride> paletteOverride() {
+    public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {
+        return Optional.ofNullable(paletteOverride);
+    }
+
+    @Nullable
+    public MKWorkspacePaletteOverride paletteOverride() {
         return paletteOverride;
     }
 
@@ -359,12 +367,6 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                 .toList();
     }
 
-    public MKTowerBranchExitMask legacyBranchExitMask() {
-        return MKTowerBranchExitMask.fromDirections(branchExits().stream()
-                .map(MKWorkspaceFamilyHorizontalExitDefinition::direction)
-                .toList());
-    }
-
     public String horizontalExitSummary() {
         if (horizontalExits.isEmpty()) {
             return "none";
@@ -374,46 +376,6 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                         exit.connectionMode().getSerializedName() + ":" + exit.openingProfileId() + ":" +
                         exit.sideOffset() + ":" + exit.verticalOffset())
                 .collect(java.util.stream.Collectors.joining("|"));
-    }
-
-    private static MKTowerWorkspaceFamilyDefinition fromSerializedData(String baseName, MKTowerWorkspaceCategory category,
-                                                                       MKWorkspacePieceRole pieceRole,
-                                                                       boolean supportsVerticalAccess,
-                                                                       Optional<Integer> roomWidth,
-                                                                       Optional<Integer> roomLength,
-                                                                       Optional<Integer> roomHeight,
-                                                                       MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
-                                                                       List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
-                                                                       Optional<MKTowerBranchExitMask> branchExitMask,
-                                                                       Optional<MKWorkspacePaletteOverride> paletteOverride) {
-        if (!horizontalExits.isEmpty()) {
-            return new MKTowerWorkspaceFamilyDefinition(baseName, category, pieceRole, supportsVerticalAccess,
-                    roomWidth.orElse(0), roomLength.orElse(0), roomHeight.orElse(0),
-                    horizontalExtrusionMode,
-                    horizontalExits,
-                    paletteOverride);
-        }
-        return new MKTowerWorkspaceFamilyDefinition(baseName, category, pieceRole, supportsVerticalAccess,
-                roomWidth.orElse(0), roomLength.orElse(0), roomHeight.orElse(0),
-                horizontalExtrusionMode,
-                buildLegacyHorizontalExits(category, pieceRole, branchExitMask.orElse(MKTowerBranchExitMask.NONE)),
-                paletteOverride);
-    }
-
-    private static List<MKWorkspaceFamilyHorizontalExitDefinition> buildLegacyHorizontalExits(MKTowerWorkspaceCategory category,
-                                                                                               MKWorkspacePieceRole pieceRole,
-                                                                                               MKTowerBranchExitMask branchExitMask) {
-        ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new ArrayList<>();
-        if (pieceRole == MKWorkspacePieceRole.ENTRY) {
-            exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
-                    MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY, "main_opening",
-                    MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION));
-        }
-        for (Direction direction : branchExitMask.directions()) {
-            exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(direction,
-                    MKWorkspaceHorizontalExitPathKind.BRANCH, "branch_opening"));
-        }
-        return List.copyOf(exits);
     }
 
     private MKTowerWorkspaceFamilyDefinition resolveGeometry(List<MKTowerWorkspaceCategoryProfile> categoryProfiles) {
@@ -438,27 +400,6 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                 horizontalExtrusionMode,
                 horizontalExits,
                 paletteOverride
-        );
-    }
-
-    private static MKWorkspaceDimensions toLegacyDimensions(List<MKTowerWorkspaceCategoryProfile> categoryProfiles) {
-        java.util.Map<MKTowerWorkspaceCategory, MKTowerWorkspaceCategoryProfile> byCategory = categoryProfiles.stream()
-                .collect(java.util.stream.Collectors.toMap(MKTowerWorkspaceCategoryProfile::category, profile -> profile));
-        MKTowerWorkspaceCategoryProfile entry = byCategory.getOrDefault(MKTowerWorkspaceCategory.ENTRY,
-                new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.ENTRY, 9, 9, 5));
-        MKTowerWorkspaceCategoryProfile main = byCategory.getOrDefault(MKTowerWorkspaceCategory.MAIN,
-                new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.MAIN, 9, 9, 5));
-        MKTowerWorkspaceCategoryProfile basement = byCategory.getOrDefault(MKTowerWorkspaceCategory.BASEMENT,
-                new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BASEMENT, 9, 9, 5));
-        return new MKWorkspaceDimensions(
-                main.roomWidth(),
-                main.roomLength(),
-                entry.fullHeight(),
-                main.fullHeight(),
-                basement.fullHeight(),
-                3,
-                3,
-                3
         );
     }
 

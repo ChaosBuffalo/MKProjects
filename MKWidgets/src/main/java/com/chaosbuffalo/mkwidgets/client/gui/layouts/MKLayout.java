@@ -72,6 +72,11 @@ public class MKLayout extends MKWidget implements IMKLayout {
         int i = 0;
         for (IMKWidget child : getChildren()) {
             layoutWidget(child, i);
+            // Parent constraints can move a child layout after computeChildLayouts() ran, marking it dirty again.
+            // Recompute it here so its own children resolve against the final parent-assigned position.
+            if (child instanceof MKLayout childLayout && childLayout.needsRecompute) {
+                childLayout.manualRecompute();
+            }
             i++;
         }
         postLayout();

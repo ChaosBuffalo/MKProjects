@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
@@ -109,9 +110,11 @@ public class MKWorkspaceMarginExpansionService {
             MKPlannedPiece plannedPiece = plannedPieces.get(i);
             PieceContext context = createContext(targetWorkspace, plannedPiece, placements.get(i));
             BlockPos contentDelta = getInteriorOrigin(context.exportOrigin(), targetWorkspace.exteriorAirMargin(),
-                    context.shellMargin(), context.verticalShellThickness(), isEmptyScaffold(original))
+                    context.shellMargin(), context.verticalShellThickness(), getBottomVoidMargin(plannedPiece),
+                    isEmptyScaffold(original))
                     .subtract(getInteriorOrigin(original.worldOrigin(), originalExteriorMargin(original),
-                            original.shellMargin(), context.verticalShellThickness(), isEmptyScaffold(original)));
+                            original.shellMargin(), context.verticalShellThickness(), getBottomVoidMargin(original),
+                            isEmptyScaffold(original)));
             if (isEmptyScaffold(original)) {
                 contentDelta = context.exportOrigin().subtract(original.worldOrigin());
             }
@@ -127,11 +130,11 @@ public class MKWorkspaceMarginExpansionService {
     }
 
     private BlockPos getInteriorOrigin(BlockPos exportOrigin, int exteriorMargin, int shellMargin,
-                                       int verticalShellThickness, boolean emptyScaffold) {
+                                       int verticalShellThickness, int bottomVoidMargin, boolean emptyScaffold) {
         if (emptyScaffold) {
             return exportOrigin;
         }
-        return exportOrigin.offset(exteriorMargin + shellMargin, verticalShellThickness,
+        return exportOrigin.offset(exteriorMargin + shellMargin, bottomVoidMargin + verticalShellThickness,
                 exteriorMargin + shellMargin);
     }
 
@@ -451,10 +454,13 @@ public class MKWorkspaceMarginExpansionService {
         int verticalShellThickness = getVerticalShellThickness(piece);
         boolean emptyScaffold = isEmptyScaffold(piece);
         int exteriorAirMargin = emptyScaffold ? 0 : workspace.exteriorAirMargin();
+        int topVoidMargin = emptyScaffold ? 0 : getTopVoidMargin(piece);
+        int bottomVoidMargin = emptyScaffold ? 0 : getBottomVoidMargin(piece);
         int exportWidth = piece.interiorWidth() + (2 * shellMargin) + (2 * exteriorAirMargin);
         int exportLength = piece.interiorLength() + (2 * shellMargin) + (2 * exteriorAirMargin);
-        int exportHeight = piece.interiorHeight() + (2 * verticalShellThickness);
-        BlockPos geometryOrigin = exportOrigin.offset(exteriorAirMargin, 0, exteriorAirMargin);
+        int bodyHeight = piece.interiorHeight() + (2 * verticalShellThickness);
+        int exportHeight = bodyHeight + topVoidMargin + bottomVoidMargin;
+        BlockPos geometryOrigin = exportOrigin.offset(exteriorAirMargin, bottomVoidMargin, exteriorAirMargin);
         BoundingBox exportBounds = new BoundingBox(
                 exportOrigin.getX(),
                 exportOrigin.getY(),
@@ -468,7 +474,7 @@ public class MKWorkspaceMarginExpansionService {
                 geometryOrigin.getY(),
                 geometryOrigin.getZ(),
                 geometryOrigin.getX() + piece.interiorWidth() + (2 * shellMargin) - 1,
-                geometryOrigin.getY() + exportHeight - 1,
+                geometryOrigin.getY() + bodyHeight - 1,
                 geometryOrigin.getZ() + piece.interiorLength() + (2 * shellMargin) - 1
         );
         BlockPos structureBlockPos = exportOrigin.offset(-2, 1, exportLength / 2);
@@ -571,6 +577,26 @@ public class MKWorkspaceMarginExpansionService {
 
     private boolean isEmptyScaffold(MKWorkspacePieceDefinition piece) {
         return "embedded_stair".equals(piece.tags().get("tower_piece_kind"));
+    }
+
+    private int getTopVoidMargin(MKPlannedPiece piece) {
+        return Math.max(0, parseIntTag(piece.tags(), MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG, 0));
+    }
+
+    private int getBottomVoidMargin(MKPlannedPiece piece) {
+        return Math.max(0, parseIntTag(piece.tags(), MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG, 0));
+    }
+
+    private int getBottomVoidMargin(MKWorkspacePieceDefinition piece) {
+        return Math.max(0, parseIntTag(piece.tags(), MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG, 0));
+    }
+
+    private int parseIntTag(Map<String, String> tags, String tagName, int fallback) {
+        try {
+            return Integer.parseInt(tags.getOrDefault(tagName, Integer.toString(fallback)));
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
     }
 
     private MKStructureWorkspace withMargins(MKStructureWorkspace workspace, int shellMargin, int exteriorAirMargin) {

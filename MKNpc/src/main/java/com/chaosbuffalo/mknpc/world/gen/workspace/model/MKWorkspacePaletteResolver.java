@@ -5,16 +5,16 @@ import java.util.Optional;
 public final class MKWorkspacePaletteResolver {
     public MKWorkspaceMaterialPalette resolveCategory(MKStructureWorkspace workspace, MKTowerWorkspaceCategory category) {
         return workspace.categoryProfile(category)
-                .flatMap(MKTowerWorkspaceCategoryProfile::paletteOverride)
+                .flatMap(MKTowerWorkspaceCategoryProfile::paletteOverrideOpt)
                 .map(override -> override.resolve(workspace.palette()))
                 .orElse(workspace.palette());
     }
 
     public MKWorkspaceMaterialPalette resolveFamily(MKStructureWorkspace workspace, MKWorkspacePaletteFamily family) {
-        MKWorkspaceMaterialPalette parent = family.paletteCategory()
+        MKWorkspaceMaterialPalette parent = family.paletteCategoryOpt()
                 .map(category -> resolveCategory(workspace, category))
                 .orElse(workspace.palette());
-        return family.paletteOverride()
+        return family.paletteOverrideOpt()
                 .map(override -> override.resolve(parent))
                 .orElse(parent);
     }

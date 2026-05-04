@@ -72,7 +72,7 @@
   "mknpc.workspace.field.structure_name": "Structure Name",
   "mknpc.workspace.field.wall_block": "Wall Block",
   "mknpc.workspace.message.export_failed": "Workspace export failed.",
-  "mknpc.workspace.message.exported_pieces": "Exported %s workspace structure pieces, wrote manifest %s, and wrote piece metadata under %s.",
+  "mknpc.workspace.message.exported_pieces": "Exported %s workspace structure pieces and %s metadata files to archive %s.",
   "mknpc.workspace.screen.generate": "Create + Generate",
   "mknpc.workspace.screen.help": "Configure a tower template workspace. Dimensions should stay odd for centered connectors. Hallways can be as tight as 1 wide and 2 high.",
   "mknpc.workspace.screen.manage_summary": "Workspace %s:%s currently has %s generated pieces.",

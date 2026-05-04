@@ -35,6 +35,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -49,17 +50,21 @@ public class MKStructureWorkspaceImportService {
     public record MKWorkspaceImportResult(UUID workspaceId, int pieceCount) {
     }
 
-    public record MKWorkspaceImportOutcome(Optional<MKWorkspaceImportResult> result, List<String> validationErrors) {
+    public record MKWorkspaceImportOutcome(@Nullable MKWorkspaceImportResult result, List<String> validationErrors) {
         public static MKWorkspaceImportOutcome success(MKWorkspaceImportResult result) {
-            return new MKWorkspaceImportOutcome(Optional.of(result), List.of());
+            return new MKWorkspaceImportOutcome(result, List.of());
         }
 
         public static MKWorkspaceImportOutcome failed() {
-            return new MKWorkspaceImportOutcome(Optional.empty(), List.of());
+            return new MKWorkspaceImportOutcome(null, List.of());
         }
 
         public static MKWorkspaceImportOutcome validationFailed(List<String> validationErrors) {
-            return new MKWorkspaceImportOutcome(Optional.empty(), List.copyOf(validationErrors));
+            return new MKWorkspaceImportOutcome(null, List.copyOf(validationErrors));
+        }
+
+        public Optional<MKWorkspaceImportResult> resultOpt() {
+            return Optional.ofNullable(result);
         }
     }
 
@@ -69,7 +74,7 @@ public class MKStructureWorkspaceImportService {
 
     public Optional<MKWorkspaceImportResult> importWorkspaceAtAnchor(ServerLevel level, BlockPos anchor,
                                                                      ResourceLocation manifestId) {
-        return importWorkspaceAtAnchorDetailed(level, anchor, manifestId).result();
+        return importWorkspaceAtAnchorDetailed(level, anchor, manifestId).resultOpt();
     }
 
     public MKWorkspaceImportOutcome importWorkspaceAtAnchorDetailed(ServerLevel level, BlockPos anchor,
@@ -178,61 +183,59 @@ public class MKStructureWorkspaceImportService {
                 stairConfig.slabBlock(),
                 stairConfig.ladderBlock()
         );
-        MKWorkspaceVerticalAccessSpec verticalAccessSpec = settings.verticalAccessSpec()
-                .map(spec -> new MKWorkspaceVerticalAccessSpec(
-                        spec.shaftSize(),
-                        spec.placement(),
-                        new MKWorkspaceStairAuthoringConfig(
-                                spec.stairConfig().mode(),
-                                spec.stairConfig().riseType(),
-                                spec.stairConfig().stairWidth(),
-                                spec.stairConfig().stairBlock(),
-                                spec.stairConfig().slabBlock(),
-                                spec.stairConfig().ladderBlock()
-                        )
-                ))
-                .orElseGet(() -> MKWorkspaceVerticalAccessSpec.fromLegacy(
-                        workspaceDimensions,
-                        settings.verticalAccessPlacement(),
-                        workspaceStairConfig
-                ));
+        MKWorkspaceExportManifest.ExportVerticalAccessSpec verticalAccessSpecExport = settings.verticalAccessSpec();
+        MKWorkspaceVerticalAccessSpec verticalAccessSpec = new MKWorkspaceVerticalAccessSpec(
+                verticalAccessSpecExport.shaftSize(),
+                verticalAccessSpecExport.placement(),
+                new MKWorkspaceStairAuthoringConfig(
+                        verticalAccessSpecExport.stairConfig().mode(),
+                        verticalAccessSpecExport.stairConfig().riseType(),
+                        verticalAccessSpecExport.stairConfig().stairWidth(),
+                        verticalAccessSpecExport.stairConfig().stairBlock(),
+                        verticalAccessSpecExport.stairConfig().slabBlock(),
+                        verticalAccessSpecExport.stairConfig().ladderBlock()
+                )
+        );
         List<MKTowerWorkspaceCategoryProfile> categoryProfiles = settings.categoryProfiles().stream()
                 .map(profile -> new MKTowerWorkspaceCategoryProfile(
                         profile.category(),
                         profile.roomWidth(),
                         profile.roomLength(),
-                        profile.fullHeight().orElse(profile.defaultHeight().orElse(profile.maxHeight().orElse(3))),
+                        profile.fullHeight(),
                         profile.minMainPathPieces(),
                         profile.maxMainPathPieces(),
                         profile.maxBranchPiecesBeforeCap(),
+                        profile.topVoidMargin(),
+                        profile.bottomVoidMargin(),
                         profile.paletteOverride()
                 ))
                 .toList();
         if (categoryProfiles.isEmpty()) {
             categoryProfiles = MKTowerWorkspaceCategoryProfile.createDefaults(workspaceDimensions);
         }
-        MKTowerWorkspaceFloorSettings floorSettings = settings.floorSettings()
-                .map(floor -> new MKTowerWorkspaceFloorSettings(floor.mainFloors(), floor.basementFloors(),
-                        floor.topCapApproachEnabled(), floor.basementCapApproachEnabled()))
-                .orElseGet(MKTowerWorkspaceFloorSettings::defaultSettings);
+        MKWorkspaceExportManifest.ExportFloorSettings floorSettingsExport = settings.floorSettings();
+        MKTowerWorkspaceFloorSettings floorSettings = new MKTowerWorkspaceFloorSettings(
+                floorSettingsExport.mainFloors(),
+                floorSettingsExport.basementFloors(),
+                floorSettingsExport.topCapApproachEnabled(),
+                floorSettingsExport.basementCapApproachEnabled()
+        );
         List<MKTowerWorkspaceFamilyDefinition> familyDefinitions = settings.familyDefinitions().stream()
                 .map(family -> new MKTowerWorkspaceFamilyDefinition(
                         family.baseName(),
                         family.category(),
                         family.pieceRole(),
                         family.supportsVerticalAccess(),
-                        family.roomWidth().orElse(0),
-                        family.roomLength().orElse(0),
-                        family.roomHeight().orElse(0),
-                        family.horizontalExtrusionMode().orElse(
-                                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode.FULL_BODY),
+                        family.roomWidth(),
+                        family.roomLength(),
+                        family.roomHeight(),
+                        family.horizontalExtrusionMode(),
                         family.horizontalExits().stream()
                                 .map(exit -> new MKWorkspaceFamilyHorizontalExitDefinition(
                                         Direction.byName(exit.direction()),
                                         exit.pathKind(),
                                         exit.openingProfileId(),
-                                        exit.connectionMode().orElse(
-                                                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode.HALLWAY),
+                                        exit.connectionMode(),
                                         exit.sideOffset(),
                                         exit.verticalOffset()
                                 ))
@@ -263,20 +266,7 @@ public class MKStructureWorkspaceImportService {
                         hallway.slopeDelta(),
                         hallway.allowOnMainPath(),
                         hallway.allowOnBranchPath(),
-                        hallway.paletteOverride().or(() -> {
-                            if (hallway.legacyFloorBlock().isEmpty() && hallway.legacyWallBlock().isEmpty() &&
-                                    hallway.legacyCeilingBlock().isEmpty()) {
-                                return java.util.Optional.empty();
-                            }
-                            return java.util.Optional.of(new com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride(
-                                    hallway.legacyFloorBlock(),
-                                    hallway.legacyWallBlock(),
-                                    hallway.legacyCeilingBlock(),
-                                    java.util.Optional.empty(),
-                                    java.util.Optional.empty(),
-                                    java.util.Optional.empty()
-                            ));
-                        })
+                        hallway.paletteOverride()
                 ))
                 .toList();
         long now = System.currentTimeMillis();

@@ -27,6 +27,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -34,17 +35,21 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class MKStructureWorkspaceService {
-    public record MKWorkspaceImportResponse(Optional<MKStructureWorkspace> workspace, List<String> validationErrors) {
+    public record MKWorkspaceImportResponse(@Nullable MKStructureWorkspace workspace, List<String> validationErrors) {
         public static MKWorkspaceImportResponse success(MKStructureWorkspace workspace) {
-            return new MKWorkspaceImportResponse(Optional.of(workspace), List.of());
+            return new MKWorkspaceImportResponse(workspace, List.of());
         }
 
         public static MKWorkspaceImportResponse failed() {
-            return new MKWorkspaceImportResponse(Optional.empty(), List.of());
+            return new MKWorkspaceImportResponse(null, List.of());
         }
 
         public static MKWorkspaceImportResponse validationFailed(List<String> validationErrors) {
-            return new MKWorkspaceImportResponse(Optional.empty(), List.copyOf(validationErrors));
+            return new MKWorkspaceImportResponse(null, List.copyOf(validationErrors));
+        }
+
+        public Optional<MKStructureWorkspace> workspaceOpt() {
+            return Optional.ofNullable(workspace);
         }
     }
 
@@ -374,7 +379,7 @@ public class MKStructureWorkspaceService {
 
     public Optional<MKStructureWorkspace> importWorkspaceFromManifest(ServerLevel level, BlockPos anchor,
                                                                      ResourceLocation manifestId) {
-        return importWorkspaceFromManifestWithValidation(level, anchor, manifestId).workspace();
+        return importWorkspaceFromManifestWithValidation(level, anchor, manifestId).workspaceOpt();
     }
 
     public MKWorkspaceImportResponse importWorkspaceFromManifestWithValidation(ServerLevel level, BlockPos anchor,
@@ -384,11 +389,11 @@ public class MKStructureWorkspaceService {
         if (!outcome.validationErrors().isEmpty()) {
             return MKWorkspaceImportResponse.validationFailed(outcome.validationErrors());
         }
-        if (outcome.result().isEmpty()) {
+        if (outcome.resultOpt().isEmpty()) {
             return MKWorkspaceImportResponse.failed();
         }
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
-        Optional<MKStructureWorkspace> imported = data.getWorkspace(outcome.result().get().workspaceId());
+        Optional<MKStructureWorkspace> imported = data.getWorkspace(outcome.resultOpt().get().workspaceId());
         if (imported.isEmpty()) {
             return MKWorkspaceImportResponse.failed();
         }

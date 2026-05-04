@@ -75,7 +75,7 @@ public record MKWorkspaceRuntimePieceInfo(
                 parseBoolean(tags, ALLOW_ON_BRANCH_PATH_TAG, false),
                 parseBoolean(tags, TERMINAL_TAG, false),
                 parseBoolean(tags, TOP_CAP_ONLY_TAG, false),
-                tags.getOrDefault(CATEGORY_TAG, tags.getOrDefault("workspace_category", "")),
+                tags.getOrDefault(CATEGORY_TAG, ""),
                 parseBoolean(tags, MAIN_PATH_ENDING_TAG, false),
                 parseBoolean(tags, BRANCH_CAP_TAG, false)
         ));

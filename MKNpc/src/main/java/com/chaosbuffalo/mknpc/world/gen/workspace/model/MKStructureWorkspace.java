@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -80,24 +81,6 @@ public class MKStructureWorkspace {
         this.pieces = List.copyOf(pieces);
     }
 
-    public MKStructureWorkspace(UUID id, BlockPos anchor, String namespace, String structureName,
-                                MKStructureFamilyType familyType, MKWorkspaceDimensions dimensions,
-                                MKWorkspaceMaterialPalette palette, MKWorkspaceStairAuthoringConfig stairConfig,
-                                MKVerticalAccessPlacement verticalAccessPlacement,
-                                int shellMargin, int exteriorAirMargin,
-                                int previewMargin,
-                                long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces) {
-        this(id, anchor, namespace, structureName, familyType, dimensions, palette, stairConfig, verticalAccessPlacement,
-                shellMargin, exteriorAirMargin, previewMargin,
-                MKWorkspaceVerticalAccessSpec.fromLegacy(dimensions, verticalAccessPlacement, stairConfig),
-                MKTowerWorkspaceFloorSettings.defaultSettings(),
-                MKTowerWorkspaceCategoryProfile.createDefaults(dimensions),
-                MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions),
-                MKHorizontalOpeningProfile.createDefaults(dimensions),
-                List.of(),
-                createdAt, updatedAt, pieces);
-    }
-
     public static MKStructureWorkspace createDraft(BlockPos anchor) {
         long now = System.currentTimeMillis();
         return new MKStructureWorkspace(
@@ -136,12 +119,10 @@ public class MKStructureWorkspace {
     private static MKStructureWorkspace fromSerializedData(UUID id, BlockPos anchor, String namespace, String structureName,
                                                            SerializedWorkspaceCore core,
                                                            SerializedWorkspaceContent content) {
-        MKWorkspaceVerticalAccessSpec resolvedVerticalAccessSpec = core.verticalAccessSpec().orElseGet(() ->
-                MKWorkspaceVerticalAccessSpec.fromLegacy(core.dimensions(), core.verticalAccessPlacement(), core.stairConfig()));
+        MKWorkspaceVerticalAccessSpec resolvedVerticalAccessSpec = core.verticalAccessSpec();
         List<MKTowerWorkspaceCategoryProfile> resolvedCategoryProfiles = content.categoryProfiles().isEmpty() ?
                 MKTowerWorkspaceCategoryProfile.createDefaults(core.dimensions()) : List.copyOf(content.categoryProfiles());
-        MKTowerWorkspaceFloorSettings resolvedFloorSettings = content.floorSettings()
-                .orElseGet(MKTowerWorkspaceFloorSettings::defaultSettings);
+        MKTowerWorkspaceFloorSettings resolvedFloorSettings = content.floorSettings();
         List<MKTowerWorkspaceFamilyDefinition> resolvedFamilyDefinitions =
                 MKTowerWorkspaceFamilyDefinition.normalize(content.familyDefinitions(), resolvedCategoryProfiles);
         List<MKHorizontalOpeningProfile> resolvedOpeningProfiles = content.openingProfiles().isEmpty() ?
@@ -181,14 +162,14 @@ public class MKStructureWorkspace {
                 shellMargin,
                 exteriorAirMargin,
                 previewMargin,
-                Optional.of(verticalAccessSpec)
+                verticalAccessSpec
         );
     }
 
     private SerializedWorkspaceContent serializedContent() {
         return new SerializedWorkspaceContent(
                 categoryProfiles,
-                Optional.of(floorSettings),
+                floorSettings,
                 familyDefinitions,
                 openingProfiles,
                 hallwayFamilies,
@@ -207,7 +188,7 @@ public class MKStructureWorkspace {
             int shellMargin,
             int exteriorAirMargin,
             int previewMargin,
-            Optional<MKWorkspaceVerticalAccessSpec> verticalAccessSpec
+            MKWorkspaceVerticalAccessSpec verticalAccessSpec
     ) {
         private static final MapCodec<SerializedWorkspaceCore> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 MKWorkspaceCodecs.FAMILY_TYPE_CODEC.optionalFieldOf("familyType", MKStructureFamilyType.TOWER)
@@ -222,13 +203,14 @@ public class MKStructureWorkspace {
                 Codec.INT.optionalFieldOf("shellMargin", 1).forGetter(SerializedWorkspaceCore::shellMargin),
                 Codec.INT.optionalFieldOf("exteriorAirMargin", 2).forGetter(SerializedWorkspaceCore::exteriorAirMargin),
                 Codec.INT.optionalFieldOf("previewMargin", 4).forGetter(SerializedWorkspaceCore::previewMargin),
-                MKWorkspaceVerticalAccessSpec.CODEC.optionalFieldOf("verticalAccessSpec").forGetter(SerializedWorkspaceCore::verticalAccessSpec)
+                MKWorkspaceVerticalAccessSpec.CODEC.fieldOf("verticalAccessSpec")
+                        .forGetter(SerializedWorkspaceCore::verticalAccessSpec)
         ).apply(instance, SerializedWorkspaceCore::new));
     }
 
     private record SerializedWorkspaceContent(
             List<MKTowerWorkspaceCategoryProfile> categoryProfiles,
-            Optional<MKTowerWorkspaceFloorSettings> floorSettings,
+            MKTowerWorkspaceFloorSettings floorSettings,
             List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
             List<MKHorizontalOpeningProfile> openingProfiles,
             List<MKHallwayFamilyDefinition> hallwayFamilies,
@@ -239,7 +221,8 @@ public class MKStructureWorkspace {
         private static final MapCodec<SerializedWorkspaceContent> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 MKTowerWorkspaceCategoryProfile.CODEC.listOf().optionalFieldOf("categoryProfiles", List.of())
                         .forGetter(SerializedWorkspaceContent::categoryProfiles),
-                MKTowerWorkspaceFloorSettings.CODEC.optionalFieldOf("floorSettings").forGetter(SerializedWorkspaceContent::floorSettings),
+                MKTowerWorkspaceFloorSettings.CODEC.fieldOf("floorSettings")
+                        .forGetter(SerializedWorkspaceContent::floorSettings),
                 MKTowerWorkspaceFamilyDefinition.CODEC.listOf().optionalFieldOf("familyDefinitions", List.of())
                         .forGetter(SerializedWorkspaceContent::familyDefinitions),
                 MKHorizontalOpeningProfile.CODEC.listOf().optionalFieldOf("openingProfiles", List.of())

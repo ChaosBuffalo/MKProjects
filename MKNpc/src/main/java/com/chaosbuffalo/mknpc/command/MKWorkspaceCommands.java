@@ -134,19 +134,19 @@ public class MKWorkspaceCommands {
             if (!result.validationErrors().isEmpty()) {
                 player.sendSystemMessage(Component.literal("Backup restore failed validation: " +
                         String.join("; ", result.validationErrors())));
-                result.beforeRestoreBackupPath().ifPresent(path ->
+                result.beforeRestoreBackupPathOpt().ifPresent(path ->
                         player.sendSystemMessage(Component.literal("Before-restore backup manifest: " + path)));
                 return Command.SINGLE_SUCCESS;
             }
-            if (result.workspace().isEmpty()) {
+            if (result.workspaceOpt().isEmpty()) {
                 player.sendSystemMessage(Component.literal(fileName == null ?
                         "No restorable backups found for " + nearest.namespace() + ":" + nearest.structureName() :
                         "Backup file not found for " + nearest.namespace() + ":" + nearest.structureName() + ": " + fileName));
                 return Command.SINGLE_SUCCESS;
             }
             player.sendSystemMessage(Component.literal("Restored live workspace metadata/layout from " +
-                    result.selectedBackupPath().map(path -> path.getFileName().toString()).orElse("backup")));
-            result.beforeRestoreBackupPath().ifPresent(path ->
+                    result.selectedBackupPathOpt().map(path -> path.getFileName().toString()).orElse("backup")));
+            result.beforeRestoreBackupPathOpt().ifPresent(path ->
                     player.sendSystemMessage(Component.literal("Before-restore backup manifest: " + path)));
             player.sendSystemMessage(Component.literal("World blocks were not rewritten; export later when the live workspace is correct."));
             return Command.SINGLE_SUCCESS;

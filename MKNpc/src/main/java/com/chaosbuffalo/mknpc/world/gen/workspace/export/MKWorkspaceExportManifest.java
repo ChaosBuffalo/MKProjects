@@ -31,6 +31,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
@@ -116,8 +117,8 @@ public record MKWorkspaceExportManifest(
                                 workspace.stairConfig().slabBlock(),
                                 workspace.stairConfig().ladderBlock()
                         ),
-                        Optional.of(ExportVerticalAccessSpec.from(workspace.verticalAccessSpec())),
-                        Optional.of(ExportFloorSettings.from(workspace.floorSettings())),
+                        ExportVerticalAccessSpec.from(workspace.verticalAccessSpec()),
+                        ExportFloorSettings.from(workspace.floorSettings()),
                         workspace.categoryProfiles().stream().map(ExportCategoryProfile::from).toList(),
                         workspace.familyDefinitions().stream().map(ExportFamilyDefinition::from).toList(),
                         workspace.openingProfiles().stream().map(ExportOpeningProfile::from).toList(),
@@ -298,8 +299,8 @@ public record MKWorkspaceExportManifest(
             ExportDimensions dimensions,
             ExportPalette palette,
             ExportStairConfig stairConfig,
-            Optional<ExportVerticalAccessSpec> verticalAccessSpec,
-            Optional<ExportFloorSettings> floorSettings,
+            ExportVerticalAccessSpec verticalAccessSpec,
+            ExportFloorSettings floorSettings,
             List<ExportCategoryProfile> categoryProfiles,
             List<ExportFamilyDefinition> familyDefinitions,
             List<ExportOpeningProfile> openingProfiles,
@@ -314,8 +315,10 @@ public record MKWorkspaceExportManifest(
                 ExportDimensions.CODEC.fieldOf("dimensions").forGetter(ExportWorkspaceSettings::dimensions),
                 ExportPalette.CODEC.fieldOf("palette").forGetter(ExportWorkspaceSettings::palette),
                 ExportStairConfig.CODEC.fieldOf("stair_config").forGetter(ExportWorkspaceSettings::stairConfig),
-                ExportVerticalAccessSpec.CODEC.optionalFieldOf("vertical_access_spec").forGetter(ExportWorkspaceSettings::verticalAccessSpec),
-                ExportFloorSettings.CODEC.optionalFieldOf("floor_settings").forGetter(ExportWorkspaceSettings::floorSettings),
+                ExportVerticalAccessSpec.CODEC.fieldOf("vertical_access_spec")
+                        .forGetter(ExportWorkspaceSettings::verticalAccessSpec),
+                ExportFloorSettings.CODEC.fieldOf("floor_settings")
+                        .forGetter(ExportWorkspaceSettings::floorSettings),
                 ExportCategoryProfile.CODEC.listOf().optionalFieldOf("category_profiles", List.of()).forGetter(ExportWorkspaceSettings::categoryProfiles),
                 ExportFamilyDefinition.CODEC.listOf().optionalFieldOf("family_definitions", List.of()).forGetter(ExportWorkspaceSettings::familyDefinitions),
                 ExportOpeningProfile.CODEC.listOf().optionalFieldOf("opening_profiles", List.of()).forGetter(ExportWorkspaceSettings::openingProfiles),
@@ -378,15 +381,10 @@ public record MKWorkspaceExportManifest(
             int minMainPathPieces,
             int maxMainPathPieces,
             int maxBranchPiecesBeforeCap,
-            Optional<Integer> fullHeight,
-            Optional<Integer> defaultHeight,
-            Optional<Integer> legacyMinHeight,
-            Optional<Integer> maxHeight,
-            Optional<Integer> legacyMainOpeningWidth,
-            Optional<Integer> legacyMainOpeningHeight,
-            Optional<Integer> legacyBranchOpeningWidth,
-            Optional<Integer> legacyBranchOpeningHeight,
-            Optional<MKWorkspacePaletteOverride> paletteOverride
+            int fullHeight,
+            int topVoidMargin,
+            int bottomVoidMargin,
+            @Nullable MKWorkspacePaletteOverride paletteOverride
     ) {
         public static final Codec<ExportCategoryProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 towerCategoryCodec().fieldOf("category").forGetter(ExportCategoryProfile::category),
@@ -399,17 +397,16 @@ public record MKWorkspaceExportManifest(
                 Codec.INT.optionalFieldOf("max_branch_pieces_before_cap",
                                 MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP)
                         .forGetter(ExportCategoryProfile::maxBranchPiecesBeforeCap),
-                Codec.INT.optionalFieldOf("full_height").forGetter(ExportCategoryProfile::fullHeight),
-                Codec.INT.optionalFieldOf("default_height").forGetter(ExportCategoryProfile::defaultHeight),
-                Codec.INT.optionalFieldOf("min_height").forGetter(ExportCategoryProfile::legacyMinHeight),
-                Codec.INT.optionalFieldOf("max_height").forGetter(ExportCategoryProfile::maxHeight),
-                Codec.INT.optionalFieldOf("main_opening_width").forGetter(ExportCategoryProfile::legacyMainOpeningWidth),
-                Codec.INT.optionalFieldOf("main_opening_height").forGetter(ExportCategoryProfile::legacyMainOpeningHeight),
-                Codec.INT.optionalFieldOf("branch_opening_width").forGetter(ExportCategoryProfile::legacyBranchOpeningWidth),
-                Codec.INT.optionalFieldOf("branch_opening_height").forGetter(ExportCategoryProfile::legacyBranchOpeningHeight),
+                Codec.INT.optionalFieldOf("full_height", 3).forGetter(ExportCategoryProfile::fullHeight),
+                Codec.INT.optionalFieldOf("top_void_margin", 0).forGetter(ExportCategoryProfile::topVoidMargin),
+                Codec.INT.optionalFieldOf("bottom_void_margin", 0).forGetter(ExportCategoryProfile::bottomVoidMargin),
                 MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
-                        .forGetter(ExportCategoryProfile::paletteOverride)
-        ).apply(instance, ExportCategoryProfile::new));
+                        .forGetter(ExportCategoryProfile::paletteOverrideOpt)
+        ).apply(instance, (category, roomWidth, roomLength, minMainPathPieces, maxMainPathPieces,
+                           maxBranchPiecesBeforeCap, fullHeight, topVoidMargin, bottomVoidMargin, paletteOverride) ->
+                new ExportCategoryProfile(category, roomWidth, roomLength, minMainPathPieces, maxMainPathPieces,
+                        maxBranchPiecesBeforeCap, fullHeight, topVoidMargin, bottomVoidMargin,
+                        paletteOverride.orElse(null))));
 
         public static ExportCategoryProfile from(MKTowerWorkspaceCategoryProfile profile) {
             return new ExportCategoryProfile(
@@ -419,16 +416,15 @@ public record MKWorkspaceExportManifest(
                     profile.minMainPathPieces(),
                     profile.maxMainPathPieces(),
                     profile.maxBranchPiecesBeforeCap(),
-                    Optional.of(profile.fullHeight()),
-                    Optional.of(profile.fullHeight()),
-                    Optional.empty(),
-                    Optional.of(profile.fullHeight()),
-                    Optional.empty(),
-                    Optional.empty(),
-                    Optional.empty(),
-                    Optional.empty(),
+                    profile.fullHeight(),
+                    profile.topVoidMargin(),
+                    profile.bottomVoidMargin(),
                     profile.paletteOverride()
             );
+        }
+
+        public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {
+            return Optional.ofNullable(paletteOverride);
         }
     }
 
@@ -437,30 +433,33 @@ public record MKWorkspaceExportManifest(
             MKTowerWorkspaceCategory category,
             MKWorkspacePieceRole pieceRole,
             boolean supportsVerticalAccess,
-            Optional<Integer> roomWidth,
-            Optional<Integer> roomLength,
-            Optional<Integer> roomHeight,
-            Optional<MKWorkspaceHorizontalExtrusionMode> horizontalExtrusionMode,
+            int roomWidth,
+            int roomLength,
+            int roomHeight,
+            MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
             List<ExportFamilyHorizontalExit> horizontalExits,
-            Optional<String> legacyBranchExitMask,
-            Optional<MKWorkspacePaletteOverride> paletteOverride
+            @Nullable MKWorkspacePaletteOverride paletteOverride
     ) {
         public static final Codec<ExportFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("base_name").forGetter(ExportFamilyDefinition::baseName),
                 towerCategoryCodec().fieldOf("category").forGetter(ExportFamilyDefinition::category),
                 pieceRoleCodec().fieldOf("piece_role").forGetter(ExportFamilyDefinition::pieceRole),
                 Codec.BOOL.fieldOf("supports_vertical_access").forGetter(ExportFamilyDefinition::supportsVerticalAccess),
-            Codec.INT.optionalFieldOf("room_width").forGetter(ExportFamilyDefinition::roomWidth),
-            Codec.INT.optionalFieldOf("room_length").forGetter(ExportFamilyDefinition::roomLength),
-            Codec.INT.optionalFieldOf("room_height").forGetter(ExportFamilyDefinition::roomHeight),
-            horizontalExtrusionModeCodec().optionalFieldOf("horizontal_extrusion_mode")
+            Codec.INT.optionalFieldOf("room_width", 10).forGetter(ExportFamilyDefinition::roomWidth),
+            Codec.INT.optionalFieldOf("room_length", 10).forGetter(ExportFamilyDefinition::roomLength),
+            Codec.INT.optionalFieldOf("room_height", 5).forGetter(ExportFamilyDefinition::roomHeight),
+            horizontalExtrusionModeCodec().optionalFieldOf("horizontal_extrusion_mode",
+                            MKWorkspaceHorizontalExtrusionMode.FULL_BODY)
                     .forGetter(ExportFamilyDefinition::horizontalExtrusionMode),
             ExportFamilyHorizontalExit.CODEC.listOf().optionalFieldOf("horizontal_exits", List.of())
                     .forGetter(ExportFamilyDefinition::horizontalExits),
-            Codec.STRING.optionalFieldOf("branch_exit_mask").forGetter(ExportFamilyDefinition::legacyBranchExitMask),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
-                    .forGetter(ExportFamilyDefinition::paletteOverride)
-        ).apply(instance, ExportFamilyDefinition::new));
+                    .forGetter(ExportFamilyDefinition::paletteOverrideOpt)
+        ).apply(instance, (baseName, category, pieceRole, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
+                           horizontalExtrusionMode, horizontalExits, paletteOverride) ->
+                new ExportFamilyDefinition(baseName, category, pieceRole, supportsVerticalAccess,
+                        roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
+                        paletteOverride.orElse(null))));
 
         public static ExportFamilyDefinition from(MKTowerWorkspaceFamilyDefinition familyDefinition) {
             return new ExportFamilyDefinition(
@@ -468,14 +467,17 @@ public record MKWorkspaceExportManifest(
                     familyDefinition.category(),
                     familyDefinition.pieceRole(),
                     familyDefinition.supportsVerticalAccess(),
-                    Optional.of(familyDefinition.roomWidth()),
-                    Optional.of(familyDefinition.roomLength()),
-                    Optional.of(familyDefinition.roomHeight()),
-                    Optional.of(familyDefinition.horizontalExtrusionMode()),
+                    familyDefinition.roomWidth(),
+                    familyDefinition.roomLength(),
+                    familyDefinition.roomHeight(),
+                    familyDefinition.horizontalExtrusionMode(),
                     familyDefinition.horizontalExits().stream().map(ExportFamilyHorizontalExit::from).toList(),
-                    Optional.of(familyDefinition.legacyBranchExitMask().getSerializedName()),
                     familyDefinition.paletteOverride()
             );
+        }
+
+        public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {
+            return Optional.ofNullable(paletteOverride);
         }
     }
 
@@ -483,7 +485,7 @@ public record MKWorkspaceExportManifest(
             String direction,
             MKWorkspaceHorizontalExitPathKind pathKind,
             String openingProfileId,
-            Optional<MKWorkspaceHorizontalExitConnectionMode> connectionMode,
+            MKWorkspaceHorizontalExitConnectionMode connectionMode,
             int sideOffset,
             int verticalOffset
     ) {
@@ -493,7 +495,8 @@ public record MKWorkspaceExportManifest(
                         MKWorkspaceHorizontalExitPathKind::getSerializedName)
                         .fieldOf("path_kind").forGetter(ExportFamilyHorizontalExit::pathKind),
                 Codec.STRING.fieldOf("opening_profile_id").forGetter(ExportFamilyHorizontalExit::openingProfileId),
-                horizontalExitConnectionModeCodec().optionalFieldOf("connection_mode")
+                horizontalExitConnectionModeCodec().optionalFieldOf("connection_mode",
+                                MKWorkspaceHorizontalExitConnectionMode.HALLWAY)
                         .forGetter(ExportFamilyHorizontalExit::connectionMode),
                 Codec.INT.optionalFieldOf("side_offset", 0).forGetter(ExportFamilyHorizontalExit::sideOffset),
                 Codec.INT.optionalFieldOf("vertical_offset", 0).forGetter(ExportFamilyHorizontalExit::verticalOffset)
@@ -504,11 +507,12 @@ public record MKWorkspaceExportManifest(
                     exit.direction().getSerializedName(),
                     exit.pathKind(),
                     exit.openingProfileId(),
-                    Optional.of(exit.connectionMode()),
+                    exit.connectionMode(),
                     exit.sideOffset(),
                     exit.verticalOffset()
             );
         }
+
     }
 
     public record ExportOpeningProfile(
@@ -546,10 +550,7 @@ public record MKWorkspaceExportManifest(
             int slopeDelta,
             boolean allowOnMainPath,
             boolean allowOnBranchPath,
-            Optional<ResourceLocation> legacyFloorBlock,
-            Optional<ResourceLocation> legacyWallBlock,
-            Optional<ResourceLocation> legacyCeilingBlock,
-            Optional<MKWorkspacePaletteOverride> paletteOverride
+            @Nullable MKWorkspacePaletteOverride paletteOverride
     ) {
         public static final Codec<ExportHallwayFamily> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("hallway_id").forGetter(ExportHallwayFamily::hallwayId),
@@ -560,12 +561,12 @@ public record MKWorkspaceExportManifest(
                 Codec.INT.fieldOf("slope_delta").forGetter(ExportHallwayFamily::slopeDelta),
                 Codec.BOOL.fieldOf("allow_on_main_path").forGetter(ExportHallwayFamily::allowOnMainPath),
                 Codec.BOOL.fieldOf("allow_on_branch_path").forGetter(ExportHallwayFamily::allowOnBranchPath),
-                ResourceLocation.CODEC.optionalFieldOf("floor_block").forGetter(ExportHallwayFamily::legacyFloorBlock),
-                ResourceLocation.CODEC.optionalFieldOf("wall_block").forGetter(ExportHallwayFamily::legacyWallBlock),
-                ResourceLocation.CODEC.optionalFieldOf("ceiling_block").forGetter(ExportHallwayFamily::legacyCeilingBlock),
                 MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
-                        .forGetter(ExportHallwayFamily::paletteOverride)
-        ).apply(instance, ExportHallwayFamily::new));
+                        .forGetter(ExportHallwayFamily::paletteOverrideOpt)
+        ).apply(instance, (hallwayId, openingProfileId, length, interiorWidth, interiorHeight, slopeDelta,
+                           allowOnMainPath, allowOnBranchPath, paletteOverride) ->
+                new ExportHallwayFamily(hallwayId, openingProfileId, length, interiorWidth, interiorHeight,
+                        slopeDelta, allowOnMainPath, allowOnBranchPath, paletteOverride.orElse(null))));
 
         public static ExportHallwayFamily from(MKHallwayFamilyDefinition hallwayFamily) {
             return new ExportHallwayFamily(
@@ -577,11 +578,12 @@ public record MKWorkspaceExportManifest(
                     hallwayFamily.slopeDelta(),
                     hallwayFamily.allowOnMainPath(),
                     hallwayFamily.allowOnBranchPath(),
-                    Optional.empty(),
-                    Optional.empty(),
-                    Optional.empty(),
                     hallwayFamily.paletteOverride()
             );
+        }
+
+        public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {
+            return Optional.ofNullable(paletteOverride);
         }
     }
 
@@ -966,5 +968,4 @@ public record MKWorkspaceExportManifest(
                 poolId.getPath().substring(prefix.length()) : poolId.getPath();
     }
 }
-
 

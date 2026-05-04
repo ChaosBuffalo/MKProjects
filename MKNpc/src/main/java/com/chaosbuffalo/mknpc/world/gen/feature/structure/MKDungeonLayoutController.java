@@ -163,7 +163,7 @@ public class MKDungeonLayoutController {
                 .filter(rule -> rule.hasMainPathEndings() &&
                         (!rule.hasMainPathContinuations() ||
                                 parentState.mainPathPiecesInCategory() >= parentState.mainPathTargetInCategory()))
-                .flatMap(MKDungeonCategoryRule::mainPathEndingPool);
+                .flatMap(MKDungeonCategoryRule::mainPathEndingPoolOpt);
     }
 
     private Optional<String> getCategoryPathRejection(MKDungeonPieceState parentState, boolean nextOnMainPath,

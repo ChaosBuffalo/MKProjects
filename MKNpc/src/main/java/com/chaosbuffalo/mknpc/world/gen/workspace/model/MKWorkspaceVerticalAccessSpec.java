@@ -33,12 +33,6 @@ public class MKWorkspaceVerticalAccessSpec {
                 MKWorkspaceStairAuthoringConfig.defaultConfig());
     }
 
-    public static MKWorkspaceVerticalAccessSpec fromLegacy(MKWorkspaceDimensions dimensions,
-                                                           MKVerticalAccessPlacement placement,
-                                                           MKWorkspaceStairAuthoringConfig stairConfig) {
-        return new MKWorkspaceVerticalAccessSpec(dimensions.hallwayWidth(), placement, stairConfig);
-    }
-
     public static MKWorkspaceVerticalAccessSpec fromTag(CompoundTag tag) {
         return MKWorkspaceCodecs.parseNbt(CODEC, tag, "workspace vertical access spec");
     }

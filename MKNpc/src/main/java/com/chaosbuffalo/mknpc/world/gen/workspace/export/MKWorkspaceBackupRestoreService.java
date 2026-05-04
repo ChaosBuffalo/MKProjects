@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,25 +19,41 @@ public class MKWorkspaceBackupRestoreService {
     private final MKWorkspaceBackupArchiveStore archiveStore = new MKWorkspaceBackupArchiveStore();
     private final MKStructureWorkspaceImportService importService = new MKStructureWorkspaceImportService();
 
-    public record RestoreResult(Optional<MKStructureWorkspace> workspace, Optional<Path> selectedBackupPath,
-                                Optional<Path> beforeRestoreBackupPath,
-                                Optional<MKWorkspaceBackupArchiveStore.RestoreStats> blockRestoreStats,
+    public record RestoreResult(@Nullable MKStructureWorkspace workspace, @Nullable Path selectedBackupPath,
+                                @Nullable Path beforeRestoreBackupPath,
+                                @Nullable MKWorkspaceBackupArchiveStore.RestoreStats blockRestoreStats,
                                 List<String> validationErrors) {
         public static RestoreResult failed() {
-            return new RestoreResult(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), List.of());
+            return new RestoreResult(null, null, null, null, List.of());
         }
 
         public static RestoreResult validationFailed(Path selectedBackupPath, Path beforeRestoreBackupPath,
                                                      List<String> validationErrors) {
-            return new RestoreResult(Optional.empty(), Optional.of(selectedBackupPath),
-                    Optional.of(beforeRestoreBackupPath), Optional.empty(), List.copyOf(validationErrors));
+            return new RestoreResult(null, selectedBackupPath, beforeRestoreBackupPath, null,
+                    List.copyOf(validationErrors));
         }
 
         public static RestoreResult success(MKStructureWorkspace workspace, Path selectedBackupPath,
                                             Path beforeRestoreBackupPath,
                                             Optional<MKWorkspaceBackupArchiveStore.RestoreStats> blockRestoreStats) {
-            return new RestoreResult(Optional.of(workspace), Optional.of(selectedBackupPath),
-                    Optional.of(beforeRestoreBackupPath), blockRestoreStats, List.of());
+            return new RestoreResult(workspace, selectedBackupPath, beforeRestoreBackupPath,
+                    blockRestoreStats.orElse(null), List.of());
+        }
+
+        public Optional<MKStructureWorkspace> workspaceOpt() {
+            return Optional.ofNullable(workspace);
+        }
+
+        public Optional<Path> selectedBackupPathOpt() {
+            return Optional.ofNullable(selectedBackupPath);
+        }
+
+        public Optional<Path> beforeRestoreBackupPathOpt() {
+            return Optional.ofNullable(beforeRestoreBackupPath);
+        }
+
+        public Optional<MKWorkspaceBackupArchiveStore.RestoreStats> blockRestoreStatsOpt() {
+            return Optional.ofNullable(blockRestoreStats);
         }
     }
 

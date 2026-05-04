@@ -5,7 +5,7 @@ import java.util.Optional;
 public interface MKWorkspacePaletteFamily {
     String paletteFamilyId();
 
-    Optional<MKTowerWorkspaceCategory> paletteCategory();
+    Optional<MKTowerWorkspaceCategory> paletteCategoryOpt();
 
-    Optional<MKWorkspacePaletteOverride> paletteOverride();
+    Optional<MKWorkspacePaletteOverride> paletteOverrideOpt();
 }

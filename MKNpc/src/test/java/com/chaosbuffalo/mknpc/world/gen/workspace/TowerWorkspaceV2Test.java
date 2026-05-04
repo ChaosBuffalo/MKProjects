@@ -262,6 +262,69 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void categoryProfileCodecRoundTripPreservesCapVoidMargins() {
+        MKTowerWorkspaceCategoryProfile profile = new MKTowerWorkspaceCategoryProfile(
+                MKTowerWorkspaceCategory.TOP_CAP,
+                9,
+                9,
+                7,
+                MKTowerWorkspaceCategoryProfile.DEFAULT_MIN_MAIN_PATH_PIECES,
+                MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_MAIN_PATH_PIECES,
+                MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP,
+                4,
+                0,
+                null
+        );
+
+        MKTowerWorkspaceCategoryProfile decoded = MKTowerWorkspaceCategoryProfile.fromTag(profile.toTag());
+
+        assertEquals(4, decoded.topVoidMargin());
+        assertEquals(0, decoded.bottomVoidMargin());
+        assertEquals(11, decoded.exportedFullHeight());
+    }
+
+    @Test
+    void plannerTagsOnlyCapPiecesWithVoidMargins() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                ),
+                List.of()
+        );
+        workspace = withCategoryProfiles(workspace, workspace.categoryProfiles().stream()
+                .map(profile -> {
+                    if (profile.category() == MKTowerWorkspaceCategory.TOP_CAP) {
+                        return new MKTowerWorkspaceCategoryProfile(
+                                profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
+                                profile.minMainPathPieces(), profile.maxMainPathPieces(),
+                                profile.maxBranchPiecesBeforeCap(), 4, 0, profile.paletteOverride());
+                    }
+                    if (profile.category() == MKTowerWorkspaceCategory.BASEMENT_CAP) {
+                        return new MKTowerWorkspaceCategoryProfile(
+                                profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
+                                profile.minMainPathPieces(), profile.maxMainPathPieces(),
+                                profile.maxBranchPiecesBeforeCap(), 0, 3, profile.paletteOverride());
+                    }
+                    return profile;
+                })
+                .toList());
+
+        List<MKPlannedPiece> pieces = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace);
+
+        MKPlannedPiece topCap = pieces.stream().filter(piece -> piece.role() == MKWorkspacePieceRole.TOP_CAP)
+                .findFirst().orElseThrow();
+        MKPlannedPiece basementCap = pieces.stream().filter(piece -> piece.role() == MKWorkspacePieceRole.BASEMENT_CAP)
+                .findFirst().orElseThrow();
+        MKPlannedPiece floor = pieces.stream().filter(piece -> piece.role() == MKWorkspacePieceRole.FLOOR_MAIN)
+                .findFirst().orElseThrow();
+        assertEquals("4", topCap.tags().get(MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG));
+        assertEquals("3", basementCap.tags().get(MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG));
+        assertFalse(floor.tags().containsKey(MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG));
+        assertFalse(floor.tags().containsKey(MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG));
+    }
+
+    @Test
     void defaultTowerMainEntranceIsOpeningOnly() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKTowerWorkspaceFamilyDefinition entryFamily = MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions).stream()
@@ -571,7 +634,7 @@ class TowerWorkspaceV2Test {
                 MKVerticalProgressionMode.MIXED,
                 true,
                 false,
-                List.of(new MKDungeonCategoryRule("main", 2, 2, true, java.util.Optional.of(endingPool))),
+                List.of(new MKDungeonCategoryRule("main", 2, 2, true, endingPool)),
                 connectorSettings()
         ));
         MKDungeonPieceState beforeTarget = new MKDungeonPieceState(0, 0, 1, 0, true, 3,
@@ -609,7 +672,7 @@ class TowerWorkspaceV2Test {
                 MKVerticalProgressionMode.MIXED,
                 true,
                 false,
-                List.of(new MKDungeonCategoryRule("main", 1, 2, 2, true, java.util.Optional.empty())),
+                List.of(new MKDungeonCategoryRule("main", 1, 2, 2, true, null)),
                 connectorSettings()
         ));
         MKDungeonPieceState atBranchLimit = new MKDungeonPieceState(0, 0, 2, 2, false, 3,
@@ -764,7 +827,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void floorSettingsPreserveLegacyCapApproachDefaults() {
+    void floorSettingsDefaultCapApproachFlags() {
         MKTowerWorkspaceFloorSettings settings = MKTowerWorkspaceFloorSettings.defaultSettings();
 
         assertTrue(settings.topCapApproachEnabled());
@@ -879,18 +942,6 @@ class TowerWorkspaceV2Test {
                         "bottom_cap".equals(connector.incomingPoolName())));
         assertEquals("0", basementCap.tags().get(MKWorkspaceRuntimePieceInfo.PROGRESSION_DELTA_TAG));
         assertEquals("0", basementCap.tags().get(MKWorkspaceRuntimePieceInfo.VERTICAL_LEVEL_DELTA_TAG));
-    }
-
-    @Test
-    void entryFamilyDefaultsToNoExtrusionButLegacyDataLoadsAsFullBody() {
-        MKTowerWorkspaceFamilyDefinition defaultFamily = MKTowerWorkspaceFamilyDefinition.createDefaults().getFirst();
-        assertEquals(MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, defaultFamily.horizontalExtrusionMode());
-
-        CompoundTag legacyTag = defaultFamily.toTag();
-        legacyTag.remove("horizontalExtrusionMode");
-        MKTowerWorkspaceFamilyDefinition decodedLegacy = MKTowerWorkspaceFamilyDefinition.fromTag(legacyTag);
-
-        assertEquals(MKWorkspaceHorizontalExtrusionMode.FULL_BODY, decodedLegacy.horizontalExtrusionMode());
     }
 
     @Test
@@ -1494,6 +1545,33 @@ class TowerWorkspaceV2Test {
                 workspace.verticalAccessSpec(),
                 floorSettings,
                 workspace.categoryProfiles(),
+                workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.hallwayFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces()
+        );
+    }
+
+    private static MKStructureWorkspace withCategoryProfiles(MKStructureWorkspace workspace,
+                                                             List<MKTowerWorkspaceCategoryProfile> categoryProfiles) {
+        return new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
+                categoryProfiles,
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
                 workspace.hallwayFamilies(),

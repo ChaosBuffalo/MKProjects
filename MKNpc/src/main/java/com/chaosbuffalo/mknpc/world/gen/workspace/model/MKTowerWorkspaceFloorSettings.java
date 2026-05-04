@@ -135,9 +135,9 @@ public class MKTowerWorkspaceFloorSettings {
         if (entry == null || main == null || basement == null || topCap == null || basementCap == null) {
             return false;
         }
-        int upwardSpan = entry.fullHeight() + (mainFloors * main.fullHeight()) + topCap.fullHeight() +
+        int upwardSpan = entry.fullHeight() + (mainFloors * main.fullHeight()) + topCap.exportedFullHeight() +
                 (topCapApproachEnabled ? topCap.fullHeight() : 0);
-        int downwardSpan = ((basementFloors + 1) * basement.fullHeight()) + basementCap.fullHeight() +
+        int downwardSpan = ((basementFloors + 1) * basement.fullHeight()) + basementCap.exportedFullHeight() +
                 (basementCapApproachEnabled ? basementCap.fullHeight() : 0);
         int totalSpan = upwardSpan + downwardSpan;
         return upwardSpan <= DEFAULT_VERTICAL_RADIUS &&

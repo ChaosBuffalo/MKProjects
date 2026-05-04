@@ -6,117 +6,124 @@
         "base_name": "entry",
         "role": "entry",
         "piece_metadata": {
-          "allow_on_main_path": true,
-          "allow_on_branch_path": false,
+          "category": "entry",
           "terminal": false,
           "top_cap_only": false,
+          "vertical_level_delta": 0,
+          "allow_on_main_path": true,
+          "allow_on_branch_path": false,
           "role": "room",
-          "progression_delta": 0,
-          "vertical_level_delta": 0
+          "progression_delta": 0
         }
       },
       {
         "base_name": "floor_main",
         "role": "floor_main",
         "piece_metadata": {
-          "allow_on_main_path": true,
-          "allow_on_branch_path": false,
+          "category": "main",
           "terminal": false,
           "top_cap_only": false,
+          "vertical_level_delta": 1,
+          "allow_on_main_path": true,
+          "allow_on_branch_path": false,
           "role": "room",
-          "progression_delta": 1,
-          "vertical_level_delta": 1
+          "progression_delta": 1
         }
       },
       {
         "base_name": "top_cap_approach",
         "role": "top_cap_approach",
         "piece_metadata": {
-          "allow_on_main_path": true,
-          "allow_on_branch_path": false,
+          "category": "top_cap",
           "terminal": false,
           "top_cap_only": true,
+          "vertical_level_delta": 1,
+          "allow_on_main_path": true,
+          "allow_on_branch_path": false,
           "role": "top_cap_approach",
-          "progression_delta": 1,
-          "vertical_level_delta": 1
+          "progression_delta": 1
         }
       },
       {
         "base_name": "top_cap",
         "role": "top_cap",
         "piece_metadata": {
-          "allow_on_main_path": true,
-          "allow_on_branch_path": false,
+          "category": "top_cap",
           "terminal": true,
           "top_cap_only": true,
+          "vertical_level_delta": 0,
+          "allow_on_main_path": true,
+          "allow_on_branch_path": false,
           "role": "top_cap",
-          "progression_delta": 0,
-          "vertical_level_delta": 0
+          "progression_delta": 0
         }
       },
       {
         "base_name": "basement_entry",
         "role": "basement_entry",
         "piece_metadata": {
-          "allow_on_main_path": true,
-          "allow_on_branch_path": false,
+          "category": "basement",
           "terminal": false,
           "top_cap_only": false,
+          "vertical_level_delta": -1,
+          "allow_on_main_path": true,
+          "allow_on_branch_path": false,
           "role": "room",
-          "progression_delta": 1,
-          "vertical_level_delta": -1
+          "progression_delta": 1
         }
       },
       {
         "base_name": "basement_main",
         "role": "basement_main",
         "piece_metadata": {
-          "allow_on_main_path": true,
-          "allow_on_branch_path": false,
+          "category": "basement",
           "terminal": false,
           "top_cap_only": false,
+          "vertical_level_delta": -1,
+          "allow_on_main_path": true,
+          "allow_on_branch_path": false,
           "role": "room",
-          "progression_delta": 1,
-          "vertical_level_delta": -1
+          "progression_delta": 1
         }
       },
       {
         "base_name": "basement_cap",
         "role": "basement_cap",
         "piece_metadata": {
-          "allow_on_main_path": true,
-          "allow_on_branch_path": false,
+          "category": "basement_cap",
           "terminal": true,
           "top_cap_only": false,
+          "vertical_level_delta": -1,
+          "allow_on_main_path": true,
+          "allow_on_branch_path": false,
           "role": "terminal",
-          "progression_delta": 1,
-          "vertical_level_delta": -1
+          "progression_delta": 1
         }
       },
       {
         "base_name": "hallway_main_main",
         "role": "hallway",
         "piece_metadata": {
-          "allow_on_main_path": true,
-          "allow_on_branch_path": false,
           "terminal": false,
           "top_cap_only": false,
+          "vertical_level_delta": 0,
+          "allow_on_main_path": true,
+          "allow_on_branch_path": false,
           "role": "room",
-          "progression_delta": 0,
-          "vertical_level_delta": 0
+          "progression_delta": 0
         }
       },
       {
         "base_name": "hallway_branch_branch",
         "role": "hallway",
         "piece_metadata": {
-          "allow_on_main_path": false,
-          "allow_on_branch_path": true,
           "terminal": false,
           "top_cap_only": false,
+          "vertical_level_delta": 0,
+          "allow_on_main_path": false,
+          "allow_on_branch_path": true,
           "role": "room",
-          "progression_delta": 0,
-          "vertical_level_delta": 0
+          "progression_delta": 0
         }
       }
     ],
@@ -246,47 +253,35 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": -11,
-            "y": -53,
-            "z": 353
+            "x": -10,
+            "y": -46,
+            "z": 352
           },
           "offset": {
             "x": 19,
-            "y": 7,
+            "y": 14,
             "z": 19
           }
         },
         {
           "absolute": {
-            "x": -11,
+            "x": -10,
             "y": -61,
-            "z": 353
+            "z": 352
           },
           "offset": {
             "x": 19,
             "y": -1,
             "z": 19
           }
-        },
-        {
-          "absolute": {
-            "x": -11,
-            "y": -59,
-            "z": 361
-          },
-          "offset": {
-            "x": 19,
-            "y": 1,
-            "z": 27
-          }
         }
       ],
       "generated_stair_positions": [
         {
           "absolute": {
-            "x": -11,
+            "x": -10,
             "y": -60,
-            "z": 354
+            "z": 353
           },
           "offset": {
             "x": 19,
@@ -301,6 +296,18 @@
             "z": 354
           },
           "offset": {
+            "x": 19,
+            "y": 0,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
+            "y": -60,
+            "z": 353
+          },
+          "offset": {
             "x": 20,
             "y": 0,
             "z": 20
@@ -308,9 +315,45 @@
         },
         {
           "absolute": {
-            "x": -12,
-            "y": -59,
+            "x": -9,
+            "y": -60,
             "z": 354
+          },
+          "offset": {
+            "x": 20,
+            "y": 0,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -60,
+            "z": 353
+          },
+          "offset": {
+            "x": 21,
+            "y": 0,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -60,
+            "z": 354
+          },
+          "offset": {
+            "x": 21,
+            "y": 0,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -59,
+            "z": 353
           },
           "offset": {
             "x": 18,
@@ -321,8 +364,44 @@
         {
           "absolute": {
             "x": -12,
-            "y": -58,
+            "y": -59,
             "z": 353
+          },
+          "offset": {
+            "x": 17,
+            "y": 1,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -59,
+            "z": 354
+          },
+          "offset": {
+            "x": 18,
+            "y": 1,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": -12,
+            "y": -59,
+            "z": 354
+          },
+          "offset": {
+            "x": 17,
+            "y": 1,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -58,
+            "z": 352
           },
           "offset": {
             "x": 18,
@@ -333,8 +412,20 @@
         {
           "absolute": {
             "x": -12,
-            "y": -57,
+            "y": -58,
             "z": 352
+          },
+          "offset": {
+            "x": 17,
+            "y": 2,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -57,
+            "z": 351
           },
           "offset": {
             "x": 18,
@@ -345,8 +436,44 @@
         {
           "absolute": {
             "x": -11,
+            "y": -57,
+            "z": 350
+          },
+          "offset": {
+            "x": 18,
+            "y": 3,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": -12,
+            "y": -57,
+            "z": 351
+          },
+          "offset": {
+            "x": 17,
+            "y": 3,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": -12,
+            "y": -57,
+            "z": 350
+          },
+          "offset": {
+            "x": 17,
+            "y": 3,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": -10,
             "y": -56,
-            "z": 352
+            "z": 351
           },
           "offset": {
             "x": 19,
@@ -357,8 +484,20 @@
         {
           "absolute": {
             "x": -10,
+            "y": -56,
+            "z": 350
+          },
+          "offset": {
+            "x": 19,
+            "y": 4,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
             "y": -55,
-            "z": 352
+            "z": 351
           },
           "offset": {
             "x": 20,
@@ -368,22 +507,370 @@
         },
         {
           "absolute": {
-            "x": -10,
+            "x": -8,
+            "y": -55,
+            "z": 351
+          },
+          "offset": {
+            "x": 21,
+            "y": 5,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
+            "y": -55,
+            "z": 350
+          },
+          "offset": {
+            "x": 20,
+            "y": 5,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -55,
+            "z": 350
+          },
+          "offset": {
+            "x": 21,
+            "y": 5,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
             "y": -54,
-            "z": 353
+            "z": 352
           },
           "offset": {
             "x": 20,
             "y": 6,
             "z": 19
           }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -54,
+            "z": 352
+          },
+          "offset": {
+            "x": 21,
+            "y": 6,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
+            "y": -53,
+            "z": 353
+          },
+          "offset": {
+            "x": 20,
+            "y": 7,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
+            "y": -53,
+            "z": 354
+          },
+          "offset": {
+            "x": 20,
+            "y": 7,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -53,
+            "z": 353
+          },
+          "offset": {
+            "x": 21,
+            "y": 7,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -53,
+            "z": 354
+          },
+          "offset": {
+            "x": 21,
+            "y": 7,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": -10,
+            "y": -52,
+            "z": 353
+          },
+          "offset": {
+            "x": 19,
+            "y": 8,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": -10,
+            "y": -52,
+            "z": 354
+          },
+          "offset": {
+            "x": 19,
+            "y": 8,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -51,
+            "z": 353
+          },
+          "offset": {
+            "x": 18,
+            "y": 9,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": -12,
+            "y": -51,
+            "z": 353
+          },
+          "offset": {
+            "x": 17,
+            "y": 9,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -51,
+            "z": 354
+          },
+          "offset": {
+            "x": 18,
+            "y": 9,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": -12,
+            "y": -51,
+            "z": 354
+          },
+          "offset": {
+            "x": 17,
+            "y": 9,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -50,
+            "z": 352
+          },
+          "offset": {
+            "x": 18,
+            "y": 10,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": -12,
+            "y": -50,
+            "z": 352
+          },
+          "offset": {
+            "x": 17,
+            "y": 10,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -49,
+            "z": 351
+          },
+          "offset": {
+            "x": 18,
+            "y": 11,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -49,
+            "z": 350
+          },
+          "offset": {
+            "x": 18,
+            "y": 11,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": -12,
+            "y": -49,
+            "z": 351
+          },
+          "offset": {
+            "x": 17,
+            "y": 11,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": -12,
+            "y": -49,
+            "z": 350
+          },
+          "offset": {
+            "x": 17,
+            "y": 11,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": -10,
+            "y": -48,
+            "z": 351
+          },
+          "offset": {
+            "x": 19,
+            "y": 12,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": -10,
+            "y": -48,
+            "z": 350
+          },
+          "offset": {
+            "x": 19,
+            "y": 12,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
+            "y": -47,
+            "z": 351
+          },
+          "offset": {
+            "x": 20,
+            "y": 13,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
+            "y": -47,
+            "z": 350
+          },
+          "offset": {
+            "x": 20,
+            "y": 13,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -47,
+            "z": 351
+          },
+          "offset": {
+            "x": 21,
+            "y": 13,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -47,
+            "z": 350
+          },
+          "offset": {
+            "x": 21,
+            "y": 13,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
+            "y": -47,
+            "z": 352
+          },
+          "offset": {
+            "x": 20,
+            "y": 13,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -47,
+            "z": 352
+          },
+          "offset": {
+            "x": 21,
+            "y": 13,
+            "z": 19
+          }
         }
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777332319251",
+        "generated_stair_revision": "1777733783540",
+        "resolved_boundary_status": "exact",
+        "resolved_bridge_steps": "0",
+        "resolved_cycle_length": "8",
+        "resolved_flat_run_length": "0",
+        "resolved_interior_height": "12",
+        "resolved_path_steps": "15",
+        "resolved_pattern": "[STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, SLAB_BOTTOM, SLAB_TOP]",
+        "resolved_rise_strategy": "mixed",
+        "resolved_top_phase": "7",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_category": "entry",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "0",
         "runtime_start": "true",
@@ -396,11 +883,10 @@
         "vertical_access_direction": "both",
         "vertical_access_placement": "center",
         "workspace_base_name": "entry",
-        "workspace_branch_exit_mask": "none",
         "workspace_category": "entry",
         "workspace_family_id": "entry",
-        "workspace_horizontal_exits": "south:main_exit:hallway:main_opening:0:0",
-        "workspace_horizontal_extrusion_mode": "tunnel_only",
+        "workspace_horizontal_exits": "south:main_entry:no_connection:main_opening:0:0",
+        "workspace_horizontal_extrusion_mode": "no_extrusion",
         "workspace_piece_kind": "template",
         "workspace_variant_index": "0"
       },
@@ -411,11 +897,11 @@
           "jigsaw_name": "mknpc:connect_up",
           "relative_pos": {
             "x": 7,
-            "y": 6,
+            "y": 13,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_up",
           "facing": "up"
         },
@@ -428,42 +914,28 @@
             "y": 0,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_down",
           "facing": "down"
-        },
-        {
-          "jigsaw_target": "mknpc:main_forward",
-          "target_pool": "mknpc:test_tower/hallways/main/main_opening",
-          "jigsaw_name": "mknpc:main_back",
-          "relative_pos": {
-            "x": 7,
-            "y": 1,
-            "z": 14
-          },
-          "opening_width": 3,
-          "opening_height": 3,
-          "role": "main_back",
-          "facing": "south"
         }
       ],
       "shell_margin": 1,
       "effective_dimensions": {
-        "basement_height": 5,
-        "hallway_width": 3,
+        "basement_height": 12,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 9,
         "room_length": 9,
-        "entrance_height": 5,
-        "room_height": 5
+        "entrance_height": 12,
+        "room_height": 12
       },
       "placement": {
         "sign_pos": {
-          "x": -21,
+          "x": -20,
           "y": -59,
-          "z": 353
+          "z": 352
         },
         "sign_offset": {
           "x": 9,
@@ -473,21 +945,21 @@
         "export_bounds": {
           "max_offset": {
             "x": 26,
-            "y": 6,
+            "y": 13,
             "z": 26
           },
           "size_x": 15,
-          "size_y": 7,
+          "size_y": 14,
           "size_z": 15,
           "min": {
-            "x": -18,
+            "x": -17,
             "y": -60,
-            "z": 346
+            "z": 345
           },
           "max": {
-            "x": -4,
-            "y": -54,
-            "z": 360
+            "x": -3,
+            "y": -47,
+            "z": 359
           },
           "min_offset": {
             "x": 12,
@@ -498,21 +970,21 @@
         "preview_bounds": {
           "max_offset": {
             "x": 30,
-            "y": 6,
+            "y": 13,
             "z": 30
           },
           "size_x": 23,
-          "size_y": 7,
+          "size_y": 14,
           "size_z": 23,
           "min": {
-            "x": -22,
+            "x": -21,
             "y": -60,
-            "z": 342
+            "z": 341
           },
           "max": {
-            "x": 0,
-            "y": -54,
-            "z": 364
+            "x": 1,
+            "y": -47,
+            "z": 363
           },
           "min_offset": {
             "x": 8,
@@ -521,9 +993,9 @@
           }
         },
         "world_origin": {
-          "x": -18,
+          "x": -17,
           "y": -60,
-          "z": 346
+          "z": 345
         },
         "world_origin_offset": {
           "x": 12,
@@ -531,9 +1003,9 @@
           "z": 12
         },
         "structure_block_pos": {
-          "x": -20,
+          "x": -19,
           "y": -59,
-          "z": 353
+          "z": 352
         },
         "structure_block_offset": {
           "x": 10,
@@ -545,7 +1017,7 @@
       "variant_index": 0,
       "workspace_piece_kind": "template",
       "structure_id": "mknpc:test_tower/entry_template",
-      "piece_id": "ffd25008-ed7b-4f00-9a2c-d274f96e464f",
+      "piece_id": "81027c2b-3041-4a09-b439-3415d907e7df",
       "piece_name": "entry_template",
       "base_name": "entry"
     },
@@ -553,9 +1025,9 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": 16,
+            "x": 17,
             "y": -61,
-            "z": 353
+            "z": 352
           },
           "offset": {
             "x": 46,
@@ -565,9 +1037,9 @@
         },
         {
           "absolute": {
-            "x": 16,
+            "x": 17,
             "y": -53,
-            "z": 353
+            "z": 352
           },
           "offset": {
             "x": 46,
@@ -579,9 +1051,9 @@
       "generated_stair_positions": [
         {
           "absolute": {
-            "x": 16,
+            "x": 17,
             "y": -60,
-            "z": 354
+            "z": 353
           },
           "offset": {
             "x": 46,
@@ -596,6 +1068,18 @@
             "z": 354
           },
           "offset": {
+            "x": 46,
+            "y": 0,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 18,
+            "y": -60,
+            "z": 353
+          },
+          "offset": {
             "x": 47,
             "y": 0,
             "z": 20
@@ -603,9 +1087,45 @@
         },
         {
           "absolute": {
-            "x": 15,
-            "y": -59,
+            "x": 18,
+            "y": -60,
             "z": 354
+          },
+          "offset": {
+            "x": 47,
+            "y": 0,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 19,
+            "y": -60,
+            "z": 353
+          },
+          "offset": {
+            "x": 48,
+            "y": 0,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 19,
+            "y": -60,
+            "z": 354
+          },
+          "offset": {
+            "x": 48,
+            "y": 0,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 16,
+            "y": -59,
+            "z": 353
           },
           "offset": {
             "x": 45,
@@ -616,8 +1136,44 @@
         {
           "absolute": {
             "x": 15,
-            "y": -58,
+            "y": -59,
             "z": 353
+          },
+          "offset": {
+            "x": 44,
+            "y": 1,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 16,
+            "y": -59,
+            "z": 354
+          },
+          "offset": {
+            "x": 45,
+            "y": 1,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 15,
+            "y": -59,
+            "z": 354
+          },
+          "offset": {
+            "x": 44,
+            "y": 1,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 16,
+            "y": -58,
+            "z": 352
           },
           "offset": {
             "x": 45,
@@ -628,8 +1184,20 @@
         {
           "absolute": {
             "x": 15,
-            "y": -57,
+            "y": -58,
             "z": 352
+          },
+          "offset": {
+            "x": 44,
+            "y": 2,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": 16,
+            "y": -57,
+            "z": 351
           },
           "offset": {
             "x": 45,
@@ -640,8 +1208,44 @@
         {
           "absolute": {
             "x": 16,
+            "y": -57,
+            "z": 350
+          },
+          "offset": {
+            "x": 45,
+            "y": 3,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 15,
+            "y": -57,
+            "z": 351
+          },
+          "offset": {
+            "x": 44,
+            "y": 3,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 15,
+            "y": -57,
+            "z": 350
+          },
+          "offset": {
+            "x": 44,
+            "y": 3,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 17,
             "y": -56,
-            "z": 352
+            "z": 351
           },
           "offset": {
             "x": 46,
@@ -652,8 +1256,20 @@
         {
           "absolute": {
             "x": 17,
+            "y": -56,
+            "z": 350
+          },
+          "offset": {
+            "x": 46,
+            "y": 4,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 18,
             "y": -55,
-            "z": 352
+            "z": 351
           },
           "offset": {
             "x": 47,
@@ -663,12 +1279,60 @@
         },
         {
           "absolute": {
-            "x": 17,
-            "y": -54,
-            "z": 353
+            "x": 19,
+            "y": -55,
+            "z": 351
+          },
+          "offset": {
+            "x": 48,
+            "y": 5,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 18,
+            "y": -55,
+            "z": 350
           },
           "offset": {
             "x": 47,
+            "y": 5,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 19,
+            "y": -55,
+            "z": 350
+          },
+          "offset": {
+            "x": 48,
+            "y": 5,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 18,
+            "y": -54,
+            "z": 352
+          },
+          "offset": {
+            "x": 47,
+            "y": 6,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": 19,
+            "y": -54,
+            "z": 352
+          },
+          "offset": {
+            "x": 48,
             "y": 6,
             "z": 19
           }
@@ -676,9 +1340,21 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777332319251",
+        "generated_stair_revision": "1777733783540",
+        "resolved_boundary_status": "exact",
+        "resolved_bridge_steps": "0",
+        "resolved_cycle_length": "8",
+        "resolved_flat_run_length": "0",
+        "resolved_interior_height": "5",
+        "resolved_path_steps": "7",
+        "resolved_pattern": "[STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR]",
+        "resolved_rise_strategy": "mixed",
+        "resolved_top_phase": "7",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_category": "main",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
@@ -691,7 +1367,6 @@
         "vertical_access_direction": "both",
         "vertical_access_placement": "center",
         "workspace_base_name": "floor_main",
-        "workspace_branch_exit_mask": "none",
         "workspace_category": "main",
         "workspace_family_id": "floor_main",
         "workspace_horizontal_exits": "none",
@@ -710,8 +1385,8 @@
             "y": 0,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_down",
           "facing": "down"
         },
@@ -724,8 +1399,8 @@
             "y": 6,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_up",
           "facing": "up"
         }
@@ -733,7 +1408,7 @@
       "shell_margin": 1,
       "effective_dimensions": {
         "basement_height": 5,
-        "hallway_width": 3,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 9,
@@ -743,9 +1418,9 @@
       },
       "placement": {
         "sign_pos": {
-          "x": 6,
+          "x": 7,
           "y": -59,
-          "z": 353
+          "z": 352
         },
         "sign_offset": {
           "x": 36,
@@ -762,14 +1437,14 @@
           "size_y": 7,
           "size_z": 15,
           "min": {
-            "x": 9,
+            "x": 10,
             "y": -60,
-            "z": 346
+            "z": 345
           },
           "max": {
-            "x": 23,
+            "x": 24,
             "y": -54,
-            "z": 360
+            "z": 359
           },
           "min_offset": {
             "x": 39,
@@ -787,14 +1462,14 @@
           "size_y": 7,
           "size_z": 23,
           "min": {
-            "x": 5,
+            "x": 6,
             "y": -60,
-            "z": 342
+            "z": 341
           },
           "max": {
-            "x": 27,
+            "x": 28,
             "y": -54,
-            "z": 364
+            "z": 363
           },
           "min_offset": {
             "x": 35,
@@ -803,9 +1478,9 @@
           }
         },
         "world_origin": {
-          "x": 9,
+          "x": 10,
           "y": -60,
-          "z": 346
+          "z": 345
         },
         "world_origin_offset": {
           "x": 39,
@@ -813,9 +1488,9 @@
           "z": 12
         },
         "structure_block_pos": {
-          "x": 7,
+          "x": 8,
           "y": -59,
-          "z": 353
+          "z": 352
         },
         "structure_block_offset": {
           "x": 37,
@@ -827,7 +1502,7 @@
       "variant_index": 0,
       "workspace_piece_kind": "template",
       "structure_id": "mknpc:test_tower/floor_main_template",
-      "piece_id": "c9e79425-61ad-42cc-b478-777036455016",
+      "piece_id": "8ad29488-113f-46bd-a0bd-090d13d7448b",
       "piece_name": "floor_main_template",
       "base_name": "floor_main"
     },
@@ -835,9 +1510,9 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": 43,
+            "x": 44,
             "y": -61,
-            "z": 353
+            "z": 352
           },
           "offset": {
             "x": 73,
@@ -847,9 +1522,9 @@
         },
         {
           "absolute": {
-            "x": 43,
+            "x": 44,
             "y": -53,
-            "z": 353
+            "z": 352
           },
           "offset": {
             "x": 73,
@@ -861,9 +1536,9 @@
       "generated_stair_positions": [
         {
           "absolute": {
-            "x": 43,
+            "x": 44,
             "y": -60,
-            "z": 354
+            "z": 353
           },
           "offset": {
             "x": 73,
@@ -878,6 +1553,18 @@
             "z": 354
           },
           "offset": {
+            "x": 73,
+            "y": 0,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 45,
+            "y": -60,
+            "z": 353
+          },
+          "offset": {
             "x": 74,
             "y": 0,
             "z": 20
@@ -885,9 +1572,45 @@
         },
         {
           "absolute": {
-            "x": 42,
-            "y": -59,
+            "x": 45,
+            "y": -60,
             "z": 354
+          },
+          "offset": {
+            "x": 74,
+            "y": 0,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 46,
+            "y": -60,
+            "z": 353
+          },
+          "offset": {
+            "x": 75,
+            "y": 0,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 46,
+            "y": -60,
+            "z": 354
+          },
+          "offset": {
+            "x": 75,
+            "y": 0,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 43,
+            "y": -59,
+            "z": 353
           },
           "offset": {
             "x": 72,
@@ -898,8 +1621,44 @@
         {
           "absolute": {
             "x": 42,
-            "y": -58,
+            "y": -59,
             "z": 353
+          },
+          "offset": {
+            "x": 71,
+            "y": 1,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 43,
+            "y": -59,
+            "z": 354
+          },
+          "offset": {
+            "x": 72,
+            "y": 1,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 42,
+            "y": -59,
+            "z": 354
+          },
+          "offset": {
+            "x": 71,
+            "y": 1,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 43,
+            "y": -58,
+            "z": 352
           },
           "offset": {
             "x": 72,
@@ -910,8 +1669,20 @@
         {
           "absolute": {
             "x": 42,
-            "y": -57,
+            "y": -58,
             "z": 352
+          },
+          "offset": {
+            "x": 71,
+            "y": 2,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": 43,
+            "y": -57,
+            "z": 351
           },
           "offset": {
             "x": 72,
@@ -922,8 +1693,44 @@
         {
           "absolute": {
             "x": 43,
+            "y": -57,
+            "z": 350
+          },
+          "offset": {
+            "x": 72,
+            "y": 3,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 42,
+            "y": -57,
+            "z": 351
+          },
+          "offset": {
+            "x": 71,
+            "y": 3,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 42,
+            "y": -57,
+            "z": 350
+          },
+          "offset": {
+            "x": 71,
+            "y": 3,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 44,
             "y": -56,
-            "z": 352
+            "z": 351
           },
           "offset": {
             "x": 73,
@@ -934,8 +1741,20 @@
         {
           "absolute": {
             "x": 44,
+            "y": -56,
+            "z": 350
+          },
+          "offset": {
+            "x": 73,
+            "y": 4,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 45,
             "y": -55,
-            "z": 352
+            "z": 351
           },
           "offset": {
             "x": 74,
@@ -945,12 +1764,60 @@
         },
         {
           "absolute": {
-            "x": 44,
-            "y": -54,
-            "z": 353
+            "x": 46,
+            "y": -55,
+            "z": 351
+          },
+          "offset": {
+            "x": 75,
+            "y": 5,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 45,
+            "y": -55,
+            "z": 350
           },
           "offset": {
             "x": 74,
+            "y": 5,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 46,
+            "y": -55,
+            "z": 350
+          },
+          "offset": {
+            "x": 75,
+            "y": 5,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 45,
+            "y": -54,
+            "z": 352
+          },
+          "offset": {
+            "x": 74,
+            "y": 6,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": 46,
+            "y": -54,
+            "z": 352
+          },
+          "offset": {
+            "x": 75,
             "y": 6,
             "z": 19
           }
@@ -958,9 +1825,21 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777332319251",
+        "generated_stair_revision": "1777733783540",
+        "resolved_boundary_status": "exact",
+        "resolved_bridge_steps": "0",
+        "resolved_cycle_length": "8",
+        "resolved_flat_run_length": "0",
+        "resolved_interior_height": "5",
+        "resolved_path_steps": "7",
+        "resolved_pattern": "[STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR]",
+        "resolved_rise_strategy": "mixed",
+        "resolved_top_phase": "7",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_category": "top_cap",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "top_cap_approach",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
@@ -973,7 +1852,6 @@
         "vertical_access_direction": "up",
         "vertical_access_placement": "center",
         "workspace_base_name": "top_cap_approach",
-        "workspace_branch_exit_mask": "none",
         "workspace_category": "top_cap",
         "workspace_family_id": "top_cap_approach",
         "workspace_horizontal_exits": "none",
@@ -992,8 +1870,8 @@
             "y": 0,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_down",
           "facing": "down"
         },
@@ -1006,8 +1884,8 @@
             "y": 6,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "top_cap_forward",
           "facing": "up"
         }
@@ -1015,7 +1893,7 @@
       "shell_margin": 1,
       "effective_dimensions": {
         "basement_height": 5,
-        "hallway_width": 3,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 9,
@@ -1025,9 +1903,9 @@
       },
       "placement": {
         "sign_pos": {
-          "x": 33,
+          "x": 34,
           "y": -59,
-          "z": 353
+          "z": 352
         },
         "sign_offset": {
           "x": 63,
@@ -1044,14 +1922,14 @@
           "size_y": 7,
           "size_z": 15,
           "min": {
-            "x": 36,
+            "x": 37,
             "y": -60,
-            "z": 346
+            "z": 345
           },
           "max": {
-            "x": 50,
+            "x": 51,
             "y": -54,
-            "z": 360
+            "z": 359
           },
           "min_offset": {
             "x": 66,
@@ -1069,14 +1947,14 @@
           "size_y": 7,
           "size_z": 23,
           "min": {
-            "x": 32,
+            "x": 33,
             "y": -60,
-            "z": 342
+            "z": 341
           },
           "max": {
-            "x": 54,
+            "x": 55,
             "y": -54,
-            "z": 364
+            "z": 363
           },
           "min_offset": {
             "x": 62,
@@ -1085,9 +1963,9 @@
           }
         },
         "world_origin": {
-          "x": 36,
+          "x": 37,
           "y": -60,
-          "z": 346
+          "z": 345
         },
         "world_origin_offset": {
           "x": 66,
@@ -1095,9 +1973,9 @@
           "z": 12
         },
         "structure_block_pos": {
-          "x": 34,
+          "x": 35,
           "y": -59,
-          "z": 353
+          "z": 352
         },
         "structure_block_offset": {
           "x": 64,
@@ -1109,7 +1987,7 @@
       "variant_index": 0,
       "workspace_piece_kind": "template",
       "structure_id": "mknpc:test_tower/top_cap_approach_template",
-      "piece_id": "789e0778-a56b-4ae3-83d7-db4cc5e65809",
+      "piece_id": "eb88afdf-f4c5-46e2-8dc7-477726e09870",
       "piece_name": "top_cap_approach_template",
       "base_name": "top_cap_approach"
     },
@@ -1117,9 +1995,9 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": 70,
+            "x": 71,
             "y": -61,
-            "z": 353
+            "z": 352
           },
           "offset": {
             "x": 100,
@@ -1131,9 +2009,9 @@
       "generated_stair_positions": [
         {
           "absolute": {
-            "x": 70,
+            "x": 71,
             "y": -60,
-            "z": 354
+            "z": 353
           },
           "offset": {
             "x": 100,
@@ -1148,17 +2026,29 @@
             "z": 354
           },
           "offset": {
-            "x": 101,
+            "x": 100,
             "y": 0,
-            "z": 20
+            "z": 21
           }
         }
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777332319251",
+        "generated_stair_revision": "1777733783540",
+        "resolved_boundary_status": "exact",
+        "resolved_bridge_steps": "0",
+        "resolved_cycle_length": "8",
+        "resolved_flat_run_length": "0",
+        "resolved_interior_height": "5",
+        "resolved_path_steps": "7",
+        "resolved_pattern": "[STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR]",
+        "resolved_rise_strategy": "mixed",
+        "resolved_top_phase": "7",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_category": "top_cap",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "top_cap",
         "runtime_progression_delta": "0",
         "runtime_start": "false",
@@ -1172,7 +2062,6 @@
         "vertical_access_placement": "center",
         "vertical_access_top_cap": "true",
         "workspace_base_name": "top_cap",
-        "workspace_branch_exit_mask": "none",
         "workspace_category": "top_cap",
         "workspace_family_id": "top_cap",
         "workspace_horizontal_exits": "none",
@@ -1191,8 +2080,8 @@
             "y": 0,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "top_cap_back",
           "facing": "down"
         }
@@ -1200,7 +2089,7 @@
       "shell_margin": 1,
       "effective_dimensions": {
         "basement_height": 5,
-        "hallway_width": 3,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 9,
@@ -1210,9 +2099,9 @@
       },
       "placement": {
         "sign_pos": {
-          "x": 60,
+          "x": 61,
           "y": -59,
-          "z": 353
+          "z": 352
         },
         "sign_offset": {
           "x": 90,
@@ -1229,14 +2118,14 @@
           "size_y": 7,
           "size_z": 15,
           "min": {
-            "x": 63,
+            "x": 64,
             "y": -60,
-            "z": 346
+            "z": 345
           },
           "max": {
-            "x": 77,
+            "x": 78,
             "y": -54,
-            "z": 360
+            "z": 359
           },
           "min_offset": {
             "x": 93,
@@ -1254,14 +2143,14 @@
           "size_y": 7,
           "size_z": 23,
           "min": {
-            "x": 59,
+            "x": 60,
             "y": -60,
-            "z": 342
+            "z": 341
           },
           "max": {
-            "x": 81,
+            "x": 82,
             "y": -54,
-            "z": 364
+            "z": 363
           },
           "min_offset": {
             "x": 89,
@@ -1270,9 +2159,9 @@
           }
         },
         "world_origin": {
-          "x": 63,
+          "x": 64,
           "y": -60,
-          "z": 346
+          "z": 345
         },
         "world_origin_offset": {
           "x": 93,
@@ -1280,9 +2169,9 @@
           "z": 12
         },
         "structure_block_pos": {
-          "x": 61,
+          "x": 62,
           "y": -59,
-          "z": 353
+          "z": 352
         },
         "structure_block_offset": {
           "x": 91,
@@ -1294,7 +2183,7 @@
       "variant_index": 0,
       "workspace_piece_kind": "template",
       "structure_id": "mknpc:test_tower/top_cap_template",
-      "piece_id": "a1f646e1-74da-452f-8abf-f83bdeb4bdb8",
+      "piece_id": "3dbdc26b-d849-467f-a057-828dc974bfcf",
       "piece_name": "top_cap_template",
       "base_name": "top_cap"
     },
@@ -1302,21 +2191,21 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": 97,
-            "y": -53,
-            "z": 353
+            "x": 98,
+            "y": -45,
+            "z": 352
           },
           "offset": {
             "x": 127,
-            "y": 7,
+            "y": 15,
             "z": 19
           }
         },
         {
           "absolute": {
-            "x": 97,
+            "x": 98,
             "y": -61,
-            "z": 353
+            "z": 352
           },
           "offset": {
             "x": 127,
@@ -1328,9 +2217,9 @@
       "generated_stair_positions": [
         {
           "absolute": {
-            "x": 97,
+            "x": 98,
             "y": -60,
-            "z": 354
+            "z": 353
           },
           "offset": {
             "x": 127,
@@ -1345,6 +2234,18 @@
             "z": 354
           },
           "offset": {
+            "x": 127,
+            "y": 0,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
+            "y": -60,
+            "z": 353
+          },
+          "offset": {
             "x": 128,
             "y": 0,
             "z": 20
@@ -1352,9 +2253,45 @@
         },
         {
           "absolute": {
-            "x": 96,
-            "y": -59,
+            "x": 99,
+            "y": -60,
             "z": 354
+          },
+          "offset": {
+            "x": 128,
+            "y": 0,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -60,
+            "z": 353
+          },
+          "offset": {
+            "x": 129,
+            "y": 0,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -60,
+            "z": 354
+          },
+          "offset": {
+            "x": 129,
+            "y": 0,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -59,
+            "z": 353
           },
           "offset": {
             "x": 126,
@@ -1365,8 +2302,44 @@
         {
           "absolute": {
             "x": 96,
-            "y": -58,
+            "y": -59,
             "z": 353
+          },
+          "offset": {
+            "x": 125,
+            "y": 1,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -59,
+            "z": 354
+          },
+          "offset": {
+            "x": 126,
+            "y": 1,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 96,
+            "y": -59,
+            "z": 354
+          },
+          "offset": {
+            "x": 125,
+            "y": 1,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -58,
+            "z": 352
           },
           "offset": {
             "x": 126,
@@ -1377,8 +2350,20 @@
         {
           "absolute": {
             "x": 96,
-            "y": -57,
+            "y": -58,
             "z": 352
+          },
+          "offset": {
+            "x": 125,
+            "y": 2,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -57,
+            "z": 351
           },
           "offset": {
             "x": 126,
@@ -1389,8 +2374,44 @@
         {
           "absolute": {
             "x": 97,
+            "y": -57,
+            "z": 350
+          },
+          "offset": {
+            "x": 126,
+            "y": 3,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 96,
+            "y": -57,
+            "z": 351
+          },
+          "offset": {
+            "x": 125,
+            "y": 3,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 96,
+            "y": -57,
+            "z": 350
+          },
+          "offset": {
+            "x": 125,
+            "y": 3,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 98,
             "y": -56,
-            "z": 352
+            "z": 351
           },
           "offset": {
             "x": 127,
@@ -1401,8 +2422,20 @@
         {
           "absolute": {
             "x": 98,
+            "y": -56,
+            "z": 350
+          },
+          "offset": {
+            "x": 127,
+            "y": 4,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
             "y": -55,
-            "z": 352
+            "z": 351
           },
           "offset": {
             "x": 128,
@@ -1412,22 +2445,370 @@
         },
         {
           "absolute": {
-            "x": 98,
+            "x": 100,
+            "y": -55,
+            "z": 351
+          },
+          "offset": {
+            "x": 129,
+            "y": 5,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
+            "y": -55,
+            "z": 350
+          },
+          "offset": {
+            "x": 128,
+            "y": 5,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -55,
+            "z": 350
+          },
+          "offset": {
+            "x": 129,
+            "y": 5,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
             "y": -54,
-            "z": 353
+            "z": 352
           },
           "offset": {
             "x": 128,
             "y": 6,
             "z": 19
           }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -54,
+            "z": 352
+          },
+          "offset": {
+            "x": 129,
+            "y": 6,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
+            "y": -53,
+            "z": 353
+          },
+          "offset": {
+            "x": 128,
+            "y": 7,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
+            "y": -53,
+            "z": 354
+          },
+          "offset": {
+            "x": 128,
+            "y": 7,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -53,
+            "z": 353
+          },
+          "offset": {
+            "x": 129,
+            "y": 7,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -53,
+            "z": 354
+          },
+          "offset": {
+            "x": 129,
+            "y": 7,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 98,
+            "y": -52,
+            "z": 353
+          },
+          "offset": {
+            "x": 127,
+            "y": 8,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 98,
+            "y": -52,
+            "z": 354
+          },
+          "offset": {
+            "x": 127,
+            "y": 8,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -51,
+            "z": 353
+          },
+          "offset": {
+            "x": 126,
+            "y": 9,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 96,
+            "y": -51,
+            "z": 353
+          },
+          "offset": {
+            "x": 125,
+            "y": 9,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -51,
+            "z": 354
+          },
+          "offset": {
+            "x": 126,
+            "y": 9,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 96,
+            "y": -51,
+            "z": 354
+          },
+          "offset": {
+            "x": 125,
+            "y": 9,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -50,
+            "z": 352
+          },
+          "offset": {
+            "x": 126,
+            "y": 10,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": 96,
+            "y": -50,
+            "z": 352
+          },
+          "offset": {
+            "x": 125,
+            "y": 10,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -49,
+            "z": 351
+          },
+          "offset": {
+            "x": 126,
+            "y": 11,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -49,
+            "z": 350
+          },
+          "offset": {
+            "x": 126,
+            "y": 11,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 96,
+            "y": -49,
+            "z": 351
+          },
+          "offset": {
+            "x": 125,
+            "y": 11,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 96,
+            "y": -49,
+            "z": 350
+          },
+          "offset": {
+            "x": 125,
+            "y": 11,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 98,
+            "y": -48,
+            "z": 351
+          },
+          "offset": {
+            "x": 127,
+            "y": 12,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 98,
+            "y": -48,
+            "z": 350
+          },
+          "offset": {
+            "x": 127,
+            "y": 12,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
+            "y": -47,
+            "z": 351
+          },
+          "offset": {
+            "x": 128,
+            "y": 13,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -47,
+            "z": 351
+          },
+          "offset": {
+            "x": 129,
+            "y": 13,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
+            "y": -47,
+            "z": 350
+          },
+          "offset": {
+            "x": 128,
+            "y": 13,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -47,
+            "z": 350
+          },
+          "offset": {
+            "x": 129,
+            "y": 13,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
+            "y": -46,
+            "z": 352
+          },
+          "offset": {
+            "x": 128,
+            "y": 14,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -46,
+            "z": 352
+          },
+          "offset": {
+            "x": 129,
+            "y": 14,
+            "z": 19
+          }
         }
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777332319252",
+        "generated_stair_revision": "1777733783541",
+        "resolved_boundary_status": "exact",
+        "resolved_bridge_steps": "0",
+        "resolved_cycle_length": "8",
+        "resolved_flat_run_length": "0",
+        "resolved_interior_height": "13",
+        "resolved_path_steps": "15",
+        "resolved_pattern": "[STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR]",
+        "resolved_rise_strategy": "mixed",
+        "resolved_top_phase": "7",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_category": "basement",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
@@ -1440,7 +2821,6 @@
         "vertical_access_direction": "down",
         "vertical_access_placement": "center",
         "workspace_base_name": "basement_entry",
-        "workspace_branch_exit_mask": "none",
         "workspace_category": "basement",
         "workspace_family_id": "basement_entry",
         "workspace_horizontal_exits": "none",
@@ -1456,11 +2836,11 @@
           "jigsaw_name": "mknpc:connect_up",
           "relative_pos": {
             "x": 7,
-            "y": 6,
+            "y": 14,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_up",
           "facing": "up"
         },
@@ -1473,28 +2853,28 @@
             "y": 0,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_down",
           "facing": "down"
         }
       ],
       "shell_margin": 1,
       "effective_dimensions": {
-        "basement_height": 5,
-        "hallway_width": 3,
+        "basement_height": 13,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 9,
         "room_length": 9,
-        "entrance_height": 5,
-        "room_height": 5
+        "entrance_height": 13,
+        "room_height": 13
       },
       "placement": {
         "sign_pos": {
-          "x": 87,
+          "x": 88,
           "y": -59,
-          "z": 353
+          "z": 352
         },
         "sign_offset": {
           "x": 117,
@@ -1504,21 +2884,21 @@
         "export_bounds": {
           "max_offset": {
             "x": 134,
-            "y": 6,
+            "y": 14,
             "z": 26
           },
           "size_x": 15,
-          "size_y": 7,
+          "size_y": 15,
           "size_z": 15,
           "min": {
-            "x": 90,
+            "x": 91,
             "y": -60,
-            "z": 346
+            "z": 345
           },
           "max": {
-            "x": 104,
-            "y": -54,
-            "z": 360
+            "x": 105,
+            "y": -46,
+            "z": 359
           },
           "min_offset": {
             "x": 120,
@@ -1529,21 +2909,21 @@
         "preview_bounds": {
           "max_offset": {
             "x": 138,
-            "y": 6,
+            "y": 14,
             "z": 30
           },
           "size_x": 23,
-          "size_y": 7,
+          "size_y": 15,
           "size_z": 23,
           "min": {
-            "x": 86,
+            "x": 87,
             "y": -60,
-            "z": 342
+            "z": 341
           },
           "max": {
-            "x": 108,
-            "y": -54,
-            "z": 364
+            "x": 109,
+            "y": -46,
+            "z": 363
           },
           "min_offset": {
             "x": 116,
@@ -1552,9 +2932,9 @@
           }
         },
         "world_origin": {
-          "x": 90,
+          "x": 91,
           "y": -60,
-          "z": 346
+          "z": 345
         },
         "world_origin_offset": {
           "x": 120,
@@ -1562,9 +2942,9 @@
           "z": 12
         },
         "structure_block_pos": {
-          "x": 88,
+          "x": 89,
           "y": -59,
-          "z": 353
+          "z": 352
         },
         "structure_block_offset": {
           "x": 118,
@@ -1576,7 +2956,7 @@
       "variant_index": 0,
       "workspace_piece_kind": "template",
       "structure_id": "mknpc:test_tower/basement_entry_template",
-      "piece_id": "e9cafd54-1861-48ac-afac-c32f8dba7964",
+      "piece_id": "1ddff0c1-5224-47cd-9287-52ddf85ac25c",
       "piece_name": "basement_entry_template",
       "base_name": "basement_entry"
     },
@@ -1584,21 +2964,21 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": 124,
-            "y": -53,
-            "z": 353
+            "x": 125,
+            "y": -45,
+            "z": 352
           },
           "offset": {
             "x": 154,
-            "y": 7,
+            "y": 15,
             "z": 19
           }
         },
         {
           "absolute": {
-            "x": 124,
+            "x": 125,
             "y": -61,
-            "z": 353
+            "z": 352
           },
           "offset": {
             "x": 154,
@@ -1610,9 +2990,9 @@
       "generated_stair_positions": [
         {
           "absolute": {
-            "x": 124,
+            "x": 125,
             "y": -60,
-            "z": 354
+            "z": 353
           },
           "offset": {
             "x": 154,
@@ -1627,6 +3007,18 @@
             "z": 354
           },
           "offset": {
+            "x": 154,
+            "y": 0,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
+            "y": -60,
+            "z": 353
+          },
+          "offset": {
             "x": 155,
             "y": 0,
             "z": 20
@@ -1634,9 +3026,45 @@
         },
         {
           "absolute": {
-            "x": 123,
-            "y": -59,
+            "x": 126,
+            "y": -60,
             "z": 354
+          },
+          "offset": {
+            "x": 155,
+            "y": 0,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -60,
+            "z": 353
+          },
+          "offset": {
+            "x": 156,
+            "y": 0,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -60,
+            "z": 354
+          },
+          "offset": {
+            "x": 156,
+            "y": 0,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -59,
+            "z": 353
           },
           "offset": {
             "x": 153,
@@ -1647,8 +3075,44 @@
         {
           "absolute": {
             "x": 123,
-            "y": -58,
+            "y": -59,
             "z": 353
+          },
+          "offset": {
+            "x": 152,
+            "y": 1,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -59,
+            "z": 354
+          },
+          "offset": {
+            "x": 153,
+            "y": 1,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 123,
+            "y": -59,
+            "z": 354
+          },
+          "offset": {
+            "x": 152,
+            "y": 1,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -58,
+            "z": 352
           },
           "offset": {
             "x": 153,
@@ -1659,8 +3123,20 @@
         {
           "absolute": {
             "x": 123,
-            "y": -57,
+            "y": -58,
             "z": 352
+          },
+          "offset": {
+            "x": 152,
+            "y": 2,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -57,
+            "z": 351
           },
           "offset": {
             "x": 153,
@@ -1671,8 +3147,44 @@
         {
           "absolute": {
             "x": 124,
+            "y": -57,
+            "z": 350
+          },
+          "offset": {
+            "x": 153,
+            "y": 3,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 123,
+            "y": -57,
+            "z": 351
+          },
+          "offset": {
+            "x": 152,
+            "y": 3,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 123,
+            "y": -57,
+            "z": 350
+          },
+          "offset": {
+            "x": 152,
+            "y": 3,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 125,
             "y": -56,
-            "z": 352
+            "z": 351
           },
           "offset": {
             "x": 154,
@@ -1683,8 +3195,20 @@
         {
           "absolute": {
             "x": 125,
+            "y": -56,
+            "z": 350
+          },
+          "offset": {
+            "x": 154,
+            "y": 4,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
             "y": -55,
-            "z": 352
+            "z": 351
           },
           "offset": {
             "x": 155,
@@ -1694,22 +3218,370 @@
         },
         {
           "absolute": {
-            "x": 125,
+            "x": 127,
+            "y": -55,
+            "z": 351
+          },
+          "offset": {
+            "x": 156,
+            "y": 5,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
+            "y": -55,
+            "z": 350
+          },
+          "offset": {
+            "x": 155,
+            "y": 5,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -55,
+            "z": 350
+          },
+          "offset": {
+            "x": 156,
+            "y": 5,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
             "y": -54,
-            "z": 353
+            "z": 352
           },
           "offset": {
             "x": 155,
             "y": 6,
             "z": 19
           }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -54,
+            "z": 352
+          },
+          "offset": {
+            "x": 156,
+            "y": 6,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
+            "y": -53,
+            "z": 353
+          },
+          "offset": {
+            "x": 155,
+            "y": 7,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
+            "y": -53,
+            "z": 354
+          },
+          "offset": {
+            "x": 155,
+            "y": 7,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -53,
+            "z": 353
+          },
+          "offset": {
+            "x": 156,
+            "y": 7,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -53,
+            "z": 354
+          },
+          "offset": {
+            "x": 156,
+            "y": 7,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 125,
+            "y": -52,
+            "z": 353
+          },
+          "offset": {
+            "x": 154,
+            "y": 8,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 125,
+            "y": -52,
+            "z": 354
+          },
+          "offset": {
+            "x": 154,
+            "y": 8,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -51,
+            "z": 353
+          },
+          "offset": {
+            "x": 153,
+            "y": 9,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 123,
+            "y": -51,
+            "z": 353
+          },
+          "offset": {
+            "x": 152,
+            "y": 9,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -51,
+            "z": 354
+          },
+          "offset": {
+            "x": 153,
+            "y": 9,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 123,
+            "y": -51,
+            "z": 354
+          },
+          "offset": {
+            "x": 152,
+            "y": 9,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -50,
+            "z": 352
+          },
+          "offset": {
+            "x": 153,
+            "y": 10,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": 123,
+            "y": -50,
+            "z": 352
+          },
+          "offset": {
+            "x": 152,
+            "y": 10,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -49,
+            "z": 351
+          },
+          "offset": {
+            "x": 153,
+            "y": 11,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -49,
+            "z": 350
+          },
+          "offset": {
+            "x": 153,
+            "y": 11,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 123,
+            "y": -49,
+            "z": 351
+          },
+          "offset": {
+            "x": 152,
+            "y": 11,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 123,
+            "y": -49,
+            "z": 350
+          },
+          "offset": {
+            "x": 152,
+            "y": 11,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 125,
+            "y": -48,
+            "z": 351
+          },
+          "offset": {
+            "x": 154,
+            "y": 12,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 125,
+            "y": -48,
+            "z": 350
+          },
+          "offset": {
+            "x": 154,
+            "y": 12,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
+            "y": -47,
+            "z": 351
+          },
+          "offset": {
+            "x": 155,
+            "y": 13,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -47,
+            "z": 351
+          },
+          "offset": {
+            "x": 156,
+            "y": 13,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
+            "y": -47,
+            "z": 350
+          },
+          "offset": {
+            "x": 155,
+            "y": 13,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -47,
+            "z": 350
+          },
+          "offset": {
+            "x": 156,
+            "y": 13,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
+            "y": -46,
+            "z": 352
+          },
+          "offset": {
+            "x": 155,
+            "y": 14,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -46,
+            "z": 352
+          },
+          "offset": {
+            "x": 156,
+            "y": 14,
+            "z": 19
+          }
         }
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777332319252",
+        "generated_stair_revision": "1777733783541",
+        "resolved_boundary_status": "exact",
+        "resolved_bridge_steps": "0",
+        "resolved_cycle_length": "8",
+        "resolved_flat_run_length": "0",
+        "resolved_interior_height": "13",
+        "resolved_path_steps": "15",
+        "resolved_pattern": "[STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR]",
+        "resolved_rise_strategy": "mixed",
+        "resolved_top_phase": "7",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_category": "basement",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
@@ -1722,7 +3594,6 @@
         "vertical_access_direction": "down",
         "vertical_access_placement": "center",
         "workspace_base_name": "basement_main",
-        "workspace_branch_exit_mask": "none",
         "workspace_category": "basement",
         "workspace_family_id": "basement_main",
         "workspace_horizontal_exits": "none",
@@ -1738,11 +3609,11 @@
           "jigsaw_name": "mknpc:connect_up",
           "relative_pos": {
             "x": 7,
-            "y": 6,
+            "y": 14,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_up",
           "facing": "up"
         },
@@ -1755,28 +3626,28 @@
             "y": 0,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_down",
           "facing": "down"
         }
       ],
       "shell_margin": 1,
       "effective_dimensions": {
-        "basement_height": 5,
-        "hallway_width": 3,
+        "basement_height": 13,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 9,
         "room_length": 9,
-        "entrance_height": 5,
-        "room_height": 5
+        "entrance_height": 13,
+        "room_height": 13
       },
       "placement": {
         "sign_pos": {
-          "x": 114,
+          "x": 115,
           "y": -59,
-          "z": 353
+          "z": 352
         },
         "sign_offset": {
           "x": 144,
@@ -1786,21 +3657,21 @@
         "export_bounds": {
           "max_offset": {
             "x": 161,
-            "y": 6,
+            "y": 14,
             "z": 26
           },
           "size_x": 15,
-          "size_y": 7,
+          "size_y": 15,
           "size_z": 15,
           "min": {
-            "x": 117,
+            "x": 118,
             "y": -60,
-            "z": 346
+            "z": 345
           },
           "max": {
-            "x": 131,
-            "y": -54,
-            "z": 360
+            "x": 132,
+            "y": -46,
+            "z": 359
           },
           "min_offset": {
             "x": 147,
@@ -1811,21 +3682,21 @@
         "preview_bounds": {
           "max_offset": {
             "x": 165,
-            "y": 6,
+            "y": 14,
             "z": 30
           },
           "size_x": 23,
-          "size_y": 7,
+          "size_y": 15,
           "size_z": 23,
           "min": {
-            "x": 113,
+            "x": 114,
             "y": -60,
-            "z": 342
+            "z": 341
           },
           "max": {
-            "x": 135,
-            "y": -54,
-            "z": 364
+            "x": 136,
+            "y": -46,
+            "z": 363
           },
           "min_offset": {
             "x": 143,
@@ -1834,9 +3705,9 @@
           }
         },
         "world_origin": {
-          "x": 117,
+          "x": 118,
           "y": -60,
-          "z": 346
+          "z": 345
         },
         "world_origin_offset": {
           "x": 147,
@@ -1844,9 +3715,9 @@
           "z": 12
         },
         "structure_block_pos": {
-          "x": 115,
+          "x": 116,
           "y": -59,
-          "z": 353
+          "z": 352
         },
         "structure_block_offset": {
           "x": 145,
@@ -1858,7 +3729,7 @@
       "variant_index": 0,
       "workspace_piece_kind": "template",
       "structure_id": "mknpc:test_tower/basement_main_template",
-      "piece_id": "903c6b3a-b9f3-462c-88dd-1e75ee8a57c1",
+      "piece_id": "32db4bc6-4988-42b8-8e39-4215fff62c67",
       "piece_name": "basement_main_template",
       "base_name": "basement_main"
     },
@@ -1866,9 +3737,9 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": 151,
+            "x": 152,
             "y": -53,
-            "z": 353
+            "z": 352
           },
           "offset": {
             "x": 181,
@@ -1880,9 +3751,9 @@
       "generated_stair_positions": [
         {
           "absolute": {
-            "x": 150,
+            "x": 151,
             "y": -59,
-            "z": 354
+            "z": 353
           },
           "offset": {
             "x": 180,
@@ -1893,8 +3764,44 @@
         {
           "absolute": {
             "x": 150,
-            "y": -58,
+            "y": -59,
             "z": 353
+          },
+          "offset": {
+            "x": 179,
+            "y": 1,
+            "z": 20
+          }
+        },
+        {
+          "absolute": {
+            "x": 151,
+            "y": -59,
+            "z": 354
+          },
+          "offset": {
+            "x": 180,
+            "y": 1,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 150,
+            "y": -59,
+            "z": 354
+          },
+          "offset": {
+            "x": 179,
+            "y": 1,
+            "z": 21
+          }
+        },
+        {
+          "absolute": {
+            "x": 151,
+            "y": -58,
+            "z": 352
           },
           "offset": {
             "x": 180,
@@ -1905,8 +3812,20 @@
         {
           "absolute": {
             "x": 150,
-            "y": -57,
+            "y": -58,
             "z": 352
+          },
+          "offset": {
+            "x": 179,
+            "y": 2,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": 151,
+            "y": -57,
+            "z": 351
           },
           "offset": {
             "x": 180,
@@ -1917,8 +3836,44 @@
         {
           "absolute": {
             "x": 151,
+            "y": -57,
+            "z": 350
+          },
+          "offset": {
+            "x": 180,
+            "y": 3,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 150,
+            "y": -57,
+            "z": 351
+          },
+          "offset": {
+            "x": 179,
+            "y": 3,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 150,
+            "y": -57,
+            "z": 350
+          },
+          "offset": {
+            "x": 179,
+            "y": 3,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 152,
             "y": -56,
-            "z": 352
+            "z": 351
           },
           "offset": {
             "x": 181,
@@ -1929,8 +3884,20 @@
         {
           "absolute": {
             "x": 152,
+            "y": -56,
+            "z": 350
+          },
+          "offset": {
+            "x": 181,
+            "y": 4,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 153,
             "y": -55,
-            "z": 352
+            "z": 351
           },
           "offset": {
             "x": 182,
@@ -1940,12 +3907,60 @@
         },
         {
           "absolute": {
-            "x": 152,
-            "y": -54,
-            "z": 353
+            "x": 154,
+            "y": -55,
+            "z": 351
+          },
+          "offset": {
+            "x": 183,
+            "y": 5,
+            "z": 18
+          }
+        },
+        {
+          "absolute": {
+            "x": 153,
+            "y": -55,
+            "z": 350
           },
           "offset": {
             "x": 182,
+            "y": 5,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 154,
+            "y": -55,
+            "z": 350
+          },
+          "offset": {
+            "x": 183,
+            "y": 5,
+            "z": 17
+          }
+        },
+        {
+          "absolute": {
+            "x": 153,
+            "y": -54,
+            "z": 352
+          },
+          "offset": {
+            "x": 182,
+            "y": 6,
+            "z": 19
+          }
+        },
+        {
+          "absolute": {
+            "x": 154,
+            "y": -54,
+            "z": 352
+          },
+          "offset": {
+            "x": 183,
             "y": 6,
             "z": 19
           }
@@ -1953,9 +3968,21 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777332319252",
+        "generated_stair_revision": "1777733783542",
+        "resolved_boundary_status": "exact",
+        "resolved_bridge_steps": "0",
+        "resolved_cycle_length": "8",
+        "resolved_flat_run_length": "0",
+        "resolved_interior_height": "5",
+        "resolved_path_steps": "7",
+        "resolved_pattern": "[STAIR, STAIR, STAIR, STAIR, STAIR, STAIR, STAIR]",
+        "resolved_rise_strategy": "mixed",
+        "resolved_top_phase": "7",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_category": "basement_cap",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "terminal",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
@@ -1969,7 +3996,6 @@
         "vertical_access_direction": "down",
         "vertical_access_placement": "center",
         "workspace_base_name": "basement_cap",
-        "workspace_branch_exit_mask": "none",
         "workspace_category": "basement_cap",
         "workspace_family_id": "basement_cap",
         "workspace_horizontal_exits": "none",
@@ -1988,8 +4014,8 @@
             "y": 6,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_up",
           "facing": "up"
         }
@@ -1997,7 +4023,7 @@
       "shell_margin": 1,
       "effective_dimensions": {
         "basement_height": 5,
-        "hallway_width": 3,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 9,
@@ -2007,9 +4033,9 @@
       },
       "placement": {
         "sign_pos": {
-          "x": 141,
+          "x": 142,
           "y": -59,
-          "z": 353
+          "z": 352
         },
         "sign_offset": {
           "x": 171,
@@ -2026,14 +4052,14 @@
           "size_y": 7,
           "size_z": 15,
           "min": {
-            "x": 144,
+            "x": 145,
             "y": -60,
-            "z": 346
+            "z": 345
           },
           "max": {
-            "x": 158,
+            "x": 159,
             "y": -54,
-            "z": 360
+            "z": 359
           },
           "min_offset": {
             "x": 174,
@@ -2051,14 +4077,14 @@
           "size_y": 7,
           "size_z": 23,
           "min": {
-            "x": 140,
+            "x": 141,
             "y": -60,
-            "z": 342
+            "z": 341
           },
           "max": {
-            "x": 162,
+            "x": 163,
             "y": -54,
-            "z": 364
+            "z": 363
           },
           "min_offset": {
             "x": 170,
@@ -2067,9 +4093,9 @@
           }
         },
         "world_origin": {
-          "x": 144,
+          "x": 145,
           "y": -60,
-          "z": 346
+          "z": 345
         },
         "world_origin_offset": {
           "x": 174,
@@ -2077,9 +4103,9 @@
           "z": 12
         },
         "structure_block_pos": {
-          "x": 142,
+          "x": 143,
           "y": -59,
-          "z": 353
+          "z": 352
         },
         "structure_block_offset": {
           "x": 172,
@@ -2091,7 +4117,7 @@
       "variant_index": 0,
       "workspace_piece_kind": "template",
       "structure_id": "mknpc:test_tower/basement_cap_template",
-      "piece_id": "b8a3118c-90cb-4c0c-8174-2513bf79fbfa",
+      "piece_id": "b001ed54-f2f0-49ff-903a-cbebfb5dc87a",
       "piece_name": "basement_cap_template",
       "base_name": "basement_cap"
     },
@@ -2099,9 +4125,9 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": 170,
+            "x": 171,
             "y": -59,
-            "z": 350
+            "z": 349
           },
           "offset": {
             "x": 200,
@@ -2111,9 +4137,9 @@
         },
         {
           "absolute": {
-            "x": 182,
+            "x": 183,
             "y": -59,
-            "z": 350
+            "z": 349
           },
           "offset": {
             "x": 212,
@@ -2126,6 +4152,9 @@
       "tags": {
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_category": "",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "0",
         "runtime_start": "false",
@@ -2180,7 +4209,7 @@
       "shell_margin": 1,
       "effective_dimensions": {
         "basement_height": 3,
-        "hallway_width": 3,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 5,
@@ -2190,9 +4219,9 @@
       },
       "placement": {
         "sign_pos": {
-          "x": 168,
+          "x": 169,
           "y": -59,
-          "z": 350
+          "z": 349
         },
         "sign_offset": {
           "x": 198,
@@ -2209,14 +4238,14 @@
           "size_y": 5,
           "size_z": 9,
           "min": {
-            "x": 171,
+            "x": 172,
             "y": -60,
-            "z": 346
+            "z": 345
           },
           "max": {
-            "x": 181,
+            "x": 182,
             "y": -56,
-            "z": 354
+            "z": 353
           },
           "min_offset": {
             "x": 201,
@@ -2234,14 +4263,14 @@
           "size_y": 5,
           "size_z": 17,
           "min": {
-            "x": 167,
+            "x": 168,
             "y": -60,
-            "z": 342
+            "z": 341
           },
           "max": {
-            "x": 185,
+            "x": 186,
             "y": -56,
-            "z": 358
+            "z": 357
           },
           "min_offset": {
             "x": 197,
@@ -2250,9 +4279,9 @@
           }
         },
         "world_origin": {
-          "x": 171,
+          "x": 172,
           "y": -60,
-          "z": 346
+          "z": 345
         },
         "world_origin_offset": {
           "x": 201,
@@ -2260,9 +4289,9 @@
           "z": 12
         },
         "structure_block_pos": {
-          "x": 169,
+          "x": 170,
           "y": -59,
-          "z": 350
+          "z": 349
         },
         "structure_block_offset": {
           "x": 199,
@@ -2274,7 +4303,7 @@
       "variant_index": 0,
       "workspace_piece_kind": "template",
       "structure_id": "mknpc:test_tower/hallway_main_main_template",
-      "piece_id": "dc2d1542-a9c0-4849-bd6a-930d80b26874",
+      "piece_id": "c61b4f70-1647-4ce9-9b97-cd5b887815d9",
       "piece_name": "hallway_main_main_template",
       "base_name": "hallway_main_main"
     },
@@ -2282,9 +4311,9 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": 197,
+            "x": 198,
             "y": -59,
-            "z": 350
+            "z": 349
           },
           "offset": {
             "x": 227,
@@ -2294,9 +4323,9 @@
         },
         {
           "absolute": {
-            "x": 209,
+            "x": 210,
             "y": -59,
-            "z": 350
+            "z": 349
           },
           "offset": {
             "x": 239,
@@ -2309,6 +4338,9 @@
       "tags": {
         "runtime_allow_on_branch_path": "true",
         "runtime_allow_on_main_path": "false",
+        "runtime_branch_cap": "false",
+        "runtime_category": "",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "0",
         "runtime_start": "false",
@@ -2363,7 +4395,7 @@
       "shell_margin": 1,
       "effective_dimensions": {
         "basement_height": 3,
-        "hallway_width": 3,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 5,
@@ -2373,9 +4405,9 @@
       },
       "placement": {
         "sign_pos": {
-          "x": 195,
+          "x": 196,
           "y": -59,
-          "z": 350
+          "z": 349
         },
         "sign_offset": {
           "x": 225,
@@ -2392,14 +4424,14 @@
           "size_y": 5,
           "size_z": 9,
           "min": {
-            "x": 198,
+            "x": 199,
             "y": -60,
-            "z": 346
+            "z": 345
           },
           "max": {
-            "x": 208,
+            "x": 209,
             "y": -56,
-            "z": 354
+            "z": 353
           },
           "min_offset": {
             "x": 228,
@@ -2417,14 +4449,14 @@
           "size_y": 5,
           "size_z": 17,
           "min": {
-            "x": 194,
+            "x": 195,
             "y": -60,
-            "z": 342
+            "z": 341
           },
           "max": {
-            "x": 212,
+            "x": 213,
             "y": -56,
-            "z": 358
+            "z": 357
           },
           "min_offset": {
             "x": 224,
@@ -2433,9 +4465,9 @@
           }
         },
         "world_origin": {
-          "x": 198,
+          "x": 199,
           "y": -60,
-          "z": 346
+          "z": 345
         },
         "world_origin_offset": {
           "x": 228,
@@ -2443,9 +4475,9 @@
           "z": 12
         },
         "structure_block_pos": {
-          "x": 196,
+          "x": 197,
           "y": -59,
-          "z": 350
+          "z": 349
         },
         "structure_block_offset": {
           "x": 226,
@@ -2457,7 +4489,7 @@
       "variant_index": 0,
       "workspace_piece_kind": "template",
       "structure_id": "mknpc:test_tower/hallway_branch_branch_template",
-      "piece_id": "00e6d93a-e586-4f64-8467-a95da9a5b34a",
+      "piece_id": "fdc91e3f-5765-4eea-8e9e-28d8b8458604",
       "piece_name": "hallway_branch_branch_template",
       "base_name": "hallway_branch_branch"
     },
@@ -2465,47 +4497,35 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": -11,
-            "y": -53,
-            "z": 380
+            "x": -10,
+            "y": -46,
+            "z": 379
           },
           "offset": {
             "x": 19,
-            "y": 7,
+            "y": 14,
             "z": 46
           }
         },
         {
           "absolute": {
-            "x": -11,
+            "x": -10,
             "y": -61,
-            "z": 380
+            "z": 379
           },
           "offset": {
             "x": 19,
             "y": -1,
             "z": 46
           }
-        },
-        {
-          "absolute": {
-            "x": -11,
-            "y": -59,
-            "z": 388
-          },
-          "offset": {
-            "x": 19,
-            "y": 1,
-            "z": 54
-          }
         }
       ],
       "generated_stair_positions": [
         {
           "absolute": {
-            "x": -11,
+            "x": -10,
             "y": -60,
-            "z": 381
+            "z": 380
           },
           "offset": {
             "x": 19,
@@ -2520,6 +4540,18 @@
             "z": 381
           },
           "offset": {
+            "x": 19,
+            "y": 0,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
+            "y": -60,
+            "z": 380
+          },
+          "offset": {
             "x": 20,
             "y": 0,
             "z": 47
@@ -2527,9 +4559,45 @@
         },
         {
           "absolute": {
-            "x": -12,
-            "y": -59,
+            "x": -9,
+            "y": -60,
             "z": 381
+          },
+          "offset": {
+            "x": 20,
+            "y": 0,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -60,
+            "z": 380
+          },
+          "offset": {
+            "x": 21,
+            "y": 0,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -60,
+            "z": 381
+          },
+          "offset": {
+            "x": 21,
+            "y": 0,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -59,
+            "z": 380
           },
           "offset": {
             "x": 18,
@@ -2540,8 +4608,44 @@
         {
           "absolute": {
             "x": -12,
-            "y": -58,
+            "y": -59,
             "z": 380
+          },
+          "offset": {
+            "x": 17,
+            "y": 1,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -59,
+            "z": 381
+          },
+          "offset": {
+            "x": 18,
+            "y": 1,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": -12,
+            "y": -59,
+            "z": 381
+          },
+          "offset": {
+            "x": 17,
+            "y": 1,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -58,
+            "z": 379
           },
           "offset": {
             "x": 18,
@@ -2552,8 +4656,20 @@
         {
           "absolute": {
             "x": -12,
-            "y": -57,
+            "y": -58,
             "z": 379
+          },
+          "offset": {
+            "x": 17,
+            "y": 2,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -57,
+            "z": 378
           },
           "offset": {
             "x": 18,
@@ -2564,8 +4680,44 @@
         {
           "absolute": {
             "x": -11,
+            "y": -57,
+            "z": 377
+          },
+          "offset": {
+            "x": 18,
+            "y": 3,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": -12,
+            "y": -57,
+            "z": 378
+          },
+          "offset": {
+            "x": 17,
+            "y": 3,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": -12,
+            "y": -57,
+            "z": 377
+          },
+          "offset": {
+            "x": 17,
+            "y": 3,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": -10,
             "y": -56,
-            "z": 379
+            "z": 378
           },
           "offset": {
             "x": 19,
@@ -2576,8 +4728,20 @@
         {
           "absolute": {
             "x": -10,
+            "y": -56,
+            "z": 377
+          },
+          "offset": {
+            "x": 19,
+            "y": 4,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
             "y": -55,
-            "z": 379
+            "z": 378
           },
           "offset": {
             "x": 20,
@@ -2587,22 +4751,361 @@
         },
         {
           "absolute": {
-            "x": -10,
+            "x": -8,
+            "y": -55,
+            "z": 378
+          },
+          "offset": {
+            "x": 21,
+            "y": 5,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
+            "y": -55,
+            "z": 377
+          },
+          "offset": {
+            "x": 20,
+            "y": 5,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -55,
+            "z": 377
+          },
+          "offset": {
+            "x": 21,
+            "y": 5,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
             "y": -54,
-            "z": 380
+            "z": 379
           },
           "offset": {
             "x": 20,
             "y": 6,
             "z": 46
           }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -54,
+            "z": 379
+          },
+          "offset": {
+            "x": 21,
+            "y": 6,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
+            "y": -53,
+            "z": 380
+          },
+          "offset": {
+            "x": 20,
+            "y": 7,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
+            "y": -53,
+            "z": 381
+          },
+          "offset": {
+            "x": 20,
+            "y": 7,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -53,
+            "z": 380
+          },
+          "offset": {
+            "x": 21,
+            "y": 7,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -53,
+            "z": 381
+          },
+          "offset": {
+            "x": 21,
+            "y": 7,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": -10,
+            "y": -52,
+            "z": 380
+          },
+          "offset": {
+            "x": 19,
+            "y": 8,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": -10,
+            "y": -52,
+            "z": 381
+          },
+          "offset": {
+            "x": 19,
+            "y": 8,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -51,
+            "z": 380
+          },
+          "offset": {
+            "x": 18,
+            "y": 9,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": -12,
+            "y": -51,
+            "z": 380
+          },
+          "offset": {
+            "x": 17,
+            "y": 9,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -51,
+            "z": 381
+          },
+          "offset": {
+            "x": 18,
+            "y": 9,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": -12,
+            "y": -51,
+            "z": 381
+          },
+          "offset": {
+            "x": 17,
+            "y": 9,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -50,
+            "z": 379
+          },
+          "offset": {
+            "x": 18,
+            "y": 10,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": -12,
+            "y": -50,
+            "z": 379
+          },
+          "offset": {
+            "x": 17,
+            "y": 10,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -49,
+            "z": 378
+          },
+          "offset": {
+            "x": 18,
+            "y": 11,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": -11,
+            "y": -49,
+            "z": 377
+          },
+          "offset": {
+            "x": 18,
+            "y": 11,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": -12,
+            "y": -49,
+            "z": 378
+          },
+          "offset": {
+            "x": 17,
+            "y": 11,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": -12,
+            "y": -49,
+            "z": 377
+          },
+          "offset": {
+            "x": 17,
+            "y": 11,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": -10,
+            "y": -48,
+            "z": 378
+          },
+          "offset": {
+            "x": 19,
+            "y": 12,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": -10,
+            "y": -48,
+            "z": 377
+          },
+          "offset": {
+            "x": 19,
+            "y": 12,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
+            "y": -47,
+            "z": 378
+          },
+          "offset": {
+            "x": 20,
+            "y": 13,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
+            "y": -47,
+            "z": 377
+          },
+          "offset": {
+            "x": 20,
+            "y": 13,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -47,
+            "z": 378
+          },
+          "offset": {
+            "x": 21,
+            "y": 13,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -47,
+            "z": 377
+          },
+          "offset": {
+            "x": 21,
+            "y": 13,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": -9,
+            "y": -47,
+            "z": 379
+          },
+          "offset": {
+            "x": 20,
+            "y": 13,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": -8,
+            "y": -47,
+            "z": 379
+          },
+          "offset": {
+            "x": 21,
+            "y": 13,
+            "z": 46
+          }
         }
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777332319251",
+        "generated_stair_revision": "1777733783540",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_category": "entry",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "0",
         "runtime_start": "true",
@@ -2615,11 +5118,10 @@
         "vertical_access_direction": "both",
         "vertical_access_placement": "center",
         "workspace_base_name": "entry",
-        "workspace_branch_exit_mask": "none",
         "workspace_category": "entry",
         "workspace_family_id": "entry",
-        "workspace_horizontal_exits": "south:main_exit:hallway:main_opening:0:0",
-        "workspace_horizontal_extrusion_mode": "tunnel_only",
+        "workspace_horizontal_exits": "south:main_entry:no_connection:main_opening:0:0",
+        "workspace_horizontal_extrusion_mode": "no_extrusion",
         "workspace_piece_kind": "instance",
         "workspace_variant_index": "1"
       },
@@ -2630,11 +5132,11 @@
           "jigsaw_name": "mknpc:connect_up",
           "relative_pos": {
             "x": 7,
-            "y": 6,
+            "y": 13,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_up",
           "facing": "up"
         },
@@ -2647,42 +5149,28 @@
             "y": 0,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_down",
           "facing": "down"
-        },
-        {
-          "jigsaw_target": "mknpc:main_forward",
-          "target_pool": "mknpc:test_tower/hallways/main/main_opening",
-          "jigsaw_name": "mknpc:main_back",
-          "relative_pos": {
-            "x": 7,
-            "y": 1,
-            "z": 14
-          },
-          "opening_width": 3,
-          "opening_height": 3,
-          "role": "main_back",
-          "facing": "south"
         }
       ],
       "shell_margin": 1,
       "effective_dimensions": {
-        "basement_height": 5,
-        "hallway_width": 3,
+        "basement_height": 12,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 9,
         "room_length": 9,
-        "entrance_height": 5,
-        "room_height": 5
+        "entrance_height": 12,
+        "room_height": 12
       },
       "placement": {
         "sign_pos": {
-          "x": -21,
+          "x": -20,
           "y": -59,
-          "z": 380
+          "z": 379
         },
         "sign_offset": {
           "x": 9,
@@ -2692,21 +5180,21 @@
         "export_bounds": {
           "max_offset": {
             "x": 26,
-            "y": 6,
+            "y": 13,
             "z": 53
           },
           "size_x": 15,
-          "size_y": 7,
+          "size_y": 14,
           "size_z": 15,
           "min": {
-            "x": -18,
+            "x": -17,
             "y": -60,
-            "z": 373
+            "z": 372
           },
           "max": {
-            "x": -4,
-            "y": -54,
-            "z": 387
+            "x": -3,
+            "y": -47,
+            "z": 386
           },
           "min_offset": {
             "x": 12,
@@ -2717,21 +5205,21 @@
         "preview_bounds": {
           "max_offset": {
             "x": 30,
-            "y": 6,
+            "y": 13,
             "z": 57
           },
           "size_x": 23,
-          "size_y": 7,
+          "size_y": 14,
           "size_z": 23,
           "min": {
-            "x": -22,
+            "x": -21,
             "y": -60,
-            "z": 369
+            "z": 368
           },
           "max": {
-            "x": 0,
-            "y": -54,
-            "z": 391
+            "x": 1,
+            "y": -47,
+            "z": 390
           },
           "min_offset": {
             "x": 8,
@@ -2740,9 +5228,9 @@
           }
         },
         "world_origin": {
-          "x": -18,
+          "x": -17,
           "y": -60,
-          "z": 373
+          "z": 372
         },
         "world_origin_offset": {
           "x": 12,
@@ -2750,9 +5238,9 @@
           "z": 39
         },
         "structure_block_pos": {
-          "x": -20,
+          "x": -19,
           "y": -59,
-          "z": 380
+          "z": 379
         },
         "structure_block_offset": {
           "x": 10,
@@ -2764,7 +5252,7 @@
       "variant_index": 1,
       "workspace_piece_kind": "instance",
       "structure_id": "mknpc:test_tower/entry_1",
-      "piece_id": "3878bfc4-1c57-4dc8-a207-8d469047de30",
+      "piece_id": "8c702a80-67c9-4994-aed1-d96ed0b8d16b",
       "piece_name": "entry_1",
       "base_name": "entry"
     },
@@ -2772,9 +5260,9 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": 16,
+            "x": 17,
             "y": -61,
-            "z": 380
+            "z": 379
           },
           "offset": {
             "x": 46,
@@ -2784,9 +5272,9 @@
         },
         {
           "absolute": {
-            "x": 16,
+            "x": 17,
             "y": -53,
-            "z": 380
+            "z": 379
           },
           "offset": {
             "x": 46,
@@ -2798,9 +5286,9 @@
       "generated_stair_positions": [
         {
           "absolute": {
-            "x": 16,
+            "x": 17,
             "y": -60,
-            "z": 381
+            "z": 380
           },
           "offset": {
             "x": 46,
@@ -2815,6 +5303,18 @@
             "z": 381
           },
           "offset": {
+            "x": 46,
+            "y": 0,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 18,
+            "y": -60,
+            "z": 380
+          },
+          "offset": {
             "x": 47,
             "y": 0,
             "z": 47
@@ -2822,9 +5322,45 @@
         },
         {
           "absolute": {
-            "x": 15,
-            "y": -59,
+            "x": 18,
+            "y": -60,
             "z": 381
+          },
+          "offset": {
+            "x": 47,
+            "y": 0,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 19,
+            "y": -60,
+            "z": 380
+          },
+          "offset": {
+            "x": 48,
+            "y": 0,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 19,
+            "y": -60,
+            "z": 381
+          },
+          "offset": {
+            "x": 48,
+            "y": 0,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 16,
+            "y": -59,
+            "z": 380
           },
           "offset": {
             "x": 45,
@@ -2835,8 +5371,44 @@
         {
           "absolute": {
             "x": 15,
-            "y": -58,
+            "y": -59,
             "z": 380
+          },
+          "offset": {
+            "x": 44,
+            "y": 1,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 16,
+            "y": -59,
+            "z": 381
+          },
+          "offset": {
+            "x": 45,
+            "y": 1,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 15,
+            "y": -59,
+            "z": 381
+          },
+          "offset": {
+            "x": 44,
+            "y": 1,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 16,
+            "y": -58,
+            "z": 379
           },
           "offset": {
             "x": 45,
@@ -2847,8 +5419,20 @@
         {
           "absolute": {
             "x": 15,
-            "y": -57,
+            "y": -58,
             "z": 379
+          },
+          "offset": {
+            "x": 44,
+            "y": 2,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": 16,
+            "y": -57,
+            "z": 378
           },
           "offset": {
             "x": 45,
@@ -2859,8 +5443,44 @@
         {
           "absolute": {
             "x": 16,
+            "y": -57,
+            "z": 377
+          },
+          "offset": {
+            "x": 45,
+            "y": 3,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 15,
+            "y": -57,
+            "z": 378
+          },
+          "offset": {
+            "x": 44,
+            "y": 3,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 15,
+            "y": -57,
+            "z": 377
+          },
+          "offset": {
+            "x": 44,
+            "y": 3,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 17,
             "y": -56,
-            "z": 379
+            "z": 378
           },
           "offset": {
             "x": 46,
@@ -2871,8 +5491,20 @@
         {
           "absolute": {
             "x": 17,
+            "y": -56,
+            "z": 377
+          },
+          "offset": {
+            "x": 46,
+            "y": 4,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 18,
             "y": -55,
-            "z": 379
+            "z": 378
           },
           "offset": {
             "x": 47,
@@ -2882,12 +5514,60 @@
         },
         {
           "absolute": {
-            "x": 17,
-            "y": -54,
-            "z": 380
+            "x": 19,
+            "y": -55,
+            "z": 378
+          },
+          "offset": {
+            "x": 48,
+            "y": 5,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 18,
+            "y": -55,
+            "z": 377
           },
           "offset": {
             "x": 47,
+            "y": 5,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 19,
+            "y": -55,
+            "z": 377
+          },
+          "offset": {
+            "x": 48,
+            "y": 5,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 18,
+            "y": -54,
+            "z": 379
+          },
+          "offset": {
+            "x": 47,
+            "y": 6,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": 19,
+            "y": -54,
+            "z": 379
+          },
+          "offset": {
+            "x": 48,
             "y": 6,
             "z": 46
           }
@@ -2895,9 +5575,12 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777332319251",
+        "generated_stair_revision": "1777733783540",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_category": "main",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
@@ -2910,7 +5593,6 @@
         "vertical_access_direction": "both",
         "vertical_access_placement": "center",
         "workspace_base_name": "floor_main",
-        "workspace_branch_exit_mask": "none",
         "workspace_category": "main",
         "workspace_family_id": "floor_main",
         "workspace_horizontal_exits": "none",
@@ -2929,8 +5611,8 @@
             "y": 0,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_down",
           "facing": "down"
         },
@@ -2943,8 +5625,8 @@
             "y": 6,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_up",
           "facing": "up"
         }
@@ -2952,7 +5634,7 @@
       "shell_margin": 1,
       "effective_dimensions": {
         "basement_height": 5,
-        "hallway_width": 3,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 9,
@@ -2962,9 +5644,9 @@
       },
       "placement": {
         "sign_pos": {
-          "x": 6,
+          "x": 7,
           "y": -59,
-          "z": 380
+          "z": 379
         },
         "sign_offset": {
           "x": 36,
@@ -2981,14 +5663,14 @@
           "size_y": 7,
           "size_z": 15,
           "min": {
-            "x": 9,
+            "x": 10,
             "y": -60,
-            "z": 373
+            "z": 372
           },
           "max": {
-            "x": 23,
+            "x": 24,
             "y": -54,
-            "z": 387
+            "z": 386
           },
           "min_offset": {
             "x": 39,
@@ -3006,14 +5688,14 @@
           "size_y": 7,
           "size_z": 23,
           "min": {
-            "x": 5,
+            "x": 6,
             "y": -60,
-            "z": 369
+            "z": 368
           },
           "max": {
-            "x": 27,
+            "x": 28,
             "y": -54,
-            "z": 391
+            "z": 390
           },
           "min_offset": {
             "x": 35,
@@ -3022,9 +5704,9 @@
           }
         },
         "world_origin": {
-          "x": 9,
+          "x": 10,
           "y": -60,
-          "z": 373
+          "z": 372
         },
         "world_origin_offset": {
           "x": 39,
@@ -3032,9 +5714,9 @@
           "z": 39
         },
         "structure_block_pos": {
-          "x": 7,
+          "x": 8,
           "y": -59,
-          "z": 380
+          "z": 379
         },
         "structure_block_offset": {
           "x": 37,
@@ -3046,7 +5728,7 @@
       "variant_index": 1,
       "workspace_piece_kind": "instance",
       "structure_id": "mknpc:test_tower/floor_main_1",
-      "piece_id": "b315275c-01a9-49b1-a9fd-1376421ca91a",
+      "piece_id": "8917175e-11ac-48ef-8b4c-936484e3b4f8",
       "piece_name": "floor_main_1",
       "base_name": "floor_main"
     },
@@ -3054,9 +5736,9 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": 43,
+            "x": 44,
             "y": -61,
-            "z": 380
+            "z": 379
           },
           "offset": {
             "x": 73,
@@ -3066,9 +5748,9 @@
         },
         {
           "absolute": {
-            "x": 43,
+            "x": 44,
             "y": -53,
-            "z": 380
+            "z": 379
           },
           "offset": {
             "x": 73,
@@ -3080,9 +5762,9 @@
       "generated_stair_positions": [
         {
           "absolute": {
-            "x": 43,
+            "x": 44,
             "y": -60,
-            "z": 381
+            "z": 380
           },
           "offset": {
             "x": 73,
@@ -3097,6 +5779,18 @@
             "z": 381
           },
           "offset": {
+            "x": 73,
+            "y": 0,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 45,
+            "y": -60,
+            "z": 380
+          },
+          "offset": {
             "x": 74,
             "y": 0,
             "z": 47
@@ -3104,9 +5798,45 @@
         },
         {
           "absolute": {
-            "x": 42,
-            "y": -59,
+            "x": 45,
+            "y": -60,
             "z": 381
+          },
+          "offset": {
+            "x": 74,
+            "y": 0,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 46,
+            "y": -60,
+            "z": 380
+          },
+          "offset": {
+            "x": 75,
+            "y": 0,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 46,
+            "y": -60,
+            "z": 381
+          },
+          "offset": {
+            "x": 75,
+            "y": 0,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 43,
+            "y": -59,
+            "z": 380
           },
           "offset": {
             "x": 72,
@@ -3117,8 +5847,44 @@
         {
           "absolute": {
             "x": 42,
-            "y": -58,
+            "y": -59,
             "z": 380
+          },
+          "offset": {
+            "x": 71,
+            "y": 1,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 43,
+            "y": -59,
+            "z": 381
+          },
+          "offset": {
+            "x": 72,
+            "y": 1,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 42,
+            "y": -59,
+            "z": 381
+          },
+          "offset": {
+            "x": 71,
+            "y": 1,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 43,
+            "y": -58,
+            "z": 379
           },
           "offset": {
             "x": 72,
@@ -3129,8 +5895,20 @@
         {
           "absolute": {
             "x": 42,
-            "y": -57,
+            "y": -58,
             "z": 379
+          },
+          "offset": {
+            "x": 71,
+            "y": 2,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": 43,
+            "y": -57,
+            "z": 378
           },
           "offset": {
             "x": 72,
@@ -3141,8 +5919,44 @@
         {
           "absolute": {
             "x": 43,
+            "y": -57,
+            "z": 377
+          },
+          "offset": {
+            "x": 72,
+            "y": 3,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 42,
+            "y": -57,
+            "z": 378
+          },
+          "offset": {
+            "x": 71,
+            "y": 3,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 42,
+            "y": -57,
+            "z": 377
+          },
+          "offset": {
+            "x": 71,
+            "y": 3,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 44,
             "y": -56,
-            "z": 379
+            "z": 378
           },
           "offset": {
             "x": 73,
@@ -3153,8 +5967,20 @@
         {
           "absolute": {
             "x": 44,
+            "y": -56,
+            "z": 377
+          },
+          "offset": {
+            "x": 73,
+            "y": 4,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 45,
             "y": -55,
-            "z": 379
+            "z": 378
           },
           "offset": {
             "x": 74,
@@ -3164,12 +5990,60 @@
         },
         {
           "absolute": {
-            "x": 44,
-            "y": -54,
-            "z": 380
+            "x": 46,
+            "y": -55,
+            "z": 378
+          },
+          "offset": {
+            "x": 75,
+            "y": 5,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 45,
+            "y": -55,
+            "z": 377
           },
           "offset": {
             "x": 74,
+            "y": 5,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 46,
+            "y": -55,
+            "z": 377
+          },
+          "offset": {
+            "x": 75,
+            "y": 5,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 45,
+            "y": -54,
+            "z": 379
+          },
+          "offset": {
+            "x": 74,
+            "y": 6,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": 46,
+            "y": -54,
+            "z": 379
+          },
+          "offset": {
+            "x": 75,
             "y": 6,
             "z": 46
           }
@@ -3177,9 +6051,12 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777332319251",
+        "generated_stair_revision": "1777733783540",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_category": "top_cap",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "top_cap_approach",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
@@ -3192,7 +6069,6 @@
         "vertical_access_direction": "up",
         "vertical_access_placement": "center",
         "workspace_base_name": "top_cap_approach",
-        "workspace_branch_exit_mask": "none",
         "workspace_category": "top_cap",
         "workspace_family_id": "top_cap_approach",
         "workspace_horizontal_exits": "none",
@@ -3211,8 +6087,8 @@
             "y": 0,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_down",
           "facing": "down"
         },
@@ -3225,8 +6101,8 @@
             "y": 6,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "top_cap_forward",
           "facing": "up"
         }
@@ -3234,7 +6110,7 @@
       "shell_margin": 1,
       "effective_dimensions": {
         "basement_height": 5,
-        "hallway_width": 3,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 9,
@@ -3244,9 +6120,9 @@
       },
       "placement": {
         "sign_pos": {
-          "x": 33,
+          "x": 34,
           "y": -59,
-          "z": 380
+          "z": 379
         },
         "sign_offset": {
           "x": 63,
@@ -3263,14 +6139,14 @@
           "size_y": 7,
           "size_z": 15,
           "min": {
-            "x": 36,
+            "x": 37,
             "y": -60,
-            "z": 373
+            "z": 372
           },
           "max": {
-            "x": 50,
+            "x": 51,
             "y": -54,
-            "z": 387
+            "z": 386
           },
           "min_offset": {
             "x": 66,
@@ -3288,14 +6164,14 @@
           "size_y": 7,
           "size_z": 23,
           "min": {
-            "x": 32,
+            "x": 33,
             "y": -60,
-            "z": 369
+            "z": 368
           },
           "max": {
-            "x": 54,
+            "x": 55,
             "y": -54,
-            "z": 391
+            "z": 390
           },
           "min_offset": {
             "x": 62,
@@ -3304,9 +6180,9 @@
           }
         },
         "world_origin": {
-          "x": 36,
+          "x": 37,
           "y": -60,
-          "z": 373
+          "z": 372
         },
         "world_origin_offset": {
           "x": 66,
@@ -3314,9 +6190,9 @@
           "z": 39
         },
         "structure_block_pos": {
-          "x": 34,
+          "x": 35,
           "y": -59,
-          "z": 380
+          "z": 379
         },
         "structure_block_offset": {
           "x": 64,
@@ -3328,7 +6204,7 @@
       "variant_index": 1,
       "workspace_piece_kind": "instance",
       "structure_id": "mknpc:test_tower/top_cap_approach_1",
-      "piece_id": "140620ea-5391-4c6e-bf33-28313e06b061",
+      "piece_id": "61316b4f-7bdd-4321-81a2-d142af802a2d",
       "piece_name": "top_cap_approach_1",
       "base_name": "top_cap_approach"
     },
@@ -3336,9 +6212,9 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": 70,
+            "x": 71,
             "y": -61,
-            "z": 380
+            "z": 379
           },
           "offset": {
             "x": 100,
@@ -3350,9 +6226,9 @@
       "generated_stair_positions": [
         {
           "absolute": {
-            "x": 70,
+            "x": 71,
             "y": -60,
-            "z": 381
+            "z": 380
           },
           "offset": {
             "x": 100,
@@ -3367,17 +6243,20 @@
             "z": 381
           },
           "offset": {
-            "x": 101,
+            "x": 100,
             "y": 0,
-            "z": 47
+            "z": 48
           }
         }
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777332319251",
+        "generated_stair_revision": "1777733783540",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_category": "top_cap",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "top_cap",
         "runtime_progression_delta": "0",
         "runtime_start": "false",
@@ -3391,7 +6270,6 @@
         "vertical_access_placement": "center",
         "vertical_access_top_cap": "true",
         "workspace_base_name": "top_cap",
-        "workspace_branch_exit_mask": "none",
         "workspace_category": "top_cap",
         "workspace_family_id": "top_cap",
         "workspace_horizontal_exits": "none",
@@ -3410,8 +6288,8 @@
             "y": 0,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "top_cap_back",
           "facing": "down"
         }
@@ -3419,7 +6297,7 @@
       "shell_margin": 1,
       "effective_dimensions": {
         "basement_height": 5,
-        "hallway_width": 3,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 9,
@@ -3429,9 +6307,9 @@
       },
       "placement": {
         "sign_pos": {
-          "x": 60,
+          "x": 61,
           "y": -59,
-          "z": 380
+          "z": 379
         },
         "sign_offset": {
           "x": 90,
@@ -3448,14 +6326,14 @@
           "size_y": 7,
           "size_z": 15,
           "min": {
-            "x": 63,
+            "x": 64,
             "y": -60,
-            "z": 373
+            "z": 372
           },
           "max": {
-            "x": 77,
+            "x": 78,
             "y": -54,
-            "z": 387
+            "z": 386
           },
           "min_offset": {
             "x": 93,
@@ -3473,14 +6351,14 @@
           "size_y": 7,
           "size_z": 23,
           "min": {
-            "x": 59,
+            "x": 60,
             "y": -60,
-            "z": 369
+            "z": 368
           },
           "max": {
-            "x": 81,
+            "x": 82,
             "y": -54,
-            "z": 391
+            "z": 390
           },
           "min_offset": {
             "x": 89,
@@ -3489,9 +6367,9 @@
           }
         },
         "world_origin": {
-          "x": 63,
+          "x": 64,
           "y": -60,
-          "z": 373
+          "z": 372
         },
         "world_origin_offset": {
           "x": 93,
@@ -3499,9 +6377,9 @@
           "z": 39
         },
         "structure_block_pos": {
-          "x": 61,
+          "x": 62,
           "y": -59,
-          "z": 380
+          "z": 379
         },
         "structure_block_offset": {
           "x": 91,
@@ -3513,7 +6391,7 @@
       "variant_index": 1,
       "workspace_piece_kind": "instance",
       "structure_id": "mknpc:test_tower/top_cap_1",
-      "piece_id": "1a44607e-1e9d-45c6-8be8-52f06d443926",
+      "piece_id": "5aea7687-e0bc-4d6f-9ccf-061a7e29cd34",
       "piece_name": "top_cap_1",
       "base_name": "top_cap"
     },
@@ -3521,21 +6399,21 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": 97,
-            "y": -53,
-            "z": 380
+            "x": 98,
+            "y": -45,
+            "z": 379
           },
           "offset": {
             "x": 127,
-            "y": 7,
+            "y": 15,
             "z": 46
           }
         },
         {
           "absolute": {
-            "x": 97,
+            "x": 98,
             "y": -61,
-            "z": 380
+            "z": 379
           },
           "offset": {
             "x": 127,
@@ -3547,9 +6425,9 @@
       "generated_stair_positions": [
         {
           "absolute": {
-            "x": 97,
+            "x": 98,
             "y": -60,
-            "z": 381
+            "z": 380
           },
           "offset": {
             "x": 127,
@@ -3564,6 +6442,18 @@
             "z": 381
           },
           "offset": {
+            "x": 127,
+            "y": 0,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
+            "y": -60,
+            "z": 380
+          },
+          "offset": {
             "x": 128,
             "y": 0,
             "z": 47
@@ -3571,9 +6461,45 @@
         },
         {
           "absolute": {
-            "x": 96,
-            "y": -59,
+            "x": 99,
+            "y": -60,
             "z": 381
+          },
+          "offset": {
+            "x": 128,
+            "y": 0,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -60,
+            "z": 380
+          },
+          "offset": {
+            "x": 129,
+            "y": 0,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -60,
+            "z": 381
+          },
+          "offset": {
+            "x": 129,
+            "y": 0,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -59,
+            "z": 380
           },
           "offset": {
             "x": 126,
@@ -3584,8 +6510,44 @@
         {
           "absolute": {
             "x": 96,
-            "y": -58,
+            "y": -59,
             "z": 380
+          },
+          "offset": {
+            "x": 125,
+            "y": 1,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -59,
+            "z": 381
+          },
+          "offset": {
+            "x": 126,
+            "y": 1,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 96,
+            "y": -59,
+            "z": 381
+          },
+          "offset": {
+            "x": 125,
+            "y": 1,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -58,
+            "z": 379
           },
           "offset": {
             "x": 126,
@@ -3596,8 +6558,20 @@
         {
           "absolute": {
             "x": 96,
-            "y": -57,
+            "y": -58,
             "z": 379
+          },
+          "offset": {
+            "x": 125,
+            "y": 2,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -57,
+            "z": 378
           },
           "offset": {
             "x": 126,
@@ -3608,8 +6582,44 @@
         {
           "absolute": {
             "x": 97,
+            "y": -57,
+            "z": 377
+          },
+          "offset": {
+            "x": 126,
+            "y": 3,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 96,
+            "y": -57,
+            "z": 378
+          },
+          "offset": {
+            "x": 125,
+            "y": 3,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 96,
+            "y": -57,
+            "z": 377
+          },
+          "offset": {
+            "x": 125,
+            "y": 3,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 98,
             "y": -56,
-            "z": 379
+            "z": 378
           },
           "offset": {
             "x": 127,
@@ -3620,8 +6630,20 @@
         {
           "absolute": {
             "x": 98,
+            "y": -56,
+            "z": 377
+          },
+          "offset": {
+            "x": 127,
+            "y": 4,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
             "y": -55,
-            "z": 379
+            "z": 378
           },
           "offset": {
             "x": 128,
@@ -3631,22 +6653,361 @@
         },
         {
           "absolute": {
-            "x": 98,
+            "x": 100,
+            "y": -55,
+            "z": 378
+          },
+          "offset": {
+            "x": 129,
+            "y": 5,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
+            "y": -55,
+            "z": 377
+          },
+          "offset": {
+            "x": 128,
+            "y": 5,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -55,
+            "z": 377
+          },
+          "offset": {
+            "x": 129,
+            "y": 5,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
             "y": -54,
-            "z": 380
+            "z": 379
           },
           "offset": {
             "x": 128,
             "y": 6,
             "z": 46
           }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -54,
+            "z": 379
+          },
+          "offset": {
+            "x": 129,
+            "y": 6,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
+            "y": -53,
+            "z": 380
+          },
+          "offset": {
+            "x": 128,
+            "y": 7,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
+            "y": -53,
+            "z": 381
+          },
+          "offset": {
+            "x": 128,
+            "y": 7,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -53,
+            "z": 380
+          },
+          "offset": {
+            "x": 129,
+            "y": 7,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -53,
+            "z": 381
+          },
+          "offset": {
+            "x": 129,
+            "y": 7,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 98,
+            "y": -52,
+            "z": 380
+          },
+          "offset": {
+            "x": 127,
+            "y": 8,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 98,
+            "y": -52,
+            "z": 381
+          },
+          "offset": {
+            "x": 127,
+            "y": 8,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -51,
+            "z": 380
+          },
+          "offset": {
+            "x": 126,
+            "y": 9,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 96,
+            "y": -51,
+            "z": 380
+          },
+          "offset": {
+            "x": 125,
+            "y": 9,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -51,
+            "z": 381
+          },
+          "offset": {
+            "x": 126,
+            "y": 9,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 96,
+            "y": -51,
+            "z": 381
+          },
+          "offset": {
+            "x": 125,
+            "y": 9,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -50,
+            "z": 379
+          },
+          "offset": {
+            "x": 126,
+            "y": 10,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": 96,
+            "y": -50,
+            "z": 379
+          },
+          "offset": {
+            "x": 125,
+            "y": 10,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -49,
+            "z": 378
+          },
+          "offset": {
+            "x": 126,
+            "y": 11,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 97,
+            "y": -49,
+            "z": 377
+          },
+          "offset": {
+            "x": 126,
+            "y": 11,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 96,
+            "y": -49,
+            "z": 378
+          },
+          "offset": {
+            "x": 125,
+            "y": 11,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 96,
+            "y": -49,
+            "z": 377
+          },
+          "offset": {
+            "x": 125,
+            "y": 11,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 98,
+            "y": -48,
+            "z": 378
+          },
+          "offset": {
+            "x": 127,
+            "y": 12,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 98,
+            "y": -48,
+            "z": 377
+          },
+          "offset": {
+            "x": 127,
+            "y": 12,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
+            "y": -47,
+            "z": 378
+          },
+          "offset": {
+            "x": 128,
+            "y": 13,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -47,
+            "z": 378
+          },
+          "offset": {
+            "x": 129,
+            "y": 13,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
+            "y": -47,
+            "z": 377
+          },
+          "offset": {
+            "x": 128,
+            "y": 13,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -47,
+            "z": 377
+          },
+          "offset": {
+            "x": 129,
+            "y": 13,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 99,
+            "y": -46,
+            "z": 379
+          },
+          "offset": {
+            "x": 128,
+            "y": 14,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": 100,
+            "y": -46,
+            "z": 379
+          },
+          "offset": {
+            "x": 129,
+            "y": 14,
+            "z": 46
+          }
         }
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777332319252",
+        "generated_stair_revision": "1777733783541",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_category": "basement",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
@@ -3659,7 +7020,6 @@
         "vertical_access_direction": "down",
         "vertical_access_placement": "center",
         "workspace_base_name": "basement_entry",
-        "workspace_branch_exit_mask": "none",
         "workspace_category": "basement",
         "workspace_family_id": "basement_entry",
         "workspace_horizontal_exits": "none",
@@ -3675,11 +7035,11 @@
           "jigsaw_name": "mknpc:connect_up",
           "relative_pos": {
             "x": 7,
-            "y": 6,
+            "y": 14,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_up",
           "facing": "up"
         },
@@ -3692,28 +7052,28 @@
             "y": 0,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_down",
           "facing": "down"
         }
       ],
       "shell_margin": 1,
       "effective_dimensions": {
-        "basement_height": 5,
-        "hallway_width": 3,
+        "basement_height": 13,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 9,
         "room_length": 9,
-        "entrance_height": 5,
-        "room_height": 5
+        "entrance_height": 13,
+        "room_height": 13
       },
       "placement": {
         "sign_pos": {
-          "x": 87,
+          "x": 88,
           "y": -59,
-          "z": 380
+          "z": 379
         },
         "sign_offset": {
           "x": 117,
@@ -3723,21 +7083,21 @@
         "export_bounds": {
           "max_offset": {
             "x": 134,
-            "y": 6,
+            "y": 14,
             "z": 53
           },
           "size_x": 15,
-          "size_y": 7,
+          "size_y": 15,
           "size_z": 15,
           "min": {
-            "x": 90,
+            "x": 91,
             "y": -60,
-            "z": 373
+            "z": 372
           },
           "max": {
-            "x": 104,
-            "y": -54,
-            "z": 387
+            "x": 105,
+            "y": -46,
+            "z": 386
           },
           "min_offset": {
             "x": 120,
@@ -3748,21 +7108,21 @@
         "preview_bounds": {
           "max_offset": {
             "x": 138,
-            "y": 6,
+            "y": 14,
             "z": 57
           },
           "size_x": 23,
-          "size_y": 7,
+          "size_y": 15,
           "size_z": 23,
           "min": {
-            "x": 86,
+            "x": 87,
             "y": -60,
-            "z": 369
+            "z": 368
           },
           "max": {
-            "x": 108,
-            "y": -54,
-            "z": 391
+            "x": 109,
+            "y": -46,
+            "z": 390
           },
           "min_offset": {
             "x": 116,
@@ -3771,9 +7131,9 @@
           }
         },
         "world_origin": {
-          "x": 90,
+          "x": 91,
           "y": -60,
-          "z": 373
+          "z": 372
         },
         "world_origin_offset": {
           "x": 120,
@@ -3781,9 +7141,9 @@
           "z": 39
         },
         "structure_block_pos": {
-          "x": 88,
+          "x": 89,
           "y": -59,
-          "z": 380
+          "z": 379
         },
         "structure_block_offset": {
           "x": 118,
@@ -3795,7 +7155,7 @@
       "variant_index": 1,
       "workspace_piece_kind": "instance",
       "structure_id": "mknpc:test_tower/basement_entry_1",
-      "piece_id": "86986312-27e8-4e45-b835-736ce42b6028",
+      "piece_id": "a64141c0-b11d-4d0f-8ca5-3c80eb2d54b7",
       "piece_name": "basement_entry_1",
       "base_name": "basement_entry"
     },
@@ -3803,21 +7163,21 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": 124,
-            "y": -53,
-            "z": 380
+            "x": 125,
+            "y": -45,
+            "z": 379
           },
           "offset": {
             "x": 154,
-            "y": 7,
+            "y": 15,
             "z": 46
           }
         },
         {
           "absolute": {
-            "x": 124,
+            "x": 125,
             "y": -61,
-            "z": 380
+            "z": 379
           },
           "offset": {
             "x": 154,
@@ -3829,9 +7189,9 @@
       "generated_stair_positions": [
         {
           "absolute": {
-            "x": 124,
+            "x": 125,
             "y": -60,
-            "z": 381
+            "z": 380
           },
           "offset": {
             "x": 154,
@@ -3846,6 +7206,18 @@
             "z": 381
           },
           "offset": {
+            "x": 154,
+            "y": 0,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
+            "y": -60,
+            "z": 380
+          },
+          "offset": {
             "x": 155,
             "y": 0,
             "z": 47
@@ -3853,9 +7225,45 @@
         },
         {
           "absolute": {
-            "x": 123,
-            "y": -59,
+            "x": 126,
+            "y": -60,
             "z": 381
+          },
+          "offset": {
+            "x": 155,
+            "y": 0,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -60,
+            "z": 380
+          },
+          "offset": {
+            "x": 156,
+            "y": 0,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -60,
+            "z": 381
+          },
+          "offset": {
+            "x": 156,
+            "y": 0,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -59,
+            "z": 380
           },
           "offset": {
             "x": 153,
@@ -3866,8 +7274,44 @@
         {
           "absolute": {
             "x": 123,
-            "y": -58,
+            "y": -59,
             "z": 380
+          },
+          "offset": {
+            "x": 152,
+            "y": 1,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -59,
+            "z": 381
+          },
+          "offset": {
+            "x": 153,
+            "y": 1,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 123,
+            "y": -59,
+            "z": 381
+          },
+          "offset": {
+            "x": 152,
+            "y": 1,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -58,
+            "z": 379
           },
           "offset": {
             "x": 153,
@@ -3878,8 +7322,20 @@
         {
           "absolute": {
             "x": 123,
-            "y": -57,
+            "y": -58,
             "z": 379
+          },
+          "offset": {
+            "x": 152,
+            "y": 2,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -57,
+            "z": 378
           },
           "offset": {
             "x": 153,
@@ -3890,8 +7346,44 @@
         {
           "absolute": {
             "x": 124,
+            "y": -57,
+            "z": 377
+          },
+          "offset": {
+            "x": 153,
+            "y": 3,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 123,
+            "y": -57,
+            "z": 378
+          },
+          "offset": {
+            "x": 152,
+            "y": 3,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 123,
+            "y": -57,
+            "z": 377
+          },
+          "offset": {
+            "x": 152,
+            "y": 3,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 125,
             "y": -56,
-            "z": 379
+            "z": 378
           },
           "offset": {
             "x": 154,
@@ -3902,8 +7394,20 @@
         {
           "absolute": {
             "x": 125,
+            "y": -56,
+            "z": 377
+          },
+          "offset": {
+            "x": 154,
+            "y": 4,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
             "y": -55,
-            "z": 379
+            "z": 378
           },
           "offset": {
             "x": 155,
@@ -3913,22 +7417,361 @@
         },
         {
           "absolute": {
-            "x": 125,
+            "x": 127,
+            "y": -55,
+            "z": 378
+          },
+          "offset": {
+            "x": 156,
+            "y": 5,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
+            "y": -55,
+            "z": 377
+          },
+          "offset": {
+            "x": 155,
+            "y": 5,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -55,
+            "z": 377
+          },
+          "offset": {
+            "x": 156,
+            "y": 5,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
             "y": -54,
-            "z": 380
+            "z": 379
           },
           "offset": {
             "x": 155,
             "y": 6,
             "z": 46
           }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -54,
+            "z": 379
+          },
+          "offset": {
+            "x": 156,
+            "y": 6,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
+            "y": -53,
+            "z": 380
+          },
+          "offset": {
+            "x": 155,
+            "y": 7,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
+            "y": -53,
+            "z": 381
+          },
+          "offset": {
+            "x": 155,
+            "y": 7,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -53,
+            "z": 380
+          },
+          "offset": {
+            "x": 156,
+            "y": 7,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -53,
+            "z": 381
+          },
+          "offset": {
+            "x": 156,
+            "y": 7,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 125,
+            "y": -52,
+            "z": 380
+          },
+          "offset": {
+            "x": 154,
+            "y": 8,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 125,
+            "y": -52,
+            "z": 381
+          },
+          "offset": {
+            "x": 154,
+            "y": 8,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -51,
+            "z": 380
+          },
+          "offset": {
+            "x": 153,
+            "y": 9,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 123,
+            "y": -51,
+            "z": 380
+          },
+          "offset": {
+            "x": 152,
+            "y": 9,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -51,
+            "z": 381
+          },
+          "offset": {
+            "x": 153,
+            "y": 9,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 123,
+            "y": -51,
+            "z": 381
+          },
+          "offset": {
+            "x": 152,
+            "y": 9,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -50,
+            "z": 379
+          },
+          "offset": {
+            "x": 153,
+            "y": 10,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": 123,
+            "y": -50,
+            "z": 379
+          },
+          "offset": {
+            "x": 152,
+            "y": 10,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -49,
+            "z": 378
+          },
+          "offset": {
+            "x": 153,
+            "y": 11,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 124,
+            "y": -49,
+            "z": 377
+          },
+          "offset": {
+            "x": 153,
+            "y": 11,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 123,
+            "y": -49,
+            "z": 378
+          },
+          "offset": {
+            "x": 152,
+            "y": 11,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 123,
+            "y": -49,
+            "z": 377
+          },
+          "offset": {
+            "x": 152,
+            "y": 11,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 125,
+            "y": -48,
+            "z": 378
+          },
+          "offset": {
+            "x": 154,
+            "y": 12,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 125,
+            "y": -48,
+            "z": 377
+          },
+          "offset": {
+            "x": 154,
+            "y": 12,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
+            "y": -47,
+            "z": 378
+          },
+          "offset": {
+            "x": 155,
+            "y": 13,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -47,
+            "z": 378
+          },
+          "offset": {
+            "x": 156,
+            "y": 13,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
+            "y": -47,
+            "z": 377
+          },
+          "offset": {
+            "x": 155,
+            "y": 13,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -47,
+            "z": 377
+          },
+          "offset": {
+            "x": 156,
+            "y": 13,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 126,
+            "y": -46,
+            "z": 379
+          },
+          "offset": {
+            "x": 155,
+            "y": 14,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": 127,
+            "y": -46,
+            "z": 379
+          },
+          "offset": {
+            "x": 156,
+            "y": 14,
+            "z": 46
+          }
         }
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777332319252",
+        "generated_stair_revision": "1777733783541",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_category": "basement",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
@@ -3941,7 +7784,6 @@
         "vertical_access_direction": "down",
         "vertical_access_placement": "center",
         "workspace_base_name": "basement_main",
-        "workspace_branch_exit_mask": "none",
         "workspace_category": "basement",
         "workspace_family_id": "basement_main",
         "workspace_horizontal_exits": "none",
@@ -3957,11 +7799,11 @@
           "jigsaw_name": "mknpc:connect_up",
           "relative_pos": {
             "x": 7,
-            "y": 6,
+            "y": 14,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_up",
           "facing": "up"
         },
@@ -3974,28 +7816,28 @@
             "y": 0,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_down",
           "facing": "down"
         }
       ],
       "shell_margin": 1,
       "effective_dimensions": {
-        "basement_height": 5,
-        "hallway_width": 3,
+        "basement_height": 13,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 9,
         "room_length": 9,
-        "entrance_height": 5,
-        "room_height": 5
+        "entrance_height": 13,
+        "room_height": 13
       },
       "placement": {
         "sign_pos": {
-          "x": 114,
+          "x": 115,
           "y": -59,
-          "z": 380
+          "z": 379
         },
         "sign_offset": {
           "x": 144,
@@ -4005,21 +7847,21 @@
         "export_bounds": {
           "max_offset": {
             "x": 161,
-            "y": 6,
+            "y": 14,
             "z": 53
           },
           "size_x": 15,
-          "size_y": 7,
+          "size_y": 15,
           "size_z": 15,
           "min": {
-            "x": 117,
+            "x": 118,
             "y": -60,
-            "z": 373
+            "z": 372
           },
           "max": {
-            "x": 131,
-            "y": -54,
-            "z": 387
+            "x": 132,
+            "y": -46,
+            "z": 386
           },
           "min_offset": {
             "x": 147,
@@ -4030,21 +7872,21 @@
         "preview_bounds": {
           "max_offset": {
             "x": 165,
-            "y": 6,
+            "y": 14,
             "z": 57
           },
           "size_x": 23,
-          "size_y": 7,
+          "size_y": 15,
           "size_z": 23,
           "min": {
-            "x": 113,
+            "x": 114,
             "y": -60,
-            "z": 369
+            "z": 368
           },
           "max": {
-            "x": 135,
-            "y": -54,
-            "z": 391
+            "x": 136,
+            "y": -46,
+            "z": 390
           },
           "min_offset": {
             "x": 143,
@@ -4053,9 +7895,9 @@
           }
         },
         "world_origin": {
-          "x": 117,
+          "x": 118,
           "y": -60,
-          "z": 373
+          "z": 372
         },
         "world_origin_offset": {
           "x": 147,
@@ -4063,9 +7905,9 @@
           "z": 39
         },
         "structure_block_pos": {
-          "x": 115,
+          "x": 116,
           "y": -59,
-          "z": 380
+          "z": 379
         },
         "structure_block_offset": {
           "x": 145,
@@ -4077,7 +7919,7 @@
       "variant_index": 1,
       "workspace_piece_kind": "instance",
       "structure_id": "mknpc:test_tower/basement_main_1",
-      "piece_id": "c83e2fb2-54f4-4dd4-a10a-cc098b4d12d7",
+      "piece_id": "2bfa3ec9-d5e6-412a-8c68-7b76a0b23244",
       "piece_name": "basement_main_1",
       "base_name": "basement_main"
     },
@@ -4085,9 +7927,9 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": 151,
+            "x": 152,
             "y": -53,
-            "z": 380
+            "z": 379
           },
           "offset": {
             "x": 181,
@@ -4099,9 +7941,9 @@
       "generated_stair_positions": [
         {
           "absolute": {
-            "x": 150,
+            "x": 151,
             "y": -59,
-            "z": 381
+            "z": 380
           },
           "offset": {
             "x": 180,
@@ -4112,8 +7954,44 @@
         {
           "absolute": {
             "x": 150,
-            "y": -58,
+            "y": -59,
             "z": 380
+          },
+          "offset": {
+            "x": 179,
+            "y": 1,
+            "z": 47
+          }
+        },
+        {
+          "absolute": {
+            "x": 151,
+            "y": -59,
+            "z": 381
+          },
+          "offset": {
+            "x": 180,
+            "y": 1,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 150,
+            "y": -59,
+            "z": 381
+          },
+          "offset": {
+            "x": 179,
+            "y": 1,
+            "z": 48
+          }
+        },
+        {
+          "absolute": {
+            "x": 151,
+            "y": -58,
+            "z": 379
           },
           "offset": {
             "x": 180,
@@ -4124,8 +8002,20 @@
         {
           "absolute": {
             "x": 150,
-            "y": -57,
+            "y": -58,
             "z": 379
+          },
+          "offset": {
+            "x": 179,
+            "y": 2,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": 151,
+            "y": -57,
+            "z": 378
           },
           "offset": {
             "x": 180,
@@ -4136,8 +8026,44 @@
         {
           "absolute": {
             "x": 151,
+            "y": -57,
+            "z": 377
+          },
+          "offset": {
+            "x": 180,
+            "y": 3,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 150,
+            "y": -57,
+            "z": 378
+          },
+          "offset": {
+            "x": 179,
+            "y": 3,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 150,
+            "y": -57,
+            "z": 377
+          },
+          "offset": {
+            "x": 179,
+            "y": 3,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 152,
             "y": -56,
-            "z": 379
+            "z": 378
           },
           "offset": {
             "x": 181,
@@ -4148,8 +8074,20 @@
         {
           "absolute": {
             "x": 152,
+            "y": -56,
+            "z": 377
+          },
+          "offset": {
+            "x": 181,
+            "y": 4,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 153,
             "y": -55,
-            "z": 379
+            "z": 378
           },
           "offset": {
             "x": 182,
@@ -4159,12 +8097,60 @@
         },
         {
           "absolute": {
-            "x": 152,
-            "y": -54,
-            "z": 380
+            "x": 154,
+            "y": -55,
+            "z": 378
+          },
+          "offset": {
+            "x": 183,
+            "y": 5,
+            "z": 45
+          }
+        },
+        {
+          "absolute": {
+            "x": 153,
+            "y": -55,
+            "z": 377
           },
           "offset": {
             "x": 182,
+            "y": 5,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 154,
+            "y": -55,
+            "z": 377
+          },
+          "offset": {
+            "x": 183,
+            "y": 5,
+            "z": 44
+          }
+        },
+        {
+          "absolute": {
+            "x": 153,
+            "y": -54,
+            "z": 379
+          },
+          "offset": {
+            "x": 182,
+            "y": 6,
+            "z": 46
+          }
+        },
+        {
+          "absolute": {
+            "x": 154,
+            "y": -54,
+            "z": 379
+          },
+          "offset": {
+            "x": 183,
             "y": 6,
             "z": 46
           }
@@ -4172,9 +8158,12 @@
       ],
       "tags": {
         "generated_stair_mode": "stair_stairs",
-        "generated_stair_revision": "1777332319252",
+        "generated_stair_revision": "1777733783542",
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_category": "basement_cap",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "terminal",
         "runtime_progression_delta": "1",
         "runtime_start": "false",
@@ -4188,7 +8177,6 @@
         "vertical_access_direction": "down",
         "vertical_access_placement": "center",
         "workspace_base_name": "basement_cap",
-        "workspace_branch_exit_mask": "none",
         "workspace_category": "basement_cap",
         "workspace_family_id": "basement_cap",
         "workspace_horizontal_exits": "none",
@@ -4207,8 +8195,8 @@
             "y": 6,
             "z": 7
           },
-          "opening_width": 3,
-          "opening_height": 3,
+          "opening_width": 5,
+          "opening_height": 5,
           "role": "connect_up",
           "facing": "up"
         }
@@ -4216,7 +8204,7 @@
       "shell_margin": 1,
       "effective_dimensions": {
         "basement_height": 5,
-        "hallway_width": 3,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 9,
@@ -4226,9 +8214,9 @@
       },
       "placement": {
         "sign_pos": {
-          "x": 141,
+          "x": 142,
           "y": -59,
-          "z": 380
+          "z": 379
         },
         "sign_offset": {
           "x": 171,
@@ -4245,14 +8233,14 @@
           "size_y": 7,
           "size_z": 15,
           "min": {
-            "x": 144,
+            "x": 145,
             "y": -60,
-            "z": 373
+            "z": 372
           },
           "max": {
-            "x": 158,
+            "x": 159,
             "y": -54,
-            "z": 387
+            "z": 386
           },
           "min_offset": {
             "x": 174,
@@ -4270,14 +8258,14 @@
           "size_y": 7,
           "size_z": 23,
           "min": {
-            "x": 140,
+            "x": 141,
             "y": -60,
-            "z": 369
+            "z": 368
           },
           "max": {
-            "x": 162,
+            "x": 163,
             "y": -54,
-            "z": 391
+            "z": 390
           },
           "min_offset": {
             "x": 170,
@@ -4286,9 +8274,9 @@
           }
         },
         "world_origin": {
-          "x": 144,
+          "x": 145,
           "y": -60,
-          "z": 373
+          "z": 372
         },
         "world_origin_offset": {
           "x": 174,
@@ -4296,9 +8284,9 @@
           "z": 39
         },
         "structure_block_pos": {
-          "x": 142,
+          "x": 143,
           "y": -59,
-          "z": 380
+          "z": 379
         },
         "structure_block_offset": {
           "x": 172,
@@ -4310,7 +8298,7 @@
       "variant_index": 1,
       "workspace_piece_kind": "instance",
       "structure_id": "mknpc:test_tower/basement_cap_1",
-      "piece_id": "09a6c4dd-1ecb-459c-83fe-89db6b4a036b",
+      "piece_id": "c519124b-94d5-4566-a31f-5690931ecd23",
       "piece_name": "basement_cap_1",
       "base_name": "basement_cap"
     },
@@ -4318,9 +8306,9 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": 170,
+            "x": 171,
             "y": -59,
-            "z": 377
+            "z": 376
           },
           "offset": {
             "x": 200,
@@ -4330,9 +8318,9 @@
         },
         {
           "absolute": {
-            "x": 182,
+            "x": 183,
             "y": -59,
-            "z": 377
+            "z": 376
           },
           "offset": {
             "x": 212,
@@ -4345,6 +8333,9 @@
       "tags": {
         "runtime_allow_on_branch_path": "false",
         "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_category": "",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "0",
         "runtime_start": "false",
@@ -4399,7 +8390,7 @@
       "shell_margin": 1,
       "effective_dimensions": {
         "basement_height": 3,
-        "hallway_width": 3,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 5,
@@ -4409,9 +8400,9 @@
       },
       "placement": {
         "sign_pos": {
-          "x": 168,
+          "x": 169,
           "y": -59,
-          "z": 377
+          "z": 376
         },
         "sign_offset": {
           "x": 198,
@@ -4428,14 +8419,14 @@
           "size_y": 5,
           "size_z": 9,
           "min": {
-            "x": 171,
+            "x": 172,
             "y": -60,
-            "z": 373
+            "z": 372
           },
           "max": {
-            "x": 181,
+            "x": 182,
             "y": -56,
-            "z": 381
+            "z": 380
           },
           "min_offset": {
             "x": 201,
@@ -4453,14 +8444,14 @@
           "size_y": 5,
           "size_z": 17,
           "min": {
-            "x": 167,
+            "x": 168,
             "y": -60,
-            "z": 369
+            "z": 368
           },
           "max": {
-            "x": 185,
+            "x": 186,
             "y": -56,
-            "z": 385
+            "z": 384
           },
           "min_offset": {
             "x": 197,
@@ -4469,9 +8460,9 @@
           }
         },
         "world_origin": {
-          "x": 171,
+          "x": 172,
           "y": -60,
-          "z": 373
+          "z": 372
         },
         "world_origin_offset": {
           "x": 201,
@@ -4479,9 +8470,9 @@
           "z": 39
         },
         "structure_block_pos": {
-          "x": 169,
+          "x": 170,
           "y": -59,
-          "z": 377
+          "z": 376
         },
         "structure_block_offset": {
           "x": 199,
@@ -4493,7 +8484,7 @@
       "variant_index": 1,
       "workspace_piece_kind": "instance",
       "structure_id": "mknpc:test_tower/hallway_main_main_1",
-      "piece_id": "e93caa28-f131-4fd3-888c-7060d0d25a87",
+      "piece_id": "9a1d663c-2246-4064-aa26-6d0885a0fd39",
       "piece_name": "hallway_main_main_1",
       "base_name": "hallway_main_main"
     },
@@ -4501,9 +8492,9 @@
       "marker_positions": [
         {
           "absolute": {
-            "x": 197,
+            "x": 198,
             "y": -59,
-            "z": 377
+            "z": 376
           },
           "offset": {
             "x": 227,
@@ -4513,9 +8504,9 @@
         },
         {
           "absolute": {
-            "x": 209,
+            "x": 210,
             "y": -59,
-            "z": 377
+            "z": 376
           },
           "offset": {
             "x": 239,
@@ -4528,6 +8519,9 @@
       "tags": {
         "runtime_allow_on_branch_path": "true",
         "runtime_allow_on_main_path": "false",
+        "runtime_branch_cap": "false",
+        "runtime_category": "",
+        "runtime_main_path_ending": "false",
         "runtime_piece_role": "room",
         "runtime_progression_delta": "0",
         "runtime_start": "false",
@@ -4582,7 +8576,7 @@
       "shell_margin": 1,
       "effective_dimensions": {
         "basement_height": 3,
-        "hallway_width": 3,
+        "hallway_width": 5,
         "doorway_width": 3,
         "doorway_height": 3,
         "room_width": 5,
@@ -4592,9 +8586,9 @@
       },
       "placement": {
         "sign_pos": {
-          "x": 195,
+          "x": 196,
           "y": -59,
-          "z": 377
+          "z": 376
         },
         "sign_offset": {
           "x": 225,
@@ -4611,14 +8605,14 @@
           "size_y": 5,
           "size_z": 9,
           "min": {
-            "x": 198,
+            "x": 199,
             "y": -60,
-            "z": 373
+            "z": 372
           },
           "max": {
-            "x": 208,
+            "x": 209,
             "y": -56,
-            "z": 381
+            "z": 380
           },
           "min_offset": {
             "x": 228,
@@ -4636,14 +8630,14 @@
           "size_y": 5,
           "size_z": 17,
           "min": {
-            "x": 194,
+            "x": 195,
             "y": -60,
-            "z": 369
+            "z": 368
           },
           "max": {
-            "x": 212,
+            "x": 213,
             "y": -56,
-            "z": 385
+            "z": 384
           },
           "min_offset": {
             "x": 224,
@@ -4652,9 +8646,9 @@
           }
         },
         "world_origin": {
-          "x": 198,
+          "x": 199,
           "y": -60,
-          "z": 373
+          "z": 372
         },
         "world_origin_offset": {
           "x": 228,
@@ -4662,9 +8656,9 @@
           "z": 39
         },
         "structure_block_pos": {
-          "x": 196,
+          "x": 197,
           "y": -59,
-          "z": 377
+          "z": 376
         },
         "structure_block_offset": {
           "x": 226,
@@ -4676,70 +8670,59 @@
       "variant_index": 1,
       "workspace_piece_kind": "instance",
       "structure_id": "mknpc:test_tower/hallway_branch_branch_1",
-      "piece_id": "4d2725d6-8785-40ed-addc-cda8170d3d44",
+      "piece_id": "7bdec73d-b926-454a-bd28-25f7d3ab7fab",
       "piece_name": "hallway_branch_branch_1",
       "base_name": "hallway_branch_branch"
     }
   ],
-  "created_at": 1777329139061,
-  "updated_at": 1777332349236,
+  "created_at": 1777657974094,
+  "updated_at": 1777733787178,
   "settings": {
     "category_profiles": [
       {
-        "max_height": 5,
-        "room_length": 9,
-        "full_height": 5,
-        "default_height": 5,
+        "full_height": 12,
         "category": "entry",
-        "room_width": 9
+        "room_width": 9,
+        "room_length": 9
       },
       {
-        "max_height": 5,
-        "room_length": 9,
         "full_height": 5,
-        "default_height": 5,
         "category": "main",
-        "room_width": 9
+        "room_width": 9,
+        "room_length": 9
       },
       {
-        "max_height": 5,
-        "room_length": 9,
-        "full_height": 5,
-        "default_height": 5,
+        "full_height": 13,
         "category": "basement",
-        "room_width": 9
+        "room_width": 9,
+        "room_length": 9
       },
       {
-        "max_height": 5,
-        "room_length": 9,
         "full_height": 5,
-        "default_height": 5,
         "category": "top_cap",
-        "room_width": 9
+        "room_width": 9,
+        "room_length": 9
       },
       {
-        "max_height": 5,
-        "room_length": 9,
         "full_height": 5,
-        "default_height": 5,
         "category": "basement_cap",
-        "room_width": 9
+        "room_width": 9,
+        "room_length": 9
       }
     ],
     "family_definitions": [
       {
-        "horizontal_extrusion_mode": "tunnel_only",
+        "horizontal_extrusion_mode": "no_extrusion",
         "horizontal_exits": [
           {
-            "connection_mode": "hallway",
+            "connection_mode": "no_connection",
             "direction": "south",
-            "path_kind": "main_exit",
+            "path_kind": "main_entry",
             "opening_profile_id": "main_opening"
           }
         ],
-        "branch_exit_mask": "none",
         "room_length": 9,
-        "room_height": 5,
+        "room_height": 12,
         "piece_role": "entry",
         "supports_vertical_access": true,
         "room_width": 9,
@@ -4748,7 +8731,6 @@
       },
       {
         "horizontal_extrusion_mode": "tunnel_only",
-        "branch_exit_mask": "none",
         "room_length": 9,
         "room_height": 5,
         "piece_role": "floor_main",
@@ -4759,7 +8741,6 @@
       },
       {
         "horizontal_extrusion_mode": "tunnel_only",
-        "branch_exit_mask": "none",
         "room_length": 9,
         "room_height": 5,
         "piece_role": "top_cap_approach",
@@ -4770,7 +8751,6 @@
       },
       {
         "horizontal_extrusion_mode": "tunnel_only",
-        "branch_exit_mask": "none",
         "room_length": 9,
         "room_height": 5,
         "piece_role": "top_cap",
@@ -4781,9 +8761,8 @@
       },
       {
         "horizontal_extrusion_mode": "tunnel_only",
-        "branch_exit_mask": "none",
         "room_length": 9,
-        "room_height": 5,
+        "room_height": 13,
         "piece_role": "basement_entry",
         "supports_vertical_access": true,
         "room_width": 9,
@@ -4792,9 +8771,8 @@
       },
       {
         "horizontal_extrusion_mode": "tunnel_only",
-        "branch_exit_mask": "none",
         "room_length": 9,
-        "room_height": 5,
+        "room_height": 13,
         "piece_role": "basement_main",
         "supports_vertical_access": true,
         "room_width": 9,
@@ -4803,7 +8781,6 @@
       },
       {
         "horizontal_extrusion_mode": "tunnel_only",
-        "branch_exit_mask": "none",
         "room_length": 9,
         "room_height": 5,
         "piece_role": "basement_cap_approach",
@@ -4814,7 +8791,6 @@
       },
       {
         "horizontal_extrusion_mode": "tunnel_only",
-        "branch_exit_mask": "none",
         "room_length": 9,
         "room_height": 5,
         "piece_role": "basement_cap",
@@ -4842,9 +8818,6 @@
     ],
     "hallway_families": [
       {
-        "floor_block": "minecraft:smooth_stone",
-        "wall_block": "minecraft:stone_bricks",
-        "ceiling_block": "minecraft:smooth_stone",
         "slope_delta": 0,
         "allow_on_main_path": true,
         "allow_on_branch_path": false,
@@ -4855,9 +8828,6 @@
         "opening_profile_id": "main_opening"
       },
       {
-        "floor_block": "minecraft:smooth_stone",
-        "wall_block": "minecraft:stone_bricks",
-        "ceiling_block": "minecraft:smooth_stone",
         "slope_delta": 0,
         "allow_on_main_path": false,
         "allow_on_branch_path": true,
@@ -4869,25 +8839,23 @@
       }
     ],
     "stair_config": {
-      "stair_width": 1,
       "stair_block": "minecraft:stone_brick_stairs",
       "slab_block": "minecraft:stone_brick_slab",
       "ladder_block": "minecraft:ladder",
       "mode": "auto",
-      "rise_type": "stair",
-      "flat_run_length": 0
+      "rise_type": "mixed",
+      "stair_width": 2
     },
     "vertical_access_spec": {
-      "shaft_size": 3,
+      "shaft_size": 5,
       "placement": "center",
       "stair_config": {
-        "stair_width": 1,
         "stair_block": "minecraft:stone_brick_stairs",
         "slab_block": "minecraft:stone_brick_slab",
         "ladder_block": "minecraft:ladder",
         "mode": "auto",
-        "rise_type": "stair",
-        "flat_run_length": 0
+        "rise_type": "mixed",
+        "stair_width": 2
       }
     },
     "floor_settings": {
@@ -4897,13 +8865,13 @@
     "preview_margin": 4,
     "vertical_access_placement": "center",
     "dimensions": {
-      "basement_height": 5,
-      "hallway_width": 3,
+      "basement_height": 13,
+      "hallway_width": 5,
       "doorway_width": 3,
       "doorway_height": 3,
       "room_width": 9,
       "room_length": 9,
-      "entrance_height": 5,
+      "entrance_height": 12,
       "room_height": 5
     },
     "palette": {
@@ -4912,17 +8880,17 @@
       "ceiling_block": "minecraft:smooth_stone"
     },
     "anchor": {
-      "x": -30,
+      "x": -29,
       "y": -60,
-      "z": 334
+      "z": 333
     },
     "shell_margin": 1,
     "exterior_air_margin": 2
   },
   "structure_name": "test_tower",
   "family_type": "tower",
-  "exported_at": "2026-04-27T23:25:51.600493200Z",
+  "exported_at": "2026-05-02T14:56:53.038228100Z",
   "schema_version": 4,
-  "workspace_id": "6abb1781-3a0f-4fe0-b2a5-ef6cb3bbb344",
+  "workspace_id": "c21b4cfa-528a-48a2-aa7f-4476d1dd99c2",
   "namespace": "mknpc"
 }

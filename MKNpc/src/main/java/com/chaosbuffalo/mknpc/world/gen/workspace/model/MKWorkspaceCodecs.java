@@ -80,10 +80,6 @@ public final class MKWorkspaceCodecs {
     public static final Codec<MKConnectorRole> CONNECTOR_ROLE_CODEC = Codec.STRING.xmap(
             MKConnectorRole::fromSerializedName, MKConnectorRole::getSerializedName
     );
-    public static final Codec<MKTowerBranchExitMask> BRANCH_EXIT_MASK_CODEC = Codec.STRING.xmap(
-            MKTowerBranchExitMask::fromSerializedName, MKTowerBranchExitMask::getSerializedName
-    );
-
     private MKWorkspaceCodecs() {
     }
 

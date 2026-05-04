@@ -1,6 +1,7 @@
 {
+  "category": "top_cap",
   "top_cap_only": true,
+  "vertical_level_delta": 1,
   "role": "top_cap_approach",
-  "progression_delta": 1,
-  "vertical_level_delta": 1
+  "progression_delta": 1
 }

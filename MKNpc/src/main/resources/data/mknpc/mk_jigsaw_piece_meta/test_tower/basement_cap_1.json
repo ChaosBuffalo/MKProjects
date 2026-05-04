@@ -1,6 +1,7 @@
 {
+  "category": "basement_cap",
   "terminal": true,
+  "vertical_level_delta": -1,
   "role": "terminal",
-  "progression_delta": 1,
-  "vertical_level_delta": -1
+  "progression_delta": 1
 }
