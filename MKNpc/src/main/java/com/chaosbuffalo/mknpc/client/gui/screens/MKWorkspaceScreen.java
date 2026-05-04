@@ -9,7 +9,7 @@ import com.chaosbuffalo.mknpc.network.packets.CreateWorkspacePacket;
 import com.chaosbuffalo.mknpc.network.packets.ExportWorkspacePiecesPacket;
 import com.chaosbuffalo.mknpc.network.packets.GenerateWorkspaceStairsPacket;
 import com.chaosbuffalo.mknpc.network.packets.LoadWorkspaceFromManifestPacket;
-import com.chaosbuffalo.mknpc.network.packets.SwapWorkspaceBlockPacket;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceBlockSwapPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceBackupPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePageContext;
@@ -246,7 +246,7 @@ public class MKWorkspaceScreen extends MKScreen {
         addState("form_hallway_detail", this::buildFormHallwayDetailState);
         addState("workspace", this::buildWorkspaceState);
         addWorkspacePage(new WorkspaceUtilitiesPage());
-        addState("block_swap", this::buildBlockSwapState);
+        addWorkspacePage(new WorkspaceBlockSwapPage());
         addWorkspacePage(new WorkspaceBackupPage());
         addState("category", this::buildCategoryState);
         List<String> statesToPush = initialStates.isEmpty() ? getDefaultInitialStates() : initialStates;
@@ -261,9 +261,11 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private WorkspacePageContext createPageContext() {
         return new WorkspacePageContext(font, anchor, workspace, width, height, PANEL_WIDTH, PANEL_HEIGHT, SCROLL_WIDTH,
-                CONTENT_WIDTH, BUTTON_HEIGHT, BOTTOM_PADDING, TOP_CONTENT_Y, HEADER_SCROLL_GAP, TEXT_COLOR,
+                CONTENT_WIDTH, BUTTON_HEIGHT, BUTTON_GAP, BOTTOM_PADDING, TOP_CONTENT_Y, HEADER_SCROLL_GAP, TEXT_COLOR,
                 backupManifestFiles, this::pushState, this::switchToExistingState, this::flagNeedSetup,
-                this::supportsStairGeneration, this::finalizeScrollView);
+                () -> blockSwapSourceBlock, value -> blockSwapSourceBlock = value,
+                () -> blockSwapTargetBlock, value -> blockSwapTargetBlock = value,
+                this::addBlockPickerRow, this::supportsStairGeneration, this::finalizeScrollView);
     }
 
     @Override
@@ -1813,62 +1815,6 @@ public class MKWorkspaceScreen extends MKScreen {
             return true;
         });
 
-        return root;
-    }
-
-    private MKLayout buildBlockSwapState() {
-        int xPos = width / 2 - PANEL_WIDTH / 2;
-        int yPos = height / 2 - PANEL_HEIGHT / 2;
-        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
-        root.setMargins(8, 8, 8, 8);
-        root.setPaddingTop(8).setPaddingBot(8);
-
-        MKText title = makeWhiteText(Component.literal("Block Swap"));
-        root.addWidget(title);
-        root.addConstraintToWidget(MarginConstraint.TOP, title);
-        root.addConstraintToWidget(new CenterXConstraint(), title);
-
-        if (blockSwapSourceBlock == null) {
-            blockSwapSourceBlock = workspace.palette().wallBlock();
-        }
-        if (blockSwapTargetBlock == null) {
-            blockSwapTargetBlock = workspace.palette().floorBlock();
-        }
-
-        MKText summary = makeWhiteText(Component.literal("Choose source and target blocks to replace across the live workspace."));
-        summary.setWidth(CONTENT_WIDTH);
-        summary.setMultiline(true);
-        root.addWidget(summary);
-        root.addConstraintToWidget(StackConstraint.VERTICAL, summary);
-        root.addConstraintToWidget(new CenterXConstraint(), summary);
-
-        int rowTop = yPos + 112;
-        addBlockPickerRow(root, xPos, rowTop, "Source", blockSwapSourceBlock,
-                value -> blockSwapSourceBlock = value, false);
-        addBlockPickerRow(root, xPos, rowTop + 42, "Target", blockSwapTargetBlock,
-                value -> blockSwapTargetBlock = value, false);
-
-        MKButton swapBlocks = new MKButton(Component.literal("Swap Blocks"), 180, 20);
-        root.addWidget(swapBlocks);
-        root.addConstraintToWidget(new CenterXConstraint(), swapBlocks);
-        swapBlocks.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - BUTTON_GAP - BUTTON_HEIGHT);
-        swapBlocks.setPressedCallback((button, mouseButton) -> {
-            ResourceLocation sourceBlock = blockSwapSourceBlock;
-            ResourceLocation targetBlock = blockSwapTargetBlock;
-            if (!sourceBlock.equals(ResourceLocation.withDefaultNamespace("air")) && !sourceBlock.equals(targetBlock)) {
-                PacketDistributor.sendToServer(new SwapWorkspaceBlockPacket(anchor, sourceBlock, targetBlock));
-            }
-            return true;
-        });
-
-        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
-        root.addWidget(back);
-        root.addConstraintToWidget(new CenterXConstraint(), back);
-        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
-        back.setPressedCallback((button, mouseButton) -> {
-            switchToExistingState("utilities");
-            return true;
-        });
         return root;
     }
 

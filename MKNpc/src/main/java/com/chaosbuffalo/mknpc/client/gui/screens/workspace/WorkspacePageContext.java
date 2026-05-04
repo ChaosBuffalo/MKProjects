@@ -8,11 +8,13 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.client.gui.Font;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public record WorkspacePageContext(Font font,
                                    BlockPos anchor,
@@ -24,6 +26,7 @@ public record WorkspacePageContext(Font font,
                                    int scrollWidth,
                                    int contentWidth,
                                    int buttonHeight,
+                                   int buttonGap,
                                    int bottomPadding,
                                    int topContentY,
                                    int headerScrollGap,
@@ -32,8 +35,19 @@ public record WorkspacePageContext(Font font,
                                    Consumer<String> pushState,
                                    Consumer<String> switchToExistingState,
                                    Runnable flagNeedSetup,
+                                   Supplier<ResourceLocation> blockSwapSourceBlock,
+                                   Consumer<ResourceLocation> setBlockSwapSourceBlock,
+                                   Supplier<ResourceLocation> blockSwapTargetBlock,
+                                   Consumer<ResourceLocation> setBlockSwapTargetBlock,
+                                   BlockPickerRowAdder addBlockPickerRow,
                                    Predicate<MKWorkspacePieceDefinition> supportsStairGeneration,
                                    BiConsumer<MKScrollView, String> finalizeScrollView) {
+    @FunctionalInterface
+    public interface BlockPickerRowAdder {
+        void add(MKLayout root, int xPos, int y, String label, ResourceLocation blockId,
+                 Consumer<ResourceLocation> setter, boolean allowClear);
+    }
+
     public int panelX() {
         return screenWidth / 2 - panelWidth / 2;
     }
