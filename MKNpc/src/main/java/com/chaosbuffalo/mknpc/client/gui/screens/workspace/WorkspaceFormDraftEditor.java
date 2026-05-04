@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
 import net.minecraft.resources.ResourceLocation;
 
 public interface WorkspaceFormDraftEditor {
@@ -56,4 +57,8 @@ public interface WorkspaceFormDraftEditor {
     ResourceLocation ladderBlock();
 
     void ladderBlock(ResourceLocation value);
+
+    long familyCount(MKTowerWorkspaceCategory category);
+
+    void selectedFamilyCategory(MKTowerWorkspaceCategory category);
 }

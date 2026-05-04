@@ -16,6 +16,7 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceGenerateConf
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormIdentityPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormDraftEditor;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormFamiliesPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormMaterialsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePageContext;
@@ -242,7 +243,7 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(new WorkspaceFormMaterialsPage());
         addState("form_categories", this::buildFormCategoriesState);
         addState("form_category_detail", this::buildFormCategoryDetailState);
-        addState("form_families", this::buildFormFamiliesState);
+        addWorkspacePage(new WorkspaceFormFamiliesPage());
         addState("form_family_category", this::buildFormFamilyCategoryState);
         addState("form_family_detail", this::buildFormFamilyDetailState);
         addState("form_family_exit_detail", this::buildFormFamilyExitDetailState);
@@ -451,6 +452,19 @@ public class MKWorkspaceScreen extends MKScreen {
             public void ladderBlock(ResourceLocation value) {
                 ensureFormDraftInitialized();
                 formDraft.ladderBlock = value;
+            }
+
+            @Override
+            public long familyCount(MKTowerWorkspaceCategory category) {
+                ensureFormDraftInitialized();
+                return formDraft.familyDefinitions.stream()
+                        .filter(family -> family.category() == category)
+                        .count();
+            }
+
+            @Override
+            public void selectedFamilyCategory(MKTowerWorkspaceCategory category) {
+                selectedFormCategory = category;
             }
         };
     }
@@ -748,75 +762,6 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private MKLayout buildFormCategoryDetailState() {
         return buildFormCategoriesState();
-    }
-
-    private MKLayout buildFormFamiliesState() {
-        ensureFormDraftInitialized();
-        int xPos = width / 2 - PANEL_WIDTH / 2;
-        int yPos = height / 2 - PANEL_HEIGHT / 2;
-        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
-        root.setMargins(8, 8, 8, 8);
-        root.setPaddingTop(8).setPaddingBot(8);
-
-        MKText title = makeWhiteText(Component.literal("Branch Variants"));
-        root.addWidget(title);
-        root.addConstraintToWidget(MarginConstraint.TOP, title);
-        root.addConstraintToWidget(new CenterXConstraint(), title);
-
-        MKText helpText = makeWhiteText(Component.literal(
-                "Choose a category first, then edit only the families that belong to that band."));
-        helpText.setWidth(CONTENT_WIDTH);
-        helpText.setMultiline(true);
-        root.addWidget(helpText);
-        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
-        root.addConstraintToWidget(new CenterXConstraint(), helpText);
-
-        int buttonAreaHeight = (2 * BUTTON_HEIGHT) + BUTTON_GAP + BOTTOM_PADDING;
-        int scrollTop = scrollTopAfterHeader(root, helpText);
-        int scrollHeight = yPos + PANEL_HEIGHT - buttonAreaHeight - 12 - scrollTop;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
-        scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
-        root.addWidget(scrollView);
-
-        MKStackLayoutVertical content = new MKStackLayoutVertical(0, 0, CONTENT_WIDTH);
-        content.setMargins(4, 4, 4, 4);
-        content.setPaddingTop(4).setPaddingBot(4);
-
-        for (MKTowerWorkspaceCategory category : MKTowerWorkspaceCategory.values()) {
-            long count = formDraft.familyDefinitions.stream().filter(family -> family.category() == category).count();
-            MKText header = makeWhiteText(Component.literal(formatTopologyLabel(category.getSerializedName())));
-            content.addWidget(header);
-            content.addConstraintToWidget(MarginConstraint.LEFT, header);
-            MKText summary = makeWhiteText(Component.literal(count + " families"));
-            summary.setWidth(CONTENT_WIDTH);
-            content.addWidget(summary);
-            content.addConstraintToWidget(MarginConstraint.LEFT, summary);
-
-            MKButton openButton = new MKButton(Component.literal("Open Category"), 180, 20);
-            content.addWidget(openButton);
-            content.addConstraintToWidget(new CenterXConstraint(), openButton);
-            openButton.setPressedCallback((button, mouseButton) -> {
-                selectedFormCategory = category;
-                pushState("form_family_category");
-                flagNeedSetup();
-                return true;
-            });
-        }
-
-        content.manualRecompute();
-        scrollView.addWidget(content);
-        scrollView.centerContentX();
-        finalizeScrollView(scrollView, "form_categories");
-
-        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
-        root.addWidget(back);
-        root.addConstraintToWidget(new CenterXConstraint(), back);
-        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
-        back.setPressedCallback((button, mouseButton) -> {
-            switchToExistingState("form");
-            return true;
-        });
-        return root;
     }
 
     private MKLayout buildFormFamilyCategoryState() {
