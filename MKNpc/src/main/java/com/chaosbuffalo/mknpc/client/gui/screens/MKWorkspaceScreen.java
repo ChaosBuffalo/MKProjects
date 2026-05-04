@@ -29,6 +29,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
@@ -78,12 +79,7 @@ public class MKWorkspaceScreen extends MKScreen {
     private final List<String> backupManifestFiles;
     private final List<String> initialStates;
     private String selectedTopologyKey;
-    private MKWorkspaceStairMode detailStairMode;
-    private MKWorkspaceStairRiseType detailStairRiseType;
-    private int detailStairWidth;
-    private ResourceLocation detailStairBlock;
-    private ResourceLocation detailSlabBlock;
-    private ResourceLocation detailLadderBlock;
+    private MKWorkspaceStairAuthoringConfig detailStairConfig;
     private BlockPickerRequest blockPickerRequest;
     private MKModal blockPickerModal;
     private String blockPickerCategoryId;
@@ -133,7 +129,7 @@ public class MKWorkspaceScreen extends MKScreen {
     public MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace,
                              List<String> importManifestIds, List<String> backupManifestFiles) {
         this(anchor, workspace, importManifestIds, backupManifestFiles, List.of(), null, null, -1, -1, -1, -1,
-                null, null, 1, null, null, null);
+                null);
     }
 
     private MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace, List<String> importManifestIds,
@@ -145,10 +141,7 @@ public class MKWorkspaceScreen extends MKScreen {
                               int selectedFamilyExitIndex,
                               int selectedOpeningIndex,
                               int selectedHallwayIndex,
-                              MKWorkspaceStairMode detailStairMode,
-                              MKWorkspaceStairRiseType detailStairRiseType, int detailStairWidth,
-                              ResourceLocation detailStairBlock, ResourceLocation detailSlabBlock,
-                              ResourceLocation detailLadderBlock) {
+                              MKWorkspaceStairAuthoringConfig detailStairConfig) {
         super(Component.literal("Tower Workspace"));
         this.anchor = anchor;
         this.workspace = workspace;
@@ -156,12 +149,7 @@ public class MKWorkspaceScreen extends MKScreen {
         this.backupManifestFiles = List.copyOf(backupManifestFiles);
         this.initialStates = List.copyOf(initialStates);
         this.selectedTopologyKey = selectedTopologyKey;
-        this.detailStairMode = detailStairMode;
-        this.detailStairRiseType = detailStairRiseType;
-        this.detailStairWidth = detailStairWidth;
-        this.detailStairBlock = detailStairBlock;
-        this.detailSlabBlock = detailSlabBlock;
-        this.detailLadderBlock = detailLadderBlock;
+        this.detailStairConfig = detailStairConfig;
         this.draftSession = new WorkspaceDraftSession(this, selectedFormCategory, selectedFamilyIndex,
                 selectedFamilyExitIndex, selectedOpeningIndex, selectedHallwayIndex);
     }
@@ -177,8 +165,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 draftSession.selectedFamilyCategory(), selectedTopologyKey, draftSession.selectedFamilyIndex(),
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
                 draftSession.selectedHallwayIndex(),
-                detailStairMode, detailStairRiseType, detailStairWidth,
-                detailStairBlock, detailSlabBlock, detailLadderBlock);
+                detailStairConfig);
     }
 
     @Override
@@ -355,52 +342,69 @@ public class MKWorkspaceScreen extends MKScreen {
         return workspace.dimensions().hallwayWidth();
     }
 
+    private MKWorkspaceStairAuthoringConfig categoryStairConfig() {
+        ensureCategoryOverridesInitialized();
+        return detailStairConfig;
+    }
+
     public MKWorkspaceStairMode categoryStairMode() {
-        return detailStairMode;
+        return categoryStairConfig().mode();
     }
 
     public void categoryStairMode(MKWorkspaceStairMode value) {
-        detailStairMode = value;
+        MKWorkspaceStairAuthoringConfig config = categoryStairConfig();
+        detailStairConfig = new MKWorkspaceStairAuthoringConfig(value, config.riseType(), config.stairWidth(),
+                config.stairBlock(), config.slabBlock(), config.ladderBlock());
     }
 
     public MKWorkspaceStairRiseType categoryStairRiseType() {
-        return detailStairRiseType;
+        return categoryStairConfig().riseType();
     }
 
     public void categoryStairRiseType(MKWorkspaceStairRiseType value) {
-        detailStairRiseType = value;
+        MKWorkspaceStairAuthoringConfig config = categoryStairConfig();
+        detailStairConfig = new MKWorkspaceStairAuthoringConfig(config.mode(), value, config.stairWidth(),
+                config.stairBlock(), config.slabBlock(), config.ladderBlock());
     }
 
     public int categoryStairWidth() {
-        return detailStairWidth;
+        return categoryStairConfig().stairWidth();
     }
 
     public void categoryStairWidth(int value) {
-        detailStairWidth = value;
+        MKWorkspaceStairAuthoringConfig config = categoryStairConfig();
+        detailStairConfig = new MKWorkspaceStairAuthoringConfig(config.mode(), config.riseType(), value,
+                config.stairBlock(), config.slabBlock(), config.ladderBlock());
     }
 
     public ResourceLocation categoryStairBlock() {
-        return detailStairBlock;
+        return categoryStairConfig().stairBlock();
     }
 
     public void categoryStairBlock(ResourceLocation value) {
-        detailStairBlock = value;
+        MKWorkspaceStairAuthoringConfig config = categoryStairConfig();
+        detailStairConfig = new MKWorkspaceStairAuthoringConfig(config.mode(), config.riseType(), config.stairWidth(),
+                value, config.slabBlock(), config.ladderBlock());
     }
 
     public ResourceLocation categorySlabBlock() {
-        return detailSlabBlock;
+        return categoryStairConfig().slabBlock();
     }
 
     public void categorySlabBlock(ResourceLocation value) {
-        detailSlabBlock = value;
+        MKWorkspaceStairAuthoringConfig config = categoryStairConfig();
+        detailStairConfig = new MKWorkspaceStairAuthoringConfig(config.mode(), config.riseType(), config.stairWidth(),
+                config.stairBlock(), value, config.ladderBlock());
     }
 
     public ResourceLocation categoryLadderBlock() {
-        return detailLadderBlock;
+        return categoryStairConfig().ladderBlock();
     }
 
     public void categoryLadderBlock(ResourceLocation value) {
-        detailLadderBlock = value;
+        MKWorkspaceStairAuthoringConfig config = categoryStairConfig();
+        detailStairConfig = new MKWorkspaceStairAuthoringConfig(config.mode(), config.riseType(), config.stairWidth(),
+                config.stairBlock(), config.slabBlock(), value);
     }
 
     @Override
@@ -959,25 +963,29 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public void resetCategoryOverrides() {
         if (workspace == null) {
-            detailStairMode = MKWorkspaceStairMode.AUTO;
-            detailStairRiseType = MKWorkspaceStairRiseType.MIXED;
-            detailStairWidth = 1;
-            detailStairBlock = ResourceLocation.parse("minecraft:stone_brick_stairs");
-            detailSlabBlock = ResourceLocation.parse("minecraft:stone_brick_slab");
-            detailLadderBlock = ResourceLocation.parse("minecraft:ladder");
+            MKWorkspaceMaterialPalette palette = MKWorkspaceMaterialPalette.defaultPalette();
+            detailStairConfig = new MKWorkspaceStairAuthoringConfig(
+                    MKWorkspaceStairMode.AUTO,
+                    MKWorkspaceStairRiseType.MIXED,
+                    1,
+                    palette.stairBlock(),
+                    palette.slabBlock(),
+                    palette.ladderBlock()
+            );
             return;
         }
-        detailStairMode = workspace.stairConfig().mode();
-        detailStairRiseType = workspace.stairConfig().riseType();
-        detailStairWidth = workspace.stairConfig().stairWidth();
-        detailStairBlock = workspace.palette().stairBlock();
-        detailSlabBlock = workspace.palette().slabBlock();
-        detailLadderBlock = workspace.palette().ladderBlock();
+        detailStairConfig = new MKWorkspaceStairAuthoringConfig(
+                workspace.stairConfig().mode(),
+                workspace.stairConfig().riseType(),
+                workspace.stairConfig().stairWidth(),
+                workspace.palette().stairBlock(),
+                workspace.palette().slabBlock(),
+                workspace.palette().ladderBlock()
+        );
     }
 
     public void ensureCategoryOverridesInitialized() {
-        if (detailStairMode == null || detailStairRiseType == null || detailStairBlock == null || detailSlabBlock == null ||
-                detailLadderBlock == null) {
+        if (detailStairConfig == null) {
             resetCategoryOverrides();
         }
     }

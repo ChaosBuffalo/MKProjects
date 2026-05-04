@@ -66,16 +66,11 @@ public class WorkspaceDraftSession {
         draft.stairMode = workspace != null ? workspace.stairConfig().mode() : MKWorkspaceStairMode.AUTO;
         draft.stairRiseType = workspace != null ? workspace.stairConfig().riseType() : MKWorkspaceStairRiseType.MIXED;
         draft.stairWidth = workspace != null ? workspace.stairConfig().stairWidth() : 1;
-        draft.stairBlock = workspace != null ? workspace.palette().stairBlock() : ResourceLocation.parse("minecraft:stone_brick_stairs");
-        draft.slabBlock = workspace != null ? workspace.palette().slabBlock() : ResourceLocation.parse("minecraft:stone_brick_slab");
-        draft.ladderBlock = workspace != null ? workspace.palette().ladderBlock() : ResourceLocation.parse("minecraft:ladder");
+        draft.palette = workspace != null ? workspace.palette() : MKWorkspaceMaterialPalette.defaultPalette();
         draft.verticalAccessPlacement = workspace != null ? workspace.verticalAccessSpec().placement() : MKVerticalAccessPlacement.CENTER;
         draft.shellMargin = workspace != null ? workspace.shellMargin() : 1;
         draft.exteriorAirMargin = workspace != null ? workspace.exteriorAirMargin() : 2;
         draft.previewMargin = workspace != null ? workspace.previewMargin() : 4;
-        draft.floorBlock = workspace != null ? workspace.palette().floorBlock() : ResourceLocation.parse("minecraft:smooth_stone");
-        draft.wallBlock = workspace != null ? workspace.palette().wallBlock() : ResourceLocation.parse("minecraft:stone_bricks");
-        draft.ceilingBlock = workspace != null ? workspace.palette().ceilingBlock() : ResourceLocation.parse("minecraft:smooth_stone");
         draft.mainFloors = workspace != null ? workspace.floorSettings().mainFloors() : MKTowerWorkspaceFloorSettings.defaultSettings().mainFloors();
         draft.basementFloors = workspace != null ? workspace.floorSettings().basementFloors() : MKTowerWorkspaceFloorSettings.defaultSettings().basementFloors();
         draft.topCapApproachEnabled = workspace != null ? workspace.floorSettings().topCapApproachEnabled() :
@@ -175,51 +170,71 @@ public class WorkspaceDraftSession {
     }
 
     public ResourceLocation floorBlock() {
-        return draft().floorBlock;
+        return draft().palette.floorBlock();
     }
 
     public void floorBlock(ResourceLocation value) {
-        draft().floorBlock = value;
+        MKWorkspaceMaterialPalette palette = palette();
+        palette(new MKWorkspaceMaterialPalette(value, palette.wallBlock(), palette.ceilingBlock(),
+                palette.stairBlock(), palette.slabBlock(), palette.ladderBlock()));
     }
 
     public ResourceLocation wallBlock() {
-        return draft().wallBlock;
+        return draft().palette.wallBlock();
     }
 
     public void wallBlock(ResourceLocation value) {
-        draft().wallBlock = value;
+        MKWorkspaceMaterialPalette palette = palette();
+        palette(new MKWorkspaceMaterialPalette(palette.floorBlock(), value, palette.ceilingBlock(),
+                palette.stairBlock(), palette.slabBlock(), palette.ladderBlock()));
     }
 
     public ResourceLocation ceilingBlock() {
-        return draft().ceilingBlock;
+        return draft().palette.ceilingBlock();
     }
 
     public void ceilingBlock(ResourceLocation value) {
-        draft().ceilingBlock = value;
+        MKWorkspaceMaterialPalette palette = palette();
+        palette(new MKWorkspaceMaterialPalette(palette.floorBlock(), palette.wallBlock(), value,
+                palette.stairBlock(), palette.slabBlock(), palette.ladderBlock()));
     }
 
     public ResourceLocation stairBlock() {
-        return draft().stairBlock;
+        return draft().palette.stairBlock();
     }
 
     public void stairBlock(ResourceLocation value) {
-        draft().stairBlock = value;
+        MKWorkspaceMaterialPalette palette = palette();
+        palette(new MKWorkspaceMaterialPalette(palette.floorBlock(), palette.wallBlock(),
+                palette.ceilingBlock(), value, palette.slabBlock(), palette.ladderBlock()));
     }
 
     public ResourceLocation slabBlock() {
-        return draft().slabBlock;
+        return draft().palette.slabBlock();
     }
 
     public void slabBlock(ResourceLocation value) {
-        draft().slabBlock = value;
+        MKWorkspaceMaterialPalette palette = palette();
+        palette(new MKWorkspaceMaterialPalette(palette.floorBlock(), palette.wallBlock(),
+                palette.ceilingBlock(), palette.stairBlock(), value, palette.ladderBlock()));
     }
 
     public ResourceLocation ladderBlock() {
-        return draft().ladderBlock;
+        return draft().palette.ladderBlock();
     }
 
     public void ladderBlock(ResourceLocation value) {
-        draft().ladderBlock = value;
+        MKWorkspaceMaterialPalette palette = palette();
+        palette(new MKWorkspaceMaterialPalette(palette.floorBlock(), palette.wallBlock(),
+                palette.ceilingBlock(), palette.stairBlock(), palette.slabBlock(), value));
+    }
+
+    public MKWorkspaceMaterialPalette palette() {
+        return draft().palette;
+    }
+
+    public void palette(MKWorkspaceMaterialPalette value) {
+        draft().palette = value;
     }
 
     public long familyCount(MKTowerWorkspaceCategory category) {
@@ -353,15 +368,7 @@ public class WorkspaceDraftSession {
     }
 
     public MKWorkspaceMaterialPalette basePalette() {
-        Draft draft = draft();
-        return new MKWorkspaceMaterialPalette(
-                draft.floorBlock,
-                draft.wallBlock,
-                draft.ceilingBlock,
-                draft.stairBlock,
-                draft.slabBlock,
-                draft.ladderBlock
-        );
+        return palette();
     }
 
     public MKWorkspaceMaterialPalette draftBasePalette() {
@@ -729,9 +736,9 @@ public class WorkspaceDraftSession {
                 draft().stairMode,
                 draft().stairRiseType,
                 draft().stairWidth,
-                draft().stairBlock,
-                draft().slabBlock,
-                draft().ladderBlock
+                draft().palette.stairBlock(),
+                draft().palette.slabBlock(),
+                draft().palette.ladderBlock()
         );
     }
 
@@ -1141,12 +1148,7 @@ public class WorkspaceDraftSession {
         public MKWorkspaceStairMode stairMode;
         public MKWorkspaceStairRiseType stairRiseType;
         public int stairWidth;
-        public ResourceLocation floorBlock;
-        public ResourceLocation wallBlock;
-        public ResourceLocation ceilingBlock;
-        public ResourceLocation stairBlock;
-        public ResourceLocation slabBlock;
-        public ResourceLocation ladderBlock;
+        public MKWorkspaceMaterialPalette palette;
         public int mainFloors;
         public int basementFloors;
         public boolean topCapApproachEnabled;
