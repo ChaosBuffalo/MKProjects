@@ -22,18 +22,19 @@ public class WorkspaceFormMaterialsPage extends WorkspacePageBase {
 
         int rowTop = context.panelY() + 96;
         MKWorkspaceMaterialPalette defaultPalette = MKWorkspaceMaterialPalette.defaultPalette();
+        WorkspaceFormDraftEditor editor = context.draftEditor();
         context.addPaletteBlockPickerRow().add(root, context.panelX(), rowTop, "Floor",
-                context.draftFloorBlock().get(), defaultPalette.floorBlock(), context.setDraftFloorBlock());
+                editor.floorBlock(), defaultPalette.floorBlock(), editor::floorBlock);
         context.addPaletteBlockPickerRow().add(root, context.panelX(), rowTop + 34, "Wall",
-                context.draftWallBlock().get(), defaultPalette.wallBlock(), context.setDraftWallBlock());
+                editor.wallBlock(), defaultPalette.wallBlock(), editor::wallBlock);
         context.addPaletteBlockPickerRow().add(root, context.panelX(), rowTop + 68, "Ceiling",
-                context.draftCeilingBlock().get(), defaultPalette.ceilingBlock(), context.setDraftCeilingBlock());
+                editor.ceilingBlock(), defaultPalette.ceilingBlock(), editor::ceilingBlock);
         context.addPaletteBlockPickerRow().add(root, context.panelX(), rowTop + 102, "Stair",
-                context.draftStairBlock().get(), defaultPalette.stairBlock(), context.setDraftStairBlock());
+                editor.stairBlock(), defaultPalette.stairBlock(), editor::stairBlock);
         context.addPaletteBlockPickerRow().add(root, context.panelX(), rowTop + 136, "Slab",
-                context.draftSlabBlock().get(), defaultPalette.slabBlock(), context.setDraftSlabBlock());
+                editor.slabBlock(), defaultPalette.slabBlock(), editor::slabBlock);
         context.addPaletteBlockPickerRow().add(root, context.panelX(), rowTop + 170, "Ladder",
-                context.draftLadderBlock().get(), defaultPalette.ladderBlock(), context.setDraftLadderBlock());
+                editor.ladderBlock(), defaultPalette.ladderBlock(), editor::ladderBlock);
 
         addBackButton(context, root, WorkspaceFormPage.ID);
         return root;

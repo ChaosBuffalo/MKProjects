@@ -15,6 +15,7 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceImportPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceGenerateConfirmPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormIdentityPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormPage;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormDraftEditor;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormMaterialsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePageContext;
@@ -287,89 +288,171 @@ public class MKWorkspaceScreen extends MKScreen {
         return new WorkspacePageContext(font, anchor, workspace, width, height, PANEL_WIDTH, PANEL_HEIGHT, SCROLL_WIDTH,
                 CONTENT_WIDTH, BUTTON_HEIGHT, BUTTON_GAP, BOTTOM_PADDING, TOP_CONTENT_Y, HEADER_SCROLL_GAP, TEXT_COLOR,
                 importManifestIds, backupManifestFiles, this::pushState, this::switchToExistingState, this::flagNeedSetup,
-                this::workspaceFormSummary, this::hasExistingWorkspacePieces, this::submitWorkspaceDraft,
-                () -> {
-                    ensureFormDraftInitialized();
-                    return formDraft.namespace;
-                }, value -> {
-                    ensureFormDraftInitialized();
-                    formDraft.namespace = value;
-                },
-                () -> {
-                    ensureFormDraftInitialized();
-                    return formDraft.structureName;
-                }, value -> {
-                    ensureFormDraftInitialized();
-                    formDraft.structureName = value;
-                },
-                () -> {
-                    ensureFormDraftInitialized();
-                    return formDraft.shellMargin;
-                }, value -> {
-                    ensureFormDraftInitialized();
-                    formDraft.shellMargin = value;
-                },
-                () -> {
-                    ensureFormDraftInitialized();
-                    return formDraft.exteriorAirMargin;
-                }, value -> {
-                    ensureFormDraftInitialized();
-                    formDraft.exteriorAirMargin = value;
-                },
-                () -> {
-                    ensureFormDraftInitialized();
-                    return formDraft.previewMargin;
-                }, value -> {
-                    ensureFormDraftInitialized();
-                    formDraft.previewMargin = value;
-                },
-                this::draftWorkspaceId, this::sendWorkspaceDraft,
-                this::addPaletteBlockPickerRow,
-                () -> {
-                    ensureFormDraftInitialized();
-                    return formDraft.floorBlock;
-                }, value -> {
-                    ensureFormDraftInitialized();
-                    formDraft.floorBlock = value;
-                },
-                () -> {
-                    ensureFormDraftInitialized();
-                    return formDraft.wallBlock;
-                }, value -> {
-                    ensureFormDraftInitialized();
-                    formDraft.wallBlock = value;
-                },
-                () -> {
-                    ensureFormDraftInitialized();
-                    return formDraft.ceilingBlock;
-                }, value -> {
-                    ensureFormDraftInitialized();
-                    formDraft.ceilingBlock = value;
-                },
-                () -> {
-                    ensureFormDraftInitialized();
-                    return formDraft.stairBlock;
-                }, value -> {
-                    ensureFormDraftInitialized();
-                    formDraft.stairBlock = value;
-                },
-                () -> {
-                    ensureFormDraftInitialized();
-                    return formDraft.slabBlock;
-                }, value -> {
-                    ensureFormDraftInitialized();
-                    formDraft.slabBlock = value;
-                },
-                () -> {
-                    ensureFormDraftInitialized();
-                    return formDraft.ladderBlock;
-                }, value -> {
-                    ensureFormDraftInitialized();
-                    formDraft.ladderBlock = value;
-                },
+                createDraftEditor(), this::addPaletteBlockPickerRow,
                 () -> blockSwapSourceBlock, value -> blockSwapSourceBlock = value,
                 () -> blockSwapTargetBlock, value -> blockSwapTargetBlock = value,
                 this::addBlockPickerRow, this::supportsStairGeneration, this::finalizeScrollView);
+    }
+
+    private WorkspaceFormDraftEditor createDraftEditor() {
+        return new WorkspaceFormDraftEditor() {
+            @Override
+            public String summary() {
+                return workspaceFormSummary();
+            }
+
+            @Override
+            public String workspaceId() {
+                return draftWorkspaceId();
+            }
+
+            @Override
+            public boolean hasExistingWorkspacePieces() {
+                return MKWorkspaceScreen.this.hasExistingWorkspacePieces();
+            }
+
+            @Override
+            public void submit() {
+                submitWorkspaceDraft();
+            }
+
+            @Override
+            public void send() {
+                sendWorkspaceDraft();
+            }
+
+            @Override
+            public String namespace() {
+                ensureFormDraftInitialized();
+                return formDraft.namespace;
+            }
+
+            @Override
+            public void namespace(String value) {
+                ensureFormDraftInitialized();
+                formDraft.namespace = value;
+            }
+
+            @Override
+            public String structureName() {
+                ensureFormDraftInitialized();
+                return formDraft.structureName;
+            }
+
+            @Override
+            public void structureName(String value) {
+                ensureFormDraftInitialized();
+                formDraft.structureName = value;
+            }
+
+            @Override
+            public int shellMargin() {
+                ensureFormDraftInitialized();
+                return formDraft.shellMargin;
+            }
+
+            @Override
+            public void shellMargin(int value) {
+                ensureFormDraftInitialized();
+                formDraft.shellMargin = value;
+            }
+
+            @Override
+            public int exteriorAirMargin() {
+                ensureFormDraftInitialized();
+                return formDraft.exteriorAirMargin;
+            }
+
+            @Override
+            public void exteriorAirMargin(int value) {
+                ensureFormDraftInitialized();
+                formDraft.exteriorAirMargin = value;
+            }
+
+            @Override
+            public int previewMargin() {
+                ensureFormDraftInitialized();
+                return formDraft.previewMargin;
+            }
+
+            @Override
+            public void previewMargin(int value) {
+                ensureFormDraftInitialized();
+                formDraft.previewMargin = value;
+            }
+
+            @Override
+            public ResourceLocation floorBlock() {
+                ensureFormDraftInitialized();
+                return formDraft.floorBlock;
+            }
+
+            @Override
+            public void floorBlock(ResourceLocation value) {
+                ensureFormDraftInitialized();
+                formDraft.floorBlock = value;
+            }
+
+            @Override
+            public ResourceLocation wallBlock() {
+                ensureFormDraftInitialized();
+                return formDraft.wallBlock;
+            }
+
+            @Override
+            public void wallBlock(ResourceLocation value) {
+                ensureFormDraftInitialized();
+                formDraft.wallBlock = value;
+            }
+
+            @Override
+            public ResourceLocation ceilingBlock() {
+                ensureFormDraftInitialized();
+                return formDraft.ceilingBlock;
+            }
+
+            @Override
+            public void ceilingBlock(ResourceLocation value) {
+                ensureFormDraftInitialized();
+                formDraft.ceilingBlock = value;
+            }
+
+            @Override
+            public ResourceLocation stairBlock() {
+                ensureFormDraftInitialized();
+                return formDraft.stairBlock;
+            }
+
+            @Override
+            public void stairBlock(ResourceLocation value) {
+                ensureFormDraftInitialized();
+                formDraft.stairBlock = value;
+            }
+
+            @Override
+            public ResourceLocation slabBlock() {
+                ensureFormDraftInitialized();
+                return formDraft.slabBlock;
+            }
+
+            @Override
+            public void slabBlock(ResourceLocation value) {
+                ensureFormDraftInitialized();
+                formDraft.slabBlock = value;
+            }
+
+            @Override
+            public ResourceLocation ladderBlock() {
+                ensureFormDraftInitialized();
+                return formDraft.ladderBlock;
+            }
+
+            @Override
+            public void ladderBlock(ResourceLocation value) {
+                ensureFormDraftInitialized();
+                formDraft.ladderBlock = value;
+            }
+        };
     }
 
     @Override

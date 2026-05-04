@@ -30,25 +30,27 @@ public class WorkspaceFormIdentityPage extends WorkspacePageBase {
         MKScrollView scrollView = addScrollBelowHeader(context, root, helpText);
         MKStackLayoutVertical content = createContentStack(context);
 
-        MKTextFieldWidget namespaceField = makeField(context, "Namespace", context.draftNamespace().get());
+        WorkspaceFormDraftEditor editor = context.draftEditor();
+
+        MKTextFieldWidget namespaceField = makeField(context, "Namespace", editor.namespace());
         namespaceField.setTextChangeCallback((field, text) ->
-                context.setDraftNamespace().accept(text.trim().isBlank() ? "mkdev" : text.trim()));
+                editor.namespace(text.trim().isBlank() ? "mkdev" : text.trim()));
         MKTextFieldWidget structureNameField = makeField(context, "Structure Name",
-                context.draftStructureName().get());
+                editor.structureName());
         structureNameField.setTextChangeCallback((field, text) ->
-                context.setDraftStructureName().accept(text.trim().isBlank() ? "tower_workspace" : text.trim()));
+                editor.structureName(text.trim().isBlank() ? "tower_workspace" : text.trim()));
         MKTextFieldWidget shellMarginField = makeField(context, "Shell Margin",
-                Integer.toString(context.draftShellMargin().get()));
+                Integer.toString(editor.shellMargin()));
         shellMarginField.setTextChangeCallback((field, text) ->
-                context.setDraftShellMargin().accept(parseInt(text, context.draftShellMargin().get())));
+                editor.shellMargin(parseInt(text, editor.shellMargin())));
         MKTextFieldWidget exteriorAirMarginField = makeField(context, "Exterior Air Margin",
-                Integer.toString(context.draftExteriorAirMargin().get()));
+                Integer.toString(editor.exteriorAirMargin()));
         exteriorAirMarginField.setTextChangeCallback((field, text) ->
-                context.setDraftExteriorAirMargin().accept(parseInt(text, context.draftExteriorAirMargin().get())));
+                editor.exteriorAirMargin(parseInt(text, editor.exteriorAirMargin())));
         MKTextFieldWidget previewMarginField = makeField(context, "Preview Margin",
-                Integer.toString(context.draftPreviewMargin().get()));
+                Integer.toString(editor.previewMargin()));
         previewMarginField.setTextChangeCallback((field, text) ->
-                context.setDraftPreviewMargin().accept(parseInt(text, context.draftPreviewMargin().get())));
+                editor.previewMargin(parseInt(text, editor.previewMargin())));
 
         addRow(context, content, "mknpc.workspace.field.namespace", namespaceField);
         addRow(context, content, "mknpc.workspace.field.structure_name", structureNameField);

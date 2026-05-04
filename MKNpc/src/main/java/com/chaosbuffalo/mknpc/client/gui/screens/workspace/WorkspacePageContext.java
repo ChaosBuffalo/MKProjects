@@ -11,7 +11,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
-import java.util.function.BooleanSupplier;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -37,34 +36,8 @@ public record WorkspacePageContext(Font font,
                                    Consumer<String> pushState,
                                    Consumer<String> switchToExistingState,
                                    Runnable flagNeedSetup,
-                                   Supplier<String> workspaceFormSummary,
-                                   BooleanSupplier hasExistingWorkspacePieces,
-                                   Runnable submitWorkspaceDraft,
-                                   Supplier<String> draftNamespace,
-                                   Consumer<String> setDraftNamespace,
-                                   Supplier<String> draftStructureName,
-                                   Consumer<String> setDraftStructureName,
-                                   Supplier<Integer> draftShellMargin,
-                                   Consumer<Integer> setDraftShellMargin,
-                                   Supplier<Integer> draftExteriorAirMargin,
-                                   Consumer<Integer> setDraftExteriorAirMargin,
-                                   Supplier<Integer> draftPreviewMargin,
-                                   Consumer<Integer> setDraftPreviewMargin,
-                                   Supplier<String> draftWorkspaceId,
-                                   Runnable sendWorkspaceDraft,
+                                   WorkspaceFormDraftEditor draftEditor,
                                    PaletteBlockPickerRowAdder addPaletteBlockPickerRow,
-                                   Supplier<ResourceLocation> draftFloorBlock,
-                                   Consumer<ResourceLocation> setDraftFloorBlock,
-                                   Supplier<ResourceLocation> draftWallBlock,
-                                   Consumer<ResourceLocation> setDraftWallBlock,
-                                   Supplier<ResourceLocation> draftCeilingBlock,
-                                   Consumer<ResourceLocation> setDraftCeilingBlock,
-                                   Supplier<ResourceLocation> draftStairBlock,
-                                   Consumer<ResourceLocation> setDraftStairBlock,
-                                   Supplier<ResourceLocation> draftSlabBlock,
-                                   Consumer<ResourceLocation> setDraftSlabBlock,
-                                   Supplier<ResourceLocation> draftLadderBlock,
-                                   Consumer<ResourceLocation> setDraftLadderBlock,
                                    Supplier<ResourceLocation> blockSwapSourceBlock,
                                    Consumer<ResourceLocation> setBlockSwapSourceBlock,
                                    Supplier<ResourceLocation> blockSwapTargetBlock,

@@ -19,11 +19,11 @@ public class WorkspaceGenerateConfirmPage extends WorkspacePageBase {
         addTitle(context, root, Component.literal("Confirm Regenerate"));
         addHeaderText(context, root, Component.literal(
                 "This change is not covered by a safe live mutation. Regenerating will rebuild the workspace scaffold and overwrite existing authored workspace blocks."));
-        addHeaderText(context, root, Component.literal(context.draftWorkspaceId().get()));
+        addHeaderText(context, root, Component.literal(context.draftEditor().workspaceId()));
 
         MKButton confirm = addBottomButton(context, root, Component.literal("Regenerate Workspace"), 200, 1);
         confirm.setPressedCallback((button, mouseButton) -> {
-            context.sendWorkspaceDraft().run();
+            context.draftEditor().send();
             return true;
         });
 

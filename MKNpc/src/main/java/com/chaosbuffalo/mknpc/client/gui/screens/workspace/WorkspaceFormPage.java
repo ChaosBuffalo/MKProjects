@@ -20,7 +20,7 @@ public class WorkspaceFormPage extends WorkspacePageBase {
         addTitle(context, root, Component.literal("Workspace Configuration"));
         addHeaderText(context, root, Component.literal(
                 "Edit the workspace through focused v2 sections. Global screens handle naming, margins, materials, categories, family variants, openings, and hallway data."));
-        addHeaderText(context, root, Component.literal(context.workspaceFormSummary().get()));
+        addHeaderText(context, root, Component.literal(context.draftEditor().summary()));
 
         int firstButtonY = context.panelY() + 130;
         addNavigationButton(context, root, firstButtonY, "Identity & Bounds", "form_identity");
@@ -35,7 +35,7 @@ public class WorkspaceFormPage extends WorkspacePageBase {
         addNavigationButton(context, root, firstButtonY + ((context.buttonHeight() + context.buttonGap()) * 5),
                 "Hallway Families", "form_hallways");
 
-        if (context.hasExistingWorkspacePieces().getAsBoolean()) {
+        if (context.draftEditor().hasExistingWorkspacePieces()) {
             MKButton backToWorkspace = addBottomButton(context, root,
                     Component.translatable("mknpc.workspace.button.back_to_workspace"), 180, 1);
             backToWorkspace.setPressedCallback((button, mouseButton) -> {
@@ -47,7 +47,7 @@ public class WorkspaceFormPage extends WorkspacePageBase {
         MKButton generate = addBottomButton(context, root,
                 Component.translatable("mknpc.workspace.screen.generate"), 200, 0);
         generate.setPressedCallback((button, mouseButton) -> {
-            context.submitWorkspaceDraft().run();
+            context.draftEditor().submit();
             return true;
         });
 
