@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
-
 import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantPacket;
 import com.chaosbuffalo.mknpc.network.packets.ClearWorkspaceStairsPacket;
 import com.chaosbuffalo.mknpc.network.packets.GenerateWorkspaceStairsPacket;
