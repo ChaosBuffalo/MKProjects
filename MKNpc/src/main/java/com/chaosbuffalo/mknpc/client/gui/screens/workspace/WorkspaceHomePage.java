@@ -1,14 +1,12 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
-import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
-import com.chaosbuffalo.mkwidgets.client.gui.constraints.StackConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.network.chat.Component;
 
-public class WorkspaceHomePage implements WorkspacePage {
+public class WorkspaceHomePage extends WorkspacePageBase {
     public static final String ID = "home";
 
     @Override
@@ -18,23 +16,11 @@ public class WorkspaceHomePage implements WorkspacePage {
 
     @Override
     public MKLayout build(WorkspacePageContext context) {
-        int xPos = context.panelX();
         int yPos = context.panelY();
-        MKLayout root = new MKLayout(xPos, yPos, context.panelWidth(), context.panelHeight());
-        root.setMargins(8, 8, 8, 8);
-        root.setPaddingTop(8).setPaddingBot(8);
+        MKLayout root = createPanel(context);
 
-        MKText title = context.makeWhiteText(Component.translatable("mknpc.workspace.screen.title"));
-        root.addWidget(title);
-        root.addConstraintToWidget(MarginConstraint.TOP, title);
-        root.addConstraintToWidget(new CenterXConstraint(), title);
-
-        MKText helpText = context.makeWhiteText(Component.literal("Create a new workspace or load an exported one."));
-        helpText.setWidth(context.contentWidth());
-        helpText.setMultiline(true);
-        root.addWidget(helpText);
-        root.addConstraintToWidget(StackConstraint.VERTICAL, helpText);
-        root.addConstraintToWidget(new CenterXConstraint(), helpText);
+        addTitle(context, root, Component.translatable("mknpc.workspace.screen.title"));
+        addHeaderText(context, root, Component.literal("Create a new workspace or load an exported one."));
 
         MKButton createNew = new MKButton(Component.literal("Create New Workspace"), 220, 20);
         root.addWidget(createNew);
