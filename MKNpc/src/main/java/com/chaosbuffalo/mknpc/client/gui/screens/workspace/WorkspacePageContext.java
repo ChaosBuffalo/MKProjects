@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
@@ -10,9 +12,11 @@ import net.minecraft.network.chat.Component;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public record WorkspacePageContext(Font font,
                                    BlockPos anchor,
+                                   MKStructureWorkspace workspace,
                                    int screenWidth,
                                    int screenHeight,
                                    int panelWidth,
@@ -25,7 +29,10 @@ public record WorkspacePageContext(Font font,
                                    int headerScrollGap,
                                    int textColor,
                                    List<String> backupManifestFiles,
+                                   Consumer<String> pushState,
                                    Consumer<String> switchToExistingState,
+                                   Runnable flagNeedSetup,
+                                   Predicate<MKWorkspacePieceDefinition> supportsStairGeneration,
                                    BiConsumer<MKScrollView, String> finalizeScrollView) {
     public int panelX() {
         return screenWidth / 2 - panelWidth / 2;

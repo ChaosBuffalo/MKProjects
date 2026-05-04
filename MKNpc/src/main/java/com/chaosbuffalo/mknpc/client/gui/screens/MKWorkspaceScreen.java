@@ -4,17 +4,16 @@ import com.chaosbuffalo.mknpc.client.gui.widgets.MKBranchExitMaskWidget;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKBlockingModal;
 import com.chaosbuffalo.mknpc.client.gui.widgets.MKIntegerSlider;
 import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantPacket;
-import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantsForAllPacket;
 import com.chaosbuffalo.mknpc.network.packets.ClearWorkspaceStairsPacket;
 import com.chaosbuffalo.mknpc.network.packets.CreateWorkspacePacket;
 import com.chaosbuffalo.mknpc.network.packets.ExportWorkspacePiecesPacket;
-import com.chaosbuffalo.mknpc.network.packets.GenerateAllWorkspaceStairsPacket;
 import com.chaosbuffalo.mknpc.network.packets.GenerateWorkspaceStairsPacket;
 import com.chaosbuffalo.mknpc.network.packets.LoadWorkspaceFromManifestPacket;
 import com.chaosbuffalo.mknpc.network.packets.SwapWorkspaceBlockPacket;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceBackupPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePageContext;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceUtilitiesPage;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
@@ -246,7 +245,7 @@ public class MKWorkspaceScreen extends MKScreen {
         addState("form_hallways", this::buildFormHallwaysState);
         addState("form_hallway_detail", this::buildFormHallwayDetailState);
         addState("workspace", this::buildWorkspaceState);
-        addState("utilities", this::buildUtilitiesState);
+        addWorkspacePage(new WorkspaceUtilitiesPage());
         addState("block_swap", this::buildBlockSwapState);
         addWorkspacePage(new WorkspaceBackupPage());
         addState("category", this::buildCategoryState);
@@ -261,9 +260,10 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     private WorkspacePageContext createPageContext() {
-        return new WorkspacePageContext(font, anchor, width, height, PANEL_WIDTH, PANEL_HEIGHT, SCROLL_WIDTH,
+        return new WorkspacePageContext(font, anchor, workspace, width, height, PANEL_WIDTH, PANEL_HEIGHT, SCROLL_WIDTH,
                 CONTENT_WIDTH, BUTTON_HEIGHT, BOTTOM_PADDING, TOP_CONTENT_Y, HEADER_SCROLL_GAP, TEXT_COLOR,
-                backupManifestFiles, this::switchToExistingState, this::finalizeScrollView);
+                backupManifestFiles, this::pushState, this::switchToExistingState, this::flagNeedSetup,
+                this::supportsStairGeneration, this::finalizeScrollView);
     }
 
     @Override
@@ -1813,87 +1813,6 @@ public class MKWorkspaceScreen extends MKScreen {
             return true;
         });
 
-        return root;
-    }
-
-    private MKLayout buildUtilitiesState() {
-        int xPos = width / 2 - PANEL_WIDTH / 2;
-        int yPos = height / 2 - PANEL_HEIGHT / 2;
-        MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
-        root.setMargins(8, 8, 8, 8);
-        root.setPaddingTop(8).setPaddingBot(8);
-
-        MKText title = makeWhiteText(Component.literal("Utilities"));
-        root.addWidget(title);
-        root.addConstraintToWidget(MarginConstraint.TOP, title);
-        root.addConstraintToWidget(new CenterXConstraint(), title);
-
-        MKText summary = makeWhiteText(Component.literal("Workspace-wide tools for live workspace maintenance."));
-        summary.setWidth(CONTENT_WIDTH);
-        summary.setMultiline(true);
-        root.addWidget(summary);
-        root.addConstraintToWidget(StackConstraint.VERTICAL, summary);
-        root.addConstraintToWidget(new CenterXConstraint(), summary);
-
-        int scrollTop = scrollTopAfterHeader(root, summary);
-        int scrollHeight = yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT - 12 - scrollTop;
-        MKScrollView scrollView = new MKScrollView(xPos + 10, scrollTop, SCROLL_WIDTH, scrollHeight);
-        scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
-        root.addWidget(scrollView);
-
-        MKStackLayoutVertical content = new MKStackLayoutVertical(0, 0, CONTENT_WIDTH);
-        content.setMargins(4, 4, 4, 4);
-        content.setPaddingTop(4).setPaddingBot(4);
-
-        MKButton blockSwap = new MKButton(Component.literal("Block Swap"), 180, 20);
-        content.addWidget(blockSwap);
-        content.addConstraintToWidget(new CenterXConstraint(), blockSwap);
-        blockSwap.setPressedCallback((button, mouseButton) -> {
-            pushState("block_swap");
-            flagNeedSetup();
-            return true;
-        });
-
-        MKButton backups = new MKButton(Component.literal("Backups (" + backupManifestFiles.size() + ")"), 180, 20);
-        content.addWidget(backups);
-        content.addConstraintToWidget(new CenterXConstraint(), backups);
-        backups.setPressedCallback((button, mouseButton) -> {
-            pushState("backups");
-            flagNeedSetup();
-            return true;
-        });
-
-        if (workspace.pieces().stream().anyMatch(this::supportsStairGeneration)) {
-            MKButton generateAllStairs = new MKButton(Component.literal("Generate All Stairs"), 180, 20);
-            content.addWidget(generateAllStairs);
-            content.addConstraintToWidget(new CenterXConstraint(), generateAllStairs);
-            generateAllStairs.setPressedCallback((button, mouseButton) -> {
-                PacketDistributor.sendToServer(new GenerateAllWorkspaceStairsPacket(anchor));
-                return true;
-            });
-        }
-
-        MKButton addCopyForAll = new MKButton(Component.translatable("mknpc.workspace.button.add_copy_for_all"), 180, 20);
-        content.addWidget(addCopyForAll);
-        content.addConstraintToWidget(new CenterXConstraint(), addCopyForAll);
-        addCopyForAll.setPressedCallback((button, mouseButton) -> {
-            PacketDistributor.sendToServer(new AddWorkspaceVariantsForAllPacket(anchor));
-            return true;
-        });
-
-        content.manualRecompute();
-        scrollView.addWidget(content);
-        scrollView.centerContentX();
-        finalizeScrollView(scrollView, "utilities");
-
-        MKButton back = new MKButton(Component.literal("Back"), 120, 20);
-        root.addWidget(back);
-        root.addConstraintToWidget(new CenterXConstraint(), back);
-        back.setY(yPos + PANEL_HEIGHT - BOTTOM_PADDING - BUTTON_HEIGHT);
-        back.setPressedCallback((button, mouseButton) -> {
-            switchToExistingState("workspace");
-            return true;
-        });
         return root;
     }
 
