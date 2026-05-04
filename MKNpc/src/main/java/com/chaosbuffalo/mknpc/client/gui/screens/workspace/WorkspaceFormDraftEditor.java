@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
@@ -70,4 +71,10 @@ public interface WorkspaceFormDraftEditor {
     void selectedOpeningIndex(int index);
 
     int addOpeningProfile();
+
+    List<MKHallwayFamilyDefinition> hallwayFamilies();
+
+    void selectedHallwayIndex(int index);
+
+    int addHallwayFamily();
 }
