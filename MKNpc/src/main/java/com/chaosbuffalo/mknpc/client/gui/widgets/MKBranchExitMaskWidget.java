@@ -13,10 +13,11 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class MKBranchExitMaskWidget extends MKWidget {
-    private static final int WIDGET_SIZE = 92;
+    private static final int WIDGET_SIZE = 112;
     private static final int ROOM_SIZE = 28;
     private static final int ARM_LENGTH = 18;
     private static final int ARM_THICKNESS = 10;
+    private static final int VERTICAL_BUTTON_SIZE = 22;
     private static final int BACKGROUND = 0xFF1B1B1F;
     private static final int BORDER = 0xFF72727A;
     private static final int ROOM_FILL = 0xFF2A3440;
@@ -25,6 +26,7 @@ public class MKBranchExitMaskWidget extends MKWidget {
     private static final int SELECTED_MAIN_ENTRY = 0xFFF59E0B;
     private static final int SELECTED_MAIN_EXIT = 0xFF60A5FA;
     private static final int SELECTED_BRANCH_EXIT = 0xFF74C69D;
+    private static final int SELECTED_VERTICAL = 0xFFA78BFA;
     private static final int LABEL_ACTIVE = 0xFFF8FAFC;
     private static final int LABEL_INACTIVE = 0xFF9CA3AF;
 
@@ -36,7 +38,7 @@ public class MKBranchExitMaskWidget extends MKWidget {
     public MKBranchExitMaskWidget(List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits) {
         super(0, 0, WIDGET_SIZE, WIDGET_SIZE);
         this.horizontalExits = List.copyOf(horizontalExits);
-        setTooltip(Component.literal("Left click an active exit to edit its role. Right click to toggle exits on or off."));
+        setTooltip(Component.literal("Left click an active exit to edit it. Right click to toggle exits on or off."));
     }
 
     public MKBranchExitMaskWidget setEditCallback(Consumer<Direction> editCallback) {
@@ -95,6 +97,8 @@ public class MKBranchExitMaskWidget extends MKWidget {
         drawExit(graphics, Direction.EAST, roomLeft, roomTop, roomRight, roomBottom, centerX, centerY);
         drawExit(graphics, Direction.SOUTH, roomLeft, roomTop, roomRight, roomBottom, centerX, centerY);
         drawExit(graphics, Direction.WEST, roomLeft, roomTop, roomRight, roomBottom, centerX, centerY);
+        drawVerticalExit(graphics, mc, Direction.UP, x + 8, y + 8);
+        drawVerticalExit(graphics, mc, Direction.DOWN, x + width - 8 - VERTICAL_BUTTON_SIZE, y + 8);
 
         graphics.fill(roomLeft, roomTop, roomRight, roomBottom, ROOM_FILL);
         graphics.fill(roomLeft, roomTop, roomRight, roomTop + 1, BORDER);
@@ -107,6 +111,22 @@ public class MKBranchExitMaskWidget extends MKWidget {
         drawDirectionLabel(graphics, mc, Direction.EAST, roomRight + ARM_LENGTH - 2, centerY - 4);
         drawDirectionLabel(graphics, mc, Direction.SOUTH, centerX, roomBottom + ARM_LENGTH - 1);
         drawDirectionLabel(graphics, mc, Direction.WEST, roomLeft - ARM_LENGTH + 2, centerY - 4);
+    }
+
+    private void drawVerticalExit(GuiGraphics graphics, Minecraft minecraft, Direction direction, int left, int top) {
+        int color = exitColor(direction);
+        graphics.fill(left, top, left + VERTICAL_BUTTON_SIZE, top + VERTICAL_BUTTON_SIZE, color);
+        graphics.fill(left, top, left + VERTICAL_BUTTON_SIZE, top + 1, BORDER);
+        graphics.fill(left, top + VERTICAL_BUTTON_SIZE - 1, left + VERTICAL_BUTTON_SIZE,
+                top + VERTICAL_BUTTON_SIZE, BORDER);
+        graphics.fill(left, top, left + 1, top + VERTICAL_BUTTON_SIZE, BORDER);
+        graphics.fill(left + VERTICAL_BUTTON_SIZE - 1, top, left + VERTICAL_BUTTON_SIZE,
+                top + VERTICAL_BUTTON_SIZE, BORDER);
+        graphics.drawCenteredString(minecraft.font,
+                Component.literal(direction == Direction.UP ? "T" : "B"),
+                left + (VERTICAL_BUTTON_SIZE / 2),
+                top + 7,
+                exitKind(direction) == ExitKind.NONE ? LABEL_INACTIVE : LABEL_ACTIVE);
     }
 
     private void drawExit(GuiGraphics graphics, Direction direction, int roomLeft, int roomTop, int roomRight, int roomBottom,
@@ -142,6 +162,7 @@ public class MKBranchExitMaskWidget extends MKWidget {
                 case MAIN_EXIT -> SELECTED_MAIN_EXIT;
                 case MAIN_ENDING_ENTRY -> SELECTED_MAIN_ENTRY;
                 case BRANCH, BRANCH_CAP_ENTRY -> SELECTED_BRANCH_EXIT;
+                case VERTICAL_ACCESS -> SELECTED_VERTICAL;
                 case NONE -> INACTIVE_EXIT;
             };
         }
@@ -157,6 +178,7 @@ public class MKBranchExitMaskWidget extends MKWidget {
             case MAIN_ENDING_ENTRY -> direction.getName().substring(0, 1).toUpperCase() + "E";
             case BRANCH -> direction.getName().substring(0, 1).toUpperCase() + "B";
             case BRANCH_CAP_ENTRY -> direction.getName().substring(0, 1).toUpperCase() + "C";
+            case VERTICAL_ACCESS -> direction == Direction.UP ? "T" : "B";
             case NONE -> direction.getName().substring(0, 1).toUpperCase();
         };
         graphics.drawCenteredString(minecraft.font, Component.literal(label), x, y, color);
@@ -172,6 +194,7 @@ public class MKBranchExitMaskWidget extends MKWidget {
                     case MAIN_ENDING_ENTRY -> ExitKind.MAIN_ENDING_ENTRY;
                     case BRANCH -> ExitKind.BRANCH;
                     case BRANCH_CAP_ENTRY -> ExitKind.BRANCH_CAP_ENTRY;
+                    case VERTICAL_ACCESS -> ExitKind.VERTICAL_ACCESS;
                 })
                 .orElse(ExitKind.NONE);
     }
@@ -183,6 +206,18 @@ public class MKBranchExitMaskWidget extends MKWidget {
         int roomTop = centerY - (ROOM_SIZE / 2);
         int roomRight = roomLeft + ROOM_SIZE;
         int roomBottom = roomTop + ROOM_SIZE;
+
+        int upLeft = getX() + 8;
+        int top = getY() + 8;
+        if (mouseX >= upLeft && mouseX <= upLeft + VERTICAL_BUTTON_SIZE &&
+                mouseY >= top && mouseY <= top + VERTICAL_BUTTON_SIZE) {
+            return Direction.UP;
+        }
+        int downLeft = getX() + getWidth() - 8 - VERTICAL_BUTTON_SIZE;
+        if (mouseX >= downLeft && mouseX <= downLeft + VERTICAL_BUTTON_SIZE &&
+                mouseY >= top && mouseY <= top + VERTICAL_BUTTON_SIZE) {
+            return Direction.DOWN;
+        }
 
         if (mouseX >= centerX - (ARM_THICKNESS / 2) && mouseX <= centerX + (ARM_THICKNESS / 2)) {
             if (mouseY >= roomTop - ARM_LENGTH && mouseY <= roomTop) {
@@ -209,6 +244,7 @@ public class MKBranchExitMaskWidget extends MKWidget {
         MAIN_EXIT,
         MAIN_ENDING_ENTRY,
         BRANCH,
-        BRANCH_CAP_ENTRY
+        BRANCH_CAP_ENTRY,
+        VERTICAL_ACCESS
     }
 }

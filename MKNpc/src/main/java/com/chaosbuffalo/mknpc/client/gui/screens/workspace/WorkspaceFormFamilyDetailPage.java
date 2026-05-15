@@ -100,24 +100,6 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
             screen.flagNeedSetup();
             return true;
         });
-        MKButton supportsVerticalButton = new MKButton(Component.literal(family.supportsVerticalAccess() ? "Enabled" : "Disabled"), 180, 20);
-        supportsVerticalButton.setPressedCallback((button, mouseButton) -> {
-            MKTowerWorkspaceCategoryProfile categoryProfile = editor.getCategoryProfile(family.category());
-            boolean supportsVerticalAccess = !family.supportsVerticalAccess();
-            editor.replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
-                    family.baseName(), family.category(), family.pieceRole(),
-                    supportsVerticalAccess,
-                    editor.normalizeFamilyWidthForCategory(family.roomWidth(), supportsVerticalAccess, categoryProfile),
-                    editor.normalizeFamilyLengthForCategory(family.roomLength(), supportsVerticalAccess, categoryProfile),
-                    editor.normalizeFamilyHeightForCategory(family.roomHeight(), supportsVerticalAccess, categoryProfile),
-                    family.horizontalExtrusionMode(),
-                    family.horizontalExits(),
-                    supportsVerticalAccess ? 0 : family.topVoidMargin(),
-                    supportsVerticalAccess ? 0 : family.bottomVoidMargin(),
-                    family.paletteOverride()));
-            screen.flagNeedSetup();
-            return true;
-        });
         MKButton extrusionModeButton = new MKButton(Component.literal(formatFamilyExtrusionMode(family.horizontalExtrusionMode())), 180, 20);
         extrusionModeButton.setPressedCallback((button, mouseButton) -> {
             editor.replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
@@ -150,7 +132,6 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         addRow(screen, content, screen.makeWhiteText(Component.literal("Base Name")), baseNameField);
         addRow(screen, content, screen.makeWhiteText(Component.literal("Category")), categoryButton);
         addRow(screen, content, screen.makeWhiteText(Component.literal("Role")), roleButton);
-        addRow(screen, content, screen.makeWhiteText(Component.literal("Vertical Access")), supportsVerticalButton);
         addRow(screen, content, screen.makeWhiteText(Component.literal("Horizontal Extrusion")), extrusionModeButton);
         addRow(screen, content, screen.makeWhiteText(Component.literal("Room Width")), roomWidthSlider);
         addRow(screen, content, screen.makeWhiteText(Component.literal("Room Length")), roomLengthSlider);
@@ -195,7 +176,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                 family.paletteOverrideOpt(),
                 override -> editor.replaceFamilyDefinition(index, editor.copyFamilyDefinition(family, override)));
 
-        MKText exitLabel = screen.makeWhiteText(Component.literal("Horizontal Exits"));
+        MKText exitLabel = screen.makeWhiteText(Component.literal("Family Exits"));
         content.addWidget(exitLabel);
         content.addConstraintToWidget(MarginConstraint.LEFT, exitLabel);
         MKBranchExitMaskWidget exitWidget = new MKBranchExitMaskWidget(family.horizontalExits())
@@ -260,6 +241,19 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         content.addWidget(header);
         content.addConstraintToWidget(MarginConstraint.LEFT, header);
 
+        if (exit.isVerticalAccess()) {
+            MKButton directionButton = new MKButton(Component.literal(formatDirection(exit.direction())), 180, 20);
+            directionButton.setPressedCallback((button, mouseButton) -> {
+                Direction nextDirection = exit.direction() == Direction.UP ? Direction.DOWN : Direction.UP;
+                editor.replaceFamilyExit(familyIndex, exitIndex,
+                        MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(nextDirection));
+                screen.refreshPreservingActiveScroll();
+                return true;
+            });
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Direction")), directionButton);
+            return;
+        }
+
         MKButton directionButton = new MKButton(Component.literal(formatDirection(exit.direction())), 180, 20);
         directionButton.setPressedCallback((button, mouseButton) -> {
             MKTowerWorkspaceFamilyDefinition family = editor.draft().familyDefinitions.get(familyIndex);
@@ -279,7 +273,10 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         pathKindButton.setPressedCallback((button, mouseButton) -> {
             MKTowerWorkspaceFamilyDefinition family = editor.draft().familyDefinitions.get(familyIndex);
             MKWorkspaceHorizontalExitPathKind nextPathKind = cycleValue(
-                    List.of(MKWorkspaceHorizontalExitPathKind.values()), exit.pathKind(), isReverseClick(mouseButton));
+                    List.of(MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY, MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                            MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY, MKWorkspaceHorizontalExitPathKind.BRANCH,
+                            MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY),
+                    exit.pathKind(), isReverseClick(mouseButton));
             String nextOpeningProfileId = editor.ensureCompatibleOpeningProfile(nextPathKind, exit.openingProfileId());
             editor.replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
                     exit.direction(),
@@ -381,6 +378,9 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
     }
 
     private String describeFamilyExit(MKWorkspaceFamilyHorizontalExitDefinition exit) {
+        if (exit.isVerticalAccess()) {
+            return formatDirection(exit.direction()) + " / " + formatTopologyLabel(exit.pathKind().getSerializedName());
+        }
         return formatDirection(exit.direction()) + " / " + formatTopologyLabel(exit.pathKind().getSerializedName()) +
                 " / " + formatExitConnectionMode(exit.connectionMode()) + " / " + exit.openingProfileId() +
                 " / side " + exit.sideOffset() + " / up " + exit.verticalOffset();

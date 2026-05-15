@@ -102,6 +102,9 @@ public class WorkspaceFormFamilyCategoryPage extends WorkspacePageBase {
     }
 
     private String describeFamilyExit(MKWorkspaceFamilyHorizontalExitDefinition exit) {
+        if (exit.isVerticalAccess()) {
+            return formatDirection(exit.direction()) + " / " + formatTopologyLabel(exit.pathKind().getSerializedName());
+        }
         return formatDirection(exit.direction()) + " / " + formatTopologyLabel(exit.pathKind().getSerializedName()) +
                 " / " + formatExitConnectionMode(exit.connectionMode()) + " / " + exit.openingProfileId() +
                 " / side " + exit.sideOffset() + " / up " + exit.verticalOffset();
