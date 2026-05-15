@@ -242,15 +242,6 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         content.addConstraintToWidget(MarginConstraint.LEFT, header);
 
         if (exit.isVerticalAccess()) {
-            MKButton directionButton = new MKButton(Component.literal(formatDirection(exit.direction())), 180, 20);
-            directionButton.setPressedCallback((button, mouseButton) -> {
-                Direction nextDirection = exit.direction() == Direction.UP ? Direction.DOWN : Direction.UP;
-                editor.replaceFamilyExit(familyIndex, exitIndex,
-                        MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(nextDirection));
-                screen.refreshPreservingActiveScroll();
-                return true;
-            });
-            addRow(screen, content, screen.makeWhiteText(Component.literal("Direction")), directionButton);
             return;
         }
 

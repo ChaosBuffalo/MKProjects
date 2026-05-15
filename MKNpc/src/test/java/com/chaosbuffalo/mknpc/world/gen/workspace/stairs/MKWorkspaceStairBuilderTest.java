@@ -59,6 +59,36 @@ class MKWorkspaceStairBuilderTest {
     }
 
     @Test
+    void pieceWithoutDownExitClipsEditsAboveBottomShell() {
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
+        MKWorkspacePieceDefinition topOnly = verticalPiece(MKWorkspacePieceRole.FLOOR_MAIN,
+                Map.of(MKWorkspaceVerticalAccessTags.ENABLED_TAG, "true"),
+                List.of(verticalConnector(Direction.UP)));
+
+        MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry = builder.getGenerationGeometry(workspace, topOnly);
+
+        assertEquals(0, geometry.interiorMinY());
+        assertEquals(6, geometry.interiorMaxY());
+        assertEquals(1, builder.getEditableMinY(topOnly, geometry));
+    }
+
+    @Test
+    void pieceWithoutUpExitUsesTopCapTraversalRange() {
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
+        MKWorkspacePieceDefinition bottomOnly = verticalPiece(MKWorkspacePieceRole.FLOOR_MAIN,
+                Map.of(MKWorkspaceVerticalAccessTags.ENABLED_TAG, "true"),
+                List.of(verticalConnector(Direction.DOWN)));
+
+        MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry = builder.getGenerationGeometry(workspace, bottomOnly);
+
+        assertEquals(0, geometry.interiorMinY());
+        assertEquals(0, geometry.interiorMaxY());
+        assertEquals(0, builder.getEditableMinY(bottomOnly, geometry));
+    }
+
+    @Test
     void verticalAccessGeometryIgnoresBottomVoidMarginTags() {
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
         MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
@@ -244,6 +274,11 @@ class MKWorkspaceStairBuilderTest {
     }
 
     private MKWorkspacePieceDefinition verticalPiece(MKWorkspacePieceRole role, Map<String, String> tags) {
+        return verticalPiece(role, tags, List.of(verticalConnector(Direction.UP), verticalConnector(Direction.DOWN)));
+    }
+
+    private MKWorkspacePieceDefinition verticalPiece(MKWorkspacePieceRole role, Map<String, String> tags,
+                                                     List<MKWorkspaceConnectorDefinition> connectors) {
         UUID workspaceId = UUID.randomUUID();
         BoundingBox bounds = new BoundingBox(0, 0, 0, 10, 6, 10);
         return new MKWorkspacePieceDefinition(
@@ -254,7 +289,7 @@ class MKWorkspaceStairBuilderTest {
                 0,
                 new MKWorkspaceDimensions(9, 9, 5, 5, 5, 3, 3, 3),
                 1,
-                List.of(verticalConnector(Direction.UP), verticalConnector(Direction.DOWN)),
+                connectors,
                 BlockPos.ZERO,
                 bounds,
                 bounds,

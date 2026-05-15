@@ -58,7 +58,7 @@ public class MKWorkspaceStairBuilder {
         if (resolvedMode == MKWorkspaceStairMode.LADDER) {
             return generateLadder(level, piece, geometry, effectiveStairConfig);
         }
-        if (MKWorkspaceVerticalAccessTags.isTopCap(piece.tags())) {
+        if (isTerminalTop(piece)) {
             return generateTopCapContinuation(level, piece, geometry, effectiveStairConfig, resolvedMode);
         }
         MKWorkspaceStairAuthoringConfig resolvedConfig = normalizeConfigForMode(effectiveStairConfig, resolvedMode);
@@ -480,7 +480,7 @@ public class MKWorkspaceStairBuilder {
 
     int getEditableMinY(MKWorkspacePieceDefinition piece,
                         MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry) {
-        if (MKWorkspaceVerticalAccessTags.isBottomCap(piece.tags())) {
+        if (isTerminalBottom(piece)) {
             return Math.min(geometry.interiorMaxY(), geometry.interiorMinY() + 1);
         }
         return geometry.interiorMinY();
@@ -491,7 +491,7 @@ public class MKWorkspaceStairBuilder {
     }
 
     private boolean isProtectedBottomShell(MKWorkspacePieceDefinition piece, BlockPos pos) {
-        return MKWorkspaceVerticalAccessTags.isBottomCap(piece.tags()) && pos.getY() <= piece.exportBounds().minY();
+        return isTerminalBottom(piece) && pos.getY() <= piece.exportBounds().minY();
     }
 
     private void clipBelowMinY(Map<BlockPos, BlockState> planned, LinkedHashSet<BlockPos> generated, int editableMinY) {
@@ -509,7 +509,7 @@ public class MKWorkspaceStairBuilder {
                                                                           MKWorkspacePieceDefinition piece) {
         MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry = MKWorkspaceVerticalAccessGeometry.forPiece(workspace, piece);
         BoundingBox bounds = geometry.shaftBounds();
-        if (MKWorkspaceVerticalAccessTags.isTopCap(piece.tags())) {
+        if (isTerminalTop(piece)) {
             BoundingBox constrainedBounds = new BoundingBox(
                     bounds.minX(),
                     geometry.interiorMinY(),
@@ -522,6 +522,18 @@ public class MKWorkspaceStairBuilder {
                     geometry.interiorMinY(), geometry.placement());
         }
         return geometry;
+    }
+
+    private boolean isTerminalTop(MKWorkspacePieceDefinition piece) {
+        return MKWorkspaceVerticalAccessTags.isTopCap(piece.tags()) || !hasVerticalConnector(piece, Direction.UP);
+    }
+
+    private boolean isTerminalBottom(MKWorkspacePieceDefinition piece) {
+        return MKWorkspaceVerticalAccessTags.isBottomCap(piece.tags()) || !hasVerticalConnector(piece, Direction.DOWN);
+    }
+
+    private boolean hasVerticalConnector(MKWorkspacePieceDefinition piece, Direction direction) {
+        return piece.connectors().stream().anyMatch(connector -> connector.facing() == direction);
     }
 
     private MKWorkspaceStairMode resolveMode(MKWorkspaceStairAuthoringConfig stairConfig,
