@@ -181,14 +181,12 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
                 value -> editor.replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                         profile.category(), value, profile.roomLength(), profile.fullHeight(),
                         profile.minMainPathPieces(), profile.maxMainPathPieces(),
-                        profile.maxBranchPiecesBeforeCap(), profile.topVoidMargin(), profile.bottomVoidMargin(),
-                        profile.paletteOverride())));
+                        profile.maxBranchPiecesBeforeCap(), profile.paletteOverride())));
         MKIntegerSlider roomLengthSlider = new MKIntegerSlider("Length", 180, 20, 1, 45, 2, profile.roomLength(),
                 value -> editor.replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                         profile.category(), profile.roomWidth(), value, profile.fullHeight(),
                         profile.minMainPathPieces(), profile.maxMainPathPieces(),
-                        profile.maxBranchPiecesBeforeCap(), profile.topVoidMargin(), profile.bottomVoidMargin(),
-                        profile.paletteOverride())));
+                        profile.maxBranchPiecesBeforeCap(), profile.paletteOverride())));
 
         addRow(screen, content, screen.makeWhiteText(Component.literal("Room Width")), roomWidthSlider);
         addRow(screen, content, screen.makeWhiteText(Component.literal("Room Length")), roomLengthSlider);
@@ -197,12 +195,12 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
                     profile.minMainPathPieces(), value -> editor.replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                     profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
                     value, Math.max(value, profile.maxMainPathPieces()), profile.maxBranchPiecesBeforeCap(),
-                    profile.topVoidMargin(), profile.bottomVoidMargin(), profile.paletteOverride())));
+                    profile.paletteOverride())));
             MKIntegerSlider maxPathSlider = new MKIntegerSlider("Max", 180, 20, 0, 10, 1,
                     profile.maxMainPathPieces(), value -> editor.replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                     profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
                     Math.min(profile.minMainPathPieces(), value), value, profile.maxBranchPiecesBeforeCap(),
-                    profile.topVoidMargin(), profile.bottomVoidMargin(), profile.paletteOverride())));
+                    profile.paletteOverride())));
             addRow(screen, content, screen.makeWhiteText(Component.literal("Main Path Min")), minPathSlider);
             addRow(screen, content, screen.makeWhiteText(Component.literal("Main Path Max")), maxPathSlider);
         }
@@ -210,25 +208,8 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
                 MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP, 1,
                 profile.maxBranchPiecesBeforeCap(), value -> editor.replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
                 profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
-                profile.minMainPathPieces(), profile.maxMainPathPieces(), value, profile.topVoidMargin(),
-                profile.bottomVoidMargin(), profile.paletteOverride())));
+                profile.minMainPathPieces(), profile.maxMainPathPieces(), value, profile.paletteOverride())));
         addRow(screen, content, screen.makeWhiteText(Component.literal("Branch Cap Max")), maxBranchBeforeCapSlider);
-        if (category == MKTowerWorkspaceCategory.TOP_CAP) {
-            MKIntegerSlider topVoidMarginSlider = new MKIntegerSlider("Margin", 180, 20, 0, 32, 1,
-                    profile.topVoidMargin(), value -> editor.replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
-                    profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
-                    profile.minMainPathPieces(), profile.maxMainPathPieces(), profile.maxBranchPiecesBeforeCap(),
-                    value, profile.bottomVoidMargin(), profile.paletteOverride())));
-            addRow(screen, content, screen.makeWhiteText(Component.literal("Top Void Margin")), topVoidMarginSlider);
-        }
-        if (category == MKTowerWorkspaceCategory.BASEMENT_CAP) {
-            MKIntegerSlider bottomVoidMarginSlider = new MKIntegerSlider("Margin", 180, 20, 0, 32, 1,
-                    profile.bottomVoidMargin(), value -> editor.replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
-                    profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
-                    profile.minMainPathPieces(), profile.maxMainPathPieces(), profile.maxBranchPiecesBeforeCap(),
-                    profile.topVoidMargin(), value, profile.paletteOverride())));
-            addRow(screen, content, screen.makeWhiteText(Component.literal("Bottom Void Margin")), bottomVoidMarginSlider);
-        }
         screen.addPaletteOverrideRows(content, "Palette Overrides", editor.draftBasePalette(), profile.paletteOverrideOpt(),
                 override -> editor.replaceCategoryProfile(editor.copyCategoryProfile(profile, override)));
     }
@@ -244,8 +225,6 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
                     value,
                     profile.minMainPathPieces(), profile.maxMainPathPieces(),
                     profile.maxBranchPiecesBeforeCap(),
-                    profile.topVoidMargin(),
-                    profile.bottomVoidMargin(),
                     profile.paletteOverride()));
             screen.flagNeedSetup();
         });

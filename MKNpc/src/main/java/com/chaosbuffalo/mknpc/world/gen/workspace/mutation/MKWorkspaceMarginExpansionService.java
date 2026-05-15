@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
@@ -459,7 +460,8 @@ public class MKWorkspaceMarginExpansionService {
         int exportWidth = piece.interiorWidth() + (2 * shellMargin) + (2 * exteriorAirMargin);
         int exportLength = piece.interiorLength() + (2 * shellMargin) + (2 * exteriorAirMargin);
         int bodyHeight = piece.interiorHeight() + (2 * verticalShellThickness);
-        int exportHeight = bodyHeight + topVoidMargin + bottomVoidMargin;
+        int exportHeight = bodyHeight;
+        int geometryHeight = Math.max(1, bodyHeight - topVoidMargin - bottomVoidMargin);
         BlockPos geometryOrigin = exportOrigin.offset(exteriorAirMargin, bottomVoidMargin, exteriorAirMargin);
         BoundingBox exportBounds = new BoundingBox(
                 exportOrigin.getX(),
@@ -474,7 +476,7 @@ public class MKWorkspaceMarginExpansionService {
                 geometryOrigin.getY(),
                 geometryOrigin.getZ(),
                 geometryOrigin.getX() + piece.interiorWidth() + (2 * shellMargin) - 1,
-                geometryOrigin.getY() + bodyHeight - 1,
+                geometryOrigin.getY() + geometryHeight - 1,
                 geometryOrigin.getZ() + piece.interiorLength() + (2 * shellMargin) - 1
         );
         BlockPos structureBlockPos = exportOrigin.offset(-2, 1, exportLength / 2);
@@ -580,14 +582,23 @@ public class MKWorkspaceMarginExpansionService {
     }
 
     private int getTopVoidMargin(MKPlannedPiece piece) {
+        if (MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags())) {
+            return 0;
+        }
         return Math.max(0, parseIntTag(piece.tags(), MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG, 0));
     }
 
     private int getBottomVoidMargin(MKPlannedPiece piece) {
+        if (MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags())) {
+            return 0;
+        }
         return Math.max(0, parseIntTag(piece.tags(), MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG, 0));
     }
 
     private int getBottomVoidMargin(MKWorkspacePieceDefinition piece) {
+        if (MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags())) {
+            return 0;
+        }
         return Math.max(0, parseIntTag(piece.tags(), MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG, 0));
     }
 

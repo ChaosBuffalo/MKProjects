@@ -499,7 +499,7 @@ public class WorkspaceDraftSession {
         replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits,
-                family.paletteOverride()
+                family.topVoidMargin(), family.bottomVoidMargin(), family.paletteOverride()
         ));
     }
 
@@ -525,7 +525,7 @@ public class WorkspaceDraftSession {
         replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits,
-                family.paletteOverride()
+                family.topVoidMargin(), family.bottomVoidMargin(), family.paletteOverride()
         ));
     }
 
@@ -545,7 +545,7 @@ public class WorkspaceDraftSession {
         replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits,
-                family.paletteOverride()
+                family.topVoidMargin(), family.bottomVoidMargin(), family.paletteOverride()
         ));
         return exits.size() - 1;
     }
@@ -772,9 +772,6 @@ public class WorkspaceDraftSession {
         int roomWidth = Math.max(3, makeOdd(profile.roomWidth()));
         int roomLength = Math.max(3, makeOdd(profile.roomLength()));
         int fullHeight = normalizeCategoryFullHeight(profile.category(), profile.fullHeight(), verticalAccessSpec, normalizedMainHeight);
-        int topVoidMargin = profile.category() == MKTowerWorkspaceCategory.TOP_CAP ? Math.max(0, profile.topVoidMargin()) : 0;
-        int bottomVoidMargin = profile.category() == MKTowerWorkspaceCategory.BASEMENT_CAP ?
-                Math.max(0, profile.bottomVoidMargin()) : 0;
         return new MKTowerWorkspaceCategoryProfile(
                 profile.category(),
                 roomWidth,
@@ -784,8 +781,6 @@ public class WorkspaceDraftSession {
                 Math.max(Math.max(0, profile.minMainPathPieces()), profile.maxMainPathPieces()),
                 Math.max(0, Math.min(MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP,
                         profile.maxBranchPiecesBeforeCap())),
-                topVoidMargin,
-                bottomVoidMargin,
                 profile.paletteOverride()
         );
     }
@@ -872,6 +867,11 @@ public class WorkspaceDraftSession {
         int roomWidth = normalizeFamilyWidthForCategory(family.roomWidth(), family.supportsVerticalAccess(), profile);
         int roomLength = normalizeFamilyLengthForCategory(family.roomLength(), family.supportsVerticalAccess(), profile);
         int roomHeight = normalizeFamilyHeightForCategory(family.roomHeight(), family.supportsVerticalAccess(), profile);
+        int availableVoidMargin = Math.max(0, roomHeight - MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT);
+        int topVoidMargin = family.supportsVerticalAccess() ? 0 :
+                clamp(family.topVoidMargin(), 0, availableVoidMargin);
+        int bottomVoidMargin = family.supportsVerticalAccess() ? 0 :
+                clamp(family.bottomVoidMargin(), 0, availableVoidMargin - topVoidMargin);
         MKTowerWorkspaceFamilyDefinition normalizedGeometry = new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(),
                 family.category(),
@@ -882,6 +882,8 @@ public class WorkspaceDraftSession {
                 roomHeight,
                 family.horizontalExtrusionMode(),
                 family.horizontalExits(),
+                topVoidMargin,
+                bottomVoidMargin,
                 family.paletteOverride()
         );
         return new MKTowerWorkspaceFamilyDefinition(
@@ -903,6 +905,8 @@ public class WorkspaceDraftSession {
                                 clampVerticalOffset(normalizedGeometry, exit.openingProfileId(), exit.verticalOffset())
                         ))
                         .toList(),
+                topVoidMargin,
+                bottomVoidMargin,
                 family.paletteOverride()
         );
     }
@@ -1055,8 +1059,6 @@ public class WorkspaceDraftSession {
                 profile.minMainPathPieces(),
                 profile.maxMainPathPieces(),
                 profile.maxBranchPiecesBeforeCap(),
-                profile.topVoidMargin(),
-                profile.bottomVoidMargin(),
                 paletteOverride.orElse(null)
         );
     }
@@ -1073,6 +1075,8 @@ public class WorkspaceDraftSession {
                 family.roomHeight(),
                 family.horizontalExtrusionMode(),
                 family.horizontalExits(),
+                family.topVoidMargin(),
+                family.bottomVoidMargin(),
                 paletteOverride.orElse(null)
         );
     }

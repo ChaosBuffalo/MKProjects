@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.stairs;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
@@ -54,6 +55,37 @@ class MKWorkspaceStairBuilderTest {
         assertEquals(0, geometry.interiorMinY());
         assertEquals(6, geometry.interiorMaxY());
         assertEquals(1, builder.getEditableMinY(bottomCap, geometry));
+    }
+
+    @Test
+    void verticalAccessGeometryIgnoresBottomVoidMarginTags() {
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
+        MKWorkspacePieceDefinition bottomCap = verticalCapPiece(Direction.UP,
+                MKWorkspaceVerticalAccessTags.BOTTOM_CAP_TAG,
+                new BoundingBox(0, 0, 0, 10, 8, 10),
+                Map.of(MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG, "2"));
+
+        MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry = builder.getGenerationGeometry(workspace, bottomCap);
+
+        assertEquals(0, geometry.interiorMinY());
+        assertEquals(8, geometry.interiorMaxY());
+        assertEquals(1, builder.getEditableMinY(bottomCap, geometry));
+    }
+
+    @Test
+    void verticalAccessGeometryIgnoresTopVoidMarginTags() {
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
+        MKWorkspacePieceDefinition topCap = verticalCapPiece(Direction.DOWN,
+                MKWorkspaceVerticalAccessTags.TOP_CAP_TAG,
+                new BoundingBox(0, 0, 0, 10, 8, 10),
+                Map.of(MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG, "2"));
+
+        MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry = builder.getGenerationGeometry(workspace, topCap);
+
+        assertEquals(0, geometry.interiorMinY());
+        assertEquals(0, geometry.interiorMaxY());
     }
 
     @Test
@@ -181,12 +213,16 @@ class MKWorkspaceStairBuilderTest {
     }
 
     private MKWorkspacePieceDefinition verticalCapPiece(Direction connectorFacing, String capTag) {
+        return verticalCapPiece(connectorFacing, capTag, new BoundingBox(0, 0, 0, 10, 6, 10), Map.of());
+    }
+
+    private MKWorkspacePieceDefinition verticalCapPiece(Direction connectorFacing, String capTag, BoundingBox bounds,
+                                                        Map<String, String> extraTags) {
         UUID workspaceId = UUID.randomUUID();
-        BoundingBox bounds = new BoundingBox(0, 0, 0, 10, 6, 10);
-        Map<String, String> tags = Map.of(
-                MKWorkspaceVerticalAccessTags.ENABLED_TAG, "true",
-                capTag, "true"
-        );
+        Map<String, String> tags = new LinkedHashMap<>();
+        tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, "true");
+        tags.put(capTag, "true");
+        tags.putAll(extraTags);
         return new MKWorkspacePieceDefinition(
                 UUID.randomUUID(),
                 workspaceId,
@@ -223,4 +259,5 @@ class MKWorkspaceStairBuilderTest {
                 empty
         );
     }
+
 }

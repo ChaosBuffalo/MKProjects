@@ -382,8 +382,6 @@ public record MKWorkspaceExportManifest(
             int maxMainPathPieces,
             int maxBranchPiecesBeforeCap,
             int fullHeight,
-            int topVoidMargin,
-            int bottomVoidMargin,
             @Nullable MKWorkspacePaletteOverride paletteOverride
     ) {
         public static final Codec<ExportCategoryProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -398,15 +396,12 @@ public record MKWorkspaceExportManifest(
                                 MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP)
                         .forGetter(ExportCategoryProfile::maxBranchPiecesBeforeCap),
                 Codec.INT.optionalFieldOf("full_height", 3).forGetter(ExportCategoryProfile::fullHeight),
-                Codec.INT.optionalFieldOf("top_void_margin", 0).forGetter(ExportCategoryProfile::topVoidMargin),
-                Codec.INT.optionalFieldOf("bottom_void_margin", 0).forGetter(ExportCategoryProfile::bottomVoidMargin),
                 MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
                         .forGetter(ExportCategoryProfile::paletteOverrideOpt)
         ).apply(instance, (category, roomWidth, roomLength, minMainPathPieces, maxMainPathPieces,
-                           maxBranchPiecesBeforeCap, fullHeight, topVoidMargin, bottomVoidMargin, paletteOverride) ->
+                           maxBranchPiecesBeforeCap, fullHeight, paletteOverride) ->
                 new ExportCategoryProfile(category, roomWidth, roomLength, minMainPathPieces, maxMainPathPieces,
-                        maxBranchPiecesBeforeCap, fullHeight, topVoidMargin, bottomVoidMargin,
-                        paletteOverride.orElse(null))));
+                        maxBranchPiecesBeforeCap, fullHeight, paletteOverride.orElse(null))));
 
         public static ExportCategoryProfile from(MKTowerWorkspaceCategoryProfile profile) {
             return new ExportCategoryProfile(
@@ -417,8 +412,6 @@ public record MKWorkspaceExportManifest(
                     profile.maxMainPathPieces(),
                     profile.maxBranchPiecesBeforeCap(),
                     profile.fullHeight(),
-                    profile.topVoidMargin(),
-                    profile.bottomVoidMargin(),
                     profile.paletteOverride()
             );
         }
@@ -438,6 +431,8 @@ public record MKWorkspaceExportManifest(
             int roomHeight,
             MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
             List<ExportFamilyHorizontalExit> horizontalExits,
+            int topVoidMargin,
+            int bottomVoidMargin,
             @Nullable MKWorkspacePaletteOverride paletteOverride
     ) {
         public static final Codec<ExportFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -453,13 +448,15 @@ public record MKWorkspaceExportManifest(
                     .forGetter(ExportFamilyDefinition::horizontalExtrusionMode),
             ExportFamilyHorizontalExit.CODEC.listOf().optionalFieldOf("horizontal_exits", List.of())
                     .forGetter(ExportFamilyDefinition::horizontalExits),
+            Codec.INT.optionalFieldOf("top_void_margin", 0).forGetter(ExportFamilyDefinition::topVoidMargin),
+            Codec.INT.optionalFieldOf("bottom_void_margin", 0).forGetter(ExportFamilyDefinition::bottomVoidMargin),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
                     .forGetter(ExportFamilyDefinition::paletteOverrideOpt)
         ).apply(instance, (baseName, category, pieceRole, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
-                           horizontalExtrusionMode, horizontalExits, paletteOverride) ->
+                           horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin, paletteOverride) ->
                 new ExportFamilyDefinition(baseName, category, pieceRole, supportsVerticalAccess,
                         roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
-                        paletteOverride.orElse(null))));
+                        topVoidMargin, bottomVoidMargin, paletteOverride.orElse(null))));
 
         public static ExportFamilyDefinition from(MKTowerWorkspaceFamilyDefinition familyDefinition) {
             return new ExportFamilyDefinition(
@@ -472,6 +469,8 @@ public record MKWorkspaceExportManifest(
                     familyDefinition.roomHeight(),
                     familyDefinition.horizontalExtrusionMode(),
                     familyDefinition.horizontalExits().stream().map(ExportFamilyHorizontalExit::from).toList(),
+                    familyDefinition.topVoidMargin(),
+                    familyDefinition.bottomVoidMargin(),
                     familyDefinition.paletteOverride()
             );
         }
@@ -968,4 +967,3 @@ public record MKWorkspaceExportManifest(
                 poolId.getPath().substring(prefix.length()) : poolId.getPath();
     }
 }
-

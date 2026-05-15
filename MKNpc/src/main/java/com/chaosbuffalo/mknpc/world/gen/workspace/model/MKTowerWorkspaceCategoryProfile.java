@@ -28,12 +28,10 @@ public class MKTowerWorkspaceCategoryProfile {
             Codec.INT.optionalFieldOf("maxBranchPiecesBeforeCap", DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP)
                     .forGetter(MKTowerWorkspaceCategoryProfile::maxBranchPiecesBeforeCap),
             Codec.INT.fieldOf("fullHeight").forGetter(MKTowerWorkspaceCategoryProfile::fullHeight),
-            Codec.INT.optionalFieldOf("topVoidMargin", 0).forGetter(MKTowerWorkspaceCategoryProfile::topVoidMargin),
-            Codec.INT.optionalFieldOf("bottomVoidMargin", 0).forGetter(MKTowerWorkspaceCategoryProfile::bottomVoidMargin),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("paletteOverride")
                     .forGetter(MKTowerWorkspaceCategoryProfile::paletteOverrideOpt)
     ).apply(instance, (category, roomWidth, roomLength, minMainPathPieces, maxMainPathPieces, maxBranchPiecesBeforeCap,
-                       fullHeight, topVoidMargin, bottomVoidMargin, paletteOverride) ->
+                       fullHeight, paletteOverride) ->
             new MKTowerWorkspaceCategoryProfile(
                     category,
                     roomWidth,
@@ -42,8 +40,6 @@ public class MKTowerWorkspaceCategoryProfile {
                     minMainPathPieces,
                     maxMainPathPieces,
                     maxBranchPiecesBeforeCap,
-                    topVoidMargin,
-                    bottomVoidMargin,
                     paletteOverride.orElse(null)
             )));
 
@@ -51,8 +47,6 @@ public class MKTowerWorkspaceCategoryProfile {
     private final int roomWidth;
     private final int roomLength;
     private final int fullHeight;
-    private final int topVoidMargin;
-    private final int bottomVoidMargin;
     private final int minMainPathPieces;
     private final int maxMainPathPieces;
     private final int maxBranchPiecesBeforeCap;
@@ -82,20 +76,10 @@ public class MKTowerWorkspaceCategoryProfile {
                                            int fullHeight, int minMainPathPieces, int maxMainPathPieces,
                                            int maxBranchPiecesBeforeCap,
                                            @Nullable MKWorkspacePaletteOverride paletteOverride) {
-        this(category, roomWidth, roomLength, fullHeight, minMainPathPieces, maxMainPathPieces,
-                maxBranchPiecesBeforeCap, 0, 0, paletteOverride);
-    }
-
-    public MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory category, int roomWidth, int roomLength,
-                                           int fullHeight, int minMainPathPieces, int maxMainPathPieces,
-                                           int maxBranchPiecesBeforeCap, int topVoidMargin, int bottomVoidMargin,
-                                           @Nullable MKWorkspacePaletteOverride paletteOverride) {
         this.category = category;
         this.roomWidth = roomWidth;
         this.roomLength = roomLength;
         this.fullHeight = fullHeight;
-        this.topVoidMargin = Math.max(0, topVoidMargin);
-        this.bottomVoidMargin = Math.max(0, bottomVoidMargin);
         this.minMainPathPieces = minMainPathPieces;
         this.maxMainPathPieces = maxMainPathPieces;
         this.maxBranchPiecesBeforeCap = maxBranchPiecesBeforeCap;
@@ -131,18 +115,6 @@ public class MKTowerWorkspaceCategoryProfile {
         validateOdd(errors, category.getSerializedName() + " room length", roomLength, 3);
         if (fullHeight < 3) {
             errors.add(category.getSerializedName() + " full height must be at least 3");
-        }
-        if (topVoidMargin < 0) {
-            errors.add(category.getSerializedName() + " top void margin must be at least 0");
-        }
-        if (bottomVoidMargin < 0) {
-            errors.add(category.getSerializedName() + " bottom void margin must be at least 0");
-        }
-        if (category != MKTowerWorkspaceCategory.TOP_CAP && topVoidMargin > 0) {
-            errors.add(category.getSerializedName() + " top void margin is only supported on top_cap");
-        }
-        if (category != MKTowerWorkspaceCategory.BASEMENT_CAP && bottomVoidMargin > 0) {
-            errors.add(category.getSerializedName() + " bottom void margin is only supported on basement_cap");
         }
         if (verticalAccessSpec.shaftSize() > roomWidth) {
             errors.add(category.getSerializedName() + " room width must be at least the shared shaft size");
@@ -194,16 +166,8 @@ public class MKTowerWorkspaceCategoryProfile {
         return fullHeight;
     }
 
-    public int topVoidMargin() {
-        return topVoidMargin;
-    }
-
-    public int bottomVoidMargin() {
-        return bottomVoidMargin;
-    }
-
     public int exportedFullHeight() {
-        return fullHeight + topVoidMargin + bottomVoidMargin;
+        return fullHeight;
     }
 
     public int minMainPathPieces() {

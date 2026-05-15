@@ -58,7 +58,8 @@ public class MKWorkspaceScaffoldBuilder {
             BoundingBox clearedBounds,
             int exportWidth,
             int exportLength,
-            int exportHeight
+            int exportHeight,
+            int geometryInteriorHeight
     ) {
     }
 
@@ -136,9 +137,10 @@ public class MKWorkspaceScaffoldBuilder {
             int verticalShellThickness = getVerticalShellThickness(plannedPiece);
             placeShell(level, context.geometryBounds(), effectiveShellMargin, verticalShellThickness, floorState, wallState,
                     ceilingState);
-            carveInterior(level, context.geometryOrigin(), plannedPiece, effectiveShellMargin, verticalShellThickness);
+            carveInterior(level, context.geometryOrigin(), plannedPiece, effectiveShellMargin, verticalShellThickness,
+                    context.geometryInteriorHeight());
             decoratePieceInterior(level, context.geometryOrigin(), plannedPiece, effectiveShellMargin,
-                    verticalShellThickness, floorState);
+                    verticalShellThickness, context.geometryInteriorHeight(), floorState);
         }
 
         List<MKWorkspaceConnectorDefinition> connectors = new ArrayList<>();
@@ -147,7 +149,8 @@ public class MKWorkspaceScaffoldBuilder {
             MKWorkspaceConnectorDefinition connector = placeConnector(level, workspace, plannedPiece, plannedConnector,
                     context.exportOrigin(), context.exportBounds(), context.geometryOrigin(), effectiveShellMargin,
                     context.geometryBounds().getXSpan(), context.geometryBounds().getZSpan(),
-                    context.geometryBounds().getYSpan(), floorState, wallState, ceilingState);
+                    context.geometryBounds().getYSpan(), context.geometryInteriorHeight(), floorState, wallState,
+                    ceilingState);
             if (connector == null) {
                 continue;
             }
@@ -230,7 +233,9 @@ public class MKWorkspaceScaffoldBuilder {
         int exportWidth = plannedPiece.interiorWidth() + (2 * shellMargin) + (2 * exteriorAirMargin);
         int exportLength = plannedPiece.interiorLength() + (2 * shellMargin) + (2 * exteriorAirMargin);
         int bodyHeight = plannedPiece.interiorHeight() + (2 * verticalShellThickness);
-        int exportHeight = bodyHeight + topVoidMargin + bottomVoidMargin;
+        int exportHeight = bodyHeight;
+        int geometryHeight = Math.max(1, bodyHeight - topVoidMargin - bottomVoidMargin);
+        int geometryInteriorHeight = Math.max(0, geometryHeight - (2 * verticalShellThickness));
         BlockPos exportOrigin = placement.previewOrigin().offset(workspace.previewMargin(), 0, workspace.previewMargin());
         BlockPos geometryOrigin = exportOrigin.offset(exteriorAirMargin, bottomVoidMargin, exteriorAirMargin);
         BoundingBox exportBounds = new BoundingBox(
@@ -246,7 +251,7 @@ public class MKWorkspaceScaffoldBuilder {
                 geometryOrigin.getY(),
                 geometryOrigin.getZ(),
                 geometryOrigin.getX() + plannedPiece.interiorWidth() + (2 * shellMargin) - 1,
-                geometryOrigin.getY() + bodyHeight - 1,
+                geometryOrigin.getY() + geometryHeight - 1,
                 geometryOrigin.getZ() + plannedPiece.interiorLength() + (2 * shellMargin) - 1
         );
         BoundingBox clearedBounds = new BoundingBox(
@@ -258,7 +263,7 @@ public class MKWorkspaceScaffoldBuilder {
                 exportBounds.maxZ() + CLEAR_MARGIN
         );
         return new PieceBuildContext(exportOrigin, geometryOrigin, exportBounds, geometryBounds, clearedBounds,
-                exportWidth, exportLength, exportHeight);
+                exportWidth, exportLength, exportHeight, geometryInteriorHeight);
     }
 
     private void copyTemplateContents(ServerLevel level, BoundingBox sourceBounds, BoundingBox destinationBounds) {
@@ -450,10 +455,10 @@ public class MKWorkspaceScaffoldBuilder {
     }
 
     private void carveInterior(ServerLevel level, BlockPos exportOrigin, MKPlannedPiece piece, int shellMargin,
-                               int verticalShellThickness) {
+                               int verticalShellThickness, int geometryInteriorHeight) {
         BlockPos interiorMin = exportOrigin.offset(shellMargin, verticalShellThickness, shellMargin);
         for (int x = 0; x < piece.interiorWidth(); x++) {
-            for (int y = 0; y < piece.interiorHeight(); y++) {
+            for (int y = 0; y < geometryInteriorHeight; y++) {
                 for (int z = 0; z < piece.interiorLength(); z++) {
                     level.setBlock(interiorMin.offset(x, y, z), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                 }
@@ -462,7 +467,7 @@ public class MKWorkspaceScaffoldBuilder {
     }
 
     private void decoratePieceInterior(ServerLevel level, BlockPos geometryOrigin, MKPlannedPiece piece, int shellMargin,
-                                       int verticalShellThickness, BlockState floorState) {
+                                       int verticalShellThickness, int geometryInteriorHeight, BlockState floorState) {
         if (!"hallway".equals(piece.tags().get("tower_piece_kind"))) {
             return;
         }
@@ -474,7 +479,7 @@ public class MKWorkspaceScaffoldBuilder {
         int interiorMinZ = geometryOrigin.getZ() + shellMargin;
         for (int x = 0; x < piece.interiorWidth(); x++) {
             int rise = getHallwayRiseForColumn(slopeDelta, x, piece.interiorWidth());
-            for (int y = 1; y <= rise; y++) {
+            for (int y = 1; y <= Math.min(rise, geometryInteriorHeight); y++) {
                 for (int z = 0; z < piece.interiorLength(); z++) {
                     level.setBlock(new BlockPos(interiorMinX + x, geometryOrigin.getY() + verticalShellThickness - 1 + y,
                             interiorMinZ + z), floorState, Block.UPDATE_ALL);
@@ -488,6 +493,7 @@ public class MKWorkspaceScaffoldBuilder {
                                                           BoundingBox exportBounds,
                                                           BlockPos geometryOrigin, int shellMargin, int geometryWidth,
                                                           int geometryLength, int geometryHeight,
+                                                          int geometryInteriorHeight,
                                                           BlockState floorState, BlockState wallState,
                                                           BlockState ceilingState) {
         Direction facing = plannedConnector.facing();
@@ -495,7 +501,8 @@ public class MKWorkspaceScaffoldBuilder {
         int interiorCenterX = getConnectorCenterX(geometryOrigin, piece, shellMargin, plannedConnector);
         int interiorCenterZ = getConnectorCenterZ(geometryOrigin, piece, shellMargin, plannedConnector);
         int openingBaseY = getOpeningBaseY(geometryOrigin, verticalShellThickness, plannedConnector);
-        validateConnectorBounds(piece, plannedConnector, shellMargin, openingBaseY - geometryOrigin.getY());
+        validateConnectorBounds(piece, plannedConnector, shellMargin, openingBaseY - geometryOrigin.getY(),
+                geometryInteriorHeight);
         BlockPos connectorPos;
         if (facing == Direction.NORTH) {
             connectorPos = new BlockPos(interiorCenterX, openingBaseY, exportBounds.minZ());
@@ -820,7 +827,7 @@ public class MKWorkspaceScaffoldBuilder {
     }
 
     private void validateConnectorBounds(MKPlannedPiece piece, MKPlannedConnector connector, int shellMargin,
-                                         int localBaseY) {
+                                         int localBaseY, int geometryInteriorHeight) {
         if (connector.facing() == Direction.UP || connector.facing() == Direction.DOWN) {
             return;
         }
@@ -835,7 +842,7 @@ public class MKWorkspaceScaffoldBuilder {
             throw new IllegalStateException("connector " + connector.role().getSerializedName() +
                     " opening base is below the room interior for piece " + piece.pieceName());
         }
-        if ((localBaseY - 1) + connector.openingHeight() > piece.interiorHeight()) {
+        if ((localBaseY - 1) + connector.openingHeight() > geometryInteriorHeight) {
             throw new IllegalStateException("connector " + connector.role().getSerializedName() +
                     " opening exceeds the room height for piece " + piece.pieceName());
         }
@@ -988,10 +995,16 @@ public class MKWorkspaceScaffoldBuilder {
     }
 
     private int getTopVoidMargin(MKPlannedPiece piece) {
+        if (MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags())) {
+            return 0;
+        }
         return Math.max(0, parseIntTag(piece.tags(), MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG, 0));
     }
 
     private int getBottomVoidMargin(MKPlannedPiece piece) {
+        if (MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags())) {
+            return 0;
+        }
         return Math.max(0, parseIntTag(piece.tags(), MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG, 0));
     }
 

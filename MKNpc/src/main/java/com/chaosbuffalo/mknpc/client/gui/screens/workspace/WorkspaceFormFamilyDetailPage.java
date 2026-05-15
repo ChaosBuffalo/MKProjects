@@ -67,7 +67,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                 text.trim().isBlank() ? family.baseName() : text.trim(),
                 family.category(), family.pieceRole(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
-                family.horizontalExits(), family.paletteOverride())));
+                family.horizontalExits(), family.topVoidMargin(), family.bottomVoidMargin(), family.paletteOverride())));
         MKButton categoryButton = new MKButton(Component.literal(formatTopologyLabel(family.category().getSerializedName())), 180, 20);
         categoryButton.setPressedCallback((button, mouseButton) -> {
             MKTowerWorkspaceCategory nextCategory = cycleCategory(family.category(), isReverseClick(mouseButton));
@@ -80,6 +80,8 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                     editor.normalizeFamilyHeightForCategory(family.roomHeight(), family.supportsVerticalAccess(), nextProfile),
                     family.horizontalExtrusionMode(),
                     family.horizontalExits(),
+                    family.topVoidMargin(),
+                    family.bottomVoidMargin(),
                     family.paletteOverride()));
             editor.selectedFamilyCategory(nextCategory);
             screen.flagNeedSetup();
@@ -92,6 +94,8 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                     family.supportsVerticalAccess(),
                     family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
                     family.horizontalExits(),
+                    family.topVoidMargin(),
+                    family.bottomVoidMargin(),
                     family.paletteOverride()));
             screen.flagNeedSetup();
             return true;
@@ -108,6 +112,8 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                     editor.normalizeFamilyHeightForCategory(family.roomHeight(), supportsVerticalAccess, categoryProfile),
                     family.horizontalExtrusionMode(),
                     family.horizontalExits(),
+                    supportsVerticalAccess ? 0 : family.topVoidMargin(),
+                    supportsVerticalAccess ? 0 : family.bottomVoidMargin(),
                     family.paletteOverride()));
             screen.flagNeedSetup();
             return true;
@@ -120,6 +126,8 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                     cycleValue(List.of(MKWorkspaceHorizontalExtrusionMode.values()), family.horizontalExtrusionMode(),
                             isReverseClick(mouseButton)),
                     family.horizontalExits(),
+                    family.topVoidMargin(),
+                    family.bottomVoidMargin(),
                     family.paletteOverride()));
             screen.flagNeedSetup();
             return true;
@@ -129,13 +137,15 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                         new MKTowerWorkspaceFamilyDefinition(
                                 family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
                                 value, family.roomLength(), family.roomHeight(),
-                                family.horizontalExtrusionMode(), family.horizontalExits(), family.paletteOverride()))));
+                                family.horizontalExtrusionMode(), family.horizontalExits(),
+                                family.topVoidMargin(), family.bottomVoidMargin(), family.paletteOverride()))));
         MKIntegerSlider roomLengthSlider = new MKIntegerSlider("Length", 180, 20, 1, 45, 2, family.roomLength(),
                 value -> editor.replaceFamilyDefinition(index, editor.normalizeFamilyDefinition(
                         new MKTowerWorkspaceFamilyDefinition(
                                 family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
                                 family.roomWidth(), value, family.roomHeight(),
-                                family.horizontalExtrusionMode(), family.horizontalExits(), family.paletteOverride()))));
+                                family.horizontalExtrusionMode(), family.horizontalExits(),
+                                family.topVoidMargin(), family.bottomVoidMargin(), family.paletteOverride()))));
 
         addRow(screen, content, screen.makeWhiteText(Component.literal("Base Name")), baseNameField);
         addRow(screen, content, screen.makeWhiteText(Component.literal("Category")), categoryButton);
@@ -158,8 +168,28 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                     new MKTowerWorkspaceFamilyDefinition(
                             family.baseName(), family.category(), family.pieceRole(), false,
                             family.roomWidth(), family.roomLength(), parseInt(text, family.roomHeight()),
-                            family.horizontalExtrusionMode(), family.horizontalExits(), family.paletteOverride()))));
+                            family.horizontalExtrusionMode(), family.horizontalExits(),
+                            family.topVoidMargin(), family.bottomVoidMargin(), family.paletteOverride()))));
             addRow(screen, content, screen.makeWhiteText(Component.literal("Room Height")), roomHeightField);
+            int minInteriorHeight = MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT;
+            int topMarginMax = Math.max(0, family.roomHeight() - family.bottomVoidMargin() - minInteriorHeight);
+            MKIntegerSlider topVoidMarginSlider = new MKIntegerSlider("Margin", 180, 20, 0, topMarginMax, 1,
+                    clamp(family.topVoidMargin(), 0, topMarginMax), value ->
+                    editor.replaceFamilyDefinition(index, editor.normalizeFamilyDefinition(new MKTowerWorkspaceFamilyDefinition(
+                            family.baseName(), family.category(), family.pieceRole(), false,
+                            family.roomWidth(), family.roomLength(), family.roomHeight(),
+                            family.horizontalExtrusionMode(), family.horizontalExits(),
+                            value, family.bottomVoidMargin(), family.paletteOverride()))));
+            int bottomMarginMax = Math.max(0, family.roomHeight() - family.topVoidMargin() - minInteriorHeight);
+            MKIntegerSlider bottomVoidMarginSlider = new MKIntegerSlider("Margin", 180, 20, 0, bottomMarginMax, 1,
+                    clamp(family.bottomVoidMargin(), 0, bottomMarginMax), value ->
+                    editor.replaceFamilyDefinition(index, editor.normalizeFamilyDefinition(new MKTowerWorkspaceFamilyDefinition(
+                            family.baseName(), family.category(), family.pieceRole(), false,
+                            family.roomWidth(), family.roomLength(), family.roomHeight(),
+                            family.horizontalExtrusionMode(), family.horizontalExits(),
+                            family.topVoidMargin(), value, family.paletteOverride()))));
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Top Void Margin")), topVoidMarginSlider);
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Bottom Void Margin")), bottomVoidMarginSlider);
         }
         screen.addPaletteOverrideRows(content, "Palette Overrides", editor.resolveCategoryPalette(family.category()),
                 family.paletteOverrideOpt(),

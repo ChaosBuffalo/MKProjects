@@ -205,8 +205,6 @@ public class MKStructureWorkspaceImportService {
                         profile.minMainPathPieces(),
                         profile.maxMainPathPieces(),
                         profile.maxBranchPiecesBeforeCap(),
-                        profile.topVoidMargin(),
-                        profile.bottomVoidMargin(),
                         profile.paletteOverride()
                 ))
                 .toList();
@@ -240,6 +238,8 @@ public class MKStructureWorkspaceImportService {
                                         exit.verticalOffset()
                                 ))
                                 .toList(),
+                        family.topVoidMargin(),
+                        family.bottomVoidMargin(),
                         family.paletteOverride()
                 ))
                 .toList();

@@ -452,7 +452,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         tags.put("workspace_horizontal_exits", family.horizontalExitSummary());
         tags.put("workspace_horizontal_extrusion_mode", family.horizontalExtrusionMode().getSerializedName());
         tags.put("workspace_category", family.category().getSerializedName());
-        applyCapVoidMarginTags(workspace, family, tags);
+        applyVoidMarginTags(family, tags);
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, Boolean.toString(family.supportsVerticalAccess()));
         if (family.supportsVerticalAccess()) {
             tags.put(MKWorkspaceVerticalAccessTags.PLACEMENT_TAG, stairPlacement);
@@ -469,15 +469,15 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         return tags;
     }
 
-    private void applyCapVoidMarginTags(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family,
-                                        Map<String, String> tags) {
-        MKTowerWorkspaceCategoryProfile profile = workspace.categoryProfile(family.category())
-                .orElseGet(() -> fallbackProfile(family.category(), workspace.dimensions()));
-        if (family.pieceRole() == MKWorkspacePieceRole.TOP_CAP && profile.topVoidMargin() > 0) {
-            tags.put(MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG, Integer.toString(profile.topVoidMargin()));
+    private void applyVoidMarginTags(MKTowerWorkspaceFamilyDefinition family, Map<String, String> tags) {
+        if (family.supportsVerticalAccess()) {
+            return;
         }
-        if (family.pieceRole() == MKWorkspacePieceRole.BASEMENT_CAP && profile.bottomVoidMargin() > 0) {
-            tags.put(MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG, Integer.toString(profile.bottomVoidMargin()));
+        if (family.topVoidMargin() > 0) {
+            tags.put(MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG, Integer.toString(family.topVoidMargin()));
+        }
+        if (family.bottomVoidMargin() > 0) {
+            tags.put(MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG, Integer.toString(family.bottomVoidMargin()));
         }
     }
 }
