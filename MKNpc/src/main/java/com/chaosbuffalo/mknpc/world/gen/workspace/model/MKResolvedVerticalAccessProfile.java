@@ -190,7 +190,6 @@ public record MKResolvedVerticalAccessProfile(
         }
 
         Map<GridPoint, List<VerticalSpan>> spansByColumn = new HashMap<>();
-        List<VerticalSpan> centerlineSpans = new ArrayList<>();
         GridDirection previousMovement = null;
         int halfHeight = 0;
         int step = 0;
@@ -203,7 +202,6 @@ public record MKResolvedVerticalAccessProfile(
                 if (!addBandSpans(spansByColumn, base, span, centerlineBounds, outerBounds, stairWidth)) {
                     return false;
                 }
-                centerlineSpans.add(span);
                 if (previousMovement != null && movement != null && previousMovement != movement) {
                     if (!addCornerSpans(spansByColumn, base, previousMovement, movement, span, outerBounds, stairWidth)) {
                         return false;
@@ -213,18 +211,6 @@ public record MKResolvedVerticalAccessProfile(
                 step++;
             }
             halfHeight += kind == RiseStepKind.STAIR ? 2 : 1;
-        }
-        return hasRequiredOpposingPassClearance(centerlineSpans, perimeter.size());
-    }
-
-    private static boolean hasRequiredOpposingPassClearance(List<VerticalSpan> centerlineSpans, int cycleLength) {
-        int opposingPassOffset = Math.max(1, cycleLength / 2);
-        for (int step = 0; step + opposingPassOffset < centerlineSpans.size(); step++) {
-            VerticalSpan lower = centerlineSpans.get(step);
-            VerticalSpan upper = centerlineSpans.get(step + opposingPassOffset);
-            if (upper.bottomHalf() - lower.topHalf() < MIN_PASS_CLEARANCE_HALF_BLOCKS) {
-                return false;
-            }
         }
         return true;
     }

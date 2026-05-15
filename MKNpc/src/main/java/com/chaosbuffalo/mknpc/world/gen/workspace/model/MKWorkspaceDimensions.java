@@ -123,6 +123,19 @@ public class MKWorkspaceDimensions {
                 .orElseGet(() -> allowed.getFirst());
     }
 
+    public static int snapToNearestUsableShaftSize(MKWorkspaceStairAuthoringConfig stairConfig, int roomWidth,
+                                                   int roomLength, int requestedSize, int minimumHeight) {
+        List<Integer> allowed = getAllowedShaftSizes(roomWidth, roomLength);
+        int snapped = snapToNearestAllowedShaftSize(roomWidth, roomLength, requestedSize);
+        if (hasReusableBandHeight(stairConfig, snapped, minimumHeight)) {
+            return snapped;
+        }
+        return allowed.stream()
+                .filter(size -> hasReusableBandHeight(stairConfig, size, minimumHeight))
+                .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedSize)))
+                .orElse(snapped);
+    }
+
     public static int getTowerShaftPerimeter(int hallwayWidth) {
         return MKVerticalAccessProfile.getPerimeterStepCount(hallwayWidth, hallwayWidth);
     }
@@ -250,6 +263,21 @@ public class MKWorkspaceDimensions {
             }
         }
         return List.copyOf(aligned);
+    }
+
+    private static boolean hasReusableBandHeight(MKWorkspaceStairAuthoringConfig stairConfig, int shaftSize,
+                                                 int minimumHeight) {
+        int stairWidth = snapToNearestAllowedStairWidth(shaftSize, stairConfig.stairWidth());
+        MKWorkspaceStairAuthoringConfig config = new MKWorkspaceStairAuthoringConfig(
+                stairConfig.mode(),
+                stairConfig.riseType(),
+                stairWidth,
+                stairConfig.stairBlock(),
+                stairConfig.slabBlock(),
+                stairConfig.ladderBlock()
+        );
+        return !getAllowedBandHeights(config, shaftSize, minimumHeight, minimumHeight,
+                MAX_BAND_HEIGHT_EXCLUSIVE).isEmpty();
     }
 
     private record BandHeightCacheKey(MKWorkspaceStairMode mode, MKWorkspaceStairRiseType riseType, int stairWidth,

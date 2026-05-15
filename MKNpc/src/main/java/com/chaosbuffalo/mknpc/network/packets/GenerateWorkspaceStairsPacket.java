@@ -74,9 +74,10 @@ public class GenerateWorkspaceStairsPacket implements CustomPacketPayload {
         if (!(context.player() instanceof ServerPlayer player) || !player.isCreative()) {
             return;
         }
-        new MKStructureWorkspaceService().generateTowerWorkspaceStairs(player.serverLevel(), packet.anchor, packet.pieceName,
+        MKStructureWorkspaceService service = new MKStructureWorkspaceService();
+        service.generateTowerWorkspaceStairs(player.serverLevel(), packet.anchor, packet.pieceName,
                 new MKWorkspaceStairAuthoringConfig(packet.stairMode, packet.stairRiseType, packet.stairWidth,
                         packet.stairBlock, packet.slabBlock, packet.ladderBlock))
-                .ifPresent(updated -> player.connection.send(new OpenWorkspaceScreenPacket(packet.anchor, updated)));
+                .ifPresent(updated -> service.openWorkspaceScreen(player, packet.anchor));
     }
 }

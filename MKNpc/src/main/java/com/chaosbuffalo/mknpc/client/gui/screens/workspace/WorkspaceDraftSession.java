@@ -430,7 +430,8 @@ public class WorkspaceDraftSession {
 
     public void snapDraftVerticalAccess() {
         int[] footprint = getDraftVerticalAccessFootprint();
-        draft().shaftSize = MKWorkspaceDimensions.snapToNearestAllowedShaftSize(footprint[0], footprint[1], draft().shaftSize);
+        draft().shaftSize = MKWorkspaceDimensions.snapToNearestUsableShaftSize(makeStairConfig(),
+                footprint[0], footprint[1], draft().shaftSize, 3);
         draft().stairWidth = MKWorkspaceDimensions.snapToNearestAllowedStairWidth(draft().shaftSize, draft().stairWidth);
         MKWorkspaceVerticalAccessSpec verticalAccessSpec = currentVerticalAccessSpec();
         int normalizedMainHeight = normalizeCategoryFullHeight(MKTowerWorkspaceCategory.MAIN,

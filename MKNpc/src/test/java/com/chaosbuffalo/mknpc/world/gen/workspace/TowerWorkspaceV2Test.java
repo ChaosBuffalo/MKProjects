@@ -86,7 +86,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void resolvedRunProfileRequiresTwoBlockPassClearance() {
+    void resolvedRunProfileRequiresTwoBlockSameColumnPassClearance() {
         ResourceLocation stairBlock = ResourceLocation.parse("minecraft:stone_brick_stairs");
         ResourceLocation slabBlock = ResourceLocation.parse("minecraft:stone_brick_slab");
         ResourceLocation ladderBlock = ResourceLocation.parse("minecraft:ladder");
@@ -108,7 +108,7 @@ class TowerWorkspaceV2Test {
         );
 
         assertTrue(MKResolvedVerticalAccessProfile.resolve(slabOnly, 3, 3, 5).isEmpty());
-        assertTrue(MKResolvedVerticalAccessProfile.resolve(slabOnly, 5, 5, 5).isEmpty());
+        assertTrue(MKResolvedVerticalAccessProfile.resolve(slabOnly, 5, 5, 5).isPresent());
         MKResolvedVerticalAccessProfile profile = MKResolvedVerticalAccessProfile.resolve(mixed, 5, 5, 5)
                 .orElseThrow();
         assertTrue(profile.hasRequiredPassClearance());
@@ -154,6 +154,27 @@ class TowerWorkspaceV2Test {
                 MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE).isEmpty());
         assertEquals(5, MKWorkspaceDimensions.snapToNearestAllowedBandHeight(overwideStairs, 3, 5, 5, 3,
                 MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE));
+    }
+
+    @Test
+    void slabRiseStrategyAllowsThreeByThreeShaftWithReusableBandHeights() {
+        ResourceLocation stairBlock = ResourceLocation.parse("minecraft:stone_brick_stairs");
+        ResourceLocation slabBlock = ResourceLocation.parse("minecraft:stone_brick_slab");
+        ResourceLocation ladderBlock = ResourceLocation.parse("minecraft:ladder");
+        MKWorkspaceStairAuthoringConfig slabOnly = new MKWorkspaceStairAuthoringConfig(
+                MKWorkspaceStairMode.RUN_PROFILE,
+                MKWorkspaceStairRiseType.SLAB,
+                1,
+                stairBlock,
+                slabBlock,
+                ladderBlock
+        );
+
+        assertFalse(MKWorkspaceDimensions.getAllowedBandHeights(slabOnly, 3, 5, 3,
+                MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE).isEmpty());
+        assertFalse(MKWorkspaceDimensions.getAllowedBandHeights(slabOnly, 5, 5, 3,
+                MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE).isEmpty());
+        assertEquals(3, MKWorkspaceDimensions.snapToNearestUsableShaftSize(slabOnly, 9, 9, 3, 3));
     }
 
     @Test

@@ -130,9 +130,11 @@ public class MKWorkspaceStairBuilder {
                 boolean isRiseStep = segmentStep == 0;
                 BlockPos pos = new BlockPos(base.getX(), geometry.interiorMinY(), base.getZ());
                 BlockState state = resolveTopCapContinuationState(stairConfig, kind, movement, isRiseStep);
-                if (previousMovement != null && movement != null && previousMovement != movement && isRiseStep &&
+                Direction turnPreviousMovement = getTurnPreviousMovement(perimeter, startIndex + step, movement);
+                if (turnPreviousMovement != null && isRiseStep &&
                         kind == MKResolvedVerticalAccessProfile.RiseStepKind.STAIR) {
-                    planTurnStairBand(planned, pos, movement, stairWidth, geometry.shaftBounds(), state, generated);
+                    planTurnStairBand(planned, pos, turnPreviousMovement, movement, stairWidth, geometry.shaftBounds(),
+                            state, generated);
                 } else if (isRiseStep && kind == MKResolvedVerticalAccessProfile.RiseStepKind.STAIR) {
                     planStairBand(planned, pos, state, centerlineBounds, geometry.shaftBounds(), stairWidth, generated);
                 } else {
@@ -191,8 +193,9 @@ public class MKWorkspaceStairBuilder {
             BlockState state = risingStep
                     ? resolveStairState(stairConfig.stairBlock(), facing)
                     : resolveRunFillState(stairConfig);
-            if (isTurn && risingStep) {
-                planTurnStairBand(planned, new BlockPos(base.getX(), y, base.getZ()), movement,
+            Direction turnPreviousMovement = getTurnPreviousMovement(perimeter, startIndex + step, movement);
+            if (turnPreviousMovement != null && risingStep) {
+                planTurnStairBand(planned, new BlockPos(base.getX(), y, base.getZ()), turnPreviousMovement, movement,
                         profile.stairWidth(), geometry.shaftBounds(), state, generated);
             } else if (risingStep) {
                 planStairBand(planned, stairPos, state, centerlineBounds, geometry.shaftBounds(), profile.stairWidth(),
@@ -323,10 +326,11 @@ public class MKWorkspaceStairBuilder {
                 int y = geometry.interiorMinY() + (halfHeight / 2);
                 BlockPos pos = new BlockPos(base.getX(), y, base.getZ());
                 BlockState state = resolveMixedStepState(stairConfig, kind, movement, isRiseStep);
-                if (previousMovement != null && movement != null && previousMovement != movement && isRiseStep &&
+                Direction turnPreviousMovement = getTurnPreviousMovement(perimeter, startIndex + step, movement);
+                if (turnPreviousMovement != null && isRiseStep &&
                         kind == MKResolvedVerticalAccessProfile.RiseStepKind.STAIR) {
-                    planTurnStairBand(planned, pos, movement, resolvedProfile.stairWidth(), geometry.shaftBounds(),
-                            state, generated);
+                    planTurnStairBand(planned, pos, turnPreviousMovement, movement, resolvedProfile.stairWidth(),
+                            geometry.shaftBounds(), state, generated);
                 } else if (isRiseStep && kind == MKResolvedVerticalAccessProfile.RiseStepKind.STAIR) {
                     planStairBand(planned, pos, state, centerlineBounds, geometry.shaftBounds(),
                             resolvedProfile.stairWidth(), generated);
@@ -681,6 +685,19 @@ public class MKWorkspaceStairBuilder {
         return null;
     }
 
+    Direction getTurnPreviousMovement(List<BlockPos> perimeter, int index, Direction currentMovement) {
+        if (perimeter.size() < 2 || currentMovement == null) {
+            return null;
+        }
+        int currentIndex = Math.floorMod(index, perimeter.size());
+        int previousIndex = Math.floorMod(index - 1, perimeter.size());
+        Direction previousMovement = getHorizontalDirection(perimeter.get(previousIndex), perimeter.get(currentIndex));
+        if (previousMovement == null || previousMovement == currentMovement) {
+            return null;
+        }
+        return previousMovement;
+    }
+
     private void planGeneratedBand(Map<BlockPos, BlockState> planned, BlockPos pos, BlockState state,
                                    BoundingBox centerlineBounds, BoundingBox outerBounds, int width,
                                    LinkedHashSet<BlockPos> generated) {
@@ -735,11 +752,12 @@ public class MKWorkspaceStairBuilder {
         }
     }
 
-    void planTurnStairBand(Map<BlockPos, BlockState> planned, BlockPos cornerPos, Direction currentMovement,
-                           int width, BoundingBox outerBounds, BlockState stairState,
+    void planTurnStairBand(Map<BlockPos, BlockState> planned, BlockPos cornerPos, Direction previousMovement,
+                           Direction currentMovement, int width, BoundingBox outerBounds, BlockState stairState,
                            LinkedHashSet<BlockPos> generated) {
+        BlockState shapedState = withExplicitTurnShape(stairState, previousMovement, currentMovement);
         for (BlockPos target : getTurnStairBandTargets(cornerPos, currentMovement, width, outerBounds)) {
-            planned.put(target, stairState);
+            planned.put(target, shapedState);
             generated.add(target);
         }
     }
@@ -864,12 +882,13 @@ public class MKWorkspaceStairBuilder {
     }
 
     private void flushPlannedBlocks(ServerLevel level, Map<BlockPos, BlockState> planned) {
+        applyStairCornerShapes(planned);
         for (Map.Entry<BlockPos, BlockState> entry : planned.entrySet()) {
             writeGeneratedBlock(level, entry.getKey(), entry.getValue());
         }
     }
 
-    private void applyStairCornerShapes(Map<BlockPos, BlockState> planned) {
+    void applyStairCornerShapes(Map<BlockPos, BlockState> planned) {
         List<Map.Entry<BlockPos, BlockState>> stairs = planned.entrySet().stream()
                 .filter(entry -> entry.getValue().hasProperty(StairBlock.FACING) &&
                         entry.getValue().hasProperty(StairBlock.SHAPE))
@@ -879,26 +898,51 @@ public class MKWorkspaceStairBuilder {
             BlockState state = entry.getValue();
             Direction facing = state.getValue(StairBlock.FACING);
             Half half = state.hasProperty(StairBlock.HALF) ? state.getValue(StairBlock.HALF) : Half.BOTTOM;
-            StairsShape shape = StairsShape.STRAIGHT;
 
             BlockState front = planned.get(pos.relative(facing));
+            Direction frontFacing = null;
             if (isCompatibleStair(front, half)) {
-                Direction frontFacing = front.getValue(StairBlock.FACING);
-                if (frontFacing.getAxis() != facing.getAxis()) {
-                    shape = frontFacing == facing.getClockWise() ? StairsShape.OUTER_RIGHT : StairsShape.OUTER_LEFT;
-                }
+                frontFacing = front.getValue(StairBlock.FACING);
             }
 
             BlockState back = planned.get(pos.relative(facing.getOpposite()));
-            if (shape == StairsShape.STRAIGHT && isCompatibleStair(back, half)) {
-                Direction backFacing = back.getValue(StairBlock.FACING);
-                if (backFacing.getAxis() != facing.getAxis()) {
-                    shape = backFacing == facing.getClockWise() ? StairsShape.INNER_RIGHT : StairsShape.INNER_LEFT;
-                }
+            Direction backFacing = null;
+            if (isCompatibleStair(back, half)) {
+                backFacing = back.getValue(StairBlock.FACING);
             }
 
-            planned.put(pos, state.setValue(StairBlock.SHAPE, shape));
+            StairsShape inferredShape = getStairCornerShape(facing, frontFacing, backFacing);
+            StairsShape currentShape = state.getValue(StairBlock.SHAPE);
+            if (inferredShape != StairsShape.STRAIGHT || currentShape == StairsShape.STRAIGHT) {
+                planned.put(pos, state.setValue(StairBlock.SHAPE, inferredShape));
+            }
         }
+    }
+
+    StairsShape getStairCornerShape(Direction facing, Direction frontFacing, Direction backFacing) {
+        if (frontFacing != null && frontFacing.getAxis() != facing.getAxis()) {
+            return frontFacing == facing.getClockWise() ? StairsShape.OUTER_RIGHT : StairsShape.OUTER_LEFT;
+        }
+        if (backFacing != null && backFacing.getAxis() != facing.getAxis()) {
+            return backFacing == facing.getClockWise() ? StairsShape.INNER_RIGHT : StairsShape.INNER_LEFT;
+        }
+        return StairsShape.STRAIGHT;
+    }
+
+    StairsShape getExplicitTurnStairShape(Direction previousMovement, Direction currentMovement) {
+        if (previousMovement == null || currentMovement == null || previousMovement == currentMovement) {
+            return StairsShape.STRAIGHT;
+        }
+        return getStairCornerShape(currentMovement, previousMovement, null);
+    }
+
+    private BlockState withExplicitTurnShape(BlockState stairState, Direction previousMovement,
+                                             Direction currentMovement) {
+        if (!stairState.hasProperty(StairBlock.SHAPE)) {
+            return stairState;
+        }
+        return stairState.setValue(StairBlock.SHAPE,
+                getExplicitTurnStairShape(previousMovement, currentMovement));
     }
 
     private boolean isCompatibleStair(BlockState state, Half half) {

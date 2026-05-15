@@ -15,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.StairsShape;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.junit.jupiter.api.Test;
 
@@ -182,6 +183,59 @@ class MKWorkspaceStairBuilderTest {
                 2,
                 new BoundingBox(0, 0, 0, 4, 0, 4)
         ));
+    }
+
+    @Test
+    void stairCornerShapePassCreatesOuterTurnStairs() {
+        MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
+
+        assertEquals(StairsShape.OUTER_RIGHT,
+                builder.getStairCornerShape(Direction.EAST, Direction.SOUTH, null));
+        assertEquals(StairsShape.OUTER_LEFT,
+                builder.getStairCornerShape(Direction.EAST, Direction.NORTH, null));
+    }
+
+    @Test
+    void stairCornerShapePassCreatesInnerTurnStairs() {
+        MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
+
+        assertEquals(StairsShape.INNER_RIGHT,
+                builder.getStairCornerShape(Direction.EAST, null, Direction.SOUTH));
+        assertEquals(StairsShape.INNER_LEFT,
+                builder.getStairCornerShape(Direction.EAST, null, Direction.NORTH));
+    }
+
+    @Test
+    void explicitGeneratedTurnShapeUsesPreviousMovementWhenNoSameHeightNeighborExists() {
+        MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
+
+        assertEquals(StairsShape.OUTER_LEFT,
+                builder.getExplicitTurnStairShape(Direction.EAST, Direction.SOUTH));
+        assertEquals(StairsShape.OUTER_RIGHT,
+                builder.getExplicitTurnStairShape(Direction.EAST, Direction.NORTH));
+        assertEquals(StairsShape.STRAIGHT,
+                builder.getExplicitTurnStairShape(Direction.EAST, Direction.EAST));
+    }
+
+    @Test
+    void oneWideCornerStairUsesPerimeterTurnContextEvenAtStartOfPath() {
+        MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
+        List<BlockPos> perimeter = List.of(
+                new BlockPos(0, 0, 0),
+                new BlockPos(1, 0, 0),
+                new BlockPos(2, 0, 0),
+                new BlockPos(2, 0, 1),
+                new BlockPos(2, 0, 2),
+                new BlockPos(1, 0, 2),
+                new BlockPos(0, 0, 2),
+                new BlockPos(0, 0, 1)
+        );
+
+        Direction previousMovement = builder.getTurnPreviousMovement(perimeter, 2, Direction.SOUTH);
+
+        assertEquals(Direction.EAST, previousMovement);
+        assertEquals(StairsShape.OUTER_LEFT,
+                builder.getExplicitTurnStairShape(previousMovement, Direction.SOUTH));
     }
 
     private MKWorkspacePieceDefinition verticalPiece() {

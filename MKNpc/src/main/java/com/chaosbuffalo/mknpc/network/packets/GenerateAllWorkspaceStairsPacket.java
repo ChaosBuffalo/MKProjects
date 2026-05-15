@@ -44,7 +44,8 @@ public class GenerateAllWorkspaceStairsPacket implements CustomPacketPayload {
         if (!(context.player() instanceof ServerPlayer player) || !player.isCreative()) {
             return;
         }
-        new MKStructureWorkspaceService().generateAllTowerWorkspaceStairs(player.serverLevel(), packet.anchor)
+        MKStructureWorkspaceService service = new MKStructureWorkspaceService();
+        service.generateAllTowerWorkspaceStairs(player.serverLevel(), packet.anchor)
                 .ifPresent(updated -> {
                     List<String> unresolvedPieces = updated.pieces().stream()
                             .filter(piece -> MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags()))
@@ -56,7 +57,7 @@ public class GenerateAllWorkspaceStairsPacket implements CustomPacketPayload {
                         player.displayClientMessage(Component.literal("Workspace stairs: no valid profile for " +
                                 String.join(", ", unresolvedPieces)), false);
                     }
-                    player.connection.send(new OpenWorkspaceScreenPacket(packet.anchor, updated));
+                    service.openWorkspaceScreen(player, packet.anchor);
                 });
     }
 }

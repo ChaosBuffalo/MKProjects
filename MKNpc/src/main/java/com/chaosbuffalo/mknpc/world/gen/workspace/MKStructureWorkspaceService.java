@@ -14,6 +14,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportArchiveWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportResult;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestDiscovery;
+import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspaceIdentityRenameService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspaceMarginExpansionService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspacePieceRelayoutService;
@@ -58,6 +59,7 @@ public class MKStructureWorkspaceService {
     private final MKWorkspaceStairBuilder stairBuilder = new MKWorkspaceStairBuilder();
     private final MKStructureWorkspaceImportService importService = new MKStructureWorkspaceImportService();
     private final MKWorkspaceBackupManifestDiscovery backupDiscovery = new MKWorkspaceBackupManifestDiscovery();
+    private final MKWorkspaceBackupManifestWriter backupWriter = new MKWorkspaceBackupManifestWriter();
     private final MKWorkspacePieceRelayoutService relayoutService = new MKWorkspacePieceRelayoutService();
     private final MKWorkspaceMarginExpansionService marginExpansionService = new MKWorkspaceMarginExpansionService();
     private final MKStructureWorkspaceMutationService mutationService = new MKStructureWorkspaceMutationService();
@@ -316,6 +318,9 @@ public class MKStructureWorkspaceService {
         }
 
         MKStructureWorkspace workspace = workspaceOpt.get();
+        if (workspace.pieces().stream().anyMatch(piece -> pieceName.equals(piece.pieceName()))) {
+            writeBackupBeforeMutation(level, workspace, "generate-stairs", "stair generation");
+        }
         List<MKWorkspacePieceDefinition> updatedPieces = workspace.pieces().stream()
                 .map(piece -> pieceName.equals(piece.pieceName()) ?
                         stairBuilder.generateForPiece(level, workspace, piece, stairConfigOverride) : piece)
@@ -334,6 +339,9 @@ public class MKStructureWorkspaceService {
         }
 
         MKStructureWorkspace workspace = workspaceOpt.get();
+        if (workspace.pieces().stream().anyMatch(piece -> MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags()))) {
+            writeBackupBeforeMutation(level, workspace, "generate-all-stairs", "stair generation");
+        }
         List<MKWorkspacePieceDefinition> updatedPieces = workspace.pieces().stream()
                 .map(piece -> MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags()) ?
                         stairBuilder.generateForPiece(level, workspace, piece) : piece)
@@ -352,6 +360,9 @@ public class MKStructureWorkspaceService {
         }
 
         MKStructureWorkspace workspace = workspaceOpt.get();
+        if (workspace.pieces().stream().anyMatch(piece -> pieceName.equals(piece.pieceName()))) {
+            writeBackupBeforeMutation(level, workspace, "clear-stairs", "clearing stairs");
+        }
         List<MKWorkspacePieceDefinition> updatedPieces = workspace.pieces().stream()
                 .map(piece -> pieceName.equals(piece.pieceName()) ? stairBuilder.clearForPiece(level, piece) : piece)
                 .toList();
@@ -375,6 +386,15 @@ public class MKStructureWorkspaceService {
         return backupDiscovery.discoverBackups(player.server, workspace).stream()
                 .map(MKWorkspaceBackupManifestDiscovery.BackupCandidate::fileName)
                 .toList();
+    }
+
+    private void writeBackupBeforeMutation(ServerLevel level, MKStructureWorkspace workspace, String operation,
+                                           String description) {
+        try {
+            backupWriter.writeBeforeMutation(level, workspace, operation);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to write workspace backup before " + description, e);
+        }
     }
 
     public Optional<MKStructureWorkspace> importWorkspaceFromManifest(ServerLevel level, BlockPos anchor,
