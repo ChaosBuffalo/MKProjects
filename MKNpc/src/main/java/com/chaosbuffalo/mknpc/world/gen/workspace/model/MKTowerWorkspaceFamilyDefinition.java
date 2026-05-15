@@ -88,12 +88,13 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         this.baseName = baseName;
         this.category = category;
         this.pieceRole = pieceRole;
-        this.supportsVerticalAccess = supportsVerticalAccess;
         this.roomWidth = roomWidth;
         this.roomLength = roomLength;
         this.roomHeight = roomHeight;
         this.horizontalExtrusionMode = horizontalExtrusionMode;
-        this.horizontalExits = List.copyOf(horizontalExits);
+        this.horizontalExits = normalizeFamilyExits(pieceRole, supportsVerticalAccess, horizontalExits);
+        this.supportsVerticalAccess = this.horizontalExits.stream()
+                .anyMatch(MKWorkspaceFamilyHorizontalExitDefinition::isVerticalAccess);
         this.topVoidMargin = Math.max(0, topVoidMargin);
         this.bottomVoidMargin = Math.max(0, bottomVoidMargin);
         this.paletteOverride = paletteOverride != null && !paletteOverride.isEmpty() ? paletteOverride : null;
@@ -156,6 +157,30 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         );
     }
 
+    private static List<MKWorkspaceFamilyHorizontalExitDefinition> normalizeFamilyExits(
+            MKWorkspacePieceRole pieceRole, boolean supportsVerticalAccess,
+            List<MKWorkspaceFamilyHorizontalExitDefinition> exits) {
+        ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> normalized = new ArrayList<>(exits);
+        boolean hasVerticalExit = normalized.stream()
+                .anyMatch(MKWorkspaceFamilyHorizontalExitDefinition::isVerticalAccess);
+        if (supportsVerticalAccess && !hasVerticalExit) {
+            for (Direction direction : defaultVerticalAccessDirections(pieceRole)) {
+                normalized.add(MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(direction));
+            }
+        }
+        return List.copyOf(normalized);
+    }
+
+    private static List<Direction> defaultVerticalAccessDirections(MKWorkspacePieceRole pieceRole) {
+        return switch (pieceRole) {
+            case ENTRY, FLOOR_MAIN, TOP_CAP_APPROACH, BASEMENT_ENTRY, BASEMENT_MAIN, BASEMENT_CAP_APPROACH ->
+                    List.of(Direction.UP, Direction.DOWN);
+            case TOP_CAP -> List.of(Direction.DOWN);
+            case BASEMENT_CAP -> List.of(Direction.UP);
+            case HALLWAY -> List.of();
+        };
+    }
+
     public static MKTowerWorkspaceFamilyDefinition fromTag(CompoundTag tag) {
         return MKWorkspaceCodecs.parseNbt(CODEC, tag, "tower workspace family definition");
     }
@@ -180,7 +205,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         }
         validateOdd(errors, "family " + baseName + " room width", roomWidth, 3);
         validateOdd(errors, "family " + baseName + " room length", roomLength, 3);
-        if (supportsVerticalAccess) {
+        if (supportsVerticalAccess()) {
             if (roomHeight < 3) {
                 errors.add("family " + baseName + " shaft-enabled room height must be at least 3");
             }
@@ -198,10 +223,10 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
             errors.add("family " + baseName + " non-shaft room height must be within category range " +
                     MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT + "-" + categoryProfile.fullHeight());
         }
-        if (supportsVerticalAccess && (topVoidMargin > 0 || bottomVoidMargin > 0)) {
+        if (supportsVerticalAccess() && (topVoidMargin > 0 || bottomVoidMargin > 0)) {
             errors.add("family " + baseName + " shaft-enabled room cannot define top or bottom void margins");
         }
-        if (!supportsVerticalAccess) {
+        if (!supportsVerticalAccess()) {
             int reducedRoomHeight = roomHeight - topVoidMargin - bottomVoidMargin;
             if (reducedRoomHeight < MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT) {
                 errors.add("family " + baseName + " non-shaft room height after void margins must be at least " +
@@ -245,12 +270,24 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         Set<Direction> reserved = reservedHorizontalDirections(pieceRole);
         Set<Direction> seenDirections = new LinkedHashSet<>();
         for (MKWorkspaceFamilyHorizontalExitDefinition exit : horizontalExits) {
+            if (!seenDirections.add(exit.direction())) {
+                errors.add("family " + baseName + " cannot define multiple exits on " +
+                        exit.direction().getSerializedName());
+            }
+            if (exit.isVerticalAccess()) {
+                if (!exit.direction().getAxis().isVertical()) {
+                    errors.add("family " + baseName + " vertical access exit direction must be up or down");
+                }
+                if (exit.pathKind() != MKWorkspaceHorizontalExitPathKind.VERTICAL_ACCESS) {
+                    errors.add("family " + baseName + " vertical access exit must use vertical_access kind");
+                }
+                continue;
+            }
             if (exit.direction().getAxis().isVertical()) {
                 errors.add("family " + baseName + " horizontal exit direction must be cardinal");
             }
-            if (!seenDirections.add(exit.direction())) {
-                errors.add("family " + baseName + " cannot define multiple horizontal exits on " +
-                        exit.direction().getSerializedName());
+            if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.VERTICAL_ACCESS) {
+                errors.add("family " + baseName + " horizontal exit cannot use vertical_access kind");
             }
             if (reserved.contains(exit.direction())) {
                 errors.add("family " + baseName + " cannot place a horizontal exit on reserved direction " +
@@ -336,6 +373,23 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         return horizontalExits;
     }
 
+    public List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalOnlyExits() {
+        return horizontalExits.stream()
+                .filter(exit -> !exit.isVerticalAccess())
+                .toList();
+    }
+
+    public List<MKWorkspaceFamilyHorizontalExitDefinition> verticalAccessExits() {
+        return horizontalExits.stream()
+                .filter(MKWorkspaceFamilyHorizontalExitDefinition::isVerticalAccess)
+                .toList();
+    }
+
+    public boolean hasVerticalAccess(Direction direction) {
+        return horizontalExits.stream()
+                .anyMatch(exit -> exit.isVerticalAccess() && exit.direction() == direction);
+    }
+
     public int topVoidMargin() {
         return topVoidMargin;
     }
@@ -366,18 +420,21 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
 
     public Optional<MKWorkspaceFamilyHorizontalExitDefinition> mainEntry() {
         return horizontalExits.stream()
+                .filter(exit -> !exit.isVerticalAccess())
                 .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY)
                 .findFirst();
     }
 
     public Optional<MKWorkspaceFamilyHorizontalExitDefinition> mainExit() {
         return horizontalExits.stream()
+                .filter(exit -> !exit.isVerticalAccess())
                 .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)
                 .findFirst();
     }
 
     public Optional<MKWorkspaceFamilyHorizontalExitDefinition> mainEndingEntry() {
         return horizontalExits.stream()
+                .filter(exit -> !exit.isVerticalAccess())
                 .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY)
                 .findFirst();
     }
@@ -388,6 +445,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
 
     public Optional<MKWorkspaceFamilyHorizontalExitDefinition> branchCapEntry() {
         return horizontalExits.stream()
+                .filter(exit -> !exit.isVerticalAccess())
                 .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY)
                 .findFirst();
     }
@@ -398,6 +456,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
 
     public List<MKWorkspaceFamilyHorizontalExitDefinition> branchExits() {
         return horizontalExits.stream()
+                .filter(exit -> !exit.isVerticalAccess())
                 .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH)
                 .toList();
     }

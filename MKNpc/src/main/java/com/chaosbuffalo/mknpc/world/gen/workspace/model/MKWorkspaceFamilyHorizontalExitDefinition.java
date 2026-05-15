@@ -38,6 +38,22 @@ public record MKWorkspaceFamilyHorizontalExitDefinition(
         this(direction, pathKind, openingProfileId, connectionMode, 0, 0);
     }
 
+    public static MKWorkspaceFamilyHorizontalExitDefinition verticalAccess(Direction direction) {
+        if (direction != Direction.UP && direction != Direction.DOWN) {
+            throw new IllegalArgumentException("vertical access exits must face up or down");
+        }
+        return new MKWorkspaceFamilyHorizontalExitDefinition(direction,
+                MKWorkspaceHorizontalExitPathKind.VERTICAL_ACCESS,
+                "",
+                MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION,
+                0,
+                0);
+    }
+
+    public boolean isVerticalAccess() {
+        return direction.getAxis().isVertical() || pathKind == MKWorkspaceHorizontalExitPathKind.VERTICAL_ACCESS;
+    }
+
     public static MKWorkspaceFamilyHorizontalExitDefinition fromTag(CompoundTag tag) {
         return MKWorkspaceCodecs.parseNbt(CODEC, tag, "workspace family horizontal exit definition");
     }

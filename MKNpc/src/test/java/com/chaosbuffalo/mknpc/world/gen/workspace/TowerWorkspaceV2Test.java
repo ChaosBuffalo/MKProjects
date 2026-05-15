@@ -34,6 +34,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthorin
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
@@ -360,6 +361,67 @@ class TowerWorkspaceV2Test {
         assertFalse(floor.tags().containsKey(MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG));
         assertEquals("2", sideRoom.tags().get(MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG));
         assertEquals("1", sideRoom.tags().get(MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG));
+    }
+
+    @Test
+    void familyDefinitionCodecRoundTripPreservesSingleVerticalExit() {
+        MKTowerWorkspaceFamilyDefinition family = new MKTowerWorkspaceFamilyDefinition(
+                "top_only",
+                MKTowerWorkspaceCategory.MAIN,
+                MKWorkspacePieceRole.FLOOR_MAIN,
+                false,
+                9,
+                9,
+                MKWorkspaceDimensions.defaultDimensions().roomHeight(),
+                List.of(MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(net.minecraft.core.Direction.UP))
+        );
+
+        MKTowerWorkspaceFamilyDefinition decoded = MKTowerWorkspaceFamilyDefinition.fromTag(family.toTag());
+
+        assertTrue(decoded.supportsVerticalAccess());
+        assertTrue(decoded.hasVerticalAccess(net.minecraft.core.Direction.UP));
+        assertFalse(decoded.hasVerticalAccess(net.minecraft.core.Direction.DOWN));
+    }
+
+    @Test
+    void plannerUsesDeclaredTopAndBottomVerticalExits() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                ),
+                List.of()
+        );
+        MKTowerWorkspaceFamilyDefinition topOnlyMain = new MKTowerWorkspaceFamilyDefinition(
+                "floor_main",
+                MKTowerWorkspaceCategory.MAIN,
+                MKWorkspacePieceRole.FLOOR_MAIN,
+                false,
+                9,
+                9,
+                workspace.dimensions().roomHeight(),
+                MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
+                List.of(
+                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                                MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch"),
+                        MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(net.minecraft.core.Direction.UP)
+                )
+        );
+        workspace = withFamilyDefinitions(workspace, workspace.familyDefinitions().stream()
+                .map(family -> family.baseName().equals("floor_main") ? topOnlyMain : family)
+                .toList());
+
+        MKPlannedPiece floor = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.pieceName().equals("floor_main"))
+                .findFirst()
+                .orElseThrow();
+
+        assertTrue(floor.connectors().stream().anyMatch(connector ->
+                connector.facing() == net.minecraft.core.Direction.UP &&
+                        connector.role() == MKConnectorRole.CONNECT_UP));
+        assertFalse(floor.connectors().stream().anyMatch(connector ->
+                connector.facing() == net.minecraft.core.Direction.DOWN));
+        assertEquals("up", floor.tags().get(MKWorkspaceVerticalAccessTags.DIRECTION_TAG));
     }
 
     @Test
@@ -1611,6 +1673,33 @@ class TowerWorkspaceV2Test {
                 workspace.floorSettings(),
                 categoryProfiles,
                 workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.hallwayFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces()
+        );
+    }
+
+    private static MKStructureWorkspace withFamilyDefinitions(MKStructureWorkspace workspace,
+                                                              List<MKTowerWorkspaceFamilyDefinition> familyDefinitions) {
+        return new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
+                workspace.categoryProfiles(),
+                familyDefinitions,
                 workspace.openingProfiles(),
                 workspace.hallwayFamilies(),
                 workspace.createdAt(),

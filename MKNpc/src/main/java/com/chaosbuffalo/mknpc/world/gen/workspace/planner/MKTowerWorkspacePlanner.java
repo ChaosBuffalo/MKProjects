@@ -320,8 +320,11 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     private List<MKPlannedConnector> connectorsWithHorizontalExits(List<MKPlannedConnector> baseConnectors,
                                                                    MKTowerWorkspaceFamilyDefinition family,
                                                                    MKStructureWorkspace workspace) {
-        ArrayList<MKPlannedConnector> connectors = new ArrayList<>(baseConnectors);
-        for (MKWorkspaceFamilyHorizontalExitDefinition exit : family.horizontalExits()) {
+        ArrayList<MKPlannedConnector> connectors = new ArrayList<>(baseConnectors.stream()
+                .filter(connector -> !connector.facing().getAxis().isVertical() ||
+                        family.hasVerticalAccess(connector.facing()))
+                .toList());
+        for (MKWorkspaceFamilyHorizontalExitDefinition exit : family.horizontalOnlyExits()) {
             ResolvedOpeningProfile opening = resolveOpeningProfile(workspace, exit.openingProfileId())
                     .orElseThrow(() -> new IllegalStateException("missing opening profile " + exit.openingProfileId() +
                             " for family " + family.baseName()));
@@ -330,6 +333,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                 case MAIN_ENTRY, MAIN_ENDING_ENTRY -> MKConnectorRole.MAIN_FORWARD;
                 case MAIN_EXIT -> MKConnectorRole.MAIN_BACK;
                 case BRANCH, BRANCH_CAP_ENTRY -> MKConnectorRole.BRANCH;
+                case VERTICAL_ACCESS -> throw new IllegalStateException("vertical access exits are not horizontal connectors");
             };
             int lateralOffset = toLateralOffset(exit.direction(), exit.sideOffset());
             if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY) {
@@ -456,7 +460,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, Boolean.toString(family.supportsVerticalAccess()));
         if (family.supportsVerticalAccess()) {
             tags.put(MKWorkspaceVerticalAccessTags.PLACEMENT_TAG, stairPlacement);
-            tags.put(MKWorkspaceVerticalAccessTags.DIRECTION_TAG, stairDirection);
+            tags.put(MKWorkspaceVerticalAccessTags.DIRECTION_TAG, verticalAccessDirectionTag(family, stairDirection));
         }
         if (family.supportsVerticalAccess() && topCap) {
             tags.put(MKWorkspaceVerticalAccessTags.TOP_CAP_TAG, "true");
@@ -479,6 +483,21 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         if (family.bottomVoidMargin() > 0) {
             tags.put(MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG, Integer.toString(family.bottomVoidMargin()));
         }
+    }
+
+    private String verticalAccessDirectionTag(MKTowerWorkspaceFamilyDefinition family, String fallback) {
+        boolean up = family.hasVerticalAccess(Direction.UP);
+        boolean down = family.hasVerticalAccess(Direction.DOWN);
+        if (up && down) {
+            return "both";
+        }
+        if (up) {
+            return "up";
+        }
+        if (down) {
+            return "down";
+        }
+        return fallback;
     }
 }
 

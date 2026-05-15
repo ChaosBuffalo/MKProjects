@@ -266,6 +266,9 @@ public class MKStructureWorkspace {
         }
         for (MKTowerWorkspaceFamilyDefinition familyDefinition : familyDefinitions) {
             for (MKWorkspaceFamilyHorizontalExitDefinition exit : familyDefinition.horizontalExits()) {
+                if (exit.isVerticalAccess()) {
+                    continue;
+                }
                 MKHorizontalOpeningProfile openingProfile = openingProfileById.get(exit.openingProfileId());
                 if (openingProfile == null) {
                     errors.add("family " + familyDefinition.baseName() + " references missing opening profile " +

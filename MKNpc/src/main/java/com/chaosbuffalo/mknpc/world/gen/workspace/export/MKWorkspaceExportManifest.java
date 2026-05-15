@@ -493,7 +493,7 @@ public record MKWorkspaceExportManifest(
                 Codec.STRING.xmap(MKWorkspaceHorizontalExitPathKind::fromSerializedName,
                         MKWorkspaceHorizontalExitPathKind::getSerializedName)
                         .fieldOf("path_kind").forGetter(ExportFamilyHorizontalExit::pathKind),
-                Codec.STRING.fieldOf("opening_profile_id").forGetter(ExportFamilyHorizontalExit::openingProfileId),
+                Codec.STRING.optionalFieldOf("opening_profile_id", "").forGetter(ExportFamilyHorizontalExit::openingProfileId),
                 horizontalExitConnectionModeCodec().optionalFieldOf("connection_mode",
                                 MKWorkspaceHorizontalExitConnectionMode.HALLWAY)
                         .forGetter(ExportFamilyHorizontalExit::connectionMode),

@@ -478,12 +478,15 @@ public class WorkspaceDraftSession {
         MKTowerWorkspaceFamilyDefinition family = draft().familyDefinitions.get(familyIndex);
         java.util.ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
         exits.set(exitIndex, updatedExit);
-        if (updatedExit.pathKind() != MKWorkspaceHorizontalExitPathKind.BRANCH) {
+        if (!updatedExit.isVerticalAccess() && updatedExit.pathKind() != MKWorkspaceHorizontalExitPathKind.BRANCH) {
             for (int i = 0; i < exits.size(); i++) {
                 if (i == exitIndex) {
                     continue;
                 }
                 MKWorkspaceFamilyHorizontalExitDefinition existingExit = exits.get(i);
+                if (existingExit.isVerticalAccess()) {
+                    continue;
+                }
                 if (existingExit.pathKind() == updatedExit.pathKind()) {
                     exits.set(i, new MKWorkspaceFamilyHorizontalExitDefinition(
                             existingExit.direction(),
@@ -533,6 +536,15 @@ public class WorkspaceDraftSession {
     public int addFamilyExitAtDirection(int familyIndex, Direction direction) {
         MKTowerWorkspaceFamilyDefinition family = draft().familyDefinitions.get(familyIndex);
         java.util.ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
+        if (direction.getAxis().isVertical()) {
+            exits.add(MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(direction));
+            replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
+                    family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
+                    family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits,
+                    0, 0, family.paletteOverride()
+            ));
+            return exits.size() - 1;
+        }
         MKWorkspaceHorizontalExitPathKind pathKind = !family.mainExit().isPresent() ?
                 MKWorkspaceHorizontalExitPathKind.MAIN_EXIT :
                 !family.mainEntry().isPresent() ? MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY :
@@ -897,14 +909,16 @@ public class WorkspaceDraftSession {
                 roomHeight,
                 family.horizontalExtrusionMode(),
                 family.horizontalExits().stream()
-                        .map(exit -> new MKWorkspaceFamilyHorizontalExitDefinition(
-                                exit.direction(),
-                                exit.pathKind(),
-                                exit.openingProfileId(),
-                                exit.connectionMode(),
-                                clampSideOffset(normalizedGeometry, exit.direction(), exit.openingProfileId(), exit.sideOffset()),
-                                clampVerticalOffset(normalizedGeometry, exit.openingProfileId(), exit.verticalOffset())
-                        ))
+                        .map(exit -> exit.isVerticalAccess() ?
+                                MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(exit.direction()) :
+                                new MKWorkspaceFamilyHorizontalExitDefinition(
+                                        exit.direction(),
+                                        exit.pathKind(),
+                                        exit.openingProfileId(),
+                                        exit.connectionMode(),
+                                        clampSideOffset(normalizedGeometry, exit.direction(), exit.openingProfileId(), exit.sideOffset()),
+                                        clampVerticalOffset(normalizedGeometry, exit.openingProfileId(), exit.verticalOffset())
+                                ))
                         .toList(),
                 topVoidMargin,
                 bottomVoidMargin,
