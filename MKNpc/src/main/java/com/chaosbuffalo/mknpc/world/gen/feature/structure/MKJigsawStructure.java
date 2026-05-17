@@ -1,12 +1,15 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
 import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
@@ -20,9 +23,12 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.DimensionPadding;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBinding;
@@ -151,8 +157,80 @@ public class MKJigsawStructure extends MKStructure {
                 }
             }
         }
+        applyPieceFoundations(level, boundingBox, pieces);
     }
 
+    private void applyPieceFoundations(WorldGenLevel level, BoundingBox chunkBounds, PiecesContainer pieces) {
+        for (StructurePiece piece : pieces.pieces()) {
+            if (!(piece instanceof PoolElementStructurePiece poolPiece)) {
+                continue;
+            }
+            Optional<ResourceLocation> templateId = getTemplateId(poolPiece.getElement());
+            if (templateId.isEmpty()) {
+                continue;
+            }
+            Optional<MKJigsawPieceMetadata> metadataOpt = MKJigsawPieceMetadataManager.get(templateId.get());
+            if (metadataOpt.isEmpty()) {
+                continue;
+            }
+            MKWorkspaceFoundationPolicy policy = metadataOpt.get().foundationPolicy();
+            if (!policy.enabled()) {
+                continue;
+            }
+            fillPieceFoundation(level, chunkBounds, poolPiece.getBoundingBox(), policy);
+        }
+    }
+
+    private void fillPieceFoundation(WorldGenLevel level, BoundingBox chunkBounds, BoundingBox pieceBox,
+                                     MKWorkspaceFoundationPolicy policy) {
+        BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
+        int minHeight = level.getMinBuildHeight();
+        int minX = Math.max(chunkBounds.minX(), pieceBox.minX());
+        int maxX = Math.min(chunkBounds.maxX(), pieceBox.maxX());
+        int minZ = Math.max(chunkBounds.minZ(), pieceBox.minZ());
+        int maxZ = Math.min(chunkBounds.maxZ(), pieceBox.maxZ());
+        int bottomY = pieceBox.minY();
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                blockPos.set(x, bottomY, z);
+                BlockState bottomState = level.getBlockState(blockPos);
+                if (level.isEmptyBlock(blockPos) || bottomState.liquid()) {
+                    continue;
+                }
+                BlockState fillStateForColumn = resolveFoundationFillState(policy, bottomState).orElse(null);
+                if (fillStateForColumn == null) {
+                    continue;
+                }
+                for (int y = bottomY - 1; y >= minHeight; y--) {
+                    blockPos.setY(y);
+                    BlockState targetState = level.getBlockState(blockPos);
+                    if (!level.isEmptyBlock(blockPos) && !targetState.liquid()) {
+                        break;
+                    }
+                    level.setBlock(blockPos, fillStateForColumn, 2);
+                }
+            }
+        }
+    }
+
+    private Optional<BlockState> resolveFoundationFillState(MKWorkspaceFoundationPolicy policy, BlockState bottomState) {
+        return switch (policy.mode()) {
+            case NONE -> Optional.empty();
+            case UNIFORM_STATE -> policy.foundationStateOpt();
+            case EXTEND_BOTTOM_BLOCKS -> Optional.of(bottomState);
+            case MASKED_EXTEND_BOTTOM_BLOCKS -> {
+                ResourceLocation bottomBlockId = BuiltInRegistries.BLOCK.getKey(bottomState.getBlock());
+                yield policy.maskBlocks().contains(bottomBlockId) ? Optional.of(bottomState) : Optional.empty();
+            }
+        };
+    }
+
+    private Optional<ResourceLocation> getTemplateId(StructurePoolElement element) {
+        if (element instanceof MKSinglePoolElement mkSinglePoolElement) {
+            return mkSinglePoolElement.getPieceEither().left();
+        }
+        return Optional.empty();
+    }
 
     @Override
     public StructureType<?> type() {

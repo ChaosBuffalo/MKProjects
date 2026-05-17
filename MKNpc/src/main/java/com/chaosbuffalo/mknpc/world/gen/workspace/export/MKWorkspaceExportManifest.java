@@ -11,6 +11,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
@@ -454,6 +455,7 @@ public record MKWorkspaceExportManifest(
             List<ExportFamilyHorizontalExit> horizontalExits,
             int topVoidMargin,
             int bottomVoidMargin,
+            MKWorkspaceFoundationPolicy foundationPolicy,
             @Nullable MKWorkspacePaletteOverride paletteOverride
     ) {
         public static final Codec<ExportFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -471,13 +473,16 @@ public record MKWorkspaceExportManifest(
                     .forGetter(ExportFamilyDefinition::horizontalExits),
             Codec.INT.optionalFieldOf("top_void_margin", 0).forGetter(ExportFamilyDefinition::topVoidMargin),
             Codec.INT.optionalFieldOf("bottom_void_margin", 0).forGetter(ExportFamilyDefinition::bottomVoidMargin),
+            MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundation_policy", MKWorkspaceFoundationPolicy.none())
+                    .forGetter(ExportFamilyDefinition::foundationPolicy),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
                     .forGetter(ExportFamilyDefinition::paletteOverrideOpt)
         ).apply(instance, (baseName, category, pieceRole, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
-                           horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin, paletteOverride) ->
+                           horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin, foundationPolicy,
+                           paletteOverride) ->
                 new ExportFamilyDefinition(baseName, category, pieceRole, supportsVerticalAccess,
                         roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
-                        topVoidMargin, bottomVoidMargin, paletteOverride.orElse(null))));
+                        topVoidMargin, bottomVoidMargin, foundationPolicy, paletteOverride.orElse(null))));
 
         public static ExportFamilyDefinition from(MKTowerWorkspaceFamilyDefinition familyDefinition) {
             return new ExportFamilyDefinition(
@@ -492,6 +497,7 @@ public record MKWorkspaceExportManifest(
                     familyDefinition.horizontalExits().stream().map(ExportFamilyHorizontalExit::from).toList(),
                     familyDefinition.topVoidMargin(),
                     familyDefinition.bottomVoidMargin(),
+                    familyDefinition.foundationPolicy(),
                     familyDefinition.paletteOverride()
             );
         }
@@ -573,6 +579,7 @@ public record MKWorkspaceExportManifest(
             boolean allowOnBranchPath,
             MKWorkspaceLinearRunProjection projection,
             List<MKWorkspaceLinearRunPieceShape> supportedShapes,
+            MKWorkspaceFoundationPolicy foundationPolicy,
             @Nullable MKWorkspacePaletteOverride paletteOverride
     ) {
         public static final Codec<ExportLinearRunFamily> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -590,12 +597,15 @@ public record MKWorkspaceExportManifest(
                         .forGetter(ExportLinearRunFamily::projection),
                 linearRunShapeCodec().listOf().optionalFieldOf("supported_shapes", List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT))
                         .forGetter(ExportLinearRunFamily::supportedShapes),
+                MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundation_policy", MKWorkspaceFoundationPolicy.none())
+                        .forGetter(ExportLinearRunFamily::foundationPolicy),
                 MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
                         .forGetter(ExportLinearRunFamily::paletteOverrideOpt)
         ).apply(instance, (linearRunId, kind, openingProfileId, length, interiorWidth, interiorHeight, slopeDelta,
-                           allowOnMainPath, allowOnBranchPath, projection, supportedShapes, paletteOverride) ->
+                           allowOnMainPath, allowOnBranchPath, projection, supportedShapes, foundationPolicy,
+                           paletteOverride) ->
                 new ExportLinearRunFamily(linearRunId, kind, openingProfileId, length, interiorWidth, interiorHeight,
-                        slopeDelta, allowOnMainPath, allowOnBranchPath, projection, supportedShapes,
+                        slopeDelta, allowOnMainPath, allowOnBranchPath, projection, supportedShapes, foundationPolicy,
                         paletteOverride.orElse(null))));
 
         public static ExportLinearRunFamily from(MKWorkspaceLinearRunFamilyDefinition linearRunFamily) {
@@ -611,6 +621,7 @@ public record MKWorkspaceExportManifest(
                     linearRunFamily.allowOnBranchPath(),
                     linearRunFamily.projection(),
                     linearRunFamily.supportedShapes(),
+                    linearRunFamily.foundationPolicy(),
                     linearRunFamily.paletteOverride()
             );
         }
@@ -723,20 +734,41 @@ public record MKWorkspaceExportManifest(
         ).apply(instance, ExportRuntimeCategory::new));
 
         public static java.util.Optional<ExportRuntimeCategory> forCategory(MKStructureWorkspace workspace, ExportCategory category) {
-            java.util.Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = workspace.pieces().stream()
+            java.util.Optional<MKWorkspacePieceDefinition> runtimePiece = workspace.pieces().stream()
                     .filter(piece -> category.baseName().equals(piece.tags().getOrDefault("workspace_base_name", piece.pieceName())))
-                    .map(MKWorkspacePieceDefinition::tags)
-                    .map(MKWorkspaceRuntimePieceInfo::fromTags)
-                    .flatMap(java.util.Optional::stream)
                     .findFirst();
-            if (runtimeInfo.isEmpty()) {
+            java.util.Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = runtimePiece
+                    .map(MKWorkspacePieceDefinition::tags)
+                    .flatMap(MKWorkspaceRuntimePieceInfo::fromTags);
+            if (runtimeInfo.isEmpty() || runtimePiece.isEmpty()) {
                 return java.util.Optional.empty();
             }
             return java.util.Optional.of(new ExportRuntimeCategory(
                     category.baseName(),
                     category.role(),
-                    ExportRuntimePieceMetadata.from(runtimeInfo.get())
+                    ExportRuntimePieceMetadata.from(runtimeInfo.get(), foundationPolicyForPiece(workspace, runtimePiece.get()))
             ));
+        }
+
+        private static MKWorkspaceFoundationPolicy foundationPolicyForPiece(MKStructureWorkspace workspace,
+                                                                            MKWorkspacePieceDefinition piece) {
+            String linearRunId = piece.tags().get("workspace_linear_run_family_id");
+            if (linearRunId != null && !linearRunId.isBlank()) {
+                return workspace.linearRunFamilies().stream()
+                        .filter(family -> family.linearRunId().equals(linearRunId))
+                        .findFirst()
+                        .map(MKWorkspaceLinearRunFamilyDefinition::foundationPolicy)
+                        .orElse(MKWorkspaceFoundationPolicy.none());
+            }
+            String familyId = piece.tags().get("workspace_family_id");
+            if (familyId != null && !familyId.isBlank()) {
+                return workspace.familyDefinitions().stream()
+                        .filter(family -> family.baseName().equals(familyId))
+                        .findFirst()
+                        .map(MKTowerWorkspaceFamilyDefinition::foundationPolicy)
+                        .orElse(MKWorkspaceFoundationPolicy.none());
+            }
+            return MKWorkspaceFoundationPolicy.none();
         }
     }
 
@@ -750,7 +782,8 @@ public record MKWorkspaceExportManifest(
             boolean topCapOnly,
             String category,
             boolean mainPathEnding,
-            boolean branchCap
+            boolean branchCap,
+            MKWorkspaceFoundationPolicy foundationPolicy
     ) {
         public static final Codec<ExportRuntimePieceMetadata> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 jigsawPieceRoleCodec().fieldOf("role").forGetter(ExportRuntimePieceMetadata::role),
@@ -762,10 +795,13 @@ public record MKWorkspaceExportManifest(
                 Codec.BOOL.fieldOf("top_cap_only").forGetter(ExportRuntimePieceMetadata::topCapOnly),
                 Codec.STRING.optionalFieldOf("category", "").forGetter(ExportRuntimePieceMetadata::category),
                 Codec.BOOL.optionalFieldOf("main_path_ending", false).forGetter(ExportRuntimePieceMetadata::mainPathEnding),
-                Codec.BOOL.optionalFieldOf("branch_cap", false).forGetter(ExportRuntimePieceMetadata::branchCap)
+                Codec.BOOL.optionalFieldOf("branch_cap", false).forGetter(ExportRuntimePieceMetadata::branchCap),
+                MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundation_policy", MKWorkspaceFoundationPolicy.none())
+                        .forGetter(ExportRuntimePieceMetadata::foundationPolicy)
         ).apply(instance, ExportRuntimePieceMetadata::new));
 
-        public static ExportRuntimePieceMetadata from(MKWorkspaceRuntimePieceInfo runtimeInfo) {
+        public static ExportRuntimePieceMetadata from(MKWorkspaceRuntimePieceInfo runtimeInfo,
+                                                      MKWorkspaceFoundationPolicy foundationPolicy) {
             return new ExportRuntimePieceMetadata(
                     runtimeInfo.role(),
                     runtimeInfo.progressionDelta(),
@@ -776,7 +812,8 @@ public record MKWorkspaceExportManifest(
                     runtimeInfo.topCapOnly(),
                     runtimeInfo.category(),
                     runtimeInfo.mainPathEnding(),
-                    runtimeInfo.branchCap()
+                    runtimeInfo.branchCap(),
+                    foundationPolicy
             );
         }
     }

@@ -359,6 +359,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
         tags.put("workspace_hallway_family_id", linearRun.linearRunId());
         tags.put("workspace_hallway_path_kind", pathKind.serializedName);
         tags.put("workspace_hallway_slope_delta", Integer.toString(linearRun.slopeDelta()));
+        applyFoundationTags(linearRun.foundationPolicy(), tags);
         MKWorkspacePaletteTags.apply(tags, paletteResolver.resolveFamily(workspace, linearRun));
         new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
                 pathKind == HallwayPathKind.MAIN, pathKind == HallwayPathKind.BRANCH, false, false).applyToTags(tags);
@@ -523,6 +524,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
         tags.put("workspace_horizontal_extrusion_mode", family.horizontalExtrusionMode().getSerializedName());
         tags.put("workspace_category", family.category().getSerializedName());
         applyVoidMarginTags(family, tags);
+        applyFoundationTags(family.foundationPolicy(), tags);
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, Boolean.toString(family.supportsVerticalAccess()));
         if (family.supportsVerticalAccess()) {
             tags.put(MKWorkspaceVerticalAccessTags.PLACEMENT_TAG, stairPlacement);
@@ -548,6 +550,14 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
         }
         if (family.bottomVoidMargin() > 0) {
             tags.put(MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG, Integer.toString(family.bottomVoidMargin()));
+        }
+    }
+
+    private void applyFoundationTags(com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy policy,
+                                     Map<String, String> tags) {
+        if (policy.enabled()) {
+            tags.put(com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy.MODE_TAG,
+                    policy.mode().getSerializedName());
         }
     }
 

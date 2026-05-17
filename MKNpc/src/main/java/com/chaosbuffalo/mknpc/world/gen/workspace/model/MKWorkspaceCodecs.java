@@ -77,6 +77,9 @@ public final class MKWorkspaceCodecs {
     public static final Codec<MKWorkspaceHorizontalExtrusionMode> HORIZONTAL_EXTRUSION_MODE_CODEC = Codec.STRING.xmap(
             MKWorkspaceHorizontalExtrusionMode::fromSerializedName, MKWorkspaceHorizontalExtrusionMode::getSerializedName
     );
+    public static final Codec<MKWorkspaceFoundationMode> FOUNDATION_MODE_CODEC = Codec.STRING.xmap(
+            MKWorkspaceFoundationMode::fromSerializedName, MKWorkspaceFoundationMode::getSerializedName
+    );
     public static final Codec<MKWorkspaceLinearRunKind> LINEAR_RUN_KIND_CODEC = Codec.STRING.xmap(
             MKWorkspaceLinearRunKind::fromSerializedName, MKWorkspaceLinearRunKind::getSerializedName
     );

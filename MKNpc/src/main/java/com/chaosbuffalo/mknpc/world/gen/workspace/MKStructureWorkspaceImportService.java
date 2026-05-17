@@ -242,6 +242,7 @@ public class MKStructureWorkspaceImportService {
                                 .toList(),
                         family.topVoidMargin(),
                         family.bottomVoidMargin(),
+                        family.foundationPolicy(),
                         family.paletteOverride()
                 ))
                 .toList();
@@ -286,6 +287,7 @@ public class MKStructureWorkspaceImportService {
                                 linearRun.allowOnBranchPath(),
                                 linearRun.projection(),
                                 linearRun.supportedShapes(),
+                                linearRun.foundationPolicy(),
                                 linearRun.paletteOverride()
                         ))
                         .toList();

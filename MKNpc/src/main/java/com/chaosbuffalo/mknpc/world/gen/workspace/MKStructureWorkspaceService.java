@@ -628,6 +628,9 @@ public class MKStructureWorkspaceService {
                                         family.roomHeight(),
                                         family.horizontalExtrusionMode(),
                                         family.horizontalExits(),
+                                        family.topVoidMargin(),
+                                        family.bottomVoidMargin(),
+                                        family.foundationPolicy(),
                                         requested.paletteOverride()))
                                 .orElse(family))
                         .toList(),
@@ -664,6 +667,7 @@ public class MKStructureWorkspaceService {
                                         linearRun.allowOnBranchPath(),
                                         linearRun.projection(),
                                         linearRun.supportedShapes(),
+                                        linearRun.foundationPolicy(),
                                         requested.paletteOverride()))
                                 .orElse(linearRun))
                         .toList(),

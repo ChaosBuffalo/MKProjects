@@ -27,13 +27,16 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
                     .forGetter(MKWorkspaceLinearRunFamilyDefinition::projection),
             MKWorkspaceCodecs.LINEAR_RUN_SHAPE_CODEC.listOf().optionalFieldOf("supportedShapes", List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT))
                     .forGetter(MKWorkspaceLinearRunFamilyDefinition::supportedShapes),
+            MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundationPolicy", MKWorkspaceFoundationPolicy.none())
+                    .forGetter(MKWorkspaceLinearRunFamilyDefinition::foundationPolicy),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("paletteOverride")
                     .forGetter(MKWorkspaceLinearRunFamilyDefinition::paletteOverrideOpt)
     ).apply(instance, (linearRunId, kind, openingProfileId, length, interiorWidth, interiorHeight, slopeDelta,
-                       allowOnMainPath, allowOnBranchPath, projection, supportedShapes, paletteOverride) ->
+                       allowOnMainPath, allowOnBranchPath, projection, supportedShapes, foundationPolicy,
+                       paletteOverride) ->
             new MKWorkspaceLinearRunFamilyDefinition(linearRunId, kind, openingProfileId, length, interiorWidth,
                     interiorHeight, slopeDelta, allowOnMainPath, allowOnBranchPath, projection, supportedShapes,
-                    paletteOverride.orElse(null))));
+                    foundationPolicy, paletteOverride.orElse(null))));
 
     private final String linearRunId;
     private final MKWorkspaceLinearRunKind kind;
@@ -46,6 +49,7 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
     private final boolean allowOnBranchPath;
     private final MKWorkspaceLinearRunProjection projection;
     private final List<MKWorkspaceLinearRunPieceShape> supportedShapes;
+    private final MKWorkspaceFoundationPolicy foundationPolicy;
     @Nullable
     private final MKWorkspacePaletteOverride paletteOverride;
 
@@ -58,7 +62,7 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
                                                 ResourceLocation ceilingBlock) {
         this(linearRunId, kind, openingProfileId, length, interiorWidth, interiorHeight, slopeDelta,
                 allowOnMainPath, allowOnBranchPath, projection, supportedShapes,
-                MKWorkspacePaletteOverride.of(floorBlock, wallBlock, ceilingBlock));
+                MKWorkspaceFoundationPolicy.none(), MKWorkspacePaletteOverride.of(floorBlock, wallBlock, ceilingBlock));
     }
 
     public MKWorkspaceLinearRunFamilyDefinition(String linearRunId, MKWorkspaceLinearRunKind kind, String openingProfileId,
@@ -66,6 +70,18 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
                                                 boolean allowOnMainPath, boolean allowOnBranchPath,
                                                 MKWorkspaceLinearRunProjection projection,
                                                 List<MKWorkspaceLinearRunPieceShape> supportedShapes,
+                                                @Nullable MKWorkspacePaletteOverride paletteOverride) {
+        this(linearRunId, kind, openingProfileId, length, interiorWidth, interiorHeight, slopeDelta,
+                allowOnMainPath, allowOnBranchPath, projection, supportedShapes, MKWorkspaceFoundationPolicy.none(),
+                paletteOverride);
+    }
+
+    public MKWorkspaceLinearRunFamilyDefinition(String linearRunId, MKWorkspaceLinearRunKind kind, String openingProfileId,
+                                                int length, int interiorWidth, int interiorHeight, int slopeDelta,
+                                                boolean allowOnMainPath, boolean allowOnBranchPath,
+                                                MKWorkspaceLinearRunProjection projection,
+                                                List<MKWorkspaceLinearRunPieceShape> supportedShapes,
+                                                MKWorkspaceFoundationPolicy foundationPolicy,
                                                 @Nullable MKWorkspacePaletteOverride paletteOverride) {
         this.linearRunId = linearRunId;
         this.kind = kind;
@@ -78,6 +94,7 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
         this.allowOnBranchPath = allowOnBranchPath;
         this.projection = projection;
         this.supportedShapes = List.copyOf(supportedShapes.isEmpty() ? List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT) : supportedShapes);
+        this.foundationPolicy = foundationPolicy == null ? MKWorkspaceFoundationPolicy.none() : foundationPolicy;
         this.paletteOverride = paletteOverride != null && !paletteOverride.isEmpty() ? paletteOverride : null;
     }
 
@@ -100,6 +117,7 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
                         false,
                         MKWorkspaceLinearRunProjection.RIGID,
                         List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                        MKWorkspaceFoundationPolicy.none(),
                         null
                 ),
                 new MKWorkspaceLinearRunFamilyDefinition(
@@ -114,6 +132,7 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
                         true,
                         MKWorkspaceLinearRunProjection.RIGID,
                         List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                        MKWorkspaceFoundationPolicy.none(),
                         null
                 )
         );
@@ -133,6 +152,7 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
                         hallway.allowOnBranchPath(),
                         MKWorkspaceLinearRunProjection.RIGID,
                         List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                        MKWorkspaceFoundationPolicy.none(),
                         hallway.paletteOverride()
                 ))
                 .toList();
@@ -173,6 +193,7 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
         if (!allowOnMainPath && !allowOnBranchPath) {
             errors.add("linear run family " + linearRunId + " must be usable on the main path or branch path");
         }
+        errors.addAll(foundationPolicy.validate("linear run family " + linearRunId));
         return errors;
     }
 
@@ -218,6 +239,10 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
 
     public List<MKWorkspaceLinearRunPieceShape> supportedShapes() {
         return supportedShapes;
+    }
+
+    public MKWorkspaceFoundationPolicy foundationPolicy() {
+        return foundationPolicy;
     }
 
     @Override

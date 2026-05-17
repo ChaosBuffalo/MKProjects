@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -13,7 +14,8 @@ public record MKJigsawPieceMetadata(
         boolean topCapOnly,
         String category,
         boolean mainPathEnding,
-        boolean branchCap
+        boolean branchCap,
+        MKWorkspaceFoundationPolicy foundationPolicy
 ) {
     public static final Codec<MKJigsawPieceMetadata> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             MKJigsawPieceRole.CODEC.fieldOf("role").forGetter(MKJigsawPieceMetadata::pieceRole),
@@ -25,21 +27,23 @@ public record MKJigsawPieceMetadata(
             Codec.BOOL.optionalFieldOf("top_cap_only", false).forGetter(MKJigsawPieceMetadata::topCapOnly),
             Codec.STRING.optionalFieldOf("category", "").forGetter(MKJigsawPieceMetadata::category),
             Codec.BOOL.optionalFieldOf("main_path_ending", false).forGetter(MKJigsawPieceMetadata::mainPathEnding),
-            Codec.BOOL.optionalFieldOf("branch_cap", false).forGetter(MKJigsawPieceMetadata::branchCap)
+            Codec.BOOL.optionalFieldOf("branch_cap", false).forGetter(MKJigsawPieceMetadata::branchCap),
+            MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundation_policy", MKWorkspaceFoundationPolicy.none())
+                    .forGetter(MKJigsawPieceMetadata::foundationPolicy)
     ).apply(instance, MKJigsawPieceMetadata::new));
 
     public MKJigsawPieceMetadata(MKJigsawPieceRole pieceRole, int progressionDelta, int verticalLevelDelta,
                                  boolean allowOnMainPath, boolean allowOnBranchPath, boolean terminal,
                                  boolean topCapOnly) {
         this(pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
-                topCapOnly, "", false, false);
+                topCapOnly, "", false, false, MKWorkspaceFoundationPolicy.none());
     }
 
     public MKJigsawPieceMetadata(MKJigsawPieceRole pieceRole, int progressionDelta, int verticalLevelDelta,
                                  boolean allowOnMainPath, boolean allowOnBranchPath, boolean terminal,
                                  boolean topCapOnly, String category, boolean mainPathEnding) {
         this(pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
-                topCapOnly, category, mainPathEnding, false);
+                topCapOnly, category, mainPathEnding, false, MKWorkspaceFoundationPolicy.none());
     }
 }
 

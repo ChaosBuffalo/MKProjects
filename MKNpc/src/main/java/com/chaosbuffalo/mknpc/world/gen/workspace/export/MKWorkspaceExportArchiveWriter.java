@@ -87,7 +87,8 @@ public class MKWorkspaceExportArchiveWriter {
                     category.pieceMetadata().topCapOnly(),
                     category.pieceMetadata().category(),
                     category.pieceMetadata().mainPathEnding(),
-                    category.pieceMetadata().branchCap()
+                    category.pieceMetadata().branchCap(),
+                    category.pieceMetadata().foundationPolicy()
             );
             writeJson(output, metadataEntryName(manifest, piece), MKJigsawPieceMetadata.CODEC
                     .encodeStart(JsonOps.INSTANCE, metadata)
