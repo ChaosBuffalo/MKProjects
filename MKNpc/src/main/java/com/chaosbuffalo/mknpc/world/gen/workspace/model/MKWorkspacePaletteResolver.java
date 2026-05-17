@@ -21,6 +21,13 @@ public final class MKWorkspacePaletteResolver {
 
     public Optional<MKWorkspaceMaterialPalette> resolvePiece(MKStructureWorkspace workspace,
                                                              MKWorkspacePieceDefinition piece) {
+        String linearRunId = piece.tags().get("workspace_linear_run_family_id");
+        if (linearRunId != null && !linearRunId.isBlank()) {
+            return workspace.linearRunFamilies().stream()
+                    .filter(linearRun -> linearRun.linearRunId().equals(linearRunId))
+                    .findFirst()
+                    .map(linearRun -> resolveFamily(workspace, linearRun));
+        }
         String hallwayId = piece.tags().get("workspace_hallway_family_id");
         if (hallwayId != null && !hallwayId.isBlank()) {
             return workspace.hallwayFamilies().stream()

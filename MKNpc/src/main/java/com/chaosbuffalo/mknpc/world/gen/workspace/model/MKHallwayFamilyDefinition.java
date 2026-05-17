@@ -94,6 +94,24 @@ public class MKHallwayFamilyDefinition implements MKWorkspacePaletteFamily {
         );
     }
 
+    public static List<MKHallwayFamilyDefinition> fromLinearRunFamilies(
+            List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies) {
+        return linearRunFamilies.stream()
+                .filter(linearRun -> linearRun.kind() == MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR)
+                .map(linearRun -> new MKHallwayFamilyDefinition(
+                        linearRun.linearRunId(),
+                        linearRun.openingProfileId(),
+                        linearRun.length(),
+                        linearRun.interiorWidth(),
+                        linearRun.interiorHeight(),
+                        linearRun.slopeDelta(),
+                        linearRun.allowOnMainPath(),
+                        linearRun.allowOnBranchPath(),
+                        linearRun.paletteOverride()
+                ))
+                .toList();
+    }
+
     public CompoundTag toTag() {
         return MKWorkspaceCodecs.encodeNbt(CODEC, this, "hallway family definition");
     }

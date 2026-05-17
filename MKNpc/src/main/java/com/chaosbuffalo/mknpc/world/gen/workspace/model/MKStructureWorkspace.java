@@ -39,6 +39,7 @@ public class MKStructureWorkspace {
     private final List<MKTowerWorkspaceFamilyDefinition> familyDefinitions;
     private final List<MKHorizontalOpeningProfile> openingProfiles;
     private final List<MKHallwayFamilyDefinition> hallwayFamilies;
+    private final List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies;
     private final int shellMargin;
     private final int exteriorAirMargin;
     private final int previewMargin;
@@ -79,12 +80,34 @@ public class MKStructureWorkspace {
                                 List<MKHorizontalOpeningProfile> openingProfiles,
                                 List<MKHallwayFamilyDefinition> hallwayFamilies,
                                 long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces) {
+        this(id, anchor, namespace, structureName, familyType, topologyProfile, dimensions, palette,
+                stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
+                floorSettings, categoryProfiles, familyDefinitions, openingProfiles, hallwayFamilies,
+                MKWorkspaceLinearRunFamilyDefinition.fromHallwayFamilies(hallwayFamilies),
+                createdAt, updatedAt, pieces);
+    }
+
+    public MKStructureWorkspace(UUID id, BlockPos anchor, String namespace, String structureName,
+                                MKStructureFamilyType familyType, MKWorkspaceTopologyProfile topologyProfile,
+                                MKWorkspaceDimensions dimensions,
+                                MKWorkspaceMaterialPalette palette, MKWorkspaceStairAuthoringConfig stairConfig,
+                                MKVerticalAccessPlacement verticalAccessPlacement,
+                                int shellMargin, int exteriorAirMargin,
+                                int previewMargin,
+                                MKWorkspaceVerticalAccessSpec verticalAccessSpec,
+                                MKTowerWorkspaceFloorSettings floorSettings,
+                                List<MKTowerWorkspaceCategoryProfile> categoryProfiles,
+                                List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
+                                List<MKHorizontalOpeningProfile> openingProfiles,
+                                List<MKHallwayFamilyDefinition> hallwayFamilies,
+                                List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
+                                long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces) {
         this.id = id;
         this.anchor = anchor;
         this.namespace = namespace;
         this.structureName = structureName;
         this.familyType = familyType;
-        this.topologyProfile = topologyProfile;
+        this.topologyProfile = topologyProfile == null ? MKWorkspaceTopologyProfile.tower() : topologyProfile;
         this.dimensions = dimensions;
         this.palette = palette;
         this.stairConfig = stairConfig;
@@ -95,6 +118,7 @@ public class MKStructureWorkspace {
         this.familyDefinitions = List.copyOf(familyDefinitions);
         this.openingProfiles = List.copyOf(openingProfiles);
         this.hallwayFamilies = List.copyOf(hallwayFamilies);
+        this.linearRunFamilies = List.copyOf(linearRunFamilies);
         this.shellMargin = shellMargin;
         this.exteriorAirMargin = exteriorAirMargin;
         this.previewMargin = previewMargin;
@@ -149,6 +173,12 @@ public class MKStructureWorkspace {
                 MKTowerWorkspaceFamilyDefinition.normalize(content.familyDefinitions(), resolvedCategoryProfiles);
         List<MKHorizontalOpeningProfile> resolvedOpeningProfiles = content.openingProfiles().isEmpty() ?
                 MKHorizontalOpeningProfile.createDefaults(core.dimensions()) : List.copyOf(content.openingProfiles());
+        List<MKWorkspaceLinearRunFamilyDefinition> resolvedLinearRunFamilies = content.linearRunFamilies().isEmpty() ?
+                MKWorkspaceLinearRunFamilyDefinition.fromHallwayFamilies(content.hallwayFamilies()) :
+                List.copyOf(content.linearRunFamilies());
+        List<MKHallwayFamilyDefinition> resolvedHallwayFamilies = content.hallwayFamilies().isEmpty() ?
+                MKHallwayFamilyDefinition.fromLinearRunFamilies(resolvedLinearRunFamilies) :
+                List.copyOf(content.hallwayFamilies());
         return new MKStructureWorkspace(
                 id,
                 anchor,
@@ -168,7 +198,8 @@ public class MKStructureWorkspace {
                 resolvedCategoryProfiles,
                 resolvedFamilyDefinitions,
                 resolvedOpeningProfiles,
-                List.copyOf(content.hallwayFamilies()),
+                resolvedHallwayFamilies,
+                resolvedLinearRunFamilies,
                 content.createdAt(),
                 content.updatedAt(),
                 List.copyOf(content.pieces())
@@ -197,6 +228,7 @@ public class MKStructureWorkspace {
                 familyDefinitions,
                 openingProfiles,
                 hallwayFamilies,
+                linearRunFamilies,
                 createdAt,
                 updatedAt,
                 pieces
@@ -241,6 +273,7 @@ public class MKStructureWorkspace {
             List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
             List<MKHorizontalOpeningProfile> openingProfiles,
             List<MKHallwayFamilyDefinition> hallwayFamilies,
+            List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
             long createdAt,
             long updatedAt,
             List<MKWorkspacePieceDefinition> pieces
@@ -256,6 +289,8 @@ public class MKStructureWorkspace {
                         .forGetter(SerializedWorkspaceContent::openingProfiles),
                 MKHallwayFamilyDefinition.CODEC.listOf().optionalFieldOf("hallwayFamilies", List.of())
                         .forGetter(SerializedWorkspaceContent::hallwayFamilies),
+                MKWorkspaceLinearRunFamilyDefinition.CODEC.listOf().optionalFieldOf("linearRunFamilies", List.of())
+                        .forGetter(SerializedWorkspaceContent::linearRunFamilies),
                 Codec.LONG.optionalFieldOf("createdAt", 0L).forGetter(SerializedWorkspaceContent::createdAt),
                 Codec.LONG.optionalFieldOf("updatedAt", 0L).forGetter(SerializedWorkspaceContent::updatedAt),
                 MKWorkspacePieceDefinition.CODEC.listOf().optionalFieldOf("pieces", List.of())
@@ -321,13 +356,13 @@ public class MKStructureWorkspace {
                 if (exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.HALLWAY &&
                         exit.pathKind() != MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY &&
                         exit.pathKind() != MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY) {
-                    boolean hasCompatibleHallway = hallwayFamilies.stream().anyMatch(hallway ->
-                            hallway.openingProfileId().equals(exit.openingProfileId()) &&
-                                    (exit.pathKind().usesMainPath() ? hallway.allowOnMainPath() : hallway.allowOnBranchPath()));
-                    if (!hasCompatibleHallway) {
+                    boolean hasCompatibleLinearRun = linearRunFamilies.stream().anyMatch(linearRun ->
+                            linearRun.openingProfileId().equals(exit.openingProfileId()) &&
+                                    (exit.pathKind().usesMainPath() ? linearRun.allowOnMainPath() : linearRun.allowOnBranchPath()));
+                    if (!hasCompatibleLinearRun) {
                         errors.add("family " + familyDefinition.baseName() + " uses hallway exit " +
                                 exit.direction().getSerializedName() + " with opening profile " + exit.openingProfileId() +
-                                " but no compatible hallway family exists");
+                                " but no compatible linear run family exists");
                     }
                 }
                 if (!exit.direction().getAxis().isVertical()) {
@@ -360,18 +395,18 @@ public class MKStructureWorkspace {
                 }
             }
         }
-        for (MKHallwayFamilyDefinition hallwayFamily : hallwayFamilies) {
-            errors.addAll(hallwayFamily.validate(openingProfileIds));
-            MKHorizontalOpeningProfile openingProfile = openingProfileById.get(hallwayFamily.openingProfileId());
+        for (MKWorkspaceLinearRunFamilyDefinition linearRunFamily : linearRunFamilies) {
+            errors.addAll(linearRunFamily.validate(openingProfileIds));
+            MKHorizontalOpeningProfile openingProfile = openingProfileById.get(linearRunFamily.openingProfileId());
             if (openingProfile != null) {
-                if (hallwayFamily.allowOnMainPath() && !openingProfile.allowOnMainPath()) {
-                    errors.add("hallway family " + hallwayFamily.hallwayId() +
-                            " cannot allow main path when opening profile " + hallwayFamily.openingProfileId() +
+                if (linearRunFamily.allowOnMainPath() && !openingProfile.allowOnMainPath()) {
+                    errors.add("linear run family " + linearRunFamily.linearRunId() +
+                            " cannot allow main path when opening profile " + linearRunFamily.openingProfileId() +
                             " is branch-only");
                 }
-                if (hallwayFamily.allowOnBranchPath() && !openingProfile.allowOnBranchPath()) {
-                    errors.add("hallway family " + hallwayFamily.hallwayId() +
-                            " cannot allow branch path when opening profile " + hallwayFamily.openingProfileId() +
+                if (linearRunFamily.allowOnBranchPath() && !openingProfile.allowOnBranchPath()) {
+                    errors.add("linear run family " + linearRunFamily.linearRunId() +
+                            " cannot allow branch path when opening profile " + linearRunFamily.openingProfileId() +
                             " is main-only");
                 }
             }
@@ -402,10 +437,10 @@ public class MKStructureWorkspace {
                 }
             }
             int bandCap = verticalAccessSpec.getBandCapForRequestedHeight(mainProfile.get().fullHeight());
-            for (MKHallwayFamilyDefinition hallwayFamily : hallwayFamilies) {
-                int hallwayTopHeight = hallwayFamily.interiorHeight() + Math.abs(hallwayFamily.slopeDelta());
+            for (MKWorkspaceLinearRunFamilyDefinition linearRunFamily : linearRunFamilies) {
+                int hallwayTopHeight = linearRunFamily.interiorHeight() + Math.abs(linearRunFamily.slopeDelta());
                 if (hallwayTopHeight > bandCap) {
-                    errors.add("hallway family " + hallwayFamily.hallwayId() + " height " + hallwayTopHeight +
+                    errors.add("linear run family " + linearRunFamily.linearRunId() + " height " + hallwayTopHeight +
                             " exceeds main vertical band cap " + bandCap);
                 }
             }
@@ -432,6 +467,7 @@ public class MKStructureWorkspace {
         return new MKStructureWorkspace(id, anchor, namespace, structureName, familyType, topologyProfile, dimensions, palette,
                 stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
                 floorSettings, categoryProfiles, familyDefinitions, openingProfiles, hallwayFamilies,
+                linearRunFamilies,
                 createdAt, System.currentTimeMillis(), newPieces);
     }
 
@@ -501,6 +537,10 @@ public class MKStructureWorkspace {
 
     public List<MKHallwayFamilyDefinition> hallwayFamilies() {
         return hallwayFamilies;
+    }
+
+    public List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies() {
+        return linearRunFamilies;
     }
 
     public int shellMargin() {

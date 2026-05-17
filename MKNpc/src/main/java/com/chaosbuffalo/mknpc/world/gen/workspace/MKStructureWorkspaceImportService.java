@@ -17,11 +17,13 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinitio
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
@@ -269,6 +271,27 @@ public class MKStructureWorkspaceImportService {
                         hallway.paletteOverride()
                 ))
                 .toList();
+        List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies = settings.linearRunFamilies().isEmpty() ?
+                MKWorkspaceLinearRunFamilyDefinition.fromHallwayFamilies(hallwayFamilies) :
+                settings.linearRunFamilies().stream()
+                        .map(linearRun -> new MKWorkspaceLinearRunFamilyDefinition(
+                                linearRun.linearRunId(),
+                                linearRun.kind(),
+                                linearRun.openingProfileId(),
+                                linearRun.length(),
+                                linearRun.interiorWidth(),
+                                linearRun.interiorHeight(),
+                                linearRun.slopeDelta(),
+                                linearRun.allowOnMainPath(),
+                                linearRun.allowOnBranchPath(),
+                                linearRun.projection(),
+                                linearRun.supportedShapes(),
+                                linearRun.paletteOverride()
+                        ))
+                        .toList();
+        if (hallwayFamilies.isEmpty()) {
+            hallwayFamilies = MKHallwayFamilyDefinition.fromLinearRunFamilies(linearRunFamilies);
+        }
         long now = System.currentTimeMillis();
         return new MKStructureWorkspace(
                 workspaceId,
@@ -276,6 +299,7 @@ public class MKStructureWorkspaceImportService {
                 manifest.namespace(),
                 manifest.structureName(),
                 manifest.familyType(),
+                MKWorkspaceTopologyProfile.tower(),
                 workspaceDimensions,
                 new MKWorkspaceMaterialPalette(
                         palette.floorBlock(),
@@ -296,6 +320,7 @@ public class MKStructureWorkspaceImportService {
                 familyDefinitions,
                 openingProfiles,
                 hallwayFamilies,
+                linearRunFamilies,
                 createdAt,
                 now,
                 List.of()

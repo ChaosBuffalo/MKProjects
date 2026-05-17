@@ -563,6 +563,7 @@ public class MKStructureWorkspaceService {
                 namespace,
                 structureName,
                 workspace.familyType(),
+                workspace.topologyProfile(),
                 workspace.dimensions(),
                 palette,
                 alignStairMaterials(workspace.stairConfig(), palette),
@@ -576,6 +577,7 @@ public class MKStructureWorkspaceService {
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
                 workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 0,
                 0,
                 List.of()
@@ -589,6 +591,7 @@ public class MKStructureWorkspaceService {
                 source.namespace(),
                 source.structureName(),
                 source.familyType(),
+                source.topologyProfile(),
                 source.dimensions(),
                 materialSource.palette(),
                 alignStairMaterials(source.stairConfig(), materialSource.palette()),
@@ -644,6 +647,25 @@ public class MKStructureWorkspaceService {
                                         hallway.allowOnBranchPath(),
                                         requested.paletteOverride()))
                                 .orElse(hallway))
+                        .toList(),
+                source.linearRunFamilies().stream()
+                        .map(linearRun -> materialSource.linearRunFamilies().stream()
+                                .filter(requested -> requested.linearRunId().equals(linearRun.linearRunId()))
+                                .findFirst()
+                                .map(requested -> new com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition(
+                                        linearRun.linearRunId(),
+                                        linearRun.kind(),
+                                        linearRun.openingProfileId(),
+                                        linearRun.length(),
+                                        linearRun.interiorWidth(),
+                                        linearRun.interiorHeight(),
+                                        linearRun.slopeDelta(),
+                                        linearRun.allowOnMainPath(),
+                                        linearRun.allowOnBranchPath(),
+                                        linearRun.projection(),
+                                        linearRun.supportedShapes(),
+                                        requested.paletteOverride()))
+                                .orElse(linearRun))
                         .toList(),
                 source.createdAt(),
                 source.updatedAt(),

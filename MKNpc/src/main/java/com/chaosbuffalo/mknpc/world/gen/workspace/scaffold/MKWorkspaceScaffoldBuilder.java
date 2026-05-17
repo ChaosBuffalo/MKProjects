@@ -46,6 +46,7 @@ public class MKWorkspaceScaffoldBuilder {
     public static final int CELL_PADDING = 4;
     public static final int CLEAR_MARGIN = 4;
     private static final String HALLWAY_SLOPE_DELTA_TAG = "workspace_hallway_slope_delta";
+    private static final String LINEAR_RUN_SLOPE_DELTA_TAG = "workspace_linear_run_slope_delta";
     private static final String HORIZONTAL_EXTRUSION_MODE_TAG = "workspace_horizontal_extrusion_mode";
 
     private final MKWorkspaceGridLayout gridLayout = new MKWorkspaceGridLayout();
@@ -468,10 +469,12 @@ public class MKWorkspaceScaffoldBuilder {
 
     private void decoratePieceInterior(ServerLevel level, BlockPos geometryOrigin, MKPlannedPiece piece, int shellMargin,
                                        int verticalShellThickness, int geometryInteriorHeight, BlockState floorState) {
-        if (!"hallway".equals(piece.tags().get("tower_piece_kind"))) {
+        String pieceKind = piece.tags().get("tower_piece_kind");
+        if (!"hallway".equals(pieceKind) && !"linear_run".equals(pieceKind)) {
             return;
         }
-        int slopeDelta = parseIntTag(piece.tags(), HALLWAY_SLOPE_DELTA_TAG, 0);
+        int slopeDelta = parseIntTag(piece.tags(), LINEAR_RUN_SLOPE_DELTA_TAG,
+                parseIntTag(piece.tags(), HALLWAY_SLOPE_DELTA_TAG, 0));
         if (slopeDelta == 0) {
             return;
         }

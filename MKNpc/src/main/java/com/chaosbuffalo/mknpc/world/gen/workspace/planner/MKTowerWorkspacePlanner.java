@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
@@ -11,6 +10,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDe
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
@@ -32,7 +33,7 @@ import java.util.Set;
 
 public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
     private static final String EMPTY_POOL = "minecraft:empty";
-    private static final String HALLWAY_POOL_PREFIX = "hallways";
+    private static final String LINEAR_RUN_POOL_PREFIX = "linear_runs";
     private static final String ROOM_POOL_PREFIX = "rooms";
     private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
 
@@ -108,7 +109,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
                 .filter(family -> shouldCreateFamily(workspace, family))
                 .map(family -> createPieceForFamily(workspace, family))
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-        pieces.addAll(createHallwayPieces(workspace));
+        pieces.addAll(createLinearRunPieces(workspace));
         return List.copyOf(pieces);
     }
 
@@ -314,51 +315,62 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
         return roomRuntimeInfo(false, MKJigsawPieceRole.TERMINAL, 1, -1, true, false, family);
     }
 
-    private List<MKPlannedPiece> createHallwayPieces(MKStructureWorkspace workspace) {
-        return workspace.hallwayFamilies().stream()
-                .flatMap(hallway -> createHallwayPieces(workspace, hallway).stream())
+    private List<MKPlannedPiece> createLinearRunPieces(MKStructureWorkspace workspace) {
+        return workspace.linearRunFamilies().stream()
+                .flatMap(linearRun -> createLinearRunPieces(workspace, linearRun).stream())
                 .toList();
     }
 
-    private List<MKPlannedPiece> createHallwayPieces(MKStructureWorkspace workspace, MKHallwayFamilyDefinition hallway) {
+    private List<MKPlannedPiece> createLinearRunPieces(MKStructureWorkspace workspace,
+                                                       MKWorkspaceLinearRunFamilyDefinition linearRun) {
         ResolvedOpeningProfile opening = workspace.openingProfiles().stream()
-                .filter(profile -> profile.profileId().equals(hallway.openingProfileId()))
+                .filter(profile -> profile.profileId().equals(linearRun.openingProfileId()))
                 .findFirst()
                 .map(profile -> new ResolvedOpeningProfile(profile.profileId(), profile.openingWidth(), profile.openingHeight()))
-                .orElseThrow(() -> new IllegalStateException("missing hallway opening profile " + hallway.openingProfileId()));
+                .orElseThrow(() -> new IllegalStateException("missing linear run opening profile " + linearRun.openingProfileId()));
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
-        if (hallway.allowOnMainPath()) {
-            pieces.add(createHallwayPiece(workspace, hallway, opening, HallwayPathKind.MAIN));
+        if (!linearRun.supportedShapes().contains(MKWorkspaceLinearRunPieceShape.STRAIGHT)) {
+            return List.of();
         }
-        if (hallway.allowOnBranchPath()) {
-            pieces.add(createHallwayPiece(workspace, hallway, opening, HallwayPathKind.BRANCH));
+        if (linearRun.allowOnMainPath()) {
+            pieces.add(createLinearRunPiece(workspace, linearRun, opening, HallwayPathKind.MAIN));
+        }
+        if (linearRun.allowOnBranchPath()) {
+            pieces.add(createLinearRunPiece(workspace, linearRun, opening, HallwayPathKind.BRANCH));
         }
         return List.copyOf(pieces);
     }
 
-    private MKPlannedPiece createHallwayPiece(MKStructureWorkspace workspace, MKHallwayFamilyDefinition hallway,
-                                              ResolvedOpeningProfile opening, HallwayPathKind pathKind) {
-        int westOffset = Math.max(0, -hallway.slopeDelta());
-        int eastOffset = Math.max(0, hallway.slopeDelta());
+    private MKPlannedPiece createLinearRunPiece(MKStructureWorkspace workspace,
+                                                MKWorkspaceLinearRunFamilyDefinition linearRun,
+                                                ResolvedOpeningProfile opening, HallwayPathKind pathKind) {
+        int westOffset = Math.max(0, -linearRun.slopeDelta());
+        int eastOffset = Math.max(0, linearRun.slopeDelta());
         LinkedHashMap<String, String> tags = new LinkedHashMap<>();
-        tags.put("topology_role", "hallway_" + hallway.hallwayId() + "_" + pathKind.serializedName);
-        tags.put("tower_piece_kind", "hallway");
-        tags.put("workspace_opening_profile_id", hallway.openingProfileId());
-        tags.put("workspace_hallway_family_id", hallway.hallwayId());
+        tags.put("topology_role", "linear_run_" + linearRun.linearRunId() + "_" + pathKind.serializedName);
+        tags.put("tower_piece_kind", "linear_run");
+        tags.put("workspace_linear_run_family_id", linearRun.linearRunId());
+        tags.put("workspace_linear_run_kind", linearRun.kind().getSerializedName());
+        tags.put("workspace_linear_run_projection", linearRun.projection().getSerializedName());
+        tags.put("workspace_linear_run_shape", MKWorkspaceLinearRunPieceShape.STRAIGHT.getSerializedName());
+        tags.put("workspace_linear_run_path_kind", pathKind.serializedName);
+        tags.put("workspace_linear_run_slope_delta", Integer.toString(linearRun.slopeDelta()));
+        tags.put("workspace_opening_profile_id", linearRun.openingProfileId());
+        tags.put("workspace_hallway_family_id", linearRun.linearRunId());
         tags.put("workspace_hallway_path_kind", pathKind.serializedName);
-        tags.put("workspace_hallway_slope_delta", Integer.toString(hallway.slopeDelta()));
-        MKWorkspacePaletteTags.apply(tags, paletteResolver.resolveFamily(workspace, hallway));
+        tags.put("workspace_hallway_slope_delta", Integer.toString(linearRun.slopeDelta()));
+        MKWorkspacePaletteTags.apply(tags, paletteResolver.resolveFamily(workspace, linearRun));
         new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
                 pathKind == HallwayPathKind.MAIN, pathKind == HallwayPathKind.BRANCH, false, false).applyToTags(tags);
-        String hallwayPool = hallwayPoolName(hallway.openingProfileId(), pathKind);
+        String hallwayPool = hallwayPoolName(linearRun.openingProfileId(), pathKind);
         MKConnectorRole westRole = pathKind == HallwayPathKind.MAIN ? MKConnectorRole.MAIN_FORWARD : MKConnectorRole.BRANCH;
         MKConnectorRole eastRole = pathKind == HallwayPathKind.MAIN ? MKConnectorRole.MAIN_BACK : MKConnectorRole.BRANCH;
         return new MKPlannedPiece(
                 MKWorkspacePieceRole.HALLWAY,
-                "hallway_" + hallway.hallwayId() + "_" + pathKind.serializedName,
-                hallway.length(),
-                hallway.interiorWidth(),
-                hallway.interiorHeight() + Math.abs(hallway.slopeDelta()),
+                "linear_run_" + linearRun.linearRunId() + "_" + pathKind.serializedName,
+                linearRun.length(),
+                linearRun.interiorWidth(),
+                linearRun.interiorHeight() + Math.abs(linearRun.slopeDelta()),
                 List.of(
                         new MKPlannedConnector(westRole, Direction.WEST,
                                 opening.openingWidth(), opening.openingHeight(), 0, westOffset,
@@ -435,14 +447,14 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
     }
 
     private String resolveHallwayPool(MKStructureWorkspace workspace, String openingProfileId, HallwayPathKind pathKind) {
-        boolean hasCompatibleHallway = workspace.hallwayFamilies().stream().anyMatch(hallway ->
-                hallway.openingProfileId().equals(openingProfileId) &&
-                        (pathKind == HallwayPathKind.MAIN ? hallway.allowOnMainPath() : hallway.allowOnBranchPath()));
-        return hasCompatibleHallway ? hallwayPoolName(openingProfileId, pathKind) : EMPTY_POOL;
+        boolean hasCompatibleLinearRun = workspace.linearRunFamilies().stream().anyMatch(linearRun ->
+                linearRun.openingProfileId().equals(openingProfileId) &&
+                        (pathKind == HallwayPathKind.MAIN ? linearRun.allowOnMainPath() : linearRun.allowOnBranchPath()));
+        return hasCompatibleLinearRun ? hallwayPoolName(openingProfileId, pathKind) : EMPTY_POOL;
     }
 
     private String hallwayPoolName(String openingProfileId, HallwayPathKind pathKind) {
-        return HALLWAY_POOL_PREFIX + "/" + pathKind.serializedName + "/" + openingProfileId;
+        return LINEAR_RUN_POOL_PREFIX + "/" + pathKind.serializedName + "/" + openingProfileId;
     }
 
     private String directRoomTargetPoolName(String openingProfileId, MKConnectorRole role) {

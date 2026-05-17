@@ -14,6 +14,10 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizon
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunProjection;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
@@ -122,7 +126,8 @@ public record MKWorkspaceExportManifest(
                         workspace.categoryProfiles().stream().map(ExportCategoryProfile::from).toList(),
                         workspace.familyDefinitions().stream().map(ExportFamilyDefinition::from).toList(),
                         workspace.openingProfiles().stream().map(ExportOpeningProfile::from).toList(),
-                        workspace.hallwayFamilies().stream().map(ExportHallwayFamily::from).toList()
+                        workspace.hallwayFamilies().stream().map(ExportHallwayFamily::from).toList(),
+                        workspace.linearRunFamilies().stream().map(ExportLinearRunFamily::from).toList()
                 ),
                 runtimeHints,
                 buildCategories(workspace),
@@ -204,6 +209,20 @@ public record MKWorkspaceExportManifest(
     private static Codec<MKWorkspaceHorizontalExtrusionMode> horizontalExtrusionModeCodec() {
         return Codec.STRING.xmap(MKWorkspaceHorizontalExtrusionMode::fromSerializedName,
                 MKWorkspaceHorizontalExtrusionMode::getSerializedName);
+    }
+
+    private static Codec<MKWorkspaceLinearRunKind> linearRunKindCodec() {
+        return Codec.STRING.xmap(MKWorkspaceLinearRunKind::fromSerializedName, MKWorkspaceLinearRunKind::getSerializedName);
+    }
+
+    private static Codec<MKWorkspaceLinearRunProjection> linearRunProjectionCodec() {
+        return Codec.STRING.xmap(MKWorkspaceLinearRunProjection::fromSerializedName,
+                MKWorkspaceLinearRunProjection::getSerializedName);
+    }
+
+    private static Codec<MKWorkspaceLinearRunPieceShape> linearRunShapeCodec() {
+        return Codec.STRING.xmap(MKWorkspaceLinearRunPieceShape::fromSerializedName,
+                MKWorkspaceLinearRunPieceShape::getSerializedName);
     }
 
     private static Codec<MKWorkspaceHorizontalExitConnectionMode> horizontalExitConnectionModeCodec() {
@@ -304,7 +323,8 @@ public record MKWorkspaceExportManifest(
             List<ExportCategoryProfile> categoryProfiles,
             List<ExportFamilyDefinition> familyDefinitions,
             List<ExportOpeningProfile> openingProfiles,
-            List<ExportHallwayFamily> hallwayFamilies
+            List<ExportHallwayFamily> hallwayFamilies,
+            List<ExportLinearRunFamily> linearRunFamilies
     ) {
         public static final Codec<ExportWorkspaceSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ExportBlockPos.CODEC.fieldOf("anchor").forGetter(ExportWorkspaceSettings::anchor),
@@ -322,7 +342,8 @@ public record MKWorkspaceExportManifest(
                 ExportCategoryProfile.CODEC.listOf().optionalFieldOf("category_profiles", List.of()).forGetter(ExportWorkspaceSettings::categoryProfiles),
                 ExportFamilyDefinition.CODEC.listOf().optionalFieldOf("family_definitions", List.of()).forGetter(ExportWorkspaceSettings::familyDefinitions),
                 ExportOpeningProfile.CODEC.listOf().optionalFieldOf("opening_profiles", List.of()).forGetter(ExportWorkspaceSettings::openingProfiles),
-                ExportHallwayFamily.CODEC.listOf().optionalFieldOf("hallway_families", List.of()).forGetter(ExportWorkspaceSettings::hallwayFamilies)
+                ExportHallwayFamily.CODEC.listOf().optionalFieldOf("hallway_families", List.of()).forGetter(ExportWorkspaceSettings::hallwayFamilies),
+                ExportLinearRunFamily.CODEC.listOf().optionalFieldOf("linear_run_families", List.of()).forGetter(ExportWorkspaceSettings::linearRunFamilies)
         ).apply(instance, ExportWorkspaceSettings::new));
     }
 
@@ -537,6 +558,65 @@ public record MKWorkspaceExportManifest(
                     profile.allowOnMainPath(),
                     profile.allowOnBranchPath()
             );
+        }
+    }
+
+    public record ExportLinearRunFamily(
+            String linearRunId,
+            MKWorkspaceLinearRunKind kind,
+            String openingProfileId,
+            int length,
+            int interiorWidth,
+            int interiorHeight,
+            int slopeDelta,
+            boolean allowOnMainPath,
+            boolean allowOnBranchPath,
+            MKWorkspaceLinearRunProjection projection,
+            List<MKWorkspaceLinearRunPieceShape> supportedShapes,
+            @Nullable MKWorkspacePaletteOverride paletteOverride
+    ) {
+        public static final Codec<ExportLinearRunFamily> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.STRING.fieldOf("linear_run_id").forGetter(ExportLinearRunFamily::linearRunId),
+                linearRunKindCodec().optionalFieldOf("kind", MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR)
+                        .forGetter(ExportLinearRunFamily::kind),
+                Codec.STRING.fieldOf("opening_profile_id").forGetter(ExportLinearRunFamily::openingProfileId),
+                Codec.INT.fieldOf("length").forGetter(ExportLinearRunFamily::length),
+                Codec.INT.fieldOf("interior_width").forGetter(ExportLinearRunFamily::interiorWidth),
+                Codec.INT.fieldOf("interior_height").forGetter(ExportLinearRunFamily::interiorHeight),
+                Codec.INT.fieldOf("slope_delta").forGetter(ExportLinearRunFamily::slopeDelta),
+                Codec.BOOL.fieldOf("allow_on_main_path").forGetter(ExportLinearRunFamily::allowOnMainPath),
+                Codec.BOOL.fieldOf("allow_on_branch_path").forGetter(ExportLinearRunFamily::allowOnBranchPath),
+                linearRunProjectionCodec().optionalFieldOf("projection", MKWorkspaceLinearRunProjection.RIGID)
+                        .forGetter(ExportLinearRunFamily::projection),
+                linearRunShapeCodec().listOf().optionalFieldOf("supported_shapes", List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT))
+                        .forGetter(ExportLinearRunFamily::supportedShapes),
+                MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
+                        .forGetter(ExportLinearRunFamily::paletteOverrideOpt)
+        ).apply(instance, (linearRunId, kind, openingProfileId, length, interiorWidth, interiorHeight, slopeDelta,
+                           allowOnMainPath, allowOnBranchPath, projection, supportedShapes, paletteOverride) ->
+                new ExportLinearRunFamily(linearRunId, kind, openingProfileId, length, interiorWidth, interiorHeight,
+                        slopeDelta, allowOnMainPath, allowOnBranchPath, projection, supportedShapes,
+                        paletteOverride.orElse(null))));
+
+        public static ExportLinearRunFamily from(MKWorkspaceLinearRunFamilyDefinition linearRunFamily) {
+            return new ExportLinearRunFamily(
+                    linearRunFamily.linearRunId(),
+                    linearRunFamily.kind(),
+                    linearRunFamily.openingProfileId(),
+                    linearRunFamily.length(),
+                    linearRunFamily.interiorWidth(),
+                    linearRunFamily.interiorHeight(),
+                    linearRunFamily.slopeDelta(),
+                    linearRunFamily.allowOnMainPath(),
+                    linearRunFamily.allowOnBranchPath(),
+                    linearRunFamily.projection(),
+                    linearRunFamily.supportedShapes(),
+                    linearRunFamily.paletteOverride()
+            );
+        }
+
+        public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {
+            return Optional.ofNullable(paletteOverride);
         }
     }
 
