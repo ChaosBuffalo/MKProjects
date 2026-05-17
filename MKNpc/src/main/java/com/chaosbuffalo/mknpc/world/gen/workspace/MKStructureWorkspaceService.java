@@ -124,7 +124,7 @@ public class MKStructureWorkspaceService {
                     workspace.categoryProfiles(),
                     workspace.familyDefinitions(),
                     workspace.openingProfiles(),
-                    workspace.hallwayFamilies(),
+                    workspace.linearRunFamilies(),
                     existing.createdAt(),
                     System.currentTimeMillis(),
                     existing.pieces()
@@ -576,7 +576,6 @@ public class MKStructureWorkspaceService {
                 workspace.categoryProfiles(),
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
                 workspace.linearRunFamilies(),
                 0,
                 0,
@@ -637,22 +636,6 @@ public class MKStructureWorkspaceService {
                                 .orElse(family))
                         .toList(),
                 source.openingProfiles(),
-                source.hallwayFamilies().stream()
-                        .map(hallway -> materialSource.hallwayFamilies().stream()
-                                .filter(requested -> requested.hallwayId().equals(hallway.hallwayId()))
-                                .findFirst()
-                                .map(requested -> new com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition(
-                                        hallway.hallwayId(),
-                                        hallway.openingProfileId(),
-                                        hallway.length(),
-                                        hallway.interiorWidth(),
-                                        hallway.interiorHeight(),
-                                        hallway.slopeDelta(),
-                                        hallway.allowOnMainPath(),
-                                        hallway.allowOnBranchPath(),
-                                        requested.paletteOverride()))
-                                .orElse(hallway))
-                        .toList(),
                 source.linearRunFamilies().stream()
                         .map(linearRun -> materialSource.linearRunFamilies().stream()
                                 .filter(requested -> requested.linearRunId().equals(linearRun.linearRunId()))

@@ -60,10 +60,10 @@ class MKWorkspacePaletteResolverTest {
     }
 
     @Test
-    void hallwayFamilyUsesSameResolverWithoutCategory() {
+    void linearRunFamilyUsesSameResolverWithoutCategory() {
         MKWorkspaceMaterialPalette base = palette("smooth_stone", "stone_bricks", "smooth_stone",
                 "stone_brick_stairs", "stone_brick_slab", "ladder");
-        MKWorkspacePaletteOverride hallwayOverride = new MKWorkspacePaletteOverride(
+        MKWorkspacePaletteOverride linearRunOverride = new MKWorkspacePaletteOverride(
                 id("polished_deepslate"),
                 null,
                 null,
@@ -71,12 +71,14 @@ class MKWorkspacePaletteResolverTest {
                 null,
                 id("vine")
         );
-        MKHallwayFamilyDefinition hallway = new MKHallwayFamilyDefinition(
-                "branch", "branch_opening", 5, 3, 3, 0, false, true, hallwayOverride);
+        MKWorkspaceLinearRunFamilyDefinition linearRun = new MKWorkspaceLinearRunFamilyDefinition(
+                "branch", MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR, "branch_opening", 5, 3, 3,
+                0, false, true, MKWorkspaceLinearRunProjection.RIGID,
+                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT), linearRunOverride);
         MKStructureWorkspace workspace = workspace(base, MKTowerWorkspaceCategoryProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
-                List.of(), List.of(hallway));
+                List.of(), List.of(linearRun));
 
-        MKWorkspaceMaterialPalette resolved = new MKWorkspacePaletteResolver().resolveFamily(workspace, hallway);
+        MKWorkspaceMaterialPalette resolved = new MKWorkspacePaletteResolver().resolveFamily(workspace, linearRun);
 
         assertEquals(id("polished_deepslate"), resolved.floorBlock());
         assertEquals(base.wallBlock(), resolved.wallBlock());
@@ -139,7 +141,7 @@ class MKWorkspacePaletteResolverTest {
                 id("spruce_slab"),
                 null
         );
-        MKWorkspacePaletteOverride hallwayOverride = new MKWorkspacePaletteOverride(
+        MKWorkspacePaletteOverride linearRunOverride = new MKWorkspacePaletteOverride(
                 id("polished_deepslate"),
                 null,
                 null,
@@ -153,27 +155,29 @@ class MKWorkspacePaletteResolverTest {
                 "floor_main", MKTowerWorkspaceCategory.MAIN, MKWorkspacePieceRole.FLOOR_MAIN,
                 true, 9, 9, 5, MKWorkspaceHorizontalExtrusionMode.FULL_BODY, List.of(),
                 familyOverride);
-        MKHallwayFamilyDefinition hallway = new MKHallwayFamilyDefinition(
-                "branch", "branch_opening", 5, 3, 3, 0, false, true, hallwayOverride);
+        MKWorkspaceLinearRunFamilyDefinition linearRun = new MKWorkspaceLinearRunFamilyDefinition(
+                "branch", MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR, "branch_opening", 5, 3, 3,
+                0, false, true, MKWorkspaceLinearRunProjection.RIGID,
+                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT), linearRunOverride);
         MKStructureWorkspace roundTripped = MKStructureWorkspace.fromTag(
-                workspace(base, List.of(mainProfile), List.of(family), List.of(hallway)).toTag());
+                workspace(base, List.of(mainProfile), List.of(family), List.of(linearRun)).toTag());
 
         assertEquals(id("oak_stairs"), roundTripped.palette().stairBlock());
         assertEquals(id("oak_slab"), roundTripped.palette().slabBlock());
         assertEquals(id("ladder"), roundTripped.palette().ladderBlock());
         assertTrue(roundTripped.categoryProfile(MKTowerWorkspaceCategory.MAIN).orElseThrow().paletteOverrideOpt().isPresent());
         assertTrue(roundTripped.familyDefinitions().getFirst().paletteOverrideOpt().isPresent());
-        assertTrue(roundTripped.hallwayFamilies().getFirst().paletteOverrideOpt().isPresent());
+        assertTrue(roundTripped.linearRunFamilies().getFirst().paletteOverrideOpt().isPresent());
         assertEquals(id("spruce_stairs"),
                 roundTripped.familyDefinitions().getFirst().paletteOverrideOpt().orElseThrow().stairBlockOpt().orElseThrow());
         assertEquals(id("vine"),
-                roundTripped.hallwayFamilies().getFirst().paletteOverrideOpt().orElseThrow().ladderBlockOpt().orElseThrow());
+                roundTripped.linearRunFamilies().getFirst().paletteOverrideOpt().orElseThrow().ladderBlockOpt().orElseThrow());
     }
 
     private static MKStructureWorkspace workspace(MKWorkspaceMaterialPalette palette,
                                                   List<MKTowerWorkspaceCategoryProfile> categoryProfiles,
                                                   List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
-                                                  List<MKHallwayFamilyDefinition> hallwayFamilies) {
+                                                  List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies) {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceStairAuthoringConfig stairConfig = MKWorkspaceStairAuthoringConfig.defaultConfig();
         return new MKStructureWorkspace(
@@ -194,7 +198,7 @@ class MKWorkspacePaletteResolverTest {
                 categoryProfiles,
                 familyDefinitions,
                 MKHorizontalOpeningProfile.createDefaults(dimensions),
-                hallwayFamilies,
+                linearRunFamilies,
                 0,
                 0,
                 List.of()

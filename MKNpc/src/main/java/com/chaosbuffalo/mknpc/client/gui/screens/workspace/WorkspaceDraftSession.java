@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.network.packets.CreateWorkspacePacket;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
@@ -93,7 +92,6 @@ public class WorkspaceDraftSession {
         draft.linearRunFamilies = List.copyOf(workspace != null ? workspace.linearRunFamilies() :
                 MKWorkspaceLinearRunFamilyDefinition.createDefaults(MKWorkspaceDimensions.defaultDimensions(),
                         MKWorkspaceMaterialPalette.defaultPalette()));
-        draft.hallwayFamilies = MKHallwayFamilyDefinition.fromLinearRunFamilies(draft.linearRunFamilies);
         int requestedShaftSize = workspace != null ? workspace.verticalAccessSpec().shaftSize() :
                 MKWorkspaceVerticalAccessSpec.defaultSpec().shaftSize();
         draft.shaftSize = requestedShaftSize;
@@ -360,44 +358,6 @@ public class WorkspaceDraftSession {
         return draft().openingProfiles.size() - 1;
     }
 
-    public List<MKHallwayFamilyDefinition> hallwayFamilies() {
-        return MKHallwayFamilyDefinition.fromLinearRunFamilies(draft().linearRunFamilies);
-    }
-
-    public void replaceHallwayFamily(int index, MKHallwayFamilyDefinition updatedFamily) {
-        java.util.ArrayList<MKHallwayFamilyDefinition> updated = new java.util.ArrayList<>(draft().hallwayFamilies);
-        updated.set(index, updatedFamily);
-        draft().hallwayFamilies = List.copyOf(updated);
-        draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.fromHallwayFamilies(draft().hallwayFamilies);
-    }
-
-    public void removeHallwayFamily(int index) {
-        java.util.ArrayList<MKHallwayFamilyDefinition> updated = new java.util.ArrayList<>(draft().hallwayFamilies);
-        updated.remove(index);
-        draft().hallwayFamilies = List.copyOf(updated);
-        draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.fromHallwayFamilies(draft().hallwayFamilies);
-    }
-
-    public int addHallwayFamily() {
-        String openingProfileId = firstCompatibleOpeningProfileId(MKWorkspaceHorizontalExitPathKind.BRANCH)
-                .orElseGet(() -> draft().openingProfiles.isEmpty() ? "branch_opening" : draft().openingProfiles.getFirst().profileId());
-        java.util.ArrayList<MKHallwayFamilyDefinition> updated = new java.util.ArrayList<>(draft().hallwayFamilies);
-        updated.add(new MKHallwayFamilyDefinition(
-                nextUniqueHallwayFamilyId(),
-                openingProfileId,
-                5,
-                3,
-                3,
-                0,
-                false,
-                true,
-                null
-        ));
-        draft().hallwayFamilies = List.copyOf(updated);
-        draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.fromHallwayFamilies(draft().hallwayFamilies);
-        return draft().hallwayFamilies.size() - 1;
-    }
-
     public List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies() {
         return List.copyOf(draft().linearRunFamilies);
     }
@@ -407,7 +367,6 @@ public class WorkspaceDraftSession {
                 new java.util.ArrayList<>(draft().linearRunFamilies);
         updated.set(index, updatedFamily);
         draft().linearRunFamilies = List.copyOf(updated);
-        draft().hallwayFamilies = MKHallwayFamilyDefinition.fromLinearRunFamilies(draft().linearRunFamilies);
     }
 
     public void removeLinearRunFamily(int index) {
@@ -415,7 +374,6 @@ public class WorkspaceDraftSession {
                 new java.util.ArrayList<>(draft().linearRunFamilies);
         updated.remove(index);
         draft().linearRunFamilies = List.copyOf(updated);
-        draft().hallwayFamilies = MKHallwayFamilyDefinition.fromLinearRunFamilies(draft().linearRunFamilies);
     }
 
     public int addLinearRunFamily() {
@@ -424,7 +382,7 @@ public class WorkspaceDraftSession {
         java.util.ArrayList<MKWorkspaceLinearRunFamilyDefinition> updated =
                 new java.util.ArrayList<>(draft().linearRunFamilies);
         updated.add(new MKWorkspaceLinearRunFamilyDefinition(
-                nextUniqueHallwayFamilyId(),
+                nextUniqueLinearRunFamilyId(),
                 MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR,
                 openingProfileId,
                 5,
@@ -439,7 +397,6 @@ public class WorkspaceDraftSession {
                 null
         ));
         draft().linearRunFamilies = List.copyOf(updated);
-        draft().hallwayFamilies = MKHallwayFamilyDefinition.fromLinearRunFamilies(draft().linearRunFamilies);
         return draft().linearRunFamilies.size() - 1;
     }
 
@@ -498,7 +455,6 @@ public class WorkspaceDraftSession {
                 draft().categoryProfiles,
                 draft().familyDefinitions,
                 draft().openingProfiles,
-                MKHallwayFamilyDefinition.fromLinearRunFamilies(draft().linearRunFamilies),
                 draft().linearRunFamilies,
                 now,
                 now,
@@ -789,7 +745,6 @@ public class WorkspaceDraftSession {
                 workspace.categoryProfiles(),
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
                 workspace.linearRunFamilies(),
                 0,
                 0,
@@ -827,13 +782,6 @@ public class WorkspaceDraftSession {
                                 .orElse(family))
                         .toList(),
                 source.openingProfiles(),
-                source.hallwayFamilies().stream()
-                        .map(hallway -> materialSource.hallwayFamilies().stream()
-                                .filter(requested -> requested.hallwayId().equals(hallway.hallwayId()))
-                                .findFirst()
-                                .map(requested -> copyHallwayFamily(hallway, requested.paletteOverrideOpt()))
-                                .orElse(hallway))
-                        .toList(),
                 source.linearRunFamilies().stream()
                         .map(linearRun -> materialSource.linearRunFamilies().stream()
                                 .filter(requested -> requested.linearRunId().equals(linearRun.linearRunId()))
@@ -1176,11 +1124,11 @@ public class WorkspaceDraftSession {
         }
     }
 
-    private String nextUniqueHallwayFamilyId() {
+    private String nextUniqueLinearRunFamilyId() {
         int index = 1;
         while (true) {
-            String candidate = "hallway_" + index;
-            boolean used = draft().hallwayFamilies.stream().anyMatch(hallway -> hallway.hallwayId().equals(candidate));
+            String candidate = "linear_run_" + index;
+            boolean used = draft().linearRunFamilies.stream().anyMatch(linearRun -> linearRun.linearRunId().equals(candidate));
             if (!used) {
                 return candidate;
             }
@@ -1264,21 +1212,6 @@ public class WorkspaceDraftSession {
         );
     }
 
-    public MKHallwayFamilyDefinition copyHallwayFamily(MKHallwayFamilyDefinition hallway,
-                                                       Optional<MKWorkspacePaletteOverride> paletteOverride) {
-        return new MKHallwayFamilyDefinition(
-                hallway.hallwayId(),
-                hallway.openingProfileId(),
-                hallway.length(),
-                hallway.interiorWidth(),
-                hallway.interiorHeight(),
-                hallway.slopeDelta(),
-                hallway.allowOnMainPath(),
-                hallway.allowOnBranchPath(),
-                paletteOverride.orElse(null)
-        );
-    }
-
     private int makeOdd(int value) {
         int adjusted = Math.max(1, value);
         return adjusted % 2 == 0 ? adjusted + 1 : adjusted;
@@ -1344,7 +1277,6 @@ public class WorkspaceDraftSession {
         public List<MKTowerWorkspaceCategoryProfile> categoryProfiles;
         public List<MKTowerWorkspaceFamilyDefinition> familyDefinitions;
         public List<MKHorizontalOpeningProfile> openingProfiles;
-        public List<MKHallwayFamilyDefinition> hallwayFamilies;
         public List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies;
     }
 }

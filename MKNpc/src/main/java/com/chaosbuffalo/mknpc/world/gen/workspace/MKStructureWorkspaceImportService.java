@@ -13,7 +13,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizon
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
@@ -261,42 +260,24 @@ public class MKStructureWorkspaceImportService {
         if (openingProfiles.isEmpty()) {
             openingProfiles = MKHorizontalOpeningProfile.createDefaults(workspaceDimensions);
         }
-        List<MKHallwayFamilyDefinition> hallwayFamilies = settings.hallwayFamilies().stream()
-                .map(hallway -> new MKHallwayFamilyDefinition(
-                        hallway.hallwayId(),
-                        hallway.openingProfileId(),
-                        hallway.length(),
-                        hallway.interiorWidth(),
-                        hallway.interiorHeight(),
-                        hallway.slopeDelta(),
-                        hallway.allowOnMainPath(),
-                        hallway.allowOnBranchPath(),
-                        hallway.paletteOverride()
+        List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies = settings.linearRunFamilies().stream()
+                .map(linearRun -> new MKWorkspaceLinearRunFamilyDefinition(
+                        linearRun.linearRunId(),
+                        linearRun.topologySlotId(),
+                        linearRun.kind(),
+                        linearRun.openingProfileId(),
+                        linearRun.length(),
+                        linearRun.interiorWidth(),
+                        linearRun.interiorHeight(),
+                        linearRun.slopeDelta(),
+                        linearRun.allowOnMainPath(),
+                        linearRun.allowOnBranchPath(),
+                        linearRun.projection(),
+                        linearRun.supportedShapes(),
+                        linearRun.foundationPolicy(),
+                        linearRun.paletteOverride()
                 ))
                 .toList();
-        List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies = settings.linearRunFamilies().isEmpty() ?
-                MKWorkspaceLinearRunFamilyDefinition.fromHallwayFamilies(hallwayFamilies) :
-                        settings.linearRunFamilies().stream()
-                        .map(linearRun -> new MKWorkspaceLinearRunFamilyDefinition(
-                                linearRun.linearRunId(),
-                                linearRun.topologySlotId(),
-                                linearRun.kind(),
-                                linearRun.openingProfileId(),
-                                linearRun.length(),
-                                linearRun.interiorWidth(),
-                                linearRun.interiorHeight(),
-                                linearRun.slopeDelta(),
-                                linearRun.allowOnMainPath(),
-                                linearRun.allowOnBranchPath(),
-                                linearRun.projection(),
-                                linearRun.supportedShapes(),
-                                linearRun.foundationPolicy(),
-                                linearRun.paletteOverride()
-                        ))
-                        .toList();
-        if (hallwayFamilies.isEmpty()) {
-            hallwayFamilies = MKHallwayFamilyDefinition.fromLinearRunFamilies(linearRunFamilies);
-        }
         long now = System.currentTimeMillis();
         return new MKStructureWorkspace(
                 workspaceId,
@@ -324,7 +305,6 @@ public class MKStructureWorkspaceImportService {
                 categoryProfiles,
                 familyDefinitions,
                 openingProfiles,
-                hallwayFamilies,
                 linearRunFamilies,
                 createdAt,
                 now,

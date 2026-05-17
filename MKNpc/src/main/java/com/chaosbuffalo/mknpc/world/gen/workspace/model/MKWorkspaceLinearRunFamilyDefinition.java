@@ -155,26 +155,6 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
         );
     }
 
-    public static List<MKWorkspaceLinearRunFamilyDefinition> fromHallwayFamilies(List<MKHallwayFamilyDefinition> hallwayFamilies) {
-        return hallwayFamilies.stream()
-                .map(hallway -> new MKWorkspaceLinearRunFamilyDefinition(
-                        hallway.hallwayId(),
-                        MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR,
-                        hallway.openingProfileId(),
-                        hallway.length(),
-                        hallway.interiorWidth(),
-                        hallway.interiorHeight(),
-                        hallway.slopeDelta(),
-                        hallway.allowOnMainPath(),
-                        hallway.allowOnBranchPath(),
-                        MKWorkspaceLinearRunProjection.RIGID,
-                        List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
-                        MKWorkspaceFoundationPolicy.none(),
-                        hallway.paletteOverride()
-                ))
-                .toList();
-    }
-
     public CompoundTag toTag() {
         return MKWorkspaceCodecs.encodeNbt(CODEC, this, "linear run family definition");
     }

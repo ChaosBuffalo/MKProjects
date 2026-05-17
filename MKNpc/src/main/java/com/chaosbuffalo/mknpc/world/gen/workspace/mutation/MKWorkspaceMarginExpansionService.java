@@ -629,7 +629,7 @@ public class MKWorkspaceMarginExpansionService {
                 workspace.categoryProfiles(),
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 System.currentTimeMillis(),
                 workspace.pieces()

@@ -28,13 +28,6 @@ public final class MKWorkspacePaletteResolver {
                     .findFirst()
                     .map(linearRun -> resolveFamily(workspace, linearRun));
         }
-        String hallwayId = piece.tags().get("workspace_hallway_family_id");
-        if (hallwayId != null && !hallwayId.isBlank()) {
-            return workspace.hallwayFamilies().stream()
-                    .filter(hallway -> hallway.hallwayId().equals(hallwayId))
-                    .findFirst()
-                    .map(hallway -> resolveFamily(workspace, hallway));
-        }
         String familyId = piece.tags().get("workspace_family_id");
         if (familyId != null && !familyId.isBlank()) {
             return workspace.familyDefinitions().stream()

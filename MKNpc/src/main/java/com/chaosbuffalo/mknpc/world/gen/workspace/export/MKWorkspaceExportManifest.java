@@ -8,7 +8,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
@@ -127,7 +126,6 @@ public record MKWorkspaceExportManifest(
                         workspace.categoryProfiles().stream().map(ExportCategoryProfile::from).toList(),
                         workspace.familyDefinitions().stream().map(ExportFamilyDefinition::from).toList(),
                         workspace.openingProfiles().stream().map(ExportOpeningProfile::from).toList(),
-                        workspace.hallwayFamilies().stream().map(ExportHallwayFamily::from).toList(),
                         workspace.linearRunFamilies().stream().map(ExportLinearRunFamily::from).toList()
                 ),
                 runtimeHints,
@@ -324,7 +322,6 @@ public record MKWorkspaceExportManifest(
             List<ExportCategoryProfile> categoryProfiles,
             List<ExportFamilyDefinition> familyDefinitions,
             List<ExportOpeningProfile> openingProfiles,
-            List<ExportHallwayFamily> hallwayFamilies,
             List<ExportLinearRunFamily> linearRunFamilies
     ) {
         public static final Codec<ExportWorkspaceSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -343,7 +340,6 @@ public record MKWorkspaceExportManifest(
                 ExportCategoryProfile.CODEC.listOf().optionalFieldOf("category_profiles", List.of()).forGetter(ExportWorkspaceSettings::categoryProfiles),
                 ExportFamilyDefinition.CODEC.listOf().optionalFieldOf("family_definitions", List.of()).forGetter(ExportWorkspaceSettings::familyDefinitions),
                 ExportOpeningProfile.CODEC.listOf().optionalFieldOf("opening_profiles", List.of()).forGetter(ExportWorkspaceSettings::openingProfiles),
-                ExportHallwayFamily.CODEC.listOf().optionalFieldOf("hallway_families", List.of()).forGetter(ExportWorkspaceSettings::hallwayFamilies),
                 ExportLinearRunFamily.CODEC.listOf().optionalFieldOf("linear_run_families", List.of()).forGetter(ExportWorkspaceSettings::linearRunFamilies)
         ).apply(instance, ExportWorkspaceSettings::new));
     }
@@ -634,52 +630,6 @@ public record MKWorkspaceExportManifest(
                     linearRunFamily.supportedShapes(),
                     linearRunFamily.foundationPolicy(),
                     linearRunFamily.paletteOverride()
-            );
-        }
-
-        public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {
-            return Optional.ofNullable(paletteOverride);
-        }
-    }
-
-    public record ExportHallwayFamily(
-            String hallwayId,
-            String openingProfileId,
-            int length,
-            int interiorWidth,
-            int interiorHeight,
-            int slopeDelta,
-            boolean allowOnMainPath,
-            boolean allowOnBranchPath,
-            @Nullable MKWorkspacePaletteOverride paletteOverride
-    ) {
-        public static final Codec<ExportHallwayFamily> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                Codec.STRING.fieldOf("hallway_id").forGetter(ExportHallwayFamily::hallwayId),
-                Codec.STRING.fieldOf("opening_profile_id").forGetter(ExportHallwayFamily::openingProfileId),
-                Codec.INT.fieldOf("length").forGetter(ExportHallwayFamily::length),
-                Codec.INT.fieldOf("interior_width").forGetter(ExportHallwayFamily::interiorWidth),
-                Codec.INT.fieldOf("interior_height").forGetter(ExportHallwayFamily::interiorHeight),
-                Codec.INT.fieldOf("slope_delta").forGetter(ExportHallwayFamily::slopeDelta),
-                Codec.BOOL.fieldOf("allow_on_main_path").forGetter(ExportHallwayFamily::allowOnMainPath),
-                Codec.BOOL.fieldOf("allow_on_branch_path").forGetter(ExportHallwayFamily::allowOnBranchPath),
-                MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
-                        .forGetter(ExportHallwayFamily::paletteOverrideOpt)
-        ).apply(instance, (hallwayId, openingProfileId, length, interiorWidth, interiorHeight, slopeDelta,
-                           allowOnMainPath, allowOnBranchPath, paletteOverride) ->
-                new ExportHallwayFamily(hallwayId, openingProfileId, length, interiorWidth, interiorHeight,
-                        slopeDelta, allowOnMainPath, allowOnBranchPath, paletteOverride.orElse(null))));
-
-        public static ExportHallwayFamily from(MKHallwayFamilyDefinition hallwayFamily) {
-            return new ExportHallwayFamily(
-                    hallwayFamily.hallwayId(),
-                    hallwayFamily.openingProfileId(),
-                    hallwayFamily.length(),
-                    hallwayFamily.interiorWidth(),
-                    hallwayFamily.interiorHeight(),
-                    hallwayFamily.slopeDelta(),
-                    hallwayFamily.allowOnMainPath(),
-                    hallwayFamily.allowOnBranchPath(),
-                    hallwayFamily.paletteOverride()
             );
         }
 

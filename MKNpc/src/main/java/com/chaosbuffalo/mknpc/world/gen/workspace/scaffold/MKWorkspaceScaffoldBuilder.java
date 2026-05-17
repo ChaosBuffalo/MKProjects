@@ -45,7 +45,6 @@ public class MKWorkspaceScaffoldBuilder {
     public static final int GRID_COLUMNS = 4;
     public static final int CELL_PADDING = 4;
     public static final int CLEAR_MARGIN = 4;
-    private static final String HALLWAY_SLOPE_DELTA_TAG = "workspace_hallway_slope_delta";
     private static final String LINEAR_RUN_SLOPE_DELTA_TAG = "workspace_linear_run_slope_delta";
     private static final String HORIZONTAL_EXTRUSION_MODE_TAG = "workspace_horizontal_extrusion_mode";
 
@@ -473,15 +472,14 @@ public class MKWorkspaceScaffoldBuilder {
         if (!"hallway".equals(pieceKind) && !"linear_run".equals(pieceKind)) {
             return;
         }
-        int slopeDelta = parseIntTag(piece.tags(), LINEAR_RUN_SLOPE_DELTA_TAG,
-                parseIntTag(piece.tags(), HALLWAY_SLOPE_DELTA_TAG, 0));
+        int slopeDelta = parseIntTag(piece.tags(), LINEAR_RUN_SLOPE_DELTA_TAG, 0);
         if (slopeDelta == 0) {
             return;
         }
         int interiorMinX = geometryOrigin.getX() + shellMargin;
         int interiorMinZ = geometryOrigin.getZ() + shellMargin;
         for (int x = 0; x < piece.interiorWidth(); x++) {
-            int rise = getHallwayRiseForColumn(slopeDelta, x, piece.interiorWidth());
+            int rise = getLinearRunRiseForColumn(slopeDelta, x, piece.interiorWidth());
             for (int y = 1; y <= Math.min(rise, geometryInteriorHeight); y++) {
                 for (int z = 0; z < piece.interiorLength(); z++) {
                     level.setBlock(new BlockPos(interiorMinX + x, geometryOrigin.getY() + verticalShellThickness - 1 + y,
@@ -1011,12 +1009,12 @@ public class MKWorkspaceScaffoldBuilder {
         return Math.max(0, parseIntTag(piece.tags(), MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG, 0));
     }
 
-    private int getHallwayRiseForColumn(int slopeDelta, int columnIndex, int hallwayLength) {
+    private int getLinearRunRiseForColumn(int slopeDelta, int columnIndex, int linearRunLength) {
         int absoluteSlope = Math.abs(slopeDelta);
-        if (absoluteSlope == 0 || hallwayLength <= 1) {
+        if (absoluteSlope == 0 || linearRunLength <= 1) {
             return Math.max(0, slopeDelta);
         }
-        int rise = (columnIndex * absoluteSlope) / (hallwayLength - 1);
+        int rise = (columnIndex * absoluteSlope) / (linearRunLength - 1);
         if (slopeDelta < 0) {
             return absoluteSlope - rise;
         }

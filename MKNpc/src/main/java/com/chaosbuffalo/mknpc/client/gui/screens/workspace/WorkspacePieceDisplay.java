@@ -28,10 +28,10 @@ public final class WorkspacePieceDisplay {
     }
 
     public static String buildWorkspaceGroupKey(MKWorkspacePieceDefinition piece) {
-        String hallwayFamilyId = piece.tags().get("workspace_hallway_family_id");
-        if (hallwayFamilyId != null) {
-            return "hallway:" + hallwayFamilyId + ":" +
-                    piece.tags().getOrDefault("workspace_hallway_path_kind", "branch");
+        String linearRunFamilyId = piece.tags().get("workspace_linear_run_family_id");
+        if (linearRunFamilyId != null) {
+            return "linear_run:" + linearRunFamilyId + ":" +
+                    piece.tags().getOrDefault("workspace_linear_run_path_kind", "branch");
         }
         String familyId = piece.tags().get("workspace_family_id");
         if (familyId != null) {
@@ -42,10 +42,10 @@ public final class WorkspacePieceDisplay {
     }
 
     public static String buildWorkspaceGroupLabel(MKWorkspacePieceDefinition piece) {
-        String hallwayFamilyId = piece.tags().get("workspace_hallway_family_id");
-        if (hallwayFamilyId != null) {
-            return "Hallway / " + hallwayFamilyId + " / " +
-                    formatTopologyLabel(piece.tags().getOrDefault("workspace_hallway_path_kind", "branch"));
+        String linearRunFamilyId = piece.tags().get("workspace_linear_run_family_id");
+        if (linearRunFamilyId != null) {
+            return "Linear Run / " + linearRunFamilyId + " / " +
+                    formatTopologyLabel(piece.tags().getOrDefault("workspace_linear_run_path_kind", "branch"));
         }
         String familyId = piece.tags().get("workspace_family_id");
         if (familyId != null) {

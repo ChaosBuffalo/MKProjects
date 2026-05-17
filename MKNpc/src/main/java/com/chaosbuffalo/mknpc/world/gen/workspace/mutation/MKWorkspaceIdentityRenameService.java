@@ -53,7 +53,7 @@ public class MKWorkspaceIdentityRenameService {
                 workspace.categoryProfiles(),
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 System.currentTimeMillis(),
                 renamePieces(level, workspace, namespace, structureName)

@@ -358,14 +358,11 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
         tags.put("workspace_linear_run_path_kind", pathKind.serializedName);
         tags.put("workspace_linear_run_slope_delta", Integer.toString(linearRun.slopeDelta()));
         tags.put("workspace_opening_profile_id", linearRun.openingProfileId());
-        tags.put("workspace_hallway_family_id", linearRun.linearRunId());
-        tags.put("workspace_hallway_path_kind", pathKind.serializedName);
-        tags.put("workspace_hallway_slope_delta", Integer.toString(linearRun.slopeDelta()));
         applyFoundationTags(linearRun.foundationPolicy(), tags);
         MKWorkspacePaletteTags.apply(tags, paletteResolver.resolveFamily(workspace, linearRun));
         new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
                 pathKind == HallwayPathKind.MAIN, pathKind == HallwayPathKind.BRANCH, false, false).applyToTags(tags);
-        String hallwayPool = hallwayPoolName(linearRun.openingProfileId(), pathKind);
+        String linearRunPool = hallwayPoolName(linearRun.openingProfileId(), pathKind);
         MKConnectorRole westRole = pathKind == HallwayPathKind.MAIN ? MKConnectorRole.MAIN_FORWARD : MKConnectorRole.BRANCH;
         MKConnectorRole eastRole = pathKind == HallwayPathKind.MAIN ? MKConnectorRole.MAIN_BACK : MKConnectorRole.BRANCH;
         return new MKPlannedPiece(
@@ -377,10 +374,10 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
                 List.of(
                         new MKPlannedConnector(westRole, Direction.WEST,
                                 opening.openingWidth(), opening.openingHeight(), 0, westOffset,
-                                EMPTY_POOL, hallwayPool),
+                                EMPTY_POOL, linearRunPool),
                         new MKPlannedConnector(eastRole, Direction.EAST,
                                 opening.openingWidth(), opening.openingHeight(), 0, eastOffset,
-                                EMPTY_POOL, hallwayPool)
+                                EMPTY_POOL, linearRunPool)
                 ),
                 tags
         );

@@ -10,7 +10,6 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceMetadata;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKVerticalProgressionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHallwayFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
@@ -200,12 +199,14 @@ class TowerWorkspaceV2Test {
                         new MKHorizontalOpeningProfile("top_cap_branch", 3, 3, false, true)
                 ),
                 List.of(
-                        new MKHallwayFamilyDefinition("surface", "entry_main", 5, 3, 3, 0,
-                                true, false, workspacePalette().floorBlock(), workspacePalette().wallBlock(),
-                                workspacePalette().ceilingBlock()),
-                        new MKHallwayFamilyDefinition("branch", "main_branch", 5, 3, 3, 0,
-                                false, true, workspacePalette().floorBlock(), workspacePalette().wallBlock(),
-                                workspacePalette().ceilingBlock())
+                        new MKWorkspaceLinearRunFamilyDefinition("surface", MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR,
+                                "entry_main", 5, 3, 3, 0, true, false, MKWorkspaceLinearRunProjection.RIGID,
+                                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT), workspacePalette().floorBlock(),
+                                workspacePalette().wallBlock(), workspacePalette().ceilingBlock()),
+                        new MKWorkspaceLinearRunFamilyDefinition("branch", MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR,
+                                "main_branch", 5, 3, 3, 0, false, true, MKWorkspaceLinearRunProjection.RIGID,
+                                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT), workspacePalette().floorBlock(),
+                                workspacePalette().wallBlock(), workspacePalette().ceilingBlock())
                 ));
 
         List<MKPlannedPiece> pieces = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace);
@@ -218,11 +219,11 @@ class TowerWorkspaceV2Test {
                 connector.role() == MKConnectorRole.BRANCH &&
                         "linear_runs/branch/entry_main".equals(connector.targetPoolName())));
 
-        MKPlannedPiece mainHallway = pieces.stream().filter(piece -> piece.pieceName().equals("linear_run_surface_main")).findFirst().orElseThrow();
-        assertTrue(mainHallway.connectors().stream().allMatch(connector -> connector.incomingPoolName().equals("linear_runs/main/entry_main")));
+        MKPlannedPiece mainLinearRun = pieces.stream().filter(piece -> piece.pieceName().equals("linear_run_surface_main")).findFirst().orElseThrow();
+        assertTrue(mainLinearRun.connectors().stream().allMatch(connector -> connector.incomingPoolName().equals("linear_runs/main/entry_main")));
 
-        MKPlannedPiece branchHallway = pieces.stream().filter(piece -> piece.pieceName().equals("linear_run_branch_branch")).findFirst().orElseThrow();
-        assertTrue(branchHallway.connectors().stream().allMatch(connector -> connector.incomingPoolName().equals("linear_runs/branch/main_branch")));
+        MKPlannedPiece branchLinearRun = pieces.stream().filter(piece -> piece.pieceName().equals("linear_run_branch_branch")).findFirst().orElseThrow();
+        assertTrue(branchLinearRun.connectors().stream().allMatch(connector -> connector.incomingPoolName().equals("linear_runs/branch/main_branch")));
     }
 
     @Test
@@ -431,7 +432,7 @@ class TowerWorkspaceV2Test {
                         .map(family -> family.baseName().equals("entry") ? updatedEntry : family)
                         .toList(),
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 workspace.pieces()
@@ -505,7 +506,7 @@ class TowerWorkspaceV2Test {
                 workspace.categoryProfiles(),
                 families,
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 workspace.pieces()
@@ -622,7 +623,7 @@ class TowerWorkspaceV2Test {
                 MKTowerWorkspaceCategoryProfile.createDefaults(dimensions),
                 MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions),
                 MKHorizontalOpeningProfile.createDefaults(dimensions),
-                MKHallwayFamilyDefinition.createDefaults(dimensions, workspacePalette()),
+                MKWorkspaceLinearRunFamilyDefinition.createDefaults(dimensions, workspacePalette()),
                 System.currentTimeMillis(),
                 System.currentTimeMillis(),
                 List.of()
@@ -680,7 +681,7 @@ class TowerWorkspaceV2Test {
                 workspace.categoryProfiles(),
                 List.of(endingFamily),
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 List.of()
@@ -740,7 +741,7 @@ class TowerWorkspaceV2Test {
                 java.util.stream.Stream.concat(workspace.familyDefinitions().stream(), java.util.stream.Stream.of(branchCapFamily))
                         .toList(),
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 List.of()
@@ -823,7 +824,7 @@ class TowerWorkspaceV2Test {
                 workspace.categoryProfiles(),
                 List.of(invalidEnding),
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 List.of()
@@ -877,7 +878,7 @@ class TowerWorkspaceV2Test {
                 workspace.categoryProfiles(),
                 List.of(invalidCap),
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 List.of()
@@ -1001,7 +1002,7 @@ class TowerWorkspaceV2Test {
                 categoryProfiles,
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 workspace.pieces()
@@ -1073,7 +1074,7 @@ class TowerWorkspaceV2Test {
                         .map(family -> family.baseName().equals("floor_main") ? updatedMain : family)
                         .toList(),
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 workspace.pieces()
@@ -1141,7 +1142,7 @@ class TowerWorkspaceV2Test {
                 MKTowerWorkspaceCategoryProfile.createDefaults(dimensions),
                 MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions),
                 MKHorizontalOpeningProfile.createDefaults(dimensions),
-                MKHallwayFamilyDefinition.createDefaults(dimensions, palette),
+                MKWorkspaceLinearRunFamilyDefinition.createDefaults(dimensions, palette),
                 System.currentTimeMillis(),
                 System.currentTimeMillis(),
                 List.of()
@@ -1279,7 +1280,7 @@ class TowerWorkspaceV2Test {
                 workspace.categoryProfiles(),
                 updatedFamilies,
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 workspace.pieces()
@@ -1350,7 +1351,7 @@ class TowerWorkspaceV2Test {
                         .map(family -> family.baseName().equals("floor_main") ? updatedMain : family)
                         .toList(),
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 workspace.pieces()
@@ -1414,7 +1415,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void validationRejectsHallwayPathMismatchAndBandOverflow() {
+    void validationRejectsLinearRunPathMismatchAndBandOverflow() {
         MKWorkspaceVerticalAccessSpec verticalAccessSpec = MKWorkspaceVerticalAccessSpec.defaultSpec();
         MKTowerWorkspaceCategoryProfile mainProfile = MKTowerWorkspaceCategoryProfile.createDefaults(
                 MKWorkspaceDimensions.defaultDimensions()).stream()
@@ -1441,9 +1442,11 @@ class TowerWorkspaceV2Test {
                 MKTowerWorkspaceCategoryProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
                 MKTowerWorkspaceFamilyDefinition.createDefaults(),
                 List.of(new MKHorizontalOpeningProfile("branch_only", 3, 3, false, true)),
-                List.of(new MKHallwayFamilyDefinition("bad_hallway", "branch_only", 5, 3, bandCap, 1,
-                        true, false, workspacePalette().floorBlock(), workspacePalette().wallBlock(),
-                        workspacePalette().ceilingBlock())),
+                List.of(new MKWorkspaceLinearRunFamilyDefinition("bad_linear_run",
+                        MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR, "branch_only", 5, 3, bandCap, 1,
+                        true, false, MKWorkspaceLinearRunProjection.RIGID,
+                        List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT), workspacePalette().floorBlock(),
+                        workspacePalette().wallBlock(), workspacePalette().ceilingBlock())),
                 System.currentTimeMillis(),
                 System.currentTimeMillis(),
                 List.of()
@@ -1503,7 +1506,7 @@ class TowerWorkspaceV2Test {
                 categoryProfiles,
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 workspace.pieces()
@@ -1541,7 +1544,7 @@ class TowerWorkspaceV2Test {
                 workspace.categoryProfiles(),
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 workspace.pieces()
@@ -1573,9 +1576,10 @@ class TowerWorkspaceV2Test {
                 MKTowerWorkspaceCategoryProfile.createDefaults(dimensions),
                 MKTowerWorkspaceFamilyDefinition.createDefaults(),
                 MKHorizontalOpeningProfile.createDefaults(dimensions),
-                List.of(new MKHallwayFamilyDefinition("surface", "entry_main", 5, 3, 3, 0,
-                        true, false, workspacePalette().floorBlock(), workspacePalette().wallBlock(),
-                        workspacePalette().ceilingBlock())),
+                List.of(new MKWorkspaceLinearRunFamilyDefinition("surface", MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR,
+                        "entry_main", 5, 3, 3, 0, true, false, MKWorkspaceLinearRunProjection.RIGID,
+                        List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT), workspacePalette().floorBlock(),
+                        workspacePalette().wallBlock(), workspacePalette().ceilingBlock())),
                 100L,
                 200L,
                 List.of(new MKWorkspacePieceDefinition(
@@ -1595,7 +1599,7 @@ class TowerWorkspaceV2Test {
                                 1,
                                 2,
                                 ResourceLocation.parse("mkdev:entry"),
-                                ResourceLocation.parse("mkdev:hallway"),
+                                ResourceLocation.parse("mkdev:linear_run"),
                                 ResourceLocation.parse("mkdev:pool/target"),
                                 ResourceLocation.parse("mkdev:pool/incoming")
                         )),
@@ -1733,7 +1737,7 @@ class TowerWorkspaceV2Test {
     }
 
     private static MKStructureWorkspace baseWorkspace(List<MKHorizontalOpeningProfile> openingProfiles,
-                                                      List<MKHallwayFamilyDefinition> hallwayFamilies) {
+                                                      List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies) {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceVerticalAccessSpec verticalAccessSpec = MKWorkspaceVerticalAccessSpec.defaultSpec();
         return new MKStructureWorkspace(
@@ -1787,7 +1791,7 @@ class TowerWorkspaceV2Test {
                                 List.of())
                 ),
                 openingProfiles,
-                hallwayFamilies,
+                linearRunFamilies,
                 System.currentTimeMillis(),
                 System.currentTimeMillis(),
                 List.of()
@@ -1817,7 +1821,6 @@ class TowerWorkspaceV2Test {
                 workspace.categoryProfiles(),
                 familyDefinitions.isEmpty() ? workspace.familyDefinitions() : familyDefinitions,
                 workspace.openingProfiles(),
-                MKHallwayFamilyDefinition.fromLinearRunFamilies(linearRunFamilies),
                 linearRunFamilies,
                 workspace.createdAt(),
                 workspace.updatedAt(),
@@ -1845,7 +1848,7 @@ class TowerWorkspaceV2Test {
                 workspace.categoryProfiles(),
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 workspace.pieces()
@@ -1872,7 +1875,7 @@ class TowerWorkspaceV2Test {
                 categoryProfiles,
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 workspace.pieces()
@@ -1899,7 +1902,7 @@ class TowerWorkspaceV2Test {
                 workspace.categoryProfiles(),
                 familyDefinitions,
                 workspace.openingProfiles(),
-                workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 workspace.pieces()
