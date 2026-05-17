@@ -216,7 +216,9 @@ public class MKJigsawStructure extends MKStructure {
     private Optional<BlockState> resolveFoundationFillState(MKWorkspaceFoundationPolicy policy, BlockState bottomState) {
         return switch (policy.mode()) {
             case NONE -> Optional.empty();
-            case UNIFORM_STATE -> policy.foundationStateOpt();
+            case UNIFORM_STATE -> policy.foundationBlockOpt()
+                    .flatMap(blockId -> BuiltInRegistries.BLOCK.getOptional(blockId))
+                    .map(block -> block.defaultBlockState());
             case EXTEND_BOTTOM_BLOCKS -> Optional.of(bottomState);
             case MASKED_EXTEND_BOTTOM_BLOCKS -> {
                 ResourceLocation bottomBlockId = BuiltInRegistries.BLOCK.getKey(bottomState.getBlock());

@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -12,7 +13,7 @@ import java.util.Optional;
 
 public record MKWorkspaceFoundationPolicy(
         MKWorkspaceFoundationMode mode,
-        @Nullable BlockState foundationState,
+        @Nullable ResourceLocation foundationBlock,
         List<ResourceLocation> maskBlocks
 ) {
     public static final String MODE_TAG = "workspace_foundation_mode";
@@ -20,7 +21,7 @@ public record MKWorkspaceFoundationPolicy(
     public static final Codec<MKWorkspaceFoundationPolicy> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             MKWorkspaceCodecs.FOUNDATION_MODE_CODEC.optionalFieldOf("mode", MKWorkspaceFoundationMode.NONE)
                     .forGetter(MKWorkspaceFoundationPolicy::mode),
-            BlockState.CODEC.optionalFieldOf("foundationState").forGetter(MKWorkspaceFoundationPolicy::foundationStateOpt),
+            ResourceLocation.CODEC.optionalFieldOf("foundationBlock").forGetter(MKWorkspaceFoundationPolicy::foundationBlockOpt),
             ResourceLocation.CODEC.listOf().optionalFieldOf("maskBlocks", List.of())
                     .forGetter(MKWorkspaceFoundationPolicy::maskBlocks)
     ).apply(instance, (mode, foundationState, maskBlocks) ->
@@ -30,7 +31,7 @@ public record MKWorkspaceFoundationPolicy(
         mode = mode == null ? MKWorkspaceFoundationMode.NONE : mode;
         maskBlocks = List.copyOf(maskBlocks);
         if (mode != MKWorkspaceFoundationMode.UNIFORM_STATE) {
-            foundationState = null;
+            foundationBlock = null;
         }
         if (mode != MKWorkspaceFoundationMode.MASKED_EXTEND_BOTTOM_BLOCKS) {
             maskBlocks = List.of();
@@ -42,7 +43,11 @@ public record MKWorkspaceFoundationPolicy(
     }
 
     public static MKWorkspaceFoundationPolicy uniformState(BlockState state) {
-        return new MKWorkspaceFoundationPolicy(MKWorkspaceFoundationMode.UNIFORM_STATE, state, List.of());
+        return uniformBlock(BuiltInRegistries.BLOCK.getKey(state.getBlock()));
+    }
+
+    public static MKWorkspaceFoundationPolicy uniformBlock(ResourceLocation blockId) {
+        return new MKWorkspaceFoundationPolicy(MKWorkspaceFoundationMode.UNIFORM_STATE, blockId, List.of());
     }
 
     public static MKWorkspaceFoundationPolicy extendBottomBlocks() {
@@ -53,8 +58,8 @@ public record MKWorkspaceFoundationPolicy(
         return new MKWorkspaceFoundationPolicy(MKWorkspaceFoundationMode.MASKED_EXTEND_BOTTOM_BLOCKS, null, maskBlocks);
     }
 
-    public Optional<BlockState> foundationStateOpt() {
-        return Optional.ofNullable(foundationState);
+    public Optional<ResourceLocation> foundationBlockOpt() {
+        return Optional.ofNullable(foundationBlock);
     }
 
     public boolean enabled() {
@@ -63,8 +68,8 @@ public record MKWorkspaceFoundationPolicy(
 
     public List<String> validate(String ownerLabel) {
         List<String> errors = new ArrayList<>();
-        if (mode == MKWorkspaceFoundationMode.UNIFORM_STATE && foundationState == null) {
-            errors.add(ownerLabel + " uniform foundation requires a foundation state");
+        if (mode == MKWorkspaceFoundationMode.UNIFORM_STATE && foundationBlock == null) {
+            errors.add(ownerLabel + " uniform foundation requires a foundation block");
         }
         if (mode == MKWorkspaceFoundationMode.MASKED_EXTEND_BOTTOM_BLOCKS && maskBlocks.isEmpty()) {
             errors.add(ownerLabel + " masked foundation requires at least one mask block");

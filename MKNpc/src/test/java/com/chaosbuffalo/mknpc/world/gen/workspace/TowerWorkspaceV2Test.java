@@ -179,7 +179,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void plannerCreatesSeparateMainAndBranchHallwayPools() {
+    void plannerCreatesSeparateMainAndBranchLinearRunPools() {
         MKStructureWorkspace workspace = baseWorkspace(List.of(
                         new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
                         new MKHorizontalOpeningProfile("entry_branch", 3, 3, false, true),
@@ -204,16 +204,16 @@ class TowerWorkspaceV2Test {
         MKPlannedPiece entry = pieces.stream().filter(piece -> piece.pieceName().equals("entry")).findFirst().orElseThrow();
         assertTrue(entry.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.MAIN_BACK &&
-                        "hallways/main/entry_main".equals(connector.targetPoolName())));
+                        "linear_runs/main/entry_main".equals(connector.targetPoolName())));
         assertTrue(entry.connectors().stream().noneMatch(connector ->
                 connector.role() == MKConnectorRole.BRANCH &&
-                        "hallways/branch/entry_main".equals(connector.targetPoolName())));
+                        "linear_runs/branch/entry_main".equals(connector.targetPoolName())));
 
-        MKPlannedPiece mainHallway = pieces.stream().filter(piece -> piece.pieceName().equals("hallway_surface_main")).findFirst().orElseThrow();
-        assertTrue(mainHallway.connectors().stream().allMatch(connector -> connector.incomingPoolName().equals("hallways/main/entry_main")));
+        MKPlannedPiece mainHallway = pieces.stream().filter(piece -> piece.pieceName().equals("linear_run_surface_main")).findFirst().orElseThrow();
+        assertTrue(mainHallway.connectors().stream().allMatch(connector -> connector.incomingPoolName().equals("linear_runs/main/entry_main")));
 
-        MKPlannedPiece branchHallway = pieces.stream().filter(piece -> piece.pieceName().equals("hallway_branch_branch")).findFirst().orElseThrow();
-        assertTrue(branchHallway.connectors().stream().allMatch(connector -> connector.incomingPoolName().equals("hallways/branch/main_branch")));
+        MKPlannedPiece branchHallway = pieces.stream().filter(piece -> piece.pieceName().equals("linear_run_branch_branch")).findFirst().orElseThrow();
+        assertTrue(branchHallway.connectors().stream().allMatch(connector -> connector.incomingPoolName().equals("linear_runs/branch/main_branch")));
     }
 
     @Test

@@ -45,5 +45,12 @@ public record MKJigsawPieceMetadata(
         this(pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
                 topCapOnly, category, mainPathEnding, false, MKWorkspaceFoundationPolicy.none());
     }
+
+    public MKJigsawPieceMetadata(MKJigsawPieceRole pieceRole, int progressionDelta, int verticalLevelDelta,
+                                 boolean allowOnMainPath, boolean allowOnBranchPath, boolean terminal,
+                                 boolean topCapOnly, String category, boolean mainPathEnding, boolean branchCap) {
+        this(pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
+                topCapOnly, category, mainPathEnding, branchCap, MKWorkspaceFoundationPolicy.none());
+    }
 }
 
