@@ -20,6 +20,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceI
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import net.minecraft.core.Direction;
 
 import java.util.ArrayList;
@@ -27,8 +28,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
-public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
+public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
     private static final String EMPTY_POOL = "minecraft:empty";
     private static final String HALLWAY_POOL_PREFIX = "hallways";
     private static final String ROOM_POOL_PREFIX = "rooms";
@@ -46,6 +48,58 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         HallwayPathKind(String serializedName) {
             this.serializedName = serializedName;
         }
+    }
+
+    @Override
+    public String profileType() {
+        return MKWorkspaceTopologyProfile.TOWER_PROFILE_TYPE;
+    }
+
+    @Override
+    public MKWorkspaceTopologySchema schema() {
+        return new MKWorkspaceTopologySchema(
+                profileType(),
+                List.of(
+                        new MKWorkspaceRegionSchema("tower.entry", "tower_stack", true),
+                        new MKWorkspaceRegionSchema("tower.main", "tower_stack", true),
+                        new MKWorkspaceRegionSchema("tower.basement", "tower_stack", true),
+                        new MKWorkspaceRegionSchema("tower.top_cap", "tower_cap", true),
+                        new MKWorkspaceRegionSchema("tower.basement_cap", "tower_cap", true),
+                        new MKWorkspaceRegionSchema("tower.linear_runs", "linear_run", true)
+                ),
+                List.of(
+                        new MKWorkspaceSlotSchema("tower.basement_cap", "tower.basement_cap", "cap", "tower.basement_cap", MKWorkspaceSlotSchema.Repeat.FIXED),
+                        new MKWorkspaceSlotSchema("tower.basement_cap_approach", "tower.basement_cap", "approach", "tower.basement_cap_approach", MKWorkspaceSlotSchema.Repeat.OPTIONAL),
+                        new MKWorkspaceSlotSchema("tower.basement_floor", "tower.basement", "floor", "tower.basement_floor", MKWorkspaceSlotSchema.Repeat.RANGE),
+                        new MKWorkspaceSlotSchema("tower.basement_entry", "tower.basement", "entry", "tower.basement_entry", MKWorkspaceSlotSchema.Repeat.FIXED),
+                        new MKWorkspaceSlotSchema("tower.entry", "tower.entry", "entry", "tower.entry", MKWorkspaceSlotSchema.Repeat.FIXED),
+                        new MKWorkspaceSlotSchema("tower.main_floor", "tower.main", "floor", "tower.main_floor", MKWorkspaceSlotSchema.Repeat.RANGE),
+                        new MKWorkspaceSlotSchema("tower.top_cap_approach", "tower.top_cap", "approach", "tower.top_cap_approach", MKWorkspaceSlotSchema.Repeat.OPTIONAL),
+                        new MKWorkspaceSlotSchema("tower.top_cap", "tower.top_cap", "cap", "tower.top_cap", MKWorkspaceSlotSchema.Repeat.FIXED),
+                        new MKWorkspaceSlotSchema("tower.linear_run.main", "tower.linear_runs", "enclosed_corridor", "tower.linear_run.main", MKWorkspaceSlotSchema.Repeat.DERIVED),
+                        new MKWorkspaceSlotSchema("tower.linear_run.branch", "tower.linear_runs", "enclosed_corridor", "tower.linear_run.branch", MKWorkspaceSlotSchema.Repeat.DERIVED),
+                        new MKWorkspaceSlotSchema("tower.linear_run.branch_cap", "tower.linear_runs", "enclosed_corridor", "tower.linear_run.branch_cap", MKWorkspaceSlotSchema.Repeat.DERIVED),
+                        new MKWorkspaceSlotSchema("tower.linear_run.main_ending", "tower.linear_runs", "enclosed_corridor", "tower.linear_run.main_ending", MKWorkspaceSlotSchema.Repeat.DERIVED)
+                ),
+                List.of(
+                        new MKWorkspaceLinkSchema("tower.vertical.basement_cap_to_entry", "tower.basement_cap", "tower.entry", "vertical_stack"),
+                        new MKWorkspaceLinkSchema("tower.vertical.entry_to_top_cap", "tower.entry", "tower.top_cap", "vertical_stack")
+                ),
+                List.of(
+                        new MKWorkspaceRoleSchema("tower.entry", "floor", "room", false, true, Set.of("vertical_access")),
+                        new MKWorkspaceRoleSchema("tower.main_floor", "floor", "room", false, false, Set.of("vertical_access")),
+                        new MKWorkspaceRoleSchema("tower.top_cap_approach", "approach", "top_cap_approach", false, false, Set.of("vertical_access")),
+                        new MKWorkspaceRoleSchema("tower.top_cap", "cap", "top_cap", true, false, Set.of("terminal_top")),
+                        new MKWorkspaceRoleSchema("tower.basement_entry", "floor", "room", false, false, Set.of("vertical_access")),
+                        new MKWorkspaceRoleSchema("tower.basement_floor", "floor", "room", false, false, Set.of("vertical_access")),
+                        new MKWorkspaceRoleSchema("tower.basement_cap_approach", "approach", "basement_cap_approach", false, false, Set.of("vertical_access")),
+                        new MKWorkspaceRoleSchema("tower.basement_cap", "cap", "terminal", true, false, Set.of("terminal_bottom")),
+                        new MKWorkspaceRoleSchema("tower.linear_run.main", "connector", "room", false, false, Set.of("linear_run", "main_path")),
+                        new MKWorkspaceRoleSchema("tower.linear_run.branch", "connector", "room", false, false, Set.of("linear_run", "branch_path")),
+                        new MKWorkspaceRoleSchema("tower.linear_run.branch_cap", "connector", "room", true, false, Set.of("linear_run", "branch_cap")),
+                        new MKWorkspaceRoleSchema("tower.linear_run.main_ending", "connector", "room", true, false, Set.of("linear_run", "main_ending"))
+                )
+        );
     }
 
     @Override

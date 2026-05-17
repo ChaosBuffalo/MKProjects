@@ -28,6 +28,7 @@ public class MKStructureWorkspace {
     private final String namespace;
     private final String structureName;
     private final MKStructureFamilyType familyType;
+    private final MKWorkspaceTopologyProfile topologyProfile;
     private final MKWorkspaceDimensions dimensions;
     private final MKWorkspaceMaterialPalette palette;
     private final MKWorkspaceStairAuthoringConfig stairConfig;
@@ -58,11 +59,32 @@ public class MKStructureWorkspace {
                                 List<MKHorizontalOpeningProfile> openingProfiles,
                                 List<MKHallwayFamilyDefinition> hallwayFamilies,
                                 long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces) {
+        this(id, anchor, namespace, structureName, familyType, MKWorkspaceTopologyProfile.tower(), dimensions, palette,
+                stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
+                floorSettings, categoryProfiles, familyDefinitions, openingProfiles, hallwayFamilies,
+                createdAt, updatedAt, pieces);
+    }
+
+    public MKStructureWorkspace(UUID id, BlockPos anchor, String namespace, String structureName,
+                                MKStructureFamilyType familyType, MKWorkspaceTopologyProfile topologyProfile,
+                                MKWorkspaceDimensions dimensions,
+                                MKWorkspaceMaterialPalette palette, MKWorkspaceStairAuthoringConfig stairConfig,
+                                MKVerticalAccessPlacement verticalAccessPlacement,
+                                int shellMargin, int exteriorAirMargin,
+                                int previewMargin,
+                                MKWorkspaceVerticalAccessSpec verticalAccessSpec,
+                                MKTowerWorkspaceFloorSettings floorSettings,
+                                List<MKTowerWorkspaceCategoryProfile> categoryProfiles,
+                                List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
+                                List<MKHorizontalOpeningProfile> openingProfiles,
+                                List<MKHallwayFamilyDefinition> hallwayFamilies,
+                                long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces) {
         this.id = id;
         this.anchor = anchor;
         this.namespace = namespace;
         this.structureName = structureName;
         this.familyType = familyType;
+        this.topologyProfile = topologyProfile;
         this.dimensions = dimensions;
         this.palette = palette;
         this.stairConfig = stairConfig;
@@ -133,6 +155,7 @@ public class MKStructureWorkspace {
                 namespace,
                 structureName,
                 core.familyType(),
+                core.topologyProfile(),
                 core.dimensions(),
                 core.palette(),
                 core.stairConfig(),
@@ -155,6 +178,7 @@ public class MKStructureWorkspace {
     private SerializedWorkspaceCore serializedCore() {
         return new SerializedWorkspaceCore(
                 familyType,
+                topologyProfile,
                 dimensions,
                 palette,
                 stairConfig,
@@ -181,6 +205,7 @@ public class MKStructureWorkspace {
 
     private record SerializedWorkspaceCore(
             MKStructureFamilyType familyType,
+            MKWorkspaceTopologyProfile topologyProfile,
             MKWorkspaceDimensions dimensions,
             MKWorkspaceMaterialPalette palette,
             MKWorkspaceStairAuthoringConfig stairConfig,
@@ -193,6 +218,8 @@ public class MKStructureWorkspace {
         private static final MapCodec<SerializedWorkspaceCore> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 MKWorkspaceCodecs.FAMILY_TYPE_CODEC.optionalFieldOf("familyType", MKStructureFamilyType.TOWER)
                         .forGetter(SerializedWorkspaceCore::familyType),
+                MKWorkspaceTopologyProfile.CODEC.optionalFieldOf("topologyProfile", MKWorkspaceTopologyProfile.tower())
+                        .forGetter(SerializedWorkspaceCore::topologyProfile),
                 MKWorkspaceDimensions.CODEC.fieldOf("dimensions").forGetter(SerializedWorkspaceCore::dimensions),
                 MKWorkspaceMaterialPalette.CODEC.optionalFieldOf("palette", MKWorkspaceMaterialPalette.defaultPalette())
                         .forGetter(SerializedWorkspaceCore::palette),
@@ -402,7 +429,7 @@ public class MKStructureWorkspace {
     }
 
     public MKStructureWorkspace withPieces(List<MKWorkspacePieceDefinition> newPieces) {
-        return new MKStructureWorkspace(id, anchor, namespace, structureName, familyType, dimensions, palette,
+        return new MKStructureWorkspace(id, anchor, namespace, structureName, familyType, topologyProfile, dimensions, palette,
                 stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
                 floorSettings, categoryProfiles, familyDefinitions, openingProfiles, hallwayFamilies,
                 createdAt, System.currentTimeMillis(), newPieces);
@@ -426,6 +453,10 @@ public class MKStructureWorkspace {
 
     public MKStructureFamilyType familyType() {
         return familyType;
+    }
+
+    public MKWorkspaceTopologyProfile topologyProfile() {
+        return topologyProfile;
     }
 
     public MKWorkspaceDimensions dimensions() {

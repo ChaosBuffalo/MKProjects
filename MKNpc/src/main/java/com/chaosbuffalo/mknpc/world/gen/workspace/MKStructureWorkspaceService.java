@@ -8,9 +8,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlanner;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportArchiveWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportResult;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestDiscovery;
@@ -54,7 +53,7 @@ public class MKStructureWorkspaceService {
         }
     }
 
-    private final MKWorkspacePlanner towerPlanner = new MKTowerWorkspacePlanner();
+    private final MKWorkspacePlannerRegistry plannerRegistry = new MKWorkspacePlannerRegistry();
     private final MKWorkspaceScaffoldBuilder scaffoldBuilder = new MKWorkspaceScaffoldBuilder();
     private final MKWorkspaceStairBuilder stairBuilder = new MKWorkspaceStairBuilder();
     private final MKStructureWorkspaceImportService importService = new MKStructureWorkspaceImportService();
@@ -180,7 +179,7 @@ public class MKStructureWorkspaceService {
         if (!workspace.validate().isEmpty()) {
             return Optional.empty();
         }
-        List<MKPlannedPiece> templates = towerPlanner.createCanonicalPieces(workspace).stream()
+        List<MKPlannedPiece> templates = plannerRegistry.plannerFor(workspace).createCanonicalPieces(workspace).stream()
                 .map(this::toTemplatePiece)
                 .toList();
         MKStructureWorkspace updated = workspace.withPieces(scaffoldBuilder.build(level, workspace, templates));
@@ -219,7 +218,7 @@ public class MKStructureWorkspaceService {
         }
         final String targetBasePieceName = resolvedBasePieceName;
 
-        List<MKPlannedPiece> canonicalPieces = towerPlanner.createCanonicalPieces(workspace);
+        List<MKPlannedPiece> canonicalPieces = plannerRegistry.plannerFor(workspace).createCanonicalPieces(workspace);
         Map<String, MKPlannedPiece> canonicalByBaseName = canonicalPieces.stream()
                 .collect(Collectors.toMap(MKPlannedPiece::pieceName, piece -> piece));
         MKPlannedPiece basePiece = canonicalByBaseName.get(targetBasePieceName);
