@@ -21,9 +21,15 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSet
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunProjection;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
@@ -33,12 +39,15 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceI
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
@@ -214,6 +223,164 @@ class TowerWorkspaceV2Test {
 
         MKPlannedPiece branchHallway = pieces.stream().filter(piece -> piece.pieceName().equals("linear_run_branch_branch")).findFirst().orElseThrow();
         assertTrue(branchHallway.connectors().stream().allMatch(connector -> connector.incomingPoolName().equals("linear_runs/branch/main_branch")));
+    }
+
+    @Test
+    void walledKeepTopologyProfileRoundTripsThroughWorkspaceTags() {
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(List.of(new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false)), List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(true),
+                List.of(),
+                List.of()
+        );
+
+        MKStructureWorkspace decoded = MKStructureWorkspace.fromTag(workspace.toTag());
+
+        assertEquals(MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE, decoded.topologyProfile().profileType());
+        assertTrue(decoded.topologyProfile().uniqueCornerTowers());
+    }
+
+    @Test
+    void walledKeepPlannerCreatesExplicitRoomAndLinearRunPieces() {
+        MKWorkspaceFoundationPolicy wallFoundation = MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(List.of(
+                ResourceLocation.parse("minecraft:stone_bricks"),
+                ResourceLocation.parse("minecraft:cobblestone")
+        ));
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(false),
+                List.of(new MKTowerWorkspaceFamilyDefinition(
+                        "keep_center_entry",
+                        MKTowerWorkspaceCategory.ENTRY,
+                        MKWorkspacePieceRole.ENTRY,
+                        "keep.center.entry",
+                        "keep.center",
+                        true,
+                        9,
+                        9,
+                        MKWorkspaceDimensions.defaultDimensions().entranceHeight(),
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                        List.of(),
+                        0,
+                        0,
+                        MKWorkspaceFoundationPolicy.none(),
+                        null
+                )),
+                List.of(new MKWorkspaceLinearRunFamilyDefinition(
+                        "keep_wall_north",
+                        "keep.wall.north",
+                        MKWorkspaceLinearRunKind.SOLID_WALL,
+                        "wall_opening",
+                        11,
+                        3,
+                        5,
+                        0,
+                        true,
+                        true,
+                        MKWorkspaceLinearRunProjection.RIGID,
+                        List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                        wallFoundation,
+                        null
+                ))
+        );
+
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+        MKPlannedPiece centerEntry = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_center_entry"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece northWall = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_wall_north"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals("keep.center.entry", centerEntry.tags().get("workspace_topology_slot_id"));
+        assertEquals("keep.center", centerEntry.tags().get("workspace_vertical_access_group_id"));
+        assertTrue(centerEntry.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.CONNECT_UP &&
+                        "vertical_access/keep.center/up".equals(connector.targetPoolName()) &&
+                        "vertical_access/keep.center/down".equals(connector.incomingPoolName())));
+        assertTrue(centerEntry.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.CONNECT_DOWN &&
+                        "vertical_access/keep.center/down".equals(connector.targetPoolName()) &&
+                        "vertical_access/keep.center/up".equals(connector.incomingPoolName())));
+
+        assertEquals(MKWorkspacePieceRole.HALLWAY, northWall.role());
+        assertEquals("keep.wall.north", northWall.tags().get("workspace_topology_slot_id"));
+        assertEquals("solid_wall", northWall.tags().get("workspace_linear_run_kind"));
+        assertEquals(MKWorkspaceFoundationMode.MASKED_EXTEND_BOTTOM_BLOCKS.getSerializedName(),
+                northWall.tags().get(MKWorkspaceFoundationPolicy.MODE_TAG));
+        assertTrue(northWall.connectors().stream().anyMatch(connector ->
+                connector.facing() == Direction.WEST &&
+                        "keep_linear_runs/keep/wall/north".equals(connector.incomingPoolName())));
+        assertTrue(northWall.connectors().stream().anyMatch(connector ->
+                connector.facing() == Direction.EAST &&
+                        "keep_linear_runs/keep/wall/north".equals(connector.incomingPoolName())));
+    }
+
+    @Test
+    void runtimeMetadataUsesFoundationPolicyFromOwningFamilies() {
+        MKWorkspaceFoundationPolicy roomFoundation = MKWorkspaceFoundationPolicy.uniformBlock(
+                ResourceLocation.parse("minecraft:stone_bricks"));
+        MKWorkspaceFoundationPolicy runFoundation = MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(List.of(
+                ResourceLocation.parse("minecraft:stone_bricks")));
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(false),
+                List.of(new MKTowerWorkspaceFamilyDefinition(
+                        "keep_center_entry",
+                        MKTowerWorkspaceCategory.ENTRY,
+                        MKWorkspacePieceRole.ENTRY,
+                        "keep.center.entry",
+                        "keep.center",
+                        true,
+                        9,
+                        9,
+                        MKWorkspaceDimensions.defaultDimensions().entranceHeight(),
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                        List.of(),
+                        0,
+                        0,
+                        roomFoundation,
+                        null
+                )),
+                List.of(new MKWorkspaceLinearRunFamilyDefinition(
+                        "keep_wall_north",
+                        "keep.wall.north",
+                        MKWorkspaceLinearRunKind.SOLID_WALL,
+                        "wall_opening",
+                        11,
+                        3,
+                        5,
+                        0,
+                        true,
+                        true,
+                        MKWorkspaceLinearRunProjection.RIGID,
+                        List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                        runFoundation,
+                        null
+                ))
+        );
+        List<MKWorkspacePieceDefinition> exportedPieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .map(piece -> pieceToDefinitionWithConnectors(workspace, piece))
+                .toList();
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace.withPieces(exportedPieces), 1, "now");
+
+        MKWorkspaceExportManifest.ExportRuntimeCategory roomCategory = manifest.runtimeHints().categories().stream()
+                .filter(category -> category.baseName().equals("keep_center_entry"))
+                .findFirst()
+                .orElseThrow();
+        MKWorkspaceExportManifest.ExportRuntimeCategory runCategory = manifest.runtimeHints().categories().stream()
+                .filter(category -> category.baseName().equals("keep_wall_north"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(MKWorkspaceFoundationMode.UNIFORM_STATE, roomCategory.pieceMetadata().foundationPolicy().mode());
+        assertEquals(ResourceLocation.parse("minecraft:stone_bricks"),
+                roomCategory.pieceMetadata().foundationPolicy().foundationBlock());
+        assertEquals(MKWorkspaceFoundationMode.MASKED_EXTEND_BOTTOM_BLOCKS, runCategory.pieceMetadata().foundationPolicy().mode());
+        assertEquals(List.of(ResourceLocation.parse("minecraft:stone_bricks")),
+                runCategory.pieceMetadata().foundationPolicy().maskBlocks());
     }
 
     @Test
@@ -1228,18 +1395,18 @@ class TowerWorkspaceV2Test {
                                 new MKWorkspaceRuntimePieceInfo(true,
                                         com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole.ROOM,
                                         0, 0, true, false, false, false),
-                                ResourceLocation.parse("mkdev:pool_filter_test/hallways/branch/branch_opening")),
+                                ResourceLocation.parse("mkdev:pool_filter_test/linear_runs/branch/branch_opening")),
                         pieceWithRuntimeAndIncomingPool("branch_room", "branch_room",
                                 new MKWorkspaceRuntimePieceInfo(false,
                                         com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole.ROOM,
                                         0, 0, false, true, false, false),
-                                ResourceLocation.parse("mkdev:pool_filter_test/hallways/branch/branch_opening"))
+                                ResourceLocation.parse("mkdev:pool_filter_test/linear_runs/branch/branch_opening"))
                 )
         );
 
         MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 4, "test");
         MKWorkspaceExportManifest.ExportRuntimePool branchPool = manifest.runtimeHints().pools().stream()
-                .filter(pool -> pool.poolId().equals(ResourceLocation.parse("mkdev:pool_filter_test/hallways/branch/branch_opening")))
+                .filter(pool -> pool.poolId().equals(ResourceLocation.parse("mkdev:pool_filter_test/linear_runs/branch/branch_opening")))
                 .findFirst()
                 .orElseThrow();
 
@@ -1624,6 +1791,37 @@ class TowerWorkspaceV2Test {
                 System.currentTimeMillis(),
                 System.currentTimeMillis(),
                 List.of()
+        );
+    }
+
+    private static MKStructureWorkspace withTopologyAndLinearRuns(MKStructureWorkspace workspace,
+                                                                  MKWorkspaceTopologyProfile topologyProfile,
+                                                                  List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
+                                                                  List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies) {
+        return new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                topologyProfile,
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
+                workspace.categoryProfiles(),
+                familyDefinitions.isEmpty() ? workspace.familyDefinitions() : familyDefinitions,
+                workspace.openingProfiles(),
+                MKHallwayFamilyDefinition.fromLinearRunFamilies(linearRunFamilies),
+                linearRunFamilies,
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces()
         );
     }
 
