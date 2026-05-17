@@ -226,6 +226,7 @@ public class MKStructureWorkspaceImportService {
                         family.category(),
                         family.pieceRole(),
                         family.topologySlotId(),
+                        family.verticalAccessGroupId(),
                         family.supportsVerticalAccess(),
                         family.roomWidth(),
                         family.roomLength(),

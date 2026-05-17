@@ -448,6 +448,7 @@ public record MKWorkspaceExportManifest(
             MKTowerWorkspaceCategory category,
             MKWorkspacePieceRole pieceRole,
             String topologySlotId,
+            String verticalAccessGroupId,
             boolean supportsVerticalAccess,
             int roomWidth,
             int roomLength,
@@ -464,6 +465,7 @@ public record MKWorkspaceExportManifest(
                 towerCategoryCodec().fieldOf("category").forGetter(ExportFamilyDefinition::category),
                 pieceRoleCodec().fieldOf("piece_role").forGetter(ExportFamilyDefinition::pieceRole),
                 Codec.STRING.optionalFieldOf("topology_slot_id", "").forGetter(ExportFamilyDefinition::topologySlotId),
+                Codec.STRING.optionalFieldOf("vertical_access_group_id", "").forGetter(ExportFamilyDefinition::verticalAccessGroupId),
                 Codec.BOOL.fieldOf("supports_vertical_access").forGetter(ExportFamilyDefinition::supportsVerticalAccess),
             Codec.INT.optionalFieldOf("room_width", 10).forGetter(ExportFamilyDefinition::roomWidth),
             Codec.INT.optionalFieldOf("room_length", 10).forGetter(ExportFamilyDefinition::roomLength),
@@ -479,10 +481,12 @@ public record MKWorkspaceExportManifest(
                     .forGetter(ExportFamilyDefinition::foundationPolicy),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
                     .forGetter(ExportFamilyDefinition::paletteOverrideOpt)
-        ).apply(instance, (baseName, category, pieceRole, topologySlotId, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
+        ).apply(instance, (baseName, category, pieceRole, topologySlotId, verticalAccessGroupId, supportsVerticalAccess,
+                           roomWidth, roomLength, roomHeight,
                            horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin, foundationPolicy,
                            paletteOverride) ->
-                new ExportFamilyDefinition(baseName, category, pieceRole, topologySlotId, supportsVerticalAccess,
+                new ExportFamilyDefinition(baseName, category, pieceRole, topologySlotId, verticalAccessGroupId,
+                        supportsVerticalAccess,
                         roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
                         topVoidMargin, bottomVoidMargin, foundationPolicy, paletteOverride.orElse(null))));
 
@@ -492,6 +496,7 @@ public record MKWorkspaceExportManifest(
                     familyDefinition.category(),
                     familyDefinition.pieceRole(),
                     familyDefinition.topologySlotId(),
+                    familyDefinition.verticalAccessGroupId(),
                     familyDefinition.supportsVerticalAccess(),
                     familyDefinition.roomWidth(),
                     familyDefinition.roomLength(),

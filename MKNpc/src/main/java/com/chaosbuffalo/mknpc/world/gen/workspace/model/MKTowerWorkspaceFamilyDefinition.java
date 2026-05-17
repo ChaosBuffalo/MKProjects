@@ -19,6 +19,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
             MKWorkspaceCodecs.TOWER_CATEGORY_CODEC.fieldOf("category").forGetter(MKTowerWorkspaceFamilyDefinition::category),
             MKWorkspaceCodecs.PIECE_ROLE_CODEC.fieldOf("pieceRole").forGetter(MKTowerWorkspaceFamilyDefinition::pieceRole),
             Codec.STRING.optionalFieldOf("topologySlotId", "").forGetter(MKTowerWorkspaceFamilyDefinition::topologySlotId),
+            Codec.STRING.optionalFieldOf("verticalAccessGroupId", "").forGetter(MKTowerWorkspaceFamilyDefinition::verticalAccessGroupId),
             Codec.BOOL.fieldOf("supportsVerticalAccess")
                     .forGetter(MKTowerWorkspaceFamilyDefinition::supportsVerticalAccess),
             Codec.INT.optionalFieldOf("roomWidth", 0).forGetter(MKTowerWorkspaceFamilyDefinition::roomWidth),
@@ -34,10 +35,12 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                     .forGetter(MKTowerWorkspaceFamilyDefinition::foundationPolicy),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("paletteOverride")
                     .forGetter(MKTowerWorkspaceFamilyDefinition::paletteOverrideOpt)
-    ).apply(instance, (baseName, category, pieceRole, topologySlotId, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
+    ).apply(instance, (baseName, category, pieceRole, topologySlotId, verticalAccessGroupId, supportsVerticalAccess,
+                       roomWidth, roomLength, roomHeight,
                        horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin, foundationPolicy,
                        paletteOverride) ->
-            new MKTowerWorkspaceFamilyDefinition(baseName, category, pieceRole, topologySlotId, supportsVerticalAccess,
+            new MKTowerWorkspaceFamilyDefinition(baseName, category, pieceRole, topologySlotId, verticalAccessGroupId,
+                    supportsVerticalAccess,
                     roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
                     topVoidMargin, bottomVoidMargin, foundationPolicy, paletteOverride.orElse(null))));
 
@@ -45,6 +48,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
     private final MKTowerWorkspaceCategory category;
     private final MKWorkspacePieceRole pieceRole;
     private final String topologySlotId;
+    private final String verticalAccessGroupId;
     private final boolean supportsVerticalAccess;
     private final int roomWidth;
     private final int roomLength;
@@ -118,11 +122,27 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                                             int topVoidMargin, int bottomVoidMargin,
                                             MKWorkspaceFoundationPolicy foundationPolicy,
                                             @Nullable MKWorkspacePaletteOverride paletteOverride) {
+        this(baseName, category, pieceRole, topologySlotId, defaultVerticalAccessGroupId(supportsVerticalAccess),
+                supportsVerticalAccess, roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
+                topVoidMargin, bottomVoidMargin, foundationPolicy, paletteOverride);
+    }
+
+    public MKTowerWorkspaceFamilyDefinition(String baseName, MKTowerWorkspaceCategory category,
+                                            MKWorkspacePieceRole pieceRole, String topologySlotId,
+                                            String verticalAccessGroupId, boolean supportsVerticalAccess,
+                                            int roomWidth, int roomLength, int roomHeight,
+                                            MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
+                                            List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
+                                            int topVoidMargin, int bottomVoidMargin,
+                                            MKWorkspaceFoundationPolicy foundationPolicy,
+                                            @Nullable MKWorkspacePaletteOverride paletteOverride) {
         this.baseName = baseName;
         this.category = category;
         this.pieceRole = pieceRole;
         this.topologySlotId = topologySlotId == null || topologySlotId.isBlank() ?
                 defaultTopologySlotId(pieceRole) : topologySlotId;
+        this.verticalAccessGroupId = verticalAccessGroupId == null || verticalAccessGroupId.isBlank() ?
+                defaultVerticalAccessGroupId(supportsVerticalAccess) : verticalAccessGroupId;
         this.roomWidth = roomWidth;
         this.roomLength = roomLength;
         this.roomHeight = roomHeight;
@@ -241,6 +261,9 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         }
         if (topologySlotId.isBlank()) {
             errors.add("family " + baseName + " topology slot id cannot be blank");
+        }
+        if (supportsVerticalAccess() && verticalAccessGroupId.isBlank()) {
+            errors.add("family " + baseName + " shaft-enabled room must declare a vertical access group id");
         }
         validateOdd(errors, "family " + baseName + " room width", roomWidth, 3);
         validateOdd(errors, "family " + baseName + " room length", roomLength, 3);
@@ -393,6 +416,10 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         return topologySlotId;
     }
 
+    public String verticalAccessGroupId() {
+        return verticalAccessGroupId;
+    }
+
     public boolean supportsVerticalAccess() {
         return supportsVerticalAccess;
     }
@@ -536,6 +563,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                 category,
                 pieceRole,
                 topologySlotId,
+                verticalAccessGroupId,
                 supportsVerticalAccess,
                 roomWidth > 0 ? roomWidth : profile.roomWidth(),
                 roomLength > 0 ? roomLength : profile.roomLength(),
@@ -570,6 +598,10 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
             case BASEMENT_CAP -> "tower.basement_cap";
             case HALLWAY -> "tower.linear_run.branch";
         };
+    }
+
+    private static String defaultVerticalAccessGroupId(boolean supportsVerticalAccess) {
+        return supportsVerticalAccess ? "tower.core" : "";
     }
 }
 

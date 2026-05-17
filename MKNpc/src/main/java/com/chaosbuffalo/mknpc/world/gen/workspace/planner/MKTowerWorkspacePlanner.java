@@ -531,6 +531,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
         applyFoundationTags(family.foundationPolicy(), tags);
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, Boolean.toString(family.supportsVerticalAccess()));
         if (family.supportsVerticalAccess()) {
+            tags.put("workspace_vertical_access_group_id", family.verticalAccessGroupId());
             tags.put(MKWorkspaceVerticalAccessTags.PLACEMENT_TAG, stairPlacement);
             tags.put(MKWorkspaceVerticalAccessTags.DIRECTION_TAG, verticalAccessDirectionTag(family, stairDirection));
         }
