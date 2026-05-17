@@ -456,11 +456,15 @@ public class MKJigsawPlacement {
             ResourceLocation location = targetPoolKey.location();
             String path = location.getPath();
             Optional<String> openingProfile = branchOpeningProfile(path, "hallways/branch/")
+                    .or(() -> branchOpeningProfile(path, "linear_runs/branch/"))
                     .or(() -> branchOpeningProfile(path, "rooms/branch/"));
             if (openingProfile.isEmpty()) {
                 return Optional.empty();
             }
             int markerIndex = path.indexOf("hallways/branch/");
+            if (markerIndex < 0) {
+                markerIndex = path.indexOf("linear_runs/branch/");
+            }
             if (markerIndex < 0) {
                 markerIndex = path.indexOf("rooms/branch/");
             }

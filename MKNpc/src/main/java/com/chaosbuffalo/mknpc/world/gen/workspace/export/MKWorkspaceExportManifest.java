@@ -1081,7 +1081,8 @@ public record MKWorkspaceExportManifest(
 
     private static boolean isBranchRuntimePool(MKStructureWorkspace workspace, ResourceLocation poolId) {
         String path = runtimePoolPath(workspace, poolId);
-        return path.startsWith("hallways/branch/") || path.startsWith("rooms/branch/") ||
+        return path.startsWith("hallways/branch/") || path.startsWith("linear_runs/branch/") ||
+                path.startsWith("rooms/branch/") ||
                 path.startsWith("branch_caps/");
     }
 
