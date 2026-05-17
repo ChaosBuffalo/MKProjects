@@ -11,6 +11,7 @@ public class MKWorkspacePlannerRegistry {
 
     public MKWorkspacePlannerRegistry() {
         register(new MKTowerWorkspacePlanner());
+        register(new MKWalledKeepWorkspacePlanner());
     }
 
     public void register(MKWorkspaceTopologyPlanner planner) {
