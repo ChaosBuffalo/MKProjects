@@ -7,6 +7,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
@@ -22,8 +24,10 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKTextFieldWidget;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
+import java.util.Optional;
 
 public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
     public static final String ID = "form_family_detail";
@@ -68,6 +72,23 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                 family.category(), family.pieceRole(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
                 family.horizontalExits(), family.topVoidMargin(), family.bottomVoidMargin(), family.paletteOverride())));
+        MKTextFieldWidget topologySlotField = makeField(screen, "Topology Slot", family.topologySlotId());
+        topologySlotField.setTextChangeCallback((field, text) ->
+                editor.replaceFamilyTopologySlotId(index, text.trim().isBlank() ? family.topologySlotId() : text.trim()));
+        MKTextFieldWidget verticalGroupField = makeField(screen, "Vertical Access Group",
+                family.verticalAccessGroupId());
+        verticalGroupField.setTextChangeCallback((field, text) ->
+                editor.replaceFamilyVerticalAccessGroupId(index,
+                        text.trim().isBlank() ? family.verticalAccessGroupId() : text.trim()));
+        MKButton foundationModeButton = new MKButton(Component.literal(formatFoundationMode(family.foundationPolicy().mode())),
+                180, 20);
+        foundationModeButton.setPressedCallback((button, mouseButton) -> {
+            MKWorkspaceFoundationMode nextMode = cycleValue(List.of(MKWorkspaceFoundationMode.values()),
+                    family.foundationPolicy().mode(), isReverseClick(mouseButton));
+            editor.replaceFamilyFoundationPolicy(index, foundationPolicyForMode(nextMode, family.foundationPolicy()));
+            screen.flagNeedSetup();
+            return true;
+        });
         MKButton categoryButton = new MKButton(Component.literal(formatTopologyLabel(family.category().getSerializedName())), 180, 20);
         categoryButton.setPressedCallback((button, mouseButton) -> {
             MKTowerWorkspaceCategory nextCategory = cycleCategory(family.category(), isReverseClick(mouseButton));
@@ -130,6 +151,27 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                                 family.topVoidMargin(), family.bottomVoidMargin(), family.paletteOverride()))));
 
         addRow(screen, content, screen.makeWhiteText(Component.literal("Base Name")), baseNameField);
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Topology Slot")), topologySlotField);
+        if (family.supportsVerticalAccess()) {
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Vertical Access Group")), verticalGroupField);
+        }
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Mode")), foundationModeButton);
+        MKTextFieldWidget foundationBlockField = makeField(screen, "Foundation Block",
+                family.foundationPolicy().foundationBlockOpt().map(ResourceLocation::toString).orElse(""));
+        foundationBlockField.setTextChangeCallback((field, text) ->
+                editor.replaceFamilyFoundationPolicy(index, new MKWorkspaceFoundationPolicy(
+                        MKWorkspaceFoundationMode.UNIFORM_STATE,
+                        parseResourceLocation(text).orElse(null),
+                        List.of())));
+        MKTextFieldWidget foundationMaskField = makeField(screen, "Foundation Mask",
+                family.foundationPolicy().maskBlocks().stream()
+                        .map(ResourceLocation::toString)
+                        .collect(java.util.stream.Collectors.joining(",")));
+        foundationMaskField.setTextChangeCallback((field, text) ->
+                editor.replaceFamilyFoundationPolicy(index,
+                        MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(parseResourceLocationList(text))));
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Block")), foundationBlockField);
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Mask Blocks")), foundationMaskField);
         addRow(screen, content, screen.makeWhiteText(Component.literal("Category")), categoryButton);
         addRow(screen, content, screen.makeWhiteText(Component.literal("Role")), roleButton);
         addRow(screen, content, screen.makeWhiteText(Component.literal("Horizontal Extrusion")), extrusionModeButton);
@@ -391,6 +433,42 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
             case FULL_BODY -> "Full Body";
             case NO_EXTRUSION -> "No Extrusion";
         };
+    }
+
+    private String formatFoundationMode(MKWorkspaceFoundationMode mode) {
+        return formatTopologyLabel(mode.getSerializedName());
+    }
+
+    private MKWorkspaceFoundationPolicy foundationPolicyForMode(MKWorkspaceFoundationMode mode,
+                                                                MKWorkspaceFoundationPolicy current) {
+        return switch (mode) {
+            case NONE -> MKWorkspaceFoundationPolicy.none();
+            case UNIFORM_STATE -> current.foundationBlockOpt()
+                    .map(MKWorkspaceFoundationPolicy::uniformBlock)
+                    .orElse(MKWorkspaceFoundationPolicy.uniformBlock(ResourceLocation.parse("minecraft:stone")));
+            case EXTEND_BOTTOM_BLOCKS -> MKWorkspaceFoundationPolicy.extendBottomBlocks();
+            case MASKED_EXTEND_BOTTOM_BLOCKS -> current.maskBlocks().isEmpty() ?
+                    MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(List.of(ResourceLocation.parse("minecraft:stone"))) :
+                    MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(current.maskBlocks());
+        };
+    }
+
+    private Optional<ResourceLocation> parseResourceLocation(String value) {
+        String trimmed = value.trim();
+        if (trimmed.isBlank()) {
+            return Optional.empty();
+        }
+        ResourceLocation id = ResourceLocation.tryParse(trimmed);
+        return Optional.ofNullable(id);
+    }
+
+    private List<ResourceLocation> parseResourceLocationList(String value) {
+        return java.util.Arrays.stream(value.split(","))
+                .map(String::trim)
+                .filter(text -> !text.isBlank())
+                .map(ResourceLocation::tryParse)
+                .filter(java.util.Objects::nonNull)
+                .toList();
     }
 
     private String formatDirection(Direction direction) {

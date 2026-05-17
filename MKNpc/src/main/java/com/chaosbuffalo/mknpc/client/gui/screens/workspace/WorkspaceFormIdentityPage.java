@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
+import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKTextFieldWidget;
@@ -52,9 +53,25 @@ public class WorkspaceFormIdentityPage extends WorkspacePageBase {
                 Integer.toString(editor.previewMargin()));
         previewMarginField.setTextChangeCallback((field, text) ->
                 editor.previewMargin(parseInt(text, editor.previewMargin())));
+        MKButton topologyButton = new MKButton(Component.literal(formatTopologyLabel(editor.topologyProfileType())),
+                180, screen.buttonHeight());
+        topologyButton.setPressedCallback((button, mouseButton) -> {
+            editor.topologyProfileType("tower".equals(editor.topologyProfileType()) ? "walled_keep" : "tower");
+            screen.flagNeedSetup();
+            return true;
+        });
+        MKButton uniqueCornerButton = new MKButton(Component.literal(editor.uniqueCornerTowers() ? "Unique" : "Shared"),
+                180, screen.buttonHeight());
+        uniqueCornerButton.setPressedCallback((button, mouseButton) -> {
+            editor.uniqueCornerTowers(!editor.uniqueCornerTowers());
+            screen.flagNeedSetup();
+            return true;
+        });
 
         addRow(screen, content, "mknpc.workspace.field.namespace", namespaceField);
         addRow(screen, content, "mknpc.workspace.field.structure_name", structureNameField);
+        addRow(screen, content, "Topology Profile", topologyButton);
+        addRow(screen, content, "Corner Towers", uniqueCornerButton);
         addRow(screen, content, "mknpc.workspace.field.shell_margin", shellMarginField);
         addRow(screen, content, "mknpc.workspace.field.exterior_air_margin", exteriorAirMarginField);
         addRow(screen, content, "mknpc.workspace.field.preview_margin", previewMarginField);
@@ -79,6 +96,20 @@ public class WorkspaceFormIdentityPage extends WorkspacePageBase {
         root.addConstraintToWidget(MarginConstraint.LEFT, label);
         root.addWidget(field);
         root.addConstraintToWidget(new CenterXConstraint(), field);
+    }
+
+    private void addRow(MKWorkspaceScreen screen, MKStackLayoutVertical root, String labelText,
+                        MKButton button) {
+        MKText label = screen.makeWhiteText(Component.literal(labelText));
+        label.setWidth(screen.contentWidth());
+        root.addWidget(label);
+        root.addConstraintToWidget(MarginConstraint.LEFT, label);
+        root.addWidget(button);
+        root.addConstraintToWidget(new CenterXConstraint(), button);
+    }
+
+    private String formatTopologyLabel(String key) {
+        return WorkspacePieceDisplay.formatTopologyLabel(key);
     }
 
     private int parseInt(String value, int fallback) {

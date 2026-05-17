@@ -12,14 +12,20 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDe
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunProjection;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -63,6 +69,7 @@ public class WorkspaceDraftSession {
         draft = new Draft();
         draft.namespace = valueOrDefault(workspace != null ? workspace.namespace() : null, "mkdev");
         draft.structureName = valueOrDefault(workspace != null ? workspace.structureName() : null, "tower_workspace");
+        draft.topologyProfile = workspace != null ? workspace.topologyProfile() : MKWorkspaceTopologyProfile.tower();
         draft.stairMode = workspace != null ? workspace.stairConfig().mode() : MKWorkspaceStairMode.AUTO;
         draft.stairRiseType = workspace != null ? workspace.stairConfig().riseType() : MKWorkspaceStairRiseType.MIXED;
         draft.stairWidth = workspace != null ? workspace.stairConfig().stairWidth() : 1;
@@ -83,9 +90,10 @@ public class WorkspaceDraftSession {
                 MKTowerWorkspaceFamilyDefinition.createDefaults());
         draft.openingProfiles = List.copyOf(workspace != null ? workspace.openingProfiles() :
                 MKHorizontalOpeningProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()));
-        draft.hallwayFamilies = List.copyOf(workspace != null ? workspace.hallwayFamilies() :
-                MKHallwayFamilyDefinition.createDefaults(MKWorkspaceDimensions.defaultDimensions(),
+        draft.linearRunFamilies = List.copyOf(workspace != null ? workspace.linearRunFamilies() :
+                MKWorkspaceLinearRunFamilyDefinition.createDefaults(MKWorkspaceDimensions.defaultDimensions(),
                         MKWorkspaceMaterialPalette.defaultPalette()));
+        draft.hallwayFamilies = MKHallwayFamilyDefinition.fromLinearRunFamilies(draft.linearRunFamilies);
         int requestedShaftSize = workspace != null ? workspace.verticalAccessSpec().shaftSize() :
                 MKWorkspaceVerticalAccessSpec.defaultSpec().shaftSize();
         draft.shaftSize = requestedShaftSize;
@@ -99,10 +107,11 @@ public class WorkspaceDraftSession {
         Draft draft = draft();
         return draft.namespace + ":" + draft.structureName + "  |  " +
                 "shaft " + draft.shaftSize +
+                "  |  topology " + draft.topologyProfile.profileType() +
                 "  |  categories " + draft.categoryProfiles.size() +
                 "  |  families " + draft.familyDefinitions.size() +
                 "  |  openings " + draft.openingProfiles.size() +
-                "  |  hallways " + draft.hallwayFamilies.size();
+                "  |  linear runs " + draft.linearRunFamilies.size();
     }
 
     public String workspaceId() {
@@ -167,6 +176,25 @@ public class WorkspaceDraftSession {
 
     public void previewMargin(int value) {
         draft().previewMargin = value;
+    }
+
+    public String topologyProfileType() {
+        return draft().topologyProfile.profileType();
+    }
+
+    public void topologyProfileType(String value) {
+        boolean uniqueCornerTowers = draft().topologyProfile.uniqueCornerTowers();
+        draft().topologyProfile = MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(value) ?
+                MKWorkspaceTopologyProfile.walledKeep(uniqueCornerTowers) : MKWorkspaceTopologyProfile.tower();
+    }
+
+    public boolean uniqueCornerTowers() {
+        return draft().topologyProfile.uniqueCornerTowers();
+    }
+
+    public void uniqueCornerTowers(boolean value) {
+        draft().topologyProfile = MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(draft().topologyProfile.profileType()) ?
+                MKWorkspaceTopologyProfile.walledKeep(value) : MKWorkspaceTopologyProfile.tower();
     }
 
     public ResourceLocation floorBlock() {
@@ -333,19 +361,21 @@ public class WorkspaceDraftSession {
     }
 
     public List<MKHallwayFamilyDefinition> hallwayFamilies() {
-        return List.copyOf(draft().hallwayFamilies);
+        return MKHallwayFamilyDefinition.fromLinearRunFamilies(draft().linearRunFamilies);
     }
 
     public void replaceHallwayFamily(int index, MKHallwayFamilyDefinition updatedFamily) {
         java.util.ArrayList<MKHallwayFamilyDefinition> updated = new java.util.ArrayList<>(draft().hallwayFamilies);
         updated.set(index, updatedFamily);
         draft().hallwayFamilies = List.copyOf(updated);
+        draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.fromHallwayFamilies(draft().hallwayFamilies);
     }
 
     public void removeHallwayFamily(int index) {
         java.util.ArrayList<MKHallwayFamilyDefinition> updated = new java.util.ArrayList<>(draft().hallwayFamilies);
         updated.remove(index);
         draft().hallwayFamilies = List.copyOf(updated);
+        draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.fromHallwayFamilies(draft().hallwayFamilies);
     }
 
     public int addHallwayFamily() {
@@ -364,7 +394,53 @@ public class WorkspaceDraftSession {
                 null
         ));
         draft().hallwayFamilies = List.copyOf(updated);
+        draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.fromHallwayFamilies(draft().hallwayFamilies);
         return draft().hallwayFamilies.size() - 1;
+    }
+
+    public List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies() {
+        return List.copyOf(draft().linearRunFamilies);
+    }
+
+    public void replaceLinearRunFamily(int index, MKWorkspaceLinearRunFamilyDefinition updatedFamily) {
+        java.util.ArrayList<MKWorkspaceLinearRunFamilyDefinition> updated =
+                new java.util.ArrayList<>(draft().linearRunFamilies);
+        updated.set(index, updatedFamily);
+        draft().linearRunFamilies = List.copyOf(updated);
+        draft().hallwayFamilies = MKHallwayFamilyDefinition.fromLinearRunFamilies(draft().linearRunFamilies);
+    }
+
+    public void removeLinearRunFamily(int index) {
+        java.util.ArrayList<MKWorkspaceLinearRunFamilyDefinition> updated =
+                new java.util.ArrayList<>(draft().linearRunFamilies);
+        updated.remove(index);
+        draft().linearRunFamilies = List.copyOf(updated);
+        draft().hallwayFamilies = MKHallwayFamilyDefinition.fromLinearRunFamilies(draft().linearRunFamilies);
+    }
+
+    public int addLinearRunFamily() {
+        String openingProfileId = firstCompatibleOpeningProfileId(MKWorkspaceHorizontalExitPathKind.BRANCH)
+                .orElseGet(() -> draft().openingProfiles.isEmpty() ? "branch_opening" : draft().openingProfiles.getFirst().profileId());
+        java.util.ArrayList<MKWorkspaceLinearRunFamilyDefinition> updated =
+                new java.util.ArrayList<>(draft().linearRunFamilies);
+        updated.add(new MKWorkspaceLinearRunFamilyDefinition(
+                nextUniqueHallwayFamilyId(),
+                MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR,
+                openingProfileId,
+                5,
+                3,
+                3,
+                0,
+                false,
+                true,
+                MKWorkspaceLinearRunProjection.RIGID,
+                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                MKWorkspaceFoundationPolicy.none(),
+                null
+        ));
+        draft().linearRunFamilies = List.copyOf(updated);
+        draft().hallwayFamilies = MKHallwayFamilyDefinition.fromLinearRunFamilies(draft().linearRunFamilies);
+        return draft().linearRunFamilies.size() - 1;
     }
 
     public MKWorkspaceMaterialPalette basePalette() {
@@ -408,6 +484,7 @@ public class WorkspaceDraftSession {
                 draft().namespace.trim(),
                 draft().structureName.trim(),
                 MKStructureFamilyType.TOWER,
+                draft().topologyProfile,
                 dimensions,
                 palette,
                 stairConfig,
@@ -421,7 +498,8 @@ public class WorkspaceDraftSession {
                 draft().categoryProfiles,
                 draft().familyDefinitions,
                 draft().openingProfiles,
-                draft().hallwayFamilies,
+                MKHallwayFamilyDefinition.fromLinearRunFamilies(draft().linearRunFamilies),
+                draft().linearRunFamilies,
                 now,
                 now,
                 List.of()
@@ -463,6 +541,42 @@ public class WorkspaceDraftSession {
     }
 
     public void replaceFamilyDefinition(int index, MKTowerWorkspaceFamilyDefinition updatedFamily) {
+        java.util.ArrayList<MKTowerWorkspaceFamilyDefinition> updated = new java.util.ArrayList<>(draft().familyDefinitions);
+        updated.set(index, normalizeFamilyDefinition(preserveFamilyMetadata(updated.get(index), updatedFamily)));
+        draft().familyDefinitions = List.copyOf(updated);
+    }
+
+    public void replaceFamilyTopologySlotId(int index, String topologySlotId) {
+        MKTowerWorkspaceFamilyDefinition family = draft().familyDefinitions.get(index);
+        replaceFamilyDefinitionExact(index, new MKTowerWorkspaceFamilyDefinition(
+                family.baseName(), family.category(), family.pieceRole(), topologySlotId,
+                family.verticalAccessGroupId(), family.supportsVerticalAccess(),
+                family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
+                family.horizontalExits(), family.topVoidMargin(), family.bottomVoidMargin(),
+                family.foundationPolicy(), family.paletteOverride()));
+    }
+
+    public void replaceFamilyVerticalAccessGroupId(int index, String verticalAccessGroupId) {
+        MKTowerWorkspaceFamilyDefinition family = draft().familyDefinitions.get(index);
+        replaceFamilyDefinitionExact(index, new MKTowerWorkspaceFamilyDefinition(
+                family.baseName(), family.category(), family.pieceRole(), family.topologySlotId(),
+                verticalAccessGroupId, family.supportsVerticalAccess(),
+                family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
+                family.horizontalExits(), family.topVoidMargin(), family.bottomVoidMargin(),
+                family.foundationPolicy(), family.paletteOverride()));
+    }
+
+    public void replaceFamilyFoundationPolicy(int index, MKWorkspaceFoundationPolicy foundationPolicy) {
+        MKTowerWorkspaceFamilyDefinition family = draft().familyDefinitions.get(index);
+        replaceFamilyDefinitionExact(index, new MKTowerWorkspaceFamilyDefinition(
+                family.baseName(), family.category(), family.pieceRole(), family.topologySlotId(),
+                family.verticalAccessGroupId(), family.supportsVerticalAccess(),
+                family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
+                family.horizontalExits(), family.topVoidMargin(), family.bottomVoidMargin(),
+                foundationPolicy, family.paletteOverride()));
+    }
+
+    private void replaceFamilyDefinitionExact(int index, MKTowerWorkspaceFamilyDefinition updatedFamily) {
         java.util.ArrayList<MKTowerWorkspaceFamilyDefinition> updated = new java.util.ArrayList<>(draft().familyDefinitions);
         updated.set(index, normalizeFamilyDefinition(updatedFamily));
         draft().familyDefinitions = List.copyOf(updated);
@@ -662,6 +776,7 @@ public class WorkspaceDraftSession {
                 namespace,
                 structureName,
                 workspace.familyType(),
+                workspace.topologyProfile(),
                 workspace.dimensions(),
                 palette,
                 alignStairMaterials(workspace.stairConfig(), palette),
@@ -675,6 +790,7 @@ public class WorkspaceDraftSession {
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
                 workspace.hallwayFamilies(),
+                workspace.linearRunFamilies(),
                 0,
                 0,
                 List.of()
@@ -688,6 +804,7 @@ public class WorkspaceDraftSession {
                 source.namespace(),
                 source.structureName(),
                 source.familyType(),
+                source.topologyProfile(),
                 source.dimensions(),
                 materialSource.palette(),
                 alignStairMaterials(source.stairConfig(), materialSource.palette()),
@@ -716,6 +833,13 @@ public class WorkspaceDraftSession {
                                 .findFirst()
                                 .map(requested -> copyHallwayFamily(hallway, requested.paletteOverrideOpt()))
                                 .orElse(hallway))
+                        .toList(),
+                source.linearRunFamilies().stream()
+                        .map(linearRun -> materialSource.linearRunFamilies().stream()
+                                .filter(requested -> requested.linearRunId().equals(linearRun.linearRunId()))
+                                .findFirst()
+                                .map(requested -> copyLinearRunFamily(linearRun, requested.paletteOverrideOpt()))
+                                .orElse(linearRun))
                         .toList(),
                 source.createdAt(),
                 source.updatedAt(),
@@ -1084,6 +1208,8 @@ public class WorkspaceDraftSession {
                 family.baseName(),
                 family.category(),
                 family.pieceRole(),
+                family.topologySlotId(),
+                family.verticalAccessGroupId(),
                 family.supportsVerticalAccess(),
                 family.roomWidth(),
                 family.roomLength(),
@@ -1092,7 +1218,49 @@ public class WorkspaceDraftSession {
                 family.horizontalExits(),
                 family.topVoidMargin(),
                 family.bottomVoidMargin(),
+                family.foundationPolicy(),
                 paletteOverride.orElse(null)
+        );
+    }
+
+    public MKWorkspaceLinearRunFamilyDefinition copyLinearRunFamily(MKWorkspaceLinearRunFamilyDefinition linearRun,
+                                                                    Optional<MKWorkspacePaletteOverride> paletteOverride) {
+        return new MKWorkspaceLinearRunFamilyDefinition(
+                linearRun.linearRunId(),
+                linearRun.topologySlotId(),
+                linearRun.kind(),
+                linearRun.openingProfileId(),
+                linearRun.length(),
+                linearRun.interiorWidth(),
+                linearRun.interiorHeight(),
+                linearRun.slopeDelta(),
+                linearRun.allowOnMainPath(),
+                linearRun.allowOnBranchPath(),
+                linearRun.projection(),
+                linearRun.supportedShapes(),
+                linearRun.foundationPolicy(),
+                paletteOverride.orElse(null)
+        );
+    }
+
+    private MKTowerWorkspaceFamilyDefinition preserveFamilyMetadata(MKTowerWorkspaceFamilyDefinition existing,
+                                                                    MKTowerWorkspaceFamilyDefinition updated) {
+        return new MKTowerWorkspaceFamilyDefinition(
+                updated.baseName(),
+                updated.category(),
+                updated.pieceRole(),
+                existing.topologySlotId(),
+                existing.verticalAccessGroupId(),
+                updated.supportsVerticalAccess(),
+                updated.roomWidth(),
+                updated.roomLength(),
+                updated.roomHeight(),
+                updated.horizontalExtrusionMode(),
+                updated.horizontalExits(),
+                updated.topVoidMargin(),
+                updated.bottomVoidMargin(),
+                existing.foundationPolicy(),
+                updated.paletteOverride()
         );
     }
 
@@ -1159,6 +1327,7 @@ public class WorkspaceDraftSession {
     public static class Draft {
         public String namespace;
         public String structureName;
+        public MKWorkspaceTopologyProfile topologyProfile;
         public int shaftSize;
         public MKVerticalAccessPlacement verticalAccessPlacement;
         public int shellMargin;
@@ -1176,5 +1345,6 @@ public class WorkspaceDraftSession {
         public List<MKTowerWorkspaceFamilyDefinition> familyDefinitions;
         public List<MKHorizontalOpeningProfile> openingProfiles;
         public List<MKHallwayFamilyDefinition> hallwayFamilies;
+        public List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies;
     }
 }
