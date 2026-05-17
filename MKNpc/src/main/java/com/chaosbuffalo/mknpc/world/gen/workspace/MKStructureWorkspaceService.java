@@ -622,6 +622,7 @@ public class MKStructureWorkspaceService {
                                         family.baseName(),
                                         family.category(),
                                         family.pieceRole(),
+                                        family.topologySlotId(),
                                         family.supportsVerticalAccess(),
                                         family.roomWidth(),
                                         family.roomLength(),
@@ -657,6 +658,7 @@ public class MKStructureWorkspaceService {
                                 .findFirst()
                                 .map(requested -> new com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition(
                                         linearRun.linearRunId(),
+                                        linearRun.topologySlotId(),
                                         linearRun.kind(),
                                         linearRun.openingProfileId(),
                                         linearRun.length(),

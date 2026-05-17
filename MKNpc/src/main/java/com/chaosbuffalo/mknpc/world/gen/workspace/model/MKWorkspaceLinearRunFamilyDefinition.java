@@ -14,6 +14,7 @@ import java.util.Set;
 public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteFamily {
     public static final Codec<MKWorkspaceLinearRunFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("linearRunId").forGetter(MKWorkspaceLinearRunFamilyDefinition::linearRunId),
+            Codec.STRING.optionalFieldOf("topologySlotId", "").forGetter(MKWorkspaceLinearRunFamilyDefinition::topologySlotId),
             MKWorkspaceCodecs.LINEAR_RUN_KIND_CODEC.optionalFieldOf("kind", MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR)
                     .forGetter(MKWorkspaceLinearRunFamilyDefinition::kind),
             Codec.STRING.fieldOf("openingProfileId").forGetter(MKWorkspaceLinearRunFamilyDefinition::openingProfileId),
@@ -31,14 +32,15 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
                     .forGetter(MKWorkspaceLinearRunFamilyDefinition::foundationPolicy),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("paletteOverride")
                     .forGetter(MKWorkspaceLinearRunFamilyDefinition::paletteOverrideOpt)
-    ).apply(instance, (linearRunId, kind, openingProfileId, length, interiorWidth, interiorHeight, slopeDelta,
+    ).apply(instance, (linearRunId, topologySlotId, kind, openingProfileId, length, interiorWidth, interiorHeight, slopeDelta,
                        allowOnMainPath, allowOnBranchPath, projection, supportedShapes, foundationPolicy,
                        paletteOverride) ->
-            new MKWorkspaceLinearRunFamilyDefinition(linearRunId, kind, openingProfileId, length, interiorWidth,
+            new MKWorkspaceLinearRunFamilyDefinition(linearRunId, topologySlotId, kind, openingProfileId, length, interiorWidth,
                     interiorHeight, slopeDelta, allowOnMainPath, allowOnBranchPath, projection, supportedShapes,
                     foundationPolicy, paletteOverride.orElse(null))));
 
     private final String linearRunId;
+    private final String topologySlotId;
     private final MKWorkspaceLinearRunKind kind;
     private final String openingProfileId;
     private final int length;
@@ -83,7 +85,22 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
                                                 List<MKWorkspaceLinearRunPieceShape> supportedShapes,
                                                 MKWorkspaceFoundationPolicy foundationPolicy,
                                                 @Nullable MKWorkspacePaletteOverride paletteOverride) {
+        this(linearRunId, defaultTopologySlotId(allowOnMainPath, allowOnBranchPath), kind, openingProfileId, length,
+                interiorWidth, interiorHeight, slopeDelta, allowOnMainPath, allowOnBranchPath, projection,
+                supportedShapes, foundationPolicy, paletteOverride);
+    }
+
+    public MKWorkspaceLinearRunFamilyDefinition(String linearRunId, String topologySlotId, MKWorkspaceLinearRunKind kind,
+                                                String openingProfileId, int length, int interiorWidth,
+                                                int interiorHeight, int slopeDelta,
+                                                boolean allowOnMainPath, boolean allowOnBranchPath,
+                                                MKWorkspaceLinearRunProjection projection,
+                                                List<MKWorkspaceLinearRunPieceShape> supportedShapes,
+                                                MKWorkspaceFoundationPolicy foundationPolicy,
+                                                @Nullable MKWorkspacePaletteOverride paletteOverride) {
         this.linearRunId = linearRunId;
+        this.topologySlotId = topologySlotId == null || topologySlotId.isBlank() ?
+                defaultTopologySlotId(allowOnMainPath, allowOnBranchPath) : topologySlotId;
         this.kind = kind;
         this.openingProfileId = openingProfileId;
         this.length = length;
@@ -167,6 +184,9 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
         if (linearRunId.isBlank()) {
             errors.add("linear run family id cannot be blank");
         }
+        if (topologySlotId.isBlank()) {
+            errors.add("linear run family " + linearRunId + " topology slot id cannot be blank");
+        }
         if (openingProfileId.isBlank()) {
             errors.add("linear run family opening profile id cannot be blank");
         } else if (!openingProfileIds.contains(openingProfileId)) {
@@ -199,6 +219,10 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
 
     public String linearRunId() {
         return linearRunId;
+    }
+
+    public String topologySlotId() {
+        return topologySlotId;
     }
 
     public MKWorkspaceLinearRunKind kind() {
@@ -263,5 +287,15 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
     @Nullable
     public MKWorkspacePaletteOverride paletteOverride() {
         return paletteOverride;
+    }
+
+    private static String defaultTopologySlotId(boolean allowOnMainPath, boolean allowOnBranchPath) {
+        if (allowOnMainPath && !allowOnBranchPath) {
+            return "tower.linear_run.main";
+        }
+        if (allowOnBranchPath && !allowOnMainPath) {
+            return "tower.linear_run.branch";
+        }
+        return "tower.linear_run.branch";
     }
 }

@@ -447,6 +447,7 @@ public record MKWorkspaceExportManifest(
             String baseName,
             MKTowerWorkspaceCategory category,
             MKWorkspacePieceRole pieceRole,
+            String topologySlotId,
             boolean supportsVerticalAccess,
             int roomWidth,
             int roomLength,
@@ -462,6 +463,7 @@ public record MKWorkspaceExportManifest(
                 Codec.STRING.fieldOf("base_name").forGetter(ExportFamilyDefinition::baseName),
                 towerCategoryCodec().fieldOf("category").forGetter(ExportFamilyDefinition::category),
                 pieceRoleCodec().fieldOf("piece_role").forGetter(ExportFamilyDefinition::pieceRole),
+                Codec.STRING.optionalFieldOf("topology_slot_id", "").forGetter(ExportFamilyDefinition::topologySlotId),
                 Codec.BOOL.fieldOf("supports_vertical_access").forGetter(ExportFamilyDefinition::supportsVerticalAccess),
             Codec.INT.optionalFieldOf("room_width", 10).forGetter(ExportFamilyDefinition::roomWidth),
             Codec.INT.optionalFieldOf("room_length", 10).forGetter(ExportFamilyDefinition::roomLength),
@@ -477,10 +479,10 @@ public record MKWorkspaceExportManifest(
                     .forGetter(ExportFamilyDefinition::foundationPolicy),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
                     .forGetter(ExportFamilyDefinition::paletteOverrideOpt)
-        ).apply(instance, (baseName, category, pieceRole, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
+        ).apply(instance, (baseName, category, pieceRole, topologySlotId, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
                            horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin, foundationPolicy,
                            paletteOverride) ->
-                new ExportFamilyDefinition(baseName, category, pieceRole, supportsVerticalAccess,
+                new ExportFamilyDefinition(baseName, category, pieceRole, topologySlotId, supportsVerticalAccess,
                         roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
                         topVoidMargin, bottomVoidMargin, foundationPolicy, paletteOverride.orElse(null))));
 
@@ -489,6 +491,7 @@ public record MKWorkspaceExportManifest(
                     familyDefinition.baseName(),
                     familyDefinition.category(),
                     familyDefinition.pieceRole(),
+                    familyDefinition.topologySlotId(),
                     familyDefinition.supportsVerticalAccess(),
                     familyDefinition.roomWidth(),
                     familyDefinition.roomLength(),
@@ -569,6 +572,7 @@ public record MKWorkspaceExportManifest(
 
     public record ExportLinearRunFamily(
             String linearRunId,
+            String topologySlotId,
             MKWorkspaceLinearRunKind kind,
             String openingProfileId,
             int length,
@@ -584,6 +588,7 @@ public record MKWorkspaceExportManifest(
     ) {
         public static final Codec<ExportLinearRunFamily> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("linear_run_id").forGetter(ExportLinearRunFamily::linearRunId),
+                Codec.STRING.optionalFieldOf("topology_slot_id", "").forGetter(ExportLinearRunFamily::topologySlotId),
                 linearRunKindCodec().optionalFieldOf("kind", MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR)
                         .forGetter(ExportLinearRunFamily::kind),
                 Codec.STRING.fieldOf("opening_profile_id").forGetter(ExportLinearRunFamily::openingProfileId),
@@ -601,16 +606,17 @@ public record MKWorkspaceExportManifest(
                         .forGetter(ExportLinearRunFamily::foundationPolicy),
                 MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
                         .forGetter(ExportLinearRunFamily::paletteOverrideOpt)
-        ).apply(instance, (linearRunId, kind, openingProfileId, length, interiorWidth, interiorHeight, slopeDelta,
+        ).apply(instance, (linearRunId, topologySlotId, kind, openingProfileId, length, interiorWidth, interiorHeight, slopeDelta,
                            allowOnMainPath, allowOnBranchPath, projection, supportedShapes, foundationPolicy,
                            paletteOverride) ->
-                new ExportLinearRunFamily(linearRunId, kind, openingProfileId, length, interiorWidth, interiorHeight,
+                new ExportLinearRunFamily(linearRunId, topologySlotId, kind, openingProfileId, length, interiorWidth, interiorHeight,
                         slopeDelta, allowOnMainPath, allowOnBranchPath, projection, supportedShapes, foundationPolicy,
                         paletteOverride.orElse(null))));
 
         public static ExportLinearRunFamily from(MKWorkspaceLinearRunFamilyDefinition linearRunFamily) {
             return new ExportLinearRunFamily(
                     linearRunFamily.linearRunId(),
+                    linearRunFamily.topologySlotId(),
                     linearRunFamily.kind(),
                     linearRunFamily.openingProfileId(),
                     linearRunFamily.length(),

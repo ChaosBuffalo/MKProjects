@@ -348,6 +348,8 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
         int eastOffset = Math.max(0, linearRun.slopeDelta());
         LinkedHashMap<String, String> tags = new LinkedHashMap<>();
         tags.put("topology_role", "linear_run_" + linearRun.linearRunId() + "_" + pathKind.serializedName);
+        tags.put("workspace_topology_slot_id", topologySlotId(linearRun, pathKind));
+        tags.put("workspace_topology_role_id", topologySlotId(linearRun, pathKind));
         tags.put("tower_piece_kind", "linear_run");
         tags.put("workspace_linear_run_family_id", linearRun.linearRunId());
         tags.put("workspace_linear_run_kind", linearRun.kind().getSerializedName());
@@ -518,6 +520,8 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
                                               MKWorkspaceRuntimePieceInfo runtimeInfo) {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>();
         tags.put("topology_role", topologyRole);
+        tags.put("workspace_topology_slot_id", family.topologySlotId());
+        tags.put("workspace_topology_role_id", family.topologySlotId());
         tags.put("tower_piece_kind", "room");
         tags.put("workspace_family_id", family.baseName());
         tags.put("workspace_horizontal_exits", family.horizontalExitSummary());
@@ -574,6 +578,15 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
             return "down";
         }
         return fallback;
+    }
+
+    private String topologySlotId(MKWorkspaceLinearRunFamilyDefinition linearRun, HallwayPathKind pathKind) {
+        if (pathKind == HallwayPathKind.MAIN) {
+            return linearRun.allowOnMainPath() && !linearRun.allowOnBranchPath() ?
+                    linearRun.topologySlotId() : "tower.linear_run.main";
+        }
+        return linearRun.allowOnBranchPath() && !linearRun.allowOnMainPath() ?
+                linearRun.topologySlotId() : "tower.linear_run.branch";
     }
 }
 

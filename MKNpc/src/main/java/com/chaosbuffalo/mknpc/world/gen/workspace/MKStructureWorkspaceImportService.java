@@ -225,6 +225,7 @@ public class MKStructureWorkspaceImportService {
                         family.baseName(),
                         family.category(),
                         family.pieceRole(),
+                        family.topologySlotId(),
                         family.supportsVerticalAccess(),
                         family.roomWidth(),
                         family.roomLength(),
@@ -274,9 +275,10 @@ public class MKStructureWorkspaceImportService {
                 .toList();
         List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies = settings.linearRunFamilies().isEmpty() ?
                 MKWorkspaceLinearRunFamilyDefinition.fromHallwayFamilies(hallwayFamilies) :
-                settings.linearRunFamilies().stream()
+                        settings.linearRunFamilies().stream()
                         .map(linearRun -> new MKWorkspaceLinearRunFamilyDefinition(
                                 linearRun.linearRunId(),
+                                linearRun.topologySlotId(),
                                 linearRun.kind(),
                                 linearRun.openingProfileId(),
                                 linearRun.length(),
