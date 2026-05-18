@@ -484,6 +484,10 @@ public class MKStructureWorkspace {
         return topologyProfile.towerStackSettingsOrDefault(stackId).stairConfig();
     }
 
+    public MKWorkspaceResolvedFamilySettings resolveFamilySettings(MKTowerWorkspaceFamilyDefinition familyDefinition) {
+        return MKWorkspaceResolvedFamilySettings.from(this, familyDefinition);
+    }
+
     private String towerStackIdForFamily(String topologySlotId) {
         if (!MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(topologyProfile.profileType())) {
             return "";

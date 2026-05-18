@@ -11,8 +11,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizon
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamilySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
@@ -28,7 +28,6 @@ public class MKTowerStackPlanner {
     private static final String EMPTY_POOL = "minecraft:empty";
     private static final String LINEAR_RUN_POOL_PREFIX = "linear_runs";
     private static final String ROOM_POOL_PREFIX = "rooms";
-    private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
 
     private record ResolvedOpeningProfile(String profileId, int openingWidth, int openingHeight) {
     }
@@ -82,13 +81,14 @@ public class MKTowerStackPlanner {
         MKWorkspaceStairAuthoringConfig stairConfig = stackDefinition.stairConfig() == null ?
                 workspace.verticalAccessSpec().stairConfig() :
                 stackDefinition.stairConfig();
+        MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
         return switch (family.pieceRole()) {
             case ENTRY -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
-                    family.roomWidth(),
-                    family.roomLength(),
-                    family.roomHeight(),
+                    resolvedFamily.roomWidth(),
+                    resolvedFamily.roomLength(),
+                    resolvedFamily.roomHeight(),
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
                                     List.of(
@@ -106,9 +106,9 @@ public class MKTowerStackPlanner {
             case FLOOR_MAIN -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
-                    family.roomWidth(),
-                    family.roomLength(),
-                    family.roomHeight(),
+                    resolvedFamily.roomWidth(),
+                    resolvedFamily.roomLength(),
+                    resolvedFamily.roomHeight(),
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
                                     List.of(
@@ -126,9 +126,9 @@ public class MKTowerStackPlanner {
             case TOP_CAP_APPROACH -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
-                    family.roomWidth(),
-                    family.roomLength(),
-                    family.roomHeight(),
+                    resolvedFamily.roomWidth(),
+                    resolvedFamily.roomLength(),
+                    resolvedFamily.roomHeight(),
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
                                     List.of(
@@ -146,9 +146,9 @@ public class MKTowerStackPlanner {
             case TOP_CAP -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
-                    family.roomWidth(),
-                    family.roomLength(),
-                    family.roomHeight(),
+                    resolvedFamily.roomWidth(),
+                    resolvedFamily.roomLength(),
+                    resolvedFamily.roomHeight(),
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
                                     topCapConnectors(stackDefinition, hallWidth) : List.of(),
@@ -161,9 +161,9 @@ public class MKTowerStackPlanner {
             case BASEMENT_ENTRY -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
-                    family.roomWidth(),
-                    family.roomLength(),
-                    family.roomHeight(),
+                    resolvedFamily.roomWidth(),
+                    resolvedFamily.roomLength(),
+                    resolvedFamily.roomHeight(),
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
                                     List.of(
@@ -181,9 +181,9 @@ public class MKTowerStackPlanner {
             case BASEMENT_MAIN -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
-                    family.roomWidth(),
-                    family.roomLength(),
-                    family.roomHeight(),
+                    resolvedFamily.roomWidth(),
+                    resolvedFamily.roomLength(),
+                    resolvedFamily.roomHeight(),
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
                                     List.of(
@@ -201,9 +201,9 @@ public class MKTowerStackPlanner {
             case BASEMENT_CAP_APPROACH -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
-                    family.roomWidth(),
-                    family.roomLength(),
-                    family.roomHeight(),
+                    resolvedFamily.roomWidth(),
+                    resolvedFamily.roomLength(),
+                    resolvedFamily.roomHeight(),
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
                                     List.of(
@@ -221,9 +221,9 @@ public class MKTowerStackPlanner {
             case BASEMENT_CAP -> new MKPlannedPiece(
                     family.pieceRole(),
                     family.baseName(),
-                    family.roomWidth(),
-                    family.roomLength(),
-                    family.roomHeight(),
+                    resolvedFamily.roomWidth(),
+                    resolvedFamily.roomLength(),
+                    resolvedFamily.roomHeight(),
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
                                     basementCapConnectors(stackDefinition, hallWidth) : List.of(),
@@ -422,8 +422,9 @@ public class MKTowerStackPlanner {
             tags.put("workspace_tower_stack_main_floors", Integer.toString(stackDefinition.mainFloors()));
             tags.put("workspace_tower_stack_basement_floors", Integer.toString(stackDefinition.basementFloors()));
         }
-        applyVoidMarginTags(family, tags);
-        applyFoundationTags(family.foundationPolicy(), tags);
+        MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
+        applyVoidMarginTags(family, resolvedFamily, tags);
+        applyFoundationTags(resolvedFamily.foundationPolicy(), tags);
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, Boolean.toString(family.supportsVerticalAccess()));
         if (family.supportsVerticalAccess()) {
             tags.put("workspace_vertical_access_group_id", family.verticalAccessGroupId());
@@ -443,19 +444,23 @@ public class MKTowerStackPlanner {
             tags.put(MKWorkspaceVerticalAccessTags.BOTTOM_CAP_TAG, "true");
         }
         runtimeInfo.applyToTags(tags);
-        MKWorkspacePaletteTags.apply(tags, paletteResolver.resolveFamily(workspace, family));
+        MKWorkspacePaletteTags.apply(tags, resolvedFamily.palette());
         return tags;
     }
 
-    private void applyVoidMarginTags(MKTowerWorkspaceFamilyDefinition family, Map<String, String> tags) {
+    private void applyVoidMarginTags(MKTowerWorkspaceFamilyDefinition family,
+                                     MKWorkspaceResolvedFamilySettings resolvedFamily,
+                                     Map<String, String> tags) {
         if (family.supportsVerticalAccess()) {
             return;
         }
-        if (family.topVoidMargin() > 0) {
-            tags.put(MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG, Integer.toString(family.topVoidMargin()));
+        if (resolvedFamily.topVoidMargin() > 0) {
+            tags.put(MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG,
+                    Integer.toString(resolvedFamily.topVoidMargin()));
         }
-        if (family.bottomVoidMargin() > 0) {
-            tags.put(MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG, Integer.toString(family.bottomVoidMargin()));
+        if (resolvedFamily.bottomVoidMargin() > 0) {
+            tags.put(MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG,
+                    Integer.toString(resolvedFamily.bottomVoidMargin()));
         }
     }
 

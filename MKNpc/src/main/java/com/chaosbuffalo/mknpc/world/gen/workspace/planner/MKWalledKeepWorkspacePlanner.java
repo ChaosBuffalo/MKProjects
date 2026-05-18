@@ -13,6 +13,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPiec
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamilySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
@@ -321,12 +322,13 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             }
         }
         connectors.addAll(roomLayoutConnectors(family.topologySlotId(), slots, opening));
+        MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
         return new MKPlannedPiece(
                 family.pieceRole(),
                 family.baseName(),
-                family.roomWidth(),
-                family.roomLength(),
-                family.roomHeight(),
+                resolvedFamily.roomWidth(),
+                resolvedFamily.roomLength(),
+                resolvedFamily.roomHeight(),
                 connectors,
                 buildRoomTags(workspace, family)
         );
@@ -518,7 +520,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                     tags.put("workspace_tower_stack_main_floors", Integer.toString(settings.mainFloors()));
                     tags.put("workspace_tower_stack_basement_floors", Integer.toString(settings.basementFloors()));
                 });
-        applyFoundationTags(family.foundationPolicy(), tags);
+        MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
+        applyFoundationTags(resolvedFamily.foundationPolicy(), tags);
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, Boolean.toString(family.supportsVerticalAccess()));
         if (family.supportsVerticalAccess()) {
             tags.put("workspace_vertical_access_group_id", family.verticalAccessGroupId());
@@ -526,7 +529,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             tags.put(MKWorkspaceVerticalAccessTags.DIRECTION_TAG, verticalAccessDirectionTag(family));
         }
         runtimeInfoForRoom(family).applyToTags(tags);
-        MKWorkspacePaletteTags.apply(tags, paletteResolver.resolveFamily(workspace, family));
+        MKWorkspacePaletteTags.apply(tags, resolvedFamily.palette());
         return tags;
     }
 
