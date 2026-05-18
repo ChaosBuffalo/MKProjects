@@ -195,7 +195,13 @@ public record MKWorkspaceTowerStackSettings(
     }
 
     private static int defaultFootprint(String stackId) {
-        return "keep.center".equals(stackId) ? 17 : 7;
+        if ("keep.center".equals(stackId)) {
+            return 17;
+        }
+        if ("tower.primary".equals(stackId)) {
+            return 9;
+        }
+        return 7;
     }
 
     private static int normalizeFootprint(int value) {

@@ -298,7 +298,7 @@ public class MKStructureWorkspace {
                 continue;
             }
             errors.addAll(familyDefinition.validate(familyDefinitions, familyCategory.get(),
-                    verticalAccessSpecForFamily(familyDefinition)));
+                    verticalAccessSpecForFamily(familyDefinition), resolveFamilySettings(familyDefinition)));
         }
         java.util.Set<String> openingProfileIds = new java.util.LinkedHashSet<>();
         java.util.Map<String, MKHorizontalOpeningProfile> openingProfileById = new java.util.LinkedHashMap<>();

@@ -11,6 +11,7 @@ import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 
 public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamily {
@@ -189,7 +190,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                 new MKTowerWorkspaceFamilyDefinition("entry", MKTowerWorkspaceCategory.ENTRY,
                         MKWorkspacePieceRole.ENTRY, MKTowerWorkspaceStackSlot.ENTRY.slotId(PRIMARY_TOWER_STACK_ID),
                         PRIMARY_TOWER_STACK_ID, true,
-                        entry.roomWidth(), entry.roomLength(), entry.fullHeight(),
+                        0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
                         List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
                                 MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY, "main_opening",
@@ -199,49 +200,49 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                         MKWorkspacePieceRole.FLOOR_MAIN,
                         MKTowerWorkspaceStackSlot.MAIN_FLOOR.slotId(PRIMARY_TOWER_STACK_ID),
                         PRIMARY_TOWER_STACK_ID, true,
-                        main.roomWidth(), main.roomLength(), main.fullHeight(),
+                        0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
                 new MKTowerWorkspaceFamilyDefinition("top_cap_approach", MKTowerWorkspaceCategory.TOP_CAP,
                         MKWorkspacePieceRole.TOP_CAP_APPROACH,
                         MKTowerWorkspaceStackSlot.TOP_CAP_APPROACH.slotId(PRIMARY_TOWER_STACK_ID),
                         PRIMARY_TOWER_STACK_ID, true,
-                        top_cap.roomWidth(), top_cap.roomLength(), top_cap.fullHeight(),
+                        0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
                 new MKTowerWorkspaceFamilyDefinition("top_cap", MKTowerWorkspaceCategory.TOP_CAP,
                         MKWorkspacePieceRole.TOP_CAP,
                         MKTowerWorkspaceStackSlot.TOP_CAP.slotId(PRIMARY_TOWER_STACK_ID),
                         PRIMARY_TOWER_STACK_ID, true,
-                        top_cap.roomWidth(), top_cap.roomLength(), top_cap.fullHeight(),
+                        0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
                 new MKTowerWorkspaceFamilyDefinition("basement_entry", MKTowerWorkspaceCategory.BASEMENT,
                         MKWorkspacePieceRole.BASEMENT_ENTRY,
                         MKTowerWorkspaceStackSlot.BASEMENT_ENTRY.slotId(PRIMARY_TOWER_STACK_ID),
                         PRIMARY_TOWER_STACK_ID, true,
-                        basement.roomWidth(), basement.roomLength(), basement.fullHeight(),
+                        0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
                 new MKTowerWorkspaceFamilyDefinition("basement_main", MKTowerWorkspaceCategory.BASEMENT,
                         MKWorkspacePieceRole.BASEMENT_MAIN,
                         MKTowerWorkspaceStackSlot.BASEMENT_FLOOR.slotId(PRIMARY_TOWER_STACK_ID),
                         PRIMARY_TOWER_STACK_ID, true,
-                        basement.roomWidth(), basement.roomLength(), basement.fullHeight(),
+                        0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
                 new MKTowerWorkspaceFamilyDefinition("basement_cap_approach", MKTowerWorkspaceCategory.BASEMENT_CAP,
                         MKWorkspacePieceRole.BASEMENT_CAP_APPROACH,
                         MKTowerWorkspaceStackSlot.BASEMENT_CAP_APPROACH.slotId(PRIMARY_TOWER_STACK_ID),
                         PRIMARY_TOWER_STACK_ID, true,
-                        basementCap.roomWidth(), basementCap.roomLength(), basementCap.fullHeight(),
+                        0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
                 new MKTowerWorkspaceFamilyDefinition("basement_cap", MKTowerWorkspaceCategory.BASEMENT_CAP,
                         MKWorkspacePieceRole.BASEMENT_CAP,
                         MKTowerWorkspaceStackSlot.BASEMENT_CAP.slotId(PRIMARY_TOWER_STACK_ID),
                         PRIMARY_TOWER_STACK_ID, true,
-                        basementCap.roomWidth(), basementCap.roomLength(), basementCap.fullHeight(),
+                        0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null)
         );
@@ -278,9 +279,9 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                         slot.slotId(stackId),
                         stackId,
                         true,
-                        width,
-                        length,
-                        height,
+                        0,
+                        0,
+                        0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
                         List.of(),
                         0,
@@ -330,6 +331,23 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
     public List<String> validate(List<MKTowerWorkspaceFamilyDefinition> allFamilies,
                                  MKTowerWorkspaceCategoryProfile categoryProfile,
                                  MKWorkspaceVerticalAccessSpec verticalAccessSpec) {
+        return validate(allFamilies, categoryProfile, verticalAccessSpec, roomWidth, roomLength, roomHeight);
+    }
+
+    public List<String> validate(List<MKTowerWorkspaceFamilyDefinition> allFamilies,
+                                 MKTowerWorkspaceCategoryProfile categoryProfile,
+                                 MKWorkspaceVerticalAccessSpec verticalAccessSpec,
+                                 MKWorkspaceResolvedFamilySettings resolvedFamily) {
+        return validate(allFamilies, categoryProfile, verticalAccessSpec,
+                resolvedFamily.roomWidth(), resolvedFamily.roomLength(), resolvedFamily.roomHeight());
+    }
+
+    private List<String> validate(List<MKTowerWorkspaceFamilyDefinition> allFamilies,
+                                  MKTowerWorkspaceCategoryProfile categoryProfile,
+                                  MKWorkspaceVerticalAccessSpec verticalAccessSpec,
+                                  int resolvedRoomWidth,
+                                  int resolvedRoomLength,
+                                  int resolvedRoomHeight) {
         List<String> errors = new ArrayList<>();
         if (baseName.isBlank()) {
             errors.add("tower workspace family base name cannot be blank");
@@ -347,23 +365,24 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         if (supportsVerticalAccess() && verticalAccessGroupId.isBlank()) {
             errors.add("family " + baseName + " shaft-enabled room must declare a vertical access group id");
         }
-        validateOdd(errors, "family " + baseName + " room width", roomWidth, 3);
-        validateOdd(errors, "family " + baseName + " room length", roomLength, 3);
+        validateOdd(errors, "family " + baseName + " room width", resolvedRoomWidth, 3);
+        validateOdd(errors, "family " + baseName + " room length", resolvedRoomLength, 3);
         if (supportsVerticalAccess()) {
-            if (roomHeight < 3) {
+            if (resolvedRoomHeight < 3) {
                 errors.add("family " + baseName + " shaft-enabled room height must be at least 3");
             }
-            if (roomWidth < verticalAccessSpec.shaftSize()) {
+            if (resolvedRoomWidth < verticalAccessSpec.shaftSize()) {
                 errors.add("family " + baseName + " room width must be at least the shared shaft size");
             }
-            if (roomLength < verticalAccessSpec.shaftSize()) {
+            if (resolvedRoomLength < verticalAccessSpec.shaftSize()) {
                 errors.add("family " + baseName + " room length must be at least the shared shaft size");
             }
-            if (roomHeight != categoryProfile.fullHeight()) {
+            if (resolvedRoomHeight != categoryProfile.fullHeight()) {
                 errors.add("family " + baseName + " shaft-enabled room height must match category full height " +
                         categoryProfile.fullHeight());
             }
-        } else if (roomHeight < MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT || roomHeight > categoryProfile.fullHeight()) {
+        } else if (resolvedRoomHeight < MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT ||
+                resolvedRoomHeight > categoryProfile.fullHeight()) {
             errors.add("family " + baseName + " non-shaft room height must be within category range " +
                     MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT + "-" + categoryProfile.fullHeight());
         }
@@ -371,7 +390,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
             errors.add("family " + baseName + " shaft-enabled room cannot define top or bottom void margins");
         }
         if (!supportsVerticalAccess()) {
-            int reducedRoomHeight = roomHeight - topVoidMargin - bottomVoidMargin;
+            int reducedRoomHeight = resolvedRoomHeight - topVoidMargin - bottomVoidMargin;
             if (reducedRoomHeight < MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT) {
                 errors.add("family " + baseName + " non-shaft room height after void margins must be at least " +
                         MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT);
@@ -512,12 +531,24 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         return roomWidth;
     }
 
+    public OptionalInt roomWidthOverrideOpt() {
+        return roomWidth > 0 ? OptionalInt.of(roomWidth) : OptionalInt.empty();
+    }
+
     public int roomLength() {
         return roomLength;
     }
 
+    public OptionalInt roomLengthOverrideOpt() {
+        return roomLength > 0 ? OptionalInt.of(roomLength) : OptionalInt.empty();
+    }
+
     public int roomHeight() {
         return roomHeight;
+    }
+
+    public OptionalInt roomHeightOverrideOpt() {
+        return roomHeight > 0 ? OptionalInt.of(roomHeight) : OptionalInt.empty();
     }
 
     public MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode() {
@@ -642,6 +673,9 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
 
     private MKTowerWorkspaceFamilyDefinition resolveGeometry(List<MKTowerWorkspaceCategoryProfile> categoryProfiles) {
         if (roomWidth > 0 && roomLength > 0 && roomHeight > 0) {
+            return this;
+        }
+        if (MKTowerWorkspaceStackSlot.stackIdForTopologySlot(topologySlotId).isPresent()) {
             return this;
         }
         Optional<MKTowerWorkspaceCategoryProfile> profileOpt = categoryProfiles.stream()

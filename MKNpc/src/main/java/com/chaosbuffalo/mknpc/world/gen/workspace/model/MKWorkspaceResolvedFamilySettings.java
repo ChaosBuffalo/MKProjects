@@ -21,13 +21,20 @@ public record MKWorkspaceResolvedFamilySettings(
                         MKWorkspaceFoundationPolicy.none() : stackSettings.foundationPolicy());
         return new MKWorkspaceResolvedFamilySettings(
                 familyDefinition,
-                stackSettings == null ? familyDefinition.roomWidth() : stackSettings.width(),
-                stackSettings == null ? familyDefinition.roomLength() : stackSettings.length(),
-                stackSettings == null ? familyDefinition.roomHeight() : stackSettings.height(),
+                resolveDimension(stackSettings == null ? 0 : stackSettings.width(), familyDefinition.roomWidth()),
+                resolveDimension(stackSettings == null ? 0 : stackSettings.length(), familyDefinition.roomLength()),
+                resolveDimension(stackSettings == null ? 0 : stackSettings.height(), familyDefinition.roomHeight()),
                 familyDefinition.topVoidMargin(),
                 familyDefinition.bottomVoidMargin(),
                 foundationPolicy,
                 palette
         );
+    }
+
+    private static int resolveDimension(int inheritedValue, int overrideValue) {
+        if (overrideValue > 0) {
+            return overrideValue;
+        }
+        return inheritedValue;
     }
 }

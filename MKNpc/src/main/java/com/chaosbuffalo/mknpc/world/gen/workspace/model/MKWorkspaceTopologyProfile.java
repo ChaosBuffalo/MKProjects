@@ -40,7 +40,13 @@ public record MKWorkspaceTopologyProfile(
     ).apply(instance, MKWorkspaceTopologyProfile::new));
 
     public static MKWorkspaceTopologyProfile tower() {
-        return new MKWorkspaceTopologyProfile(TOWER_PROFILE_TYPE, false, false, false, false, false, List.of(),
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKTowerWorkspaceFloorSettings floorSettings = MKTowerWorkspaceFloorSettings.defaultSettings();
+        return new MKWorkspaceTopologyProfile(TOWER_PROFILE_TYPE, false, false, false, false, false,
+                List.of(new MKWorkspaceTowerStackSettings("tower.primary", floorSettings.mainFloors(),
+                        floorSettings.basementFloors(), dimensions.roomHeight(), dimensions.roomWidth(),
+                        dimensions.roomLength(), floorSettings.topCapApproachEnabled(),
+                        floorSettings.basementCapApproachEnabled())),
                 MKWorkspaceTopologyPathSettings.defaults());
     }
 
