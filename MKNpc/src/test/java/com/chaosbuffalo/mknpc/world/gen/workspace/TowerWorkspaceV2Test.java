@@ -634,6 +634,8 @@ class TowerWorkspaceV2Test {
         assertEquals("east", centerEntry.tags().get(MKWorkspaceVerticalAccessTags.PLACEMENT_TAG));
         assertEquals("ladder", centerEntry.tags().get("workspace_vertical_access_stair_mode"));
         assertEquals("2", centerEntry.tags().get("workspace_vertical_access_stair_width"));
+        assertEquals(17, centerEntry.interiorWidth());
+        assertEquals(17, centerEntry.interiorLength());
         assertEquals(MKWorkspaceStairMode.LADDER,
                 workspace.stairConfigForPiece(pieceToDefinitionWithConnectors(workspace, centerEntry)).mode());
         assertTrue(centerEntry.connectors().stream()

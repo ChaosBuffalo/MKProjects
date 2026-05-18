@@ -974,7 +974,7 @@ public class WorkspaceDraftSession {
         draft().familyDefinitions = draft().familyDefinitions.stream()
                 .map(this::normalizeFamilyDefinition)
                 .toList();
-        normalizeTowerStackSettingsFromFamilies();
+        applyTowerStackSettingsToFamilies();
     }
 
     public MKTowerWorkspaceCategoryProfile getCategoryProfile(MKTowerWorkspaceCategory category) {
@@ -1512,56 +1512,6 @@ public class WorkspaceDraftSession {
         return allowedTowerStackBasementFloorCounts(settings, mainFloors).stream()
                 .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedCount)))
                 .orElse(0);
-    }
-
-    private void normalizeTowerStackSettingsFromFamilies() {
-        if (!MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(draft().topologyProfile.profileType())) {
-            return;
-        }
-        for (String stackId : activeTowerStackIds()) {
-            int width = familyWidthForStack(stackId).orElseGet(() -> towerStackSettings(stackId).width());
-            int length = familyLengthForStack(stackId).orElseGet(() -> towerStackSettings(stackId).length());
-            int height = familyHeightForStack(stackId).orElseGet(() -> towerStackSettings(stackId).height());
-            MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId)
-                    .withWidth(width)
-                    .withLength(length)
-                    .withHeight(height);
-            int mainFloors = normalizeTowerStackMainFloorCount(settings, settings.mainFloors(), settings.basementFloors());
-            int basementFloors = normalizeTowerStackBasementFloorCount(settings, settings.basementFloors(), mainFloors);
-            replaceTowerStackSettings(settings.withMainFloors(mainFloors).withBasementFloors(basementFloors));
-        }
-        applyTowerStackSettingsToFamilies();
-    }
-
-    private List<String> activeTowerStackIds() {
-        if (!MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(topologyProfileType())) {
-            return List.of();
-        }
-        java.util.ArrayList<String> stackIds = new java.util.ArrayList<>();
-        stackIds.add("keep.center");
-        stackIds.addAll(activeCornerTopologySlots());
-        return List.copyOf(stackIds);
-    }
-
-    private Optional<Integer> familyHeightForStack(String stackId) {
-        return draft().familyDefinitions.stream()
-                .filter(family -> stackId.equals(stackIdForFamily(family)))
-                .findFirst()
-                .map(MKTowerWorkspaceFamilyDefinition::roomHeight);
-    }
-
-    private Optional<Integer> familyWidthForStack(String stackId) {
-        return draft().familyDefinitions.stream()
-                .filter(family -> stackId.equals(stackIdForFamily(family)))
-                .findFirst()
-                .map(MKTowerWorkspaceFamilyDefinition::roomWidth);
-    }
-
-    private Optional<Integer> familyLengthForStack(String stackId) {
-        return draft().familyDefinitions.stream()
-                .filter(family -> stackId.equals(stackIdForFamily(family)))
-                .findFirst()
-                .map(MKTowerWorkspaceFamilyDefinition::roomLength);
     }
 
     private int normalizeCategoryFullHeight(MKTowerWorkspaceCategory category, int requestedHeight,
