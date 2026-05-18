@@ -488,23 +488,14 @@ public class MKStructureWorkspace {
         if (!MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(topologyProfile.profileType())) {
             return "";
         }
-        if (topologySlotId.startsWith("keep.center.")) {
-            return "keep.center";
-        }
-        if (topologySlotId.startsWith("keep.corner.shared.")) {
-            return "keep.corner.shared";
-        }
-        for (String cornerStackId : List.of(
-                "keep.corner.north_west",
-                "keep.corner.north_east",
-                "keep.corner.south_east",
-                "keep.corner.south_west"
-        )) {
-            if (topologySlotId.startsWith(cornerStackId + ".")) {
-                return cornerStackId;
-            }
-        }
-        return "";
+        return MKTowerWorkspaceStackSlot.stackIdForTopologySlot(topologySlotId)
+                .filter(stackId -> stackId.equals("keep.center") ||
+                        stackId.equals("keep.corner.shared") ||
+                        stackId.equals("keep.corner.north_west") ||
+                        stackId.equals("keep.corner.north_east") ||
+                        stackId.equals("keep.corner.south_east") ||
+                        stackId.equals("keep.corner.south_west"))
+                .orElse("");
     }
 
     public MKStructureWorkspace withPieces(List<MKWorkspacePieceDefinition> newPieces) {
