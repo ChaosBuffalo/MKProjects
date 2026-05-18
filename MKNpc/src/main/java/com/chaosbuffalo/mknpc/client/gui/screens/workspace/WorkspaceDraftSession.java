@@ -936,6 +936,14 @@ public class WorkspaceDraftSession {
                 .orElse(categoryPalette);
     }
 
+    public MKWorkspaceFoundationPolicy resolveFamilyInheritedFoundation(MKTowerWorkspaceFamilyDefinition family) {
+        String stackId = stackIdForFamily(family);
+        if (stackId.isBlank()) {
+            return MKWorkspaceFoundationPolicy.none();
+        }
+        return towerStackSettings(stackId).foundationPolicy();
+    }
+
     public MKStructureWorkspace buildWorkspaceDraft() {
         snapDraftVerticalAccess();
         MKTowerWorkspaceCategoryProfile entryProfile = getCategoryProfile(MKTowerWorkspaceCategory.ENTRY);
@@ -1031,7 +1039,7 @@ public class WorkspaceDraftSession {
                 family.verticalAccessGroupId(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
                 family.horizontalExits(), family.topVoidMargin(), family.bottomVoidMargin(),
-                family.foundationPolicy(), family.paletteOverride()));
+                family.foundationPolicyOverride(), family.paletteOverride()));
     }
 
     public void replaceFamilyVerticalAccessGroupId(int index, String verticalAccessGroupId) {
@@ -1041,17 +1049,21 @@ public class WorkspaceDraftSession {
                 verticalAccessGroupId, family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
                 family.horizontalExits(), family.topVoidMargin(), family.bottomVoidMargin(),
-                family.foundationPolicy(), family.paletteOverride()));
+                family.foundationPolicyOverride(), family.paletteOverride()));
     }
 
     public void replaceFamilyFoundationPolicy(int index, MKWorkspaceFoundationPolicy foundationPolicy) {
+        replaceFamilyFoundationPolicyOverride(index, Optional.of(foundationPolicy));
+    }
+
+    public void replaceFamilyFoundationPolicyOverride(int index, Optional<MKWorkspaceFoundationPolicy> foundationPolicy) {
         MKTowerWorkspaceFamilyDefinition family = draft().familyDefinitions.get(index);
         replaceFamilyDefinitionExact(index, new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(), family.category(), family.pieceRole(), family.topologySlotId(),
                 family.verticalAccessGroupId(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
                 family.horizontalExits(), family.topVoidMargin(), family.bottomVoidMargin(),
-                foundationPolicy, family.paletteOverride()));
+                foundationPolicy.orElse(null), family.paletteOverride()));
     }
 
     private void replaceFamilyDefinitionExact(int index, MKTowerWorkspaceFamilyDefinition updatedFamily) {
@@ -1583,7 +1595,7 @@ public class WorkspaceDraftSession {
                 family.horizontalExits(),
                 topVoidMargin,
                 bottomVoidMargin,
-                family.foundationPolicy(),
+                family.foundationPolicyOverride(),
                 family.paletteOverride()
         );
         return new MKTowerWorkspaceFamilyDefinition(
@@ -1611,7 +1623,7 @@ public class WorkspaceDraftSession {
                         .toList(),
                 topVoidMargin,
                 bottomVoidMargin,
-                family.foundationPolicy(),
+                family.foundationPolicyOverride(),
                 family.paletteOverride()
         );
     }
@@ -1817,7 +1829,7 @@ public class WorkspaceDraftSession {
                 family.horizontalExits(),
                 family.topVoidMargin(),
                 family.bottomVoidMargin(),
-                family.foundationPolicy(),
+                family.foundationPolicyOverride(),
                 family.paletteOverride()
         );
     }
@@ -1965,7 +1977,7 @@ public class WorkspaceDraftSession {
                 existing.horizontalExits(),
                 existing.topVoidMargin(),
                 existing.bottomVoidMargin(),
-                existing.foundationPolicy(),
+                existing.foundationPolicyOverride(),
                 null
         );
     }
@@ -2139,7 +2151,7 @@ public class WorkspaceDraftSession {
                 family.horizontalExits(),
                 family.topVoidMargin(),
                 family.bottomVoidMargin(),
-                family.foundationPolicy(),
+                family.foundationPolicyOverride(),
                 paletteOverride.orElse(null)
         );
     }
@@ -2181,7 +2193,7 @@ public class WorkspaceDraftSession {
                 updated.horizontalExits(),
                 updated.topVoidMargin(),
                 updated.bottomVoidMargin(),
-                existing.foundationPolicy(),
+                existing.foundationPolicyOverride(),
                 updated.paletteOverride()
         );
     }

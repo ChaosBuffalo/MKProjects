@@ -632,7 +632,7 @@ public class MKStructureWorkspaceService {
                                         family.horizontalExits(),
                                         family.topVoidMargin(),
                                         family.bottomVoidMargin(),
-                                        family.foundationPolicy(),
+                                        family.foundationPolicyOverride(),
                                         requested.paletteOverride()))
                                 .orElse(family))
                         .toList(),

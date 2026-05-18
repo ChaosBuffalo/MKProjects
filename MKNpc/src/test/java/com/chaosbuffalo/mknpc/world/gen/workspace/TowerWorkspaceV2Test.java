@@ -977,6 +977,67 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void familyFoundationOverrideBeatsStackFoundationDefault() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceFoundationPolicy stackFoundation = MKWorkspaceFoundationPolicy.uniformBlock(
+                ResourceLocation.parse("minecraft:stone_bricks"));
+        MKWorkspaceFoundationPolicy familyFoundation = MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(List.of(
+                ResourceLocation.parse("minecraft:oak_planks")));
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
+                .withTowerStackSettings(MKWorkspaceTowerStackSettings.defaults("keep.center", 7)
+                        .withFoundationPolicy(stackFoundation));
+        List<MKTowerWorkspaceFamilyDefinition> families = MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions)
+                .stream()
+                .map(family -> family.baseName().equals("keep_center_entry") ?
+                        copyFamilyWithFoundation(family, familyFoundation) : family)
+                .toList();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                withCategoryProfiles(baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                        MKTowerWorkspaceCategoryProfile.createWalledKeepDefaults(dimensions)),
+                topologyProfile,
+                families,
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+
+        MKPlannedPiece centerEntry = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.pieceName().equals("keep_center_entry"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(MKWorkspaceFoundationMode.MASKED_EXTEND_BOTTOM_BLOCKS.getSerializedName(),
+                centerEntry.tags().get(MKWorkspaceFoundationPolicy.MODE_TAG));
+    }
+
+    @Test
+    void explicitFamilyFoundationNoneSuppressesStackFoundationDefault() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceFoundationPolicy stackFoundation = MKWorkspaceFoundationPolicy.uniformBlock(
+                ResourceLocation.parse("minecraft:stone_bricks"));
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
+                .withTowerStackSettings(MKWorkspaceTowerStackSettings.defaults("keep.center", 7)
+                        .withFoundationPolicy(stackFoundation));
+        List<MKTowerWorkspaceFamilyDefinition> families = MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions)
+                .stream()
+                .map(family -> family.baseName().equals("keep_center_entry") ?
+                        copyFamilyWithFoundation(family, MKWorkspaceFoundationPolicy.none()) : family)
+                .toList();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                withCategoryProfiles(baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                        MKTowerWorkspaceCategoryProfile.createWalledKeepDefaults(dimensions)),
+                topologyProfile,
+                families,
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+
+        MKPlannedPiece centerEntry = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.pieceName().equals("keep_center_entry"))
+                .findFirst()
+                .orElseThrow();
+
+        assertFalse(centerEntry.tags().containsKey(MKWorkspaceFoundationPolicy.MODE_TAG));
+    }
+
+    @Test
     void stackPaletteDefaultsFlowToResolvedRoomPieces() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         ResourceLocation stackWallBlock = ResourceLocation.parse("minecraft:polished_blackstone_bricks");
@@ -2715,7 +2776,28 @@ class TowerWorkspaceV2Test {
                 family.horizontalExits(),
                 family.topVoidMargin(),
                 family.bottomVoidMargin(),
-                family.foundationPolicy(),
+                family.foundationPolicyOverride(),
+                family.paletteOverride()
+        );
+    }
+
+    private static MKTowerWorkspaceFamilyDefinition copyFamilyWithFoundation(MKTowerWorkspaceFamilyDefinition family,
+                                                                             MKWorkspaceFoundationPolicy foundationPolicy) {
+        return new MKTowerWorkspaceFamilyDefinition(
+                family.baseName(),
+                family.category(),
+                family.pieceRole(),
+                family.topologySlotId(),
+                family.verticalAccessGroupId(),
+                family.supportsVerticalAccess(),
+                family.roomWidth(),
+                family.roomLength(),
+                family.roomHeight(),
+                family.horizontalExtrusionMode(),
+                family.horizontalExits(),
+                family.topVoidMargin(),
+                family.bottomVoidMargin(),
+                foundationPolicy,
                 family.paletteOverride()
         );
     }

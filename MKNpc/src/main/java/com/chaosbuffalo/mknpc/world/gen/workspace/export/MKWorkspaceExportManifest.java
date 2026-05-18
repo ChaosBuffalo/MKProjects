@@ -453,7 +453,7 @@ public record MKWorkspaceExportManifest(
             List<ExportFamilyHorizontalExit> horizontalExits,
             int topVoidMargin,
             int bottomVoidMargin,
-            MKWorkspaceFoundationPolicy foundationPolicy,
+            @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
             @Nullable MKWorkspacePaletteOverride paletteOverride
     ) {
         public static final Codec<ExportFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -473,8 +473,8 @@ public record MKWorkspaceExportManifest(
                     .forGetter(ExportFamilyDefinition::horizontalExits),
             Codec.INT.optionalFieldOf("top_void_margin", 0).forGetter(ExportFamilyDefinition::topVoidMargin),
             Codec.INT.optionalFieldOf("bottom_void_margin", 0).forGetter(ExportFamilyDefinition::bottomVoidMargin),
-            MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundation_policy", MKWorkspaceFoundationPolicy.none())
-                    .forGetter(ExportFamilyDefinition::foundationPolicy),
+            MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundation_policy")
+                    .forGetter(ExportFamilyDefinition::foundationPolicyOverrideOpt),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
                     .forGetter(ExportFamilyDefinition::paletteOverrideOpt)
         ).apply(instance, (baseName, category, pieceRole, topologySlotId, verticalAccessGroupId, supportsVerticalAccess,
@@ -484,7 +484,7 @@ public record MKWorkspaceExportManifest(
                 new ExportFamilyDefinition(baseName, category, pieceRole, topologySlotId, verticalAccessGroupId,
                         supportsVerticalAccess,
                         roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
-                        topVoidMargin, bottomVoidMargin, foundationPolicy, paletteOverride.orElse(null))));
+                        topVoidMargin, bottomVoidMargin, foundationPolicy.orElse(null), paletteOverride.orElse(null))));
 
         public static ExportFamilyDefinition from(MKTowerWorkspaceFamilyDefinition familyDefinition) {
             return new ExportFamilyDefinition(
@@ -501,9 +501,13 @@ public record MKWorkspaceExportManifest(
                     familyDefinition.horizontalExits().stream().map(ExportFamilyHorizontalExit::from).toList(),
                     familyDefinition.topVoidMargin(),
                     familyDefinition.bottomVoidMargin(),
-                    familyDefinition.foundationPolicy(),
+                    familyDefinition.foundationPolicyOverride(),
                     familyDefinition.paletteOverride()
             );
+        }
+
+        public Optional<MKWorkspaceFoundationPolicy> foundationPolicyOverrideOpt() {
+            return Optional.ofNullable(foundationPolicy);
         }
 
         public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {

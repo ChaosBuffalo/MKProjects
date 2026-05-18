@@ -28,6 +28,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
     public static final String ID = "form_family_detail";
@@ -80,12 +81,13 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         verticalGroupField.setTextChangeCallback((field, text) ->
                 editor.replaceFamilyVerticalAccessGroupId(index,
                         text.trim().isBlank() ? family.verticalAccessGroupId() : text.trim()));
-        MKButton foundationModeButton = new MKButton(Component.literal(formatFoundationMode(family.foundationPolicy().mode())),
+        MKWorkspaceFoundationPolicy inheritedFoundation = editor.resolveFamilyInheritedFoundation(family);
+        MKButton foundationModeButton = new MKButton(Component.literal(formatFamilyFoundationLabel(family, inheritedFoundation)),
                 180, 20);
         foundationModeButton.setPressedCallback((button, mouseButton) -> {
-            MKWorkspaceFoundationMode nextMode = cycleValue(List.of(MKWorkspaceFoundationMode.values()),
-                    family.foundationPolicy().mode(), isReverseClick(mouseButton));
-            editor.replaceFamilyFoundationPolicy(index, foundationPolicyForMode(nextMode, family.foundationPolicy()));
+            editor.replaceFamilyFoundationPolicyOverride(index,
+                    nextFamilyFoundationOverride(family.foundationPolicyOverrideOpt(), inheritedFoundation,
+                            isReverseClick(mouseButton)));
             screen.flagNeedSetup();
             return true;
         });
@@ -359,10 +361,12 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
 
     private void addFoundationBlockPickerRow(MKWorkspaceScreen screen, MKStackLayoutVertical content, int familyIndex,
                                              MKTowerWorkspaceFamilyDefinition family) {
-        if (family.foundationPolicy().mode() != MKWorkspaceFoundationMode.UNIFORM_STATE) {
+        Optional<MKWorkspaceFoundationPolicy> overrideOpt = family.foundationPolicyOverrideOpt();
+        if (overrideOpt.isEmpty() || overrideOpt.get().mode() != MKWorkspaceFoundationMode.UNIFORM_STATE) {
             return;
         }
-        ResourceLocation blockId = family.foundationPolicy().foundationBlockOpt()
+        MKWorkspaceFoundationPolicy foundationPolicy = overrideOpt.get();
+        ResourceLocation blockId = foundationPolicy.foundationBlockOpt()
                 .orElse(ResourceLocation.parse("minecraft:stone"));
         MKButton blockButton = new MKButton(screen.blockDisplayName(blockId), 180, 20);
         blockButton.setTooltip(Component.literal(blockId.toString()));
@@ -379,10 +383,12 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
 
     private void addFoundationMaskRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, int familyIndex,
                                        MKTowerWorkspaceFamilyDefinition family) {
-        if (family.foundationPolicy().mode() != MKWorkspaceFoundationMode.MASKED_EXTEND_BOTTOM_BLOCKS) {
+        Optional<MKWorkspaceFoundationPolicy> overrideOpt = family.foundationPolicyOverrideOpt();
+        if (overrideOpt.isEmpty() || overrideOpt.get().mode() != MKWorkspaceFoundationMode.MASKED_EXTEND_BOTTOM_BLOCKS) {
             return;
         }
-        List<ResourceLocation> maskBlocks = family.foundationPolicy().maskBlocks();
+        MKWorkspaceFoundationPolicy foundationPolicy = overrideOpt.get();
+        List<ResourceLocation> maskBlocks = foundationPolicy.maskBlocks();
         for (int maskIndex = 0; maskIndex < maskBlocks.size(); maskIndex++) {
             ResourceLocation blockId = maskBlocks.get(maskIndex);
             int capturedIndex = maskIndex;
@@ -500,6 +506,31 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
 
     private String formatFoundationMode(MKWorkspaceFoundationMode mode) {
         return formatTopologyLabel(mode.getSerializedName());
+    }
+
+    private String formatFamilyFoundationLabel(MKTowerWorkspaceFamilyDefinition family,
+                                               MKWorkspaceFoundationPolicy inheritedFoundation) {
+        return family.foundationPolicyOverrideOpt()
+                .map(policy -> formatFoundationMode(policy.mode()))
+                .orElse("Inherit (" + formatFoundationMode(inheritedFoundation.mode()) + ")");
+    }
+
+    private Optional<MKWorkspaceFoundationPolicy> nextFamilyFoundationOverride(
+            Optional<MKWorkspaceFoundationPolicy> currentOverride,
+            MKWorkspaceFoundationPolicy inheritedFoundation,
+            boolean reverse) {
+        List<MKWorkspaceFoundationMode> modes = List.of(MKWorkspaceFoundationMode.values());
+        int currentIndex = currentOverride
+                .map(policy -> modes.indexOf(policy.mode()) + 1)
+                .orElse(0);
+        int optionCount = modes.size() + 1;
+        int nextIndex = Math.floorMod(currentIndex + (reverse ? -1 : 1), optionCount);
+        if (nextIndex == 0) {
+            return Optional.empty();
+        }
+        MKWorkspaceFoundationMode nextMode = modes.get(nextIndex - 1);
+        MKWorkspaceFoundationPolicy currentPolicy = currentOverride.orElse(inheritedFoundation);
+        return Optional.of(foundationPolicyForMode(nextMode, currentPolicy));
     }
 
     private MKWorkspaceFoundationPolicy foundationPolicyForMode(MKWorkspaceFoundationMode mode,

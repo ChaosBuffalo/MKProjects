@@ -16,9 +16,9 @@ public record MKWorkspaceResolvedFamilySettings(
                 .resolveFamily(workspace, familyDefinition);
         MKWorkspaceTowerStackSettings stackSettings = workspace.towerStackSettingsForFamily(familyDefinition)
                 .orElse(null);
-        MKWorkspaceFoundationPolicy foundationPolicy = stackSettings != null &&
-                stackSettings.foundationPolicy().enabled() && !familyDefinition.foundationPolicy().enabled() ?
-                stackSettings.foundationPolicy() : familyDefinition.foundationPolicy();
+        MKWorkspaceFoundationPolicy foundationPolicy = familyDefinition.foundationPolicyOverrideOpt()
+                .orElseGet(() -> stackSettings == null ?
+                        MKWorkspaceFoundationPolicy.none() : stackSettings.foundationPolicy());
         return new MKWorkspaceResolvedFamilySettings(
                 familyDefinition,
                 stackSettings == null ? familyDefinition.roomWidth() : stackSettings.width(),

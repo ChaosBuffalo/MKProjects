@@ -33,18 +33,19 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                     .forGetter(MKTowerWorkspaceFamilyDefinition::horizontalExits),
             Codec.INT.optionalFieldOf("topVoidMargin", 0).forGetter(MKTowerWorkspaceFamilyDefinition::topVoidMargin),
             Codec.INT.optionalFieldOf("bottomVoidMargin", 0).forGetter(MKTowerWorkspaceFamilyDefinition::bottomVoidMargin),
-            MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundationPolicy", MKWorkspaceFoundationPolicy.none())
-                    .forGetter(MKTowerWorkspaceFamilyDefinition::foundationPolicy),
+            MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundationPolicy")
+                    .forGetter(MKTowerWorkspaceFamilyDefinition::foundationPolicyOverrideOpt),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("paletteOverride")
                     .forGetter(MKTowerWorkspaceFamilyDefinition::paletteOverrideOpt)
     ).apply(instance, (baseName, category, pieceRole, topologySlotId, verticalAccessGroupId, supportsVerticalAccess,
                        roomWidth, roomLength, roomHeight,
-                       horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin, foundationPolicy,
+                       horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin, foundationPolicyOverride,
                        paletteOverride) ->
             new MKTowerWorkspaceFamilyDefinition(baseName, category, pieceRole, topologySlotId, verticalAccessGroupId,
                     supportsVerticalAccess,
                     roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
-                    topVoidMargin, bottomVoidMargin, foundationPolicy, paletteOverride.orElse(null))));
+                    topVoidMargin, bottomVoidMargin, foundationPolicyOverride.orElse(null),
+                    paletteOverride.orElse(null))));
 
     private final String baseName;
     private final MKTowerWorkspaceCategory category;
@@ -59,7 +60,8 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
     private final List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits;
     private final int topVoidMargin;
     private final int bottomVoidMargin;
-    private final MKWorkspaceFoundationPolicy foundationPolicy;
+    @Nullable
+    private final MKWorkspaceFoundationPolicy foundationPolicyOverride;
     @Nullable
     private final MKWorkspacePaletteOverride paletteOverride;
 
@@ -87,7 +89,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                                             List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
                                             @Nullable MKWorkspacePaletteOverride paletteOverride) {
         this(baseName, category, pieceRole, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
-                horizontalExtrusionMode, horizontalExits, 0, 0, MKWorkspaceFoundationPolicy.none(), paletteOverride);
+                horizontalExtrusionMode, horizontalExits, 0, 0, null, paletteOverride);
     }
 
     public MKTowerWorkspaceFamilyDefinition(String baseName, MKTowerWorkspaceCategory category,
@@ -99,7 +101,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                                             @Nullable MKWorkspacePaletteOverride paletteOverride) {
         this(baseName, category, pieceRole, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
                 horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin,
-                MKWorkspaceFoundationPolicy.none(), paletteOverride);
+                null, paletteOverride);
     }
 
     public MKTowerWorkspaceFamilyDefinition(String baseName, MKTowerWorkspaceCategory category,
@@ -108,7 +110,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                                             MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
                                             List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
                                             int topVoidMargin, int bottomVoidMargin,
-                                            MKWorkspaceFoundationPolicy foundationPolicy,
+                                            @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
                                             @Nullable MKWorkspacePaletteOverride paletteOverride) {
         this(baseName, category, pieceRole, defaultTopologySlotId(pieceRole), supportsVerticalAccess,
                 roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits, topVoidMargin,
@@ -122,7 +124,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                                             MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
                                             List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
                                             int topVoidMargin, int bottomVoidMargin,
-                                            MKWorkspaceFoundationPolicy foundationPolicy,
+                                            @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
                                             @Nullable MKWorkspacePaletteOverride paletteOverride) {
         this(baseName, category, pieceRole, topologySlotId, defaultVerticalAccessGroupId(supportsVerticalAccess),
                 supportsVerticalAccess, roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
@@ -136,7 +138,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                                             MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
                                             List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
                                             int topVoidMargin, int bottomVoidMargin,
-                                            MKWorkspaceFoundationPolicy foundationPolicy,
+                                            @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
                                             @Nullable MKWorkspacePaletteOverride paletteOverride) {
         this.baseName = baseName;
         this.category = category;
@@ -154,7 +156,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                 .anyMatch(MKWorkspaceFamilyHorizontalExitDefinition::isVerticalAccess);
         this.topVoidMargin = Math.max(0, topVoidMargin);
         this.bottomVoidMargin = Math.max(0, bottomVoidMargin);
-        this.foundationPolicy = foundationPolicy == null ? MKWorkspaceFoundationPolicy.none() : foundationPolicy;
+        this.foundationPolicyOverride = foundationPolicy;
         this.paletteOverride = paletteOverride != null && !paletteOverride.isEmpty() ? paletteOverride : null;
     }
 
@@ -192,56 +194,56 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                         List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
                                 MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY, "main_opening",
                                 MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION)),
-                        0, 0, MKWorkspaceFoundationPolicy.none(), null),
+                        0, 0, null, null),
                 new MKTowerWorkspaceFamilyDefinition("floor_main", MKTowerWorkspaceCategory.MAIN,
                         MKWorkspacePieceRole.FLOOR_MAIN,
                         MKTowerWorkspaceStackSlot.MAIN_FLOOR.slotId(PRIMARY_TOWER_STACK_ID),
                         PRIMARY_TOWER_STACK_ID, true,
                         main.roomWidth(), main.roomLength(), main.fullHeight(),
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
-                        MKWorkspaceFoundationPolicy.none(), null),
+                        null, null),
                 new MKTowerWorkspaceFamilyDefinition("top_cap_approach", MKTowerWorkspaceCategory.TOP_CAP,
                         MKWorkspacePieceRole.TOP_CAP_APPROACH,
                         MKTowerWorkspaceStackSlot.TOP_CAP_APPROACH.slotId(PRIMARY_TOWER_STACK_ID),
                         PRIMARY_TOWER_STACK_ID, true,
                         top_cap.roomWidth(), top_cap.roomLength(), top_cap.fullHeight(),
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
-                        MKWorkspaceFoundationPolicy.none(), null),
+                        null, null),
                 new MKTowerWorkspaceFamilyDefinition("top_cap", MKTowerWorkspaceCategory.TOP_CAP,
                         MKWorkspacePieceRole.TOP_CAP,
                         MKTowerWorkspaceStackSlot.TOP_CAP.slotId(PRIMARY_TOWER_STACK_ID),
                         PRIMARY_TOWER_STACK_ID, true,
                         top_cap.roomWidth(), top_cap.roomLength(), top_cap.fullHeight(),
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
-                        MKWorkspaceFoundationPolicy.none(), null),
+                        null, null),
                 new MKTowerWorkspaceFamilyDefinition("basement_entry", MKTowerWorkspaceCategory.BASEMENT,
                         MKWorkspacePieceRole.BASEMENT_ENTRY,
                         MKTowerWorkspaceStackSlot.BASEMENT_ENTRY.slotId(PRIMARY_TOWER_STACK_ID),
                         PRIMARY_TOWER_STACK_ID, true,
                         basement.roomWidth(), basement.roomLength(), basement.fullHeight(),
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
-                        MKWorkspaceFoundationPolicy.none(), null),
+                        null, null),
                 new MKTowerWorkspaceFamilyDefinition("basement_main", MKTowerWorkspaceCategory.BASEMENT,
                         MKWorkspacePieceRole.BASEMENT_MAIN,
                         MKTowerWorkspaceStackSlot.BASEMENT_FLOOR.slotId(PRIMARY_TOWER_STACK_ID),
                         PRIMARY_TOWER_STACK_ID, true,
                         basement.roomWidth(), basement.roomLength(), basement.fullHeight(),
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
-                        MKWorkspaceFoundationPolicy.none(), null),
+                        null, null),
                 new MKTowerWorkspaceFamilyDefinition("basement_cap_approach", MKTowerWorkspaceCategory.BASEMENT_CAP,
                         MKWorkspacePieceRole.BASEMENT_CAP_APPROACH,
                         MKTowerWorkspaceStackSlot.BASEMENT_CAP_APPROACH.slotId(PRIMARY_TOWER_STACK_ID),
                         PRIMARY_TOWER_STACK_ID, true,
                         basementCap.roomWidth(), basementCap.roomLength(), basementCap.fullHeight(),
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
-                        MKWorkspaceFoundationPolicy.none(), null),
+                        null, null),
                 new MKTowerWorkspaceFamilyDefinition("basement_cap", MKTowerWorkspaceCategory.BASEMENT_CAP,
                         MKWorkspacePieceRole.BASEMENT_CAP,
                         MKTowerWorkspaceStackSlot.BASEMENT_CAP.slotId(PRIMARY_TOWER_STACK_ID),
                         PRIMARY_TOWER_STACK_ID, true,
                         basementCap.roomWidth(), basementCap.roomLength(), basementCap.fullHeight(),
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
-                        MKWorkspaceFoundationPolicy.none(), null)
+                        null, null)
         );
     }
 
@@ -259,7 +261,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                 MKWorkspacePieceRole.ENTRY, "keep.gate.main", "keep.gate", false,
                 7, 5, keepHeight,
                 MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
-                MKWorkspaceFoundationPolicy.none(), null));
+                null, null));
         return List.copyOf(families);
     }
 
@@ -283,7 +285,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                         List.of(),
                         0,
                         0,
-                        MKWorkspaceFoundationPolicy.none(),
+                        null,
                         null))
                 .toList();
     }
@@ -375,7 +377,9 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                         MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT);
             }
         }
-        errors.addAll(foundationPolicy.validate("family " + baseName));
+        if (foundationPolicyOverride != null) {
+            errors.addAll(foundationPolicyOverride.validate("family " + baseName));
+        }
         long mainEntryCount = horizontalExits.stream()
                 .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY)
                 .count();
@@ -550,7 +554,16 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
     }
 
     public MKWorkspaceFoundationPolicy foundationPolicy() {
-        return foundationPolicy;
+        return foundationPolicyOverride == null ? MKWorkspaceFoundationPolicy.none() : foundationPolicyOverride;
+    }
+
+    public Optional<MKWorkspaceFoundationPolicy> foundationPolicyOverrideOpt() {
+        return Optional.ofNullable(foundationPolicyOverride);
+    }
+
+    @Nullable
+    public MKWorkspaceFoundationPolicy foundationPolicyOverride() {
+        return foundationPolicyOverride;
     }
 
     @Override
@@ -652,7 +665,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                 horizontalExits,
                 topVoidMargin,
                 bottomVoidMargin,
-                foundationPolicy,
+                foundationPolicyOverride,
                 paletteOverride
         );
     }
