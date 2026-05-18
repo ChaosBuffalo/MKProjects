@@ -418,6 +418,36 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void exportCategoryProfilesAreGeneratedFromTopologyStackSettings() {
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
+                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("tower.primary", 2, 1, 9,
+                        15, 17, 3, MKVerticalAccessPlacement.CENTER,
+                        MKWorkspaceStairAuthoringConfig.defaultConfig(), true, false))
+                .withPathSettings(new MKWorkspaceTopologyPathSettings(
+                        MKTowerWorkspaceCategory.MAIN.getSerializedName(), 2, 5, 4));
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(List.of(new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false)), List.of()),
+                topologyProfile,
+                List.of(),
+                List.of()
+        );
+
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.snapshotFromWorkspace(workspace, 4, "test");
+        MKWorkspaceExportManifest.ExportCategoryProfile mainProfile = manifest.settings().categoryProfiles().stream()
+                .filter(profile -> profile.category() == MKTowerWorkspaceCategory.MAIN)
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(15, mainProfile.roomWidth());
+        assertEquals(17, mainProfile.roomLength());
+        assertEquals(9, mainProfile.fullHeight());
+        assertEquals(2, mainProfile.minMainPathPieces());
+        assertEquals(5, mainProfile.maxMainPathPieces());
+        assertEquals(4, mainProfile.maxBranchPiecesBeforeCap());
+        assertEquals(15, workspace.categoryProfile(MKTowerWorkspaceCategory.MAIN).orElseThrow().roomWidth());
+    }
+
+    @Test
     void walledKeepPlannerCreatesExplicitRoomAndLinearRunPieces() {
         MKWorkspaceFoundationPolicy wallFoundation = MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(List.of(
                 ResourceLocation.parse("minecraft:stone_bricks"),

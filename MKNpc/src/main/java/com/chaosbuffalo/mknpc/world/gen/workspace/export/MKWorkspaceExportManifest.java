@@ -126,7 +126,7 @@ public record MKWorkspaceExportManifest(
                         ExportVerticalAccessSpec.from(workspace.verticalAccessSpec()),
                         ExportFloorSettings.from(workspace.floorSettings()),
                         workspace.topologyProfile(),
-                        workspace.categoryProfiles().stream()
+                        workspace.compatibilityCategoryProfiles().stream()
                                 .map(profile -> ExportCategoryProfile.from(workspace, profile))
                                 .toList(),
                         workspace.familyDefinitions().stream().map(ExportFamilyDefinition::from).toList(),

@@ -143,7 +143,8 @@ public class MKStructureWorkspace {
                                                            SerializedWorkspaceContent content) {
         MKWorkspaceVerticalAccessSpec resolvedVerticalAccessSpec = core.verticalAccessSpec();
         List<MKTowerWorkspaceCategoryProfile> resolvedCategoryProfiles = content.categoryProfiles().isEmpty() ?
-                MKTowerWorkspaceCategoryProfile.createDefaults(core.dimensions()) : List.copyOf(content.categoryProfiles());
+                MKWorkspaceTopologyCompatibility.categoryProfiles(core.topologyProfile(), core.dimensions(), List.of()) :
+                List.copyOf(content.categoryProfiles());
         MKTowerWorkspaceFloorSettings resolvedFloorSettings = content.floorSettings();
         List<MKTowerWorkspaceFamilyDefinition> resolvedFamilyDefinitions =
                 MKTowerWorkspaceFamilyDefinition.normalize(content.familyDefinitions(), resolvedCategoryProfiles);
@@ -456,24 +457,10 @@ public class MKStructureWorkspace {
                 settings.topCapApproachEnabled(),
                 settings.basementCapApproachEnabled()
         );
-        return stackFloorSettings.validate(stackBudgetProfiles(settings)).stream()
+        return stackFloorSettings.validate(MKWorkspaceTopologyCompatibility.categoryProfilesForStack(
+                        topologyProfile, settings, categoryProfiles)).stream()
                 .map(error -> "tower stack " + settings.stackId() + " " + error)
                 .toList();
-    }
-
-    private List<MKTowerWorkspaceCategoryProfile> stackBudgetProfiles(MKWorkspaceTowerStackSettings settings) {
-        return List.of(
-                stackBudgetProfile(MKTowerWorkspaceCategory.ENTRY, settings),
-                stackBudgetProfile(MKTowerWorkspaceCategory.MAIN, settings),
-                stackBudgetProfile(MKTowerWorkspaceCategory.BASEMENT, settings),
-                stackBudgetProfile(MKTowerWorkspaceCategory.TOP_CAP, settings),
-                stackBudgetProfile(MKTowerWorkspaceCategory.BASEMENT_CAP, settings)
-        );
-    }
-
-    private MKTowerWorkspaceCategoryProfile stackBudgetProfile(MKTowerWorkspaceCategory category,
-                                                              MKWorkspaceTowerStackSettings settings) {
-        return new MKTowerWorkspaceCategoryProfile(category, settings.width(), settings.length(), settings.height());
     }
 
     private Optional<Integer> maxRoomHeightForFamily(MKTowerWorkspaceFamilyDefinition familyDefinition) {
@@ -607,8 +594,14 @@ public class MKStructureWorkspace {
         return categoryProfiles;
     }
 
+    public List<MKTowerWorkspaceCategoryProfile> compatibilityCategoryProfiles() {
+        return MKWorkspaceTopologyCompatibility.categoryProfilesForWorkspace(this);
+    }
+
     public Optional<MKTowerWorkspaceCategoryProfile> categoryProfile(MKTowerWorkspaceCategory category) {
-        return categoryProfiles.stream().filter(profile -> profile.category() == category).findFirst();
+        List<MKTowerWorkspaceCategoryProfile> profiles = topologyProfile.towerStackSettings().isEmpty() ?
+                categoryProfiles : compatibilityCategoryProfiles();
+        return profiles.stream().filter(profile -> profile.category() == category).findFirst();
     }
 
     public List<MKTowerWorkspaceFamilyDefinition> familyDefinitions() {

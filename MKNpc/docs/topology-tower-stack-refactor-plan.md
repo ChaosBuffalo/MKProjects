@@ -299,6 +299,7 @@ Family-level validation should focus on override legality:
 - Draft-level legacy dimensions and floor-count snapping now derive their budget profiles from the active topology stack settings instead of copied category-profile room geometry.
 - Workspace export manifests now include the topology profile, and import restores walled keep/shared-corner/stack/path settings instead of recreating every imported workspace as a standalone tower.
 - Editor-created and copied tower-stack families now derive their default category/role metadata from `MKTowerWorkspaceStackSlot` before falling back to legacy string/category heuristics.
+- A topology compatibility layer now generates legacy category-profile views from active topology stack/path settings for draft build, validation, palette fallback, and export paths. Stored category profiles remain only as a legacy fallback and palette-override source.
 - The remaining work is to continue removing category-profile-only model paths, collapse legacy role/category storage into topology slot metadata, and broaden resolver use in import/export/scaffold code.
 
 ### Phase 1: Model Reusable Tower Stack Slots
