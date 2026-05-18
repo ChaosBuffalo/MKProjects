@@ -11,20 +11,26 @@ public final class MKWorkspacePaletteResolver {
     }
 
     public MKWorkspaceMaterialPalette resolveFamily(MKStructureWorkspace workspace, MKWorkspacePaletteFamily family) {
+        if (family instanceof MKTowerWorkspaceFamilyDefinition towerFamily) {
+            Optional<MKWorkspaceTowerStackSettings> stackSettings = workspace.towerStackSettingsForFamily(towerFamily);
+            MKWorkspaceMaterialPalette stackParent = stackSettings.isPresent() ? workspace.palette() :
+                    family.paletteCategoryOpt()
+                            .map(category -> resolveCategory(workspace, category))
+                            .orElse(workspace.palette());
+            MKWorkspaceMaterialPalette parent = stackSettings
+                    .flatMap(MKWorkspaceTowerStackSettings::paletteOverrideOpt)
+                    .map(override -> override.resolve(stackParent))
+                    .orElse(stackParent);
+            return family.paletteOverrideOpt()
+                    .map(override -> override.resolve(parent))
+                    .orElse(parent);
+        }
         MKWorkspaceMaterialPalette parent = family.paletteCategoryOpt()
                 .map(category -> resolveCategory(workspace, category))
                 .orElse(workspace.palette());
-        if (family instanceof MKTowerWorkspaceFamilyDefinition towerFamily) {
-            MKWorkspaceMaterialPalette categoryParent = parent;
-            parent = workspace.towerStackSettingsForFamily(towerFamily)
-                    .flatMap(MKWorkspaceTowerStackSettings::paletteOverrideOpt)
-                    .map(override -> override.resolve(categoryParent))
-                    .orElse(categoryParent);
-        }
-        MKWorkspaceMaterialPalette effectiveParent = parent;
         return family.paletteOverrideOpt()
-                .map(override -> override.resolve(effectiveParent))
-                .orElse(effectiveParent);
+                .map(override -> override.resolve(parent))
+                .orElse(parent);
     }
 
     public Optional<MKWorkspaceMaterialPalette> resolvePiece(MKStructureWorkspace workspace,

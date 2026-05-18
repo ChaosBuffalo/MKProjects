@@ -331,7 +331,8 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
     public List<String> validate(List<MKTowerWorkspaceFamilyDefinition> allFamilies,
                                  MKTowerWorkspaceCategoryProfile categoryProfile,
                                  MKWorkspaceVerticalAccessSpec verticalAccessSpec) {
-        return validate(allFamilies, categoryProfile.fullHeight(), verticalAccessSpec, roomWidth, roomLength, roomHeight);
+        return validate(allFamilies, categoryProfile.fullHeight(), verticalAccessSpec, roomWidth, roomLength, roomHeight,
+                MKWorkspaceTopologySlotMetadata.fromFamily(this));
     }
 
     public List<String> validate(List<MKTowerWorkspaceFamilyDefinition> allFamilies,
@@ -339,7 +340,8 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                                  MKWorkspaceVerticalAccessSpec verticalAccessSpec,
                                  MKWorkspaceResolvedFamilySettings resolvedFamily) {
         return validate(allFamilies, categoryProfile.fullHeight(), verticalAccessSpec,
-                resolvedFamily.roomWidth(), resolvedFamily.roomLength(), resolvedFamily.roomHeight());
+                resolvedFamily.roomWidth(), resolvedFamily.roomLength(), resolvedFamily.roomHeight(),
+                resolvedFamily.slotMetadata());
     }
 
     public List<String> validate(List<MKTowerWorkspaceFamilyDefinition> allFamilies,
@@ -347,7 +349,8 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                                  MKWorkspaceVerticalAccessSpec verticalAccessSpec,
                                  MKWorkspaceResolvedFamilySettings resolvedFamily) {
         return validate(allFamilies, maxRoomHeight, verticalAccessSpec,
-                resolvedFamily.roomWidth(), resolvedFamily.roomLength(), resolvedFamily.roomHeight());
+                resolvedFamily.roomWidth(), resolvedFamily.roomLength(), resolvedFamily.roomHeight(),
+                resolvedFamily.slotMetadata());
     }
 
     private List<String> validate(List<MKTowerWorkspaceFamilyDefinition> allFamilies,
@@ -355,7 +358,8 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                                   MKWorkspaceVerticalAccessSpec verticalAccessSpec,
                                   int resolvedRoomWidth,
                                   int resolvedRoomLength,
-                                  int resolvedRoomHeight) {
+                                  int resolvedRoomHeight,
+                                  MKWorkspaceTopologySlotMetadata slotMetadata) {
         List<String> errors = new ArrayList<>();
         if (baseName.isBlank()) {
             errors.add("tower workspace family base name cannot be blank");
@@ -364,7 +368,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         if (duplicates > 1) {
             errors.add("tower workspace family base name must be unique: " + baseName);
         }
-        if (pieceRole == MKWorkspacePieceRole.HALLWAY) {
+        if (slotMetadata.pieceRole() == MKWorkspacePieceRole.HALLWAY) {
             errors.add("tower workspace room families cannot use hallway role");
         }
         if (topologySlotId.isBlank()) {

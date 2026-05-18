@@ -39,12 +39,17 @@ class MKWorkspacePaletteResolverTest {
                 "floor_main",
                 MKTowerWorkspaceCategory.MAIN,
                 MKWorkspacePieceRole.FLOOR_MAIN,
+                "legacy.main",
+                "",
                 true,
                 9,
                 9,
                 5,
                 MKWorkspaceHorizontalExtrusionMode.FULL_BODY,
                 List.of(),
+                0,
+                0,
+                null,
                 familyOverride
         );
         MKStructureWorkspace workspace = workspace(base, List.of(mainProfile), List.of(family), List.of());
@@ -57,6 +62,55 @@ class MKWorkspacePaletteResolverTest {
         assertEquals(id("deepslate_brick_stairs"), resolved.stairBlock());
         assertEquals(base.slabBlock(), resolved.slabBlock());
         assertEquals(base.ladderBlock(), resolved.ladderBlock());
+    }
+
+    @Test
+    void stackBackedFamilyPaletteUsesStackDefaultsInsteadOfCategoryProfile() {
+        MKWorkspaceMaterialPalette base = palette("smooth_stone", "stone_bricks", "smooth_stone",
+                "stone_brick_stairs", "stone_brick_slab", "ladder");
+        MKWorkspacePaletteOverride categoryOverride = new MKWorkspacePaletteOverride(
+                null,
+                id("blackstone"),
+                null,
+                null,
+                null,
+                null
+        );
+        MKWorkspacePaletteOverride stackOverride = new MKWorkspacePaletteOverride(
+                null,
+                id("deepslate_bricks"),
+                null,
+                null,
+                null,
+                null
+        );
+        MKTowerWorkspaceCategoryProfile mainProfile = new MKTowerWorkspaceCategoryProfile(
+                MKTowerWorkspaceCategory.MAIN, 9, 9, 5, 1, 2, 10, categoryOverride);
+        MKTowerWorkspaceFamilyDefinition family = new MKTowerWorkspaceFamilyDefinition(
+                "floor_main",
+                MKTowerWorkspaceCategory.MAIN,
+                MKWorkspacePieceRole.FLOOR_MAIN,
+                MKTowerWorkspaceStackSlot.MAIN_FLOOR.slotId("tower.primary"),
+                true,
+                0,
+                0,
+                0,
+                MKWorkspaceHorizontalExtrusionMode.FULL_BODY,
+                List.of(),
+                0,
+                0,
+                null,
+                null
+        );
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
+                .withTowerStackSettings(MKWorkspaceTopologyProfile.tower()
+                        .towerStackSettingsOrDefault("tower.primary")
+                        .withPaletteOverride(java.util.Optional.of(stackOverride)));
+        MKStructureWorkspace workspace = workspace(topologyProfile, base, List.of(mainProfile), List.of(family), List.of());
+
+        MKWorkspaceMaterialPalette resolved = new MKWorkspacePaletteResolver().resolveFamily(workspace, family);
+
+        assertEquals(id("deepslate_bricks"), resolved.wallBlock());
     }
 
     @Test
@@ -178,6 +232,15 @@ class MKWorkspacePaletteResolverTest {
                                                   List<MKTowerWorkspaceCategoryProfile> categoryProfiles,
                                                   List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
                                                   List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies) {
+        return workspace(MKWorkspaceTopologyProfile.tower(), palette, categoryProfiles, familyDefinitions,
+                linearRunFamilies);
+    }
+
+    private static MKStructureWorkspace workspace(MKWorkspaceTopologyProfile topologyProfile,
+                                                  MKWorkspaceMaterialPalette palette,
+                                                  List<MKTowerWorkspaceCategoryProfile> categoryProfiles,
+                                                  List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
+                                                  List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies) {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceStairAuthoringConfig stairConfig = MKWorkspaceStairAuthoringConfig.defaultConfig();
         return new MKStructureWorkspace(
@@ -186,6 +249,7 @@ class MKWorkspacePaletteResolverTest {
                 "mknpc",
                 "palette_test",
                 MKStructureFamilyType.TOWER,
+                topologyProfile,
                 dimensions,
                 palette,
                 stairConfig,

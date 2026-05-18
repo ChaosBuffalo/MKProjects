@@ -22,6 +22,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyCompatibility;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
@@ -209,9 +210,10 @@ public class MKStructureWorkspaceImportService {
                         profile.paletteOverride()
                 ))
                 .toList();
-        if (categoryProfiles.isEmpty()) {
-            categoryProfiles = MKTowerWorkspaceCategoryProfile.createDefaults(workspaceDimensions);
-        }
+        List<MKTowerWorkspaceCategoryProfile> categoryProfilesForNormalization = categoryProfiles.isEmpty() ?
+                MKWorkspaceTopologyCompatibility.categoryProfiles(
+                        settings.topologyProfile(), workspaceDimensions, List.of()) :
+                categoryProfiles;
         MKWorkspaceExportManifest.ExportFloorSettings floorSettingsExport = settings.floorSettings();
         MKTowerWorkspaceFloorSettings floorSettings = new MKTowerWorkspaceFloorSettings(
                 floorSettingsExport.mainFloors(),
@@ -247,7 +249,7 @@ public class MKStructureWorkspaceImportService {
                         family.paletteOverride()
                 ))
                 .toList();
-        familyDefinitions = MKTowerWorkspaceFamilyDefinition.normalize(familyDefinitions, categoryProfiles);
+        familyDefinitions = MKTowerWorkspaceFamilyDefinition.normalize(familyDefinitions, categoryProfilesForNormalization);
         List<MKHorizontalOpeningProfile> openingProfiles = settings.openingProfiles().stream()
                 .map(profile -> new MKHorizontalOpeningProfile(
                         profile.profileId(),

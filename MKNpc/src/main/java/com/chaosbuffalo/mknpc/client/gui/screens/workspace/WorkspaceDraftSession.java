@@ -28,6 +28,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyCompatibility;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
@@ -350,22 +351,8 @@ public class WorkspaceDraftSession {
             walledKeepCenterHeight(requestedHeight);
             return;
         }
-        draft().categoryProfiles = draft().categoryProfiles.stream()
-                .map(profile -> new MKTowerWorkspaceCategoryProfile(
-                        profile.category(),
-                        profile.roomWidth(),
-                        profile.roomLength(),
-                        requestedHeight,
-                        profile.minMainPathPieces(),
-                        profile.maxMainPathPieces(),
-                        profile.maxBranchPiecesBeforeCap(),
-                        profile.paletteOverride()))
-                .toList();
-        draft().familyDefinitions = draft().familyDefinitions.stream()
-                .map(family -> family.topologySlotId().startsWith("keep.") ?
-                        copyFamilyWithGeometry(family, family.roomWidth(), family.roomLength(), requestedHeight) :
-                        family)
-                .toList();
+        replaceTowerStackSettings(towerStackSettings("tower.primary").withHeight(requestedHeight));
+        applyTowerStackSettingsToFamilies();
         snapDraftVerticalAccess();
     }
 
@@ -1318,7 +1305,7 @@ public class WorkspaceDraftSession {
                 source.namespace(),
                 source.structureName(),
                 source.familyType(),
-                source.topologyProfile(),
+                withMaterialStackSettings(source.topologyProfile(), materialSource.topologyProfile()),
                 source.dimensions(),
                 materialSource.palette(),
                 alignStairMaterials(source.stairConfig(), materialSource.palette()),
@@ -1680,11 +1667,11 @@ public class WorkspaceDraftSession {
     private MKTowerWorkspaceCategoryProfile categoryProfileForFamilyNormalization(MKTowerWorkspaceFamilyDefinition family,
                                                                                   Optional<String> towerStackId) {
         if (towerStackId.isEmpty()) {
-            return getCategoryProfile(family.category());
+            return getCategoryProfile(MKWorkspaceTopologySlotMetadata.fromFamily(family).category());
         }
         MKWorkspaceTowerStackSettings settings = towerStackSettings(towerStackId.get());
         return MKWorkspaceTopologyCompatibility.categoryProfileForStack(draft().topologyProfile, settings,
-                family.category(), draft().categoryProfiles);
+                MKWorkspaceTopologySlotMetadata.fromFamily(family).category(), draft().categoryProfiles);
     }
 
     private MKWorkspaceVerticalAccessSpec verticalAccessSpecForFamilyNormalization(Optional<String> towerStackId) {
@@ -2194,6 +2181,25 @@ public class WorkspaceDraftSession {
             }
             index++;
         }
+    }
+
+    private MKWorkspaceTopologyProfile withMaterialStackSettings(MKWorkspaceTopologyProfile source,
+                                                                 MKWorkspaceTopologyProfile materialSource) {
+        List<MKWorkspaceTowerStackSettings> stackSettings = source.towerStackSettings().stream()
+                .map(settings -> materialSource.towerStackSettings(settings.stackId())
+                        .map(requested -> settings.withPaletteOverride(requested.paletteOverrideOpt()))
+                        .orElse(settings))
+                .toList();
+        return new MKWorkspaceTopologyProfile(
+                source.profileType(),
+                source.uniqueCornerTowers(),
+                source.uniqueNorthWestCornerTower(),
+                source.uniqueNorthEastCornerTower(),
+                source.uniqueSouthEastCornerTower(),
+                source.uniqueSouthWestCornerTower(),
+                stackSettings,
+                source.pathSettings()
+        );
     }
 
     public MKTowerWorkspaceCategoryProfile copyCategoryProfile(MKTowerWorkspaceCategoryProfile profile,

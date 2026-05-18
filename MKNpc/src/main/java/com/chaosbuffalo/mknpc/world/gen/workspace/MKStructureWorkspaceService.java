@@ -5,6 +5,8 @@ import com.chaosbuffalo.mknpc.network.packets.OpenWorkspaceScreenPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
@@ -591,7 +593,7 @@ public class MKStructureWorkspaceService {
                 source.namespace(),
                 source.structureName(),
                 source.familyType(),
-                source.topologyProfile(),
+                withMaterialStackSettings(source.topologyProfile(), materialSource.topologyProfile()),
                 source.dimensions(),
                 materialSource.palette(),
                 alignStairMaterials(source.stairConfig(), materialSource.palette()),
@@ -661,6 +663,25 @@ public class MKStructureWorkspaceService {
                 source.createdAt(),
                 source.updatedAt(),
                 source.pieces()
+        );
+    }
+
+    private MKWorkspaceTopologyProfile withMaterialStackSettings(MKWorkspaceTopologyProfile source,
+                                                                 MKWorkspaceTopologyProfile materialSource) {
+        List<MKWorkspaceTowerStackSettings> stackSettings = source.towerStackSettings().stream()
+                .map(settings -> materialSource.towerStackSettings(settings.stackId())
+                        .map(requested -> settings.withPaletteOverride(requested.paletteOverrideOpt()))
+                        .orElse(settings))
+                .toList();
+        return new MKWorkspaceTopologyProfile(
+                source.profileType(),
+                source.uniqueCornerTowers(),
+                source.uniqueNorthWestCornerTower(),
+                source.uniqueNorthEastCornerTower(),
+                source.uniqueSouthEastCornerTower(),
+                source.uniqueSouthWestCornerTower(),
+                stackSettings,
+                source.pathSettings()
         );
     }
 

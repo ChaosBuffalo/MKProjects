@@ -303,6 +303,9 @@ Family-level validation should focus on override legality:
 - `MKWorkspaceResolvedFamilySettings` now carries topology slot metadata and the effective vertical access spec, giving planners a single place to read resolved family dimensions, foundation, palette, role/category classification, and stack-local shaft settings.
 - Tower stack and walled keep room planning now use resolved topology slot metadata for planned piece roles, runtime categories, and jigsaw role hints instead of trusting the legacy family `category`/`pieceRole` fields when a topology slot can classify the piece.
 - Workspace template grouping and the family editor now present room families by topology slot first, with legacy category language reduced to compatibility-only or fallback screens.
+- Stack-backed family palette resolution now inherits directly from topology stack palette defaults and family overrides instead of routing through category-profile palette overrides. Legacy non-stack families can still use category-profile palettes while compatibility remains.
+- Import/deserialization now uses generated topology compatibility profiles only for family normalization fallback, instead of materializing default category profiles as the stored source when manifests/tags omit them.
+- Material-copy flows now preserve topology stack palette overrides alongside workspace, family, and linear-run palette settings.
 - The remaining work is to continue removing category-profile-only model paths, collapse the stored legacy role/category fields into topology slot metadata, and broaden resolver use in import/export/scaffold code.
 
 ### Phase 1: Model Reusable Tower Stack Slots
