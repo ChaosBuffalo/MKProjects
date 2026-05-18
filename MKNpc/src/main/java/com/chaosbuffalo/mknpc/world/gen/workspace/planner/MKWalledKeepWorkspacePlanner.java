@@ -18,6 +18,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAcces
 import net.minecraft.core.Direction;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,13 @@ import java.util.Set;
 
 public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner {
     private static final String EMPTY_POOL = "minecraft:empty";
+    private static final String SLOT_POOL_PREFIX = "keep_slots/";
+    private static final List<String> CONCRETE_CORNER_SLOTS = List.of(
+            "keep.corner.north_west",
+            "keep.corner.north_east",
+            "keep.corner.south_east",
+            "keep.corner.south_west"
+    );
     private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
 
     private record ResolvedOpeningProfile(String profileId, int openingWidth, int openingHeight) {
@@ -107,19 +115,38 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     @Override
     public List<MKPlannedPiece> createCanonicalPieces(MKStructureWorkspace workspace) {
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
+        Set<String> availableSlots = collectAvailableSlots(workspace);
         workspace.familyDefinitions().stream()
                 .filter(family -> family.topologySlotId().startsWith("keep."))
-                .map(family -> createRoomPiece(workspace, family))
+                .map(family -> createRoomPiece(workspace, family, availableSlots))
                 .forEach(pieces::add);
         workspace.linearRunFamilies().stream()
                 .filter(linearRun -> linearRun.topologySlotId().startsWith("keep."))
-                .flatMap(linearRun -> createLinearRunPieces(workspace, linearRun).stream())
+                .flatMap(linearRun -> createLinearRunPieces(workspace, linearRun, availableSlots).stream())
                 .forEach(pieces::add);
         return List.copyOf(pieces);
     }
 
-    private MKPlannedPiece createRoomPiece(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family) {
+    private Set<String> collectAvailableSlots(MKStructureWorkspace workspace) {
+        LinkedHashSet<String> slots = new LinkedHashSet<>();
+        workspace.familyDefinitions().stream()
+                .map(MKTowerWorkspaceFamilyDefinition::topologySlotId)
+                .filter(slot -> slot.startsWith("keep."))
+                .forEach(slots::add);
+        workspace.linearRunFamilies().stream()
+                .map(MKWorkspaceLinearRunFamilyDefinition::topologySlotId)
+                .filter(slot -> slot.startsWith("keep."))
+                .forEach(slots::add);
+        if (slots.contains("keep.corner.shared")) {
+            slots.addAll(CONCRETE_CORNER_SLOTS);
+        }
+        return Set.copyOf(slots);
+    }
+
+    private MKPlannedPiece createRoomPiece(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family,
+                                           Set<String> availableSlots) {
         int shaftSize = workspace.verticalAccessSpec().shaftSize();
+        ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
         if (family.supportsVerticalAccess()) {
             if (family.hasVerticalAccess(Direction.UP)) {
@@ -133,6 +160,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                         verticalPool(family.verticalAccessGroupId(), Direction.UP)));
             }
         }
+        connectors.addAll(roomLayoutConnectors(family.topologySlotId(), availableSlots, opening));
         return new MKPlannedPiece(
                 family.pieceRole(),
                 family.baseName(),
@@ -145,7 +173,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     }
 
     private List<MKPlannedPiece> createLinearRunPieces(MKStructureWorkspace workspace,
-                                                       MKWorkspaceLinearRunFamilyDefinition linearRun) {
+                                                       MKWorkspaceLinearRunFamilyDefinition linearRun,
+                                                       Set<String> availableSlots) {
         if (!linearRun.supportedShapes().contains(MKWorkspaceLinearRunPieceShape.STRAIGHT)) {
             return List.of();
         }
@@ -159,16 +188,140 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 directions.eastWest() ? linearRun.length() : linearRun.interiorWidth(),
                 directions.eastWest() ? linearRun.interiorWidth() : linearRun.length(),
                 linearRun.interiorHeight() + Math.abs(linearRun.slopeDelta()),
-                List.of(
-                        new MKPlannedConnector(MKConnectorRole.BRANCH, directions.negative(),
-                                opening.openingWidth(), opening.openingHeight(), 0, 0,
-                                linearRunPool(linearRun.topologySlotId()), linearRunPool(linearRun.topologySlotId())),
-                        new MKPlannedConnector(MKConnectorRole.BRANCH, directions.positive(),
-                                opening.openingWidth(), opening.openingHeight(), 0, Math.max(0, linearRun.slopeDelta()),
-                                linearRunPool(linearRun.topologySlotId()), linearRunPool(linearRun.topologySlotId()))
-                ),
+                linearRunLayoutConnectors(linearRun, directions, availableSlots, opening),
                 buildLinearRunTags(workspace, linearRun)
         ));
+    }
+
+    private List<MKPlannedConnector> roomLayoutConnectors(String topologySlotId, Set<String> availableSlots,
+                                                          ResolvedOpeningProfile opening) {
+        ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
+        switch (topologySlotId) {
+            case "keep.center.entry" -> {
+                if (availableSlots.contains("keep.walkway.south")) {
+                    connectors.add(new MKPlannedConnector(MKConnectorRole.MAIN_BACK, Direction.SOUTH,
+                            opening.openingWidth(), opening.openingHeight(), slotPool("keep.walkway.south")));
+                }
+            }
+            case "keep.gate.main" -> {
+                connectors.add(new MKPlannedConnector(MKConnectorRole.MAIN_FORWARD, Direction.NORTH,
+                        opening.openingWidth(), opening.openingHeight(), EMPTY_POOL, slotPool("keep.gate.main")));
+                addBranchTarget(connectors, Direction.WEST, "keep.wall.south", availableSlots, opening);
+                addBranchTarget(connectors, Direction.EAST, "keep.wall.south", availableSlots, opening);
+            }
+            case "keep.corner.shared" -> addSharedCornerConnectors(connectors, availableSlots, opening);
+            case "keep.corner.north_west", "keep.corner.north_east", "keep.corner.south_east",
+                 "keep.corner.south_west" -> addConcreteCornerConnectors(connectors, topologySlotId, availableSlots,
+                    opening);
+            default -> {
+            }
+        }
+        return List.copyOf(connectors);
+    }
+
+    private List<MKPlannedConnector> linearRunLayoutConnectors(MKWorkspaceLinearRunFamilyDefinition linearRun,
+                                                               DirectionPair directions,
+                                                               Set<String> availableSlots,
+                                                               ResolvedOpeningProfile opening) {
+        String slotId = linearRun.topologySlotId();
+        int negativeOffset = Math.max(0, -linearRun.slopeDelta());
+        int positiveOffset = Math.max(0, linearRun.slopeDelta());
+        return switch (slotId) {
+            case "keep.walkway.south" -> List.of(
+                    new MKPlannedConnector(MKConnectorRole.MAIN_FORWARD, Direction.NORTH,
+                            opening.openingWidth(), opening.openingHeight(), 0, negativeOffset,
+                            EMPTY_POOL, slotPool(slotId)),
+                    new MKPlannedConnector(MKConnectorRole.MAIN_BACK, Direction.SOUTH,
+                            opening.openingWidth(), opening.openingHeight(), 0, positiveOffset,
+                            poolOrEmpty("keep.gate.main", availableSlots), EMPTY_POOL)
+            );
+            case "keep.wall.north" -> wallConnectors(slotId, directions, "keep.corner.north_west",
+                    "keep.corner.north_east", availableSlots, opening, negativeOffset, positiveOffset);
+            case "keep.wall.east" -> wallConnectors(slotId, directions, "keep.corner.north_east",
+                    "keep.corner.south_east", availableSlots, opening, negativeOffset, positiveOffset);
+            case "keep.wall.south" -> wallConnectors(slotId, directions, "keep.corner.south_west",
+                    "keep.corner.south_east", availableSlots, opening, negativeOffset, positiveOffset);
+            case "keep.wall.west" -> wallConnectors(slotId, directions, "keep.corner.north_west",
+                    "keep.corner.south_west", availableSlots, opening, negativeOffset, positiveOffset);
+            default -> List.of(
+                    new MKPlannedConnector(MKConnectorRole.BRANCH, directions.negative(),
+                            opening.openingWidth(), opening.openingHeight(), 0, negativeOffset,
+                            slotPool(slotId), slotPool(slotId)),
+                    new MKPlannedConnector(MKConnectorRole.BRANCH, directions.positive(),
+                            opening.openingWidth(), opening.openingHeight(), 0, positiveOffset,
+                            slotPool(slotId), slotPool(slotId))
+            );
+        };
+    }
+
+    private List<MKPlannedConnector> wallConnectors(String wallSlotId, DirectionPair directions,
+                                                   String negativeCornerSlotId, String positiveCornerSlotId,
+                                                   Set<String> availableSlots, ResolvedOpeningProfile opening,
+                                                   int negativeOffset, int positiveOffset) {
+        return List.of(
+                new MKPlannedConnector(MKConnectorRole.BRANCH, directions.negative(),
+                        opening.openingWidth(), opening.openingHeight(), 0, negativeOffset,
+                        poolOrEmpty(negativeCornerSlotId, availableSlots), slotPool(wallSlotId)),
+                new MKPlannedConnector(MKConnectorRole.BRANCH, directions.positive(),
+                        opening.openingWidth(), opening.openingHeight(), 0, positiveOffset,
+                        poolOrEmpty(positiveCornerSlotId, availableSlots), slotPool(wallSlotId))
+        );
+    }
+
+    private void addSharedCornerConnectors(List<MKPlannedConnector> connectors, Set<String> availableSlots,
+                                           ResolvedOpeningProfile opening) {
+        addCornerEntryConnector(connectors, "keep.corner.north_west", Direction.EAST, "keep.wall.north",
+                availableSlots, opening);
+        addCornerEntryConnector(connectors, "keep.corner.north_east", Direction.WEST, "keep.wall.north",
+                availableSlots, opening);
+        addCornerEntryConnector(connectors, "keep.corner.south_east", Direction.WEST, "keep.wall.south",
+                availableSlots, opening);
+        addCornerEntryConnector(connectors, "keep.corner.south_west", Direction.EAST, "keep.wall.south",
+                availableSlots, opening);
+    }
+
+    private void addConcreteCornerConnectors(List<MKPlannedConnector> connectors, String cornerSlotId,
+                                             Set<String> availableSlots, ResolvedOpeningProfile opening) {
+        switch (cornerSlotId) {
+            case "keep.corner.north_west" -> {
+                addCornerEntryConnector(connectors, cornerSlotId, Direction.EAST, "keep.wall.north",
+                        availableSlots, opening);
+                addBranchTarget(connectors, Direction.SOUTH, "keep.wall.west", availableSlots, opening);
+            }
+            case "keep.corner.north_east" -> {
+                addCornerEntryConnector(connectors, cornerSlotId, Direction.WEST, "keep.wall.north",
+                        availableSlots, opening);
+                addBranchTarget(connectors, Direction.SOUTH, "keep.wall.east", availableSlots, opening);
+            }
+            case "keep.corner.south_east" -> {
+                addCornerEntryConnector(connectors, cornerSlotId, Direction.WEST, "keep.wall.south",
+                        availableSlots, opening);
+                addBranchTarget(connectors, Direction.NORTH, "keep.wall.east", availableSlots, opening);
+            }
+            case "keep.corner.south_west" -> {
+                addCornerEntryConnector(connectors, cornerSlotId, Direction.EAST, "keep.wall.south",
+                        availableSlots, opening);
+                addBranchTarget(connectors, Direction.NORTH, "keep.wall.west", availableSlots, opening);
+            }
+            default -> {
+            }
+        }
+    }
+
+    private void addCornerEntryConnector(List<MKPlannedConnector> connectors, String cornerSlotId, Direction facing,
+                                         String targetWallSlotId, Set<String> availableSlots,
+                                         ResolvedOpeningProfile opening) {
+        connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, facing,
+                opening.openingWidth(), opening.openingHeight(), 0, 0,
+                poolOrEmpty(targetWallSlotId, availableSlots), slotPool(cornerSlotId)));
+    }
+
+    private void addBranchTarget(List<MKPlannedConnector> connectors, Direction facing, String targetSlotId,
+                                 Set<String> availableSlots, ResolvedOpeningProfile opening) {
+        if (availableSlots.contains(targetSlotId)) {
+            connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, facing,
+                    opening.openingWidth(), opening.openingHeight(), slotPool(targetSlotId)));
+        }
     }
 
     private Map<String, String> buildRoomTags(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family) {
@@ -237,6 +390,13 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 .map(profile -> new ResolvedOpeningProfile(profile.profileId(), profile.openingWidth(), profile.openingHeight()));
     }
 
+    private ResolvedOpeningProfile defaultOpeningProfile(MKStructureWorkspace workspace) {
+        return workspace.openingProfiles().stream()
+                .findFirst()
+                .map(profile -> new ResolvedOpeningProfile(profile.profileId(), profile.openingWidth(), profile.openingHeight()))
+                .orElse(new ResolvedOpeningProfile("default", 3, 3));
+    }
+
     private void applyFoundationTags(MKWorkspaceFoundationPolicy policy, Map<String, String> tags) {
         if (policy.enabled()) {
             tags.put(MKWorkspaceFoundationPolicy.MODE_TAG, policy.mode().getSerializedName());
@@ -256,8 +416,12 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         return "vertical_access/" + groupId + "/" + direction.getSerializedName();
     }
 
-    private String linearRunPool(String topologySlotId) {
-        return "keep_linear_runs/" + topologySlotId.replace('.', '/');
+    private String slotPool(String topologySlotId) {
+        return SLOT_POOL_PREFIX + topologySlotId.replace('.', '/');
+    }
+
+    private String poolOrEmpty(String topologySlotId, Set<String> availableSlots) {
+        return availableSlots.contains(topologySlotId) ? slotPool(topologySlotId) : EMPTY_POOL;
     }
 
     private DirectionPair directionsForSlot(String topologySlotId) {

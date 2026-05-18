@@ -313,10 +313,119 @@ class TowerWorkspaceV2Test {
                 northWall.tags().get(MKWorkspaceFoundationPolicy.MODE_TAG));
         assertTrue(northWall.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.WEST &&
-                        "keep_linear_runs/keep/wall/north".equals(connector.incomingPoolName())));
+                        "keep_slots/keep/wall/north".equals(connector.incomingPoolName())));
         assertTrue(northWall.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.EAST &&
-                        "keep_linear_runs/keep/wall/north".equals(connector.incomingPoolName())));
+                        "keep_slots/keep/wall/north".equals(connector.incomingPoolName())));
+    }
+
+    @Test
+    void walledKeepRuntimePoolsUseSlotGraphAndSharedCorners() {
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(false),
+                List.of(
+                        new MKTowerWorkspaceFamilyDefinition(
+                                "keep_center_entry",
+                                MKTowerWorkspaceCategory.ENTRY,
+                                MKWorkspacePieceRole.ENTRY,
+                                "keep.center.entry",
+                                "keep.center",
+                                false,
+                                9,
+                                9,
+                                MKWorkspaceDimensions.defaultDimensions().entranceHeight(),
+                                MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                                List.of(),
+                                0,
+                                0,
+                                MKWorkspaceFoundationPolicy.none(),
+                                null
+                        ),
+                        new MKTowerWorkspaceFamilyDefinition(
+                                "keep_gate_main",
+                                MKTowerWorkspaceCategory.ENTRY,
+                                MKWorkspacePieceRole.ENTRY,
+                                "keep.gate.main",
+                                "keep.gate",
+                                false,
+                                7,
+                                7,
+                                5,
+                                MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                                List.of(),
+                                0,
+                                0,
+                                MKWorkspaceFoundationPolicy.none(),
+                                null
+                        ),
+                        new MKTowerWorkspaceFamilyDefinition(
+                                "keep_corner_shared",
+                                MKTowerWorkspaceCategory.MAIN,
+                                MKWorkspacePieceRole.FLOOR_MAIN,
+                                "keep.corner.shared",
+                                "keep.corner",
+                                false,
+                                7,
+                                7,
+                                7,
+                                MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                                List.of(),
+                                0,
+                                0,
+                                MKWorkspaceFoundationPolicy.none(),
+                                null
+                        )
+                ),
+                List.of(
+                        new MKWorkspaceLinearRunFamilyDefinition(
+                                "keep_walkway_south",
+                                "keep.walkway.south",
+                                MKWorkspaceLinearRunKind.OPEN_WALKWAY,
+                                "wall_opening",
+                                9,
+                                3,
+                                3,
+                                0,
+                                true,
+                                true,
+                                MKWorkspaceLinearRunProjection.RIGID,
+                                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                                MKWorkspaceFoundationPolicy.none(),
+                                null
+                        ),
+                        new MKWorkspaceLinearRunFamilyDefinition(
+                                "keep_wall_south",
+                                "keep.wall.south",
+                                MKWorkspaceLinearRunKind.SOLID_WALL,
+                                "wall_opening",
+                                13,
+                                3,
+                                5,
+                                0,
+                                true,
+                                true,
+                                MKWorkspaceLinearRunProjection.RIGID,
+                                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                                MKWorkspaceFoundationPolicy.none(),
+                                null
+                        )
+                )
+        );
+
+        List<MKWorkspacePieceDefinition> exportedPieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .map(piece -> pieceToDefinitionWithConnectors(workspace, piece))
+                .toList();
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace.withPieces(exportedPieces), 1, "now");
+
+        assertEquals("keep_center_entry", manifest.runtimeHints().startBaseName());
+        assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/walkway/south", "keep_walkway_south");
+        assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/gate/main", "keep_gate_main");
+        assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/wall/south", "keep_wall_south");
+        assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/north_west", "keep_corner_shared");
+        assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/north_east", "keep_corner_shared");
+        assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/south_east", "keep_corner_shared");
+        assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/south_west", "keep_corner_shared");
     }
 
     @Test
@@ -2016,6 +2125,20 @@ class TowerWorkspaceV2Test {
             return ResourceLocation.parse(poolName);
         }
         return ResourceLocation.parse(workspace.namespace() + ":" + workspace.structureName() + "/" + poolName);
+    }
+
+    private static void assertRuntimePoolContains(MKStructureWorkspace workspace,
+                                                  MKWorkspaceExportManifest manifest,
+                                                  String poolBaseName,
+                                                  String childBaseName) {
+        ResourceLocation poolId = ResourceLocation.parse(workspace.namespace() + ":" +
+                workspace.structureName() + "/" + poolBaseName);
+        MKWorkspaceExportManifest.ExportRuntimePool pool = manifest.runtimeHints().pools().stream()
+                .filter(candidate -> candidate.poolId().equals(poolId))
+                .findFirst()
+                .orElseThrow();
+        assertTrue(pool.childBaseNames().contains(childBaseName),
+                "Expected " + poolId + " to contain " + childBaseName + " but found " + pool.childBaseNames());
     }
 }
 
