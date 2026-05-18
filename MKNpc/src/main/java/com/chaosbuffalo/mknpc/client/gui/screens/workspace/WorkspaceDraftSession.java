@@ -25,6 +25,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
@@ -249,7 +250,8 @@ public class WorkspaceDraftSession {
                 northEast,
                 southEast,
                 southWest,
-                settings
+                settings,
+                current.pathSettings()
         );
     }
 
@@ -981,7 +983,7 @@ public class WorkspaceDraftSession {
                 verticalAccessSpec,
                 new MKTowerWorkspaceFloorSettings(draft().mainFloors, draft().basementFloors,
                         draft().topCapApproachEnabled, draft().basementCapApproachEnabled),
-                draft().categoryProfiles,
+                categoryProfilesWithTopologyPathSettings(),
                 draft().familyDefinitions,
                 draft().openingProfiles,
                 draft().linearRunFamilies,
@@ -1019,11 +1021,49 @@ public class WorkspaceDraftSession {
                 .orElseThrow();
     }
 
+    private List<MKTowerWorkspaceCategoryProfile> categoryProfilesWithTopologyPathSettings() {
+        return draft().categoryProfiles.stream()
+                .map(profile -> {
+                    MKWorkspaceTopologyPathSettings pathSettings = topologyPathSettings(profile.category());
+                    return new MKTowerWorkspaceCategoryProfile(
+                            profile.category(),
+                            profile.roomWidth(),
+                            profile.roomLength(),
+                            profile.fullHeight(),
+                            pathSettings.minMainPathPieces(),
+                            pathSettings.maxMainPathPieces(),
+                            pathSettings.maxBranchPiecesBeforeCap(),
+                            profile.paletteOverride());
+                })
+                .toList();
+    }
+
     public void replaceCategoryProfile(MKTowerWorkspaceCategoryProfile updatedProfile) {
         draft().categoryProfiles = draft().categoryProfiles.stream()
                 .map(profile -> profile.category() == updatedProfile.category() ? updatedProfile : profile)
                 .toList();
         snapDraftVerticalAccess();
+    }
+
+    public MKWorkspaceTopologyPathSettings topologyPathSettings(MKTowerWorkspaceCategory category) {
+        return draft().topologyProfile.pathSettingsOrDefault(category.getSerializedName());
+    }
+
+    public void topologyPathMinMainPathPieces(MKTowerWorkspaceCategory category, int value) {
+        replaceTopologyPathSettings(topologyPathSettings(category).withMinMainPathPieces(value));
+    }
+
+    public void topologyPathMaxMainPathPieces(MKTowerWorkspaceCategory category, int value) {
+        replaceTopologyPathSettings(topologyPathSettings(category).withMaxMainPathPieces(value));
+    }
+
+    public void topologyPathMaxBranchPiecesBeforeCap(MKTowerWorkspaceCategory category, int value) {
+        replaceTopologyPathSettings(topologyPathSettings(category).withMaxBranchPiecesBeforeCap(value));
+    }
+
+    private void replaceTopologyPathSettings(MKWorkspaceTopologyPathSettings settings) {
+        draft().topologyProfile = draft().topologyProfile.withPathSettings(settings);
+        draft().categoryProfiles = categoryProfilesWithTopologyPathSettings();
     }
 
     public void replaceFamilyDefinition(int index, MKTowerWorkspaceFamilyDefinition updatedFamily) {

@@ -27,6 +27,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.mojang.serialization.Codec;
@@ -123,7 +124,9 @@ public record MKWorkspaceExportManifest(
                         ),
                         ExportVerticalAccessSpec.from(workspace.verticalAccessSpec()),
                         ExportFloorSettings.from(workspace.floorSettings()),
-                        workspace.categoryProfiles().stream().map(ExportCategoryProfile::from).toList(),
+                        workspace.categoryProfiles().stream()
+                                .map(profile -> ExportCategoryProfile.from(workspace, profile))
+                                .toList(),
                         workspace.familyDefinitions().stream().map(ExportFamilyDefinition::from).toList(),
                         workspace.openingProfiles().stream().map(ExportOpeningProfile::from).toList(),
                         workspace.linearRunFamilies().stream().map(ExportLinearRunFamily::from).toList()
@@ -421,14 +424,15 @@ public record MKWorkspaceExportManifest(
                 new ExportCategoryProfile(category, roomWidth, roomLength, minMainPathPieces, maxMainPathPieces,
                         maxBranchPiecesBeforeCap, fullHeight, paletteOverride.orElse(null))));
 
-        public static ExportCategoryProfile from(MKTowerWorkspaceCategoryProfile profile) {
+        public static ExportCategoryProfile from(MKStructureWorkspace workspace, MKTowerWorkspaceCategoryProfile profile) {
+            MKWorkspaceTopologyPathSettings pathSettings = workspace.topologyPathSettings(profile.category());
             return new ExportCategoryProfile(
                     profile.category(),
                     profile.roomWidth(),
                     profile.roomLength(),
-                    profile.minMainPathPieces(),
-                    profile.maxMainPathPieces(),
-                    profile.maxBranchPiecesBeforeCap(),
+                    pathSettings.minMainPathPieces(),
+                    pathSettings.maxMainPathPieces(),
+                    pathSettings.maxBranchPiecesBeforeCap(),
                     profile.fullHeight(),
                     profile.paletteOverride()
             );
@@ -730,7 +734,7 @@ public record MKWorkspaceExportManifest(
                 return workspace.familyDefinitions().stream()
                         .filter(family -> family.baseName().equals(familyId))
                         .findFirst()
-                        .map(MKTowerWorkspaceFamilyDefinition::foundationPolicy)
+                        .map(family -> workspace.resolveFamilySettings(family).foundationPolicy())
                         .orElse(MKWorkspaceFoundationPolicy.none());
             }
             return MKWorkspaceFoundationPolicy.none();

@@ -40,6 +40,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceI
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
@@ -974,6 +975,16 @@ class TowerWorkspaceV2Test {
 
         assertEquals(MKWorkspaceFoundationMode.UNIFORM_STATE.getSerializedName(),
                 centerEntry.tags().get(MKWorkspaceFoundationPolicy.MODE_TAG));
+
+        MKStructureWorkspace exportedWorkspace = workspace.withPieces(List.of(
+                pieceToDefinitionWithConnectors(workspace, centerEntry)));
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(exportedWorkspace, 1, "now");
+        MKWorkspaceExportManifest.ExportRuntimeCategory centerEntryCategory = manifest.runtimeHints().categories().stream()
+                .filter(category -> category.baseName().equals("keep_center_entry"))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(MKWorkspaceFoundationMode.UNIFORM_STATE,
+                centerEntryCategory.pieceMetadata().foundationPolicy().mode());
     }
 
     @Test
@@ -1058,6 +1069,29 @@ class TowerWorkspaceV2Test {
                 .orElseThrow();
 
         assertEquals(stackWallBlock.toString(), centerEntry.tags().get(MKWorkspacePaletteTags.WALL_BLOCK_TAG));
+    }
+
+    @Test
+    void exportCategoryPathDepthUsesTopologyPathSettings() {
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
+                .withPathSettings(new MKWorkspaceTopologyPathSettings("main", 3, 5, 7));
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
+                        List.of()),
+                topologyProfile,
+                List.of(),
+                List.of()
+        );
+
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.snapshotFromWorkspace(workspace, 1, "now");
+        MKWorkspaceExportManifest.ExportCategoryProfile mainProfile = manifest.settings().categoryProfiles().stream()
+                .filter(profile -> profile.category() == MKTowerWorkspaceCategory.MAIN)
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(3, mainProfile.minMainPathPieces());
+        assertEquals(5, mainProfile.maxMainPathPieces());
+        assertEquals(7, mainProfile.maxBranchPiecesBeforeCap());
     }
 
     @Test
@@ -1705,7 +1739,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void categoryProfileBranchCapLimitExportsToManifest() {
+    void topologyPathBranchCapLimitExportsToManifest() {
         MKStructureWorkspace workspace = baseWorkspace(
                 List.of(
                         new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
@@ -1713,40 +1747,13 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        List<MKTowerWorkspaceCategoryProfile> categoryProfiles = workspace.categoryProfiles().stream()
-                .map(profile -> profile.category() == MKTowerWorkspaceCategory.MAIN ?
-                        new MKTowerWorkspaceCategoryProfile(
-                                profile.category(),
-                                profile.roomWidth(),
-                                profile.roomLength(),
-                                profile.fullHeight(),
-                                profile.minMainPathPieces(),
-                                profile.maxMainPathPieces(),
-                                3) :
-                        profile)
-                .toList();
-        workspace = new MKStructureWorkspace(
-                workspace.id(),
-                workspace.anchor(),
-                workspace.namespace(),
-                workspace.structureName(),
-                workspace.familyType(),
-                workspace.dimensions(),
-                workspace.palette(),
-                workspace.stairConfig(),
-                workspace.verticalAccessPlacement(),
-                workspace.shellMargin(),
-                workspace.exteriorAirMargin(),
-                workspace.previewMargin(),
-                workspace.verticalAccessSpec(),
-                workspace.floorSettings(),
-                categoryProfiles,
-                workspace.familyDefinitions(),
-                workspace.openingProfiles(),
-                workspace.linearRunFamilies(),
-                workspace.createdAt(),
-                workspace.updatedAt(),
-                workspace.pieces()
+        workspace = withTopologyAndLinearRuns(
+                workspace,
+                workspace.topologyProfile().withPathSettings(
+                        workspace.topologyPathSettings(MKTowerWorkspaceCategory.MAIN)
+                                .withMaxBranchPiecesBeforeCap(3)),
+                List.of(),
+                List.of()
         );
 
         MKStructureWorkspace exportSource = workspace;

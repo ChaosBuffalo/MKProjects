@@ -3,7 +3,6 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.client.gui.widgets.MKIntegerSlider;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
@@ -12,6 +11,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPol
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
@@ -111,7 +111,7 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
         addTowerStackFloorRows(screen, content, "tower.primary");
 
         MKText pathText = screen.makeWhiteText(Component.literal(
-                "Path depth defaults remain below until tower pathing moves to topology-run settings."));
+                "Path depth defaults are topology settings. Family pages only override individual authored templates."));
         pathText.setWidth(screen.contentWidth());
         pathText.setMultiline(true);
         content.addWidget(pathText);
@@ -129,38 +129,33 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
     private void addTowerPathDefaultsSection(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                              MKTowerWorkspaceCategory category) {
         WorkspaceDraftSession editor = screen.draftSession();
-        MKTowerWorkspaceCategoryProfile profile = editor.getCategoryProfile(category);
+        MKWorkspaceTopologyPathSettings pathSettings = editor.topologyPathSettings(category);
         MKText header = screen.makeWhiteText(Component.literal(formatTopologyLabel(category.getSerializedName())));
         content.addWidget(header);
         content.addConstraintToWidget(MarginConstraint.LEFT, header);
 
         MKText summary = screen.makeWhiteText(Component.literal(
                 (showCategoryPathControls(editor, category) ? "path " +
-                        profile.minMainPathPieces() + "-" + profile.maxMainPathPieces() + "  |  " : "") +
-                        "branch cap " + profile.maxBranchPiecesBeforeCap()));
+                        pathSettings.minMainPathPieces() + "-" + pathSettings.maxMainPathPieces() + "  |  " : "") +
+                        "branch cap " + pathSettings.maxBranchPiecesBeforeCap()));
         summary.setWidth(screen.contentWidth());
         summary.setMultiline(true);
         content.addWidget(summary);
         content.addConstraintToWidget(MarginConstraint.LEFT, summary);
         if (showCategoryPathControls(editor, category)) {
             MKIntegerSlider minPathSlider = new MKIntegerSlider("Min", 180, 20, 0, 10, 1,
-                    profile.minMainPathPieces(), value -> editor.replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
-                    profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
-                    value, Math.max(value, profile.maxMainPathPieces()), profile.maxBranchPiecesBeforeCap(),
-                    profile.paletteOverride())));
+                    pathSettings.minMainPathPieces(),
+                    value -> editor.topologyPathMinMainPathPieces(category, value));
             MKIntegerSlider maxPathSlider = new MKIntegerSlider("Max", 180, 20, 0, 10, 1,
-                    profile.maxMainPathPieces(), value -> editor.replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
-                    profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
-                    Math.min(profile.minMainPathPieces(), value), value, profile.maxBranchPiecesBeforeCap(),
-                    profile.paletteOverride())));
+                    pathSettings.maxMainPathPieces(),
+                    value -> editor.topologyPathMaxMainPathPieces(category, value));
             addRow(screen, content, screen.makeWhiteText(Component.literal("Main Path Min")), minPathSlider);
             addRow(screen, content, screen.makeWhiteText(Component.literal("Main Path Max")), maxPathSlider);
         }
         MKIntegerSlider maxBranchBeforeCapSlider = new MKIntegerSlider("Max", 180, 20, 0,
-                MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP, 1,
-                profile.maxBranchPiecesBeforeCap(), value -> editor.replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
-                profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
-                profile.minMainPathPieces(), profile.maxMainPathPieces(), value, profile.paletteOverride())));
+                MKWorkspaceTopologyPathSettings.MAX_BRANCH_PIECES_BEFORE_CAP, 1,
+                pathSettings.maxBranchPiecesBeforeCap(),
+                value -> editor.topologyPathMaxBranchPiecesBeforeCap(category, value));
         addRow(screen, content, screen.makeWhiteText(Component.literal("Branch Cap Max")), maxBranchBeforeCapSlider);
     }
 

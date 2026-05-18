@@ -588,6 +588,10 @@ public class MKStructureWorkspace {
         return topologyProfile;
     }
 
+    public MKWorkspaceTopologyPathSettings topologyPathSettings(MKTowerWorkspaceCategory category) {
+        return topologyProfile.pathSettingsOrDefault(category.getSerializedName());
+    }
+
     public MKWorkspaceDimensions dimensions() {
         return dimensions;
     }
