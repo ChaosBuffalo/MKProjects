@@ -370,7 +370,7 @@ public class MKWorkspaceScaffoldBuilder {
     BoundingBox extendToWorkspaceClearHeight(BoundingBox bounds, int minBuildHeight, int maxBuildY) {
         return new BoundingBox(
                 bounds.minX(),
-                Math.max(minBuildHeight, bounds.minY()),
+                minBuildHeight,
                 bounds.minZ(),
                 bounds.maxX(),
                 maxBuildY,

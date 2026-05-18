@@ -16,7 +16,7 @@ class MKWorkspaceScaffoldBuilderTest {
         MKWorkspaceScaffoldBuilder builder = new MKWorkspaceScaffoldBuilder();
 
         BoundingBox expanded = builder.extendToWorkspaceClearHeight(
-                new BoundingBox(10, -80, 20, 30, 12, 40),
+                new BoundingBox(10, 80, 20, 30, 96, 40),
                 -64,
                 319
         );
