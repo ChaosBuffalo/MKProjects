@@ -51,6 +51,12 @@ public class WorkspaceDraftSession {
     private int selectedFamilyExitIndex;
     private int selectedOpeningIndex;
     private int selectedHallwayIndex;
+    private static final List<String> KEEP_CORNER_STACK_IDS = List.of(
+            "keep.corner.north_west",
+            "keep.corner.north_east",
+            "keep.corner.south_east",
+            "keep.corner.south_west"
+    );
 
     public WorkspaceDraftSession(MKWorkspaceScreen screen, MKTowerWorkspaceCategory selectedFamilyCategory,
                                  int selectedFamilyIndex, int selectedFamilyExitIndex, int selectedOpeningIndex,
@@ -591,13 +597,14 @@ public class WorkspaceDraftSession {
         if (!MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(topologyProfileType())) {
             return true;
         }
-        if ("keep.corner.shared".equals(topologySlotId)) {
+        Optional<String> cornerStackId = cornerStackIdForSlot(topologySlotId);
+        if (cornerStackId.isEmpty()) {
+            return true;
+        }
+        if ("keep.corner.shared".equals(cornerStackId.get())) {
             return draft().topologyProfile.anySharedCornerTower();
         }
-        if (isConcreteCornerSlot(topologySlotId)) {
-            return draft().topologyProfile.uniqueCornerTower(topologySlotId);
-        }
-        return true;
+        return draft().topologyProfile.uniqueCornerTower(cornerStackId.get());
     }
 
     public List<Integer> familyIndexesForTopologySlot(String topologySlotId) {
@@ -1458,7 +1465,7 @@ public class WorkspaceDraftSession {
     }
 
     private boolean isCornerTowerFamily(MKTowerWorkspaceFamilyDefinition family) {
-        return "keep.corner.shared".equals(family.topologySlotId()) || isConcreteCornerSlot(family.topologySlotId());
+        return cornerStackIdForSlot(family.topologySlotId()).isPresent();
     }
 
     public int normalizeFamilyWidthForCategory(int requestedWidth, boolean supportsVerticalAccess,
@@ -1518,36 +1525,27 @@ public class WorkspaceDraftSession {
         }
         java.util.ArrayList<MKTowerWorkspaceFamilyDefinition> updated =
                 new java.util.ArrayList<>(draft().familyDefinitions);
-        if (draft().topologyProfile.anySharedCornerTower() &&
-                updated.stream().noneMatch(family -> family.topologySlotId().equals("keep.corner.shared"))) {
-            topologySlot("keep.corner.shared")
-                    .map(this::defaultFamilyForTopologySlot)
-                    .ifPresent(updated::add);
+        if (draft().topologyProfile.anySharedCornerTower()) {
+            ensureFamiliesForTowerStack(updated, "keep.corner.shared");
         }
-        for (String cornerSlot : List.of(
-                "keep.corner.north_west",
-                "keep.corner.north_east",
-                "keep.corner.south_east",
-                "keep.corner.south_west"
-        )) {
+        for (String cornerSlot : KEEP_CORNER_STACK_IDS) {
             if (!draft().topologyProfile.uniqueCornerTower(cornerSlot)) {
                 continue;
             }
-            if (updated.stream().anyMatch(family -> family.topologySlotId().equals(cornerSlot))) {
-                continue;
-            }
-            Optional<MKTowerWorkspaceFamilyDefinition> sharedSource = updated.stream()
-                    .filter(family -> family.topologySlotId().equals("keep.corner.shared"))
-                    .findFirst();
-            MKTowerWorkspaceFamilyDefinition family = sharedSource
-                    .map(existing -> copyFamilyForTopologySlot(existing, cornerSlot))
-                    .orElseGet(() -> topologySlot(cornerSlot)
-                            .map(this::defaultFamilyForTopologySlot)
-                            .orElseThrow());
-            updated.add(family);
+            ensureFamiliesForTowerStack(updated, cornerSlot);
         }
         draft().familyDefinitions = List.copyOf(updated);
         applyTowerStackHeightsToFamilies();
+    }
+
+    private void ensureFamiliesForTowerStack(List<MKTowerWorkspaceFamilyDefinition> updated, String stackId) {
+        topologySchema().slots().stream()
+                .filter(slot -> slot.slotId().startsWith(stackId + "."))
+                .filter(slot -> updated.stream().noneMatch(family -> family.topologySlotId().equals(slot.slotId())))
+                .map(slot -> sharedCornerSource(slot.slotId())
+                        .map(existing -> copyFamilyForTopologySlot(existing, slot.slotId()))
+                        .orElseGet(() -> defaultFamilyForTopologySlot(slot)))
+                .forEach(updated::add);
     }
 
     private void applyTowerStackHeightsToFamilies() {
@@ -1570,10 +1568,7 @@ public class WorkspaceDraftSession {
         if (family.topologySlotId().startsWith("keep.center.")) {
             return "keep.center";
         }
-        if ("keep.corner.shared".equals(family.topologySlotId()) || isConcreteCornerSlot(family.topologySlotId())) {
-            return family.topologySlotId();
-        }
-        return "";
+        return cornerStackIdForSlot(family.topologySlotId()).orElse("");
     }
 
     private void migrateWalledKeepPerimeterLinearRuns() {
@@ -1781,20 +1776,35 @@ public class WorkspaceDraftSession {
     }
 
     private Optional<MKTowerWorkspaceFamilyDefinition> sharedCornerSource(String topologySlotId) {
-        if (!topologySlotId.startsWith("keep.corner.") || topologySlotId.equals("keep.corner.shared")) {
+        Optional<String> cornerStackId = cornerStackIdForSlot(topologySlotId);
+        if (cornerStackId.isEmpty() || "keep.corner.shared".equals(cornerStackId.get())) {
             return Optional.empty();
         }
+        String suffix = topologySlotId.substring(cornerStackId.get().length());
+        String sharedSlotId = "keep.corner.shared" + suffix;
         return draft().familyDefinitions.stream()
-                .filter(family -> family.topologySlotId().equals("keep.corner.shared"))
+                .filter(family -> family.topologySlotId().equals(sharedSlotId))
                 .findFirst();
     }
 
     private boolean isConcreteCornerSlot(String topologySlotId) {
-        return switch (topologySlotId) {
-            case "keep.corner.north_west", "keep.corner.north_east",
-                 "keep.corner.south_east", "keep.corner.south_west" -> true;
-            default -> false;
-        };
+        return KEEP_CORNER_STACK_IDS.contains(topologySlotId);
+    }
+
+    private Optional<String> towerStackIdForTopologySlot(String topologySlotId) {
+        if (topologySlotId.startsWith("keep.center.")) {
+            return Optional.of("keep.center");
+        }
+        return cornerStackIdForSlot(topologySlotId);
+    }
+
+    private Optional<String> cornerStackIdForSlot(String topologySlotId) {
+        if ("keep.corner.shared".equals(topologySlotId) || topologySlotId.startsWith("keep.corner.shared.")) {
+            return Optional.of("keep.corner.shared");
+        }
+        return KEEP_CORNER_STACK_IDS.stream()
+                .filter(stackId -> topologySlotId.equals(stackId) || topologySlotId.startsWith(stackId + "."))
+                .findFirst();
     }
 
     private MKTowerWorkspaceFamilyDefinition copyFamilyForTopologySlot(MKTowerWorkspaceFamilyDefinition existing,
@@ -1804,7 +1814,9 @@ public class WorkspaceDraftSession {
                 existing.category(),
                 existing.pieceRole(),
                 topologySlotId,
-                existing.supportsVerticalAccess() ? valueOrDefault(existing.verticalAccessGroupId(), topologySlotId) : "",
+                existing.supportsVerticalAccess() ?
+                        towerStackIdForTopologySlot(topologySlotId)
+                                .orElseGet(() -> valueOrDefault(existing.verticalAccessGroupId(), topologySlotId)) : "",
                 existing.supportsVerticalAccess(),
                 existing.roomWidth(),
                 existing.roomLength(),
@@ -1823,18 +1835,21 @@ public class WorkspaceDraftSession {
         MKTowerWorkspaceCategoryProfile profile = getCategoryProfile(category);
         MKWorkspacePieceRole role = defaultRoleForTopologySlot(slot.slotId(), category);
         boolean supportsVerticalAccess = topologySlotSupportsVerticalAccess(slot);
+        String verticalAccessGroupId = towerStackIdForTopologySlot(slot.slotId()).orElse(slot.slotId());
+        List<MKWorkspaceFamilyHorizontalExitDefinition> exits =
+                towerStackIdForTopologySlot(slot.slotId()).isPresent() ? List.of() : defaultHorizontalExitsForNewFamily();
         return new MKTowerWorkspaceFamilyDefinition(
                 nextUniqueFamilyBaseName(),
                 category,
                 role,
                 slot.slotId(),
-                supportsVerticalAccess ? slot.slotId() : "",
+                supportsVerticalAccess ? verticalAccessGroupId : "",
                 supportsVerticalAccess,
                 profile.roomWidth(),
                 profile.roomLength(),
                 profile.fullHeight(),
                 com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
-                defaultHorizontalExitsForNewFamily(),
+                exits,
                 0,
                 0,
                 MKWorkspaceFoundationPolicy.none(),

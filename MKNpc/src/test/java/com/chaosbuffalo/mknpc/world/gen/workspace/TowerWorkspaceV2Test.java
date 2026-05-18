@@ -409,14 +409,16 @@ class TowerWorkspaceV2Test {
         assertEquals(7, centerEntry.interiorHeight());
         assertEquals("keep.center.entry", centerEntry.tags().get("workspace_topology_slot_id"));
         MKPlannedPiece sharedCorner = pieces.stream()
-                .filter(piece -> piece.pieceName().equals("keep_corner_shared"))
+                .filter(piece -> piece.pieceName().equals("keep_corner_shared_entry"))
                 .findFirst()
                 .orElseThrow();
-        assertEquals("keep.corner.shared", sharedCorner.tags().get("workspace_topology_slot_id"));
+        assertEquals("keep.corner.shared.entry", sharedCorner.tags().get("workspace_topology_slot_id"));
         assertTrue(sharedCorner.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_UP));
         assertTrue(sharedCorner.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_DOWN));
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_shared_top_cap")));
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_shared_basement_cap")));
         MKPlannedPiece northWall = pieces.stream()
                 .filter(piece -> piece.pieceName().equals("keep_wall_north"))
                 .findFirst()

@@ -83,54 +83,116 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                         new MKWorkspaceRegionSchema("keep.gates", "entry", false),
                         new MKWorkspaceRegionSchema("keep.courtyard", "open_area", false)
                 ),
-                List.of(
-                        new MKWorkspaceSlotSchema("keep.center.basement_cap", "keep.center_tower", "cap", "keep.center.basement_cap", MKWorkspaceSlotSchema.Repeat.FIXED),
-                        new MKWorkspaceSlotSchema("keep.center.basement_floor", "keep.center_tower", "floor", "keep.center.basement_floor", MKWorkspaceSlotSchema.Repeat.RANGE),
-                        new MKWorkspaceSlotSchema("keep.center.entry", "keep.center_tower", "entry", "keep.center.entry", MKWorkspaceSlotSchema.Repeat.FIXED),
-                        new MKWorkspaceSlotSchema("keep.center.main_floor", "keep.center_tower", "floor", "keep.center.main_floor", MKWorkspaceSlotSchema.Repeat.RANGE),
-                        new MKWorkspaceSlotSchema("keep.center.top_cap", "keep.center_tower", "cap", "keep.center.top_cap", MKWorkspaceSlotSchema.Repeat.FIXED),
-                        new MKWorkspaceSlotSchema("keep.corner.shared", "keep.corner_towers", "tower_stack", "keep.corner.shared", MKWorkspaceSlotSchema.Repeat.OPTIONAL),
-                        new MKWorkspaceSlotSchema("keep.corner.north_west", "keep.corner_towers", "tower_stack", "keep.corner.north_west", MKWorkspaceSlotSchema.Repeat.OPTIONAL),
-                        new MKWorkspaceSlotSchema("keep.corner.north_east", "keep.corner_towers", "tower_stack", "keep.corner.north_east", MKWorkspaceSlotSchema.Repeat.OPTIONAL),
-                        new MKWorkspaceSlotSchema("keep.corner.south_east", "keep.corner_towers", "tower_stack", "keep.corner.south_east", MKWorkspaceSlotSchema.Repeat.OPTIONAL),
-                        new MKWorkspaceSlotSchema("keep.corner.south_west", "keep.corner_towers", "tower_stack", "keep.corner.south_west", MKWorkspaceSlotSchema.Repeat.OPTIONAL),
-                        new MKWorkspaceSlotSchema("keep.perimeter.north", "keep.perimeter_runs", "defensive_run", "keep.perimeter.north", MKWorkspaceSlotSchema.Repeat.DERIVED),
-                        new MKWorkspaceSlotSchema("keep.perimeter.east", "keep.perimeter_runs", "defensive_run", "keep.perimeter.east", MKWorkspaceSlotSchema.Repeat.DERIVED),
-                        new MKWorkspaceSlotSchema("keep.perimeter.south", "keep.perimeter_runs", "defensive_run", "keep.perimeter.south", MKWorkspaceSlotSchema.Repeat.DERIVED),
-                        new MKWorkspaceSlotSchema("keep.perimeter.west", "keep.perimeter_runs", "defensive_run", "keep.perimeter.west", MKWorkspaceSlotSchema.Repeat.DERIVED),
-                        new MKWorkspaceSlotSchema("keep.walkway.north", "keep.walkways", "open_walkway", "keep.walkway.north", MKWorkspaceSlotSchema.Repeat.DERIVED),
-                        new MKWorkspaceSlotSchema("keep.walkway.east", "keep.walkways", "open_walkway", "keep.walkway.east", MKWorkspaceSlotSchema.Repeat.DERIVED),
-                        new MKWorkspaceSlotSchema("keep.walkway.south", "keep.walkways", "open_walkway", "keep.walkway.south", MKWorkspaceSlotSchema.Repeat.DERIVED),
-                        new MKWorkspaceSlotSchema("keep.walkway.west", "keep.walkways", "open_walkway", "keep.walkway.west", MKWorkspaceSlotSchema.Repeat.DERIVED),
-                        new MKWorkspaceSlotSchema("keep.gate.main", "keep.gates", "entry", "keep.gate.main", MKWorkspaceSlotSchema.Repeat.OPTIONAL)
-                ),
+                walledKeepSlots(),
                 List.of(
                         new MKWorkspaceLinkSchema("keep.center.vertical", "keep.center.basement_cap", "keep.center.top_cap", "vertical_access_group:keep.center"),
-                        new MKWorkspaceLinkSchema("keep.corner.north_west.vertical", "keep.corner.north_west", "keep.perimeter.north", "vertical_access_group:keep.corner.north_west"),
-                        new MKWorkspaceLinkSchema("keep.corner.north_east.vertical", "keep.corner.north_east", "keep.perimeter.east", "vertical_access_group:keep.corner.north_east"),
-                        new MKWorkspaceLinkSchema("keep.corner.south_east.vertical", "keep.corner.south_east", "keep.perimeter.south", "vertical_access_group:keep.corner.south_east"),
-                        new MKWorkspaceLinkSchema("keep.corner.south_west.vertical", "keep.corner.south_west", "keep.perimeter.west", "vertical_access_group:keep.corner.south_west"),
-                        new MKWorkspaceLinkSchema("keep.perimeter.north", "keep.corner.north_west", "keep.corner.north_east", "linear_run"),
-                        new MKWorkspaceLinkSchema("keep.perimeter.east", "keep.corner.north_east", "keep.corner.south_east", "linear_run"),
-                        new MKWorkspaceLinkSchema("keep.perimeter.south", "keep.corner.south_west", "keep.corner.south_east", "linear_run"),
-                        new MKWorkspaceLinkSchema("keep.perimeter.west", "keep.corner.north_west", "keep.corner.south_west", "linear_run")
+                        new MKWorkspaceLinkSchema("keep.corner.north_west.vertical", "keep.corner.north_west.basement_cap", "keep.corner.north_west.top_cap", "vertical_access_group:keep.corner.north_west"),
+                        new MKWorkspaceLinkSchema("keep.corner.north_east.vertical", "keep.corner.north_east.basement_cap", "keep.corner.north_east.top_cap", "vertical_access_group:keep.corner.north_east"),
+                        new MKWorkspaceLinkSchema("keep.corner.south_east.vertical", "keep.corner.south_east.basement_cap", "keep.corner.south_east.top_cap", "vertical_access_group:keep.corner.south_east"),
+                        new MKWorkspaceLinkSchema("keep.corner.south_west.vertical", "keep.corner.south_west.basement_cap", "keep.corner.south_west.top_cap", "vertical_access_group:keep.corner.south_west"),
+                        new MKWorkspaceLinkSchema("keep.perimeter.north", "keep.corner.north_west.entry", "keep.corner.north_east.entry", "linear_run"),
+                        new MKWorkspaceLinkSchema("keep.perimeter.east", "keep.corner.north_east.entry", "keep.corner.south_east.entry", "linear_run"),
+                        new MKWorkspaceLinkSchema("keep.perimeter.south", "keep.corner.south_west.entry", "keep.corner.south_east.entry", "linear_run"),
+                        new MKWorkspaceLinkSchema("keep.perimeter.west", "keep.corner.north_west.entry", "keep.corner.south_west.entry", "linear_run")
                 ),
-                List.of(
-                        new MKWorkspaceRoleSchema("keep.center.entry", "floor", "room", false, true, Set.of("vertical_access", "center_tower")),
-                        new MKWorkspaceRoleSchema("keep.center.main_floor", "floor", "room", false, false, Set.of("vertical_access", "center_tower")),
-                        new MKWorkspaceRoleSchema("keep.center.top_cap", "cap", "top_cap", true, false, Set.of("terminal_top", "center_tower")),
-                        new MKWorkspaceRoleSchema("keep.corner.shared", "tower", "room", false, false, Set.of("vertical_access", "corner_tower", "shared_corner_template")),
-                        new MKWorkspaceRoleSchema("keep.corner.north_west", "tower", "room", false, false, Set.of("vertical_access", "corner_tower", "unique_corner_template")),
-                        new MKWorkspaceRoleSchema("keep.corner.north_east", "tower", "room", false, false, Set.of("vertical_access", "corner_tower", "unique_corner_template")),
-                        new MKWorkspaceRoleSchema("keep.corner.south_east", "tower", "room", false, false, Set.of("vertical_access", "corner_tower", "unique_corner_template")),
-                        new MKWorkspaceRoleSchema("keep.corner.south_west", "tower", "room", false, false, Set.of("vertical_access", "corner_tower", "unique_corner_template")),
-                        new MKWorkspaceRoleSchema("keep.perimeter.north", "linear_run", "defensive_run", false, false, Set.of("solid_wall", "parapet")),
-                        new MKWorkspaceRoleSchema("keep.perimeter.east", "linear_run", "defensive_run", false, false, Set.of("solid_wall", "parapet")),
-                        new MKWorkspaceRoleSchema("keep.perimeter.south", "linear_run", "defensive_run", false, false, Set.of("solid_wall", "parapet")),
-                        new MKWorkspaceRoleSchema("keep.perimeter.west", "linear_run", "defensive_run", false, false, Set.of("solid_wall", "parapet")),
-                        new MKWorkspaceRoleSchema("keep.walkway.north", "linear_run", "walkway", false, false, Set.of("open_walkway", "terrain_matched_allowed"))
-                )
+                walledKeepRoles()
         );
+    }
+
+    private static List<MKWorkspaceSlotSchema> walledKeepSlots() {
+        ArrayList<MKWorkspaceSlotSchema> slots = new ArrayList<>();
+        addTowerStackSlots(slots, "keep.center", "keep.center_tower");
+        addTowerStackSlots(slots, "keep.corner.shared", "keep.corner_towers");
+        for (String cornerSlot : CONCRETE_CORNER_SLOTS) {
+            addTowerStackSlots(slots, cornerSlot, "keep.corner_towers");
+        }
+        slots.add(new MKWorkspaceSlotSchema("keep.perimeter.north", "keep.perimeter_runs", "defensive_run",
+                "keep.perimeter.north", MKWorkspaceSlotSchema.Repeat.DERIVED));
+        slots.add(new MKWorkspaceSlotSchema("keep.perimeter.east", "keep.perimeter_runs", "defensive_run",
+                "keep.perimeter.east", MKWorkspaceSlotSchema.Repeat.DERIVED));
+        slots.add(new MKWorkspaceSlotSchema("keep.perimeter.south", "keep.perimeter_runs", "defensive_run",
+                "keep.perimeter.south", MKWorkspaceSlotSchema.Repeat.DERIVED));
+        slots.add(new MKWorkspaceSlotSchema("keep.perimeter.west", "keep.perimeter_runs", "defensive_run",
+                "keep.perimeter.west", MKWorkspaceSlotSchema.Repeat.DERIVED));
+        slots.add(new MKWorkspaceSlotSchema("keep.walkway.north", "keep.walkways", "open_walkway",
+                "keep.walkway.north", MKWorkspaceSlotSchema.Repeat.DERIVED));
+        slots.add(new MKWorkspaceSlotSchema("keep.walkway.east", "keep.walkways", "open_walkway",
+                "keep.walkway.east", MKWorkspaceSlotSchema.Repeat.DERIVED));
+        slots.add(new MKWorkspaceSlotSchema("keep.walkway.south", "keep.walkways", "open_walkway",
+                "keep.walkway.south", MKWorkspaceSlotSchema.Repeat.DERIVED));
+        slots.add(new MKWorkspaceSlotSchema("keep.walkway.west", "keep.walkways", "open_walkway",
+                "keep.walkway.west", MKWorkspaceSlotSchema.Repeat.DERIVED));
+        slots.add(new MKWorkspaceSlotSchema("keep.gate.main", "keep.gates", "entry", "keep.gate.main",
+                MKWorkspaceSlotSchema.Repeat.OPTIONAL));
+        return List.copyOf(slots);
+    }
+
+    private static void addTowerStackSlots(List<MKWorkspaceSlotSchema> slots, String stackId, String regionId) {
+        slots.add(new MKWorkspaceSlotSchema(stackId + ".basement_cap", regionId, "cap",
+                stackId + ".basement_cap", MKWorkspaceSlotSchema.Repeat.FIXED));
+        slots.add(new MKWorkspaceSlotSchema(stackId + ".basement_cap_approach", regionId, "cap_approach",
+                stackId + ".basement_cap_approach", MKWorkspaceSlotSchema.Repeat.OPTIONAL));
+        slots.add(new MKWorkspaceSlotSchema(stackId + ".basement_entry", regionId, "floor",
+                stackId + ".basement_entry", MKWorkspaceSlotSchema.Repeat.FIXED));
+        slots.add(new MKWorkspaceSlotSchema(stackId + ".basement_floor", regionId, "floor",
+                stackId + ".basement_floor", MKWorkspaceSlotSchema.Repeat.RANGE));
+        slots.add(new MKWorkspaceSlotSchema(stackId + ".entry", regionId, "entry",
+                stackId + ".entry", MKWorkspaceSlotSchema.Repeat.FIXED));
+        slots.add(new MKWorkspaceSlotSchema(stackId + ".main_floor", regionId, "floor",
+                stackId + ".main_floor", MKWorkspaceSlotSchema.Repeat.RANGE));
+        slots.add(new MKWorkspaceSlotSchema(stackId + ".top_cap_approach", regionId, "cap_approach",
+                stackId + ".top_cap_approach", MKWorkspaceSlotSchema.Repeat.OPTIONAL));
+        slots.add(new MKWorkspaceSlotSchema(stackId + ".top_cap", regionId, "cap",
+                stackId + ".top_cap", MKWorkspaceSlotSchema.Repeat.FIXED));
+    }
+
+    private static List<MKWorkspaceRoleSchema> walledKeepRoles() {
+        ArrayList<MKWorkspaceRoleSchema> roles = new ArrayList<>();
+        addTowerStackRoles(roles, "keep.center", Set.of("center_tower"));
+        addTowerStackRoles(roles, "keep.corner.shared", Set.of("corner_tower", "shared_corner_template"));
+        for (String cornerSlot : CONCRETE_CORNER_SLOTS) {
+            addTowerStackRoles(roles, cornerSlot, Set.of("corner_tower", "unique_corner_template"));
+        }
+        roles.add(new MKWorkspaceRoleSchema("keep.perimeter.north", "linear_run", "defensive_run",
+                false, false, Set.of("solid_wall", "parapet")));
+        roles.add(new MKWorkspaceRoleSchema("keep.perimeter.east", "linear_run", "defensive_run",
+                false, false, Set.of("solid_wall", "parapet")));
+        roles.add(new MKWorkspaceRoleSchema("keep.perimeter.south", "linear_run", "defensive_run",
+                false, false, Set.of("solid_wall", "parapet")));
+        roles.add(new MKWorkspaceRoleSchema("keep.perimeter.west", "linear_run", "defensive_run",
+                false, false, Set.of("solid_wall", "parapet")));
+        roles.add(new MKWorkspaceRoleSchema("keep.walkway.north", "linear_run", "walkway",
+                false, false, Set.of("open_walkway", "terrain_matched_allowed")));
+        roles.add(new MKWorkspaceRoleSchema("keep.walkway.east", "linear_run", "walkway",
+                false, false, Set.of("open_walkway", "terrain_matched_allowed")));
+        roles.add(new MKWorkspaceRoleSchema("keep.walkway.south", "linear_run", "walkway",
+                false, false, Set.of("open_walkway", "terrain_matched_allowed")));
+        roles.add(new MKWorkspaceRoleSchema("keep.walkway.west", "linear_run", "walkway",
+                false, false, Set.of("open_walkway", "terrain_matched_allowed")));
+        roles.add(new MKWorkspaceRoleSchema("keep.gate.main", "entry", "room",
+                false, true, Set.of("gate")));
+        return List.copyOf(roles);
+    }
+
+    private static void addTowerStackRoles(List<MKWorkspaceRoleSchema> roles, String stackId, Set<String> extraTags) {
+        roles.add(towerStackRole(stackId + ".basement_cap", "cap", "terminal_bottom", true, false, extraTags));
+        roles.add(towerStackRole(stackId + ".basement_cap_approach", "cap_approach", "room", false, false,
+                extraTags));
+        roles.add(towerStackRole(stackId + ".basement_entry", "floor", "room", false, false, extraTags));
+        roles.add(towerStackRole(stackId + ".basement_floor", "floor", "room", false, false, extraTags));
+        roles.add(towerStackRole(stackId + ".entry", "floor", "room", false, stackId.equals("keep.center"),
+                extraTags));
+        roles.add(towerStackRole(stackId + ".main_floor", "floor", "room", false, false, extraTags));
+        roles.add(towerStackRole(stackId + ".top_cap_approach", "cap_approach", "room", false, false, extraTags));
+        roles.add(towerStackRole(stackId + ".top_cap", "cap", "top_cap", true, false, extraTags));
+    }
+
+    private static MKWorkspaceRoleSchema towerStackRole(String roleId, String roleKind, String pieceKind,
+                                                        boolean terminal, boolean start, Set<String> extraTags) {
+        LinkedHashSet<String> tags = new LinkedHashSet<>();
+        tags.add("vertical_access");
+        tags.addAll(extraTags);
+        return new MKWorkspaceRoleSchema(roleId, roleKind, pieceKind, terminal, start, Set.copyOf(tags));
     }
 
     @Override
@@ -138,9 +200,11 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
         SlotAvailability slots = collectAvailableSlots(workspace);
         pieces.addAll(createCenterStackPieces(workspace, slots));
+        pieces.addAll(createCornerStackPieces(workspace, slots));
         workspace.familyDefinitions().stream()
                 .filter(family -> isActiveKeepSlot(workspace, family.topologySlotId()))
                 .filter(family -> !isCenterStackSlot(family.topologySlotId()))
+                .filter(family -> !isCornerStackSlot(family.topologySlotId()))
                 .map(family -> createRoomPiece(workspace, family, slots))
                 .forEach(pieces::add);
         workspace.linearRunFamilies().stream()
@@ -161,6 +225,33 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         return towerStackPlanner.createRoomPieces(workspace, stackDefinition, centerFamilies).stream()
                 .map(piece -> withRoomLayoutConnectors(piece, slots, opening))
                 .toList();
+    }
+
+    private List<MKPlannedPiece> createCornerStackPieces(MKStructureWorkspace workspace, SlotAvailability slots) {
+        ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
+        for (String stackId : activeCornerStackIds(workspace)) {
+            List<MKTowerWorkspaceFamilyDefinition> stackFamilies = workspace.familyDefinitions().stream()
+                    .filter(family -> family.topologySlotId().startsWith(stackId + "."))
+                    .toList();
+            MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped(stackId,
+                    floorSettingsForStack(workspace, stackId), false);
+            ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
+            towerStackPlanner.createRoomPieces(workspace, stackDefinition, stackFamilies).stream()
+                    .map(piece -> withRoomLayoutConnectors(piece, slots, opening))
+                    .forEach(pieces::add);
+        }
+        return List.copyOf(pieces);
+    }
+
+    private List<String> activeCornerStackIds(MKStructureWorkspace workspace) {
+        ArrayList<String> stackIds = new ArrayList<>();
+        if (workspace.topologyProfile().anySharedCornerTower()) {
+            stackIds.add("keep.corner.shared");
+        }
+        CONCRETE_CORNER_SLOTS.stream()
+                .filter(workspace.topologyProfile()::uniqueCornerTower)
+                .forEach(stackIds::add);
+        return List.copyOf(stackIds);
     }
 
     private MKTowerWorkspaceFloorSettings floorSettingsForStack(MKStructureWorkspace workspace, String stackId) {
@@ -199,7 +290,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 .map(MKTowerWorkspaceFamilyDefinition::topologySlotId)
                 .filter(MKWalledKeepWorkspacePlanner::isKnownKeepSlot)
                 .filter(slot -> isActiveKeepSlot(workspace, slot))
-                .forEach(slots::add);
+                .forEach(slot -> addAvailableSlot(slots, slot));
         workspace.linearRunFamilies().stream()
                 .map(MKWorkspaceLinearRunFamilyDefinition::topologySlotId)
                 .filter(MKWalledKeepWorkspacePlanner::isKnownKeepSlot)
@@ -213,6 +304,11 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             slots.addAll(sharedCornerSlots);
         }
         return new SlotAvailability(Set.copyOf(slots), Set.copyOf(sharedCornerSlots));
+    }
+
+    private static void addAvailableSlot(Set<String> slots, String topologySlotId) {
+        slots.add(topologySlotId);
+        cornerStackIdForSlot(topologySlotId).ifPresent(slots::add);
     }
 
     private MKPlannedPiece createRoomPiece(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family,
@@ -284,8 +380,14 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             }
             case "keep.corner.shared" -> addSharedCornerConnectors(connectors, slots.sharedCornerSlots(),
                     availableSlots, opening);
+            case "keep.corner.shared.entry" -> addSharedCornerConnectors(connectors, slots.sharedCornerSlots(),
+                    availableSlots, opening);
             case "keep.corner.north_west", "keep.corner.north_east", "keep.corner.south_east",
                  "keep.corner.south_west" -> addConcreteCornerConnectors(connectors, topologySlotId, availableSlots,
+                    opening);
+            case "keep.corner.north_west.entry", "keep.corner.north_east.entry", "keep.corner.south_east.entry",
+                 "keep.corner.south_west.entry" -> addConcreteCornerConnectors(connectors,
+                    topologySlotId.substring(0, topologySlotId.length() - ".entry".length()), availableSlots,
                     opening);
             default -> {
             }
@@ -465,6 +567,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         if (family.topologySlotId().startsWith("keep.center.")) {
             return "keep.center";
         }
+        Optional<String> cornerStackId = cornerStackIdForSlot(family.topologySlotId());
+        if (cornerStackId.isPresent()) {
+            return cornerStackId.get();
+        }
         if ("keep.corner.shared".equals(family.topologySlotId()) ||
                 CONCRETE_CORNER_SLOTS.contains(family.topologySlotId())) {
             return family.topologySlotId();
@@ -528,14 +634,35 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     }
 
     private static boolean isKnownKeepSlot(String topologySlotId) {
-        return KNOWN_KEEP_SLOTS.contains(topologySlotId);
+        return KNOWN_KEEP_SLOTS.contains(topologySlotId) ||
+                isCenterStackSlot(topologySlotId) ||
+                isCornerStackSlot(topologySlotId);
     }
 
     private static boolean isCenterStackSlot(String topologySlotId) {
         return topologySlotId.startsWith("keep.center.");
     }
 
+    private static boolean isCornerStackSlot(String topologySlotId) {
+        return cornerStackIdForSlot(topologySlotId)
+                .filter(stackId -> !stackId.equals(topologySlotId))
+                .isPresent();
+    }
+
+    private static Optional<String> cornerStackIdForSlot(String topologySlotId) {
+        if ("keep.corner.shared".equals(topologySlotId) || topologySlotId.startsWith("keep.corner.shared.")) {
+            return Optional.of("keep.corner.shared");
+        }
+        return CONCRETE_CORNER_SLOTS.stream()
+                .filter(slot -> topologySlotId.equals(slot) || topologySlotId.startsWith(slot + "."))
+                .findFirst();
+    }
+
     private static boolean isActiveKeepSlot(MKStructureWorkspace workspace, String topologySlotId) {
+        Optional<String> cornerStackId = cornerStackIdForSlot(topologySlotId);
+        if (cornerStackId.isPresent()) {
+            topologySlotId = cornerStackId.get();
+        }
         if ("keep.corner.shared".equals(topologySlotId)) {
             return workspace.topologyProfile().anySharedCornerTower();
         }

@@ -264,6 +264,12 @@ Family-level validation should focus on override legality:
 
 ## Implementation Phases
 
+### Current Implementation Status
+
+- Phase 2 is implemented: the standalone tower planner delegates room stack planning to `MKTowerStackPlanner`.
+- Phase 3 is implemented: the walled keep center stack uses the reusable stack planner with scoped stack pools.
+- Phase 4 is partially implemented: default shared corner towers now generate as full tower stacks, and the walled keep planner can plan active shared or unique corner stacks through the reusable stack planner. The remaining work is to finish topology-default editing, inherited family overrides, and stack-scoped vertical access settings.
+
 ### Phase 1: Model Reusable Tower Stack Slots
 
 - Add a stack slot id helper that maps `{stackId}` plus stack role to concrete slot ids.
