@@ -341,6 +341,26 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
             return true;
         });
         addRow(screen, content, screen.makeWhiteText(Component.literal("Basement Floors")), basementFloorsButton);
+
+        MKButton topCapApproachButton = new MKButton(
+                Component.literal(enabledLabel(editor.towerStackTopCapApproachEnabled(stackId))), 180, 20);
+        topCapApproachButton.setPressedCallback((button, mouseButton) -> {
+            editor.towerStackTopCapApproachEnabled(stackId, !editor.towerStackTopCapApproachEnabled(stackId));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Top Cap Approach")), topCapApproachButton);
+
+        MKButton basementCapApproachButton = new MKButton(
+                Component.literal(enabledLabel(editor.towerStackBasementCapApproachEnabled(stackId))), 180, 20);
+        basementCapApproachButton.setPressedCallback((button, mouseButton) -> {
+            editor.towerStackBasementCapApproachEnabled(stackId,
+                    !editor.towerStackBasementCapApproachEnabled(stackId));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Basement Cap Approach")),
+                basementCapApproachButton);
     }
 
     private void addCornerModeRow(MKWorkspaceScreen screen, MKStackLayoutVertical content, String label,

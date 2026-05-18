@@ -259,8 +259,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         return new MKTowerWorkspaceFloorSettings(
                 settings.mainFloors(),
                 settings.basementFloors(),
-                workspace.floorSettings().topCapApproachEnabled(),
-                workspace.floorSettings().basementCapApproachEnabled()
+                settings.topCapApproachEnabled(),
+                settings.basementCapApproachEnabled()
         );
     }
 

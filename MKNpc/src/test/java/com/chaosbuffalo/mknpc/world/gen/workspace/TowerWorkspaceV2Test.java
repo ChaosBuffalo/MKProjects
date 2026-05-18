@@ -490,6 +490,29 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void walledKeepStackSettingsControlCapApproachPiecesPerStack() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
+                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 1, 1, 7,
+                        false, true));
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                withCategoryProfiles(baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                        MKTowerWorkspaceCategoryProfile.createWalledKeepDefaults(dimensions)),
+                topologyProfile,
+                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+
+        assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_top_cap_approach")));
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_basement_cap_approach")));
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_shared_top_cap_approach")));
+        assertFalse(pieces.stream().anyMatch(piece ->
+                piece.pieceName().equals("keep_corner_shared_basement_cap_approach")));
+    }
+
+    @Test
     void walledKeepRuntimePoolsUseSlotGraphAndSharedCorners() {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),

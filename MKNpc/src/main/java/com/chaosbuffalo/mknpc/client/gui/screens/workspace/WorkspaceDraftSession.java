@@ -398,8 +398,7 @@ public class WorkspaceDraftSession {
         MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId);
         int normalizedMain = normalizeTowerStackMainFloorCount(settings, value, settings.basementFloors());
         int normalizedBasement = normalizeTowerStackBasementFloorCount(settings, settings.basementFloors(), normalizedMain);
-        replaceTowerStackSettings(new MKWorkspaceTowerStackSettings(
-                settings.stackId(), normalizedMain, normalizedBasement, settings.height()));
+        replaceTowerStackSettings(settings.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
 
     public int towerStackBasementFloors(String stackId) {
@@ -410,8 +409,29 @@ public class WorkspaceDraftSession {
         MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId);
         int normalizedBasement = normalizeTowerStackBasementFloorCount(settings, value, settings.mainFloors());
         int normalizedMain = normalizeTowerStackMainFloorCount(settings, settings.mainFloors(), normalizedBasement);
-        replaceTowerStackSettings(new MKWorkspaceTowerStackSettings(
-                settings.stackId(), normalizedMain, normalizedBasement, settings.height()));
+        replaceTowerStackSettings(settings.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
+    }
+
+    public boolean towerStackTopCapApproachEnabled(String stackId) {
+        return towerStackSettings(stackId).topCapApproachEnabled();
+    }
+
+    public void towerStackTopCapApproachEnabled(String stackId, boolean value) {
+        MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId).withTopCapApproachEnabled(value);
+        int normalizedMain = normalizeTowerStackMainFloorCount(settings, settings.mainFloors(), settings.basementFloors());
+        int normalizedBasement = normalizeTowerStackBasementFloorCount(settings, settings.basementFloors(), normalizedMain);
+        replaceTowerStackSettings(settings.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
+    }
+
+    public boolean towerStackBasementCapApproachEnabled(String stackId) {
+        return towerStackSettings(stackId).basementCapApproachEnabled();
+    }
+
+    public void towerStackBasementCapApproachEnabled(String stackId, boolean value) {
+        MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId).withBasementCapApproachEnabled(value);
+        int normalizedBasement = normalizeTowerStackBasementFloorCount(settings, settings.basementFloors(), settings.mainFloors());
+        int normalizedMain = normalizeTowerStackMainFloorCount(settings, settings.mainFloors(), normalizedBasement);
+        replaceTowerStackSettings(settings.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
 
     public int nextAllowedTowerStackMainFloorCount(String stackId, boolean reverse) {
@@ -1321,12 +1341,12 @@ public class WorkspaceDraftSession {
 
     private List<Integer> allowedTowerStackMainFloorCounts(MKWorkspaceTowerStackSettings settings, int basementFloors) {
         return MKTowerWorkspaceFloorSettings.allowedMainFloorCounts(categoryProfilesForTowerStack(settings),
-                basementFloors, draft().topCapApproachEnabled, draft().basementCapApproachEnabled);
+                basementFloors, settings.topCapApproachEnabled(), settings.basementCapApproachEnabled());
     }
 
     private List<Integer> allowedTowerStackBasementFloorCounts(MKWorkspaceTowerStackSettings settings, int mainFloors) {
         return MKTowerWorkspaceFloorSettings.allowedBasementFloorCounts(categoryProfilesForTowerStack(settings),
-                mainFloors, draft().topCapApproachEnabled, draft().basementCapApproachEnabled);
+                mainFloors, settings.topCapApproachEnabled(), settings.basementCapApproachEnabled());
     }
 
     private int normalizeTowerStackMainFloorCount(MKWorkspaceTowerStackSettings settings, int requestedCount,
@@ -1352,7 +1372,7 @@ public class WorkspaceDraftSession {
             MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId).withHeight(height);
             int mainFloors = normalizeTowerStackMainFloorCount(settings, settings.mainFloors(), settings.basementFloors());
             int basementFloors = normalizeTowerStackBasementFloorCount(settings, settings.basementFloors(), mainFloors);
-            replaceTowerStackSettings(new MKWorkspaceTowerStackSettings(stackId, mainFloors, basementFloors, height));
+            replaceTowerStackSettings(settings.withMainFloors(mainFloors).withBasementFloors(basementFloors));
         }
     }
 
