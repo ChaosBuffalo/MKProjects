@@ -254,6 +254,39 @@ public class WorkspaceDraftSession {
         snapDraftVerticalAccess();
     }
 
+    public void resetCurrentTopologyDefaults() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceStairAuthoringConfig defaultStairConfig = MKWorkspaceStairAuthoringConfig.defaultConfig();
+        MKTowerWorkspaceFloorSettings defaultFloorSettings = MKTowerWorkspaceFloorSettings.defaultSettings();
+        draft().stairMode = defaultStairConfig.mode();
+        draft().stairRiseType = defaultStairConfig.riseType();
+        draft().stairWidth = defaultStairConfig.stairWidth();
+        draft().verticalAccessPlacement = MKWorkspaceVerticalAccessSpec.defaultSpec().placement();
+        draft().shaftSize = MKWorkspaceVerticalAccessSpec.defaultSpec().shaftSize();
+        draft().mainFloors = defaultFloorSettings.mainFloors();
+        draft().basementFloors = defaultFloorSettings.basementFloors();
+        draft().topCapApproachEnabled = defaultFloorSettings.topCapApproachEnabled();
+        draft().basementCapApproachEnabled = defaultFloorSettings.basementCapApproachEnabled();
+        draft().openingProfiles = MKHorizontalOpeningProfile.createDefaults(dimensions);
+        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(draft().topologyProfile.profileType())) {
+            draft().categoryProfiles = MKTowerWorkspaceCategoryProfile.createWalledKeepDefaults(dimensions);
+            draft().familyDefinitions = MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions);
+            draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions,
+                    draft().palette);
+        } else {
+            draft().categoryProfiles = MKTowerWorkspaceCategoryProfile.createDefaults(dimensions);
+            draft().familyDefinitions = MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions);
+            draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.createDefaults(dimensions,
+                    draft().palette);
+        }
+        selectedFamilyCategory = MKTowerWorkspaceCategory.ENTRY;
+        selectedFamilyIndex = -1;
+        selectedFamilyExitIndex = -1;
+        selectedOpeningIndex = -1;
+        selectedHallwayIndex = -1;
+        snapDraftVerticalAccess();
+    }
+
     public ResourceLocation floorBlock() {
         return draft().palette.floorBlock();
     }

@@ -38,6 +38,17 @@ public class WorkspaceFormPage extends WorkspacePageBase {
         addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 5),
                 "Linear Run Families", "form_hallways");
 
+        MKButton resetDefaults = new MKButton(Component.literal("Reset Topology Defaults"), 220,
+                screen.buttonHeight());
+        root.addWidget(resetDefaults);
+        root.addConstraintToWidget(new CenterXConstraint(), resetDefaults);
+        resetDefaults.setY(firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 6));
+        resetDefaults.setPressedCallback((button, mouseButton) -> {
+            screen.draftSession().resetCurrentTopologyDefaults();
+            screen.flagNeedSetup();
+            return true;
+        });
+
         if (screen.draftSession().hasExistingWorkspacePieces()) {
             MKButton backToWorkspace = addBottomButton(screen, root,
                     Component.translatable("mknpc.workspace.button.back_to_workspace"), 180, 1);
