@@ -162,23 +162,23 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
         ));
         return List.of(
                 keepRun("keep_wall_north", "keep.wall.north", MKWorkspaceLinearRunKind.SOLID_WALL,
-                        "branch_opening", 15, 3, 5, wallFoundation),
+                        "branch_opening", 15, 3, 3, false, true, wallFoundation),
                 keepRun("keep_wall_east", "keep.wall.east", MKWorkspaceLinearRunKind.SOLID_WALL,
-                        "branch_opening", 15, 3, 5, wallFoundation),
+                        "branch_opening", 15, 3, 3, false, true, wallFoundation),
                 keepRun("keep_wall_south", "keep.wall.south", MKWorkspaceLinearRunKind.SOLID_WALL,
-                        "branch_opening", 15, 3, 5, wallFoundation),
+                        "branch_opening", 15, 3, 3, false, true, wallFoundation),
                 keepRun("keep_wall_west", "keep.wall.west", MKWorkspaceLinearRunKind.SOLID_WALL,
-                        "branch_opening", 15, 3, 5, wallFoundation),
+                        "branch_opening", 15, 3, 3, false, true, wallFoundation),
                 keepRun("keep_parapet_north", "keep.parapet.north", MKWorkspaceLinearRunKind.PARAPET,
-                        "branch_opening", 15, 3, 5, MKWorkspaceFoundationPolicy.none()),
+                        "branch_opening", 15, 3, 3, false, true, MKWorkspaceFoundationPolicy.none()),
                 keepRun("keep_parapet_east", "keep.parapet.east", MKWorkspaceLinearRunKind.PARAPET,
-                        "branch_opening", 15, 3, 5, MKWorkspaceFoundationPolicy.none()),
+                        "branch_opening", 15, 3, 3, false, true, MKWorkspaceFoundationPolicy.none()),
                 keepRun("keep_parapet_south", "keep.parapet.south", MKWorkspaceLinearRunKind.PARAPET,
-                        "branch_opening", 15, 3, 5, MKWorkspaceFoundationPolicy.none()),
+                        "branch_opening", 15, 3, 3, false, true, MKWorkspaceFoundationPolicy.none()),
                 keepRun("keep_parapet_west", "keep.parapet.west", MKWorkspaceLinearRunKind.PARAPET,
-                        "branch_opening", 15, 3, 5, MKWorkspaceFoundationPolicy.none()),
+                        "branch_opening", 15, 3, 3, false, true, MKWorkspaceFoundationPolicy.none()),
                 keepRun("keep_walkway_south", "keep.walkway.south", MKWorkspaceLinearRunKind.OPEN_WALKWAY,
-                        "main_opening", 9, dimensions.hallwayWidth(), 3, MKWorkspaceFoundationPolicy.none())
+                        "main_opening", 9, dimensions.hallwayWidth(), 3, true, false, MKWorkspaceFoundationPolicy.none())
         );
     }
 
@@ -186,6 +186,7 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
                                                                 MKWorkspaceLinearRunKind kind,
                                                                 String openingProfileId, int length,
                                                                 int interiorWidth, int interiorHeight,
+                                                                boolean allowOnMainPath, boolean allowOnBranchPath,
                                                                 MKWorkspaceFoundationPolicy foundationPolicy) {
         return new MKWorkspaceLinearRunFamilyDefinition(
                 linearRunId,
@@ -196,8 +197,8 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
                 interiorWidth,
                 interiorHeight,
                 0,
-                true,
-                true,
+                allowOnMainPath,
+                allowOnBranchPath,
                 MKWorkspaceLinearRunProjection.RIGID,
                 List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
                 foundationPolicy,

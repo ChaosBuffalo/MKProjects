@@ -329,6 +329,7 @@ class TowerWorkspaceV2Test {
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
 
+        assertEquals(List.of(), workspace.validate());
         List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
 
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_entry") &&
