@@ -293,9 +293,17 @@ class TowerWorkspaceV2Test {
 
     @Test
     void walledKeepTopologyProfileRoundTripsThroughWorkspaceTags() {
+        MKWorkspaceStairAuthoringConfig centerStairs = new MKWorkspaceStairAuthoringConfig(
+                MKWorkspaceStairMode.LADDER,
+                MKWorkspaceStairRiseType.MIXED,
+                2,
+                ResourceLocation.parse("minecraft:oak_stairs"),
+                ResourceLocation.parse("minecraft:oak_slab"),
+                ResourceLocation.parse("minecraft:vine")
+        );
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(true, false, true, false)
                 .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 2, 1, 9,
-                        19, 21, 5, MKVerticalAccessPlacement.EAST, true, false));
+                        19, 21, 5, MKVerticalAccessPlacement.EAST, centerStairs, true, false));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false)), List.of()),
                 topologyProfile,
@@ -319,6 +327,9 @@ class TowerWorkspaceV2Test {
         assertEquals(9, centerSettings.height());
         assertEquals(5, centerSettings.shaftSize());
         assertEquals(MKVerticalAccessPlacement.EAST, centerSettings.verticalAccessPlacement());
+        assertEquals(MKWorkspaceStairMode.LADDER, centerSettings.stairConfig().mode());
+        assertEquals(2, centerSettings.stairConfig().stairWidth());
+        assertEquals(ResourceLocation.parse("minecraft:vine"), centerSettings.stairConfig().ladderBlock());
     }
 
     @Test
@@ -525,9 +536,17 @@ class TowerWorkspaceV2Test {
     @Test
     void walledKeepStackSettingsControlCapApproachPiecesPerStack() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceStairAuthoringConfig centerStairs = new MKWorkspaceStairAuthoringConfig(
+                MKWorkspaceStairMode.LADDER,
+                MKWorkspaceStairRiseType.MIXED,
+                2,
+                ResourceLocation.parse("minecraft:stone_brick_stairs"),
+                ResourceLocation.parse("minecraft:stone_brick_slab"),
+                ResourceLocation.parse("minecraft:ladder")
+        );
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
                 .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 1, 1, 7,
-                        17, 17, 5, MKVerticalAccessPlacement.EAST, false, true));
+                        17, 17, 5, MKVerticalAccessPlacement.EAST, centerStairs, false, true));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 withCategoryProfiles(baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                         MKTowerWorkspaceCategoryProfile.createWalledKeepDefaults(dimensions)),
@@ -543,6 +562,10 @@ class TowerWorkspaceV2Test {
                 .findFirst()
                 .orElseThrow();
         assertEquals("east", centerEntry.tags().get(MKWorkspaceVerticalAccessTags.PLACEMENT_TAG));
+        assertEquals("ladder", centerEntry.tags().get("workspace_vertical_access_stair_mode"));
+        assertEquals("2", centerEntry.tags().get("workspace_vertical_access_stair_width"));
+        assertEquals(MKWorkspaceStairMode.LADDER,
+                workspace.stairConfigForPiece(pieceToDefinitionWithConnectors(workspace, centerEntry)).mode());
         assertTrue(centerEntry.connectors().stream()
                 .filter(connector -> connector.role() == MKConnectorRole.CONNECT_UP)
                 .anyMatch(connector -> connector.openingWidth() == 5 && connector.openingHeight() == 5));

@@ -274,6 +274,15 @@ public class MKStructureWorkspace {
             errors.addAll(categoryProfile.validate(verticalAccessSpec));
         }
         errors.addAll(floorSettings.validate(categoryProfiles));
+        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(topologyProfile.profileType())) {
+            for (MKWorkspaceTowerStackSettings settings : topologyProfile.towerStackSettings()) {
+                MKWorkspaceVerticalAccessSpec stackSpec = new MKWorkspaceVerticalAccessSpec(
+                        settings.shaftSize(), settings.verticalAccessPlacement(), settings.stairConfig());
+                for (String error : stackSpec.validate()) {
+                    errors.add("tower stack " + settings.stackId() + " " + error);
+                }
+            }
+        }
         for (MKTowerWorkspaceFamilyDefinition familyDefinition : familyDefinitions) {
             Optional<MKTowerWorkspaceCategoryProfile> familyCategory = categoryProfileForFamily(familyDefinition);
             if (familyCategory.isEmpty()) {
@@ -463,8 +472,16 @@ public class MKStructureWorkspace {
         return new MKWorkspaceVerticalAccessSpec(
                 settings.shaftSize(),
                 settings.verticalAccessPlacement(),
-                verticalAccessSpec.stairConfig()
+                settings.stairConfig()
         );
+    }
+
+    public MKWorkspaceStairAuthoringConfig stairConfigForPiece(MKWorkspacePieceDefinition piece) {
+        String stackId = piece.tags().getOrDefault("workspace_tower_stack_id", "");
+        if (stackId.isBlank() || !MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(topologyProfile.profileType())) {
+            return stairConfig;
+        }
+        return topologyProfile.towerStackSettingsOrDefault(stackId).stairConfig();
     }
 
     private String towerStackIdForFamily(String topologySlotId) {

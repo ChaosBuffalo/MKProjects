@@ -78,6 +78,7 @@ The standalone tower planner should become a thin wrapper around one tower stack
 - `length`
 - `shaftSize`
 - `verticalAccessPlacement`
+- `stairConfig`
 - `topCapApproachEnabled`
 - `basementCapApproachEnabled`
 
@@ -94,7 +95,8 @@ It should grow to include:
 - default foundation policy
 - top and bottom void defaults for eligible non-shaft pieces
 - stack-scoped vertical access settings
-  - remaining: stair mode, rise type, stair width, stair/slab/ladder blocks
+  - stored: shaft size, placement, stair mode, rise type, stair width, stair/slab/ladder blocks
+  - remaining: higher-level enable/group defaults once the resolver exists
 
 ## Stack-Scoped Vertical Access
 
@@ -273,8 +275,8 @@ Family-level validation should focus on override legality:
 - Phase 3 is implemented: the walled keep center stack uses the reusable stack planner with scoped stack pools.
 - Phase 4 is partially implemented: default shared corner towers now generate as full tower stacks, and the walled keep planner can plan active shared or unique corner stacks through the reusable stack planner.
 - Stack-level width, length, height, floor counts, and cap approach toggles are now represented in `MKWorkspaceTowerStackSettings` and applied to walled keep stack families as a bridge until the full resolver exists.
-- Stack-level vertical access shaft size and placement are now represented in `MKWorkspaceTowerStackSettings` and used by walled keep stack planning/validation.
-- The remaining work is to finish inherited family overrides, the rest of stack-scoped vertical access settings, and the resolver layer.
+- Stack-level vertical access shaft size, placement, stair mode, rise type, stair width, and stair/slab/ladder blocks are now represented in `MKWorkspaceTowerStackSettings` and used by walled keep stack planning, validation, and default stair generation.
+- The remaining work is to finish inherited family overrides and the resolver layer.
 
 ### Phase 1: Model Reusable Tower Stack Slots
 

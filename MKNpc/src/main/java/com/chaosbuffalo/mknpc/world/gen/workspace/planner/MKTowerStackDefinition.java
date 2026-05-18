@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
 
 public record MKTowerStackDefinition(
@@ -10,6 +11,7 @@ public record MKTowerStackDefinition(
         int basementFloors,
         int shaftSize,
         MKVerticalAccessPlacement verticalAccessPlacement,
+        MKWorkspaceStairAuthoringConfig stairConfig,
         boolean topCapApproachEnabled,
         boolean basementCapApproachEnabled,
         boolean startPiece,
@@ -30,6 +32,7 @@ public record MKTowerStackDefinition(
                 floorSettings.mainFloors(),
                 floorSettings.basementFloors(),
                 0,
+                null,
                 null,
                 floorSettings.topCapApproachEnabled(),
                 floorSettings.basementCapApproachEnabled(),
@@ -58,6 +61,7 @@ public record MKTowerStackDefinition(
                 floorSettings.basementFloors(),
                 stackSettings == null ? 0 : stackSettings.shaftSize(),
                 stackSettings == null ? null : stackSettings.verticalAccessPlacement(),
+                stackSettings == null ? null : stackSettings.stairConfig(),
                 floorSettings.topCapApproachEnabled(),
                 floorSettings.basementCapApproachEnabled(),
                 startPiece,

@@ -453,6 +453,76 @@ public class WorkspaceDraftSession {
         replaceTowerStackSettings(towerStackSettings(stackId).withVerticalAccessPlacement(value));
     }
 
+    public MKWorkspaceStairMode towerStackStairMode(String stackId) {
+        return towerStackSettings(stackId).stairConfig().mode();
+    }
+
+    public void towerStackStairMode(String stackId, MKWorkspaceStairMode value) {
+        MKWorkspaceStairAuthoringConfig config = towerStackSettings(stackId).stairConfig();
+        replaceTowerStackStairConfig(stackId, new MKWorkspaceStairAuthoringConfig(
+                value, config.riseType(), config.stairWidth(), config.stairBlock(), config.slabBlock(),
+                config.ladderBlock()));
+    }
+
+    public MKWorkspaceStairRiseType towerStackStairRiseType(String stackId) {
+        return towerStackSettings(stackId).stairConfig().riseType();
+    }
+
+    public void towerStackStairRiseType(String stackId, MKWorkspaceStairRiseType value) {
+        MKWorkspaceStairAuthoringConfig config = towerStackSettings(stackId).stairConfig();
+        replaceTowerStackStairConfig(stackId, new MKWorkspaceStairAuthoringConfig(
+                config.mode(), value, config.stairWidth(), config.stairBlock(), config.slabBlock(),
+                config.ladderBlock()));
+    }
+
+    public int towerStackStairWidth(String stackId) {
+        return towerStackSettings(stackId).stairConfig().stairWidth();
+    }
+
+    public void towerStackStairWidth(String stackId, int value) {
+        MKWorkspaceStairAuthoringConfig config = towerStackSettings(stackId).stairConfig();
+        replaceTowerStackStairConfig(stackId, new MKWorkspaceStairAuthoringConfig(
+                config.mode(), config.riseType(), value, config.stairBlock(), config.slabBlock(),
+                config.ladderBlock()));
+    }
+
+    public List<Integer> allowedTowerStackStairWidths(String stackId) {
+        return MKWorkspaceDimensions.getAllowedStairWidths(towerStackShaftSize(stackId));
+    }
+
+    public ResourceLocation towerStackStairBlock(String stackId) {
+        return towerStackSettings(stackId).stairConfig().stairBlock();
+    }
+
+    public void towerStackStairBlock(String stackId, ResourceLocation value) {
+        MKWorkspaceStairAuthoringConfig config = towerStackSettings(stackId).stairConfig();
+        replaceTowerStackStairConfig(stackId, new MKWorkspaceStairAuthoringConfig(
+                config.mode(), config.riseType(), config.stairWidth(), value, config.slabBlock(),
+                config.ladderBlock()));
+    }
+
+    public ResourceLocation towerStackSlabBlock(String stackId) {
+        return towerStackSettings(stackId).stairConfig().slabBlock();
+    }
+
+    public void towerStackSlabBlock(String stackId, ResourceLocation value) {
+        MKWorkspaceStairAuthoringConfig config = towerStackSettings(stackId).stairConfig();
+        replaceTowerStackStairConfig(stackId, new MKWorkspaceStairAuthoringConfig(
+                config.mode(), config.riseType(), config.stairWidth(), config.stairBlock(), value,
+                config.ladderBlock()));
+    }
+
+    public ResourceLocation towerStackLadderBlock(String stackId) {
+        return towerStackSettings(stackId).stairConfig().ladderBlock();
+    }
+
+    public void towerStackLadderBlock(String stackId, ResourceLocation value) {
+        MKWorkspaceStairAuthoringConfig config = towerStackSettings(stackId).stairConfig();
+        replaceTowerStackStairConfig(stackId, new MKWorkspaceStairAuthoringConfig(
+                config.mode(), config.riseType(), config.stairWidth(), config.stairBlock(), config.slabBlock(),
+                value));
+    }
+
     public int nextAllowedTowerStackMainFloorCount(String stackId, boolean reverse) {
         MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId);
         List<Integer> allowed = allowedTowerStackMainFloorCounts(settings, settings.basementFloors());
@@ -1341,6 +1411,13 @@ public class WorkspaceDraftSession {
 
     private void replaceTowerStackSettings(MKWorkspaceTowerStackSettings settings) {
         draft().topologyProfile = draft().topologyProfile.withTowerStackSettings(settings);
+    }
+
+    private void replaceTowerStackStairConfig(String stackId, MKWorkspaceStairAuthoringConfig stairConfig) {
+        MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId).withStairConfig(stairConfig);
+        int normalizedMain = normalizeTowerStackMainFloorCount(settings, settings.mainFloors(), settings.basementFloors());
+        int normalizedBasement = normalizeTowerStackBasementFloorCount(settings, settings.basementFloors(), normalizedMain);
+        replaceTowerStackSettings(settings.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
 
     private List<MKTowerWorkspaceCategoryProfile> categoryProfilesForTowerStack(MKWorkspaceTowerStackSettings settings) {

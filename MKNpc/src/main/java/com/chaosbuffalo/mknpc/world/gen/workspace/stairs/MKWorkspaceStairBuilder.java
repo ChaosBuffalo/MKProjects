@@ -40,7 +40,7 @@ public class MKWorkspaceStairBuilder {
 
     public MKWorkspacePieceDefinition generateForPiece(ServerLevel level, MKStructureWorkspace workspace,
                                                        MKWorkspacePieceDefinition piece) {
-        return generateForPiece(level, workspace, piece, workspace.stairConfig());
+        return generateForPiece(level, workspace, piece, workspace.stairConfigForPiece(piece));
     }
 
     public MKWorkspacePieceDefinition generateForPiece(ServerLevel level, MKStructureWorkspace workspace,

@@ -359,6 +359,37 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
         });
         addRow(screen, content, screen.makeWhiteText(Component.literal("Stair Placement")), stairPlacementButton);
 
+        MKButton stairModeButton = new MKButton(
+                getStairModeComponent(editor.towerStackStairMode(stackId)), 180, 20);
+        stairModeButton.setPressedCallback((button, mouseButton) -> {
+            editor.towerStackStairMode(stackId,
+                    cycleStairMode(editor.towerStackStairMode(stackId), isReverseClick(mouseButton)));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Stair Mode")), stairModeButton);
+
+        MKButton stairRiseButton = new MKButton(
+                getStairRiseTypeComponent(editor.towerStackStairRiseType(stackId)), 180, 20);
+        stairRiseButton.setPressedCallback((button, mouseButton) -> {
+            editor.towerStackStairRiseType(stackId, cycleValue(List.of(MKWorkspaceStairRiseType.values()),
+                    editor.towerStackStairRiseType(stackId), isReverseClick(mouseButton)));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Rise Type")), stairRiseButton);
+
+        MKButton stairWidthButton = new MKButton(
+                Component.literal(Integer.toString(editor.towerStackStairWidth(stackId))), 180, 20);
+        stairWidthButton.setPressedCallback((button, mouseButton) -> {
+            editor.towerStackStairWidth(stackId, cycleAllowedStairWidth(
+                    editor.towerStackShaftSize(stackId), editor.towerStackStairWidth(stackId),
+                    isReverseClick(mouseButton)));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Stair Width")), stairWidthButton);
+
         MKButton topCapApproachButton = new MKButton(
                 Component.literal(enabledLabel(editor.towerStackTopCapApproachEnabled(stackId))), 180, 20);
         topCapApproachButton.setPressedCallback((button, mouseButton) -> {
