@@ -124,7 +124,6 @@ public class MKStructureWorkspaceService {
                     workspace.previewMargin(),
                     workspace.verticalAccessSpec(),
                     workspace.floorSettings(),
-                    workspace.categoryProfiles(),
                     workspace.familyDefinitions(),
                     workspace.openingProfiles(),
                     workspace.linearRunFamilies(),
@@ -576,7 +575,6 @@ public class MKStructureWorkspaceService {
                 previewMargin,
                 alignVerticalAccessMaterials(workspace.verticalAccessSpec(), palette),
                 workspace.floorSettings(),
-                workspace.categoryProfiles(),
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
                 workspace.linearRunFamilies(),
@@ -603,19 +601,6 @@ public class MKStructureWorkspaceService {
                 source.previewMargin(),
                 alignVerticalAccessMaterials(source.verticalAccessSpec(), materialSource.palette()),
                 source.floorSettings(),
-                source.categoryProfiles().stream()
-                        .map(profile -> materialSource.categoryProfile(profile.category())
-                                .map(requested -> new com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile(
-                                        profile.category(),
-                                        profile.roomWidth(),
-                                        profile.roomLength(),
-                                        profile.fullHeight(),
-                                        profile.minMainPathPieces(),
-                                        profile.maxMainPathPieces(),
-                                        profile.maxBranchPiecesBeforeCap(),
-                                        requested.paletteOverride()))
-                                .orElse(profile))
-                        .toList(),
                 source.familyDefinitions().stream()
                         .map(family -> materialSource.familyDefinitions().stream()
                                 .filter(requested -> requested.baseName().equals(family.baseName()))

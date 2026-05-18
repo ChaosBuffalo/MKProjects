@@ -6,7 +6,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +34,6 @@ public class MKStructureWorkspace {
     private final MKVerticalAccessPlacement verticalAccessPlacement;
     private final MKWorkspaceVerticalAccessSpec verticalAccessSpec;
     private final MKTowerWorkspaceFloorSettings floorSettings;
-    private final List<MKTowerWorkspaceCategoryProfile> categoryProfiles;
     private final List<MKTowerWorkspaceFamilyDefinition> familyDefinitions;
     private final List<MKHorizontalOpeningProfile> openingProfiles;
     private final List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies;
@@ -54,14 +52,13 @@ public class MKStructureWorkspace {
                                 int previewMargin,
                                 MKWorkspaceVerticalAccessSpec verticalAccessSpec,
                                 MKTowerWorkspaceFloorSettings floorSettings,
-                                List<MKTowerWorkspaceCategoryProfile> categoryProfiles,
                                 List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
                                 List<MKHorizontalOpeningProfile> openingProfiles,
                                 List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
                                 long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces) {
         this(id, anchor, namespace, structureName, familyType, MKWorkspaceTopologyProfile.tower(), dimensions, palette,
                 stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
-                floorSettings, categoryProfiles, familyDefinitions, openingProfiles, linearRunFamilies,
+                floorSettings, familyDefinitions, openingProfiles, linearRunFamilies,
                 createdAt, updatedAt, pieces);
     }
 
@@ -74,7 +71,6 @@ public class MKStructureWorkspace {
                                 int previewMargin,
                                 MKWorkspaceVerticalAccessSpec verticalAccessSpec,
                                 MKTowerWorkspaceFloorSettings floorSettings,
-                                List<MKTowerWorkspaceCategoryProfile> categoryProfiles,
                                 List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
                                 List<MKHorizontalOpeningProfile> openingProfiles,
                                 List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
@@ -91,7 +87,6 @@ public class MKStructureWorkspace {
         this.verticalAccessPlacement = verticalAccessPlacement;
         this.verticalAccessSpec = verticalAccessSpec;
         this.floorSettings = floorSettings;
-        this.categoryProfiles = List.copyOf(categoryProfiles);
         this.familyDefinitions = List.copyOf(familyDefinitions);
         this.openingProfiles = List.copyOf(openingProfiles);
         this.linearRunFamilies = List.copyOf(linearRunFamilies);
@@ -120,7 +115,6 @@ public class MKStructureWorkspace {
                 4,
                 MKWorkspaceVerticalAccessSpec.defaultSpec(),
                 MKTowerWorkspaceFloorSettings.defaultSettings(),
-                MKTowerWorkspaceCategoryProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
                 MKTowerWorkspaceFamilyDefinition.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
                 MKHorizontalOpeningProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
                 List.of(),
@@ -142,13 +136,8 @@ public class MKStructureWorkspace {
                                                            SerializedWorkspaceCore core,
                                                            SerializedWorkspaceContent content) {
         MKWorkspaceVerticalAccessSpec resolvedVerticalAccessSpec = core.verticalAccessSpec();
-        List<MKTowerWorkspaceCategoryProfile> storedCategoryProfiles = List.copyOf(content.categoryProfiles());
-        List<MKTowerWorkspaceCategoryProfile> normalizationCategoryProfiles = storedCategoryProfiles.isEmpty() ?
-                MKWorkspaceTopologyCompatibility.categoryProfiles(core.topologyProfile(), core.dimensions(), List.of()) :
-                storedCategoryProfiles;
         MKTowerWorkspaceFloorSettings resolvedFloorSettings = content.floorSettings();
-        List<MKTowerWorkspaceFamilyDefinition> resolvedFamilyDefinitions =
-                MKTowerWorkspaceFamilyDefinition.normalize(content.familyDefinitions(), normalizationCategoryProfiles);
+        List<MKTowerWorkspaceFamilyDefinition> resolvedFamilyDefinitions = List.copyOf(content.familyDefinitions());
         List<MKHorizontalOpeningProfile> resolvedOpeningProfiles = content.openingProfiles().isEmpty() ?
                 MKHorizontalOpeningProfile.createDefaults(core.dimensions()) : List.copyOf(content.openingProfiles());
         List<MKWorkspaceLinearRunFamilyDefinition> resolvedLinearRunFamilies = List.copyOf(content.linearRunFamilies());
@@ -168,7 +157,6 @@ public class MKStructureWorkspace {
                 core.previewMargin(),
                 resolvedVerticalAccessSpec,
                 resolvedFloorSettings,
-                storedCategoryProfiles,
                 resolvedFamilyDefinitions,
                 resolvedOpeningProfiles,
                 resolvedLinearRunFamilies,
@@ -195,7 +183,6 @@ public class MKStructureWorkspace {
 
     private SerializedWorkspaceContent serializedContent() {
         return new SerializedWorkspaceContent(
-                categoryProfiles,
                 floorSettings,
                 familyDefinitions,
                 openingProfiles,
@@ -239,7 +226,6 @@ public class MKStructureWorkspace {
     }
 
     private record SerializedWorkspaceContent(
-            List<MKTowerWorkspaceCategoryProfile> categoryProfiles,
             MKTowerWorkspaceFloorSettings floorSettings,
             List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
             List<MKHorizontalOpeningProfile> openingProfiles,
@@ -249,8 +235,6 @@ public class MKStructureWorkspace {
             List<MKWorkspacePieceDefinition> pieces
     ) {
         private static final MapCodec<SerializedWorkspaceContent> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                MKTowerWorkspaceCategoryProfile.CODEC.listOf().optionalFieldOf("categoryProfiles", List.of())
-                        .forGetter(SerializedWorkspaceContent::categoryProfiles),
                 MKTowerWorkspaceFloorSettings.CODEC.fieldOf("floorSettings")
                         .forGetter(SerializedWorkspaceContent::floorSettings),
                 MKTowerWorkspaceFamilyDefinition.CODEC.listOf().optionalFieldOf("familyDefinitions", List.of())
@@ -268,17 +252,8 @@ public class MKStructureWorkspace {
 
     public List<String> validate() {
         List<String> errors = new ArrayList<>(verticalAccessSpec.validate());
-        java.util.Set<MKTowerWorkspaceCategory> categoriesWithProfiles = new java.util.LinkedHashSet<>();
-        for (MKTowerWorkspaceCategoryProfile categoryProfile : categoryProfiles) {
-            if (!categoriesWithProfiles.add(categoryProfile.category())) {
-                errors.add("tower workspace category profile must be unique: " + categoryProfile.category().getSerializedName());
-            }
-            if (topologyProfile.towerStackSettings().isEmpty()) {
-                errors.addAll(categoryProfile.validate(verticalAccessSpec));
-            }
-        }
         if (topologyProfile.towerStackSettings().isEmpty()) {
-            errors.addAll(floorSettings.validate(categoryProfiles));
+            errors.addAll(floorSettings.validate(MKTowerStackBudget.fromDimensions(dimensions)));
         } else {
             for (MKWorkspaceTowerStackSettings settings : topologyProfile.towerStackSettings()) {
                 errors.addAll(validateTowerStackFloorSettings(settings));
@@ -399,12 +374,12 @@ public class MKStructureWorkspace {
                 }
             }
         }
-        Optional<MKTowerWorkspaceCategoryProfile> mainProfile = categoryProfile(MKTowerWorkspaceCategory.MAIN);
-        if (topologyProfile.towerStackSettings().isEmpty() && mainProfile.isPresent()) {
+        if (topologyProfile.towerStackSettings().isEmpty()) {
+            int mainHeight = dimensions.roomHeight();
             List<Integer> allowedBandHeights = MKWorkspaceDimensions.getAllowedBandHeights(
                     verticalAccessSpec.stairConfig(),
                     verticalAccessSpec.shaftSize(),
-                    mainProfile.get().fullHeight(),
+                    mainHeight,
                     3,
                     16
             );
@@ -417,14 +392,14 @@ public class MKStructureWorkspace {
                 stairBandCategories.add(MKTowerWorkspaceCategory.TOP_CAP);
             }
             for (MKTowerWorkspaceCategory category : stairBandCategories) {
-                Optional<MKTowerWorkspaceCategoryProfile> profile = categoryProfile(category);
-                if (profile.isPresent() && !allowedBandHeights.contains(profile.get().fullHeight())) {
+                int categoryHeight = legacyHeightForCategory(category);
+                if (!allowedBandHeights.contains(categoryHeight)) {
                     errors.add(category.getSerializedName() + " full height must be one of " +
                             allowedBandHeights + " to stay in phase with main room height " +
-                            mainProfile.get().fullHeight());
+                            mainHeight);
                 }
             }
-            int bandCap = verticalAccessSpec.getBandCapForRequestedHeight(mainProfile.get().fullHeight());
+            int bandCap = verticalAccessSpec.getBandCapForRequestedHeight(mainHeight);
             for (MKWorkspaceLinearRunFamilyDefinition linearRunFamily : linearRunFamilies) {
                 int linearRunTopHeight = linearRunFamily.interiorHeight() + Math.abs(linearRunFamily.slopeDelta());
                 if (linearRunTopHeight > bandCap) {
@@ -458,8 +433,7 @@ public class MKStructureWorkspace {
                 settings.topCapApproachEnabled(),
                 settings.basementCapApproachEnabled()
         );
-        return stackFloorSettings.validate(MKWorkspaceTopologyCompatibility.categoryProfilesForStack(
-                        topologyProfile, settings, categoryProfiles)).stream()
+        return stackFloorSettings.validate(MKTowerStackBudget.fromStackSettings(settings)).stream()
                 .map(error -> "tower stack " + settings.stackId() + " " + error)
                 .toList();
     }
@@ -469,8 +443,16 @@ public class MKStructureWorkspace {
         if (stackSettings.isPresent()) {
             return Optional.of(stackSettings.get().height());
         }
-        return categoryProfile(MKWorkspaceTopologySlotMetadata.fromFamily(familyDefinition).category())
-                .map(MKTowerWorkspaceCategoryProfile::fullHeight);
+        int fallbackHeight = legacyHeightForCategory(MKWorkspaceTopologySlotMetadata.fromFamily(familyDefinition).category());
+        return Optional.of(Math.max(fallbackHeight, familyDefinition.roomHeight()));
+    }
+
+    private int legacyHeightForCategory(MKTowerWorkspaceCategory category) {
+        return switch (category) {
+            case ENTRY -> dimensions.entranceHeight();
+            case MAIN, TOP_CAP -> dimensions.roomHeight();
+            case BASEMENT, BASEMENT_CAP -> dimensions.basementHeight();
+        };
     }
 
     private MKWorkspaceVerticalAccessSpec verticalAccessSpecForFamily(MKTowerWorkspaceFamilyDefinition familyDefinition) {
@@ -536,7 +518,7 @@ public class MKStructureWorkspace {
     public MKStructureWorkspace withPieces(List<MKWorkspacePieceDefinition> newPieces) {
         return new MKStructureWorkspace(id, anchor, namespace, structureName, familyType, topologyProfile, dimensions, palette,
                 stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
-                floorSettings, categoryProfiles, familyDefinitions, openingProfiles, linearRunFamilies,
+                floorSettings, familyDefinitions, openingProfiles, linearRunFamilies,
                 createdAt, System.currentTimeMillis(), newPieces);
     }
 
@@ -590,20 +572,6 @@ public class MKStructureWorkspace {
 
     public MKTowerWorkspaceFloorSettings floorSettings() {
         return floorSettings;
-    }
-
-    public List<MKTowerWorkspaceCategoryProfile> categoryProfiles() {
-        return categoryProfiles;
-    }
-
-    public List<MKTowerWorkspaceCategoryProfile> compatibilityCategoryProfiles() {
-        return MKWorkspaceTopologyCompatibility.categoryProfilesForWorkspace(this);
-    }
-
-    public Optional<MKTowerWorkspaceCategoryProfile> categoryProfile(MKTowerWorkspaceCategory category) {
-        List<MKTowerWorkspaceCategoryProfile> profiles = topologyProfile.towerStackSettings().isEmpty() ?
-                categoryProfiles : compatibilityCategoryProfiles();
-        return profiles.stream().filter(profile -> profile.category() == category).findFirst();
     }
 
     public List<MKTowerWorkspaceFamilyDefinition> familyDefinitions() {

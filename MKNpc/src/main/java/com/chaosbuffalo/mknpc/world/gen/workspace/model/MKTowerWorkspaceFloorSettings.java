@@ -54,7 +54,7 @@ public class MKTowerWorkspaceFloorSettings {
         return MKWorkspaceCodecs.encodeNbt(CODEC, this, "tower workspace floor settings");
     }
 
-    public List<String> validate(List<MKTowerWorkspaceCategoryProfile> categoryProfiles) {
+    public List<String> validate(MKTowerStackBudget budget) {
         List<String> errors = new ArrayList<>();
         if (mainFloors < 0) {
             errors.add("main floor count must be at least 0");
@@ -62,31 +62,31 @@ public class MKTowerWorkspaceFloorSettings {
         if (basementFloors < 0) {
             errors.add("basement floor count must be at least 0");
         }
-        List<Integer> allowedMainFloors = allowedMainFloorCounts(categoryProfiles, basementFloors,
+        List<Integer> allowedMainFloors = allowedMainFloorCounts(budget, basementFloors,
                 topCapApproachEnabled, basementCapApproachEnabled);
         if (!allowedMainFloors.contains(mainFloors)) {
-            errors.add("main floor count must be one of " + allowedMainFloors + " for the current category heights");
+            errors.add("main floor count must be one of " + allowedMainFloors + " for the current stack heights");
         }
-        List<Integer> allowedBasementFloors = allowedBasementFloorCounts(categoryProfiles, mainFloors,
+        List<Integer> allowedBasementFloors = allowedBasementFloorCounts(budget, mainFloors,
                 topCapApproachEnabled, basementCapApproachEnabled);
         if (!allowedBasementFloors.contains(basementFloors)) {
-            errors.add("basement floor count must be one of " + allowedBasementFloors + " for the current category heights");
+            errors.add("basement floor count must be one of " + allowedBasementFloors + " for the current stack heights");
         }
         return errors;
     }
 
-    public static List<Integer> allowedMainFloorCounts(List<MKTowerWorkspaceCategoryProfile> categoryProfiles,
+    public static List<Integer> allowedMainFloorCounts(MKTowerStackBudget budget,
                                                        int basementFloors) {
-        return allowedMainFloorCounts(categoryProfiles, basementFloors, true, false);
+        return allowedMainFloorCounts(budget, basementFloors, true, false);
     }
 
-    public static List<Integer> allowedMainFloorCounts(List<MKTowerWorkspaceCategoryProfile> categoryProfiles,
+    public static List<Integer> allowedMainFloorCounts(MKTowerStackBudget budget,
                                                        int basementFloors, boolean topCapApproachEnabled,
                                                        boolean basementCapApproachEnabled) {
         List<Integer> allowed = new ArrayList<>();
         int maxFloors = Math.max(0, MAX_CHAIN_PIECES - getUpwardFixedPieces(topCapApproachEnabled));
         for (int candidate = 0; candidate <= maxFloors; candidate++) {
-            if (fitsBudget(categoryProfiles, candidate, Math.max(0, basementFloors),
+            if (fitsBudget(budget, candidate, Math.max(0, basementFloors),
                     topCapApproachEnabled, basementCapApproachEnabled)) {
                 allowed.add(candidate);
             }
@@ -97,18 +97,18 @@ public class MKTowerWorkspaceFloorSettings {
         return allowed;
     }
 
-    public static List<Integer> allowedBasementFloorCounts(List<MKTowerWorkspaceCategoryProfile> categoryProfiles,
+    public static List<Integer> allowedBasementFloorCounts(MKTowerStackBudget budget,
                                                            int mainFloors) {
-        return allowedBasementFloorCounts(categoryProfiles, mainFloors, true, false);
+        return allowedBasementFloorCounts(budget, mainFloors, true, false);
     }
 
-    public static List<Integer> allowedBasementFloorCounts(List<MKTowerWorkspaceCategoryProfile> categoryProfiles,
+    public static List<Integer> allowedBasementFloorCounts(MKTowerStackBudget budget,
                                                            int mainFloors, boolean topCapApproachEnabled,
                                                            boolean basementCapApproachEnabled) {
         List<Integer> allowed = new ArrayList<>();
         int maxFloors = Math.max(0, MAX_CHAIN_PIECES - getDownwardFixedPieces(basementCapApproachEnabled));
         for (int candidate = 0; candidate <= maxFloors; candidate++) {
-            if (fitsBudget(categoryProfiles, Math.max(0, mainFloors), candidate,
+            if (fitsBudget(budget, Math.max(0, mainFloors), candidate,
                     topCapApproachEnabled, basementCapApproachEnabled)) {
                 allowed.add(candidate);
             }
@@ -119,26 +119,17 @@ public class MKTowerWorkspaceFloorSettings {
         return allowed;
     }
 
-    private static boolean fitsBudget(List<MKTowerWorkspaceCategoryProfile> categoryProfiles, int mainFloors,
-                                      int basementFloors) {
-        return fitsBudget(categoryProfiles, mainFloors, basementFloors, true, false);
+    private static boolean fitsBudget(MKTowerStackBudget budget, int mainFloors, int basementFloors) {
+        return fitsBudget(budget, mainFloors, basementFloors, true, false);
     }
 
-    private static boolean fitsBudget(List<MKTowerWorkspaceCategoryProfile> categoryProfiles, int mainFloors,
-                                      int basementFloors, boolean topCapApproachEnabled,
+    private static boolean fitsBudget(MKTowerStackBudget budget, int mainFloors, int basementFloors,
+                                      boolean topCapApproachEnabled,
                                       boolean basementCapApproachEnabled) {
-        MKTowerWorkspaceCategoryProfile entry = findProfile(categoryProfiles, MKTowerWorkspaceCategory.ENTRY);
-        MKTowerWorkspaceCategoryProfile main = findProfile(categoryProfiles, MKTowerWorkspaceCategory.MAIN);
-        MKTowerWorkspaceCategoryProfile basement = findProfile(categoryProfiles, MKTowerWorkspaceCategory.BASEMENT);
-        MKTowerWorkspaceCategoryProfile topCap = findProfile(categoryProfiles, MKTowerWorkspaceCategory.TOP_CAP);
-        MKTowerWorkspaceCategoryProfile basementCap = findProfile(categoryProfiles, MKTowerWorkspaceCategory.BASEMENT_CAP);
-        if (entry == null || main == null || basement == null || topCap == null || basementCap == null) {
-            return false;
-        }
-        int upwardSpan = entry.fullHeight() + (mainFloors * main.fullHeight()) + topCap.exportedFullHeight() +
-                (topCapApproachEnabled ? topCap.fullHeight() : 0);
-        int downwardSpan = ((basementFloors + 1) * basement.fullHeight()) + basementCap.exportedFullHeight() +
-                (basementCapApproachEnabled ? basementCap.fullHeight() : 0);
+        int upwardSpan = budget.entryHeight() + (mainFloors * budget.mainFloorHeight()) + budget.topCapHeight() +
+                (topCapApproachEnabled ? budget.topCapHeight() : 0);
+        int downwardSpan = ((basementFloors + 1) * budget.basementFloorHeight()) + budget.basementCapHeight() +
+                (basementCapApproachEnabled ? budget.basementCapHeight() : 0);
         int totalSpan = upwardSpan + downwardSpan;
         return upwardSpan <= DEFAULT_VERTICAL_RADIUS &&
                 downwardSpan <= DEFAULT_VERTICAL_RADIUS &&
@@ -151,14 +142,6 @@ public class MKTowerWorkspaceFloorSettings {
 
     private static int getDownwardFixedPieces(boolean basementCapApproachEnabled) {
         return basementCapApproachEnabled ? DOWNWARD_FIXED_PIECES + 1 : DOWNWARD_FIXED_PIECES;
-    }
-
-    private static MKTowerWorkspaceCategoryProfile findProfile(List<MKTowerWorkspaceCategoryProfile> categoryProfiles,
-                                                               MKTowerWorkspaceCategory category) {
-        return categoryProfiles.stream()
-                .filter(profile -> profile.category() == category)
-                .findFirst()
-                .orElse(null);
     }
 
     public int mainFloors() {

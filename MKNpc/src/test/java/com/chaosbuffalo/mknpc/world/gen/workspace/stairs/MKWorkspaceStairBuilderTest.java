@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.stairs;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
@@ -95,7 +95,7 @@ class MKWorkspaceStairBuilderTest {
         MKWorkspacePieceDefinition bottomCap = verticalCapPiece(Direction.UP,
                 MKWorkspaceVerticalAccessTags.BOTTOM_CAP_TAG,
                 new BoundingBox(0, 0, 0, 10, 8, 10),
-                Map.of(MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG, "2"));
+                Map.of(MKWorkspaceVoidMarginTags.BOTTOM_VOID_MARGIN_TAG, "2"));
 
         MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry = builder.getGenerationGeometry(workspace, bottomCap);
 
@@ -111,7 +111,7 @@ class MKWorkspaceStairBuilderTest {
         MKWorkspacePieceDefinition topCap = verticalCapPiece(Direction.DOWN,
                 MKWorkspaceVerticalAccessTags.TOP_CAP_TAG,
                 new BoundingBox(0, 0, 0, 10, 8, 10),
-                Map.of(MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG, "2"));
+                    Map.of(MKWorkspaceVoidMarginTags.TOP_VOID_MARGIN_TAG, "2"));
 
         MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry = builder.getGenerationGeometry(workspace, topCap);
 

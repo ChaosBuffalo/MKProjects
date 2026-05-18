@@ -250,7 +250,6 @@ public class MKWorkspacePieceRelayoutService {
                 previewMargin,
                 workspace.verticalAccessSpec(),
                 workspace.floorSettings(),
-                workspace.categoryProfiles(),
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
                 workspace.linearRunFamilies(),

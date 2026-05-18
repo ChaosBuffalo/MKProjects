@@ -5,7 +5,6 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
@@ -17,6 +16,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceI
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
 import net.minecraft.core.Direction;
 
 import java.util.ArrayList;
@@ -458,11 +458,11 @@ public class MKTowerStackPlanner {
             return;
         }
         if (resolvedFamily.topVoidMargin() > 0) {
-            tags.put(MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG,
+            tags.put(MKWorkspaceVoidMarginTags.TOP_VOID_MARGIN_TAG,
                     Integer.toString(resolvedFamily.topVoidMargin()));
         }
         if (resolvedFamily.bottomVoidMargin() > 0) {
-            tags.put(MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG,
+            tags.put(MKWorkspaceVoidMarginTags.BOTTOM_VOID_MARGIN_TAG,
                     Integer.toString(resolvedFamily.bottomVoidMargin()));
         }
     }

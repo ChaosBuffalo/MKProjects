@@ -15,16 +15,17 @@ public record MKWorkspaceTopologyPathSettings(
         int maxMainPathPieces,
         int maxBranchPiecesBeforeCap
 ) {
-    public static final int MAX_BRANCH_PIECES_BEFORE_CAP =
-            MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP;
+    public static final int DEFAULT_MIN_MAIN_PATH_PIECES = 1;
+    public static final int DEFAULT_MAX_MAIN_PATH_PIECES = 2;
+    public static final int DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP = 10;
+    public static final int MAX_BRANCH_PIECES_BEFORE_CAP = DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP;
     public static final Codec<MKWorkspaceTopologyPathSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("category_id").forGetter(MKWorkspaceTopologyPathSettings::categoryId),
-            Codec.INT.optionalFieldOf("min_main_path_pieces", MKTowerWorkspaceCategoryProfile.DEFAULT_MIN_MAIN_PATH_PIECES)
+            Codec.INT.optionalFieldOf("min_main_path_pieces", DEFAULT_MIN_MAIN_PATH_PIECES)
                     .forGetter(MKWorkspaceTopologyPathSettings::minMainPathPieces),
-            Codec.INT.optionalFieldOf("max_main_path_pieces", MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_MAIN_PATH_PIECES)
+            Codec.INT.optionalFieldOf("max_main_path_pieces", DEFAULT_MAX_MAIN_PATH_PIECES)
                     .forGetter(MKWorkspaceTopologyPathSettings::maxMainPathPieces),
-            Codec.INT.optionalFieldOf("max_branch_pieces_before_cap",
-                            MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP)
+            Codec.INT.optionalFieldOf("max_branch_pieces_before_cap", DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP)
                     .forGetter(MKWorkspaceTopologyPathSettings::maxBranchPiecesBeforeCap)
     ).apply(instance, MKWorkspaceTopologyPathSettings::new));
 
@@ -33,8 +34,7 @@ public record MKWorkspaceTopologyPathSettings(
         minMainPathPieces = Math.max(0, minMainPathPieces);
         maxMainPathPieces = Math.max(minMainPathPieces, maxMainPathPieces);
         maxBranchPiecesBeforeCap = Math.max(0, Math.min(
-                MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP,
-                maxBranchPiecesBeforeCap));
+                DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP, maxBranchPiecesBeforeCap));
     }
 
     public static List<MKWorkspaceTopologyPathSettings> defaults() {
@@ -48,9 +48,9 @@ public record MKWorkspaceTopologyPathSettings(
     public static MKWorkspaceTopologyPathSettings defaultForCategory(String categoryId) {
         return new MKWorkspaceTopologyPathSettings(
                 categoryId,
-                MKTowerWorkspaceCategoryProfile.DEFAULT_MIN_MAIN_PATH_PIECES,
-                MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_MAIN_PATH_PIECES,
-                MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP
+                DEFAULT_MIN_MAIN_PATH_PIECES,
+                DEFAULT_MAX_MAIN_PATH_PIECES,
+                DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP
         );
     }
 

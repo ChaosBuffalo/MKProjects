@@ -3,7 +3,6 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.client.gui.widgets.MKBranchExitMaskWidget;
 import com.chaosbuffalo.mknpc.client.gui.widgets.MKIntegerSlider;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationMode;
@@ -11,6 +10,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPol
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomGeometry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
@@ -543,7 +543,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
 
     private void addVoidMarginRows(MKWorkspaceScreen screen, MKStackLayoutVertical root, WorkspaceDraftSession editor,
                                    int familyIndex, MKTowerWorkspaceFamilyDefinition family, int resolvedHeight) {
-        int minInteriorHeight = MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT;
+        int minInteriorHeight = MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT;
         int topMarginMax = Math.max(0, resolvedHeight - family.bottomVoidMargin() - minInteriorHeight);
         MKIntegerSlider topVoidMarginSlider = new MKIntegerSlider("Margin", 180, 20, 0, topMarginMax, 1,
                 clamp(family.topVoidMargin(), 0, topMarginMax), value ->

@@ -4,7 +4,6 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
@@ -18,6 +17,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceI
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import net.minecraft.core.Direction;
@@ -550,7 +550,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         tags.put("workspace_linear_run_slope_delta", Integer.toString(linearRun.slopeDelta()));
         tags.put("workspace_opening_profile_id", linearRun.openingProfileId());
         if (linearRun.topVoidMargin() > 0) {
-            tags.put(MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG, Integer.toString(linearRun.topVoidMargin()));
+            tags.put(MKWorkspaceVoidMarginTags.TOP_VOID_MARGIN_TAG, Integer.toString(linearRun.topVoidMargin()));
         }
         applyFoundationTags(linearRun.foundationPolicy(), tags);
         new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,

@@ -4,10 +4,7 @@ import java.util.Optional;
 
 public final class MKWorkspacePaletteResolver {
     public MKWorkspaceMaterialPalette resolveCategory(MKStructureWorkspace workspace, MKTowerWorkspaceCategory category) {
-        return workspace.categoryProfile(category)
-                .flatMap(MKTowerWorkspaceCategoryProfile::paletteOverrideOpt)
-                .map(override -> override.resolve(workspace.palette()))
-                .orElse(workspace.palette());
+        return workspace.palette();
     }
 
     public MKWorkspaceMaterialPalette resolveFamily(MKStructureWorkspace workspace, MKWorkspacePaletteFamily family) {

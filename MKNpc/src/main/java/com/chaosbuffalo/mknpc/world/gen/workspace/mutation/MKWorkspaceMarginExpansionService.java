@@ -5,12 +5,12 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
@@ -585,21 +585,21 @@ public class MKWorkspaceMarginExpansionService {
         if (MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags())) {
             return 0;
         }
-        return Math.max(0, parseIntTag(piece.tags(), MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG, 0));
+        return Math.max(0, parseIntTag(piece.tags(), MKWorkspaceVoidMarginTags.TOP_VOID_MARGIN_TAG, 0));
     }
 
     private int getBottomVoidMargin(MKPlannedPiece piece) {
         if (MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags())) {
             return 0;
         }
-        return Math.max(0, parseIntTag(piece.tags(), MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG, 0));
+        return Math.max(0, parseIntTag(piece.tags(), MKWorkspaceVoidMarginTags.BOTTOM_VOID_MARGIN_TAG, 0));
     }
 
     private int getBottomVoidMargin(MKWorkspacePieceDefinition piece) {
         if (MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags())) {
             return 0;
         }
-        return Math.max(0, parseIntTag(piece.tags(), MKTowerWorkspaceCategoryProfile.BOTTOM_VOID_MARGIN_TAG, 0));
+        return Math.max(0, parseIntTag(piece.tags(), MKWorkspaceVoidMarginTags.BOTTOM_VOID_MARGIN_TAG, 0));
     }
 
     private int parseIntTag(Map<String, String> tags, String tagName, int fallback) {
@@ -627,7 +627,6 @@ public class MKWorkspaceMarginExpansionService {
                 workspace.previewMargin(),
                 workspace.verticalAccessSpec(),
                 workspace.floorSettings(),
-                workspace.categoryProfiles(),
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
                 workspace.linearRunFamilies(),

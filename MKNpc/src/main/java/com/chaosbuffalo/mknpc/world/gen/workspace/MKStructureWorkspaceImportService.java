@@ -6,7 +6,6 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
@@ -22,7 +21,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyCompatibility;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
@@ -198,22 +196,6 @@ public class MKStructureWorkspaceImportService {
                         verticalAccessSpecExport.stairConfig().ladderBlock()
                 )
         );
-        List<MKTowerWorkspaceCategoryProfile> categoryProfiles = settings.categoryProfiles().stream()
-                .map(profile -> new MKTowerWorkspaceCategoryProfile(
-                        profile.category(),
-                        profile.roomWidth(),
-                        profile.roomLength(),
-                        profile.fullHeight(),
-                        profile.minMainPathPieces(),
-                        profile.maxMainPathPieces(),
-                        profile.maxBranchPiecesBeforeCap(),
-                        profile.paletteOverride()
-                ))
-                .toList();
-        List<MKTowerWorkspaceCategoryProfile> categoryProfilesForNormalization = categoryProfiles.isEmpty() ?
-                MKWorkspaceTopologyCompatibility.categoryProfiles(
-                        settings.topologyProfile(), workspaceDimensions, List.of()) :
-                categoryProfiles;
         MKWorkspaceExportManifest.ExportFloorSettings floorSettingsExport = settings.floorSettings();
         MKTowerWorkspaceFloorSettings floorSettings = new MKTowerWorkspaceFloorSettings(
                 floorSettingsExport.mainFloors(),
@@ -249,7 +231,6 @@ public class MKStructureWorkspaceImportService {
                         family.paletteOverride()
                 ))
                 .toList();
-        familyDefinitions = MKTowerWorkspaceFamilyDefinition.normalize(familyDefinitions, categoryProfilesForNormalization);
         List<MKHorizontalOpeningProfile> openingProfiles = settings.openingProfiles().stream()
                 .map(profile -> new MKHorizontalOpeningProfile(
                         profile.profileId(),
@@ -304,7 +285,6 @@ public class MKStructureWorkspaceImportService {
                 settings.previewMargin(),
                 verticalAccessSpec,
                 floorSettings,
-                categoryProfiles,
                 familyDefinitions,
                 openingProfiles,
                 linearRunFamilies,

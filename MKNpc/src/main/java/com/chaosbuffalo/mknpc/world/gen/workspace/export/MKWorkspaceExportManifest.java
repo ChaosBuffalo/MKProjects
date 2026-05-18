@@ -4,7 +4,6 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategoryProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
@@ -27,7 +26,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
@@ -126,9 +124,6 @@ public record MKWorkspaceExportManifest(
                         ExportVerticalAccessSpec.from(workspace.verticalAccessSpec()),
                         ExportFloorSettings.from(workspace.floorSettings()),
                         workspace.topologyProfile(),
-                        workspace.compatibilityCategoryProfiles().stream()
-                                .map(profile -> ExportCategoryProfile.from(workspace, profile))
-                                .toList(),
                         workspace.familyDefinitions().stream().map(ExportFamilyDefinition::from).toList(),
                         workspace.openingProfiles().stream().map(ExportOpeningProfile::from).toList(),
                         workspace.linearRunFamilies().stream().map(ExportLinearRunFamily::from).toList()
@@ -325,7 +320,6 @@ public record MKWorkspaceExportManifest(
             ExportVerticalAccessSpec verticalAccessSpec,
             ExportFloorSettings floorSettings,
             MKWorkspaceTopologyProfile topologyProfile,
-            List<ExportCategoryProfile> categoryProfiles,
             List<ExportFamilyDefinition> familyDefinitions,
             List<ExportOpeningProfile> openingProfiles,
             List<ExportLinearRunFamily> linearRunFamilies
@@ -345,7 +339,6 @@ public record MKWorkspaceExportManifest(
                         .forGetter(ExportWorkspaceSettings::floorSettings),
                 MKWorkspaceTopologyProfile.CODEC.optionalFieldOf("topology_profile", MKWorkspaceTopologyProfile.tower())
                         .forGetter(ExportWorkspaceSettings::topologyProfile),
-                ExportCategoryProfile.CODEC.listOf().optionalFieldOf("category_profiles", List.of()).forGetter(ExportWorkspaceSettings::categoryProfiles),
                 ExportFamilyDefinition.CODEC.listOf().optionalFieldOf("family_definitions", List.of()).forGetter(ExportWorkspaceSettings::familyDefinitions),
                 ExportOpeningProfile.CODEC.listOf().optionalFieldOf("opening_profiles", List.of()).forGetter(ExportWorkspaceSettings::openingProfiles),
                 ExportLinearRunFamily.CODEC.listOf().optionalFieldOf("linear_run_families", List.of()).forGetter(ExportWorkspaceSettings::linearRunFamilies)
@@ -397,54 +390,6 @@ public record MKWorkspaceExportManifest(
         public static ExportFloorSettings from(MKTowerWorkspaceFloorSettings settings) {
             return new ExportFloorSettings(settings.mainFloors(), settings.basementFloors(),
                     settings.topCapApproachEnabled(), settings.basementCapApproachEnabled());
-        }
-    }
-
-    public record ExportCategoryProfile(
-            MKTowerWorkspaceCategory category,
-            int roomWidth,
-            int roomLength,
-            int minMainPathPieces,
-            int maxMainPathPieces,
-            int maxBranchPiecesBeforeCap,
-            int fullHeight,
-            @Nullable MKWorkspacePaletteOverride paletteOverride
-    ) {
-        public static final Codec<ExportCategoryProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                towerCategoryCodec().fieldOf("category").forGetter(ExportCategoryProfile::category),
-                Codec.INT.fieldOf("room_width").forGetter(ExportCategoryProfile::roomWidth),
-                Codec.INT.fieldOf("room_length").forGetter(ExportCategoryProfile::roomLength),
-                Codec.INT.optionalFieldOf("min_main_path_pieces", MKTowerWorkspaceCategoryProfile.DEFAULT_MIN_MAIN_PATH_PIECES)
-                        .forGetter(ExportCategoryProfile::minMainPathPieces),
-                Codec.INT.optionalFieldOf("max_main_path_pieces", MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_MAIN_PATH_PIECES)
-                        .forGetter(ExportCategoryProfile::maxMainPathPieces),
-                Codec.INT.optionalFieldOf("max_branch_pieces_before_cap",
-                                MKTowerWorkspaceCategoryProfile.DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP)
-                        .forGetter(ExportCategoryProfile::maxBranchPiecesBeforeCap),
-                Codec.INT.optionalFieldOf("full_height", 3).forGetter(ExportCategoryProfile::fullHeight),
-                MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
-                        .forGetter(ExportCategoryProfile::paletteOverrideOpt)
-        ).apply(instance, (category, roomWidth, roomLength, minMainPathPieces, maxMainPathPieces,
-                           maxBranchPiecesBeforeCap, fullHeight, paletteOverride) ->
-                new ExportCategoryProfile(category, roomWidth, roomLength, minMainPathPieces, maxMainPathPieces,
-                        maxBranchPiecesBeforeCap, fullHeight, paletteOverride.orElse(null))));
-
-        public static ExportCategoryProfile from(MKStructureWorkspace workspace, MKTowerWorkspaceCategoryProfile profile) {
-            MKWorkspaceTopologyPathSettings pathSettings = workspace.topologyPathSettings(profile.category());
-            return new ExportCategoryProfile(
-                    profile.category(),
-                    profile.roomWidth(),
-                    profile.roomLength(),
-                    pathSettings.minMainPathPieces(),
-                    pathSettings.maxMainPathPieces(),
-                    pathSettings.maxBranchPiecesBeforeCap(),
-                    profile.fullHeight(),
-                    profile.paletteOverride()
-            );
-        }
-
-        public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {
-            return Optional.ofNullable(paletteOverride);
         }
     }
 
