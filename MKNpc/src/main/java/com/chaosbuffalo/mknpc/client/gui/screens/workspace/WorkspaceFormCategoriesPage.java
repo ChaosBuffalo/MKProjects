@@ -108,15 +108,15 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
         addTowerStackSizingRows(screen, content, "tower.primary", "Primary Tower");
         addTowerStackFloorRows(screen, content, "tower.primary");
 
-        MKText legacyText = screen.makeWhiteText(Component.literal(
-                "Transitional family defaults remain available below until category profiles are fully replaced by topology defaults and family overrides."));
-        legacyText.setWidth(screen.contentWidth());
-        legacyText.setMultiline(true);
-        content.addWidget(legacyText);
-        content.addConstraintToWidget(MarginConstraint.LEFT, legacyText);
+        MKText pathText = screen.makeWhiteText(Component.literal(
+                "Path depth defaults remain below until tower pathing moves to topology-run settings."));
+        pathText.setWidth(screen.contentWidth());
+        pathText.setMultiline(true);
+        content.addWidget(pathText);
+        content.addConstraintToWidget(MarginConstraint.LEFT, pathText);
 
         for (MKTowerWorkspaceCategory category : MKTowerWorkspaceCategory.values()) {
-            addCategoryProfileSection(screen, content, category);
+            addTowerPathDefaultsSection(screen, content, category);
         }
 
         finishScrollContent(screen, scrollView, content);
@@ -124,8 +124,8 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
         return root;
     }
 
-    private void addCategoryProfileSection(MKWorkspaceScreen screen, MKStackLayoutVertical content,
-                                           MKTowerWorkspaceCategory category) {
+    private void addTowerPathDefaultsSection(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                             MKTowerWorkspaceCategory category) {
         WorkspaceDraftSession editor = screen.draftSession();
         MKTowerWorkspaceCategoryProfile profile = editor.getCategoryProfile(category);
         MKText header = screen.makeWhiteText(Component.literal(formatTopologyLabel(category.getSerializedName())));
@@ -133,28 +133,13 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
         content.addConstraintToWidget(MarginConstraint.LEFT, header);
 
         MKText summary = screen.makeWhiteText(Component.literal(
-                profile.roomWidth() + "x" + profile.roomLength() +
-                        (showCategoryPathControls(editor, category) ? "  |  path " +
-                                profile.minMainPathPieces() + "-" + profile.maxMainPathPieces() : "") +
-                        "  |  branch cap " + profile.maxBranchPiecesBeforeCap()));
+                (showCategoryPathControls(editor, category) ? "path " +
+                        profile.minMainPathPieces() + "-" + profile.maxMainPathPieces() + "  |  " : "") +
+                        "branch cap " + profile.maxBranchPiecesBeforeCap()));
         summary.setWidth(screen.contentWidth());
         summary.setMultiline(true);
         content.addWidget(summary);
         content.addConstraintToWidget(MarginConstraint.LEFT, summary);
-
-        MKIntegerSlider roomWidthSlider = new MKIntegerSlider("Width", 180, 20, 1, 45, 2, profile.roomWidth(),
-                value -> editor.replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
-                        profile.category(), value, profile.roomLength(), profile.fullHeight(),
-                        profile.minMainPathPieces(), profile.maxMainPathPieces(),
-                        profile.maxBranchPiecesBeforeCap(), profile.paletteOverride())));
-        MKIntegerSlider roomLengthSlider = new MKIntegerSlider("Length", 180, 20, 1, 45, 2, profile.roomLength(),
-                value -> editor.replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
-                        profile.category(), profile.roomWidth(), value, profile.fullHeight(),
-                        profile.minMainPathPieces(), profile.maxMainPathPieces(),
-                        profile.maxBranchPiecesBeforeCap(), profile.paletteOverride())));
-
-        addRow(screen, content, screen.makeWhiteText(Component.literal("Room Width")), roomWidthSlider);
-        addRow(screen, content, screen.makeWhiteText(Component.literal("Room Length")), roomLengthSlider);
         if (showCategoryPathControls(editor, category)) {
             MKIntegerSlider minPathSlider = new MKIntegerSlider("Min", 180, 20, 0, 10, 1,
                     profile.minMainPathPieces(), value -> editor.replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
@@ -175,8 +160,6 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
                 profile.category(), profile.roomWidth(), profile.roomLength(), profile.fullHeight(),
                 profile.minMainPathPieces(), profile.maxMainPathPieces(), value, profile.paletteOverride())));
         addRow(screen, content, screen.makeWhiteText(Component.literal("Branch Cap Max")), maxBranchBeforeCapSlider);
-        screen.addPaletteOverrideRows(content, "Palette Overrides", editor.draftBasePalette(), profile.paletteOverrideOpt(),
-                override -> editor.replaceCategoryProfile(editor.copyCategoryProfile(profile, override)));
     }
 
     private void addCornerSizingSection(MKWorkspaceScreen screen, MKStackLayoutVertical content, String topologySlotId) {
@@ -339,25 +322,6 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
             return true;
         });
         addRow(screen, content, screen.makeWhiteText(Component.literal(label)), modeButton);
-    }
-
-    private void addCategoryHeightRow(MKWorkspaceScreen screen, MKStackLayoutVertical content,
-                                      MKTowerWorkspaceCategory category) {
-        WorkspaceDraftSession editor = screen.draftSession();
-        MKTowerWorkspaceCategoryProfile profile = editor.getCategoryProfile(category);
-        MKIntegerSlider heightSlider = new MKIntegerSlider("Height", 180, 20,
-                editor.allowedFullHeightsForCategory(category), profile.fullHeight(), value -> {
-            editor.replaceCategoryProfile(new MKTowerWorkspaceCategoryProfile(
-                    profile.category(), profile.roomWidth(), profile.roomLength(),
-                    value,
-                    profile.minMainPathPieces(), profile.maxMainPathPieces(),
-                    profile.maxBranchPiecesBeforeCap(),
-                    profile.paletteOverride()));
-            screen.flagNeedSetup();
-        });
-        addRow(screen, content,
-                screen.makeWhiteText(Component.literal(formatTopologyLabel(category.getSerializedName()) + " Height")),
-                heightSlider);
     }
 
     private boolean showCategoryPathControls(WorkspaceDraftSession editor, MKTowerWorkspaceCategory category) {
