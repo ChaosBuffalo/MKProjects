@@ -952,19 +952,7 @@ public class WorkspaceDraftSession {
 
     public MKStructureWorkspace buildWorkspaceDraft() {
         snapDraftVerticalAccess();
-        MKTowerWorkspaceCategoryProfile entryProfile = getCategoryProfile(MKTowerWorkspaceCategory.ENTRY);
-        MKTowerWorkspaceCategoryProfile mainProfile = getCategoryProfile(MKTowerWorkspaceCategory.MAIN);
-        MKTowerWorkspaceCategoryProfile basementProfile = getCategoryProfile(MKTowerWorkspaceCategory.BASEMENT);
-        MKWorkspaceDimensions dimensions = new MKWorkspaceDimensions(
-                mainProfile.roomWidth(),
-                mainProfile.roomLength(),
-                entryProfile.fullHeight(),
-                mainProfile.fullHeight(),
-                basementProfile.fullHeight(),
-                draft().shaftSize,
-                deriveDoorwayWidth(),
-                deriveDoorwayHeight()
-        );
+        MKWorkspaceDimensions dimensions = legacyDimensionsFromTopologySettings();
         MKWorkspaceMaterialPalette palette = basePalette();
         MKWorkspaceStairAuthoringConfig stairConfig = makeStairConfig();
         MKWorkspaceVerticalAccessSpec verticalAccessSpec = new MKWorkspaceVerticalAccessSpec(draft().shaftSize,
@@ -1419,6 +1407,27 @@ public class WorkspaceDraftSession {
                 .orElse(screen.workspace() != null ? screen.workspace().dimensions().doorwayHeight() : 3);
     }
 
+    private MKWorkspaceDimensions legacyDimensionsFromTopologySettings() {
+        MKWorkspaceTowerStackSettings primaryStack = primaryDimensionStackSettings();
+        return new MKWorkspaceDimensions(
+                primaryStack.width(),
+                primaryStack.length(),
+                primaryStack.height(),
+                primaryStack.height(),
+                primaryStack.height(),
+                primaryStack.shaftSize(),
+                deriveDoorwayWidth(),
+                deriveDoorwayHeight()
+        );
+    }
+
+    private MKWorkspaceTowerStackSettings primaryDimensionStackSettings() {
+        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(topologyProfileType())) {
+            return towerStackSettings("keep.center");
+        }
+        return towerStackSettings(TOWER_PRIMARY_STACK_ID);
+    }
+
     public Optional<MKHorizontalOpeningProfile> getOpeningProfile(String profileId) {
         return draft().openingProfiles.stream()
                 .filter(profile -> profile.profileId().equals(profileId))
@@ -1474,13 +1483,15 @@ public class WorkspaceDraftSession {
     }
 
     public List<Integer> allowedMainFloorCounts(int basementFloors) {
-        return MKTowerWorkspaceFloorSettings.allowedMainFloorCounts(draft().categoryProfiles, basementFloors,
-                draft().topCapApproachEnabled, draft().basementCapApproachEnabled);
+        MKWorkspaceTowerStackSettings settings = primaryDimensionStackSettings()
+                .withBasementFloors(basementFloors);
+        return allowedTowerStackMainFloorCounts(settings, basementFloors);
     }
 
     public List<Integer> allowedBasementFloorCounts(int mainFloors) {
-        return MKTowerWorkspaceFloorSettings.allowedBasementFloorCounts(draft().categoryProfiles, mainFloors,
-                draft().topCapApproachEnabled, draft().basementCapApproachEnabled);
+        MKWorkspaceTowerStackSettings settings = primaryDimensionStackSettings()
+                .withMainFloors(mainFloors);
+        return allowedTowerStackBasementFloorCounts(settings, mainFloors);
     }
 
     public int nextAllowedMainFloorCount(int currentCount, int basementFloors, boolean reverse) {
@@ -1559,18 +1570,18 @@ public class WorkspaceDraftSession {
     }
 
     private List<MKTowerWorkspaceCategoryProfile> categoryProfilesForTowerStack(MKWorkspaceTowerStackSettings settings) {
-        int height = Math.max(3, settings.height());
-        return draft().categoryProfiles.stream()
-                .map(profile -> new MKTowerWorkspaceCategoryProfile(
-                        profile.category(),
-                        profile.roomWidth(),
-                        profile.roomLength(),
-                        height,
-                        profile.minMainPathPieces(),
-                        profile.maxMainPathPieces(),
-                        profile.maxBranchPiecesBeforeCap(),
-                        profile.paletteOverride()))
-                .toList();
+        return List.of(
+                stackBudgetProfile(MKTowerWorkspaceCategory.ENTRY, settings),
+                stackBudgetProfile(MKTowerWorkspaceCategory.MAIN, settings),
+                stackBudgetProfile(MKTowerWorkspaceCategory.BASEMENT, settings),
+                stackBudgetProfile(MKTowerWorkspaceCategory.TOP_CAP, settings),
+                stackBudgetProfile(MKTowerWorkspaceCategory.BASEMENT_CAP, settings)
+        );
+    }
+
+    private MKTowerWorkspaceCategoryProfile stackBudgetProfile(MKTowerWorkspaceCategory category,
+                                                              MKWorkspaceTowerStackSettings settings) {
+        return new MKTowerWorkspaceCategoryProfile(category, settings.width(), settings.length(), settings.height());
     }
 
     private List<Integer> allowedTowerStackMainFloorCounts(MKWorkspaceTowerStackSettings settings, int basementFloors) {

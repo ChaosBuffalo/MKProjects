@@ -331,19 +331,27 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
     public List<String> validate(List<MKTowerWorkspaceFamilyDefinition> allFamilies,
                                  MKTowerWorkspaceCategoryProfile categoryProfile,
                                  MKWorkspaceVerticalAccessSpec verticalAccessSpec) {
-        return validate(allFamilies, categoryProfile, verticalAccessSpec, roomWidth, roomLength, roomHeight);
+        return validate(allFamilies, categoryProfile.fullHeight(), verticalAccessSpec, roomWidth, roomLength, roomHeight);
     }
 
     public List<String> validate(List<MKTowerWorkspaceFamilyDefinition> allFamilies,
                                  MKTowerWorkspaceCategoryProfile categoryProfile,
                                  MKWorkspaceVerticalAccessSpec verticalAccessSpec,
                                  MKWorkspaceResolvedFamilySettings resolvedFamily) {
-        return validate(allFamilies, categoryProfile, verticalAccessSpec,
+        return validate(allFamilies, categoryProfile.fullHeight(), verticalAccessSpec,
+                resolvedFamily.roomWidth(), resolvedFamily.roomLength(), resolvedFamily.roomHeight());
+    }
+
+    public List<String> validate(List<MKTowerWorkspaceFamilyDefinition> allFamilies,
+                                 int maxRoomHeight,
+                                 MKWorkspaceVerticalAccessSpec verticalAccessSpec,
+                                 MKWorkspaceResolvedFamilySettings resolvedFamily) {
+        return validate(allFamilies, maxRoomHeight, verticalAccessSpec,
                 resolvedFamily.roomWidth(), resolvedFamily.roomLength(), resolvedFamily.roomHeight());
     }
 
     private List<String> validate(List<MKTowerWorkspaceFamilyDefinition> allFamilies,
-                                  MKTowerWorkspaceCategoryProfile categoryProfile,
+                                  int maxRoomHeight,
                                   MKWorkspaceVerticalAccessSpec verticalAccessSpec,
                                   int resolvedRoomWidth,
                                   int resolvedRoomLength,
@@ -377,14 +385,14 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
             if (resolvedRoomLength < verticalAccessSpec.shaftSize()) {
                 errors.add("family " + baseName + " room length must be at least the shared shaft size");
             }
-            if (resolvedRoomHeight != categoryProfile.fullHeight()) {
-                errors.add("family " + baseName + " shaft-enabled room height must match category full height " +
-                        categoryProfile.fullHeight());
+            if (resolvedRoomHeight != maxRoomHeight) {
+                errors.add("family " + baseName + " shaft-enabled room height must match topology height " +
+                        maxRoomHeight);
             }
         } else if (resolvedRoomHeight < MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT ||
-                resolvedRoomHeight > categoryProfile.fullHeight()) {
-            errors.add("family " + baseName + " non-shaft room height must be within category range " +
-                    MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT + "-" + categoryProfile.fullHeight());
+                resolvedRoomHeight > maxRoomHeight) {
+            errors.add("family " + baseName + " non-shaft room height must be within topology range " +
+                    MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT + "-" + maxRoomHeight);
         }
         if (supportsVerticalAccess() && (topVoidMargin > 0 || bottomVoidMargin > 0)) {
             errors.add("family " + baseName + " shaft-enabled room cannot define top or bottom void margins");

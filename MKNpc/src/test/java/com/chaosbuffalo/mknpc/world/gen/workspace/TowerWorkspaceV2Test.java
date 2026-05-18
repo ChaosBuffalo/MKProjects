@@ -2337,6 +2337,54 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void stackBackedValidationDoesNotRequireCategoryProfiles() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                ),
+                List.of(
+                        new MKWorkspaceLinearRunFamilyDefinition("entry_run",
+                                MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR, "entry_main", 5, 3, 3, 0,
+                                true, false, MKWorkspaceLinearRunProjection.RIGID,
+                                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT), workspacePalette().floorBlock(),
+                                workspacePalette().wallBlock(), workspacePalette().ceilingBlock()),
+                        new MKWorkspaceLinearRunFamilyDefinition("branch_run",
+                                MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR, "main_branch", 5, 3, 3, 0,
+                                false, true, MKWorkspaceLinearRunProjection.RIGID,
+                                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT), workspacePalette().floorBlock(),
+                                workspacePalette().wallBlock(), workspacePalette().ceilingBlock())
+                )
+        );
+        workspace = new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.topologyProfile(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
+                List.of(),
+                workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.linearRunFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces()
+        );
+
+        assertEquals(List.of(), workspace.validate());
+    }
+
+    @Test
     void validationAllowsCategoryBandsWithIndependentlyResolvedCanonicalProfiles() {
         MKStructureWorkspace workspace = baseWorkspace(
                 List.of(
