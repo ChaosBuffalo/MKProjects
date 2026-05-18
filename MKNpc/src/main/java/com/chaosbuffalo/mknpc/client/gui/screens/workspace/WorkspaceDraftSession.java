@@ -946,6 +946,10 @@ public class WorkspaceDraftSession {
         return towerStackSettings(stackId).foundationPolicy();
     }
 
+    public boolean familyHasTopologyStack(MKTowerWorkspaceFamilyDefinition family) {
+        return towerStackIdForTopologySlot(family.topologySlotId()).isPresent();
+    }
+
     public MKStructureWorkspace buildWorkspaceDraft() {
         snapDraftVerticalAccess();
         MKTowerWorkspaceCategoryProfile entryProfile = getCategoryProfile(MKTowerWorkspaceCategory.ENTRY);

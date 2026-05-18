@@ -27,7 +27,7 @@ public class WorkspaceFormIdentityPage extends WorkspacePageBase {
 
         addTitle(screen, root, Component.literal("Identity & Bounds"));
         MKText helpText = addHeaderText(screen, root, Component.literal(
-                "Configure workspace naming and scaffold/export margins. Room geometry now lives entirely in category profiles."));
+                "Configure workspace naming, topology profile, and scaffold/export margins."));
 
         MKScrollView scrollView = addScrollBelowHeader(screen, root, helpText);
         MKStackLayoutVertical content = createContentStack(screen);

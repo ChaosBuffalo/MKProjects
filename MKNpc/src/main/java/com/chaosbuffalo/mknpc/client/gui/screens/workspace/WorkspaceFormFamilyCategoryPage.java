@@ -56,7 +56,10 @@ public class WorkspaceFormFamilyCategoryPage extends WorkspacePageBase {
             content.addWidget(header);
             content.addConstraintToWidget(MarginConstraint.LEFT, header);
             MKText summary = screen.makeWhiteText(Component.literal(
-                    family.roomWidth() + "x" + family.roomLength() + "x" + family.roomHeight() + "  |  " +
+                    editor.resolvedFamilyRoomWidth(family) + "x" +
+                            editor.resolvedFamilyRoomLength(family) + "x" +
+                            editor.resolvedFamilyRoomHeight(family) +
+                            (editor.familyHasTopologyStack(family) ? " stack" : "") + "  |  " +
                             formatTopologyLabel(family.pieceRole().getSerializedName()) + "  |  exits " +
                             summarizeFamilyExits(family) + "  |  shaft " +
                             (family.supportsVerticalAccess() ? "yes" : "no")));
