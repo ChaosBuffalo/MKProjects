@@ -431,6 +431,28 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void walledKeepValidationAllowsIndependentTowerStackHeights() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
+                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 1, 1, 9))
+                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.corner.shared", 1, 1, 7));
+        List<MKTowerWorkspaceFamilyDefinition> families = MKTowerWorkspaceFamilyDefinition
+                .createWalledKeepDefaults(dimensions).stream()
+                .map(family -> family.topologySlotId().startsWith("keep.center.") ?
+                        copyFamilyWithHeight(family, 9) : family)
+                .toList();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                withCategoryProfiles(baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                        MKTowerWorkspaceCategoryProfile.createWalledKeepDefaults(dimensions)),
+                topologyProfile,
+                families,
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+
+        assertEquals(List.of(), workspace.validate());
+    }
+
+    @Test
     void walledKeepPlannerTagsTowerStacksAndLinearRunVoidMargins() {
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
                 .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 3, 2, 7));
@@ -2510,6 +2532,27 @@ class TowerWorkspaceV2Test {
             return ResourceLocation.parse(poolName);
         }
         return ResourceLocation.parse(workspace.namespace() + ":" + workspace.structureName() + "/" + poolName);
+    }
+
+    private static MKTowerWorkspaceFamilyDefinition copyFamilyWithHeight(MKTowerWorkspaceFamilyDefinition family,
+                                                                         int height) {
+        return new MKTowerWorkspaceFamilyDefinition(
+                family.baseName(),
+                family.category(),
+                family.pieceRole(),
+                family.topologySlotId(),
+                family.verticalAccessGroupId(),
+                family.supportsVerticalAccess(),
+                family.roomWidth(),
+                family.roomLength(),
+                height,
+                family.horizontalExtrusionMode(),
+                family.horizontalExits(),
+                family.topVoidMargin(),
+                family.bottomVoidMargin(),
+                family.foundationPolicy(),
+                family.paletteOverride()
+        );
     }
 
     private static void assertRuntimePoolContains(MKStructureWorkspace workspace,

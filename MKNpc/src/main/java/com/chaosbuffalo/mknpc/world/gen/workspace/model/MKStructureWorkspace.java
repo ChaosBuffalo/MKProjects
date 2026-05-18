@@ -275,7 +275,7 @@ public class MKStructureWorkspace {
         }
         errors.addAll(floorSettings.validate(categoryProfiles));
         for (MKTowerWorkspaceFamilyDefinition familyDefinition : familyDefinitions) {
-            Optional<MKTowerWorkspaceCategoryProfile> familyCategory = categoryProfile(familyDefinition.category());
+            Optional<MKTowerWorkspaceCategoryProfile> familyCategory = categoryProfileForFamily(familyDefinition);
             if (familyCategory.isEmpty()) {
                 errors.add("family " + familyDefinition.baseName() + " references missing category profile " +
                         familyDefinition.category().getSerializedName());
@@ -427,6 +427,53 @@ public class MKStructureWorkspace {
             errors.add("preview margin must be at least 2");
         }
         return errors;
+    }
+
+    private Optional<MKTowerWorkspaceCategoryProfile> categoryProfileForFamily(
+            MKTowerWorkspaceFamilyDefinition familyDefinition) {
+        Optional<MKTowerWorkspaceCategoryProfile> profileOpt = categoryProfile(familyDefinition.category());
+        if (profileOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        String stackId = towerStackIdForFamily(familyDefinition.topologySlotId());
+        if (stackId.isBlank()) {
+            return profileOpt;
+        }
+        MKTowerWorkspaceCategoryProfile profile = profileOpt.get();
+        int stackHeight = topologyProfile.towerStackSettingsOrDefault(stackId).height();
+        return Optional.of(new MKTowerWorkspaceCategoryProfile(
+                profile.category(),
+                profile.roomWidth(),
+                profile.roomLength(),
+                stackHeight,
+                profile.minMainPathPieces(),
+                profile.maxMainPathPieces(),
+                profile.maxBranchPiecesBeforeCap(),
+                profile.paletteOverride()
+        ));
+    }
+
+    private String towerStackIdForFamily(String topologySlotId) {
+        if (!MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(topologyProfile.profileType())) {
+            return "";
+        }
+        if (topologySlotId.startsWith("keep.center.")) {
+            return "keep.center";
+        }
+        if (topologySlotId.startsWith("keep.corner.shared.")) {
+            return "keep.corner.shared";
+        }
+        for (String cornerStackId : List.of(
+                "keep.corner.north_west",
+                "keep.corner.north_east",
+                "keep.corner.south_east",
+                "keep.corner.south_west"
+        )) {
+            if (topologySlotId.startsWith(cornerStackId + ".")) {
+                return cornerStackId;
+            }
+        }
+        return "";
     }
 
     public MKStructureWorkspace withPieces(List<MKWorkspacePieceDefinition> newPieces) {
