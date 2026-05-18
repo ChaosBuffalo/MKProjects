@@ -14,11 +14,13 @@ public record MKWorkspaceResolvedFamilySettings(
                                                          MKTowerWorkspaceFamilyDefinition familyDefinition) {
         MKWorkspaceMaterialPalette palette = new MKWorkspacePaletteResolver()
                 .resolveFamily(workspace, familyDefinition);
+        MKWorkspaceTowerStackSettings stackSettings = workspace.towerStackSettingsForFamily(familyDefinition)
+                .orElse(null);
         return new MKWorkspaceResolvedFamilySettings(
                 familyDefinition,
-                familyDefinition.roomWidth(),
-                familyDefinition.roomLength(),
-                familyDefinition.roomHeight(),
+                stackSettings == null ? familyDefinition.roomWidth() : stackSettings.width(),
+                stackSettings == null ? familyDefinition.roomLength() : stackSettings.length(),
+                stackSettings == null ? familyDefinition.roomHeight() : stackSettings.height(),
                 familyDefinition.topVoidMargin(),
                 familyDefinition.bottomVoidMargin(),
                 familyDefinition.foundationPolicy(),

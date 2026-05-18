@@ -14,6 +14,8 @@ import java.util.Optional;
 import java.util.Set;
 
 public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamily {
+    private static final String PRIMARY_TOWER_STACK_ID = "tower.primary";
+
     public static final Codec<MKTowerWorkspaceFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("baseName").forGetter(MKTowerWorkspaceFamilyDefinition::baseName),
             MKWorkspaceCodecs.TOWER_CATEGORY_CODEC.fieldOf("category").forGetter(MKTowerWorkspaceFamilyDefinition::category),
@@ -183,33 +185,63 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                 .orElseThrow();
         return List.of(
                 new MKTowerWorkspaceFamilyDefinition("entry", MKTowerWorkspaceCategory.ENTRY,
-                        MKWorkspacePieceRole.ENTRY, true,
+                        MKWorkspacePieceRole.ENTRY, MKTowerWorkspaceStackSlot.ENTRY.slotId(PRIMARY_TOWER_STACK_ID),
+                        PRIMARY_TOWER_STACK_ID, true,
                         entry.roomWidth(), entry.roomLength(), entry.fullHeight(),
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
                         List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
                                 MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY, "main_opening",
-                                MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION))),
+                                MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION)),
+                        0, 0, MKWorkspaceFoundationPolicy.none(), null),
                 new MKTowerWorkspaceFamilyDefinition("floor_main", MKTowerWorkspaceCategory.MAIN,
-                        MKWorkspacePieceRole.FLOOR_MAIN, true,
-                        main.roomWidth(), main.roomLength(), main.fullHeight(), List.of()),
+                        MKWorkspacePieceRole.FLOOR_MAIN,
+                        MKTowerWorkspaceStackSlot.MAIN_FLOOR.slotId(PRIMARY_TOWER_STACK_ID),
+                        PRIMARY_TOWER_STACK_ID, true,
+                        main.roomWidth(), main.roomLength(), main.fullHeight(),
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
+                        MKWorkspaceFoundationPolicy.none(), null),
                 new MKTowerWorkspaceFamilyDefinition("top_cap_approach", MKTowerWorkspaceCategory.TOP_CAP,
-                        MKWorkspacePieceRole.TOP_CAP_APPROACH, true,
-                        top_cap.roomWidth(), top_cap.roomLength(), top_cap.fullHeight(), List.of()),
+                        MKWorkspacePieceRole.TOP_CAP_APPROACH,
+                        MKTowerWorkspaceStackSlot.TOP_CAP_APPROACH.slotId(PRIMARY_TOWER_STACK_ID),
+                        PRIMARY_TOWER_STACK_ID, true,
+                        top_cap.roomWidth(), top_cap.roomLength(), top_cap.fullHeight(),
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
+                        MKWorkspaceFoundationPolicy.none(), null),
                 new MKTowerWorkspaceFamilyDefinition("top_cap", MKTowerWorkspaceCategory.TOP_CAP,
-                        MKWorkspacePieceRole.TOP_CAP, true,
-                        top_cap.roomWidth(), top_cap.roomLength(), top_cap.fullHeight(), List.of()),
+                        MKWorkspacePieceRole.TOP_CAP,
+                        MKTowerWorkspaceStackSlot.TOP_CAP.slotId(PRIMARY_TOWER_STACK_ID),
+                        PRIMARY_TOWER_STACK_ID, true,
+                        top_cap.roomWidth(), top_cap.roomLength(), top_cap.fullHeight(),
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
+                        MKWorkspaceFoundationPolicy.none(), null),
                 new MKTowerWorkspaceFamilyDefinition("basement_entry", MKTowerWorkspaceCategory.BASEMENT,
-                        MKWorkspacePieceRole.BASEMENT_ENTRY, true,
-                        basement.roomWidth(), basement.roomLength(), basement.fullHeight(), List.of()),
+                        MKWorkspacePieceRole.BASEMENT_ENTRY,
+                        MKTowerWorkspaceStackSlot.BASEMENT_ENTRY.slotId(PRIMARY_TOWER_STACK_ID),
+                        PRIMARY_TOWER_STACK_ID, true,
+                        basement.roomWidth(), basement.roomLength(), basement.fullHeight(),
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
+                        MKWorkspaceFoundationPolicy.none(), null),
                 new MKTowerWorkspaceFamilyDefinition("basement_main", MKTowerWorkspaceCategory.BASEMENT,
-                        MKWorkspacePieceRole.BASEMENT_MAIN, true,
-                        basement.roomWidth(), basement.roomLength(), basement.fullHeight(), List.of()),
+                        MKWorkspacePieceRole.BASEMENT_MAIN,
+                        MKTowerWorkspaceStackSlot.BASEMENT_FLOOR.slotId(PRIMARY_TOWER_STACK_ID),
+                        PRIMARY_TOWER_STACK_ID, true,
+                        basement.roomWidth(), basement.roomLength(), basement.fullHeight(),
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
+                        MKWorkspaceFoundationPolicy.none(), null),
                 new MKTowerWorkspaceFamilyDefinition("basement_cap_approach", MKTowerWorkspaceCategory.BASEMENT_CAP,
-                        MKWorkspacePieceRole.BASEMENT_CAP_APPROACH, true,
-                        basementCap.roomWidth(), basementCap.roomLength(), basementCap.fullHeight(), List.of()),
+                        MKWorkspacePieceRole.BASEMENT_CAP_APPROACH,
+                        MKTowerWorkspaceStackSlot.BASEMENT_CAP_APPROACH.slotId(PRIMARY_TOWER_STACK_ID),
+                        PRIMARY_TOWER_STACK_ID, true,
+                        basementCap.roomWidth(), basementCap.roomLength(), basementCap.fullHeight(),
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
+                        MKWorkspaceFoundationPolicy.none(), null),
                 new MKTowerWorkspaceFamilyDefinition("basement_cap", MKTowerWorkspaceCategory.BASEMENT_CAP,
-                        MKWorkspacePieceRole.BASEMENT_CAP, true,
-                        basementCap.roomWidth(), basementCap.roomLength(), basementCap.fullHeight(), List.of())
+                        MKWorkspacePieceRole.BASEMENT_CAP,
+                        MKTowerWorkspaceStackSlot.BASEMENT_CAP.slotId(PRIMARY_TOWER_STACK_ID),
+                        PRIMARY_TOWER_STACK_ID, true,
+                        basementCap.roomWidth(), basementCap.roomLength(), basementCap.fullHeight(),
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
+                        MKWorkspaceFoundationPolicy.none(), null)
         );
     }
 
@@ -636,14 +668,14 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
 
     private static String defaultTopologySlotId(MKWorkspacePieceRole pieceRole) {
         return switch (pieceRole) {
-            case ENTRY -> "tower.entry";
-            case FLOOR_MAIN -> "tower.main_floor";
-            case TOP_CAP_APPROACH -> "tower.top_cap_approach";
-            case TOP_CAP -> "tower.top_cap";
-            case BASEMENT_ENTRY -> "tower.basement_entry";
-            case BASEMENT_MAIN -> "tower.basement_floor";
-            case BASEMENT_CAP_APPROACH -> "tower.basement_cap_approach";
-            case BASEMENT_CAP -> "tower.basement_cap";
+            case ENTRY -> MKTowerWorkspaceStackSlot.ENTRY.slotId(PRIMARY_TOWER_STACK_ID);
+            case FLOOR_MAIN -> MKTowerWorkspaceStackSlot.MAIN_FLOOR.slotId(PRIMARY_TOWER_STACK_ID);
+            case TOP_CAP_APPROACH -> MKTowerWorkspaceStackSlot.TOP_CAP_APPROACH.slotId(PRIMARY_TOWER_STACK_ID);
+            case TOP_CAP -> MKTowerWorkspaceStackSlot.TOP_CAP.slotId(PRIMARY_TOWER_STACK_ID);
+            case BASEMENT_ENTRY -> MKTowerWorkspaceStackSlot.BASEMENT_ENTRY.slotId(PRIMARY_TOWER_STACK_ID);
+            case BASEMENT_MAIN -> MKTowerWorkspaceStackSlot.BASEMENT_FLOOR.slotId(PRIMARY_TOWER_STACK_ID);
+            case BASEMENT_CAP_APPROACH -> MKTowerWorkspaceStackSlot.BASEMENT_CAP_APPROACH.slotId(PRIMARY_TOWER_STACK_ID);
+            case BASEMENT_CAP -> MKTowerWorkspaceStackSlot.BASEMENT_CAP.slotId(PRIMARY_TOWER_STACK_ID);
             case HALLWAY -> "tower.linear_run.branch";
         };
     }

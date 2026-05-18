@@ -137,7 +137,9 @@ class TowerWorkspaceV2Test {
     void towerPlannerUsesPrimaryTowerStackSettingsWhenPresent() {
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
                 .withTowerStackSettings(new MKWorkspaceTowerStackSettings(
-                        "tower.primary", 2, 0, 7, false, false));
+                        "tower.primary", 2, 0, 9, 11, 13,
+                        3, MKVerticalAccessPlacement.CENTER, MKWorkspaceStairAuthoringConfig.defaultConfig(),
+                        false, false));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(
                         List.of(
@@ -160,6 +162,10 @@ class TowerWorkspaceV2Test {
         assertEquals("tower.primary", entry.tags().get("workspace_tower_stack_id"));
         assertEquals("2", entry.tags().get("workspace_tower_stack_main_floors"));
         assertEquals("0", entry.tags().get("workspace_tower_stack_basement_floors"));
+        assertEquals("tower.primary.entry", entry.tags().get("workspace_topology_slot_id"));
+        assertEquals(11, entry.interiorWidth());
+        assertEquals(13, entry.interiorLength());
+        assertEquals(9, entry.interiorHeight());
         assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("top_cap_approach")));
         assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("basement_cap_approach")));
     }
