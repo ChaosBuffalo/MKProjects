@@ -310,6 +310,7 @@ public class MKStructureWorkspace {
             openingProfileById.put(openingProfile.profileId(), openingProfile);
         }
         for (MKTowerWorkspaceFamilyDefinition familyDefinition : familyDefinitions) {
+            MKWorkspaceResolvedFamilySettings resolvedFamily = resolveFamilySettings(familyDefinition);
             for (MKWorkspaceFamilyHorizontalExitDefinition exit : familyDefinition.horizontalExits()) {
                 if (exit.isVerticalAccess()) {
                     continue;
@@ -351,7 +352,7 @@ public class MKStructureWorkspace {
                 if (!exit.direction().getAxis().isVertical()) {
                     int sideLength = exit.direction() == net.minecraft.core.Direction.NORTH ||
                             exit.direction() == net.minecraft.core.Direction.SOUTH ?
-                            familyDefinition.roomWidth() : familyDefinition.roomLength();
+                            resolvedFamily.roomWidth() : resolvedFamily.roomLength();
                     int halfOpening = openingProfile.openingWidth() / 2;
                     int center = sideLength / 2;
                     int minSideOffset = halfOpening - center;
@@ -365,11 +366,11 @@ public class MKStructureWorkspace {
                                 exit.direction().getSerializedName() + " side offset " + exit.sideOffset() +
                                 " must be between " + minSideOffset + " and " + maxSideOffset);
                     }
-                    int maxVerticalOffset = familyDefinition.roomHeight() - openingProfile.openingHeight();
+                    int maxVerticalOffset = resolvedFamily.roomHeight() - openingProfile.openingHeight();
                     if (maxVerticalOffset < 0) {
                         errors.add("family " + familyDefinition.baseName() + " horizontal exit " +
                                 exit.direction().getSerializedName() + " opening height " +
-                                openingProfile.openingHeight() + " exceeds room height " + familyDefinition.roomHeight());
+                                openingProfile.openingHeight() + " exceeds room height " + resolvedFamily.roomHeight());
                     } else if (exit.verticalOffset() < 0 || exit.verticalOffset() > maxVerticalOffset) {
                         errors.add("family " + familyDefinition.baseName() + " horizontal exit " +
                                 exit.direction().getSerializedName() + " vertical offset " + exit.verticalOffset() +

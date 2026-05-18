@@ -549,6 +549,65 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void familyExitValidationUsesResolvedStackDimensions() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
+                .withTowerStackSettings(new MKWorkspaceTowerStackSettings(
+                        "tower.primary", 1, 1, 7, 15, 15,
+                        3, MKVerticalAccessPlacement.CENTER, MKWorkspaceStairAuthoringConfig.defaultConfig(),
+                        true, true));
+        List<MKTowerWorkspaceFamilyDefinition> families = MKTowerWorkspaceFamilyDefinition
+                .createDefaults(dimensions).stream()
+                .map(family -> family.baseName().equals("floor_main") ?
+                        new MKTowerWorkspaceFamilyDefinition(
+                                family.baseName(),
+                                family.category(),
+                                family.pieceRole(),
+                                family.topologySlotId(),
+                                family.verticalAccessGroupId(),
+                                family.supportsVerticalAccess(),
+                                family.roomWidth(),
+                                family.roomLength(),
+                                7,
+                                family.horizontalExtrusionMode(),
+                                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
+                                        Direction.NORTH,
+                                        MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                        "main_branch",
+                                        MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM,
+                                        5,
+                                        0)),
+                                family.topVoidMargin(),
+                                family.bottomVoidMargin(),
+                                family.foundationPolicyOverride(),
+                                family.paletteOverride()) :
+                        copyFamilyWithHeight(family, 7))
+                .toList();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(
+                        List.of(
+                                new MKHorizontalOpeningProfile("main_opening", 3, 3, true, false),
+                                new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                                new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                        ),
+                        List.of(new MKWorkspaceLinearRunFamilyDefinition(
+                                "branch", MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR,
+                                "main_branch", 5, 3, 3, 0, false, true,
+                                MKWorkspaceLinearRunProjection.RIGID,
+                                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                                workspacePalette().floorBlock(),
+                                workspacePalette().wallBlock(),
+                                workspacePalette().ceilingBlock()))
+                ),
+                topologyProfile,
+                families,
+                List.of()
+        );
+
+        assertEquals(List.of(), workspace.validate());
+    }
+
+    @Test
     void walledKeepPlannerTagsTowerStacksAndLinearRunVoidMargins() {
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
                 .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 3, 2, 7));
