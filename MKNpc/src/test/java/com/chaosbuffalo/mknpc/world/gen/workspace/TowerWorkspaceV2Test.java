@@ -368,12 +368,10 @@ class TowerWorkspaceV2Test {
         assertEquals("keep.center", centerEntry.tags().get("workspace_vertical_access_group_id"));
         assertTrue(centerEntry.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_UP &&
-                        "vertical_access/keep.center/up".equals(connector.targetPoolName()) &&
-                        "vertical_access/keep.center/down".equals(connector.incomingPoolName())));
+                        "tower_stacks/keep/center/connect_up".equals(connector.targetPoolName())));
         assertTrue(centerEntry.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_DOWN &&
-                        "vertical_access/keep.center/down".equals(connector.targetPoolName()) &&
-                        "vertical_access/keep.center/up".equals(connector.incomingPoolName())));
+                        "tower_stacks/keep/center/connect_down_entry".equals(connector.targetPoolName())));
 
         assertEquals(MKWorkspacePieceRole.HALLWAY, northWall.role());
         assertEquals("keep.perimeter.north", northWall.tags().get("workspace_topology_slot_id"));

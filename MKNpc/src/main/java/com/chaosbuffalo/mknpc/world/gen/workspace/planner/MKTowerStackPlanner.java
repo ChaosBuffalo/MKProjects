@@ -399,7 +399,7 @@ public class MKTowerStackPlanner {
                                               String stairDirection, boolean topCap, boolean bottomCap,
                                               MKWorkspaceRuntimePieceInfo runtimeInfo) {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>();
-        tags.put("topology_role", topologyRole);
+        tags.put("topology_role", stackDefinition.useFamilyTopologyRole() ? family.topologySlotId() : topologyRole);
         tags.put("workspace_topology_slot_id", family.topologySlotId());
         tags.put("workspace_topology_role_id", family.topologySlotId());
         tags.put("tower_piece_kind", "room");
@@ -409,6 +409,8 @@ public class MKTowerStackPlanner {
         tags.put("workspace_category", family.category().getSerializedName());
         if (!stackDefinition.stackId().isBlank()) {
             tags.put("workspace_tower_stack_id", stackDefinition.stackId());
+            tags.put("workspace_tower_stack_main_floors", Integer.toString(stackDefinition.mainFloors()));
+            tags.put("workspace_tower_stack_basement_floors", Integer.toString(stackDefinition.basementFloors()));
         }
         applyVoidMarginTags(family, tags);
         applyFoundationTags(family.foundationPolicy(), tags);
