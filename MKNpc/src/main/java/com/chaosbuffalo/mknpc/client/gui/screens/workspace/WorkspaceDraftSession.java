@@ -184,6 +184,7 @@ public class WorkspaceDraftSession {
         boolean uniqueCornerTowers = draft().topologyProfile.uniqueCornerTowers();
         draft().topologyProfile = MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(value) ?
                 MKWorkspaceTopologyProfile.walledKeep(uniqueCornerTowers) : MKWorkspaceTopologyProfile.tower();
+        seedDefaultsForTopology();
     }
 
     public boolean uniqueCornerTowers() {
@@ -961,6 +962,8 @@ public class WorkspaceDraftSession {
                 family.baseName(),
                 family.category(),
                 family.pieceRole(),
+                family.topologySlotId(),
+                family.verticalAccessGroupId(),
                 family.supportsVerticalAccess(),
                 roomWidth,
                 roomLength,
@@ -969,12 +972,15 @@ public class WorkspaceDraftSession {
                 family.horizontalExits(),
                 topVoidMargin,
                 bottomVoidMargin,
+                family.foundationPolicy(),
                 family.paletteOverride()
         );
         return new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(),
                 family.category(),
                 family.pieceRole(),
+                family.topologySlotId(),
+                family.verticalAccessGroupId(),
                 family.supportsVerticalAccess(),
                 roomWidth,
                 roomLength,
@@ -994,6 +1000,7 @@ public class WorkspaceDraftSession {
                         .toList(),
                 topVoidMargin,
                 bottomVoidMargin,
+                family.foundationPolicy(),
                 family.paletteOverride()
         );
     }
@@ -1016,6 +1023,34 @@ public class WorkspaceDraftSession {
             return profile.fullHeight();
         }
         return Math.max(MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT, Math.min(requestedHeight, profile.fullHeight()));
+    }
+
+    private void seedDefaultsForTopology() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(draft().topologyProfile.profileType())) {
+            boolean hasKeepFamilies = draft().familyDefinitions.stream()
+                    .anyMatch(family -> family.topologySlotId().startsWith("keep."));
+            if (!hasKeepFamilies) {
+                draft().familyDefinitions = MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions);
+            }
+            boolean hasKeepLinearRuns = draft().linearRunFamilies.stream()
+                    .anyMatch(linearRun -> linearRun.topologySlotId().startsWith("keep."));
+            if (!hasKeepLinearRuns) {
+                draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions,
+                        draft().palette);
+            }
+            return;
+        }
+        boolean hasTowerFamilies = draft().familyDefinitions.stream()
+                .anyMatch(family -> family.topologySlotId().startsWith("tower."));
+        if (!hasTowerFamilies) {
+            draft().familyDefinitions = MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions);
+        }
+        boolean hasTowerLinearRuns = draft().linearRunFamilies.stream()
+                .anyMatch(linearRun -> linearRun.topologySlotId().startsWith("tower."));
+        if (!hasTowerLinearRuns) {
+            draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.createDefaults(dimensions, draft().palette);
+        }
     }
 
     public int clampSideOffset(MKTowerWorkspaceFamilyDefinition family, Direction direction, String openingProfileId,

@@ -155,6 +155,56 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
         );
     }
 
+    public static List<MKWorkspaceLinearRunFamilyDefinition> createWalledKeepDefaults(MKWorkspaceDimensions dimensions,
+                                                                                      MKWorkspaceMaterialPalette palette) {
+        MKWorkspaceFoundationPolicy wallFoundation = MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(List.of(
+                palette.wallBlock()
+        ));
+        return List.of(
+                keepRun("keep_wall_north", "keep.wall.north", MKWorkspaceLinearRunKind.SOLID_WALL,
+                        "branch_opening", 15, 3, 5, wallFoundation),
+                keepRun("keep_wall_east", "keep.wall.east", MKWorkspaceLinearRunKind.SOLID_WALL,
+                        "branch_opening", 15, 3, 5, wallFoundation),
+                keepRun("keep_wall_south", "keep.wall.south", MKWorkspaceLinearRunKind.SOLID_WALL,
+                        "branch_opening", 15, 3, 5, wallFoundation),
+                keepRun("keep_wall_west", "keep.wall.west", MKWorkspaceLinearRunKind.SOLID_WALL,
+                        "branch_opening", 15, 3, 5, wallFoundation),
+                keepRun("keep_parapet_north", "keep.parapet.north", MKWorkspaceLinearRunKind.PARAPET,
+                        "branch_opening", 15, 3, 5, MKWorkspaceFoundationPolicy.none()),
+                keepRun("keep_parapet_east", "keep.parapet.east", MKWorkspaceLinearRunKind.PARAPET,
+                        "branch_opening", 15, 3, 5, MKWorkspaceFoundationPolicy.none()),
+                keepRun("keep_parapet_south", "keep.parapet.south", MKWorkspaceLinearRunKind.PARAPET,
+                        "branch_opening", 15, 3, 5, MKWorkspaceFoundationPolicy.none()),
+                keepRun("keep_parapet_west", "keep.parapet.west", MKWorkspaceLinearRunKind.PARAPET,
+                        "branch_opening", 15, 3, 5, MKWorkspaceFoundationPolicy.none()),
+                keepRun("keep_walkway_south", "keep.walkway.south", MKWorkspaceLinearRunKind.OPEN_WALKWAY,
+                        "main_opening", 9, dimensions.hallwayWidth(), 3, MKWorkspaceFoundationPolicy.none())
+        );
+    }
+
+    private static MKWorkspaceLinearRunFamilyDefinition keepRun(String linearRunId, String topologySlotId,
+                                                                MKWorkspaceLinearRunKind kind,
+                                                                String openingProfileId, int length,
+                                                                int interiorWidth, int interiorHeight,
+                                                                MKWorkspaceFoundationPolicy foundationPolicy) {
+        return new MKWorkspaceLinearRunFamilyDefinition(
+                linearRunId,
+                topologySlotId,
+                kind,
+                openingProfileId,
+                length,
+                interiorWidth,
+                interiorHeight,
+                0,
+                true,
+                true,
+                MKWorkspaceLinearRunProjection.RIGID,
+                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                foundationPolicy,
+                null
+        );
+    }
+
     public CompoundTag toTag() {
         return MKWorkspaceCodecs.encodeNbt(CODEC, this, "linear run family definition");
     }

@@ -320,6 +320,30 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void walledKeepDefaultsGenerateKeepSpecificPieces() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(false),
+                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_entry") &&
+                "keep.center.entry".equals(piece.tags().get("workspace_topology_slot_id"))));
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_shared") &&
+                "keep.corner.shared".equals(piece.tags().get("workspace_topology_slot_id"))));
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_wall_north") &&
+                "solid_wall".equals(piece.tags().get("workspace_linear_run_kind"))));
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_parapet_north") &&
+                "parapet".equals(piece.tags().get("workspace_linear_run_kind"))));
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_walkway_south") &&
+                "open_walkway".equals(piece.tags().get("workspace_linear_run_kind"))));
+    }
+
+    @Test
     void walledKeepRuntimePoolsUseSlotGraphAndSharedCorners() {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),

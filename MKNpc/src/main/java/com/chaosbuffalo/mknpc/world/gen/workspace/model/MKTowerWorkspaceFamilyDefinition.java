@@ -213,6 +213,49 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         );
     }
 
+    public static List<MKTowerWorkspaceFamilyDefinition> createWalledKeepDefaults(MKWorkspaceDimensions dimensions) {
+        int centerWidth = Math.max(9, dimensions.roomWidth());
+        int centerLength = Math.max(9, dimensions.roomLength());
+        int cornerFootprint = 7;
+        return List.of(
+                new MKTowerWorkspaceFamilyDefinition("keep_center_entry", MKTowerWorkspaceCategory.ENTRY,
+                        MKWorkspacePieceRole.ENTRY, "keep.center.entry", "keep.center", true,
+                        centerWidth, centerLength, dimensions.entranceHeight(),
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
+                        MKWorkspaceFoundationPolicy.none(), null),
+                new MKTowerWorkspaceFamilyDefinition("keep_center_main_floor", MKTowerWorkspaceCategory.MAIN,
+                        MKWorkspacePieceRole.FLOOR_MAIN, "keep.center.main_floor", "keep.center", true,
+                        centerWidth, centerLength, dimensions.roomHeight(),
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
+                        MKWorkspaceFoundationPolicy.none(), null),
+                new MKTowerWorkspaceFamilyDefinition("keep_center_top_cap", MKTowerWorkspaceCategory.TOP_CAP,
+                        MKWorkspacePieceRole.TOP_CAP, "keep.center.top_cap", "keep.center", true,
+                        centerWidth, centerLength, dimensions.roomHeight(),
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
+                        MKWorkspaceFoundationPolicy.none(), null),
+                new MKTowerWorkspaceFamilyDefinition("keep_center_basement_floor", MKTowerWorkspaceCategory.BASEMENT,
+                        MKWorkspacePieceRole.BASEMENT_MAIN, "keep.center.basement_floor", "keep.center", true,
+                        centerWidth, centerLength, dimensions.basementHeight(),
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
+                        MKWorkspaceFoundationPolicy.none(), null),
+                new MKTowerWorkspaceFamilyDefinition("keep_center_basement_cap", MKTowerWorkspaceCategory.BASEMENT_CAP,
+                        MKWorkspacePieceRole.BASEMENT_CAP, "keep.center.basement_cap", "keep.center", true,
+                        centerWidth, centerLength, dimensions.basementHeight(),
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
+                        MKWorkspaceFoundationPolicy.none(), null),
+                new MKTowerWorkspaceFamilyDefinition("keep_corner_shared", MKTowerWorkspaceCategory.MAIN,
+                        MKWorkspacePieceRole.FLOOR_MAIN, "keep.corner.shared", "keep.corner.shared", false,
+                        cornerFootprint, cornerFootprint, dimensions.roomHeight(),
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
+                        MKWorkspaceFoundationPolicy.none(), null),
+                new MKTowerWorkspaceFamilyDefinition("keep_gate_main", MKTowerWorkspaceCategory.ENTRY,
+                        MKWorkspacePieceRole.ENTRY, "keep.gate.main", "keep.gate", false,
+                        7, 5, dimensions.entranceHeight(),
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
+                        MKWorkspaceFoundationPolicy.none(), null)
+        );
+    }
+
     private static List<MKWorkspaceFamilyHorizontalExitDefinition> normalizeFamilyExits(
             MKWorkspacePieceRole pieceRole, boolean supportsVerticalAccess,
             List<MKWorkspaceFamilyHorizontalExitDefinition> exits) {
