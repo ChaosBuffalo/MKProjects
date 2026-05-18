@@ -240,6 +240,7 @@ public class MKWorkspacePieceRelayoutService {
                 workspace.namespace(),
                 workspace.structureName(),
                 workspace.familyType(),
+                workspace.topologyProfile(),
                 workspace.dimensions(),
                 workspace.palette(),
                 workspace.stairConfig(),

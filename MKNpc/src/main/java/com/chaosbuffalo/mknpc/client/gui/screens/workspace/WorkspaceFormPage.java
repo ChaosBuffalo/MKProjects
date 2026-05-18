@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
@@ -28,7 +29,8 @@ public class WorkspaceFormPage extends WorkspacePageBase {
         addNavigationButton(screen, root, firstButtonY + screen.buttonHeight() + screen.buttonGap(),
                 "Materials", "form_materials");
         addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 2),
-                "Category Profiles", "form_categories");
+                MKWorkspaceTopologyProfile.TOWER_PROFILE_TYPE.equals(screen.draftSession().topologyProfileType()) ?
+                        "Category Profiles" : "Topology Notes", "form_categories");
         addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 3),
                 "Branch Variants", "form_families");
         addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 4),

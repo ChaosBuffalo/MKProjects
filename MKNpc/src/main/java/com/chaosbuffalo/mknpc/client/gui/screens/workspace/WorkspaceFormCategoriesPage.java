@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
@@ -38,6 +39,29 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
 
         MKLayout root = createPanel(screen);
         addTitle(screen, root, Component.literal("Category Profiles"));
+        if (!MKWorkspaceTopologyProfile.TOWER_PROFILE_TYPE.equals(editor.topologyProfileType())) {
+            MKText helpText = addHeaderText(screen, root, Component.literal(
+                    "Category profiles are tower-specific compatibility settings. This topology is configured through explicit family topology slots and linear-run families."));
+            MKScrollView scrollView = addScrollBelowHeader(screen, root, helpText);
+            MKStackLayoutVertical content = createContentStack(screen);
+            MKText topologyText = screen.makeWhiteText(Component.literal(
+                    "Active topology: " + formatTopologyLabel(editor.topologyProfileType())));
+            topologyText.setWidth(screen.contentWidth());
+            topologyText.setMultiline(true);
+            content.addWidget(topologyText);
+            content.addConstraintToWidget(MarginConstraint.LEFT, topologyText);
+
+            MKText nextSteps = screen.makeWhiteText(Component.literal(
+                    "Use Branch Variants for room/corner/gate slots and Linear Run Families for walls, parapets, and walkways."));
+            nextSteps.setWidth(screen.contentWidth());
+            nextSteps.setMultiline(true);
+            content.addWidget(nextSteps);
+            content.addConstraintToWidget(MarginConstraint.LEFT, nextSteps);
+
+            finishScrollContent(screen, scrollView, content);
+            addBackButton(screen, root, WorkspaceFormPage.ID);
+            return root;
+        }
         MKText helpText = addHeaderText(screen, root, Component.literal(
                 "Edit vertical access settings and the shaft-driven category bands in one place. Stair shape, shaft size, and stair width determine which full heights are valid for each category."));
 

@@ -41,6 +41,7 @@ public class MKWorkspaceIdentityRenameService {
                 namespace,
                 structureName,
                 workspace.familyType(),
+                workspace.topologyProfile(),
                 workspace.dimensions(),
                 workspace.palette(),
                 workspace.stairConfig(),
