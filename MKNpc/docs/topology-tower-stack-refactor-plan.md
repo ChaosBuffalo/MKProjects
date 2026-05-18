@@ -275,13 +275,15 @@ Family-level validation should focus on override legality:
 - Phase 2 is implemented: the standalone tower planner delegates room stack planning to `MKTowerStackPlanner`.
 - Phase 3 is implemented: the walled keep center stack uses the reusable stack planner with scoped stack pools.
 - Phase 4 is partially implemented: default shared corner towers now generate as full tower stacks, and the walled keep planner can plan active shared or unique corner stacks through the reusable stack planner.
+- A reusable tower stack slot helper now defines the standard stack suffixes, default family order, schema role metadata, and stack-id extraction for tower-stack topology slots.
 - Stack-level width, length, height, floor counts, and cap approach toggles are now represented in `MKWorkspaceTowerStackSettings` and applied to walled keep stack families as a bridge until the full resolver exists.
 - Stack-level vertical access shaft size, placement, stair mode, rise type, stair width, and stair/slab/ladder blocks are now represented in `MKWorkspaceTowerStackSettings` and used by walled keep stack planning, validation, and default stair generation.
-- The remaining work is to finish inherited family overrides and the resolver layer.
+- Room family planning now goes through an initial `MKWorkspaceResolvedFamilySettings` bridge for dimensions, void margins, foundation policy, and palette.
+- The remaining work is to make the resolver consume inherited topology defaults and to finish inherited family overrides.
 
 ### Phase 1: Model Reusable Tower Stack Slots
 
-- Add a stack slot id helper that maps `{stackId}` plus stack role to concrete slot ids.
+- Add a stack slot id helper that maps `{stackId}` plus stack role to concrete slot ids. Done for current tower-stack slots.
 - Add a reusable tower stack schema builder.
 - Expand `MKWorkspaceTowerStackSettings` with per-slot or per-stack-role heights, dimensions, cap approach toggles, and vertical access settings.
 - Keep current tower and walled keep behavior working through compatibility helpers.
@@ -323,8 +325,8 @@ Family-level validation should focus on override legality:
 
 ### Phase 7: Resolver and Validation
 
-- Introduce resolved settings objects.
-- Update planners, scaffold generation, export, and validation to consume resolved settings.
+- Introduce resolved settings objects. Initial room-family resolver bridge is in place.
+- Update planners, scaffold generation, export, and validation to consume resolved settings. Room planners now consume resolved family settings; scaffold/export/validation still need to move over.
 - Split topology validation from family override validation.
 
 ### Phase 8: Tests
