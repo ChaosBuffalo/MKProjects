@@ -19,6 +19,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKTextFieldWidget;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -93,25 +94,8 @@ public class WorkspaceFormHallwayDetailPage extends WorkspacePageBase {
                             hallway.paletteOverrideOpt()));
                     screen.flagNeedSetup();
                 });
-        addHallwayFieldRow(screen, content, "Foundation Block",
-                hallway.foundationPolicy().foundationBlockOpt().map(ResourceLocation::toString).orElse(""),
-                text -> editor.replaceLinearRunFamily(index, copyLinearRunFamily(hallway, hallway.linearRunId(),
-                        hallway.topologySlotId(), hallway.kind(), hallway.openingProfileId(), hallway.length(),
-                        hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
-                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.projection(),
-                        new MKWorkspaceFoundationPolicy(MKWorkspaceFoundationMode.UNIFORM_STATE,
-                                parseResourceLocation(text).orElse(null), List.of()),
-                        hallway.paletteOverrideOpt())));
-        addHallwayFieldRow(screen, content, "Foundation Mask Blocks",
-                hallway.foundationPolicy().maskBlocks().stream()
-                        .map(ResourceLocation::toString)
-                        .collect(java.util.stream.Collectors.joining(",")),
-                text -> editor.replaceLinearRunFamily(index, copyLinearRunFamily(hallway, hallway.linearRunId(),
-                        hallway.topologySlotId(), hallway.kind(), hallway.openingProfileId(), hallway.length(),
-                        hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
-                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.projection(),
-                        MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(parseResourceLocationList(text)),
-                        hallway.paletteOverrideOpt())));
+        addFoundationBlockPickerRow(screen, content, index, hallway);
+        addFoundationMaskRows(screen, content, index, hallway);
         addHallwayFieldRow(screen, content, "Opening Profile Id", hallway.openingProfileId(),
                 text -> editor.replaceLinearRunFamily(index, copyLinearRunFamily(hallway,
                         hallway.linearRunId(), hallway.topologySlotId(), hallway.kind(),
@@ -188,6 +172,91 @@ public class WorkspaceFormHallwayDetailPage extends WorkspacePageBase {
 
         addBackButton(screen, root, WorkspaceFormHallwaysPage.ID);
         return root;
+    }
+
+    private void addFoundationBlockPickerRow(MKWorkspaceScreen screen, MKStackLayoutVertical content, int hallwayIndex,
+                                             MKWorkspaceLinearRunFamilyDefinition hallway) {
+        if (hallway.foundationPolicy().mode() != MKWorkspaceFoundationMode.UNIFORM_STATE) {
+            return;
+        }
+        ResourceLocation blockId = hallway.foundationPolicy().foundationBlockOpt()
+                .orElse(ResourceLocation.parse("minecraft:stone"));
+        MKButton blockButton = new MKButton(screen.blockDisplayName(blockId), 180, 20);
+        blockButton.setTooltip(Component.literal(blockId.toString()));
+        blockButton.setPressedCallback((button, mouseButton) -> {
+            screen.openBlockPicker("Choose Foundation Block", blockId, value -> {
+                replaceLinearRunFoundationPolicy(screen, hallwayIndex, hallway,
+                        MKWorkspaceFoundationPolicy.uniformBlock(value));
+            }, false);
+            return true;
+        });
+        addRow(screen, content, "Foundation Block", blockButton);
+    }
+
+    private void addFoundationMaskRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, int hallwayIndex,
+                                       MKWorkspaceLinearRunFamilyDefinition hallway) {
+        if (hallway.foundationPolicy().mode() != MKWorkspaceFoundationMode.MASKED_EXTEND_BOTTOM_BLOCKS) {
+            return;
+        }
+        List<ResourceLocation> maskBlocks = hallway.foundationPolicy().maskBlocks();
+        for (int maskIndex = 0; maskIndex < maskBlocks.size(); maskIndex++) {
+            ResourceLocation blockId = maskBlocks.get(maskIndex);
+            int capturedIndex = maskIndex;
+            MKButton blockButton = new MKButton(screen.blockDisplayName(blockId), 180, 20);
+            blockButton.setTooltip(Component.literal(blockId + "\nLeft-click to choose. Right-click to remove."));
+            blockButton.setPressedCallback((button, mouseButton) -> {
+                if (mouseButton == 1) {
+                    updateFoundationMaskBlock(screen, hallwayIndex, hallway, capturedIndex, null);
+                } else {
+                    screen.openBlockPicker("Choose Foundation Mask Block", blockId, value ->
+                            updateFoundationMaskBlock(screen, hallwayIndex, hallway, capturedIndex, value), false);
+                }
+                return true;
+            });
+            addRow(screen, content, "Mask Block " + (maskIndex + 1), blockButton);
+        }
+        MKButton addButton = new MKButton(Component.literal("Add Block"), 180, 20);
+        addButton.setPressedCallback((button, mouseButton) -> {
+            ResourceLocation defaultBlock = ResourceLocation.parse("minecraft:stone");
+            screen.openBlockPicker("Choose Foundation Mask Block", defaultBlock, value -> {
+                List<ResourceLocation> updated = new java.util.ArrayList<>(hallway.foundationPolicy().maskBlocks());
+                if (!updated.contains(value)) {
+                    updated.add(value);
+                }
+                replaceLinearRunFoundationPolicy(screen, hallwayIndex, hallway,
+                        MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(updated));
+            }, false);
+            return true;
+        });
+        addRow(screen, content, "Foundation Mask", addButton);
+    }
+
+    private void updateFoundationMaskBlock(MKWorkspaceScreen screen, int hallwayIndex,
+                                           MKWorkspaceLinearRunFamilyDefinition hallway, int maskIndex,
+                                           @Nullable ResourceLocation blockId) {
+        List<ResourceLocation> updated = new java.util.ArrayList<>(hallway.foundationPolicy().maskBlocks());
+        if (maskIndex < 0 || maskIndex >= updated.size()) {
+            return;
+        }
+        if (blockId == null) {
+            updated.remove(maskIndex);
+        } else {
+            updated.set(maskIndex, blockId);
+        }
+        replaceLinearRunFoundationPolicy(screen, hallwayIndex, hallway,
+                MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(updated));
+    }
+
+    private void replaceLinearRunFoundationPolicy(MKWorkspaceScreen screen, int hallwayIndex,
+                                                  MKWorkspaceLinearRunFamilyDefinition hallway,
+                                                  MKWorkspaceFoundationPolicy foundationPolicy) {
+        WorkspaceDraftSession editor = screen.draftSession();
+        editor.replaceLinearRunFamily(hallwayIndex, copyLinearRunFamily(hallway, hallway.linearRunId(),
+                hallway.topologySlotId(), hallway.kind(), hallway.openingProfileId(), hallway.length(),
+                hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
+                hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.projection(),
+                foundationPolicy, hallway.paletteOverrideOpt()));
+        screen.refreshPreservingActiveScroll();
     }
 
     private void addToggleRow(MKWorkspaceScreen screen, MKStackLayoutVertical root, String label,
@@ -319,23 +388,6 @@ public class WorkspaceFormHallwayDetailPage extends WorkspacePageBase {
                     MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(List.of(ResourceLocation.parse("minecraft:stone"))) :
                     MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(current.maskBlocks());
         };
-    }
-
-    private Optional<ResourceLocation> parseResourceLocation(String value) {
-        String trimmed = value.trim();
-        if (trimmed.isBlank()) {
-            return Optional.empty();
-        }
-        return Optional.ofNullable(ResourceLocation.tryParse(trimmed));
-    }
-
-    private List<ResourceLocation> parseResourceLocationList(String value) {
-        return java.util.Arrays.stream(value.split(","))
-                .map(String::trim)
-                .filter(text -> !text.isBlank())
-                .map(ResourceLocation::tryParse)
-                .filter(java.util.Objects::nonNull)
-                .toList();
     }
 
     private String formatTopologyLabel(String key) {

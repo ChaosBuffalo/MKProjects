@@ -26,8 +26,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
+import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 
 public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
     public static final String ID = "form_family_detail";
@@ -156,22 +156,8 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
             addRow(screen, content, screen.makeWhiteText(Component.literal("Vertical Access Group")), verticalGroupField);
         }
         addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Mode")), foundationModeButton);
-        MKTextFieldWidget foundationBlockField = makeField(screen, "Foundation Block",
-                family.foundationPolicy().foundationBlockOpt().map(ResourceLocation::toString).orElse(""));
-        foundationBlockField.setTextChangeCallback((field, text) ->
-                editor.replaceFamilyFoundationPolicy(index, new MKWorkspaceFoundationPolicy(
-                        MKWorkspaceFoundationMode.UNIFORM_STATE,
-                        parseResourceLocation(text).orElse(null),
-                        List.of())));
-        MKTextFieldWidget foundationMaskField = makeField(screen, "Foundation Mask",
-                family.foundationPolicy().maskBlocks().stream()
-                        .map(ResourceLocation::toString)
-                        .collect(java.util.stream.Collectors.joining(",")));
-        foundationMaskField.setTextChangeCallback((field, text) ->
-                editor.replaceFamilyFoundationPolicy(index,
-                        MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(parseResourceLocationList(text))));
-        addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Block")), foundationBlockField);
-        addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Mask Blocks")), foundationMaskField);
+        addFoundationBlockPickerRow(screen, content, index, family);
+        addFoundationMaskRows(screen, content, index, family);
         addRow(screen, content, screen.makeWhiteText(Component.literal("Geometry Band")), categoryButton);
         addRow(screen, content, screen.makeWhiteText(Component.literal("Role")), roleButton);
         addRow(screen, content, screen.makeWhiteText(Component.literal("Horizontal Extrusion")), extrusionModeButton);
@@ -371,6 +357,83 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         addRow(screen, content, screen.makeWhiteText(Component.literal("Vertical Offset")), verticalOffsetSlider);
     }
 
+    private void addFoundationBlockPickerRow(MKWorkspaceScreen screen, MKStackLayoutVertical content, int familyIndex,
+                                             MKTowerWorkspaceFamilyDefinition family) {
+        if (family.foundationPolicy().mode() != MKWorkspaceFoundationMode.UNIFORM_STATE) {
+            return;
+        }
+        ResourceLocation blockId = family.foundationPolicy().foundationBlockOpt()
+                .orElse(ResourceLocation.parse("minecraft:stone"));
+        MKButton blockButton = new MKButton(screen.blockDisplayName(blockId), 180, 20);
+        blockButton.setTooltip(Component.literal(blockId.toString()));
+        blockButton.setPressedCallback((button, mouseButton) -> {
+            screen.openBlockPicker("Choose Foundation Block", blockId, value -> {
+                screen.draftSession().replaceFamilyFoundationPolicy(familyIndex,
+                        MKWorkspaceFoundationPolicy.uniformBlock(value));
+                screen.refreshPreservingActiveScroll();
+            }, false);
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Block")), blockButton);
+    }
+
+    private void addFoundationMaskRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, int familyIndex,
+                                       MKTowerWorkspaceFamilyDefinition family) {
+        if (family.foundationPolicy().mode() != MKWorkspaceFoundationMode.MASKED_EXTEND_BOTTOM_BLOCKS) {
+            return;
+        }
+        List<ResourceLocation> maskBlocks = family.foundationPolicy().maskBlocks();
+        for (int maskIndex = 0; maskIndex < maskBlocks.size(); maskIndex++) {
+            ResourceLocation blockId = maskBlocks.get(maskIndex);
+            int capturedIndex = maskIndex;
+            MKButton blockButton = new MKButton(screen.blockDisplayName(blockId), 180, 20);
+            blockButton.setTooltip(Component.literal(blockId + "\nLeft-click to choose. Right-click to remove."));
+            blockButton.setPressedCallback((button, mouseButton) -> {
+                if (isReverseClick(mouseButton)) {
+                    updateFoundationMaskBlock(screen, familyIndex, family, capturedIndex, null);
+                } else {
+                    screen.openBlockPicker("Choose Foundation Mask Block", blockId, value ->
+                            updateFoundationMaskBlock(screen, familyIndex, family, capturedIndex, value), false);
+                }
+                return true;
+            });
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Mask Block " + (maskIndex + 1))),
+                    blockButton);
+        }
+        MKButton addButton = new MKButton(Component.literal("Add Block"), 180, 20);
+        addButton.setPressedCallback((button, mouseButton) -> {
+            ResourceLocation defaultBlock = ResourceLocation.parse("minecraft:stone");
+            screen.openBlockPicker("Choose Foundation Mask Block", defaultBlock, value -> {
+                List<ResourceLocation> updated = new java.util.ArrayList<>(family.foundationPolicy().maskBlocks());
+                if (!updated.contains(value)) {
+                    updated.add(value);
+                }
+                screen.draftSession().replaceFamilyFoundationPolicy(familyIndex,
+                        MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(updated));
+                screen.refreshPreservingActiveScroll();
+            }, false);
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Mask")), addButton);
+    }
+
+    private void updateFoundationMaskBlock(MKWorkspaceScreen screen, int familyIndex,
+                                           MKTowerWorkspaceFamilyDefinition family, int maskIndex,
+                                           @Nullable ResourceLocation blockId) {
+        List<ResourceLocation> updated = new java.util.ArrayList<>(family.foundationPolicy().maskBlocks());
+        if (maskIndex < 0 || maskIndex >= updated.size()) {
+            return;
+        }
+        if (blockId == null) {
+            updated.remove(maskIndex);
+        } else {
+            updated.set(maskIndex, blockId);
+        }
+        screen.draftSession().replaceFamilyFoundationPolicy(familyIndex,
+                MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(updated));
+        screen.refreshPreservingActiveScroll();
+    }
+
     private void addRow(MKWorkspaceScreen screen, MKStackLayoutVertical root, MKText label, MKTextFieldWidget field) {
         label.setWidth(screen.contentWidth());
         root.addWidget(label);
@@ -451,24 +514,6 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                     MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(List.of(ResourceLocation.parse("minecraft:stone"))) :
                     MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(current.maskBlocks());
         };
-    }
-
-    private Optional<ResourceLocation> parseResourceLocation(String value) {
-        String trimmed = value.trim();
-        if (trimmed.isBlank()) {
-            return Optional.empty();
-        }
-        ResourceLocation id = ResourceLocation.tryParse(trimmed);
-        return Optional.ofNullable(id);
-    }
-
-    private List<ResourceLocation> parseResourceLocationList(String value) {
-        return java.util.Arrays.stream(value.split(","))
-                .map(String::trim)
-                .filter(text -> !text.isBlank())
-                .map(ResourceLocation::tryParse)
-                .filter(java.util.Objects::nonNull)
-                .toList();
     }
 
     private String formatDirection(Direction direction) {

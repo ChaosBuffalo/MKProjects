@@ -286,6 +286,7 @@ Family-level validation should focus on override legality:
 - Validation now uses per-stack floor budgets when topology stack settings are present and keeps legacy global category-band validation only for workspaces without stack settings.
 - Draft normalization now keeps stack-to-family geometry as a one-way bridge; family geometry no longer feeds back into topology stack dimensions.
 - The standalone tower topology defaults page no longer exposes category-profile room geometry controls; it keeps only temporary path-depth controls until those move to topology-run settings.
+- Family and linear-run foundation block fields now use block pickers, and masked foundations expose editable/addable/removable block entries instead of a comma-separated text field.
 - The remaining work is to finish inherited family overrides and continue removing category-profile-only configuration paths.
 
 ### Phase 1: Model Reusable Tower Stack Slots
