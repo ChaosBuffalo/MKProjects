@@ -94,10 +94,16 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
     public List<MKPlannedPiece> createCanonicalPieces(MKStructureWorkspace workspace) {
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>(towerStackPlanner.createRoomPieces(
                 workspace,
-                MKTowerStackDefinition.legacyTower(workspace.floorSettings()),
+                towerStackDefinition(workspace),
                 workspace.familyDefinitions()));
         pieces.addAll(createLinearRunPieces(workspace));
         return List.copyOf(pieces);
+    }
+
+    private MKTowerStackDefinition towerStackDefinition(MKStructureWorkspace workspace) {
+        return workspace.topologyProfile().towerStackSettings("tower.primary")
+                .map(MKTowerStackDefinition::towerPrimary)
+                .orElseGet(() -> MKTowerStackDefinition.legacyTower(workspace.floorSettings()));
     }
 
     private List<MKPlannedPiece> createLinearRunPieces(MKStructureWorkspace workspace) {

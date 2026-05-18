@@ -57,6 +57,7 @@ public class WorkspaceDraftSession {
             "keep.corner.south_east",
             "keep.corner.south_west"
     );
+    private static final String TOWER_PRIMARY_STACK_ID = "tower.primary";
 
     public WorkspaceDraftSession(MKWorkspaceScreen screen, MKTowerWorkspaceCategory selectedFamilyCategory,
                                  int selectedFamilyIndex, int selectedFamilyExitIndex, int selectedOpeningIndex,
@@ -1402,7 +1403,9 @@ public class WorkspaceDraftSession {
     }
 
     private MKWorkspaceTowerStackSettings towerStackSettings(String stackId) {
-        MKWorkspaceTowerStackSettings settings = draft().topologyProfile.towerStackSettingsOrDefault(stackId);
+        MKWorkspaceTowerStackSettings settings = TOWER_PRIMARY_STACK_ID.equals(stackId) ?
+                draft().topologyProfile.towerStackSettings(stackId).orElseGet(this::towerPrimarySettingsFromDraft) :
+                draft().topologyProfile.towerStackSettingsOrDefault(stackId);
         if (draft().topologyProfile.towerStackSettings(stackId).isEmpty()) {
             replaceTowerStackSettings(settings);
         }
@@ -1411,6 +1414,34 @@ public class WorkspaceDraftSession {
 
     private void replaceTowerStackSettings(MKWorkspaceTowerStackSettings settings) {
         draft().topologyProfile = draft().topologyProfile.withTowerStackSettings(settings);
+        if (TOWER_PRIMARY_STACK_ID.equals(settings.stackId())) {
+            draft().mainFloors = settings.mainFloors();
+            draft().basementFloors = settings.basementFloors();
+            draft().topCapApproachEnabled = settings.topCapApproachEnabled();
+            draft().basementCapApproachEnabled = settings.basementCapApproachEnabled();
+            draft().shaftSize = settings.shaftSize();
+            draft().verticalAccessPlacement = settings.verticalAccessPlacement();
+            draft().stairMode = settings.stairConfig().mode();
+            draft().stairRiseType = settings.stairConfig().riseType();
+            draft().stairWidth = settings.stairConfig().stairWidth();
+        }
+    }
+
+    private MKWorkspaceTowerStackSettings towerPrimarySettingsFromDraft() {
+        MKTowerWorkspaceCategoryProfile mainProfile = getCategoryProfile(MKTowerWorkspaceCategory.MAIN);
+        return new MKWorkspaceTowerStackSettings(
+                TOWER_PRIMARY_STACK_ID,
+                draft().mainFloors,
+                draft().basementFloors,
+                mainProfile.fullHeight(),
+                mainProfile.roomWidth(),
+                mainProfile.roomLength(),
+                draft().shaftSize,
+                draft().verticalAccessPlacement,
+                makeStairConfig(),
+                draft().topCapApproachEnabled,
+                draft().basementCapApproachEnabled
+        );
     }
 
     private void replaceTowerStackStairConfig(String stackId, MKWorkspaceStairAuthoringConfig stairConfig) {

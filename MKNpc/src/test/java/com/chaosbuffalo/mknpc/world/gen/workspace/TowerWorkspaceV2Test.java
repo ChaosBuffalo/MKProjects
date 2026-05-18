@@ -134,6 +134,37 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void towerPlannerUsesPrimaryTowerStackSettingsWhenPresent() {
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
+                .withTowerStackSettings(new MKWorkspaceTowerStackSettings(
+                        "tower.primary", 2, 0, 7, false, false));
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(
+                        List.of(
+                                new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                                new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                        ),
+                        List.of()
+                ),
+                topologyProfile,
+                List.of(),
+                List.of()
+        );
+
+        List<MKPlannedPiece> pieces = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace);
+        MKPlannedPiece entry = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("entry"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals("tower.primary", entry.tags().get("workspace_tower_stack_id"));
+        assertEquals("2", entry.tags().get("workspace_tower_stack_main_floors"));
+        assertEquals("0", entry.tags().get("workspace_tower_stack_basement_floors"));
+        assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("top_cap_approach")));
+        assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("basement_cap_approach")));
+    }
+
+    @Test
     void mixedRiseStrategyResolvesHeightRejectedByStairOnly() {
         ResourceLocation stairBlock = ResourceLocation.parse("minecraft:stone_brick_stairs");
         ResourceLocation slabBlock = ResourceLocation.parse("minecraft:stone_brick_slab");

@@ -279,6 +279,8 @@ Family-level validation should focus on override legality:
 - Stack-level width, length, height, floor counts, and cap approach toggles are now represented in `MKWorkspaceTowerStackSettings` and applied to walled keep stack families as a bridge until the full resolver exists.
 - Stack-level vertical access shaft size, placement, stair mode, rise type, stair width, and stair/slab/ladder blocks are now represented in `MKWorkspaceTowerStackSettings` and used by walled keep stack planning, validation, and default stair generation.
 - Room family planning now goes through an initial `MKWorkspaceResolvedFamilySettings` bridge for dimensions, void margins, foundation policy, and palette.
+- The standalone tower planner can now consume `tower.primary` stack settings when present, while preserving legacy workspace floor settings as a migration fallback.
+- Stack-scoped stair config lookup is no longer walled-keep-only; any generated piece tagged with a tower stack id can resolve that stack's stair settings.
 - The remaining work is to make the resolver consume inherited topology defaults and to finish inherited family overrides.
 
 ### Phase 1: Model Reusable Tower Stack Slots
@@ -287,6 +289,7 @@ Family-level validation should focus on override legality:
 - Add a reusable tower stack schema builder.
 - Expand `MKWorkspaceTowerStackSettings` with per-slot or per-stack-role heights, dimensions, cap approach toggles, and vertical access settings.
 - Keep current tower and walled keep behavior working through compatibility helpers.
+- Bridge `tower.primary` to legacy standalone tower draft settings until category profiles are fully removed.
 
 ### Phase 2: Extract Tower Stack Planner
 

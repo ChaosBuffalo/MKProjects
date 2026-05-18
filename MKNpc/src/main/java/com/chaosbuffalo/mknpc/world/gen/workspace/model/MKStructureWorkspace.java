@@ -478,10 +478,12 @@ public class MKStructureWorkspace {
 
     public MKWorkspaceStairAuthoringConfig stairConfigForPiece(MKWorkspacePieceDefinition piece) {
         String stackId = piece.tags().getOrDefault("workspace_tower_stack_id", "");
-        if (stackId.isBlank() || !MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(topologyProfile.profileType())) {
+        if (stackId.isBlank()) {
             return stairConfig;
         }
-        return topologyProfile.towerStackSettingsOrDefault(stackId).stairConfig();
+        return topologyProfile.towerStackSettings(stackId)
+                .map(MKWorkspaceTowerStackSettings::stairConfig)
+                .orElse(stairConfig);
     }
 
     public MKWorkspaceResolvedFamilySettings resolveFamilySettings(MKTowerWorkspaceFamilyDefinition familyDefinition) {

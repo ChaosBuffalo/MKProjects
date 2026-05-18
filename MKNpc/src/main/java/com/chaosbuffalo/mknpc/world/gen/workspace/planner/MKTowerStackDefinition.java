@@ -46,6 +46,26 @@ public record MKTowerStackDefinition(
         );
     }
 
+    public static MKTowerStackDefinition towerPrimary(MKWorkspaceTowerStackSettings stackSettings) {
+        return new MKTowerStackDefinition(
+                stackSettings.stackId(),
+                stackSettings.mainFloors(),
+                stackSettings.basementFloors(),
+                stackSettings.shaftSize(),
+                stackSettings.verticalAccessPlacement(),
+                stackSettings.stairConfig(),
+                stackSettings.topCapApproachEnabled(),
+                stackSettings.basementCapApproachEnabled(),
+                true,
+                "connect_up",
+                "connect_down_entry",
+                "connect_down",
+                "top_cap",
+                "bottom_cap",
+                false
+        );
+    }
+
     public static MKTowerStackDefinition scoped(String stackId, MKTowerWorkspaceFloorSettings floorSettings,
                                                 boolean startPiece) {
         return scoped(stackId, floorSettings, startPiece, null);
