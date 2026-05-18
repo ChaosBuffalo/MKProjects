@@ -7,6 +7,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
@@ -294,6 +296,113 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
         });
         addRow(screen, content, screen.makeWhiteText(Component.literal("Basement Cap Approach")),
                 basementCapApproachButton);
+
+        addTowerStackFoundationRows(screen, content, stackId);
+    }
+
+    private void addTowerStackFoundationRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, String stackId) {
+        WorkspaceDraftSession editor = screen.draftSession();
+        MKWorkspaceFoundationPolicy foundationPolicy = editor.towerStackFoundationPolicy(stackId);
+        MKButton modeButton = new MKButton(Component.literal(formatTopologyLabel(
+                foundationPolicy.mode().getSerializedName())), 180, 20);
+        modeButton.setPressedCallback((button, mouseButton) -> {
+            editor.towerStackFoundationPolicy(stackId, foundationPolicyForMode(
+                    cycleValue(List.of(MKWorkspaceFoundationMode.values()), foundationPolicy.mode(),
+                            isReverseClick(mouseButton)),
+                    foundationPolicy));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Mode")), modeButton);
+
+        if (foundationPolicy.mode() == MKWorkspaceFoundationMode.UNIFORM_STATE) {
+            ResourceLocation blockId = foundationPolicy.foundationBlockOpt()
+                    .orElse(ResourceLocation.parse("minecraft:stone"));
+            MKButton blockButton = new MKButton(screen.blockDisplayName(blockId), 180, 20);
+            blockButton.setTooltip(Component.literal(blockId.toString()));
+            blockButton.setPressedCallback((button, mouseButton) -> {
+                screen.openBlockPicker("Choose Foundation Block", blockId, value -> {
+                    editor.towerStackFoundationPolicy(stackId, MKWorkspaceFoundationPolicy.uniformBlock(value));
+                    screen.refreshPreservingActiveScroll();
+                }, false);
+                return true;
+            });
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Block")), blockButton);
+        }
+
+        if (foundationPolicy.mode() == MKWorkspaceFoundationMode.MASKED_EXTEND_BOTTOM_BLOCKS) {
+            addTowerStackFoundationMaskRows(screen, content, stackId, foundationPolicy);
+        }
+    }
+
+    private void addTowerStackFoundationMaskRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                                 String stackId, MKWorkspaceFoundationPolicy foundationPolicy) {
+        WorkspaceDraftSession editor = screen.draftSession();
+        List<ResourceLocation> maskBlocks = foundationPolicy.maskBlocks();
+        for (int maskIndex = 0; maskIndex < maskBlocks.size(); maskIndex++) {
+            ResourceLocation blockId = maskBlocks.get(maskIndex);
+            int capturedIndex = maskIndex;
+            MKButton blockButton = new MKButton(screen.blockDisplayName(blockId), 180, 20);
+            blockButton.setTooltip(Component.literal(blockId + "\nLeft-click to choose. Right-click to remove."));
+            blockButton.setPressedCallback((button, mouseButton) -> {
+                if (isReverseClick(mouseButton)) {
+                    updateTowerStackFoundationMaskBlock(screen, stackId, foundationPolicy, capturedIndex, null);
+                } else {
+                    screen.openBlockPicker("Choose Foundation Mask Block", blockId, value ->
+                            updateTowerStackFoundationMaskBlock(screen, stackId, foundationPolicy, capturedIndex, value),
+                            false);
+                }
+                return true;
+            });
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Mask Block " + (maskIndex + 1))),
+                    blockButton);
+        }
+        MKButton addButton = new MKButton(Component.literal("Add Block"), 180, 20);
+        addButton.setPressedCallback((button, mouseButton) -> {
+            ResourceLocation defaultBlock = ResourceLocation.parse("minecraft:stone");
+            screen.openBlockPicker("Choose Foundation Mask Block", defaultBlock, value -> {
+                List<ResourceLocation> updated = new java.util.ArrayList<>(foundationPolicy.maskBlocks());
+                if (!updated.contains(value)) {
+                    updated.add(value);
+                }
+                editor.towerStackFoundationPolicy(stackId,
+                        MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(updated));
+                screen.refreshPreservingActiveScroll();
+            }, false);
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Mask")), addButton);
+    }
+
+    private void updateTowerStackFoundationMaskBlock(MKWorkspaceScreen screen, String stackId,
+                                                     MKWorkspaceFoundationPolicy foundationPolicy, int maskIndex,
+                                                     ResourceLocation blockId) {
+        List<ResourceLocation> updated = new java.util.ArrayList<>(foundationPolicy.maskBlocks());
+        if (maskIndex < 0 || maskIndex >= updated.size()) {
+            return;
+        }
+        if (blockId == null) {
+            updated.remove(maskIndex);
+        } else {
+            updated.set(maskIndex, blockId);
+        }
+        screen.draftSession().towerStackFoundationPolicy(stackId,
+                MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(updated));
+        screen.refreshPreservingActiveScroll();
+    }
+
+    private MKWorkspaceFoundationPolicy foundationPolicyForMode(MKWorkspaceFoundationMode mode,
+                                                                MKWorkspaceFoundationPolicy current) {
+        return switch (mode) {
+            case NONE -> MKWorkspaceFoundationPolicy.none();
+            case UNIFORM_STATE -> current.foundationBlockOpt()
+                    .map(MKWorkspaceFoundationPolicy::uniformBlock)
+                    .orElse(MKWorkspaceFoundationPolicy.uniformBlock(ResourceLocation.parse("minecraft:stone")));
+            case EXTEND_BOTTOM_BLOCKS -> MKWorkspaceFoundationPolicy.extendBottomBlocks();
+            case MASKED_EXTEND_BOTTOM_BLOCKS -> current.maskBlocks().isEmpty() ?
+                    MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(List.of(ResourceLocation.parse("minecraft:stone"))) :
+                    MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(current.maskBlocks());
+        };
     }
 
     private void addTowerStackBlockRow(MKWorkspaceScreen screen, MKStackLayoutVertical content, String label,

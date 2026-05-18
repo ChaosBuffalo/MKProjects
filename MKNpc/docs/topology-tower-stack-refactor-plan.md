@@ -288,6 +288,7 @@ Family-level validation should focus on override legality:
 - The standalone tower topology defaults page no longer exposes category-profile room geometry controls; it keeps only temporary path-depth controls until those move to topology-run settings.
 - Family and linear-run foundation block fields now use block pickers, and masked foundations expose editable/addable/removable block entries instead of a comma-separated text field.
 - Tower stack settings now carry foundation defaults, and resolved room pieces inherit the stack foundation policy when the family does not define one.
+- The topology defaults page now exposes stack-level foundation mode, block, and mask controls for the standalone tower, center keep stack, and active corner stacks.
 - The remaining work is to finish inherited family overrides and continue removing category-profile-only configuration paths.
 
 ### Phase 1: Model Reusable Tower Stack Slots

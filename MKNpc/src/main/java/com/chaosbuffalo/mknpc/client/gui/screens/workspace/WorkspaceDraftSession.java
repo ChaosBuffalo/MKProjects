@@ -546,6 +546,14 @@ public class WorkspaceDraftSession {
                 value));
     }
 
+    public MKWorkspaceFoundationPolicy towerStackFoundationPolicy(String stackId) {
+        return towerStackSettings(stackId).foundationPolicy();
+    }
+
+    public void towerStackFoundationPolicy(String stackId, MKWorkspaceFoundationPolicy value) {
+        replaceTowerStackSettings(towerStackSettings(stackId).withFoundationPolicy(value));
+    }
+
     public int nextAllowedTowerStackMainFloorCount(String stackId, boolean reverse) {
         MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId);
         List<Integer> allowed = allowedTowerStackMainFloorCounts(settings, settings.basementFloors());
