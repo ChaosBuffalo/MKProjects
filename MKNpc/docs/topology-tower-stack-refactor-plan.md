@@ -74,13 +74,13 @@ The standalone tower planner should become a thin wrapper around one tower stack
 - `mainFloors`
 - `basementFloors`
 - `height`
+- `width`
+- `length`
+- `topCapApproachEnabled`
+- `basementCapApproachEnabled`
 
 It should grow to include:
 
-- main floor count
-- basement floor count
-- top cap approach enabled
-- basement cap approach enabled
 - entry height
 - main floor height
 - basement floor height
@@ -268,7 +268,9 @@ Family-level validation should focus on override legality:
 
 - Phase 2 is implemented: the standalone tower planner delegates room stack planning to `MKTowerStackPlanner`.
 - Phase 3 is implemented: the walled keep center stack uses the reusable stack planner with scoped stack pools.
-- Phase 4 is partially implemented: default shared corner towers now generate as full tower stacks, and the walled keep planner can plan active shared or unique corner stacks through the reusable stack planner. The remaining work is to finish topology-default editing, inherited family overrides, and stack-scoped vertical access settings.
+- Phase 4 is partially implemented: default shared corner towers now generate as full tower stacks, and the walled keep planner can plan active shared or unique corner stacks through the reusable stack planner.
+- Stack-level width, length, height, floor counts, and cap approach toggles are now represented in `MKWorkspaceTowerStackSettings` and applied to walled keep stack families as a bridge until the full resolver exists.
+- The remaining work is to finish inherited family overrides, stack-scoped vertical access settings, and the resolver layer.
 
 ### Phase 1: Model Reusable Tower Stack Slots
 

@@ -293,9 +293,12 @@ class TowerWorkspaceV2Test {
 
     @Test
     void walledKeepTopologyProfileRoundTripsThroughWorkspaceTags() {
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(true, false, true, false)
+                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 2, 1, 9,
+                        19, 21, true, false));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false)), List.of()),
-                MKWorkspaceTopologyProfile.walledKeep(true, false, true, false),
+                topologyProfile,
                 List.of(),
                 List.of()
         );
@@ -308,6 +311,12 @@ class TowerWorkspaceV2Test {
         assertTrue(decoded.topologyProfile().uniqueSouthEastCornerTower());
         assertFalse(decoded.topologyProfile().uniqueSouthWestCornerTower());
         assertFalse(decoded.topologyProfile().uniqueCornerTowers());
+        MKWorkspaceTowerStackSettings centerSettings = decoded.topologyProfile()
+                .towerStackSettings("keep.center")
+                .orElseThrow();
+        assertEquals(19, centerSettings.width());
+        assertEquals(21, centerSettings.length());
+        assertEquals(9, centerSettings.height());
     }
 
     @Test
