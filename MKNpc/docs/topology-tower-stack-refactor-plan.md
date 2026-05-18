@@ -306,6 +306,7 @@ Family-level validation should focus on override legality:
 - Stack-backed family palette resolution now inherits directly from topology stack palette defaults and family overrides instead of routing through category-profile palette overrides. Legacy non-stack families can still use category-profile palettes while compatibility remains.
 - Import/deserialization now uses generated topology compatibility profiles only for family normalization fallback, instead of materializing default category profiles as the stored source when manifests/tags omit them.
 - Material-copy flows now preserve topology stack palette overrides alongside workspace, family, and linear-run palette settings.
+- Topology-stack workspace drafts now submit an empty stored category-profile list; category-profile-shaped data is generated on demand through the compatibility layer for validation/export callers that still expect it.
 - The remaining work is to continue removing category-profile-only model paths, collapse the stored legacy role/category fields into topology slot metadata, and broaden resolver use in import/export/scaffold code.
 
 ### Phase 1: Model Reusable Tower Stack Slots

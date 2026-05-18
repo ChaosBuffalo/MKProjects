@@ -102,8 +102,7 @@ public class WorkspaceDraftSession {
                 MKTowerWorkspaceFloorSettings.defaultSettings().topCapApproachEnabled();
         draft.basementCapApproachEnabled = workspace != null ? workspace.floorSettings().basementCapApproachEnabled() :
                 MKTowerWorkspaceFloorSettings.defaultSettings().basementCapApproachEnabled();
-        draft.categoryProfiles = List.copyOf(workspace != null ? workspace.categoryProfiles() :
-                MKTowerWorkspaceCategoryProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()));
+        draft.categoryProfiles = initialCategoryProfiles(workspace);
         draft.familyDefinitions = List.copyOf(workspace != null ? workspace.familyDefinitions() :
                 MKTowerWorkspaceFamilyDefinition.createDefaults());
         draft.openingProfiles = List.copyOf(workspace != null ? workspace.openingProfiles() :
@@ -119,6 +118,16 @@ public class WorkspaceDraftSession {
         }
         seedDefaultsForTopology();
         snapDraftVerticalAccess();
+    }
+
+    private List<MKTowerWorkspaceCategoryProfile> initialCategoryProfiles(MKStructureWorkspace workspace) {
+        if (workspace == null) {
+            return List.of();
+        }
+        if (!workspace.topologyProfile().towerStackSettings().isEmpty()) {
+            return List.of();
+        }
+        return List.copyOf(workspace.categoryProfiles());
     }
 
     public String summary() {
@@ -622,12 +631,12 @@ public class WorkspaceDraftSession {
                     draft().topologyProfile.uniqueNorthEastCornerTower(),
                     draft().topologyProfile.uniqueSouthEastCornerTower(),
                     draft().topologyProfile.uniqueSouthWestCornerTower());
-            draft().categoryProfiles = MKTowerWorkspaceCategoryProfile.createWalledKeepDefaults(dimensions);
+            draft().categoryProfiles = List.of();
             draft().familyDefinitions = MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions);
             draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions,
                     draft().palette);
         } else {
-            draft().categoryProfiles = MKTowerWorkspaceCategoryProfile.createDefaults(dimensions);
+            draft().categoryProfiles = List.of();
             draft().familyDefinitions = MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions);
             draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.createDefaults(dimensions,
                     draft().palette);
@@ -963,7 +972,7 @@ public class WorkspaceDraftSession {
                 verticalAccessSpec,
                 new MKTowerWorkspaceFloorSettings(draft().mainFloors, draft().basementFloors,
                         draft().topCapApproachEnabled, draft().basementCapApproachEnabled),
-                categoryProfilesWithTopologyPathSettings(),
+                categoryProfilesForWorkspaceStorage(),
                 draft().familyDefinitions,
                 draft().openingProfiles,
                 draft().linearRunFamilies,
@@ -1009,6 +1018,10 @@ public class WorkspaceDraftSession {
                 MKWorkspaceDimensions.defaultDimensions(),
                 draft().categoryProfiles
         );
+    }
+
+    private List<MKTowerWorkspaceCategoryProfile> categoryProfilesForWorkspaceStorage() {
+        return topologyHasTowerStacks() ? List.of() : categoryProfilesWithTopologyPathSettings();
     }
 
     public void replaceCategoryProfile(MKTowerWorkspaceCategoryProfile updatedProfile) {
