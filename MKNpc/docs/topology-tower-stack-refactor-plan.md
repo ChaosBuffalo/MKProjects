@@ -297,6 +297,7 @@ Family-level validation should focus on override legality:
 - Export/import family dimension defaults now preserve inherited geometry by using `0` as the missing/default value.
 - Stack-backed family validation now resolves its allowed room height from the owning topology stack instead of the legacy category profile. Category-profile geometry validation remains only as a fallback for workspaces without tower stack settings.
 - Draft-level legacy dimensions and floor-count snapping now derive their budget profiles from the active topology stack settings instead of copied category-profile room geometry.
+- Workspace export manifests now include the topology profile, and import restores walled keep/shared-corner/stack/path settings instead of recreating every imported workspace as a standalone tower.
 - The remaining work is to continue removing category-profile-only model paths, collapse legacy role/category storage into topology slot metadata, and broaden resolver use in import/export/scaffold code.
 
 ### Phase 1: Model Reusable Tower Stack Slots

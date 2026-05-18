@@ -28,6 +28,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceI
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.mojang.serialization.Codec;
@@ -124,6 +125,7 @@ public record MKWorkspaceExportManifest(
                         ),
                         ExportVerticalAccessSpec.from(workspace.verticalAccessSpec()),
                         ExportFloorSettings.from(workspace.floorSettings()),
+                        workspace.topologyProfile(),
                         workspace.categoryProfiles().stream()
                                 .map(profile -> ExportCategoryProfile.from(workspace, profile))
                                 .toList(),
@@ -322,6 +324,7 @@ public record MKWorkspaceExportManifest(
             ExportStairConfig stairConfig,
             ExportVerticalAccessSpec verticalAccessSpec,
             ExportFloorSettings floorSettings,
+            MKWorkspaceTopologyProfile topologyProfile,
             List<ExportCategoryProfile> categoryProfiles,
             List<ExportFamilyDefinition> familyDefinitions,
             List<ExportOpeningProfile> openingProfiles,
@@ -340,6 +343,8 @@ public record MKWorkspaceExportManifest(
                         .forGetter(ExportWorkspaceSettings::verticalAccessSpec),
                 ExportFloorSettings.CODEC.fieldOf("floor_settings")
                         .forGetter(ExportWorkspaceSettings::floorSettings),
+                MKWorkspaceTopologyProfile.CODEC.optionalFieldOf("topology_profile", MKWorkspaceTopologyProfile.tower())
+                        .forGetter(ExportWorkspaceSettings::topologyProfile),
                 ExportCategoryProfile.CODEC.listOf().optionalFieldOf("category_profiles", List.of()).forGetter(ExportWorkspaceSettings::categoryProfiles),
                 ExportFamilyDefinition.CODEC.listOf().optionalFieldOf("family_definitions", List.of()).forGetter(ExportWorkspaceSettings::familyDefinitions),
                 ExportOpeningProfile.CODEC.listOf().optionalFieldOf("opening_profiles", List.of()).forGetter(ExportWorkspaceSettings::openingProfiles),

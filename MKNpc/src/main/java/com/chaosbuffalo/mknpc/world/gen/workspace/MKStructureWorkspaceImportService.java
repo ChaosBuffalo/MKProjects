@@ -285,7 +285,7 @@ public class MKStructureWorkspaceImportService {
                 manifest.namespace(),
                 manifest.structureName(),
                 manifest.familyType(),
-                MKWorkspaceTopologyProfile.tower(),
+                settings.topologyProfile(),
                 workspaceDimensions,
                 new MKWorkspaceMaterialPalette(
                         palette.floorBlock(),

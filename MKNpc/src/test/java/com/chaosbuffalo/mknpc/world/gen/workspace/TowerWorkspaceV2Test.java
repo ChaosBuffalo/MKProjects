@@ -374,6 +374,50 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void exportManifestRestoresTopologyProfileOnImport() {
+        MKWorkspaceStairAuthoringConfig centerStairs = new MKWorkspaceStairAuthoringConfig(
+                MKWorkspaceStairMode.LADDER,
+                MKWorkspaceStairRiseType.MIXED,
+                2,
+                ResourceLocation.parse("minecraft:oak_stairs"),
+                ResourceLocation.parse("minecraft:oak_slab"),
+                ResourceLocation.parse("minecraft:vine")
+        );
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false, true, false, true)
+                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 3, 2, 11,
+                        23, 25, 5, MKVerticalAccessPlacement.WEST, centerStairs, false, true))
+                .withPathSettings(new MKWorkspaceTopologyPathSettings(
+                        MKTowerWorkspaceCategory.MAIN.getSerializedName(), 2, 4, 3));
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(List.of(new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false)), List.of()),
+                topologyProfile,
+                List.of(),
+                List.of()
+        );
+
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.snapshotFromWorkspace(workspace, 4, "test");
+        MKStructureWorkspace imported = new MKStructureWorkspaceImportService().workspaceFromManifest(
+                UUID.randomUUID(), new BlockPos(7, 80, 7), 123L, manifest);
+
+        assertEquals(MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE, manifest.settings().topologyProfile().profileType());
+        assertEquals(MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE, imported.topologyProfile().profileType());
+        assertFalse(imported.topologyProfile().uniqueNorthWestCornerTower());
+        assertTrue(imported.topologyProfile().uniqueNorthEastCornerTower());
+        assertFalse(imported.topologyProfile().uniqueSouthEastCornerTower());
+        assertTrue(imported.topologyProfile().uniqueSouthWestCornerTower());
+        MKWorkspaceTowerStackSettings centerSettings = imported.topologyProfile()
+                .towerStackSettings("keep.center")
+                .orElseThrow();
+        assertEquals(23, centerSettings.width());
+        assertEquals(25, centerSettings.length());
+        assertEquals(11, centerSettings.height());
+        assertEquals(5, centerSettings.shaftSize());
+        assertEquals(MKVerticalAccessPlacement.WEST, centerSettings.verticalAccessPlacement());
+        assertEquals(MKWorkspaceStairMode.LADDER, centerSettings.stairConfig().mode());
+        assertEquals(3, imported.topologyPathSettings(MKTowerWorkspaceCategory.MAIN).maxBranchPiecesBeforeCap());
+    }
+
+    @Test
     void walledKeepPlannerCreatesExplicitRoomAndLinearRunPieces() {
         MKWorkspaceFoundationPolicy wallFoundation = MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(List.of(
                 ResourceLocation.parse("minecraft:stone_bricks"),
