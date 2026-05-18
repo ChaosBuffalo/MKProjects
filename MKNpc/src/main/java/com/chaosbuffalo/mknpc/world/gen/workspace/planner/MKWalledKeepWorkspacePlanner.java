@@ -135,7 +135,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
         SlotAvailability slots = collectAvailableSlots(workspace);
         workspace.familyDefinitions().stream()
-                .filter(family -> isKnownKeepSlot(family.topologySlotId()))
+                .filter(family -> isActiveKeepSlot(workspace, family.topologySlotId()))
                 .map(family -> createRoomPiece(workspace, family, slots))
                 .forEach(pieces::add);
         workspace.linearRunFamilies().stream()
@@ -150,6 +150,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         workspace.familyDefinitions().stream()
                 .map(MKTowerWorkspaceFamilyDefinition::topologySlotId)
                 .filter(MKWalledKeepWorkspacePlanner::isKnownKeepSlot)
+                .filter(slot -> isActiveKeepSlot(workspace, slot))
                 .forEach(slots::add);
         workspace.linearRunFamilies().stream()
                 .map(MKWorkspaceLinearRunFamilyDefinition::topologySlotId)
@@ -157,13 +158,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 .forEach(slots::add);
         LinkedHashSet<String> sharedCornerSlots = new LinkedHashSet<>();
         if (slots.contains("keep.corner.shared")) {
-            if (workspace.topologyProfile().uniqueCornerTowers()) {
-                CONCRETE_CORNER_SLOTS.stream()
-                        .filter(slot -> !slots.contains(slot))
-                        .forEach(sharedCornerSlots::add);
-            } else {
-                sharedCornerSlots.addAll(CONCRETE_CORNER_SLOTS);
-            }
+            CONCRETE_CORNER_SLOTS.stream()
+                    .filter(slot -> !workspace.topologyProfile().uniqueCornerTower(slot))
+                    .filter(slot -> !slots.contains(slot))
+                    .forEach(sharedCornerSlots::add);
             slots.addAll(sharedCornerSlots);
         }
         return new SlotAvailability(Set.copyOf(slots), Set.copyOf(sharedCornerSlots));
@@ -463,6 +461,16 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
 
     private static boolean isKnownKeepSlot(String topologySlotId) {
         return KNOWN_KEEP_SLOTS.contains(topologySlotId);
+    }
+
+    private static boolean isActiveKeepSlot(MKStructureWorkspace workspace, String topologySlotId) {
+        if ("keep.corner.shared".equals(topologySlotId)) {
+            return workspace.topologyProfile().anySharedCornerTower();
+        }
+        if (CONCRETE_CORNER_SLOTS.contains(topologySlotId)) {
+            return workspace.topologyProfile().uniqueCornerTower(topologySlotId);
+        }
+        return isKnownKeepSlot(topologySlotId);
     }
 
     private DirectionPair directionsForSlot(String topologySlotId) {

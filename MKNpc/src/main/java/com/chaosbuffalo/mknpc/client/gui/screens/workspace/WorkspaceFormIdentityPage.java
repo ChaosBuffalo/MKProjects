@@ -60,18 +60,10 @@ public class WorkspaceFormIdentityPage extends WorkspacePageBase {
             screen.flagNeedSetup();
             return true;
         });
-        MKButton uniqueCornerButton = new MKButton(Component.literal(editor.uniqueCornerTowers() ? "Unique" : "Shared"),
-                180, screen.buttonHeight());
-        uniqueCornerButton.setPressedCallback((button, mouseButton) -> {
-            editor.uniqueCornerTowers(!editor.uniqueCornerTowers());
-            screen.flagNeedSetup();
-            return true;
-        });
 
         addRow(screen, content, "mknpc.workspace.field.namespace", namespaceField);
         addRow(screen, content, "mknpc.workspace.field.structure_name", structureNameField);
         addRow(screen, content, "Topology Profile", topologyButton);
-        addRow(screen, content, "Corner Towers", uniqueCornerButton);
         addRow(screen, content, "mknpc.workspace.field.shell_margin", shellMarginField);
         addRow(screen, content, "mknpc.workspace.field.exterior_air_margin", exteriorAirMarginField);
         addRow(screen, content, "mknpc.workspace.field.preview_margin", previewMarginField);

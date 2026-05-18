@@ -230,7 +230,7 @@ class TowerWorkspaceV2Test {
     void walledKeepTopologyProfileRoundTripsThroughWorkspaceTags() {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false)), List.of()),
-                MKWorkspaceTopologyProfile.walledKeep(true),
+                MKWorkspaceTopologyProfile.walledKeep(true, false, true, false),
                 List.of(),
                 List.of()
         );
@@ -238,7 +238,11 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace decoded = MKStructureWorkspace.fromTag(workspace.toTag());
 
         assertEquals(MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE, decoded.topologyProfile().profileType());
-        assertTrue(decoded.topologyProfile().uniqueCornerTowers());
+        assertTrue(decoded.topologyProfile().uniqueNorthWestCornerTower());
+        assertFalse(decoded.topologyProfile().uniqueNorthEastCornerTower());
+        assertTrue(decoded.topologyProfile().uniqueSouthEastCornerTower());
+        assertFalse(decoded.topologyProfile().uniqueSouthWestCornerTower());
+        assertFalse(decoded.topologyProfile().uniqueCornerTowers());
     }
 
     @Test
@@ -341,8 +345,15 @@ class TowerWorkspaceV2Test {
         assertEquals(17, centerEntry.interiorLength());
         assertEquals(7, centerEntry.interiorHeight());
         assertEquals("keep.center.entry", centerEntry.tags().get("workspace_topology_slot_id"));
-        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_shared") &&
-                "keep.corner.shared".equals(piece.tags().get("workspace_topology_slot_id"))));
+        MKPlannedPiece sharedCorner = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_corner_shared"))
+                .findFirst()
+                .orElseThrow();
+        assertEquals("keep.corner.shared", sharedCorner.tags().get("workspace_topology_slot_id"));
+        assertTrue(sharedCorner.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.CONNECT_UP));
+        assertTrue(sharedCorner.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.CONNECT_DOWN));
         MKPlannedPiece northWall = pieces.stream()
                 .filter(piece -> piece.pieceName().equals("keep_wall_north"))
                 .findFirst()
@@ -464,10 +475,10 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void uniqueCornerOverrideReplacesSharedCornerForThatSlot() {
+    void perCornerUniqueModeUsesSharedOnlyForSharedCorners() {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
-                MKWorkspaceTopologyProfile.walledKeep(true),
+                MKWorkspaceTopologyProfile.walledKeep(false, false, true, false),
                 List.of(
                         new MKTowerWorkspaceFamilyDefinition(
                                 "keep_center_entry",
@@ -530,8 +541,63 @@ class TowerWorkspaceV2Test {
         MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace.withPieces(exportedPieces), 1, "now");
 
         assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/north_west", "keep_corner_shared");
+        assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/north_east", "keep_corner_shared");
         assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/south_east", "keep_corner_south_east");
+        assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/south_west", "keep_corner_shared");
         assertRuntimePoolDoesNotContain(workspace, manifest, "keep_slots/keep/corner/south_east", "keep_corner_shared");
+    }
+
+    @Test
+    void allUniqueCornersDoNotGenerateSharedCornerTemplate() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                withCategoryProfiles(baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                        MKTowerWorkspaceCategoryProfile.createWalledKeepDefaults(dimensions)),
+                MKWorkspaceTopologyProfile.walledKeep(true),
+                List.of(
+                        new MKTowerWorkspaceFamilyDefinition(
+                                "keep_corner_shared",
+                                MKTowerWorkspaceCategory.MAIN,
+                                MKWorkspacePieceRole.FLOOR_MAIN,
+                                "keep.corner.shared",
+                                "keep.corner.shared",
+                                true,
+                                7,
+                                7,
+                                7,
+                                MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                                List.of(),
+                                0,
+                                0,
+                                MKWorkspaceFoundationPolicy.none(),
+                                null
+                        ),
+                        new MKTowerWorkspaceFamilyDefinition(
+                                "keep_corner_north_west",
+                                MKTowerWorkspaceCategory.MAIN,
+                                MKWorkspacePieceRole.FLOOR_MAIN,
+                                "keep.corner.north_west",
+                                "keep.corner.north_west",
+                                true,
+                                9,
+                                9,
+                                9,
+                                MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                                List.of(),
+                                0,
+                                0,
+                                MKWorkspaceFoundationPolicy.none(),
+                                null
+                        )
+                ),
+                List.of()
+        );
+
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+
+        assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_shared")));
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west") &&
+                piece.interiorHeight() == 9));
     }
 
     @Test

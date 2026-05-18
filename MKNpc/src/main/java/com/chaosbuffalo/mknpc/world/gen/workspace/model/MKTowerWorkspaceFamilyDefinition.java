@@ -245,7 +245,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         MKWorkspaceFoundationPolicy.none(), null),
                 new MKTowerWorkspaceFamilyDefinition("keep_corner_shared", MKTowerWorkspaceCategory.MAIN,
-                        MKWorkspacePieceRole.FLOOR_MAIN, "keep.corner.shared", "keep.corner.shared", false,
+                        MKWorkspacePieceRole.FLOOR_MAIN, "keep.corner.shared", "keep.corner.shared", true,
                         cornerFootprint, cornerFootprint, keepHeight,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         MKWorkspaceFoundationPolicy.none(), null),

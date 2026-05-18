@@ -51,14 +51,10 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
             content.addWidget(topologyText);
             content.addConstraintToWidget(MarginConstraint.LEFT, topologyText);
 
-            MKButton uniqueCornerButton = new MKButton(Component.literal(editor.uniqueCornerTowers() ? "Unique" : "Shared"),
-                    180, 20);
-            uniqueCornerButton.setPressedCallback((button, mouseButton) -> {
-                editor.uniqueCornerTowers(!editor.uniqueCornerTowers());
-                screen.flagNeedSetup();
-                return true;
-            });
-            addRow(screen, content, screen.makeWhiteText(Component.literal("Corner Towers")), uniqueCornerButton);
+            addCornerModeRow(screen, content, "NW Corner", "keep.corner.north_west");
+            addCornerModeRow(screen, content, "NE Corner", "keep.corner.north_east");
+            addCornerModeRow(screen, content, "SE Corner", "keep.corner.south_east");
+            addCornerModeRow(screen, content, "SW Corner", "keep.corner.south_west");
 
             MKIntegerSlider centerWidthSlider = new MKIntegerSlider("Width", 180, 20, 3, 45, 2,
                     editor.walledKeepCenterWidth(), value -> {
@@ -102,6 +98,10 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
                 return true;
             });
             addRow(screen, content, screen.makeWhiteText(Component.literal("Basement Floors")), basementFloorsButton);
+
+            for (String cornerSlot : editor.activeCornerTopologySlots()) {
+                addCornerSizingSection(screen, content, cornerSlot);
+            }
 
             MKText perimeterText = screen.makeWhiteText(Component.literal(
                     "Perimeter sides use one linear-run slot each. Choose wall or parapet by assigning one family to each keep.perimeter slot."));
@@ -289,6 +289,49 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
         addRow(screen, content, screen.makeWhiteText(Component.literal("Branch Cap Max")), maxBranchBeforeCapSlider);
         screen.addPaletteOverrideRows(content, "Palette Overrides", editor.draftBasePalette(), profile.paletteOverrideOpt(),
                 override -> editor.replaceCategoryProfile(editor.copyCategoryProfile(profile, override)));
+    }
+
+    private void addCornerSizingSection(MKWorkspaceScreen screen, MKStackLayoutVertical content, String topologySlotId) {
+        WorkspaceDraftSession editor = screen.draftSession();
+        MKText header = screen.makeWhiteText(Component.literal(formatTopologyLabel(topologySlotId) + " Settings"));
+        header.setWidth(screen.contentWidth());
+        content.addWidget(header);
+        content.addConstraintToWidget(MarginConstraint.LEFT, header);
+
+        MKIntegerSlider widthSlider = new MKIntegerSlider("Width", 180, 20, 3, 45, 2,
+                editor.cornerTowerWidth(topologySlotId), value -> {
+            editor.cornerTowerWidth(topologySlotId, value);
+            screen.flagNeedSetup();
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Corner Width")), widthSlider);
+
+        MKIntegerSlider lengthSlider = new MKIntegerSlider("Length", 180, 20, 3, 45, 2,
+                editor.cornerTowerLength(topologySlotId), value -> {
+            editor.cornerTowerLength(topologySlotId, value);
+            screen.flagNeedSetup();
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Corner Length")), lengthSlider);
+
+        MKIntegerSlider heightSlider = new MKIntegerSlider("Height", 180, 20, 3,
+                MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE - 1, 1,
+                editor.cornerTowerHeight(topologySlotId), value -> {
+            editor.cornerTowerHeight(topologySlotId, value);
+            screen.flagNeedSetup();
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Corner Height")), heightSlider);
+    }
+
+    private void addCornerModeRow(MKWorkspaceScreen screen, MKStackLayoutVertical content, String label,
+                                  String topologySlotId) {
+        WorkspaceDraftSession editor = screen.draftSession();
+        MKButton modeButton = new MKButton(Component.literal(editor.uniqueCornerTower(topologySlotId) ? "Unique" : "Shared"),
+                180, 20);
+        modeButton.setPressedCallback((button, mouseButton) -> {
+            editor.uniqueCornerTower(topologySlotId, !editor.uniqueCornerTower(topologySlotId));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal(label)), modeButton);
     }
 
     private void addCategoryHeightRow(MKWorkspaceScreen screen, MKStackLayoutVertical content,
