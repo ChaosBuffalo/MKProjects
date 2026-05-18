@@ -26,14 +26,21 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceRegionSchema;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceRoleSchema;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceSlotSchema;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceTopologySchema;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 public class WorkspaceDraftSession {
     private final MKWorkspaceScreen screen;
@@ -270,6 +277,30 @@ public class WorkspaceDraftSession {
                 .count();
     }
 
+    public long familyCount(String topologySlotId) {
+        return draft().familyDefinitions.stream()
+                .filter(family -> family.topologySlotId().equals(topologySlotId))
+                .count();
+    }
+
+    public List<MKWorkspaceSlotSchema> roomTopologySlots() {
+        MKWorkspaceTopologySchema schema = topologySchema();
+        Map<String, String> regionKinds = schema.regions().stream()
+                .collect(java.util.stream.Collectors.toMap(MKWorkspaceRegionSchema::regionId,
+                        MKWorkspaceRegionSchema::regionKind));
+        return schema.slots().stream()
+                .filter(slot -> !"linear_run".equals(regionKinds.getOrDefault(slot.regionId(), "")))
+                .toList();
+    }
+
+    public List<Integer> familyIndexesForTopologySlot(String topologySlotId) {
+        List<MKTowerWorkspaceFamilyDefinition> families = draft().familyDefinitions;
+        return IntStream.range(0, families.size())
+                .filter(index -> families.get(index).topologySlotId().equals(topologySlotId))
+                .boxed()
+                .toList();
+    }
+
     public MKTowerWorkspaceCategory selectedFamilyCategory() {
         ensureInitialized();
         if (selectedFamilyCategory == null) {
@@ -332,6 +363,20 @@ public class WorkspaceDraftSession {
                 com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                 defaultHorizontalExitsForNewFamily()
         ));
+        draft().familyDefinitions = List.copyOf(updated);
+        return draft().familyDefinitions.size() - 1;
+    }
+
+    public int addFamilyDefinition(MKWorkspaceSlotSchema slot) {
+        Optional<MKTowerWorkspaceFamilyDefinition> source = draft().familyDefinitions.stream()
+                .filter(family -> family.topologySlotId().equals(slot.slotId()))
+                .findFirst()
+                .or(() -> sharedCornerSource(slot.slotId()));
+        MKTowerWorkspaceFamilyDefinition family = source
+                .map(existing -> copyFamilyForTopologySlot(existing, slot.slotId()))
+                .orElseGet(() -> defaultFamilyForTopologySlot(slot));
+        java.util.ArrayList<MKTowerWorkspaceFamilyDefinition> updated = new java.util.ArrayList<>(draft().familyDefinitions);
+        updated.add(family);
         draft().familyDefinitions = List.copyOf(updated);
         return draft().familyDefinitions.size() - 1;
     }
@@ -1099,6 +1144,108 @@ public class WorkspaceDraftSession {
                 MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
                 openingProfileId
         ));
+    }
+
+    private MKWorkspaceTopologySchema topologySchema() {
+        return new MKWorkspacePlannerRegistry()
+                .plannerFor(topologyProfileType())
+                .schema();
+    }
+
+    private Optional<MKTowerWorkspaceFamilyDefinition> sharedCornerSource(String topologySlotId) {
+        if (!topologySlotId.startsWith("keep.corner.") || topologySlotId.equals("keep.corner.shared")) {
+            return Optional.empty();
+        }
+        return draft().familyDefinitions.stream()
+                .filter(family -> family.topologySlotId().equals("keep.corner.shared"))
+                .findFirst();
+    }
+
+    private MKTowerWorkspaceFamilyDefinition copyFamilyForTopologySlot(MKTowerWorkspaceFamilyDefinition existing,
+                                                                       String topologySlotId) {
+        return new MKTowerWorkspaceFamilyDefinition(
+                nextUniqueFamilyBaseName(),
+                existing.category(),
+                existing.pieceRole(),
+                topologySlotId,
+                existing.supportsVerticalAccess() ? valueOrDefault(existing.verticalAccessGroupId(), topologySlotId) : "",
+                existing.supportsVerticalAccess(),
+                existing.roomWidth(),
+                existing.roomLength(),
+                existing.roomHeight(),
+                existing.horizontalExtrusionMode(),
+                existing.horizontalExits(),
+                existing.topVoidMargin(),
+                existing.bottomVoidMargin(),
+                existing.foundationPolicy(),
+                null
+        );
+    }
+
+    private MKTowerWorkspaceFamilyDefinition defaultFamilyForTopologySlot(MKWorkspaceSlotSchema slot) {
+        MKTowerWorkspaceCategory category = defaultCategoryForTopologySlot(slot.slotId());
+        MKTowerWorkspaceCategoryProfile profile = getCategoryProfile(category);
+        MKWorkspacePieceRole role = defaultRoleForTopologySlot(slot.slotId(), category);
+        boolean supportsVerticalAccess = topologySlotSupportsVerticalAccess(slot);
+        return new MKTowerWorkspaceFamilyDefinition(
+                nextUniqueFamilyBaseName(),
+                category,
+                role,
+                slot.slotId(),
+                supportsVerticalAccess ? slot.slotId() : "",
+                supportsVerticalAccess,
+                profile.roomWidth(),
+                profile.roomLength(),
+                profile.fullHeight(),
+                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
+                defaultHorizontalExitsForNewFamily(),
+                0,
+                0,
+                MKWorkspaceFoundationPolicy.none(),
+                null
+        );
+    }
+
+    private boolean topologySlotSupportsVerticalAccess(MKWorkspaceSlotSchema slot) {
+        return topologySchema().roles().stream()
+                .filter(role -> role.roleId().equals(slot.roleId()))
+                .map(MKWorkspaceRoleSchema::tags)
+                .anyMatch(tags -> tags.contains("vertical_access"));
+    }
+
+    private MKTowerWorkspaceCategory defaultCategoryForTopologySlot(String topologySlotId) {
+        if (topologySlotId.contains("basement_cap")) {
+            return MKTowerWorkspaceCategory.BASEMENT_CAP;
+        }
+        if (topologySlotId.contains("basement")) {
+            return MKTowerWorkspaceCategory.BASEMENT;
+        }
+        if (topologySlotId.contains("top_cap")) {
+            return MKTowerWorkspaceCategory.TOP_CAP;
+        }
+        if (topologySlotId.contains("entry") || topologySlotId.contains("gate")) {
+            return MKTowerWorkspaceCategory.ENTRY;
+        }
+        return MKTowerWorkspaceCategory.MAIN;
+    }
+
+    private MKWorkspacePieceRole defaultRoleForTopologySlot(String topologySlotId, MKTowerWorkspaceCategory category) {
+        if (topologySlotId.contains("top_cap_approach")) {
+            return MKWorkspacePieceRole.TOP_CAP_APPROACH;
+        }
+        if (topologySlotId.contains("top_cap")) {
+            return MKWorkspacePieceRole.TOP_CAP;
+        }
+        if (topologySlotId.contains("basement_cap_approach")) {
+            return MKWorkspacePieceRole.BASEMENT_CAP_APPROACH;
+        }
+        if (topologySlotId.contains("basement_cap")) {
+            return MKWorkspacePieceRole.BASEMENT_CAP;
+        }
+        if (topologySlotId.contains("basement_entry")) {
+            return MKWorkspacePieceRole.BASEMENT_ENTRY;
+        }
+        return defaultRoleForCategory(category);
     }
 
     public Optional<String> firstCompatibleOpeningProfileId(MKWorkspaceHorizontalExitPathKind pathKind) {

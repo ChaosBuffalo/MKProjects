@@ -44,8 +44,8 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         editor.ensureInitialized();
         if (editor.selectedFamilyIndex() < 0 ||
                 editor.selectedFamilyIndex() >= editor.draft().familyDefinitions.size()) {
-            screen.switchToExistingState(WorkspaceFormFamilyCategoryPage.ID);
-            return new WorkspaceFormFamilyCategoryPage().build(screen);
+            screen.switchToExistingState(WorkspaceFormFamiliesPage.ID);
+            return new WorkspaceFormFamiliesPage().build(screen);
         }
 
         int index = editor.selectedFamilyIndex();
@@ -172,7 +172,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                         MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(parseResourceLocationList(text))));
         addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Block")), foundationBlockField);
         addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Mask Blocks")), foundationMaskField);
-        addRow(screen, content, screen.makeWhiteText(Component.literal("Category")), categoryButton);
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Geometry Band")), categoryButton);
         addRow(screen, content, screen.makeWhiteText(Component.literal("Role")), roleButton);
         addRow(screen, content, screen.makeWhiteText(Component.literal("Horizontal Extrusion")), extrusionModeButton);
         addRow(screen, content, screen.makeWhiteText(Component.literal("Room Width")), roomWidthSlider);
@@ -180,7 +180,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         if (family.supportsVerticalAccess()) {
             MKText heightSummary = screen.makeWhiteText(Component.literal(
                     "Room Height: " + family.roomHeight() + " (matches " +
-                            formatTopologyLabel(family.category().getSerializedName()) + " full height)"));
+                            formatTopologyLabel(family.category().getSerializedName()) + " geometry band full height)"));
             heightSummary.setWidth(screen.contentWidth());
             heightSummary.setMultiline(true);
             content.addWidget(heightSummary);
@@ -263,14 +263,14 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
             editor.removeFamilyDefinition(index);
             editor.selectedFamilyIndex(-1);
             editor.selectedFamilyExitIndex(-1);
-            screen.switchToExistingState(WorkspaceFormFamilyCategoryPage.ID);
+            screen.switchToExistingState(WorkspaceFormFamiliesPage.ID);
             return true;
         });
 
-        MKButton back = addBackButton(screen, root, WorkspaceFormFamilyCategoryPage.ID);
+        MKButton back = addBackButton(screen, root, WorkspaceFormFamiliesPage.ID);
         back.setPressedCallback((button, mouseButton) -> {
             editor.selectedFamilyExitIndex(-1);
-            screen.switchToExistingState(WorkspaceFormFamilyCategoryPage.ID);
+            screen.switchToExistingState(WorkspaceFormFamiliesPage.ID);
             return true;
         });
         return root;
