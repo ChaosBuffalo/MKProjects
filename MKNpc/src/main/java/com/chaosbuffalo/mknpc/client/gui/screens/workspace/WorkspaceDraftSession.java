@@ -1526,12 +1526,12 @@ public class WorkspaceDraftSession {
     }
 
     public MKTowerWorkspaceFamilyDefinition normalizeFamilyDefinition(MKTowerWorkspaceFamilyDefinition family) {
-        MKTowerWorkspaceCategoryProfile profile = getCategoryProfile(family.category());
-        int roomWidth = normalizeFamilyWidthForCategory(family.roomWidth(), family.supportsVerticalAccess(), profile);
-        int roomLength = normalizeFamilyLengthForCategory(family.roomLength(), family.supportsVerticalAccess(), profile);
-        int roomHeight = isCornerTowerFamily(family) ?
-                normalizeCornerTowerHeight(family.roomHeight(), family.supportsVerticalAccess()) :
-                normalizeFamilyHeightForCategory(family.roomHeight(), family.supportsVerticalAccess(), profile);
+        Optional<String> towerStackId = towerStackIdForTopologySlot(family.topologySlotId());
+        MKTowerWorkspaceCategoryProfile profile = categoryProfileForFamilyNormalization(family, towerStackId);
+        MKWorkspaceVerticalAccessSpec verticalAccessSpec = verticalAccessSpecForFamilyNormalization(towerStackId);
+        int roomWidth = normalizeFamilyWidth(family.roomWidth(), family.supportsVerticalAccess(), verticalAccessSpec);
+        int roomLength = normalizeFamilyLength(family.roomLength(), family.supportsVerticalAccess(), verticalAccessSpec);
+        int roomHeight = normalizeFamilyHeightForCategory(family.roomHeight(), family.supportsVerticalAccess(), profile);
         int availableVoidMargin = Math.max(0, roomHeight - MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT);
         int topVoidMargin = family.supportsVerticalAccess() ? 0 :
                 clamp(family.topVoidMargin(), 0, availableVoidMargin);
@@ -1584,36 +1584,54 @@ public class WorkspaceDraftSession {
         );
     }
 
-    private int normalizeCornerTowerHeight(int requestedHeight, boolean supportsVerticalAccess) {
-        int height = Math.max(MKTowerWorkspaceCategoryProfile.MIN_ROOM_HEIGHT, requestedHeight);
-        if (!supportsVerticalAccess) {
-            return Math.min(height, MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE - 1);
+    private MKTowerWorkspaceCategoryProfile categoryProfileForFamilyNormalization(MKTowerWorkspaceFamilyDefinition family,
+                                                                                  Optional<String> towerStackId) {
+        MKTowerWorkspaceCategoryProfile profile = getCategoryProfile(family.category());
+        if (towerStackId.isEmpty()) {
+            return profile;
         }
-        MKWorkspaceVerticalAccessSpec verticalAccessSpec = currentVerticalAccessSpec();
-        return MKWorkspaceDimensions.snapToNearestAllowedBandHeight(
-                verticalAccessSpec.stairConfig(),
-                verticalAccessSpec.shaftSize(),
-                height,
-                height,
-                3,
-                MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE
+        MKWorkspaceTowerStackSettings settings = towerStackSettings(towerStackId.get());
+        return new MKTowerWorkspaceCategoryProfile(
+                profile.category(),
+                profile.roomWidth(),
+                profile.roomLength(),
+                settings.height(),
+                profile.minMainPathPieces(),
+                profile.maxMainPathPieces(),
+                profile.maxBranchPiecesBeforeCap(),
+                profile.paletteOverride()
         );
     }
 
-    private boolean isCornerTowerFamily(MKTowerWorkspaceFamilyDefinition family) {
-        return cornerStackIdForSlot(family.topologySlotId()).isPresent();
+    private MKWorkspaceVerticalAccessSpec verticalAccessSpecForFamilyNormalization(Optional<String> towerStackId) {
+        if (towerStackId.isEmpty()) {
+            return currentVerticalAccessSpec();
+        }
+        MKWorkspaceTowerStackSettings settings = towerStackSettings(towerStackId.get());
+        return new MKWorkspaceVerticalAccessSpec(settings.shaftSize(), settings.verticalAccessPlacement(),
+                settings.stairConfig());
+    }
+
+    private int normalizeFamilyWidth(int requestedWidth, boolean supportsVerticalAccess,
+                                     MKWorkspaceVerticalAccessSpec verticalAccessSpec) {
+        int width = Math.max(3, makeOdd(requestedWidth));
+        return supportsVerticalAccess ? Math.max(width, verticalAccessSpec.shaftSize()) : width;
+    }
+
+    private int normalizeFamilyLength(int requestedLength, boolean supportsVerticalAccess,
+                                      MKWorkspaceVerticalAccessSpec verticalAccessSpec) {
+        int length = Math.max(3, makeOdd(requestedLength));
+        return supportsVerticalAccess ? Math.max(length, verticalAccessSpec.shaftSize()) : length;
     }
 
     public int normalizeFamilyWidthForCategory(int requestedWidth, boolean supportsVerticalAccess,
                                                MKTowerWorkspaceCategoryProfile profile) {
-        int width = Math.max(3, makeOdd(requestedWidth));
-        return supportsVerticalAccess ? Math.max(width, draft().shaftSize) : width;
+        return normalizeFamilyWidth(requestedWidth, supportsVerticalAccess, currentVerticalAccessSpec());
     }
 
     public int normalizeFamilyLengthForCategory(int requestedLength, boolean supportsVerticalAccess,
                                                 MKTowerWorkspaceCategoryProfile profile) {
-        int length = Math.max(3, makeOdd(requestedLength));
-        return supportsVerticalAccess ? Math.max(length, draft().shaftSize) : length;
+        return normalizeFamilyLength(requestedLength, supportsVerticalAccess, currentVerticalAccessSpec());
     }
 
     public int normalizeFamilyHeightForCategory(int requestedHeight, boolean supportsVerticalAccess,
@@ -1753,53 +1771,6 @@ public class WorkspaceDraftSession {
             return "keep.perimeter." + topologySlotId.substring("keep.parapet.".length());
         }
         return null;
-    }
-
-    private void replaceWalledKeepCenterGeometry(Integer width, Integer length, Integer height) {
-        if (height != null) {
-            draft().categoryProfiles = draft().categoryProfiles.stream()
-                    .map(profile -> new MKTowerWorkspaceCategoryProfile(
-                            profile.category(),
-                            profile.roomWidth(),
-                            profile.roomLength(),
-                            height,
-                            profile.minMainPathPieces(),
-                            profile.maxMainPathPieces(),
-                            profile.maxBranchPiecesBeforeCap(),
-                            profile.paletteOverride()))
-                    .toList();
-        }
-        draft().familyDefinitions = draft().familyDefinitions.stream()
-                .map(family -> family.topologySlotId().startsWith("keep.center.") ?
-                        copyFamilyWithGeometry(
-                                family,
-                                width == null ? family.roomWidth() : width,
-                                length == null ? family.roomLength() : length,
-                                height == null ? family.roomHeight() : height) :
-                        family)
-                .toList();
-        snapDraftVerticalAccess();
-    }
-
-    private Optional<MKTowerWorkspaceFamilyDefinition> cornerTowerFamily(String topologySlotId) {
-        ensureFamiliesForActiveCornerSlots();
-        return draft().familyDefinitions.stream()
-                .filter(family -> family.topologySlotId().equals(topologySlotId))
-                .findFirst();
-    }
-
-    private void replaceCornerTowerGeometry(String topologySlotId, Integer width, Integer length, Integer height) {
-        ensureFamiliesForActiveCornerSlots();
-        draft().familyDefinitions = draft().familyDefinitions.stream()
-                .map(family -> family.topologySlotId().equals(topologySlotId) ?
-                        copyFamilyWithGeometry(
-                                family,
-                                width == null ? family.roomWidth() : width,
-                                length == null ? family.roomLength() : length,
-                                height == null ? family.roomHeight() : height) :
-                        family)
-                .toList();
-        snapDraftVerticalAccess();
     }
 
     private MKTowerWorkspaceFamilyDefinition copyFamilyWithGeometry(MKTowerWorkspaceFamilyDefinition family,
