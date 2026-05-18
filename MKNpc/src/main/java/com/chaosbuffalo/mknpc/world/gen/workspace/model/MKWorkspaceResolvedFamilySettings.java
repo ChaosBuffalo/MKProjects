@@ -16,6 +16,9 @@ public record MKWorkspaceResolvedFamilySettings(
                 .resolveFamily(workspace, familyDefinition);
         MKWorkspaceTowerStackSettings stackSettings = workspace.towerStackSettingsForFamily(familyDefinition)
                 .orElse(null);
+        MKWorkspaceFoundationPolicy foundationPolicy = stackSettings != null &&
+                stackSettings.foundationPolicy().enabled() && !familyDefinition.foundationPolicy().enabled() ?
+                stackSettings.foundationPolicy() : familyDefinition.foundationPolicy();
         return new MKWorkspaceResolvedFamilySettings(
                 familyDefinition,
                 stackSettings == null ? familyDefinition.roomWidth() : stackSettings.width(),
@@ -23,7 +26,7 @@ public record MKWorkspaceResolvedFamilySettings(
                 stackSettings == null ? familyDefinition.roomHeight() : stackSettings.height(),
                 familyDefinition.topVoidMargin(),
                 familyDefinition.bottomVoidMargin(),
-                familyDefinition.foundationPolicy(),
+                foundationPolicy,
                 palette
         );
     }

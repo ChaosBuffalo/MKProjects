@@ -286,6 +286,9 @@ public class MKStructureWorkspace {
             for (String error : stackSpec.validate()) {
                 errors.add("tower stack " + settings.stackId() + " " + error);
             }
+            for (String error : settings.foundationPolicy().validate("tower stack " + settings.stackId())) {
+                errors.add(error);
+            }
         }
         for (MKTowerWorkspaceFamilyDefinition familyDefinition : familyDefinitions) {
             Optional<MKTowerWorkspaceCategoryProfile> familyCategory = categoryProfileForFamily(familyDefinition);

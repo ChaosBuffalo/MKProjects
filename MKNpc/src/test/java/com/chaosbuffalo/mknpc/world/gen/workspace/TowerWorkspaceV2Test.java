@@ -949,6 +949,31 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void stackFoundationPolicyFlowsToResolvedRoomPieces() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceFoundationPolicy stackFoundation = MKWorkspaceFoundationPolicy.uniformBlock(
+                ResourceLocation.parse("minecraft:stone_bricks"));
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
+                .withTowerStackSettings(MKWorkspaceTowerStackSettings.defaults("keep.center", 7)
+                        .withFoundationPolicy(stackFoundation));
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                withCategoryProfiles(baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                        MKTowerWorkspaceCategoryProfile.createWalledKeepDefaults(dimensions)),
+                topologyProfile,
+                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+
+        MKPlannedPiece centerEntry = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.pieceName().equals("keep_center_entry"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(MKWorkspaceFoundationMode.UNIFORM_STATE.getSerializedName(),
+                centerEntry.tags().get(MKWorkspaceFoundationPolicy.MODE_TAG));
+    }
+
+    @Test
     void walledKeepPlannerIgnoresLegacySeparateWallAndParapetSlots() {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
