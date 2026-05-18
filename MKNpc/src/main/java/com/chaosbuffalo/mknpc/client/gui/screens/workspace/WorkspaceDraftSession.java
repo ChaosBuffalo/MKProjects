@@ -2045,10 +2045,15 @@ public class WorkspaceDraftSession {
 
     private MKTowerWorkspaceFamilyDefinition copyFamilyForTopologySlot(MKTowerWorkspaceFamilyDefinition existing,
                                                                        String topologySlotId) {
+        Optional<MKTowerWorkspaceStackSlot> stackSlot = MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId);
+        MKTowerWorkspaceCategory category = stackSlot.map(MKTowerWorkspaceStackSlot::category)
+                .orElse(existing.category());
+        MKWorkspacePieceRole role = stackSlot.map(MKTowerWorkspaceStackSlot::pieceRole)
+                .orElse(existing.pieceRole());
         return new MKTowerWorkspaceFamilyDefinition(
                 nextUniqueFamilyBaseName(),
-                existing.category(),
-                existing.pieceRole(),
+                category,
+                role,
                 topologySlotId,
                 existing.supportsVerticalAccess() ?
                         towerStackIdForTopologySlot(topologySlotId)
@@ -2101,6 +2106,10 @@ public class WorkspaceDraftSession {
     }
 
     private MKTowerWorkspaceCategory defaultCategoryForTopologySlot(String topologySlotId) {
+        Optional<MKTowerWorkspaceStackSlot> stackSlot = MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId);
+        if (stackSlot.isPresent()) {
+            return stackSlot.get().category();
+        }
         if (topologySlotId.contains("basement_cap")) {
             return MKTowerWorkspaceCategory.BASEMENT_CAP;
         }
@@ -2117,6 +2126,10 @@ public class WorkspaceDraftSession {
     }
 
     private MKWorkspacePieceRole defaultRoleForTopologySlot(String topologySlotId, MKTowerWorkspaceCategory category) {
+        Optional<MKTowerWorkspaceStackSlot> stackSlot = MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId);
+        if (stackSlot.isPresent()) {
+            return stackSlot.get().pieceRole();
+        }
         if (topologySlotId.contains("top_cap_approach")) {
             return MKWorkspacePieceRole.TOP_CAP_APPROACH;
         }
