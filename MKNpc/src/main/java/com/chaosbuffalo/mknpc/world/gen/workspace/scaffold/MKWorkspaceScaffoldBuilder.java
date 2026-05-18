@@ -46,6 +46,7 @@ public class MKWorkspaceScaffoldBuilder {
     public static final int CELL_PADDING = 4;
     public static final int CLEAR_MARGIN = 4;
     private static final String LINEAR_RUN_SLOPE_DELTA_TAG = "workspace_linear_run_slope_delta";
+    private static final String LINEAR_RUN_KIND_TAG = "workspace_linear_run_kind";
     private static final String HORIZONTAL_EXTRUSION_MODE_TAG = "workspace_horizontal_extrusion_mode";
 
     private final MKWorkspaceGridLayout gridLayout = new MKWorkspaceGridLayout();
@@ -61,6 +62,13 @@ public class MKWorkspaceScaffoldBuilder {
             int exportHeight,
             int geometryInteriorHeight
     ) {
+    }
+
+    enum LinearRunScaffoldStyle {
+        ENCLOSED_CORRIDOR,
+        OPEN_WALKWAY,
+        SOLID_WALL,
+        PARAPET
     }
 
     public List<MKWorkspacePieceDefinition> build(ServerLevel level, MKStructureWorkspace workspace,
@@ -135,12 +143,9 @@ public class MKWorkspaceScaffoldBuilder {
         if (!emptyScaffold) {
             placeExteriorMargin(level, context.exportBounds(), context.geometryBounds());
             int verticalShellThickness = getVerticalShellThickness(plannedPiece);
-            placeShell(level, context.geometryBounds(), effectiveShellMargin, verticalShellThickness, floorState, wallState,
-                    ceilingState);
-            carveInterior(level, context.geometryOrigin(), plannedPiece, effectiveShellMargin, verticalShellThickness,
-                    context.geometryInteriorHeight());
-            decoratePieceInterior(level, context.geometryOrigin(), plannedPiece, effectiveShellMargin,
-                    verticalShellThickness, context.geometryInteriorHeight(), floorState);
+            placeScaffoldGeometry(level, context.geometryBounds(), context.geometryOrigin(), plannedPiece,
+                    effectiveShellMargin, verticalShellThickness, context.geometryInteriorHeight(), floorState,
+                    wallState, ceilingState);
         }
 
         List<MKWorkspaceConnectorDefinition> connectors = new ArrayList<>();
@@ -439,6 +444,99 @@ public class MKWorkspaceScaffoldBuilder {
         }
     }
 
+    private void placeScaffoldGeometry(ServerLevel level, BoundingBox geometryBounds, BlockPos geometryOrigin,
+                                       MKPlannedPiece piece, int shellMargin, int verticalShellThickness,
+                                       int geometryInteriorHeight, BlockState floorState, BlockState wallState,
+                                       BlockState ceilingState) {
+        switch (linearRunScaffoldStyle(piece)) {
+            case SOLID_WALL -> placeSolidWall(level, geometryBounds, wallState);
+            case OPEN_WALKWAY -> {
+                placeOpenWalkway(level, geometryBounds, geometryOrigin, piece, shellMargin, verticalShellThickness,
+                        floorState);
+                decoratePieceInterior(level, geometryOrigin, piece, shellMargin, verticalShellThickness,
+                        geometryInteriorHeight, floorState);
+            }
+            case PARAPET -> placeParapet(level, geometryBounds, geometryOrigin, piece, shellMargin, wallState,
+                    floorState);
+            case ENCLOSED_CORRIDOR -> {
+                placeShell(level, geometryBounds, shellMargin, verticalShellThickness, floorState, wallState,
+                        ceilingState);
+                carveInterior(level, geometryOrigin, piece, shellMargin, verticalShellThickness,
+                        geometryInteriorHeight);
+                decoratePieceInterior(level, geometryOrigin, piece, shellMargin, verticalShellThickness,
+                        geometryInteriorHeight, floorState);
+            }
+        }
+    }
+
+    LinearRunScaffoldStyle linearRunScaffoldStyle(MKPlannedPiece piece) {
+        if (!"linear_run".equals(piece.tags().get("tower_piece_kind")) &&
+                !"hallway".equals(piece.tags().get("tower_piece_kind"))) {
+            return LinearRunScaffoldStyle.ENCLOSED_CORRIDOR;
+        }
+        String kind = piece.tags().getOrDefault(LINEAR_RUN_KIND_TAG, "enclosed_corridor");
+        return switch (kind) {
+            case "solid_wall" -> LinearRunScaffoldStyle.SOLID_WALL;
+            case "open_walkway" -> LinearRunScaffoldStyle.OPEN_WALKWAY;
+            case "parapet" -> LinearRunScaffoldStyle.PARAPET;
+            default -> LinearRunScaffoldStyle.ENCLOSED_CORRIDOR;
+        };
+    }
+
+    private void placeSolidWall(ServerLevel level, BoundingBox bounds, BlockState wallState) {
+        for (int x = bounds.minX(); x <= bounds.maxX(); x++) {
+            for (int y = bounds.minY(); y <= bounds.maxY(); y++) {
+                for (int z = bounds.minZ(); z <= bounds.maxZ(); z++) {
+                    level.setBlock(new BlockPos(x, y, z), wallState, Block.UPDATE_ALL);
+                }
+            }
+        }
+    }
+
+    private void placeOpenWalkway(ServerLevel level, BoundingBox geometryBounds, BlockPos geometryOrigin,
+                                  MKPlannedPiece piece, int shellMargin, int verticalShellThickness,
+                                  BlockState floorState) {
+        int deckMaxY = geometryOrigin.getY() + Math.max(0, verticalShellThickness - 1);
+        for (int x = geometryOrigin.getX(); x <= geometryBounds.maxX(); x++) {
+            for (int z = geometryOrigin.getZ(); z <= geometryBounds.maxZ(); z++) {
+                for (int y = geometryOrigin.getY(); y <= deckMaxY; y++) {
+                    level.setBlock(new BlockPos(x, y, z), floorState, Block.UPDATE_ALL);
+                }
+            }
+        }
+        clearInteriorAbove(level, geometryOrigin, piece, shellMargin, verticalShellThickness);
+    }
+
+    private void placeParapet(ServerLevel level, BoundingBox geometryBounds, BlockPos geometryOrigin,
+                              MKPlannedPiece piece, int shellMargin, BlockState wallState, BlockState floorState) {
+        placeSolidWall(level, geometryBounds, wallState);
+        int walkY = Math.max(geometryBounds.minY(), geometryBounds.maxY() - 1);
+        int interiorMinX = geometryOrigin.getX() + shellMargin;
+        int interiorMaxX = interiorMinX + piece.interiorWidth() - 1;
+        int interiorMinZ = geometryOrigin.getZ() + shellMargin;
+        int interiorMaxZ = interiorMinZ + piece.interiorLength() - 1;
+        for (int x = interiorMinX; x <= interiorMaxX; x++) {
+            for (int z = interiorMinZ; z <= interiorMaxZ; z++) {
+                level.setBlock(new BlockPos(x, walkY, z), floorState, Block.UPDATE_ALL);
+                for (int y = walkY + 1; y <= geometryBounds.maxY(); y++) {
+                    level.setBlock(new BlockPos(x, y, z), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                }
+            }
+        }
+    }
+
+    private void clearInteriorAbove(ServerLevel level, BlockPos geometryOrigin, MKPlannedPiece piece, int shellMargin,
+                                    int verticalShellThickness) {
+        BlockPos interiorMin = geometryOrigin.offset(shellMargin, verticalShellThickness, shellMargin);
+        for (int x = 0; x < piece.interiorWidth(); x++) {
+            for (int y = 0; y < piece.interiorHeight(); y++) {
+                for (int z = 0; z < piece.interiorLength(); z++) {
+                    level.setBlock(interiorMin.offset(x, y, z), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                }
+            }
+        }
+    }
+
     private void placeExteriorMargin(ServerLevel level, BoundingBox exportBounds, BoundingBox geometryBounds) {
         BlockState structureVoid = Blocks.STRUCTURE_VOID.defaultBlockState();
         for (int x = exportBounds.minX(); x <= exportBounds.maxX(); x++) {
@@ -569,6 +667,17 @@ public class MKWorkspaceScaffoldBuilder {
         if (connector.facing().getAxis().isVertical()) {
             return;
         }
+        LinearRunScaffoldStyle style = linearRunScaffoldStyle(piece);
+        if (style == LinearRunScaffoldStyle.OPEN_WALKWAY) {
+            extendHorizontalConnectorDeck(level, exportBounds, geometryOrigin, piece, connector, shellMargin,
+                    verticalShellThickness, floorState);
+            return;
+        }
+        if (style == LinearRunScaffoldStyle.SOLID_WALL || style == LinearRunScaffoldStyle.PARAPET) {
+            extendHorizontalConnectorSolid(level, exportBounds, geometryOrigin, piece, connector, shellMargin,
+                    geometryHeight, wallState);
+            return;
+        }
         MKWorkspaceHorizontalExtrusionMode extrusionMode = getHorizontalExtrusionMode(piece);
         if (extrusionMode == MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION) {
             return;
@@ -607,6 +716,86 @@ public class MKWorkspaceScaffoldBuilder {
         for (int x = startX; x <= endX; x++) {
             fillConnectorShellColumn(level, minZ, maxZ, minY, maxY, x, false,
                     verticalShellThickness, floorState, wallState, ceilingState);
+        }
+    }
+
+    private void extendHorizontalConnectorDeck(ServerLevel level, BoundingBox exportBounds, BlockPos geometryOrigin,
+                                               MKPlannedPiece piece, MKPlannedConnector connector, int shellMargin,
+                                               int verticalShellThickness, BlockState floorState) {
+        int centerX = getConnectorCenterX(geometryOrigin, piece, shellMargin, connector);
+        int centerZ = getConnectorCenterZ(geometryOrigin, piece, shellMargin, connector);
+        int halfWidth = connector.openingWidth() / 2;
+        int deckMinY = geometryOrigin.getY();
+        int deckMaxY = geometryOrigin.getY() + Math.max(0, verticalShellThickness - 1);
+        if (connector.facing() == Direction.NORTH || connector.facing() == Direction.SOUTH) {
+            int minX = centerX - halfWidth - shellMargin;
+            int maxX = centerX + halfWidth + shellMargin;
+            int startZ = connector.facing() == Direction.NORTH ? exportBounds.minZ() :
+                    geometryOrigin.getZ() + shellMargin + piece.interiorLength();
+            int endZ = connector.facing() == Direction.NORTH ? geometryOrigin.getZ() + shellMargin - 1 :
+                    exportBounds.maxZ();
+            for (int z = startZ; z <= endZ; z++) {
+                for (int x = minX; x <= maxX; x++) {
+                    for (int y = deckMinY; y <= deckMaxY; y++) {
+                        level.setBlock(new BlockPos(x, y, z), floorState, Block.UPDATE_ALL);
+                    }
+                }
+            }
+            return;
+        }
+
+        int minZ = centerZ - halfWidth - shellMargin;
+        int maxZ = centerZ + halfWidth + shellMargin;
+        int startX = connector.facing() == Direction.WEST ? exportBounds.minX() :
+                geometryOrigin.getX() + shellMargin + piece.interiorWidth();
+        int endX = connector.facing() == Direction.WEST ? geometryOrigin.getX() + shellMargin - 1 :
+                exportBounds.maxX();
+        for (int x = startX; x <= endX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                for (int y = deckMinY; y <= deckMaxY; y++) {
+                    level.setBlock(new BlockPos(x, y, z), floorState, Block.UPDATE_ALL);
+                }
+            }
+        }
+    }
+
+    private void extendHorizontalConnectorSolid(ServerLevel level, BoundingBox exportBounds, BlockPos geometryOrigin,
+                                                MKPlannedPiece piece, MKPlannedConnector connector, int shellMargin,
+                                                int geometryHeight, BlockState wallState) {
+        int centerX = getConnectorCenterX(geometryOrigin, piece, shellMargin, connector);
+        int centerZ = getConnectorCenterZ(geometryOrigin, piece, shellMargin, connector);
+        int halfWidth = connector.openingWidth() / 2;
+        int minY = geometryOrigin.getY();
+        int maxY = geometryOrigin.getY() + geometryHeight - 1;
+        if (connector.facing() == Direction.NORTH || connector.facing() == Direction.SOUTH) {
+            int minX = centerX - halfWidth - shellMargin;
+            int maxX = centerX + halfWidth + shellMargin;
+            int startZ = connector.facing() == Direction.NORTH ? exportBounds.minZ() :
+                    geometryOrigin.getZ() + shellMargin + piece.interiorLength();
+            int endZ = connector.facing() == Direction.NORTH ? geometryOrigin.getZ() + shellMargin - 1 :
+                    exportBounds.maxZ();
+            for (int z = startZ; z <= endZ; z++) {
+                for (int x = minX; x <= maxX; x++) {
+                    for (int y = minY; y <= maxY; y++) {
+                        level.setBlock(new BlockPos(x, y, z), wallState, Block.UPDATE_ALL);
+                    }
+                }
+            }
+            return;
+        }
+
+        int minZ = centerZ - halfWidth - shellMargin;
+        int maxZ = centerZ + halfWidth + shellMargin;
+        int startX = connector.facing() == Direction.WEST ? exportBounds.minX() :
+                geometryOrigin.getX() + shellMargin + piece.interiorWidth();
+        int endX = connector.facing() == Direction.WEST ? geometryOrigin.getX() + shellMargin - 1 :
+                exportBounds.maxX();
+        for (int x = startX; x <= endX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                for (int y = minY; y <= maxY; y++) {
+                    level.setBlock(new BlockPos(x, y, z), wallState, Block.UPDATE_ALL);
+                }
+            }
         }
     }
 
