@@ -370,6 +370,12 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         tags.put("workspace_category", family.category().getSerializedName());
         tags.put("workspace_horizontal_exits", family.horizontalExitSummary());
         tags.put("workspace_horizontal_extrusion_mode", family.horizontalExtrusionMode().getSerializedName());
+        workspace.topologyProfile().towerStackSettings(stackIdForFamily(family))
+                .ifPresent(settings -> {
+                    tags.put("workspace_tower_stack_id", settings.stackId());
+                    tags.put("workspace_tower_stack_main_floors", Integer.toString(settings.mainFloors()));
+                    tags.put("workspace_tower_stack_basement_floors", Integer.toString(settings.basementFloors()));
+                });
         applyFoundationTags(family.foundationPolicy(), tags);
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, Boolean.toString(family.supportsVerticalAccess()));
         if (family.supportsVerticalAccess()) {
@@ -397,11 +403,25 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         tags.put("workspace_linear_run_path_kind", "keep");
         tags.put("workspace_linear_run_slope_delta", Integer.toString(linearRun.slopeDelta()));
         tags.put("workspace_opening_profile_id", linearRun.openingProfileId());
+        if (linearRun.topVoidMargin() > 0) {
+            tags.put(MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG, Integer.toString(linearRun.topVoidMargin()));
+        }
         applyFoundationTags(linearRun.foundationPolicy(), tags);
         new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
                 true, true, false, false).applyToTags(tags);
         MKWorkspacePaletteTags.apply(tags, paletteResolver.resolveFamily(workspace, linearRun));
         return tags;
+    }
+
+    private String stackIdForFamily(MKTowerWorkspaceFamilyDefinition family) {
+        if (family.topologySlotId().startsWith("keep.center.")) {
+            return "keep.center";
+        }
+        if ("keep.corner.shared".equals(family.topologySlotId()) ||
+                CONCRETE_CORNER_SLOTS.contains(family.topologySlotId())) {
+            return family.topologySlotId();
+        }
+        return "";
     }
 
     private MKWorkspaceRuntimePieceInfo runtimeInfoForRoom(MKTowerWorkspaceFamilyDefinition family) {

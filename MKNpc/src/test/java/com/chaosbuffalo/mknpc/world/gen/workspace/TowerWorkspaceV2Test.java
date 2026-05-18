@@ -39,6 +39,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthorin
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
@@ -363,6 +364,65 @@ class TowerWorkspaceV2Test {
         assertFalse(pieces.stream().anyMatch(piece -> "parapet".equals(piece.tags().get("workspace_linear_run_kind"))));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_walkway_south") &&
                 "open_walkway".equals(piece.tags().get("workspace_linear_run_kind"))));
+    }
+
+    @Test
+    void walledKeepPlannerTagsTowerStacksAndLinearRunVoidMargins() {
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
+                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 3, 2, 7));
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
+                topologyProfile,
+                List.of(new MKTowerWorkspaceFamilyDefinition(
+                        "keep_center_entry",
+                        MKTowerWorkspaceCategory.ENTRY,
+                        MKWorkspacePieceRole.ENTRY,
+                        "keep.center.entry",
+                        "keep.center",
+                        true,
+                        9,
+                        9,
+                        7,
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                        List.of(),
+                        0,
+                        0,
+                        MKWorkspaceFoundationPolicy.none(),
+                        null
+                )),
+                List.of(new MKWorkspaceLinearRunFamilyDefinition(
+                        "keep_wall_north",
+                        "keep.perimeter.north",
+                        MKWorkspaceLinearRunKind.SOLID_WALL,
+                        "wall_opening",
+                        11,
+                        3,
+                        7,
+                        0,
+                        true,
+                        true,
+                        MKWorkspaceLinearRunProjection.RIGID,
+                        List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                        2,
+                        MKWorkspaceFoundationPolicy.none(),
+                        null
+                ))
+        );
+
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+        MKPlannedPiece centerEntry = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_center_entry"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece northWall = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_wall_north"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals("keep.center", centerEntry.tags().get("workspace_tower_stack_id"));
+        assertEquals("3", centerEntry.tags().get("workspace_tower_stack_main_floors"));
+        assertEquals("2", centerEntry.tags().get("workspace_tower_stack_basement_floors"));
+        assertEquals("2", northWall.tags().get(MKTowerWorkspaceCategoryProfile.TOP_VOID_MARGIN_TAG));
     }
 
     @Test

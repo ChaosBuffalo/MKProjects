@@ -70,34 +70,31 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
             });
             addRow(screen, content, screen.makeWhiteText(Component.literal("Center Length")), centerLengthSlider);
 
-            MKTowerWorkspaceCategoryProfile mainProfile = editor.getCategoryProfile(MKTowerWorkspaceCategory.MAIN);
             MKIntegerSlider heightSlider = new MKIntegerSlider("Height", 180, 20,
-                    editor.allowedFullHeightsForCategory(MKTowerWorkspaceCategory.MAIN), mainProfile.fullHeight(),
+                    editor.allowedFullHeightsForCategory(MKTowerWorkspaceCategory.MAIN), editor.walledKeepCenterHeight(),
                     value -> {
-                        editor.topologyDefaultHeight(value);
+                        editor.walledKeepCenterHeight(value);
                         screen.flagNeedSetup();
                     });
-            addRow(screen, content, screen.makeWhiteText(Component.literal("Default Height")), heightSlider);
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Center Height")), heightSlider);
 
-            MKButton mainFloorsButton = new MKButton(Component.literal(Integer.toString(draft.mainFloors)), 180, 20);
-            mainFloorsButton.setPressedCallback((button, mouseButton) -> {
-                draft.mainFloors = editor.nextAllowedMainFloorCount(draft.mainFloors, draft.basementFloors,
-                        isReverseClick(mouseButton));
-                draft.basementFloors = editor.normalizeBasementFloorCount(draft.basementFloors, draft.mainFloors);
-                screen.flagNeedSetup();
-                return true;
-            });
-            addRow(screen, content, screen.makeWhiteText(Component.literal("Main Floors")), mainFloorsButton);
+            addTowerStackFloorRows(screen, content, "keep.center");
 
-            MKButton basementFloorsButton = new MKButton(Component.literal(Integer.toString(draft.basementFloors)), 180, 20);
-            basementFloorsButton.setPressedCallback((button, mouseButton) -> {
-                draft.basementFloors = editor.nextAllowedBasementFloorCount(draft.basementFloors, draft.mainFloors,
-                        isReverseClick(mouseButton));
-                draft.mainFloors = editor.normalizeMainFloorCount(draft.mainFloors, draft.basementFloors);
+            MKIntegerSlider wallHeightSlider = new MKIntegerSlider("Height", 180, 20, 2,
+                    MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE - 1, 1,
+                    editor.wallHeight(), value -> {
+                editor.wallHeight(value);
                 screen.flagNeedSetup();
-                return true;
             });
-            addRow(screen, content, screen.makeWhiteText(Component.literal("Basement Floors")), basementFloorsButton);
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Wall Height")), wallHeightSlider);
+
+            MKIntegerSlider wallTopVoidSlider = new MKIntegerSlider("Margin", 180, 20, 0,
+                    Math.max(0, editor.wallHeight() - 1), 1,
+                    editor.wallTopVoidMargin(), value -> {
+                editor.wallTopVoidMargin(value);
+                screen.flagNeedSetup();
+            });
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Wall Top Void Margin")), wallTopVoidSlider);
 
             for (String cornerSlot : editor.activeCornerTopologySlots()) {
                 addCornerSizingSection(screen, content, cornerSlot);
@@ -319,6 +316,31 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
             screen.flagNeedSetup();
         });
         addRow(screen, content, screen.makeWhiteText(Component.literal("Corner Height")), heightSlider);
+
+        addTowerStackFloorRows(screen, content, topologySlotId);
+    }
+
+    private void addTowerStackFloorRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, String stackId) {
+        WorkspaceDraftSession editor = screen.draftSession();
+        MKButton mainFloorsButton = new MKButton(
+                Component.literal(Integer.toString(editor.towerStackMainFloors(stackId))), 180, 20);
+        mainFloorsButton.setPressedCallback((button, mouseButton) -> {
+            editor.towerStackMainFloors(stackId,
+                    editor.nextAllowedTowerStackMainFloorCount(stackId, isReverseClick(mouseButton)));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Main Floors")), mainFloorsButton);
+
+        MKButton basementFloorsButton = new MKButton(
+                Component.literal(Integer.toString(editor.towerStackBasementFloors(stackId))), 180, 20);
+        basementFloorsButton.setPressedCallback((button, mouseButton) -> {
+            editor.towerStackBasementFloors(stackId,
+                    editor.nextAllowedTowerStackBasementFloorCount(stackId, isReverseClick(mouseButton)));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Basement Floors")), basementFloorsButton);
     }
 
     private void addCornerModeRow(MKWorkspaceScreen screen, MKStackLayoutVertical content, String label,

@@ -138,6 +138,13 @@ public class WorkspaceFormHallwayDetailPage extends WorkspacePageBase {
                         hallway.interiorWidth(), parseInt(text, hallway.interiorHeight()), hallway.slopeDelta(),
                         hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.projection(),
                         hallway.foundationPolicy(), hallway.paletteOverrideOpt())));
+        addHallwayFieldRow(screen, content, "Top Void Margin", Integer.toString(hallway.topVoidMargin()),
+                text -> editor.replaceLinearRunFamily(index, copyLinearRunFamily(hallway,
+                        hallway.linearRunId(), hallway.topologySlotId(), hallway.kind(), hallway.openingProfileId(), hallway.length(),
+                        hallway.interiorWidth(), hallway.interiorHeight(), hallway.slopeDelta(),
+                        hallway.allowOnMainPath(), hallway.allowOnBranchPath(), hallway.projection(),
+                        hallway.foundationPolicy(), hallway.paletteOverrideOpt(),
+                        Math.max(0, parseInt(text, hallway.topVoidMargin())))));
         addHallwayFieldRow(screen, content, "Slope Delta", Integer.toString(hallway.slopeDelta()),
                 text -> editor.replaceLinearRunFamily(index, copyLinearRunFamily(hallway,
                         hallway.linearRunId(), hallway.topologySlotId(), hallway.kind(), hallway.openingProfileId(), hallway.length(),
@@ -252,6 +259,27 @@ public class WorkspaceFormHallwayDetailPage extends WorkspacePageBase {
             MKWorkspaceLinearRunProjection projection,
             MKWorkspaceFoundationPolicy foundationPolicy,
             Optional<MKWorkspacePaletteOverride> paletteOverride) {
+        return copyLinearRunFamily(linearRun, linearRunId, topologySlotId, kind, openingProfileId, length,
+                interiorWidth, interiorHeight, slopeDelta, allowOnMainPath, allowOnBranchPath, projection,
+                foundationPolicy, paletteOverride, linearRun.topVoidMargin());
+    }
+
+    private MKWorkspaceLinearRunFamilyDefinition copyLinearRunFamily(
+            MKWorkspaceLinearRunFamilyDefinition linearRun,
+            String linearRunId,
+            String topologySlotId,
+            MKWorkspaceLinearRunKind kind,
+            String openingProfileId,
+            int length,
+            int interiorWidth,
+            int interiorHeight,
+            int slopeDelta,
+            boolean allowOnMainPath,
+            boolean allowOnBranchPath,
+            MKWorkspaceLinearRunProjection projection,
+            MKWorkspaceFoundationPolicy foundationPolicy,
+            Optional<MKWorkspacePaletteOverride> paletteOverride,
+            int topVoidMargin) {
         return new MKWorkspaceLinearRunFamilyDefinition(
                 linearRunId,
                 topologySlotId,
@@ -265,6 +293,7 @@ public class WorkspaceFormHallwayDetailPage extends WorkspacePageBase {
                 allowOnBranchPath,
                 projection,
                 linearRun.supportedShapes().isEmpty() ? List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT) : linearRun.supportedShapes(),
+                Math.min(Math.max(0, topVoidMargin), Math.max(0, interiorHeight - 1)),
                 foundationPolicy,
                 paletteOverride.orElse(null)
         );

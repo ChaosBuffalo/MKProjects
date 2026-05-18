@@ -28,16 +28,17 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
                     .forGetter(MKWorkspaceLinearRunFamilyDefinition::projection),
             MKWorkspaceCodecs.LINEAR_RUN_SHAPE_CODEC.listOf().optionalFieldOf("supportedShapes", List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT))
                     .forGetter(MKWorkspaceLinearRunFamilyDefinition::supportedShapes),
+            Codec.INT.optionalFieldOf("topVoidMargin", 0).forGetter(MKWorkspaceLinearRunFamilyDefinition::topVoidMargin),
             MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundationPolicy", MKWorkspaceFoundationPolicy.none())
                     .forGetter(MKWorkspaceLinearRunFamilyDefinition::foundationPolicy),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("paletteOverride")
                     .forGetter(MKWorkspaceLinearRunFamilyDefinition::paletteOverrideOpt)
     ).apply(instance, (linearRunId, topologySlotId, kind, openingProfileId, length, interiorWidth, interiorHeight, slopeDelta,
-                       allowOnMainPath, allowOnBranchPath, projection, supportedShapes, foundationPolicy,
+                       allowOnMainPath, allowOnBranchPath, projection, supportedShapes, topVoidMargin, foundationPolicy,
                        paletteOverride) ->
             new MKWorkspaceLinearRunFamilyDefinition(linearRunId, topologySlotId, kind, openingProfileId, length, interiorWidth,
                     interiorHeight, slopeDelta, allowOnMainPath, allowOnBranchPath, projection, supportedShapes,
-                    foundationPolicy, paletteOverride.orElse(null))));
+                    topVoidMargin, foundationPolicy, paletteOverride.orElse(null))));
 
     private final String linearRunId;
     private final String topologySlotId;
@@ -51,6 +52,7 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
     private final boolean allowOnBranchPath;
     private final MKWorkspaceLinearRunProjection projection;
     private final List<MKWorkspaceLinearRunPieceShape> supportedShapes;
+    private final int topVoidMargin;
     private final MKWorkspaceFoundationPolicy foundationPolicy;
     @Nullable
     private final MKWorkspacePaletteOverride paletteOverride;
@@ -87,7 +89,7 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
                                                 @Nullable MKWorkspacePaletteOverride paletteOverride) {
         this(linearRunId, defaultTopologySlotId(allowOnMainPath, allowOnBranchPath), kind, openingProfileId, length,
                 interiorWidth, interiorHeight, slopeDelta, allowOnMainPath, allowOnBranchPath, projection,
-                supportedShapes, foundationPolicy, paletteOverride);
+                supportedShapes, 0, foundationPolicy, paletteOverride);
     }
 
     public MKWorkspaceLinearRunFamilyDefinition(String linearRunId, String topologySlotId, MKWorkspaceLinearRunKind kind,
@@ -96,6 +98,19 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
                                                 boolean allowOnMainPath, boolean allowOnBranchPath,
                                                 MKWorkspaceLinearRunProjection projection,
                                                 List<MKWorkspaceLinearRunPieceShape> supportedShapes,
+                                                MKWorkspaceFoundationPolicy foundationPolicy,
+                                                @Nullable MKWorkspacePaletteOverride paletteOverride) {
+        this(linearRunId, topologySlotId, kind, openingProfileId, length, interiorWidth, interiorHeight, slopeDelta,
+                allowOnMainPath, allowOnBranchPath, projection, supportedShapes, 0, foundationPolicy, paletteOverride);
+    }
+
+    public MKWorkspaceLinearRunFamilyDefinition(String linearRunId, String topologySlotId, MKWorkspaceLinearRunKind kind,
+                                                String openingProfileId, int length, int interiorWidth,
+                                                int interiorHeight, int slopeDelta,
+                                                boolean allowOnMainPath, boolean allowOnBranchPath,
+                                                MKWorkspaceLinearRunProjection projection,
+                                                List<MKWorkspaceLinearRunPieceShape> supportedShapes,
+                                                int topVoidMargin,
                                                 MKWorkspaceFoundationPolicy foundationPolicy,
                                                 @Nullable MKWorkspacePaletteOverride paletteOverride) {
         this.linearRunId = linearRunId;
@@ -111,6 +126,7 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
         this.allowOnBranchPath = allowOnBranchPath;
         this.projection = projection;
         this.supportedShapes = List.copyOf(supportedShapes.isEmpty() ? List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT) : supportedShapes);
+        this.topVoidMargin = Math.max(0, topVoidMargin);
         this.foundationPolicy = foundationPolicy == null ? MKWorkspaceFoundationPolicy.none() : foundationPolicy;
         this.paletteOverride = paletteOverride != null && !paletteOverride.isEmpty() ? paletteOverride : null;
     }
@@ -228,6 +244,9 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
         if (interiorHeight < 2) {
             errors.add("linear run family " + linearRunId + " height must be at least 2");
         }
+        if (topVoidMargin > Math.max(0, interiorHeight - 1)) {
+            errors.add("linear run family " + linearRunId + " top void margin must leave at least one generated layer");
+        }
         if (projection == MKWorkspaceLinearRunProjection.TERRAIN_MATCHED && kind != MKWorkspaceLinearRunKind.OPEN_WALKWAY) {
             errors.add("linear run family " + linearRunId + " can only terrain-match open walkway runs");
         }
@@ -287,6 +306,10 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
 
     public List<MKWorkspaceLinearRunPieceShape> supportedShapes() {
         return supportedShapes;
+    }
+
+    public int topVoidMargin() {
+        return topVoidMargin;
     }
 
     public MKWorkspaceFoundationPolicy foundationPolicy() {
