@@ -273,7 +273,13 @@ public class MKStructureWorkspace {
             }
             errors.addAll(categoryProfile.validate(verticalAccessSpec));
         }
-        errors.addAll(floorSettings.validate(categoryProfiles));
+        if (topologyProfile.towerStackSettings().isEmpty()) {
+            errors.addAll(floorSettings.validate(categoryProfiles));
+        } else {
+            for (MKWorkspaceTowerStackSettings settings : topologyProfile.towerStackSettings()) {
+                errors.addAll(validateTowerStackFloorSettings(settings));
+            }
+        }
         for (MKWorkspaceTowerStackSettings settings : topologyProfile.towerStackSettings()) {
             MKWorkspaceVerticalAccessSpec stackSpec = new MKWorkspaceVerticalAccessSpec(
                     settings.shaftSize(), settings.verticalAccessPlacement(), settings.stairConfig());
@@ -386,7 +392,7 @@ public class MKStructureWorkspace {
             }
         }
         Optional<MKTowerWorkspaceCategoryProfile> mainProfile = categoryProfile(MKTowerWorkspaceCategory.MAIN);
-        if (mainProfile.isPresent()) {
+        if (topologyProfile.towerStackSettings().isEmpty() && mainProfile.isPresent()) {
             List<Integer> allowedBandHeights = MKWorkspaceDimensions.getAllowedBandHeights(
                     verticalAccessSpec.stairConfig(),
                     verticalAccessSpec.shaftSize(),
@@ -435,6 +441,30 @@ public class MKStructureWorkspace {
             errors.add("preview margin must be at least 2");
         }
         return errors;
+    }
+
+    private List<String> validateTowerStackFloorSettings(MKWorkspaceTowerStackSettings settings) {
+        MKTowerWorkspaceFloorSettings stackFloorSettings = new MKTowerWorkspaceFloorSettings(
+                settings.mainFloors(),
+                settings.basementFloors(),
+                settings.topCapApproachEnabled(),
+                settings.basementCapApproachEnabled()
+        );
+        List<MKTowerWorkspaceCategoryProfile> stackProfiles = categoryProfiles.stream()
+                .map(profile -> new MKTowerWorkspaceCategoryProfile(
+                        profile.category(),
+                        profile.roomWidth(),
+                        profile.roomLength(),
+                        settings.height(),
+                        profile.minMainPathPieces(),
+                        profile.maxMainPathPieces(),
+                        profile.maxBranchPiecesBeforeCap(),
+                        profile.paletteOverride()
+                ))
+                .toList();
+        return stackFloorSettings.validate(stackProfiles).stream()
+                .map(error -> "tower stack " + settings.stackId() + " " + error)
+                .toList();
     }
 
     private Optional<MKTowerWorkspaceCategoryProfile> categoryProfileForFamily(

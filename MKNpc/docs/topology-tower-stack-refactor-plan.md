@@ -283,6 +283,7 @@ Family-level validation should focus on override legality:
 - Stack-scoped stair config lookup is no longer walled-keep-only; any generated piece tagged with a tower stack id can resolve that stack's stair settings.
 - Standalone tower schema and default room families now use `tower.primary.*` topology slots, and the topology defaults page exposes `tower.primary` stack sizing, floor counts, cap toggles, and stair material controls.
 - The resolver now consumes explicit tower stack dimensions for matching room families when stack settings are present; inherited family override state is still pending.
+- Validation now uses per-stack floor budgets when topology stack settings are present and keeps legacy global category-band validation only for workspaces without stack settings.
 - The remaining work is to finish inherited family overrides and continue removing category-profile-only configuration paths.
 
 ### Phase 1: Model Reusable Tower Stack Slots
@@ -334,6 +335,7 @@ Family-level validation should focus on override legality:
 - Introduce resolved settings objects. Initial room-family resolver bridge is in place.
 - Update planners, scaffold generation, export, and validation to consume resolved settings. Room planners now consume resolved family settings; scaffold/export/validation still need to move over.
 - Split topology validation from family override validation.
+- Replace global category-band/floor validation with per-stack validation for topology-driven workspaces. Done for explicit tower stack settings.
 
 ### Phase 8: Tests
 

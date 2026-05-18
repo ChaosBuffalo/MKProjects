@@ -512,6 +512,39 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void stackFloorValidationIgnoresLegacyGlobalCategoryHeightsWhenStackSettingsExist() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
+                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("tower.primary", 1, 1, 7));
+        List<MKTowerWorkspaceCategoryProfile> oversizedCategoryProfiles =
+                MKTowerWorkspaceCategoryProfile.createDefaults(dimensions).stream()
+                        .map(profile -> new MKTowerWorkspaceCategoryProfile(
+                                profile.category(),
+                                profile.roomWidth(),
+                                profile.roomLength(),
+                                97,
+                                profile.minMainPathPieces(),
+                                profile.maxMainPathPieces(),
+                                profile.maxBranchPiecesBeforeCap(),
+                                profile.paletteOverride()
+                        ))
+                        .toList();
+        List<MKTowerWorkspaceFamilyDefinition> families = MKTowerWorkspaceFamilyDefinition
+                .createDefaults(dimensions).stream()
+                .map(family -> copyFamilyWithHeight(family, 7))
+                .toList();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                withCategoryProfiles(baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                        oversizedCategoryProfiles),
+                topologyProfile,
+                families,
+                MKWorkspaceLinearRunFamilyDefinition.createDefaults(dimensions, workspacePalette())
+        );
+
+        assertEquals(List.of(), workspace.validate());
+    }
+
+    @Test
     void walledKeepPlannerTagsTowerStacksAndLinearRunVoidMargins() {
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
                 .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 3, 2, 7));
