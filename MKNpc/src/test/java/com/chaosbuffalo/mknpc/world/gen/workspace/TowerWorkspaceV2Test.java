@@ -44,6 +44,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAcces
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerStackDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerStackPlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
@@ -90,6 +91,46 @@ class TowerWorkspaceV2Test {
                 .toList();
 
         assertEquals(towerRoomPieceNames, stackPieceNames);
+    }
+
+    @Test
+    void reusableTowerStackPlannerSupportsScopedConnectorPools() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                ),
+                List.of()
+        );
+        MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped(
+                "keep.center", workspace.floorSettings(), true);
+
+        List<MKPlannedPiece> pieces = new MKTowerStackPlanner().createRoomPieces(
+                workspace, stackDefinition, workspace.familyDefinitions());
+
+        MKPlannedPiece entry = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("entry"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece floor = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("floor_main"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece topCapApproach = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("top_cap_approach"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals("keep.center", entry.tags().get("workspace_tower_stack_id"));
+        assertTrue(entry.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.CONNECT_UP &&
+                        "tower_stacks/keep/center/connect_up".equals(connector.targetPoolName())));
+        assertTrue(floor.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.CONNECT_DOWN &&
+                        "tower_stacks/keep/center/connect_up".equals(connector.incomingPoolName())));
+        assertTrue(topCapApproach.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.TOP_CAP_FORWARD &&
+                        "tower_stacks/keep/center/top_cap".equals(connector.targetPoolName())));
     }
 
     @Test

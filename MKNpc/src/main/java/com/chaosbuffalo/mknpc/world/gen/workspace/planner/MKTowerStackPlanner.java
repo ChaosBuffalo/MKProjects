@@ -45,21 +45,33 @@ public class MKTowerStackPlanner {
 
     public List<MKPlannedPiece> createRoomPieces(MKStructureWorkspace workspace,
                                                  List<MKTowerWorkspaceFamilyDefinition> families) {
+        return createRoomPieces(workspace, MKTowerStackDefinition.legacyTower(workspace.floorSettings()), families);
+    }
+
+    public List<MKPlannedPiece> createRoomPieces(MKStructureWorkspace workspace,
+                                                 MKTowerStackDefinition stackDefinition,
+                                                 List<MKTowerWorkspaceFamilyDefinition> families) {
         return families.stream()
-                .filter(family -> shouldCreateFamily(workspace, family))
-                .map(family -> createPieceForFamily(workspace, family))
+                .filter(family -> shouldCreateFamily(stackDefinition, family))
+                .map(family -> createPieceForFamily(workspace, stackDefinition, family))
                 .toList();
     }
 
-    public boolean shouldCreateFamily(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family) {
+    public boolean shouldCreateFamily(MKTowerStackDefinition stackDefinition, MKTowerWorkspaceFamilyDefinition family) {
         return switch (family.pieceRole()) {
-            case TOP_CAP_APPROACH -> workspace.floorSettings().topCapApproachEnabled();
-            case BASEMENT_CAP_APPROACH -> workspace.floorSettings().basementCapApproachEnabled();
+            case TOP_CAP_APPROACH -> stackDefinition.topCapApproachEnabled();
+            case BASEMENT_CAP_APPROACH -> stackDefinition.basementCapApproachEnabled();
             default -> true;
         };
     }
 
     public MKPlannedPiece createPieceForFamily(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family) {
+        return createPieceForFamily(workspace, MKTowerStackDefinition.legacyTower(workspace.floorSettings()), family);
+    }
+
+    public MKPlannedPiece createPieceForFamily(MKStructureWorkspace workspace,
+                                               MKTowerStackDefinition stackDefinition,
+                                               MKTowerWorkspaceFamilyDefinition family) {
         String stairPlacement = workspace.verticalAccessSpec().placement().getSerializedName();
         int hallWidth = workspace.verticalAccessSpec().shaftSize();
         return switch (family.pieceRole()) {
@@ -72,14 +84,16 @@ public class MKTowerStackPlanner {
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
                                     List.of(
-                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth, "connect_up"),
-                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth, "connect_down_entry")
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
+                                                    stackDefinition.connectUpPool()),
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
+                                                    stackDefinition.connectDownEntryPool())
                                     ) : List.of(),
                             family,
                             workspace
                     ),
-                    buildRoomTags(workspace, "entry", family, stairPlacement, "both",
-                            roomRuntimeInfo(true, MKJigsawPieceRole.ROOM, 0, 0, false, false, family))
+                    buildRoomTags(workspace, "entry", stackDefinition, family, stairPlacement, "both",
+                            roomRuntimeInfo(stackDefinition.startPiece(), MKJigsawPieceRole.ROOM, 0, 0, false, false, family))
             );
             case FLOOR_MAIN -> new MKPlannedPiece(
                     family.pieceRole(),
@@ -91,13 +105,14 @@ public class MKTowerStackPlanner {
                             family.supportsVerticalAccess() ?
                                     List.of(
                                             new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
-                                                    EMPTY_POOL, "connect_up"),
-                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth, "connect_up")
+                                                    EMPTY_POOL, stackDefinition.connectUpPool()),
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
+                                                    stackDefinition.connectUpPool())
                                     ) : List.of(),
                             family,
                             workspace
                     ),
-                    buildRoomTags(workspace, "floor", family, stairPlacement, "both",
+                    buildRoomTags(workspace, "floor", stackDefinition, family, stairPlacement, "both",
                             roomRuntimeInfo(false, MKJigsawPieceRole.ROOM, 1, 1, false, false, family))
             );
             case TOP_CAP_APPROACH -> new MKPlannedPiece(
@@ -110,13 +125,14 @@ public class MKTowerStackPlanner {
                             family.supportsVerticalAccess() ?
                                     List.of(
                                             new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
-                                                    EMPTY_POOL, "connect_up"),
-                                            new MKPlannedConnector(MKConnectorRole.TOP_CAP_FORWARD, Direction.UP, hallWidth, hallWidth, "top_cap")
+                                                    EMPTY_POOL, stackDefinition.connectUpPool()),
+                                            new MKPlannedConnector(MKConnectorRole.TOP_CAP_FORWARD, Direction.UP, hallWidth, hallWidth,
+                                                    stackDefinition.topCapPool())
                                     ) : List.of(),
                             family,
                             workspace
                     ),
-                    buildRoomTags(workspace, "top_cap_approach", family, stairPlacement, "up",
+                    buildRoomTags(workspace, "top_cap_approach", stackDefinition, family, stairPlacement, "up",
                             roomRuntimeInfo(false, MKJigsawPieceRole.TOP_CAP_APPROACH, 1, 1, false, true, family))
             );
             case TOP_CAP -> new MKPlannedPiece(
@@ -127,12 +143,12 @@ public class MKTowerStackPlanner {
                     family.roomHeight(),
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
-                                    topCapConnectors(workspace, hallWidth) : List.of(),
+                                    topCapConnectors(stackDefinition, hallWidth) : List.of(),
                             family,
                             workspace
                     ),
-                    buildRoomTags(workspace, "top_cap", family, stairPlacement, "up", true, false,
-                            topCapRuntimeInfo(workspace, family))
+                    buildRoomTags(workspace, "top_cap", stackDefinition, family, stairPlacement, "up", true, false,
+                            topCapRuntimeInfo(stackDefinition, family))
             );
             case BASEMENT_ENTRY -> new MKPlannedPiece(
                     family.pieceRole(),
@@ -144,13 +160,14 @@ public class MKTowerStackPlanner {
                             family.supportsVerticalAccess() ?
                                     List.of(
                                             new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
-                                                    EMPTY_POOL, "connect_down_entry"),
-                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth, "connect_down")
+                                                    EMPTY_POOL, stackDefinition.connectDownEntryPool()),
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
+                                                    stackDefinition.connectDownPool())
                                     ) : List.of(),
                             family,
                             workspace
                     ),
-                    buildRoomTags(workspace, "basement_entry", family, stairPlacement, "down",
+                    buildRoomTags(workspace, "basement_entry", stackDefinition, family, stairPlacement, "down",
                             roomRuntimeInfo(false, MKJigsawPieceRole.ROOM, 1, -1, false, false, family))
             );
             case BASEMENT_MAIN -> new MKPlannedPiece(
@@ -163,13 +180,14 @@ public class MKTowerStackPlanner {
                             family.supportsVerticalAccess() ?
                                     List.of(
                                             new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
-                                                    EMPTY_POOL, "connect_down"),
-                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth, "connect_down")
+                                                    EMPTY_POOL, stackDefinition.connectDownPool()),
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
+                                                    stackDefinition.connectDownPool())
                                     ) : List.of(),
                             family,
                             workspace
                     ),
-                    buildRoomTags(workspace, "basement_main", family, stairPlacement, "down",
+                    buildRoomTags(workspace, "basement_main", stackDefinition, family, stairPlacement, "down",
                             roomRuntimeInfo(false, MKJigsawPieceRole.ROOM, 1, -1, false, false, family))
             );
             case BASEMENT_CAP_APPROACH -> new MKPlannedPiece(
@@ -182,13 +200,14 @@ public class MKTowerStackPlanner {
                             family.supportsVerticalAccess() ?
                                     List.of(
                                             new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
-                                                    EMPTY_POOL, "connect_down"),
-                                            new MKPlannedConnector(MKConnectorRole.TOP_CAP_FORWARD, Direction.DOWN, hallWidth, hallWidth, "bottom_cap")
+                                                    EMPTY_POOL, stackDefinition.connectDownPool()),
+                                            new MKPlannedConnector(MKConnectorRole.TOP_CAP_FORWARD, Direction.DOWN, hallWidth, hallWidth,
+                                                    stackDefinition.bottomCapPool())
                                     ) : List.of(),
                             family,
                             workspace
                     ),
-                    buildRoomTags(workspace, "basement_cap_approach", family, stairPlacement, "down",
+                    buildRoomTags(workspace, "basement_cap_approach", stackDefinition, family, stairPlacement, "down",
                             roomRuntimeInfo(false, MKJigsawPieceRole.BASEMENT_CAP_APPROACH, 1, -1, false, true, family))
             );
             case BASEMENT_CAP -> new MKPlannedPiece(
@@ -199,46 +218,46 @@ public class MKTowerStackPlanner {
                     family.roomHeight(),
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
-                                    basementCapConnectors(workspace, hallWidth) : List.of(),
+                                    basementCapConnectors(stackDefinition, hallWidth) : List.of(),
                             family,
                             workspace
                     ),
-                    buildRoomTags(workspace, "basement_cap", family, stairPlacement, "down", false, true,
-                            basementCapRuntimeInfo(workspace, family))
+                    buildRoomTags(workspace, "basement_cap", stackDefinition, family, stairPlacement, "down", false, true,
+                            basementCapRuntimeInfo(stackDefinition, family))
             );
             case HALLWAY -> throw new IllegalStateException("tower families do not directly create hallway pieces");
         };
     }
 
-    private List<MKPlannedConnector> topCapConnectors(MKStructureWorkspace workspace, int hallWidth) {
-        if (workspace.floorSettings().topCapApproachEnabled()) {
+    private List<MKPlannedConnector> topCapConnectors(MKTowerStackDefinition stackDefinition, int hallWidth) {
+        if (stackDefinition.topCapApproachEnabled()) {
             return List.of(new MKPlannedConnector(MKConnectorRole.TOP_CAP_BACK, Direction.DOWN, hallWidth, hallWidth,
-                    EMPTY_POOL, "top_cap"));
+                    EMPTY_POOL, stackDefinition.topCapPool()));
         }
         return List.of(new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
-                EMPTY_POOL, "connect_up"));
+                EMPTY_POOL, stackDefinition.connectUpPool()));
     }
 
-    private MKWorkspaceRuntimePieceInfo topCapRuntimeInfo(MKStructureWorkspace workspace,
+    private MKWorkspaceRuntimePieceInfo topCapRuntimeInfo(MKTowerStackDefinition stackDefinition,
                                                           MKTowerWorkspaceFamilyDefinition family) {
-        if (workspace.floorSettings().topCapApproachEnabled()) {
+        if (stackDefinition.topCapApproachEnabled()) {
             return roomRuntimeInfo(false, MKJigsawPieceRole.TOP_CAP, 0, 0, true, true, family);
         }
         return roomRuntimeInfo(false, MKJigsawPieceRole.TOP_CAP, 1, 1, true, true, family);
     }
 
-    private List<MKPlannedConnector> basementCapConnectors(MKStructureWorkspace workspace, int hallWidth) {
-        if (workspace.floorSettings().basementCapApproachEnabled()) {
+    private List<MKPlannedConnector> basementCapConnectors(MKTowerStackDefinition stackDefinition, int hallWidth) {
+        if (stackDefinition.basementCapApproachEnabled()) {
             return List.of(new MKPlannedConnector(MKConnectorRole.TOP_CAP_BACK, Direction.UP, hallWidth, hallWidth,
-                    EMPTY_POOL, "bottom_cap"));
+                    EMPTY_POOL, stackDefinition.bottomCapPool()));
         }
         return List.of(new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
-                EMPTY_POOL, "connect_down"));
+                EMPTY_POOL, stackDefinition.connectDownPool()));
     }
 
-    private MKWorkspaceRuntimePieceInfo basementCapRuntimeInfo(MKStructureWorkspace workspace,
+    private MKWorkspaceRuntimePieceInfo basementCapRuntimeInfo(MKTowerStackDefinition stackDefinition,
                                                                MKTowerWorkspaceFamilyDefinition family) {
-        if (workspace.floorSettings().basementCapApproachEnabled()) {
+        if (stackDefinition.basementCapApproachEnabled()) {
             return roomRuntimeInfo(false, MKJigsawPieceRole.TERMINAL, 0, 0, true, true, family);
         }
         return roomRuntimeInfo(false, MKJigsawPieceRole.TERMINAL, 1, -1, true, false, family);
@@ -367,12 +386,15 @@ public class MKTowerStackPlanner {
     }
 
     private Map<String, String> buildRoomTags(MKStructureWorkspace workspace, String topologyRole,
+                                              MKTowerStackDefinition stackDefinition,
                                               MKTowerWorkspaceFamilyDefinition family, String stairPlacement,
                                               String stairDirection, MKWorkspaceRuntimePieceInfo runtimeInfo) {
-        return buildRoomTags(workspace, topologyRole, family, stairPlacement, stairDirection, false, false, runtimeInfo);
+        return buildRoomTags(workspace, topologyRole, stackDefinition, family, stairPlacement, stairDirection,
+                false, false, runtimeInfo);
     }
 
     private Map<String, String> buildRoomTags(MKStructureWorkspace workspace, String topologyRole,
+                                              MKTowerStackDefinition stackDefinition,
                                               MKTowerWorkspaceFamilyDefinition family, String stairPlacement,
                                               String stairDirection, boolean topCap, boolean bottomCap,
                                               MKWorkspaceRuntimePieceInfo runtimeInfo) {
@@ -385,6 +407,9 @@ public class MKTowerStackPlanner {
         tags.put("workspace_horizontal_exits", family.horizontalExitSummary());
         tags.put("workspace_horizontal_extrusion_mode", family.horizontalExtrusionMode().getSerializedName());
         tags.put("workspace_category", family.category().getSerializedName());
+        if (!stackDefinition.stackId().isBlank()) {
+            tags.put("workspace_tower_stack_id", stackDefinition.stackId());
+        }
         applyVoidMarginTags(family, tags);
         applyFoundationTags(family.foundationPolicy(), tags);
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, Boolean.toString(family.supportsVerticalAccess()));

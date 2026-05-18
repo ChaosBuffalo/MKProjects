@@ -93,7 +93,9 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
     @Override
     public List<MKPlannedPiece> createCanonicalPieces(MKStructureWorkspace workspace) {
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>(towerStackPlanner.createRoomPieces(
-                workspace, workspace.familyDefinitions()));
+                workspace,
+                MKTowerStackDefinition.legacyTower(workspace.floorSettings()),
+                workspace.familyDefinitions()));
         pieces.addAll(createLinearRunPieces(workspace));
         return List.copyOf(pieces);
     }
