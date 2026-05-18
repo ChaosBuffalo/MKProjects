@@ -269,7 +269,7 @@ class TowerWorkspaceV2Test {
                 )),
                 List.of(new MKWorkspaceLinearRunFamilyDefinition(
                         "keep_wall_north",
-                        "keep.wall.north",
+                        "keep.perimeter.north",
                         MKWorkspaceLinearRunKind.SOLID_WALL,
                         "wall_opening",
                         11,
@@ -307,16 +307,16 @@ class TowerWorkspaceV2Test {
                         "vertical_access/keep.center/up".equals(connector.incomingPoolName())));
 
         assertEquals(MKWorkspacePieceRole.HALLWAY, northWall.role());
-        assertEquals("keep.wall.north", northWall.tags().get("workspace_topology_slot_id"));
+        assertEquals("keep.perimeter.north", northWall.tags().get("workspace_topology_slot_id"));
         assertEquals("solid_wall", northWall.tags().get("workspace_linear_run_kind"));
         assertEquals(MKWorkspaceFoundationMode.MASKED_EXTEND_BOTTOM_BLOCKS.getSerializedName(),
                 northWall.tags().get(MKWorkspaceFoundationPolicy.MODE_TAG));
         assertTrue(northWall.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.WEST &&
-                        "keep_slots/keep/wall/north".equals(connector.incomingPoolName())));
+                        "keep_slots/keep/perimeter/north".equals(connector.incomingPoolName())));
         assertTrue(northWall.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.EAST &&
-                        "keep_slots/keep/wall/north".equals(connector.incomingPoolName())));
+                        "keep_slots/keep/perimeter/north".equals(connector.incomingPoolName())));
     }
 
     @Test
@@ -349,8 +349,7 @@ class TowerWorkspaceV2Test {
                 .orElseThrow();
         assertEquals(7, northWall.interiorHeight());
         assertEquals("solid_wall", northWall.tags().get("workspace_linear_run_kind"));
-        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_parapet_north") &&
-                "parapet".equals(piece.tags().get("workspace_linear_run_kind"))));
+        assertFalse(pieces.stream().anyMatch(piece -> "parapet".equals(piece.tags().get("workspace_linear_run_kind"))));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_walkway_south") &&
                 "open_walkway".equals(piece.tags().get("workspace_linear_run_kind"))));
     }
@@ -432,7 +431,7 @@ class TowerWorkspaceV2Test {
                         ),
                         new MKWorkspaceLinearRunFamilyDefinition(
                                 "keep_wall_south",
-                                "keep.wall.south",
+                                "keep.perimeter.south",
                                 MKWorkspaceLinearRunKind.SOLID_WALL,
                                 "wall_opening",
                                 13,
@@ -457,7 +456,7 @@ class TowerWorkspaceV2Test {
         assertEquals("keep_center_entry", manifest.runtimeHints().startBaseName());
         assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/walkway/south", "keep_walkway_south");
         assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/gate/main", "keep_gate_main");
-        assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/wall/south", "keep_wall_south");
+        assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/perimeter/south", "keep_wall_south");
         assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/north_west", "keep_corner_shared");
         assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/north_east", "keep_corner_shared");
         assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/south_east", "keep_corner_shared");
@@ -563,7 +562,7 @@ class TowerWorkspaceV2Test {
                 )),
                 List.of(new MKWorkspaceLinearRunFamilyDefinition(
                         "keep_wall_north",
-                        "keep.wall.north",
+                        "keep.perimeter.north",
                         MKWorkspaceLinearRunKind.SOLID_WALL,
                         "wall_opening",
                         11,

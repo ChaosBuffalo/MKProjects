@@ -54,8 +54,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 List.of(
                         new MKWorkspaceRegionSchema("keep.center_tower", "tower_stack", true),
                         new MKWorkspaceRegionSchema("keep.corner_towers", "tower_stack", true),
-                        new MKWorkspaceRegionSchema("keep.wall_runs", "linear_run", true),
-                        new MKWorkspaceRegionSchema("keep.parapets", "linear_run", true),
+                        new MKWorkspaceRegionSchema("keep.perimeter_runs", "linear_run", true),
                         new MKWorkspaceRegionSchema("keep.walkways", "linear_run", true),
                         new MKWorkspaceRegionSchema("keep.gates", "entry", false),
                         new MKWorkspaceRegionSchema("keep.courtyard", "open_area", false)
@@ -71,14 +70,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                         new MKWorkspaceSlotSchema("keep.corner.north_east", "keep.corner_towers", "tower_stack", "keep.corner.north_east", MKWorkspaceSlotSchema.Repeat.OPTIONAL),
                         new MKWorkspaceSlotSchema("keep.corner.south_east", "keep.corner_towers", "tower_stack", "keep.corner.south_east", MKWorkspaceSlotSchema.Repeat.OPTIONAL),
                         new MKWorkspaceSlotSchema("keep.corner.south_west", "keep.corner_towers", "tower_stack", "keep.corner.south_west", MKWorkspaceSlotSchema.Repeat.OPTIONAL),
-                        new MKWorkspaceSlotSchema("keep.wall.north", "keep.wall_runs", "solid_wall", "keep.wall.north", MKWorkspaceSlotSchema.Repeat.DERIVED),
-                        new MKWorkspaceSlotSchema("keep.wall.east", "keep.wall_runs", "solid_wall", "keep.wall.east", MKWorkspaceSlotSchema.Repeat.DERIVED),
-                        new MKWorkspaceSlotSchema("keep.wall.south", "keep.wall_runs", "solid_wall", "keep.wall.south", MKWorkspaceSlotSchema.Repeat.DERIVED),
-                        new MKWorkspaceSlotSchema("keep.wall.west", "keep.wall_runs", "solid_wall", "keep.wall.west", MKWorkspaceSlotSchema.Repeat.DERIVED),
-                        new MKWorkspaceSlotSchema("keep.parapet.north", "keep.parapets", "parapet", "keep.parapet.north", MKWorkspaceSlotSchema.Repeat.DERIVED),
-                        new MKWorkspaceSlotSchema("keep.parapet.east", "keep.parapets", "parapet", "keep.parapet.east", MKWorkspaceSlotSchema.Repeat.DERIVED),
-                        new MKWorkspaceSlotSchema("keep.parapet.south", "keep.parapets", "parapet", "keep.parapet.south", MKWorkspaceSlotSchema.Repeat.DERIVED),
-                        new MKWorkspaceSlotSchema("keep.parapet.west", "keep.parapets", "parapet", "keep.parapet.west", MKWorkspaceSlotSchema.Repeat.DERIVED),
+                        new MKWorkspaceSlotSchema("keep.perimeter.north", "keep.perimeter_runs", "defensive_run", "keep.perimeter.north", MKWorkspaceSlotSchema.Repeat.DERIVED),
+                        new MKWorkspaceSlotSchema("keep.perimeter.east", "keep.perimeter_runs", "defensive_run", "keep.perimeter.east", MKWorkspaceSlotSchema.Repeat.DERIVED),
+                        new MKWorkspaceSlotSchema("keep.perimeter.south", "keep.perimeter_runs", "defensive_run", "keep.perimeter.south", MKWorkspaceSlotSchema.Repeat.DERIVED),
+                        new MKWorkspaceSlotSchema("keep.perimeter.west", "keep.perimeter_runs", "defensive_run", "keep.perimeter.west", MKWorkspaceSlotSchema.Repeat.DERIVED),
                         new MKWorkspaceSlotSchema("keep.walkway.north", "keep.walkways", "open_walkway", "keep.walkway.north", MKWorkspaceSlotSchema.Repeat.DERIVED),
                         new MKWorkspaceSlotSchema("keep.walkway.east", "keep.walkways", "open_walkway", "keep.walkway.east", MKWorkspaceSlotSchema.Repeat.DERIVED),
                         new MKWorkspaceSlotSchema("keep.walkway.south", "keep.walkways", "open_walkway", "keep.walkway.south", MKWorkspaceSlotSchema.Repeat.DERIVED),
@@ -87,14 +82,14 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 ),
                 List.of(
                         new MKWorkspaceLinkSchema("keep.center.vertical", "keep.center.basement_cap", "keep.center.top_cap", "vertical_access_group:keep.center"),
-                        new MKWorkspaceLinkSchema("keep.corner.north_west.vertical", "keep.corner.north_west", "keep.parapet.north", "vertical_access_group:keep.corner.north_west"),
-                        new MKWorkspaceLinkSchema("keep.corner.north_east.vertical", "keep.corner.north_east", "keep.parapet.east", "vertical_access_group:keep.corner.north_east"),
-                        new MKWorkspaceLinkSchema("keep.corner.south_east.vertical", "keep.corner.south_east", "keep.parapet.south", "vertical_access_group:keep.corner.south_east"),
-                        new MKWorkspaceLinkSchema("keep.corner.south_west.vertical", "keep.corner.south_west", "keep.parapet.west", "vertical_access_group:keep.corner.south_west"),
-                        new MKWorkspaceLinkSchema("keep.wall.north", "keep.corner.north_west", "keep.corner.north_east", "linear_run"),
-                        new MKWorkspaceLinkSchema("keep.wall.east", "keep.corner.north_east", "keep.corner.south_east", "linear_run"),
-                        new MKWorkspaceLinkSchema("keep.wall.south", "keep.corner.south_west", "keep.corner.south_east", "linear_run"),
-                        new MKWorkspaceLinkSchema("keep.wall.west", "keep.corner.north_west", "keep.corner.south_west", "linear_run")
+                        new MKWorkspaceLinkSchema("keep.corner.north_west.vertical", "keep.corner.north_west", "keep.perimeter.north", "vertical_access_group:keep.corner.north_west"),
+                        new MKWorkspaceLinkSchema("keep.corner.north_east.vertical", "keep.corner.north_east", "keep.perimeter.east", "vertical_access_group:keep.corner.north_east"),
+                        new MKWorkspaceLinkSchema("keep.corner.south_east.vertical", "keep.corner.south_east", "keep.perimeter.south", "vertical_access_group:keep.corner.south_east"),
+                        new MKWorkspaceLinkSchema("keep.corner.south_west.vertical", "keep.corner.south_west", "keep.perimeter.west", "vertical_access_group:keep.corner.south_west"),
+                        new MKWorkspaceLinkSchema("keep.perimeter.north", "keep.corner.north_west", "keep.corner.north_east", "linear_run"),
+                        new MKWorkspaceLinkSchema("keep.perimeter.east", "keep.corner.north_east", "keep.corner.south_east", "linear_run"),
+                        new MKWorkspaceLinkSchema("keep.perimeter.south", "keep.corner.south_west", "keep.corner.south_east", "linear_run"),
+                        new MKWorkspaceLinkSchema("keep.perimeter.west", "keep.corner.north_west", "keep.corner.south_west", "linear_run")
                 ),
                 List.of(
                         new MKWorkspaceRoleSchema("keep.center.entry", "floor", "room", false, true, Set.of("vertical_access", "center_tower")),
@@ -105,12 +100,11 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                         new MKWorkspaceRoleSchema("keep.corner.north_east", "tower", "room", false, false, Set.of("vertical_access", "corner_tower", "unique_corner_template")),
                         new MKWorkspaceRoleSchema("keep.corner.south_east", "tower", "room", false, false, Set.of("vertical_access", "corner_tower", "unique_corner_template")),
                         new MKWorkspaceRoleSchema("keep.corner.south_west", "tower", "room", false, false, Set.of("vertical_access", "corner_tower", "unique_corner_template")),
-                        new MKWorkspaceRoleSchema("keep.wall.north", "linear_run", "wall", false, false, Set.of("solid_wall")),
-                        new MKWorkspaceRoleSchema("keep.wall.east", "linear_run", "wall", false, false, Set.of("solid_wall")),
-                        new MKWorkspaceRoleSchema("keep.wall.south", "linear_run", "wall", false, false, Set.of("solid_wall")),
-                        new MKWorkspaceRoleSchema("keep.wall.west", "linear_run", "wall", false, false, Set.of("solid_wall")),
-                        new MKWorkspaceRoleSchema("keep.walkway.north", "linear_run", "walkway", false, false, Set.of("open_walkway", "terrain_matched_allowed")),
-                        new MKWorkspaceRoleSchema("keep.parapet.north", "linear_run", "parapet", false, false, Set.of("parapet"))
+                        new MKWorkspaceRoleSchema("keep.perimeter.north", "linear_run", "defensive_run", false, false, Set.of("solid_wall", "parapet")),
+                        new MKWorkspaceRoleSchema("keep.perimeter.east", "linear_run", "defensive_run", false, false, Set.of("solid_wall", "parapet")),
+                        new MKWorkspaceRoleSchema("keep.perimeter.south", "linear_run", "defensive_run", false, false, Set.of("solid_wall", "parapet")),
+                        new MKWorkspaceRoleSchema("keep.perimeter.west", "linear_run", "defensive_run", false, false, Set.of("solid_wall", "parapet")),
+                        new MKWorkspaceRoleSchema("keep.walkway.north", "linear_run", "walkway", false, false, Set.of("open_walkway", "terrain_matched_allowed"))
                 )
         );
     }
@@ -218,8 +212,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             case "keep.gate.main" -> {
                 connectors.add(new MKPlannedConnector(MKConnectorRole.MAIN_FORWARD, Direction.NORTH,
                         opening.openingWidth(), opening.openingHeight(), EMPTY_POOL, slotPool("keep.gate.main")));
-                addBranchTarget(connectors, Direction.WEST, "keep.wall.south", availableSlots, opening);
-                addBranchTarget(connectors, Direction.EAST, "keep.wall.south", availableSlots, opening);
+                addBranchTarget(connectors, Direction.WEST, "keep.perimeter.south", availableSlots, opening);
+                addBranchTarget(connectors, Direction.EAST, "keep.perimeter.south", availableSlots, opening);
             }
             case "keep.corner.shared" -> addSharedCornerConnectors(connectors, slots.sharedCornerSlots(),
                     availableSlots, opening);
@@ -248,13 +242,13 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                             opening.openingWidth(), opening.openingHeight(), 0, positiveOffset,
                             poolOrEmpty("keep.gate.main", availableSlots), EMPTY_POOL)
             );
-            case "keep.wall.north" -> wallConnectors(slotId, directions, "keep.corner.north_west",
+            case "keep.perimeter.north" -> perimeterConnectors(slotId, directions, "keep.corner.north_west",
                     "keep.corner.north_east", availableSlots, opening, negativeOffset, positiveOffset);
-            case "keep.wall.east" -> wallConnectors(slotId, directions, "keep.corner.north_east",
+            case "keep.perimeter.east" -> perimeterConnectors(slotId, directions, "keep.corner.north_east",
                     "keep.corner.south_east", availableSlots, opening, negativeOffset, positiveOffset);
-            case "keep.wall.south" -> wallConnectors(slotId, directions, "keep.corner.south_west",
+            case "keep.perimeter.south" -> perimeterConnectors(slotId, directions, "keep.corner.south_west",
                     "keep.corner.south_east", availableSlots, opening, negativeOffset, positiveOffset);
-            case "keep.wall.west" -> wallConnectors(slotId, directions, "keep.corner.north_west",
+            case "keep.perimeter.west" -> perimeterConnectors(slotId, directions, "keep.corner.north_west",
                     "keep.corner.south_west", availableSlots, opening, negativeOffset, positiveOffset);
             default -> List.of(
                     new MKPlannedConnector(MKConnectorRole.BRANCH, directions.negative(),
@@ -267,17 +261,17 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         };
     }
 
-    private List<MKPlannedConnector> wallConnectors(String wallSlotId, DirectionPair directions,
-                                                   String negativeCornerSlotId, String positiveCornerSlotId,
-                                                   Set<String> availableSlots, ResolvedOpeningProfile opening,
-                                                   int negativeOffset, int positiveOffset) {
+    private List<MKPlannedConnector> perimeterConnectors(String perimeterSlotId, DirectionPair directions,
+                                                         String negativeCornerSlotId, String positiveCornerSlotId,
+                                                         Set<String> availableSlots, ResolvedOpeningProfile opening,
+                                                         int negativeOffset, int positiveOffset) {
         return List.of(
                 new MKPlannedConnector(MKConnectorRole.BRANCH, directions.negative(),
                         opening.openingWidth(), opening.openingHeight(), 0, negativeOffset,
-                        poolOrEmpty(negativeCornerSlotId, availableSlots), slotPool(wallSlotId)),
+                        poolOrEmpty(negativeCornerSlotId, availableSlots), slotPool(perimeterSlotId)),
                 new MKPlannedConnector(MKConnectorRole.BRANCH, directions.positive(),
                         opening.openingWidth(), opening.openingHeight(), 0, positiveOffset,
-                        poolOrEmpty(positiveCornerSlotId, availableSlots), slotPool(wallSlotId))
+                        poolOrEmpty(positiveCornerSlotId, availableSlots), slotPool(perimeterSlotId))
         );
     }
 
@@ -285,19 +279,19 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                                            Set<String> availableSlots,
                                            ResolvedOpeningProfile opening) {
         if (sharedCornerSlots.contains("keep.corner.north_west")) {
-            addCornerEntryConnector(connectors, "keep.corner.north_west", Direction.EAST, "keep.wall.north",
+            addCornerEntryConnector(connectors, "keep.corner.north_west", Direction.EAST, "keep.perimeter.north",
                     availableSlots, opening);
         }
         if (sharedCornerSlots.contains("keep.corner.north_east")) {
-            addCornerEntryConnector(connectors, "keep.corner.north_east", Direction.WEST, "keep.wall.north",
+            addCornerEntryConnector(connectors, "keep.corner.north_east", Direction.WEST, "keep.perimeter.north",
                     availableSlots, opening);
         }
         if (sharedCornerSlots.contains("keep.corner.south_east")) {
-            addCornerEntryConnector(connectors, "keep.corner.south_east", Direction.WEST, "keep.wall.south",
+            addCornerEntryConnector(connectors, "keep.corner.south_east", Direction.WEST, "keep.perimeter.south",
                     availableSlots, opening);
         }
         if (sharedCornerSlots.contains("keep.corner.south_west")) {
-            addCornerEntryConnector(connectors, "keep.corner.south_west", Direction.EAST, "keep.wall.south",
+            addCornerEntryConnector(connectors, "keep.corner.south_west", Direction.EAST, "keep.perimeter.south",
                     availableSlots, opening);
         }
     }
@@ -306,24 +300,24 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                                              Set<String> availableSlots, ResolvedOpeningProfile opening) {
         switch (cornerSlotId) {
             case "keep.corner.north_west" -> {
-                addCornerEntryConnector(connectors, cornerSlotId, Direction.EAST, "keep.wall.north",
+                addCornerEntryConnector(connectors, cornerSlotId, Direction.EAST, "keep.perimeter.north",
                         availableSlots, opening);
-                addBranchTarget(connectors, Direction.SOUTH, "keep.wall.west", availableSlots, opening);
+                addBranchTarget(connectors, Direction.SOUTH, "keep.perimeter.west", availableSlots, opening);
             }
             case "keep.corner.north_east" -> {
-                addCornerEntryConnector(connectors, cornerSlotId, Direction.WEST, "keep.wall.north",
+                addCornerEntryConnector(connectors, cornerSlotId, Direction.WEST, "keep.perimeter.north",
                         availableSlots, opening);
-                addBranchTarget(connectors, Direction.SOUTH, "keep.wall.east", availableSlots, opening);
+                addBranchTarget(connectors, Direction.SOUTH, "keep.perimeter.east", availableSlots, opening);
             }
             case "keep.corner.south_east" -> {
-                addCornerEntryConnector(connectors, cornerSlotId, Direction.WEST, "keep.wall.south",
+                addCornerEntryConnector(connectors, cornerSlotId, Direction.WEST, "keep.perimeter.south",
                         availableSlots, opening);
-                addBranchTarget(connectors, Direction.NORTH, "keep.wall.east", availableSlots, opening);
+                addBranchTarget(connectors, Direction.NORTH, "keep.perimeter.east", availableSlots, opening);
             }
             case "keep.corner.south_west" -> {
-                addCornerEntryConnector(connectors, cornerSlotId, Direction.EAST, "keep.wall.south",
+                addCornerEntryConnector(connectors, cornerSlotId, Direction.EAST, "keep.perimeter.south",
                         availableSlots, opening);
-                addBranchTarget(connectors, Direction.NORTH, "keep.wall.west", availableSlots, opening);
+                addBranchTarget(connectors, Direction.NORTH, "keep.perimeter.west", availableSlots, opening);
             }
             default -> {
             }
@@ -331,11 +325,11 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     }
 
     private void addCornerEntryConnector(List<MKPlannedConnector> connectors, String cornerSlotId, Direction facing,
-                                         String targetWallSlotId, Set<String> availableSlots,
+                                         String targetPerimeterSlotId, Set<String> availableSlots,
                                          ResolvedOpeningProfile opening) {
         connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, facing,
                 opening.openingWidth(), opening.openingHeight(), 0, 0,
-                poolOrEmpty(targetWallSlotId, availableSlots), slotPool(cornerSlotId)));
+                poolOrEmpty(targetPerimeterSlotId, availableSlots), slotPool(cornerSlotId)));
     }
 
     private void addBranchTarget(List<MKPlannedConnector> connectors, Direction facing, String targetSlotId,
