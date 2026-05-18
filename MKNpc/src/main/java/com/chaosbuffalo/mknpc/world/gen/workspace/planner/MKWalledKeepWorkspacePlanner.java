@@ -39,6 +39,9 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     private record ResolvedOpeningProfile(String profileId, int openingWidth, int openingHeight) {
     }
 
+    private record SlotAvailability(Set<String> availableSlots, Set<String> sharedCornerSlots) {
+    }
+
     @Override
     public String profileType() {
         return MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE;
@@ -115,19 +118,19 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     @Override
     public List<MKPlannedPiece> createCanonicalPieces(MKStructureWorkspace workspace) {
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
-        Set<String> availableSlots = collectAvailableSlots(workspace);
+        SlotAvailability slots = collectAvailableSlots(workspace);
         workspace.familyDefinitions().stream()
                 .filter(family -> family.topologySlotId().startsWith("keep."))
-                .map(family -> createRoomPiece(workspace, family, availableSlots))
+                .map(family -> createRoomPiece(workspace, family, slots))
                 .forEach(pieces::add);
         workspace.linearRunFamilies().stream()
                 .filter(linearRun -> linearRun.topologySlotId().startsWith("keep."))
-                .flatMap(linearRun -> createLinearRunPieces(workspace, linearRun, availableSlots).stream())
+                .flatMap(linearRun -> createLinearRunPieces(workspace, linearRun, slots.availableSlots()).stream())
                 .forEach(pieces::add);
         return List.copyOf(pieces);
     }
 
-    private Set<String> collectAvailableSlots(MKStructureWorkspace workspace) {
+    private SlotAvailability collectAvailableSlots(MKStructureWorkspace workspace) {
         LinkedHashSet<String> slots = new LinkedHashSet<>();
         workspace.familyDefinitions().stream()
                 .map(MKTowerWorkspaceFamilyDefinition::topologySlotId)
@@ -137,14 +140,22 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 .map(MKWorkspaceLinearRunFamilyDefinition::topologySlotId)
                 .filter(slot -> slot.startsWith("keep."))
                 .forEach(slots::add);
+        LinkedHashSet<String> sharedCornerSlots = new LinkedHashSet<>();
         if (slots.contains("keep.corner.shared")) {
-            slots.addAll(CONCRETE_CORNER_SLOTS);
+            if (workspace.topologyProfile().uniqueCornerTowers()) {
+                CONCRETE_CORNER_SLOTS.stream()
+                        .filter(slot -> !slots.contains(slot))
+                        .forEach(sharedCornerSlots::add);
+            } else {
+                sharedCornerSlots.addAll(CONCRETE_CORNER_SLOTS);
+            }
+            slots.addAll(sharedCornerSlots);
         }
-        return Set.copyOf(slots);
+        return new SlotAvailability(Set.copyOf(slots), Set.copyOf(sharedCornerSlots));
     }
 
     private MKPlannedPiece createRoomPiece(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family,
-                                           Set<String> availableSlots) {
+                                           SlotAvailability slots) {
         int shaftSize = workspace.verticalAccessSpec().shaftSize();
         ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
@@ -160,7 +171,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                         verticalPool(family.verticalAccessGroupId(), Direction.UP)));
             }
         }
-        connectors.addAll(roomLayoutConnectors(family.topologySlotId(), availableSlots, opening));
+        connectors.addAll(roomLayoutConnectors(family.topologySlotId(), slots, opening));
         return new MKPlannedPiece(
                 family.pieceRole(),
                 family.baseName(),
@@ -193,9 +204,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         ));
     }
 
-    private List<MKPlannedConnector> roomLayoutConnectors(String topologySlotId, Set<String> availableSlots,
+    private List<MKPlannedConnector> roomLayoutConnectors(String topologySlotId, SlotAvailability slots,
                                                           ResolvedOpeningProfile opening) {
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
+        Set<String> availableSlots = slots.availableSlots();
         switch (topologySlotId) {
             case "keep.center.entry" -> {
                 if (availableSlots.contains("keep.walkway.south")) {
@@ -209,7 +221,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 addBranchTarget(connectors, Direction.WEST, "keep.wall.south", availableSlots, opening);
                 addBranchTarget(connectors, Direction.EAST, "keep.wall.south", availableSlots, opening);
             }
-            case "keep.corner.shared" -> addSharedCornerConnectors(connectors, availableSlots, opening);
+            case "keep.corner.shared" -> addSharedCornerConnectors(connectors, slots.sharedCornerSlots(),
+                    availableSlots, opening);
             case "keep.corner.north_west", "keep.corner.north_east", "keep.corner.south_east",
                  "keep.corner.south_west" -> addConcreteCornerConnectors(connectors, topologySlotId, availableSlots,
                     opening);
@@ -268,16 +281,25 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         );
     }
 
-    private void addSharedCornerConnectors(List<MKPlannedConnector> connectors, Set<String> availableSlots,
+    private void addSharedCornerConnectors(List<MKPlannedConnector> connectors, Set<String> sharedCornerSlots,
+                                           Set<String> availableSlots,
                                            ResolvedOpeningProfile opening) {
-        addCornerEntryConnector(connectors, "keep.corner.north_west", Direction.EAST, "keep.wall.north",
-                availableSlots, opening);
-        addCornerEntryConnector(connectors, "keep.corner.north_east", Direction.WEST, "keep.wall.north",
-                availableSlots, opening);
-        addCornerEntryConnector(connectors, "keep.corner.south_east", Direction.WEST, "keep.wall.south",
-                availableSlots, opening);
-        addCornerEntryConnector(connectors, "keep.corner.south_west", Direction.EAST, "keep.wall.south",
-                availableSlots, opening);
+        if (sharedCornerSlots.contains("keep.corner.north_west")) {
+            addCornerEntryConnector(connectors, "keep.corner.north_west", Direction.EAST, "keep.wall.north",
+                    availableSlots, opening);
+        }
+        if (sharedCornerSlots.contains("keep.corner.north_east")) {
+            addCornerEntryConnector(connectors, "keep.corner.north_east", Direction.WEST, "keep.wall.north",
+                    availableSlots, opening);
+        }
+        if (sharedCornerSlots.contains("keep.corner.south_east")) {
+            addCornerEntryConnector(connectors, "keep.corner.south_east", Direction.WEST, "keep.wall.south",
+                    availableSlots, opening);
+        }
+        if (sharedCornerSlots.contains("keep.corner.south_west")) {
+            addCornerEntryConnector(connectors, "keep.corner.south_west", Direction.EAST, "keep.wall.south",
+                    availableSlots, opening);
+        }
     }
 
     private void addConcreteCornerConnectors(List<MKPlannedConnector> connectors, String cornerSlotId,

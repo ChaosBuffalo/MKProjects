@@ -429,6 +429,77 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void uniqueCornerOverrideReplacesSharedCornerForThatSlot() {
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(true),
+                List.of(
+                        new MKTowerWorkspaceFamilyDefinition(
+                                "keep_center_entry",
+                                MKTowerWorkspaceCategory.ENTRY,
+                                MKWorkspacePieceRole.ENTRY,
+                                "keep.center.entry",
+                                "keep.center",
+                                false,
+                                9,
+                                9,
+                                MKWorkspaceDimensions.defaultDimensions().entranceHeight(),
+                                MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                                List.of(),
+                                0,
+                                0,
+                                MKWorkspaceFoundationPolicy.none(),
+                                null
+                        ),
+                        new MKTowerWorkspaceFamilyDefinition(
+                                "keep_corner_shared",
+                                MKTowerWorkspaceCategory.MAIN,
+                                MKWorkspacePieceRole.FLOOR_MAIN,
+                                "keep.corner.shared",
+                                "keep.corner",
+                                false,
+                                7,
+                                7,
+                                7,
+                                MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                                List.of(),
+                                0,
+                                0,
+                                MKWorkspaceFoundationPolicy.none(),
+                                null
+                        ),
+                        new MKTowerWorkspaceFamilyDefinition(
+                                "keep_corner_south_east",
+                                MKTowerWorkspaceCategory.MAIN,
+                                MKWorkspacePieceRole.FLOOR_MAIN,
+                                "keep.corner.south_east",
+                                "keep.corner.south_east",
+                                false,
+                                9,
+                                9,
+                                8,
+                                MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                                List.of(),
+                                0,
+                                0,
+                                MKWorkspaceFoundationPolicy.none(),
+                                null
+                        )
+                ),
+                List.of()
+        );
+
+        List<MKWorkspacePieceDefinition> exportedPieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .map(piece -> pieceToDefinitionWithConnectors(workspace, piece))
+                .toList();
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace.withPieces(exportedPieces), 1, "now");
+
+        assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/north_west", "keep_corner_shared");
+        assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/south_east", "keep_corner_south_east");
+        assertRuntimePoolDoesNotContain(workspace, manifest, "keep_slots/keep/corner/south_east", "keep_corner_shared");
+    }
+
+    @Test
     void runtimeMetadataUsesFoundationPolicyFromOwningFamilies() {
         MKWorkspaceFoundationPolicy roomFoundation = MKWorkspaceFoundationPolicy.uniformBlock(
                 ResourceLocation.parse("minecraft:stone_bricks"));
@@ -2139,6 +2210,20 @@ class TowerWorkspaceV2Test {
                 .orElseThrow();
         assertTrue(pool.childBaseNames().contains(childBaseName),
                 "Expected " + poolId + " to contain " + childBaseName + " but found " + pool.childBaseNames());
+    }
+
+    private static void assertRuntimePoolDoesNotContain(MKStructureWorkspace workspace,
+                                                        MKWorkspaceExportManifest manifest,
+                                                        String poolBaseName,
+                                                        String childBaseName) {
+        ResourceLocation poolId = ResourceLocation.parse(workspace.namespace() + ":" +
+                workspace.structureName() + "/" + poolBaseName);
+        MKWorkspaceExportManifest.ExportRuntimePool pool = manifest.runtimeHints().pools().stream()
+                .filter(candidate -> candidate.poolId().equals(poolId))
+                .findFirst()
+                .orElseThrow();
+        assertFalse(pool.childBaseNames().contains(childBaseName),
+                "Expected " + poolId + " not to contain " + childBaseName + " but found " + pool.childBaseNames());
     }
 }
 
