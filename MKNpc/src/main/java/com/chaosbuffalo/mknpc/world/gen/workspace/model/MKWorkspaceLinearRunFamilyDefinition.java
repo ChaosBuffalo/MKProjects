@@ -157,28 +157,29 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
 
     public static List<MKWorkspaceLinearRunFamilyDefinition> createWalledKeepDefaults(MKWorkspaceDimensions dimensions,
                                                                                       MKWorkspaceMaterialPalette palette) {
+        int keepHeight = 7;
         MKWorkspaceFoundationPolicy wallFoundation = MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(List.of(
                 palette.wallBlock()
         ));
         return List.of(
                 keepRun("keep_wall_north", "keep.wall.north", MKWorkspaceLinearRunKind.SOLID_WALL,
-                        "branch_opening", 15, 3, 3, false, true, wallFoundation),
+                        "branch_opening", 15, 3, keepHeight, false, true, wallFoundation),
                 keepRun("keep_wall_east", "keep.wall.east", MKWorkspaceLinearRunKind.SOLID_WALL,
-                        "branch_opening", 15, 3, 3, false, true, wallFoundation),
+                        "branch_opening", 15, 3, keepHeight, false, true, wallFoundation),
                 keepRun("keep_wall_south", "keep.wall.south", MKWorkspaceLinearRunKind.SOLID_WALL,
-                        "branch_opening", 15, 3, 3, false, true, wallFoundation),
+                        "branch_opening", 15, 3, keepHeight, false, true, wallFoundation),
                 keepRun("keep_wall_west", "keep.wall.west", MKWorkspaceLinearRunKind.SOLID_WALL,
-                        "branch_opening", 15, 3, 3, false, true, wallFoundation),
+                        "branch_opening", 15, 3, keepHeight, false, true, wallFoundation),
                 keepRun("keep_parapet_north", "keep.parapet.north", MKWorkspaceLinearRunKind.PARAPET,
-                        "branch_opening", 15, 3, 3, false, true, MKWorkspaceFoundationPolicy.none()),
+                        "branch_opening", 15, 3, keepHeight, false, true, MKWorkspaceFoundationPolicy.none()),
                 keepRun("keep_parapet_east", "keep.parapet.east", MKWorkspaceLinearRunKind.PARAPET,
-                        "branch_opening", 15, 3, 3, false, true, MKWorkspaceFoundationPolicy.none()),
+                        "branch_opening", 15, 3, keepHeight, false, true, MKWorkspaceFoundationPolicy.none()),
                 keepRun("keep_parapet_south", "keep.parapet.south", MKWorkspaceLinearRunKind.PARAPET,
-                        "branch_opening", 15, 3, 3, false, true, MKWorkspaceFoundationPolicy.none()),
+                        "branch_opening", 15, 3, keepHeight, false, true, MKWorkspaceFoundationPolicy.none()),
                 keepRun("keep_parapet_west", "keep.parapet.west", MKWorkspaceLinearRunKind.PARAPET,
-                        "branch_opening", 15, 3, 3, false, true, MKWorkspaceFoundationPolicy.none()),
+                        "branch_opening", 15, 3, keepHeight, false, true, MKWorkspaceFoundationPolicy.none()),
                 keepRun("keep_walkway_south", "keep.walkway.south", MKWorkspaceLinearRunKind.OPEN_WALKWAY,
-                        "main_opening", 9, dimensions.hallwayWidth(), 3, true, false, MKWorkspaceFoundationPolicy.none())
+                        "main_opening", 9, dimensions.hallwayWidth(), keepHeight, true, false, MKWorkspaceFoundationPolicy.none())
         );
     }
 

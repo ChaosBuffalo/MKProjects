@@ -323,7 +323,8 @@ class TowerWorkspaceV2Test {
     void walledKeepDefaultsGenerateKeepSpecificPieces() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
-                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                withCategoryProfiles(baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                        MKTowerWorkspaceCategoryProfile.createWalledKeepDefaults(dimensions)),
                 MKWorkspaceTopologyProfile.walledKeep(false),
                 MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
@@ -332,12 +333,22 @@ class TowerWorkspaceV2Test {
         assertEquals(List.of(), workspace.validate());
         List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
 
-        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_entry") &&
-                "keep.center.entry".equals(piece.tags().get("workspace_topology_slot_id"))));
+        MKPlannedPiece centerEntry = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_center_entry"))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(17, centerEntry.interiorWidth());
+        assertEquals(17, centerEntry.interiorLength());
+        assertEquals(7, centerEntry.interiorHeight());
+        assertEquals("keep.center.entry", centerEntry.tags().get("workspace_topology_slot_id"));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_shared") &&
                 "keep.corner.shared".equals(piece.tags().get("workspace_topology_slot_id"))));
-        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_wall_north") &&
-                "solid_wall".equals(piece.tags().get("workspace_linear_run_kind"))));
+        MKPlannedPiece northWall = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_wall_north"))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(7, northWall.interiorHeight());
+        assertEquals("solid_wall", northWall.tags().get("workspace_linear_run_kind"));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_parapet_north") &&
                 "parapet".equals(piece.tags().get("workspace_linear_run_kind"))));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_walkway_south") &&
@@ -623,6 +634,7 @@ class TowerWorkspaceV2Test {
                 workspace.namespace(),
                 workspace.structureName(),
                 workspace.familyType(),
+                workspace.topologyProfile(),
                 workspace.dimensions(),
                 workspace.palette(),
                 workspace.stairConfig(),
@@ -2033,6 +2045,34 @@ class TowerWorkspaceV2Test {
         );
     }
 
+    private static MKStructureWorkspace withCategoryProfiles(MKStructureWorkspace workspace,
+                                                             List<MKTowerWorkspaceCategoryProfile> categoryProfiles) {
+        return new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.familyType(),
+                workspace.topologyProfile(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.floorSettings(),
+                categoryProfiles,
+                workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.linearRunFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces()
+        );
+    }
+
     private static MKStructureWorkspace withFloorSettings(MKStructureWorkspace workspace,
                                                           MKTowerWorkspaceFloorSettings floorSettings) {
         return new MKStructureWorkspace(
@@ -2051,33 +2091,6 @@ class TowerWorkspaceV2Test {
                 workspace.verticalAccessSpec(),
                 floorSettings,
                 workspace.categoryProfiles(),
-                workspace.familyDefinitions(),
-                workspace.openingProfiles(),
-                workspace.linearRunFamilies(),
-                workspace.createdAt(),
-                workspace.updatedAt(),
-                workspace.pieces()
-        );
-    }
-
-    private static MKStructureWorkspace withCategoryProfiles(MKStructureWorkspace workspace,
-                                                             List<MKTowerWorkspaceCategoryProfile> categoryProfiles) {
-        return new MKStructureWorkspace(
-                workspace.id(),
-                workspace.anchor(),
-                workspace.namespace(),
-                workspace.structureName(),
-                workspace.familyType(),
-                workspace.dimensions(),
-                workspace.palette(),
-                workspace.stairConfig(),
-                workspace.verticalAccessPlacement(),
-                workspace.shellMargin(),
-                workspace.exteriorAirMargin(),
-                workspace.previewMargin(),
-                workspace.verticalAccessSpec(),
-                workspace.floorSettings(),
-                categoryProfiles,
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
                 workspace.linearRunFamilies(),

@@ -101,6 +101,22 @@ public class MKTowerWorkspaceCategoryProfile {
         );
     }
 
+    public static List<MKTowerWorkspaceCategoryProfile> createWalledKeepDefaults(MKWorkspaceDimensions dimensions) {
+        int defaultHeight = 7;
+        return List.of(
+                new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.ENTRY,
+                        dimensions.roomWidth(), dimensions.roomLength(), defaultHeight),
+                new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.MAIN,
+                        dimensions.roomWidth(), dimensions.roomLength(), defaultHeight),
+                new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BASEMENT,
+                        dimensions.roomWidth(), dimensions.roomLength(), defaultHeight),
+                new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.TOP_CAP,
+                        dimensions.roomWidth(), dimensions.roomLength(), defaultHeight),
+                new MKTowerWorkspaceCategoryProfile(MKTowerWorkspaceCategory.BASEMENT_CAP,
+                        dimensions.roomWidth(), dimensions.roomLength(), defaultHeight)
+        );
+    }
+
     public static MKTowerWorkspaceCategoryProfile fromTag(CompoundTag tag) {
         return MKWorkspaceCodecs.parseNbt(CODEC, tag, "tower workspace category profile");
     }

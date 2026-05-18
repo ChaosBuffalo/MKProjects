@@ -1076,6 +1076,7 @@ public class WorkspaceDraftSession {
             boolean hasKeepFamilies = draft().familyDefinitions.stream()
                     .anyMatch(family -> family.topologySlotId().startsWith("keep."));
             if (!hasKeepFamilies) {
+                draft().categoryProfiles = MKTowerWorkspaceCategoryProfile.createWalledKeepDefaults(dimensions);
                 draft().familyDefinitions = MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions);
             }
             boolean hasKeepLinearRuns = draft().linearRunFamilies.stream()
