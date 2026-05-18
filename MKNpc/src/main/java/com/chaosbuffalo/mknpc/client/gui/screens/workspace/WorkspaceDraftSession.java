@@ -125,7 +125,7 @@ public class WorkspaceDraftSession {
         return draft.namespace + ":" + draft.structureName + "  |  " +
                 "shaft " + draft.shaftSize +
                 "  |  topology " + draft.topologyProfile.profileType() +
-                "  |  categories " + categoryProfilesWithTopologyPathSettings().size() +
+                "  |  topology defaults " + categoryProfilesWithTopologyPathSettings().size() +
                 "  |  families " + draft.familyDefinitions.size() +
                 "  |  openings " + draft.openingProfiles.size() +
                 "  |  linear runs " + draft.linearRunFamilies.size();

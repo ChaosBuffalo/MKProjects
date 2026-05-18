@@ -20,7 +20,7 @@ public class WorkspaceFormPage extends WorkspacePageBase {
 
         addTitle(screen, root, Component.literal("Workspace Configuration"));
         addHeaderText(screen, root, Component.literal(
-                "Edit the workspace through focused v2 sections. Global screens handle naming, margins, materials, categories, family variants, openings, and linear-run data."));
+                "Edit the workspace through focused v2 sections. Global screens handle naming, margins, materials, topology defaults, slot families, openings, and linear-run data."));
         addHeaderText(screen, root, Component.literal(screen.draftSession().summary()));
 
         int firstButtonY = screen.panelY() + 130;
@@ -30,7 +30,7 @@ public class WorkspaceFormPage extends WorkspacePageBase {
         addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 2),
                 "Topology Defaults", "form_categories");
         addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 3),
-                "Branch Variants", "form_families");
+                "Topology Slot Families", "form_families");
         addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 4),
                 "Opening Profiles", "form_openings");
         addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 5),

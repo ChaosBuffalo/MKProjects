@@ -4,6 +4,7 @@ import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceSlotSchema;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
@@ -30,7 +31,7 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
     public MKLayout build(MKWorkspaceScreen screen) {
         MKLayout root = createPanel(screen);
 
-        addTitle(screen, root, Component.literal("Branch Variants"));
+        addTitle(screen, root, Component.literal("Topology Slot Families"));
         MKText helpText = addHeaderText(screen, root, Component.literal(
                 "Assign room, corner, and gate families to topology slots. Linear-run slots are edited on the Linear Run Families page."));
 
@@ -55,6 +56,7 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
             List<MKTowerWorkspaceFamilyDefinition> families = editor.familyDefinitions();
             for (int index : editor.familyIndexesForTopologySlot(slot.slotId())) {
                 MKTowerWorkspaceFamilyDefinition family = families.get(index);
+                MKWorkspaceTopologySlotMetadata slotMetadata = MKWorkspaceTopologySlotMetadata.fromFamily(family);
                 MKText familyHeader = screen.makeWhiteText(Component.literal(" - " + family.baseName()));
                 content.addWidget(familyHeader);
                 content.addConstraintToWidget(MarginConstraint.LEFT, familyHeader);
@@ -64,7 +66,7 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
                                 editor.resolvedFamilyRoomLength(family) + "x" +
                                 editor.resolvedFamilyRoomHeight(family) +
                                 (editor.familyHasTopologyStack(family) ? " stack" : "") + "  |  " +
-                                formatTopologyLabel(family.pieceRole().getSerializedName()) + "  |  exits " +
+                                formatTopologyLabel(slotMetadata.pieceRole().getSerializedName()) + "  |  exits " +
                                 summarizeFamilyExits(family) + "  |  shaft " +
                                 (family.supportsVerticalAccess() ? "yes" : "no")));
                 familySummary.setWidth(screen.contentWidth());

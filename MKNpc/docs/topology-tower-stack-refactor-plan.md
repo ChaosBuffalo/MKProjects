@@ -300,7 +300,10 @@ Family-level validation should focus on override legality:
 - Workspace export manifests now include the topology profile, and import restores walled keep/shared-corner/stack/path settings instead of recreating every imported workspace as a standalone tower.
 - Editor-created and copied tower-stack families now derive their default category/role metadata from `MKTowerWorkspaceStackSlot` before falling back to legacy string/category heuristics.
 - A topology compatibility layer now generates legacy category-profile views from active topology stack/path settings for draft build, validation, palette fallback, and export paths. Stored category profiles remain only as a legacy fallback and palette-override source.
-- The remaining work is to continue removing category-profile-only model paths, collapse legacy role/category storage into topology slot metadata, and broaden resolver use in import/export/scaffold code.
+- `MKWorkspaceResolvedFamilySettings` now carries topology slot metadata and the effective vertical access spec, giving planners a single place to read resolved family dimensions, foundation, palette, role/category classification, and stack-local shaft settings.
+- Tower stack and walled keep room planning now use resolved topology slot metadata for planned piece roles, runtime categories, and jigsaw role hints instead of trusting the legacy family `category`/`pieceRole` fields when a topology slot can classify the piece.
+- Workspace template grouping and the family editor now present room families by topology slot first, with legacy category language reduced to compatibility-only or fallback screens.
+- The remaining work is to continue removing category-profile-only model paths, collapse the stored legacy role/category fields into topology slot metadata, and broaden resolver use in import/export/scaffold code.
 
 ### Phase 1: Model Reusable Tower Stack Slots
 
@@ -349,7 +352,7 @@ Family-level validation should focus on override legality:
 ### Phase 7: Resolver and Validation
 
 - Introduce resolved settings objects. Initial room-family resolver bridge is in place.
-- Update planners, scaffold generation, export, and validation to consume resolved settings. Room planners now consume resolved family settings; scaffold/export/validation still need to move over.
+- Update planners, scaffold generation, export, and validation to consume resolved settings. Room planners now consume resolved family settings for dimensions, foundations, palette, topology role/category metadata, and stack-local vertical access specs; scaffold/export/validation still need to move further over.
 - Split topology validation from family override validation.
 - Replace global category-band/floor validation with per-stack validation for topology-driven workspaces. Done for explicit tower stack settings.
 

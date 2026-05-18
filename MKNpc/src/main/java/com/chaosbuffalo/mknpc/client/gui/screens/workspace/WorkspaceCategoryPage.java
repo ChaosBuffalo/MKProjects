@@ -60,7 +60,7 @@ public class WorkspaceCategoryPage extends WorkspacePageBase {
 
         MKText summary = screen.makeWhiteText(Component.literal(stairCategory
                 ? "Manage variants and generate stairs into the shaft for an exact template or variant."
-                : "Manage variants for this template category."));
+                : "Manage variants for this template set."));
         summary.setWidth(screen.contentWidth());
         summary.setMultiline(true);
         root.addWidget(summary);

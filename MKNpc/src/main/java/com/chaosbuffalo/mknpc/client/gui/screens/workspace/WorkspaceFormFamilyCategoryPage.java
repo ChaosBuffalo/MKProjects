@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
@@ -34,7 +35,7 @@ public class WorkspaceFormFamilyCategoryPage extends WorkspacePageBase {
 
         addTitle(screen, root, Component.literal(formatTopologyLabel(selectedCategory.getSerializedName()) + " Families"));
         MKText helpText = addHeaderText(screen, root, Component.literal(
-                "Edit families for this category only. Families can override footprint and, when shaft access is disabled, choose their own height within the category band."));
+                "Edit legacy family groups. The topology-slot family page is the primary editor for new topology profiles."));
 
         int buttonAreaHeight = (2 * screen.buttonHeight()) + screen.buttonGap() + screen.bottomPadding();
         int scrollTop = screen.scrollTopAfterHeader(root, helpText);
@@ -52,6 +53,7 @@ public class WorkspaceFormFamilyCategoryPage extends WorkspacePageBase {
                 .toList();
         for (int index : familyIndexes) {
             MKTowerWorkspaceFamilyDefinition family = families.get(index);
+            MKWorkspaceTopologySlotMetadata slotMetadata = MKWorkspaceTopologySlotMetadata.fromFamily(family);
             MKText header = screen.makeWhiteText(Component.literal(family.baseName()));
             content.addWidget(header);
             content.addConstraintToWidget(MarginConstraint.LEFT, header);
@@ -60,7 +62,7 @@ public class WorkspaceFormFamilyCategoryPage extends WorkspacePageBase {
                             editor.resolvedFamilyRoomLength(family) + "x" +
                             editor.resolvedFamilyRoomHeight(family) +
                             (editor.familyHasTopologyStack(family) ? " stack" : "") + "  |  " +
-                            formatTopologyLabel(family.pieceRole().getSerializedName()) + "  |  exits " +
+                            formatTopologyLabel(slotMetadata.pieceRole().getSerializedName()) + "  |  exits " +
                             summarizeFamilyExits(family) + "  |  shaft " +
                             (family.supportsVerticalAccess() ? "yes" : "no")));
             summary.setWidth(screen.contentWidth());

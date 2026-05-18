@@ -72,7 +72,7 @@ public class WorkspaceManagePage extends WorkspacePageBase {
             content.addWidget(details);
             content.addConstraintToWidget(MarginConstraint.LEFT, details);
 
-            MKButton openCategory = new MKButton(Component.literal("Open Category"), 180, screen.buttonHeight());
+            MKButton openCategory = new MKButton(Component.literal("Open Templates"), 180, screen.buttonHeight());
             content.addWidget(openCategory);
             content.addConstraintToWidget(new CenterXConstraint(), openCategory);
             openCategory.setPressedCallback((button, mouseButton) -> {

@@ -11,6 +11,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPol
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.StackConstraint;
@@ -50,6 +51,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
 
         int index = editor.selectedFamilyIndex();
         MKTowerWorkspaceFamilyDefinition family = editor.draft().familyDefinitions.get(index);
+        MKWorkspaceTopologySlotMetadata slotMetadata = MKWorkspaceTopologySlotMetadata.fromFamily(family);
 
         MKLayout root = createPanel(screen);
         addTitle(screen, root, Component.literal("Family: " + family.baseName()));
@@ -113,9 +115,9 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         addFoundationBlockPickerRow(screen, content, index, family);
         addFoundationMaskRows(screen, content, index, family);
         addReadOnlyRow(screen, content, "Topology Category",
-                formatTopologyLabel(family.category().getSerializedName()));
+                formatTopologyLabel(slotMetadata.category().getSerializedName()));
         addReadOnlyRow(screen, content, "Topology Role",
-                formatTopologyLabel(family.pieceRole().getSerializedName()));
+                formatTopologyLabel(slotMetadata.pieceRole().getSerializedName()));
         addRow(screen, content, screen.makeWhiteText(Component.literal("Horizontal Extrusion")), extrusionModeButton);
         addGeometryRows(screen, content, editor, index, family);
         screen.addPaletteOverrideRows(content, "Palette Overrides", editor.resolveFamilyInheritedPalette(family),

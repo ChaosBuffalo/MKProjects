@@ -35,7 +35,8 @@ public final class WorkspacePieceDisplay {
         }
         String familyId = piece.tags().get("workspace_family_id");
         if (familyId != null) {
-            return "room:" + piece.tags().getOrDefault("workspace_category", "main") + ":" +
+            return "room:" + piece.tags().getOrDefault("workspace_topology_slot_id",
+                    piece.tags().getOrDefault("workspace_category", "main")) + ":" +
                     familyId + ":" + piece.tags().getOrDefault("workspace_horizontal_exits", "none");
         }
         return "role:" + piece.role().getSerializedName();
@@ -49,7 +50,8 @@ public final class WorkspacePieceDisplay {
         }
         String familyId = piece.tags().get("workspace_family_id");
         if (familyId != null) {
-            return formatTopologyLabel(piece.tags().getOrDefault("workspace_category", "main")) +
+            return formatTopologyLabel(piece.tags().getOrDefault("workspace_topology_slot_id",
+                    piece.tags().getOrDefault("workspace_category", "main"))) +
                     " / " + familyId +
                     " / exits " + piece.tags().getOrDefault("workspace_horizontal_exits", "none");
         }
@@ -83,7 +85,7 @@ public final class WorkspacePieceDisplay {
     }
 
     public static String formatTopologyLabel(String key) {
-        String[] parts = key.split("_");
+        String[] parts = key.split("[._]");
         StringBuilder builder = new StringBuilder();
         for (String part : parts) {
             if (builder.length() > 0) {
