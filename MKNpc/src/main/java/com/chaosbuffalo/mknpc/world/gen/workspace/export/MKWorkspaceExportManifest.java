@@ -467,9 +467,9 @@ public record MKWorkspaceExportManifest(
                 Codec.STRING.optionalFieldOf("topology_slot_id", "").forGetter(ExportFamilyDefinition::topologySlotId),
                 Codec.STRING.optionalFieldOf("vertical_access_group_id", "").forGetter(ExportFamilyDefinition::verticalAccessGroupId),
                 Codec.BOOL.fieldOf("supports_vertical_access").forGetter(ExportFamilyDefinition::supportsVerticalAccess),
-            Codec.INT.optionalFieldOf("room_width", 10).forGetter(ExportFamilyDefinition::roomWidth),
-            Codec.INT.optionalFieldOf("room_length", 10).forGetter(ExportFamilyDefinition::roomLength),
-            Codec.INT.optionalFieldOf("room_height", 5).forGetter(ExportFamilyDefinition::roomHeight),
+            Codec.INT.optionalFieldOf("room_width", 0).forGetter(ExportFamilyDefinition::roomWidth),
+            Codec.INT.optionalFieldOf("room_length", 0).forGetter(ExportFamilyDefinition::roomLength),
+            Codec.INT.optionalFieldOf("room_height", 0).forGetter(ExportFamilyDefinition::roomHeight),
             horizontalExtrusionModeCodec().optionalFieldOf("horizontal_extrusion_mode",
                             MKWorkspaceHorizontalExtrusionMode.FULL_BODY)
                     .forGetter(ExportFamilyDefinition::horizontalExtrusionMode),
