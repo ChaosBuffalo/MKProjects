@@ -298,6 +298,9 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
                 basementCapApproachButton);
 
         addTowerStackFoundationRows(screen, content, stackId);
+        screen.addPaletteOverrideRows(content, "Stack Palette Defaults", editor.draftBasePalette(),
+                editor.towerStackPaletteOverrideOpt(stackId),
+                override -> editor.towerStackPaletteOverride(stackId, override));
     }
 
     private void addTowerStackFoundationRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, String stackId) {

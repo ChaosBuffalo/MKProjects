@@ -200,7 +200,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
             addRow(screen, content, screen.makeWhiteText(Component.literal("Top Void Margin")), topVoidMarginSlider);
             addRow(screen, content, screen.makeWhiteText(Component.literal("Bottom Void Margin")), bottomVoidMarginSlider);
         }
-        screen.addPaletteOverrideRows(content, "Palette Overrides", editor.resolveCategoryPalette(family.category()),
+        screen.addPaletteOverrideRows(content, "Palette Overrides", editor.resolveFamilyInheritedPalette(family),
                 family.paletteOverrideOpt(),
                 override -> editor.replaceFamilyDefinition(index, editor.copyFamilyDefinition(family, override)));
 

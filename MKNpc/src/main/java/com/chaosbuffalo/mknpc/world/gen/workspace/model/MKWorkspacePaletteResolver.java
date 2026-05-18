@@ -14,9 +14,17 @@ public final class MKWorkspacePaletteResolver {
         MKWorkspaceMaterialPalette parent = family.paletteCategoryOpt()
                 .map(category -> resolveCategory(workspace, category))
                 .orElse(workspace.palette());
+        if (family instanceof MKTowerWorkspaceFamilyDefinition towerFamily) {
+            MKWorkspaceMaterialPalette categoryParent = parent;
+            parent = workspace.towerStackSettingsForFamily(towerFamily)
+                    .flatMap(MKWorkspaceTowerStackSettings::paletteOverrideOpt)
+                    .map(override -> override.resolve(categoryParent))
+                    .orElse(categoryParent);
+        }
+        MKWorkspaceMaterialPalette effectiveParent = parent;
         return family.paletteOverrideOpt()
-                .map(override -> override.resolve(parent))
-                .orElse(parent);
+                .map(override -> override.resolve(effectiveParent))
+                .orElse(effectiveParent);
     }
 
     public Optional<MKWorkspaceMaterialPalette> resolvePiece(MKStructureWorkspace workspace,

@@ -554,6 +554,14 @@ public class WorkspaceDraftSession {
         replaceTowerStackSettings(towerStackSettings(stackId).withFoundationPolicy(value));
     }
 
+    public Optional<MKWorkspacePaletteOverride> towerStackPaletteOverrideOpt(String stackId) {
+        return towerStackSettings(stackId).paletteOverrideOpt();
+    }
+
+    public void towerStackPaletteOverride(String stackId, Optional<MKWorkspacePaletteOverride> value) {
+        replaceTowerStackSettings(towerStackSettings(stackId).withPaletteOverride(value));
+    }
+
     public int nextAllowedTowerStackMainFloorCount(String stackId, boolean reverse) {
         MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId);
         List<Integer> allowed = allowedTowerStackMainFloorCounts(settings, settings.basementFloors());
@@ -915,6 +923,17 @@ public class WorkspaceDraftSession {
         return getCategoryProfile(category).paletteOverrideOpt()
                 .map(override -> override.resolve(basePalette))
                 .orElse(basePalette);
+    }
+
+    public MKWorkspaceMaterialPalette resolveFamilyInheritedPalette(MKTowerWorkspaceFamilyDefinition family) {
+        MKWorkspaceMaterialPalette categoryPalette = resolveCategoryPalette(family.category());
+        String stackId = stackIdForFamily(family);
+        if (stackId.isBlank()) {
+            return categoryPalette;
+        }
+        return towerStackSettings(stackId).paletteOverrideOpt()
+                .map(override -> override.resolve(categoryPalette))
+                .orElse(categoryPalette);
     }
 
     public MKStructureWorkspace buildWorkspaceDraft() {
