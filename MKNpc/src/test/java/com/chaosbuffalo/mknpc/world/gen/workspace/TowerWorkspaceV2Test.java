@@ -44,6 +44,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAcces
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerStackPlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import net.minecraft.core.BlockPos;
@@ -67,6 +68,28 @@ class TowerWorkspaceV2Test {
     @Test
     void defaultStairAuthoringUsesMixedRiseStrategy() {
         assertEquals(MKWorkspaceStairRiseType.MIXED, MKWorkspaceStairAuthoringConfig.defaultConfig().riseType());
+    }
+
+    @Test
+    void reusableTowerStackPlannerMatchesTowerRoomPieces() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                ),
+                List.of()
+        );
+
+        List<String> stackPieceNames = new MKTowerStackPlanner()
+                .createRoomPieces(workspace, workspace.familyDefinitions()).stream()
+                .map(MKPlannedPiece::pieceName)
+                .toList();
+        List<String> towerRoomPieceNames = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.role() != MKWorkspacePieceRole.HALLWAY)
+                .map(MKPlannedPiece::pieceName)
+                .toList();
+
+        assertEquals(towerRoomPieceNames, stackPieceNames);
     }
 
     @Test
