@@ -448,6 +448,39 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void resolvedFamilyMetadataComesFromTopologySlot() {
+        MKTowerWorkspaceFamilyDefinition mismatchedFamily = new MKTowerWorkspaceFamilyDefinition(
+                "custom_top",
+                MKTowerWorkspaceCategory.MAIN,
+                MKWorkspacePieceRole.FLOOR_MAIN,
+                "tower.primary.top_cap",
+                true,
+                0,
+                0,
+                0,
+                MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
+                List.of(MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(Direction.DOWN)),
+                0,
+                0,
+                null,
+                null
+        );
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(List.of(new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false)), List.of()),
+                MKWorkspaceTopologyProfile.tower(),
+                List.of(mismatchedFamily),
+                List.of()
+        );
+
+        assertEquals(MKTowerWorkspaceCategory.TOP_CAP,
+                workspace.resolveFamilySettings(mismatchedFamily).slotMetadata().category());
+        assertEquals(MKWorkspacePieceRole.TOP_CAP,
+                workspace.resolveFamilySettings(mismatchedFamily).slotMetadata().pieceRole());
+        assertEquals(MKWorkspacePieceRole.TOP_CAP,
+                new MKTowerStackPlanner().createPieceForFamily(workspace, mismatchedFamily).role());
+    }
+
+    @Test
     void walledKeepPlannerCreatesExplicitRoomAndLinearRunPieces() {
         MKWorkspaceFoundationPolicy wallFoundation = MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(List.of(
                 ResourceLocation.parse("minecraft:stone_bricks"),

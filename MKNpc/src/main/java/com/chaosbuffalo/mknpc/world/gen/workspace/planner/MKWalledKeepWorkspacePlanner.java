@@ -15,6 +15,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamilySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
@@ -306,7 +307,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
 
     private MKPlannedPiece createRoomPiece(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family,
                                            SlotAvailability slots) {
-        int shaftSize = workspace.verticalAccessSpec().shaftSize();
+        MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
+        int shaftSize = resolvedFamily.verticalAccessSpec().shaftSize();
         ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
         if (family.supportsVerticalAccess()) {
@@ -322,9 +324,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             }
         }
         connectors.addAll(roomLayoutConnectors(family.topologySlotId(), slots, opening));
-        MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
         return new MKPlannedPiece(
-                family.pieceRole(),
+                resolvedFamily.slotMetadata().pieceRole(),
                 family.baseName(),
                 resolvedFamily.roomWidth(),
                 resolvedFamily.roomLength(),
@@ -511,7 +512,6 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         tags.put("tower_piece_kind", "room");
         tags.put("workspace_piece_kind", "instance");
         tags.put("workspace_family_id", family.baseName());
-        tags.put("workspace_category", family.category().getSerializedName());
         tags.put("workspace_horizontal_exits", family.horizontalExitSummary());
         tags.put("workspace_horizontal_extrusion_mode", family.horizontalExtrusionMode().getSerializedName());
         workspace.topologyProfile().towerStackSettings(stackIdForFamily(family))
@@ -521,6 +521,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                     tags.put("workspace_tower_stack_basement_floors", Integer.toString(settings.basementFloors()));
                 });
         MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
+        tags.put("workspace_category", resolvedFamily.slotMetadata().category().getSerializedName());
         applyFoundationTags(resolvedFamily.foundationPolicy(), tags);
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, Boolean.toString(family.supportsVerticalAccess()));
         if (family.supportsVerticalAccess()) {
@@ -574,17 +575,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     }
 
     private MKWorkspaceRuntimePieceInfo runtimeInfoForRoom(MKTowerWorkspaceFamilyDefinition family) {
+        MKWorkspaceTopologySlotMetadata slotMetadata = MKWorkspaceTopologySlotMetadata.fromFamily(family);
         boolean start = family.topologySlotId().equals("keep.center.entry");
-        boolean terminal = family.topologySlotId().contains("top_cap") || family.topologySlotId().contains("basement_cap");
-        MKJigsawPieceRole role = switch (family.pieceRole()) {
-            case TOP_CAP -> MKJigsawPieceRole.TOP_CAP;
-            case TOP_CAP_APPROACH -> MKJigsawPieceRole.TOP_CAP_APPROACH;
-            case BASEMENT_CAP_APPROACH -> MKJigsawPieceRole.BASEMENT_CAP_APPROACH;
-            case BASEMENT_CAP -> MKJigsawPieceRole.TERMINAL;
-            default -> MKJigsawPieceRole.ROOM;
-        };
-        return new MKWorkspaceRuntimePieceInfo(start, role, 0, 0, true, true, terminal, false,
-                family.category().getSerializedName(), false, false);
+        return new MKWorkspaceRuntimePieceInfo(start, slotMetadata.jigsawPieceRole(), 0, 0, true, true,
+                slotMetadata.terminal(), false, slotMetadata.category().getSerializedName(), false, false);
     }
 
     private Optional<ResolvedOpeningProfile> resolveOpeningProfile(MKStructureWorkspace workspace, String profileId) {

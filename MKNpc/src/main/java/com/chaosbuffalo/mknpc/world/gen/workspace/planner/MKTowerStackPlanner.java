@@ -15,6 +15,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamilySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import net.minecraft.core.Direction;
 
@@ -58,7 +59,7 @@ public class MKTowerStackPlanner {
     }
 
     public boolean shouldCreateFamily(MKTowerStackDefinition stackDefinition, MKTowerWorkspaceFamilyDefinition family) {
-        return switch (family.pieceRole()) {
+        return switch (MKWorkspaceTopologySlotMetadata.fromFamily(family).pieceRole()) {
             case TOP_CAP_APPROACH -> stackDefinition.topCapApproachEnabled();
             case BASEMENT_CAP_APPROACH -> stackDefinition.basementCapApproachEnabled();
             default -> true;
@@ -82,9 +83,10 @@ public class MKTowerStackPlanner {
                 workspace.verticalAccessSpec().stairConfig() :
                 stackDefinition.stairConfig();
         MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
-        return switch (family.pieceRole()) {
+        MKWorkspaceTopologySlotMetadata slotMetadata = resolvedFamily.slotMetadata();
+        return switch (slotMetadata.pieceRole()) {
             case ENTRY -> new MKPlannedPiece(
-                    family.pieceRole(),
+                    slotMetadata.pieceRole(),
                     family.baseName(),
                     resolvedFamily.roomWidth(),
                     resolvedFamily.roomLength(),
@@ -104,7 +106,7 @@ public class MKTowerStackPlanner {
                             roomRuntimeInfo(stackDefinition.startPiece(), MKJigsawPieceRole.ROOM, 0, 0, false, false, family))
             );
             case FLOOR_MAIN -> new MKPlannedPiece(
-                    family.pieceRole(),
+                    slotMetadata.pieceRole(),
                     family.baseName(),
                     resolvedFamily.roomWidth(),
                     resolvedFamily.roomLength(),
@@ -124,7 +126,7 @@ public class MKTowerStackPlanner {
                             roomRuntimeInfo(false, MKJigsawPieceRole.ROOM, 1, 1, false, false, family))
             );
             case TOP_CAP_APPROACH -> new MKPlannedPiece(
-                    family.pieceRole(),
+                    slotMetadata.pieceRole(),
                     family.baseName(),
                     resolvedFamily.roomWidth(),
                     resolvedFamily.roomLength(),
@@ -144,7 +146,7 @@ public class MKTowerStackPlanner {
                             roomRuntimeInfo(false, MKJigsawPieceRole.TOP_CAP_APPROACH, 1, 1, false, true, family))
             );
             case TOP_CAP -> new MKPlannedPiece(
-                    family.pieceRole(),
+                    slotMetadata.pieceRole(),
                     family.baseName(),
                     resolvedFamily.roomWidth(),
                     resolvedFamily.roomLength(),
@@ -159,7 +161,7 @@ public class MKTowerStackPlanner {
                             topCapRuntimeInfo(stackDefinition, family))
             );
             case BASEMENT_ENTRY -> new MKPlannedPiece(
-                    family.pieceRole(),
+                    slotMetadata.pieceRole(),
                     family.baseName(),
                     resolvedFamily.roomWidth(),
                     resolvedFamily.roomLength(),
@@ -179,7 +181,7 @@ public class MKTowerStackPlanner {
                             roomRuntimeInfo(false, MKJigsawPieceRole.ROOM, 1, -1, false, false, family))
             );
             case BASEMENT_MAIN -> new MKPlannedPiece(
-                    family.pieceRole(),
+                    slotMetadata.pieceRole(),
                     family.baseName(),
                     resolvedFamily.roomWidth(),
                     resolvedFamily.roomLength(),
@@ -199,7 +201,7 @@ public class MKTowerStackPlanner {
                             roomRuntimeInfo(false, MKJigsawPieceRole.ROOM, 1, -1, false, false, family))
             );
             case BASEMENT_CAP_APPROACH -> new MKPlannedPiece(
-                    family.pieceRole(),
+                    slotMetadata.pieceRole(),
                     family.baseName(),
                     resolvedFamily.roomWidth(),
                     resolvedFamily.roomLength(),
@@ -219,7 +221,7 @@ public class MKTowerStackPlanner {
                             roomRuntimeInfo(false, MKJigsawPieceRole.BASEMENT_CAP_APPROACH, 1, -1, false, true, family))
             );
             case BASEMENT_CAP -> new MKPlannedPiece(
-                    family.pieceRole(),
+                    slotMetadata.pieceRole(),
                     family.baseName(),
                     resolvedFamily.roomWidth(),
                     resolvedFamily.roomLength(),
@@ -274,6 +276,7 @@ public class MKTowerStackPlanner {
     private List<MKPlannedConnector> connectorsWithHorizontalExits(List<MKPlannedConnector> baseConnectors,
                                                                    MKTowerWorkspaceFamilyDefinition family,
                                                                    MKStructureWorkspace workspace) {
+        MKWorkspaceTopologySlotMetadata slotMetadata = workspace.resolveFamilySettings(family).slotMetadata();
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>(baseConnectors.stream()
                 .filter(connector -> !connector.facing().getAxis().isVertical() ||
                         family.hasVerticalAccess(connector.facing()))
@@ -293,7 +296,7 @@ public class MKTowerStackPlanner {
             if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY) {
                 connectors.add(new MKPlannedConnector(role, exit.direction(),
                         opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset(),
-                        EMPTY_POOL, mainEndingPoolName(family.category())));
+                        EMPTY_POOL, mainEndingPoolName(slotMetadata.category())));
                 continue;
             }
             if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY) {
@@ -387,7 +390,7 @@ public class MKTowerStackPlanner {
                 branchOnlyHorizontalFamily,
                 terminal || branchCap,
                 topCapOnly,
-                family.category().getSerializedName(),
+                MKWorkspaceTopologySlotMetadata.fromFamily(family).category().getSerializedName(),
                 family.mainPathEnding(),
                 branchCap
         );
@@ -416,13 +419,13 @@ public class MKTowerStackPlanner {
         tags.put("workspace_family_id", family.baseName());
         tags.put("workspace_horizontal_exits", family.horizontalExitSummary());
         tags.put("workspace_horizontal_extrusion_mode", family.horizontalExtrusionMode().getSerializedName());
-        tags.put("workspace_category", family.category().getSerializedName());
+        MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
+        tags.put("workspace_category", resolvedFamily.slotMetadata().category().getSerializedName());
         if (!stackDefinition.stackId().isBlank()) {
             tags.put("workspace_tower_stack_id", stackDefinition.stackId());
             tags.put("workspace_tower_stack_main_floors", Integer.toString(stackDefinition.mainFloors()));
             tags.put("workspace_tower_stack_basement_floors", Integer.toString(stackDefinition.basementFloors()));
         }
-        MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
         applyVoidMarginTags(family, resolvedFamily, tags);
         applyFoundationTags(resolvedFamily.foundationPolicy(), tags);
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, Boolean.toString(family.supportsVerticalAccess()));

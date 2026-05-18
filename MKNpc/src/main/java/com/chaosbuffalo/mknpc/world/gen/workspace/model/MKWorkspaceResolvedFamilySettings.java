@@ -8,7 +8,9 @@ public record MKWorkspaceResolvedFamilySettings(
         int topVoidMargin,
         int bottomVoidMargin,
         MKWorkspaceFoundationPolicy foundationPolicy,
-        MKWorkspaceMaterialPalette palette
+        MKWorkspaceMaterialPalette palette,
+        MKWorkspaceTopologySlotMetadata slotMetadata,
+        MKWorkspaceVerticalAccessSpec verticalAccessSpec
 ) {
     public static MKWorkspaceResolvedFamilySettings from(MKStructureWorkspace workspace,
                                                          MKTowerWorkspaceFamilyDefinition familyDefinition) {
@@ -27,7 +29,11 @@ public record MKWorkspaceResolvedFamilySettings(
                 familyDefinition.topVoidMargin(),
                 familyDefinition.bottomVoidMargin(),
                 foundationPolicy,
-                palette
+                palette,
+                MKWorkspaceTopologySlotMetadata.fromFamily(familyDefinition),
+                stackSettings == null ? workspace.verticalAccessSpec() :
+                        new MKWorkspaceVerticalAccessSpec(stackSettings.shaftSize(),
+                                stackSettings.verticalAccessPlacement(), stackSettings.stairConfig())
         );
     }
 
