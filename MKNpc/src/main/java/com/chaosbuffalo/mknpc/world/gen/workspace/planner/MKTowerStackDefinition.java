@@ -1,11 +1,15 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
 
 public record MKTowerStackDefinition(
         String stackId,
         int mainFloors,
         int basementFloors,
+        int shaftSize,
+        MKVerticalAccessPlacement verticalAccessPlacement,
         boolean topCapApproachEnabled,
         boolean basementCapApproachEnabled,
         boolean startPiece,
@@ -25,6 +29,8 @@ public record MKTowerStackDefinition(
                 "",
                 floorSettings.mainFloors(),
                 floorSettings.basementFloors(),
+                0,
+                null,
                 floorSettings.topCapApproachEnabled(),
                 floorSettings.basementCapApproachEnabled(),
                 true,
@@ -39,11 +45,19 @@ public record MKTowerStackDefinition(
 
     public static MKTowerStackDefinition scoped(String stackId, MKTowerWorkspaceFloorSettings floorSettings,
                                                 boolean startPiece) {
+        return scoped(stackId, floorSettings, startPiece, null);
+    }
+
+    public static MKTowerStackDefinition scoped(String stackId, MKTowerWorkspaceFloorSettings floorSettings,
+                                                boolean startPiece,
+                                                MKWorkspaceTowerStackSettings stackSettings) {
         String prefix = "tower_stacks/" + stackId.replace('.', '/');
         return new MKTowerStackDefinition(
                 stackId,
                 floorSettings.mainFloors(),
                 floorSettings.basementFloors(),
+                stackSettings == null ? 0 : stackSettings.shaftSize(),
+                stackSettings == null ? null : stackSettings.verticalAccessPlacement(),
                 floorSettings.topCapApproachEnabled(),
                 floorSettings.basementCapApproachEnabled(),
                 startPiece,

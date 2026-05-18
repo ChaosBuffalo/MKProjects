@@ -295,7 +295,7 @@ class TowerWorkspaceV2Test {
     void walledKeepTopologyProfileRoundTripsThroughWorkspaceTags() {
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(true, false, true, false)
                 .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 2, 1, 9,
-                        19, 21, true, false));
+                        19, 21, 5, MKVerticalAccessPlacement.EAST, true, false));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false)), List.of()),
                 topologyProfile,
@@ -317,6 +317,8 @@ class TowerWorkspaceV2Test {
         assertEquals(19, centerSettings.width());
         assertEquals(21, centerSettings.length());
         assertEquals(9, centerSettings.height());
+        assertEquals(5, centerSettings.shaftSize());
+        assertEquals(MKVerticalAccessPlacement.EAST, centerSettings.verticalAccessPlacement());
     }
 
     @Test
@@ -525,7 +527,7 @@ class TowerWorkspaceV2Test {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
                 .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 1, 1, 7,
-                        false, true));
+                        17, 17, 5, MKVerticalAccessPlacement.EAST, false, true));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 withCategoryProfiles(baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                         MKTowerWorkspaceCategoryProfile.createWalledKeepDefaults(dimensions)),
@@ -536,6 +538,14 @@ class TowerWorkspaceV2Test {
 
         List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
 
+        MKPlannedPiece centerEntry = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_center_entry"))
+                .findFirst()
+                .orElseThrow();
+        assertEquals("east", centerEntry.tags().get(MKWorkspaceVerticalAccessTags.PLACEMENT_TAG));
+        assertTrue(centerEntry.connectors().stream()
+                .filter(connector -> connector.role() == MKConnectorRole.CONNECT_UP)
+                .anyMatch(connector -> connector.openingWidth() == 5 && connector.openingHeight() == 5));
         assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_top_cap_approach")));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_basement_cap_approach")));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_shared_top_cap_approach")));

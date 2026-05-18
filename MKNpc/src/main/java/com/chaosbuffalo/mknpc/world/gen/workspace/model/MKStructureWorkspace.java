@@ -281,7 +281,8 @@ public class MKStructureWorkspace {
                         familyDefinition.category().getSerializedName());
                 continue;
             }
-            errors.addAll(familyDefinition.validate(familyDefinitions, familyCategory.get(), verticalAccessSpec));
+            errors.addAll(familyDefinition.validate(familyDefinitions, familyCategory.get(),
+                    verticalAccessSpecForFamily(familyDefinition)));
         }
         java.util.Set<String> openingProfileIds = new java.util.LinkedHashSet<>();
         java.util.Map<String, MKHorizontalOpeningProfile> openingProfileById = new java.util.LinkedHashMap<>();
@@ -451,6 +452,19 @@ public class MKStructureWorkspace {
                 profile.maxBranchPiecesBeforeCap(),
                 profile.paletteOverride()
         ));
+    }
+
+    private MKWorkspaceVerticalAccessSpec verticalAccessSpecForFamily(MKTowerWorkspaceFamilyDefinition familyDefinition) {
+        String stackId = towerStackIdForFamily(familyDefinition.topologySlotId());
+        if (stackId.isBlank()) {
+            return verticalAccessSpec;
+        }
+        MKWorkspaceTowerStackSettings settings = topologyProfile.towerStackSettingsOrDefault(stackId);
+        return new MKWorkspaceVerticalAccessSpec(
+                settings.shaftSize(),
+                settings.verticalAccessPlacement(),
+                verticalAccessSpec.stairConfig()
+        );
     }
 
     private String towerStackIdForFamily(String topologySlotId) {

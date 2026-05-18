@@ -219,8 +219,9 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 .filter(family -> isActiveKeepSlot(workspace, family.topologySlotId()))
                 .filter(family -> isCenterStackSlot(family.topologySlotId()))
                 .toList();
+        MKWorkspaceTowerStackSettings settings = workspace.topologyProfile().towerStackSettingsOrDefault("keep.center");
         MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped("keep.center",
-                floorSettingsForStack(workspace, "keep.center"), true);
+                floorSettingsForStack(settings), true, settings);
         ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
         return towerStackPlanner.createRoomPieces(workspace, stackDefinition, centerFamilies).stream()
                 .map(piece -> withRoomLayoutConnectors(piece, slots, opening))
@@ -233,8 +234,9 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             List<MKTowerWorkspaceFamilyDefinition> stackFamilies = workspace.familyDefinitions().stream()
                     .filter(family -> family.topologySlotId().startsWith(stackId + "."))
                     .toList();
+            MKWorkspaceTowerStackSettings settings = workspace.topologyProfile().towerStackSettingsOrDefault(stackId);
             MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped(stackId,
-                    floorSettingsForStack(workspace, stackId), false);
+                    floorSettingsForStack(settings), false, settings);
             ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
             towerStackPlanner.createRoomPieces(workspace, stackDefinition, stackFamilies).stream()
                     .map(piece -> withRoomLayoutConnectors(piece, slots, opening))
@@ -254,8 +256,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         return List.copyOf(stackIds);
     }
 
-    private MKTowerWorkspaceFloorSettings floorSettingsForStack(MKStructureWorkspace workspace, String stackId) {
-        MKWorkspaceTowerStackSettings settings = workspace.topologyProfile().towerStackSettingsOrDefault(stackId);
+    private MKTowerWorkspaceFloorSettings floorSettingsForStack(MKWorkspaceTowerStackSettings settings) {
         return new MKTowerWorkspaceFloorSettings(
                 settings.mainFloors(),
                 settings.basementFloors(),

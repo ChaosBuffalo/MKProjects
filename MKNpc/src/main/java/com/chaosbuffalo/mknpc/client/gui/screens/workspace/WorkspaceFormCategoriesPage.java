@@ -342,6 +342,23 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
         });
         addRow(screen, content, screen.makeWhiteText(Component.literal("Basement Floors")), basementFloorsButton);
 
+        MKIntegerSlider shaftSizeSlider = new MKIntegerSlider("Shaft", 180, 20,
+                editor.allowedTowerStackShaftSizes(stackId), editor.towerStackShaftSize(stackId), value -> {
+            editor.towerStackShaftSize(stackId, value);
+            screen.flagNeedSetup();
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Shaft Size")), shaftSizeSlider);
+
+        MKButton stairPlacementButton = new MKButton(
+                getStairPlacementComponent(editor.towerStackVerticalAccessPlacement(stackId)), 180, 20);
+        stairPlacementButton.setPressedCallback((button, mouseButton) -> {
+            editor.towerStackVerticalAccessPlacement(stackId, cycleValue(List.of(MKVerticalAccessPlacement.values()),
+                    editor.towerStackVerticalAccessPlacement(stackId), isReverseClick(mouseButton)));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Stair Placement")), stairPlacementButton);
+
         MKButton topCapApproachButton = new MKButton(
                 Component.literal(enabledLabel(editor.towerStackTopCapApproachEnabled(stackId))), 180, 20);
         topCapApproachButton.setPressedCallback((button, mouseButton) -> {

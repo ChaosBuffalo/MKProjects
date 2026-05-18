@@ -72,8 +72,12 @@ public class MKTowerStackPlanner {
     public MKPlannedPiece createPieceForFamily(MKStructureWorkspace workspace,
                                                MKTowerStackDefinition stackDefinition,
                                                MKTowerWorkspaceFamilyDefinition family) {
-        String stairPlacement = workspace.verticalAccessSpec().placement().getSerializedName();
-        int hallWidth = workspace.verticalAccessSpec().shaftSize();
+        String stairPlacement = stackDefinition.verticalAccessPlacement() == null ?
+                workspace.verticalAccessSpec().placement().getSerializedName() :
+                stackDefinition.verticalAccessPlacement().getSerializedName();
+        int hallWidth = stackDefinition.shaftSize() > 0 ?
+                stackDefinition.shaftSize() :
+                workspace.verticalAccessSpec().shaftSize();
         return switch (family.pieceRole()) {
             case ENTRY -> new MKPlannedPiece(
                     family.pieceRole(),

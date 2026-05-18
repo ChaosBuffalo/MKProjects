@@ -432,6 +432,27 @@ public class WorkspaceDraftSession {
         replaceTowerStackSettings(settings.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
 
+    public int towerStackShaftSize(String stackId) {
+        return towerStackSettings(stackId).shaftSize();
+    }
+
+    public void towerStackShaftSize(String stackId, int value) {
+        replaceTowerStackSettings(towerStackSettings(stackId).withShaftSize(value));
+    }
+
+    public List<Integer> allowedTowerStackShaftSizes(String stackId) {
+        MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId);
+        return MKWorkspaceDimensions.getAllowedShaftSizes(settings.width(), settings.length());
+    }
+
+    public MKVerticalAccessPlacement towerStackVerticalAccessPlacement(String stackId) {
+        return towerStackSettings(stackId).verticalAccessPlacement();
+    }
+
+    public void towerStackVerticalAccessPlacement(String stackId, MKVerticalAccessPlacement value) {
+        replaceTowerStackSettings(towerStackSettings(stackId).withVerticalAccessPlacement(value));
+    }
+
     public int nextAllowedTowerStackMainFloorCount(String stackId, boolean reverse) {
         MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId);
         List<Integer> allowed = allowedTowerStackMainFloorCounts(settings, settings.basementFloors());
