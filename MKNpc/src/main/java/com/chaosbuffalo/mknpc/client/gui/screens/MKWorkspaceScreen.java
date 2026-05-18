@@ -740,14 +740,14 @@ public class MKWorkspaceScreen extends MKScreen {
         });
     }
 
-    private Component blockDisplayName(ResourceLocation blockId) {
+    public Component blockDisplayName(ResourceLocation blockId) {
         return BuiltInRegistries.BLOCK.getOptional(blockId)
                 .map(block -> block.getName())
                 .orElse(Component.literal(shortBlockId(blockId)));
     }
 
-    private void openBlockPicker(String title, ResourceLocation currentValue, Consumer<ResourceLocation> setter,
-                                 boolean allowClear) {
+    public void openBlockPicker(String title, ResourceLocation currentValue, Consumer<ResourceLocation> setter,
+                                boolean allowClear) {
         if (blockPickerModal != null) {
             closeBlockPicker();
         }

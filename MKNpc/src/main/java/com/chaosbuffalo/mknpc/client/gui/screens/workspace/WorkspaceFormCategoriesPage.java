@@ -19,8 +19,10 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
     public static final String ID = "form_categories";
@@ -390,6 +392,13 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
         });
         addRow(screen, content, screen.makeWhiteText(Component.literal("Stair Width")), stairWidthButton);
 
+        addTowerStackBlockRow(screen, content, "Stair Block", editor.towerStackStairBlock(stackId),
+                value -> editor.towerStackStairBlock(stackId, value));
+        addTowerStackBlockRow(screen, content, "Slab Block", editor.towerStackSlabBlock(stackId),
+                value -> editor.towerStackSlabBlock(stackId, value));
+        addTowerStackBlockRow(screen, content, "Ladder Block", editor.towerStackLadderBlock(stackId),
+                value -> editor.towerStackLadderBlock(stackId, value));
+
         MKButton topCapApproachButton = new MKButton(
                 Component.literal(enabledLabel(editor.towerStackTopCapApproachEnabled(stackId))), 180, 20);
         topCapApproachButton.setPressedCallback((button, mouseButton) -> {
@@ -409,6 +418,21 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
         });
         addRow(screen, content, screen.makeWhiteText(Component.literal("Basement Cap Approach")),
                 basementCapApproachButton);
+    }
+
+    private void addTowerStackBlockRow(MKWorkspaceScreen screen, MKStackLayoutVertical content, String label,
+                                       ResourceLocation blockId,
+                                       Consumer<ResourceLocation> setter) {
+        MKButton blockButton = new MKButton(screen.blockDisplayName(blockId), 180, 20);
+        blockButton.setTooltip(Component.literal(blockId.toString()));
+        blockButton.setPressedCallback((button, mouseButton) -> {
+            screen.openBlockPicker("Choose " + label, blockId, value -> {
+                setter.accept(value);
+                screen.flagNeedSetup();
+            }, false);
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal(label)), blockButton);
     }
 
     private void addCornerModeRow(MKWorkspaceScreen screen, MKStackLayoutVertical content, String label,

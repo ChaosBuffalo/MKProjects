@@ -183,7 +183,7 @@ For the standalone tower, this page should expose:
 - tower stack dimensions
 - floor counts
 - cap approach toggles
-- vertical access settings
+- vertical access settings, including stair mode/rise/width and stair/slab/ladder block pickers
 - palette defaults
 - foundation defaults
 - eligible cap void margins
@@ -193,6 +193,7 @@ For the walled keep, this page should expose:
 - center tower stack settings
 - shared/unique corner mode per corner
 - each active corner stack's settings
+- per-stack stair mode/rise/width and stair/slab/ladder block pickers
 - wall/perimeter run settings
 - walkway/run settings
 - gate settings
