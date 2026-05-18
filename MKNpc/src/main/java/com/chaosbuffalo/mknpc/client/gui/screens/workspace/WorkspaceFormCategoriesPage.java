@@ -38,10 +38,10 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
         WorkspaceDraftSession.Draft draft = editor.draft();
 
         MKLayout root = createPanel(screen);
-        addTitle(screen, root, Component.literal("Category Profiles"));
         if (!MKWorkspaceTopologyProfile.TOWER_PROFILE_TYPE.equals(editor.topologyProfileType())) {
+            addTitle(screen, root, Component.literal("Topology Defaults"));
             MKText helpText = addHeaderText(screen, root, Component.literal(
-                    "Category profiles are tower-specific compatibility settings. This topology is configured through explicit family topology slots and linear-run families."));
+                    "Set the broad sizing and stack defaults for this topology before editing individual room and linear-run families."));
             MKScrollView scrollView = addScrollBelowHeader(screen, root, helpText);
             MKStackLayoutVertical content = createContentStack(screen);
             MKText topologyText = screen.makeWhiteText(Component.literal(
@@ -51,17 +51,70 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
             content.addWidget(topologyText);
             content.addConstraintToWidget(MarginConstraint.LEFT, topologyText);
 
-            MKText nextSteps = screen.makeWhiteText(Component.literal(
-                    "Use Branch Variants for room/corner/gate slots and Linear Run Families for walls, parapets, and walkways."));
-            nextSteps.setWidth(screen.contentWidth());
-            nextSteps.setMultiline(true);
-            content.addWidget(nextSteps);
-            content.addConstraintToWidget(MarginConstraint.LEFT, nextSteps);
+            MKButton uniqueCornerButton = new MKButton(Component.literal(editor.uniqueCornerTowers() ? "Unique" : "Shared"),
+                    180, 20);
+            uniqueCornerButton.setPressedCallback((button, mouseButton) -> {
+                editor.uniqueCornerTowers(!editor.uniqueCornerTowers());
+                screen.flagNeedSetup();
+                return true;
+            });
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Corner Towers")), uniqueCornerButton);
+
+            MKIntegerSlider centerWidthSlider = new MKIntegerSlider("Width", 180, 20, 3, 45, 2,
+                    editor.walledKeepCenterWidth(), value -> {
+                editor.walledKeepCenterWidth(value);
+                screen.flagNeedSetup();
+            });
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Center Width")), centerWidthSlider);
+
+            MKIntegerSlider centerLengthSlider = new MKIntegerSlider("Length", 180, 20, 3, 45, 2,
+                    editor.walledKeepCenterLength(), value -> {
+                editor.walledKeepCenterLength(value);
+                screen.flagNeedSetup();
+            });
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Center Length")), centerLengthSlider);
+
+            MKTowerWorkspaceCategoryProfile mainProfile = editor.getCategoryProfile(MKTowerWorkspaceCategory.MAIN);
+            MKIntegerSlider heightSlider = new MKIntegerSlider("Height", 180, 20,
+                    editor.allowedFullHeightsForCategory(MKTowerWorkspaceCategory.MAIN), mainProfile.fullHeight(),
+                    value -> {
+                        editor.topologyDefaultHeight(value);
+                        screen.flagNeedSetup();
+                    });
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Default Height")), heightSlider);
+
+            MKButton mainFloorsButton = new MKButton(Component.literal(Integer.toString(draft.mainFloors)), 180, 20);
+            mainFloorsButton.setPressedCallback((button, mouseButton) -> {
+                draft.mainFloors = editor.nextAllowedMainFloorCount(draft.mainFloors, draft.basementFloors,
+                        isReverseClick(mouseButton));
+                draft.basementFloors = editor.normalizeBasementFloorCount(draft.basementFloors, draft.mainFloors);
+                screen.flagNeedSetup();
+                return true;
+            });
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Main Floors")), mainFloorsButton);
+
+            MKButton basementFloorsButton = new MKButton(Component.literal(Integer.toString(draft.basementFloors)), 180, 20);
+            basementFloorsButton.setPressedCallback((button, mouseButton) -> {
+                draft.basementFloors = editor.nextAllowedBasementFloorCount(draft.basementFloors, draft.mainFloors,
+                        isReverseClick(mouseButton));
+                draft.mainFloors = editor.normalizeMainFloorCount(draft.mainFloors, draft.basementFloors);
+                screen.flagNeedSetup();
+                return true;
+            });
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Basement Floors")), basementFloorsButton);
+
+            MKText perimeterText = screen.makeWhiteText(Component.literal(
+                    "Perimeter sides use one linear-run slot each. Choose wall or parapet by assigning one family to each keep.perimeter slot."));
+            perimeterText.setWidth(screen.contentWidth());
+            perimeterText.setMultiline(true);
+            content.addWidget(perimeterText);
+            content.addConstraintToWidget(MarginConstraint.LEFT, perimeterText);
 
             finishScrollContent(screen, scrollView, content);
             addBackButton(screen, root, WorkspaceFormPage.ID);
             return root;
         }
+        addTitle(screen, root, Component.literal("Category Profiles"));
         MKText helpText = addHeaderText(screen, root, Component.literal(
                 "Edit vertical access settings and the shaft-driven category bands in one place. Stair shape, shaft size, and stair width determine which full heights are valid for each category."));
 

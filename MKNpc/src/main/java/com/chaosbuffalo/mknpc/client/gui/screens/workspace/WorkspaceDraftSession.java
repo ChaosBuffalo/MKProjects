@@ -105,6 +105,7 @@ public class WorkspaceDraftSession {
         if (selectedFamilyCategory == null) {
             selectedFamilyCategory = MKTowerWorkspaceCategory.ENTRY;
         }
+        seedDefaultsForTopology();
         snapDraftVerticalAccess();
     }
 
@@ -201,6 +202,56 @@ public class WorkspaceDraftSession {
     public void uniqueCornerTowers(boolean value) {
         draft().topologyProfile = MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(draft().topologyProfile.profileType()) ?
                 MKWorkspaceTopologyProfile.walledKeep(value) : MKWorkspaceTopologyProfile.tower();
+    }
+
+    public int walledKeepCenterWidth() {
+        return draft().familyDefinitions.stream()
+                .filter(family -> family.topologySlotId().startsWith("keep.center."))
+                .findFirst()
+                .map(MKTowerWorkspaceFamilyDefinition::roomWidth)
+                .orElseGet(() -> getCategoryProfile(MKTowerWorkspaceCategory.MAIN).roomWidth());
+    }
+
+    public void walledKeepCenterWidth(int value) {
+        replaceWalledKeepCenterGeometry(makeOdd(Math.max(3, value)), null);
+    }
+
+    public int walledKeepCenterLength() {
+        return draft().familyDefinitions.stream()
+                .filter(family -> family.topologySlotId().startsWith("keep.center."))
+                .findFirst()
+                .map(MKTowerWorkspaceFamilyDefinition::roomLength)
+                .orElseGet(() -> getCategoryProfile(MKTowerWorkspaceCategory.MAIN).roomLength());
+    }
+
+    public void walledKeepCenterLength(int value) {
+        replaceWalledKeepCenterGeometry(null, makeOdd(Math.max(3, value)));
+    }
+
+    public void topologyDefaultHeight(int value) {
+        int requestedHeight = Math.max(3, value);
+        draft().categoryProfiles = draft().categoryProfiles.stream()
+                .map(profile -> new MKTowerWorkspaceCategoryProfile(
+                        profile.category(),
+                        profile.roomWidth(),
+                        profile.roomLength(),
+                        requestedHeight,
+                        profile.minMainPathPieces(),
+                        profile.maxMainPathPieces(),
+                        profile.maxBranchPiecesBeforeCap(),
+                        profile.paletteOverride()))
+                .toList();
+        draft().familyDefinitions = draft().familyDefinitions.stream()
+                .map(family -> family.topologySlotId().startsWith("keep.") ?
+                        copyFamilyWithGeometry(family, family.roomWidth(), family.roomLength(), requestedHeight) :
+                        family)
+                .toList();
+        draft().linearRunFamilies = draft().linearRunFamilies.stream()
+                .map(linearRun -> linearRun.topologySlotId().startsWith("keep.") ?
+                        copyLinearRunWithTopologyAndHeight(linearRun, linearRun.topologySlotId(), requestedHeight) :
+                        linearRun)
+                .toList();
+        snapDraftVerticalAccess();
     }
 
     public ResourceLocation floorBlock() {
@@ -1073,6 +1124,7 @@ public class WorkspaceDraftSession {
     private void seedDefaultsForTopology() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         if (MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(draft().topologyProfile.profileType())) {
+            migrateWalledKeepPerimeterLinearRuns();
             boolean hasKeepFamilies = draft().familyDefinitions.stream()
                     .anyMatch(family -> family.topologySlotId().startsWith("keep."));
             if (!hasKeepFamilies) {
@@ -1097,6 +1149,108 @@ public class WorkspaceDraftSession {
         if (!hasTowerLinearRuns) {
             draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.createDefaults(dimensions, draft().palette);
         }
+    }
+
+    private void migrateWalledKeepPerimeterLinearRuns() {
+        java.util.LinkedHashMap<String, MKWorkspaceLinearRunFamilyDefinition> convertedByPerimeterSlot =
+                new java.util.LinkedHashMap<>();
+        java.util.ArrayList<MKWorkspaceLinearRunFamilyDefinition> current = new java.util.ArrayList<>();
+        java.util.HashSet<String> existingPerimeterSlots = new java.util.HashSet<>();
+        for (MKWorkspaceLinearRunFamilyDefinition linearRun : draft().linearRunFamilies) {
+            String perimeterSlot = legacyPerimeterSlot(linearRun.topologySlotId());
+            if (perimeterSlot == null) {
+                current.add(linearRun);
+                if (linearRun.topologySlotId().startsWith("keep.perimeter.")) {
+                    existingPerimeterSlots.add(linearRun.topologySlotId());
+                }
+                continue;
+            }
+            MKWorkspaceLinearRunFamilyDefinition converted =
+                    copyLinearRunWithTopologyAndHeight(linearRun, perimeterSlot, linearRun.interiorHeight());
+            convertedByPerimeterSlot.merge(perimeterSlot, converted, this::preferPerimeterLinearRun);
+        }
+        for (Map.Entry<String, MKWorkspaceLinearRunFamilyDefinition> entry : convertedByPerimeterSlot.entrySet()) {
+            if (!existingPerimeterSlots.contains(entry.getKey())) {
+                current.add(entry.getValue());
+                existingPerimeterSlots.add(entry.getKey());
+            }
+        }
+        draft().linearRunFamilies = List.copyOf(current);
+    }
+
+    private MKWorkspaceLinearRunFamilyDefinition preferPerimeterLinearRun(MKWorkspaceLinearRunFamilyDefinition existing,
+                                                                          MKWorkspaceLinearRunFamilyDefinition candidate) {
+        if (existing.kind() == MKWorkspaceLinearRunKind.SOLID_WALL) {
+            return existing;
+        }
+        if (candidate.kind() == MKWorkspaceLinearRunKind.SOLID_WALL) {
+            return candidate;
+        }
+        return existing;
+    }
+
+    private String legacyPerimeterSlot(String topologySlotId) {
+        if (topologySlotId.startsWith("keep.wall.")) {
+            return "keep.perimeter." + topologySlotId.substring("keep.wall.".length());
+        }
+        if (topologySlotId.startsWith("keep.parapet.")) {
+            return "keep.perimeter." + topologySlotId.substring("keep.parapet.".length());
+        }
+        return null;
+    }
+
+    private void replaceWalledKeepCenterGeometry(Integer width, Integer length) {
+        draft().familyDefinitions = draft().familyDefinitions.stream()
+                .map(family -> family.topologySlotId().startsWith("keep.center.") ?
+                        copyFamilyWithGeometry(
+                                family,
+                                width == null ? family.roomWidth() : width,
+                                length == null ? family.roomLength() : length,
+                                family.roomHeight()) :
+                        family)
+                .toList();
+        snapDraftVerticalAccess();
+    }
+
+    private MKTowerWorkspaceFamilyDefinition copyFamilyWithGeometry(MKTowerWorkspaceFamilyDefinition family,
+                                                                    int roomWidth, int roomLength, int roomHeight) {
+        return new MKTowerWorkspaceFamilyDefinition(
+                family.baseName(),
+                family.category(),
+                family.pieceRole(),
+                family.topologySlotId(),
+                family.verticalAccessGroupId(),
+                family.supportsVerticalAccess(),
+                roomWidth,
+                roomLength,
+                roomHeight,
+                family.horizontalExtrusionMode(),
+                family.horizontalExits(),
+                family.topVoidMargin(),
+                family.bottomVoidMargin(),
+                family.foundationPolicy(),
+                family.paletteOverride()
+        );
+    }
+
+    private MKWorkspaceLinearRunFamilyDefinition copyLinearRunWithTopologyAndHeight(
+            MKWorkspaceLinearRunFamilyDefinition linearRun, String topologySlotId, int interiorHeight) {
+        return new MKWorkspaceLinearRunFamilyDefinition(
+                linearRun.linearRunId(),
+                topologySlotId,
+                linearRun.kind(),
+                linearRun.openingProfileId(),
+                linearRun.length(),
+                linearRun.interiorWidth(),
+                interiorHeight,
+                linearRun.slopeDelta(),
+                linearRun.allowOnMainPath(),
+                linearRun.allowOnBranchPath(),
+                linearRun.projection(),
+                linearRun.supportedShapes(),
+                linearRun.foundationPolicy(),
+                linearRun.paletteOverride()
+        );
     }
 
     public int clampSideOffset(MKTowerWorkspaceFamilyDefinition family, Direction direction, String openingProfileId,

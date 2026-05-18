@@ -600,6 +600,70 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void walledKeepPlannerIgnoresLegacySeparateWallAndParapetSlots() {
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(false),
+                List.of(new MKTowerWorkspaceFamilyDefinition(
+                        "keep_center_entry",
+                        MKTowerWorkspaceCategory.ENTRY,
+                        MKWorkspacePieceRole.ENTRY,
+                        "keep.center.entry",
+                        "keep.center",
+                        true,
+                        9,
+                        9,
+                        7,
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                        List.of(),
+                        0,
+                        0,
+                        MKWorkspaceFoundationPolicy.none(),
+                        null
+                )),
+                List.of(
+                        new MKWorkspaceLinearRunFamilyDefinition(
+                                "keep_wall_north",
+                                "keep.wall.north",
+                                MKWorkspaceLinearRunKind.SOLID_WALL,
+                                "wall_opening",
+                                11,
+                                3,
+                                7,
+                                0,
+                                false,
+                                true,
+                                MKWorkspaceLinearRunProjection.RIGID,
+                                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                                MKWorkspaceFoundationPolicy.none(),
+                                null
+                        ),
+                        new MKWorkspaceLinearRunFamilyDefinition(
+                                "keep_parapet_north",
+                                "keep.parapet.north",
+                                MKWorkspaceLinearRunKind.PARAPET,
+                                "wall_opening",
+                                11,
+                                3,
+                                7,
+                                0,
+                                false,
+                                true,
+                                MKWorkspaceLinearRunProjection.RIGID,
+                                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                                MKWorkspaceFoundationPolicy.none(),
+                                null
+                        )
+                )
+        );
+
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+
+        assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_wall_north")));
+        assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_parapet_north")));
+    }
+
+    @Test
     void plannerMapsMainEntryAndMainExitToDistinctConnectorRoles() {
         MKStructureWorkspace workspace = baseWorkspace(
                 List.of(

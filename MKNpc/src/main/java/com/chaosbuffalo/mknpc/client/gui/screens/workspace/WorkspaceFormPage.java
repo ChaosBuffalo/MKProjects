@@ -30,7 +30,7 @@ public class WorkspaceFormPage extends WorkspacePageBase {
                 "Materials", "form_materials");
         addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 2),
                 MKWorkspaceTopologyProfile.TOWER_PROFILE_TYPE.equals(screen.draftSession().topologyProfileType()) ?
-                        "Category Profiles" : "Topology Notes", "form_categories");
+                        "Category Profiles" : "Topology Defaults", "form_categories");
         addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 3),
                 "Branch Variants", "form_families");
         addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 4),

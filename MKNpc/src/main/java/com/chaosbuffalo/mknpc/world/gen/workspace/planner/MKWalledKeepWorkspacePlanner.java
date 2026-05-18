@@ -34,6 +34,27 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             "keep.corner.south_east",
             "keep.corner.south_west"
     );
+    private static final Set<String> KNOWN_KEEP_SLOTS = Set.of(
+            "keep.center.entry",
+            "keep.center.main_floor",
+            "keep.center.top_cap",
+            "keep.center.basement_floor",
+            "keep.center.basement_cap",
+            "keep.corner.shared",
+            "keep.corner.north_west",
+            "keep.corner.north_east",
+            "keep.corner.south_east",
+            "keep.corner.south_west",
+            "keep.perimeter.north",
+            "keep.perimeter.east",
+            "keep.perimeter.south",
+            "keep.perimeter.west",
+            "keep.walkway.north",
+            "keep.walkway.east",
+            "keep.walkway.south",
+            "keep.walkway.west",
+            "keep.gate.main"
+    );
     private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
 
     private record ResolvedOpeningProfile(String profileId, int openingWidth, int openingHeight) {
@@ -114,11 +135,11 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
         SlotAvailability slots = collectAvailableSlots(workspace);
         workspace.familyDefinitions().stream()
-                .filter(family -> family.topologySlotId().startsWith("keep."))
+                .filter(family -> isKnownKeepSlot(family.topologySlotId()))
                 .map(family -> createRoomPiece(workspace, family, slots))
                 .forEach(pieces::add);
         workspace.linearRunFamilies().stream()
-                .filter(linearRun -> linearRun.topologySlotId().startsWith("keep."))
+                .filter(linearRun -> isKnownKeepSlot(linearRun.topologySlotId()))
                 .flatMap(linearRun -> createLinearRunPieces(workspace, linearRun, slots.availableSlots()).stream())
                 .forEach(pieces::add);
         return List.copyOf(pieces);
@@ -128,11 +149,11 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         LinkedHashSet<String> slots = new LinkedHashSet<>();
         workspace.familyDefinitions().stream()
                 .map(MKTowerWorkspaceFamilyDefinition::topologySlotId)
-                .filter(slot -> slot.startsWith("keep."))
+                .filter(MKWalledKeepWorkspacePlanner::isKnownKeepSlot)
                 .forEach(slots::add);
         workspace.linearRunFamilies().stream()
                 .map(MKWorkspaceLinearRunFamilyDefinition::topologySlotId)
-                .filter(slot -> slot.startsWith("keep."))
+                .filter(MKWalledKeepWorkspacePlanner::isKnownKeepSlot)
                 .forEach(slots::add);
         LinkedHashSet<String> sharedCornerSlots = new LinkedHashSet<>();
         if (slots.contains("keep.corner.shared")) {
@@ -438,6 +459,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
 
     private String poolOrEmpty(String topologySlotId, Set<String> availableSlots) {
         return availableSlots.contains(topologySlotId) ? slotPool(topologySlotId) : EMPTY_POOL;
+    }
+
+    private static boolean isKnownKeepSlot(String topologySlotId) {
+        return KNOWN_KEEP_SLOTS.contains(topologySlotId);
     }
 
     private DirectionPair directionsForSlot(String topologySlotId) {
