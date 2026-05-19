@@ -910,8 +910,6 @@ public class WorkspaceDraftSession {
                 draft().exteriorAirMargin,
                 draft().previewMargin,
                 verticalAccessSpec,
-                new MKTowerWorkspaceFloorSettings(draft().mainFloors, draft().basementFloors,
-                        draft().topCapApproachEnabled, draft().basementCapApproachEnabled),
                 draft().familyDefinitions,
                 draft().openingProfiles,
                 draft().linearRunFamilies,
@@ -1204,7 +1202,6 @@ public class WorkspaceDraftSession {
                 exteriorAirMargin,
                 previewMargin,
                 alignVerticalAccessMaterials(workspace.verticalAccessSpec(), palette),
-                workspace.floorSettings(),
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
                 workspace.linearRunFamilies(),
@@ -1230,7 +1227,6 @@ public class WorkspaceDraftSession {
                 source.exteriorAirMargin(),
                 source.previewMargin(),
                 alignVerticalAccessMaterials(source.verticalAccessSpec(), materialSource.palette()),
-                source.floorSettings(),
                 source.familyDefinitions().stream()
                         .map(family -> materialSource.familyDefinitions().stream()
                                 .filter(requested -> requested.baseName().equals(family.baseName()))

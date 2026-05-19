@@ -222,7 +222,6 @@ class MKWorkspacePaletteResolverTest {
                 2,
                 4,
                 MKWorkspaceVerticalAccessSpec.defaultSpec(),
-                MKTowerWorkspaceFloorSettings.defaultSettings(),
                 familyDefinitions,
                 MKHorizontalOpeningProfile.createDefaults(dimensions),
                 linearRunFamilies,

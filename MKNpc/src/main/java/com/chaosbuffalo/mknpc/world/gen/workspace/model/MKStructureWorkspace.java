@@ -50,14 +50,13 @@ public class MKStructureWorkspace {
                                 int shellMargin, int exteriorAirMargin,
                                 int previewMargin,
                                 MKWorkspaceVerticalAccessSpec verticalAccessSpec,
-                                MKTowerWorkspaceFloorSettings floorSettings,
                                 List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
                                 List<MKHorizontalOpeningProfile> openingProfiles,
                                 List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
                                 long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces) {
         this(id, anchor, namespace, structureName, familyType, MKWorkspaceTopologyProfile.tower(), dimensions, palette,
                 stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
-                floorSettings, familyDefinitions, openingProfiles, linearRunFamilies,
+                familyDefinitions, openingProfiles, linearRunFamilies,
                 createdAt, updatedAt, pieces);
     }
 
@@ -69,7 +68,6 @@ public class MKStructureWorkspace {
                                 int shellMargin, int exteriorAirMargin,
                                 int previewMargin,
                                 MKWorkspaceVerticalAccessSpec verticalAccessSpec,
-                                MKTowerWorkspaceFloorSettings floorSettings,
                                 List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
                                 List<MKHorizontalOpeningProfile> openingProfiles,
                                 List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
@@ -112,7 +110,6 @@ public class MKStructureWorkspace {
                 2,
                 4,
                 MKWorkspaceVerticalAccessSpec.defaultSpec(),
-                MKTowerWorkspaceFloorSettings.defaultSettings(),
                 MKTowerWorkspaceFamilyDefinition.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
                 MKHorizontalOpeningProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
                 List.of(),
@@ -153,7 +150,6 @@ public class MKStructureWorkspace {
                 core.exteriorAirMargin(),
                 core.previewMargin(),
                 resolvedVerticalAccessSpec,
-                MKTowerWorkspaceFloorSettings.defaultSettings(),
                 resolvedFamilyDefinitions,
                 resolvedOpeningProfiles,
                 resolvedLinearRunFamilies,
@@ -511,7 +507,7 @@ public class MKStructureWorkspace {
     public MKStructureWorkspace withPieces(List<MKWorkspacePieceDefinition> newPieces) {
         return new MKStructureWorkspace(id, anchor, namespace, structureName, familyType, topologyProfile, dimensions, palette,
                 stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
-                floorSettings(), familyDefinitions, openingProfiles, linearRunFamilies,
+                familyDefinitions, openingProfiles, linearRunFamilies,
                 createdAt, System.currentTimeMillis(), newPieces);
     }
 

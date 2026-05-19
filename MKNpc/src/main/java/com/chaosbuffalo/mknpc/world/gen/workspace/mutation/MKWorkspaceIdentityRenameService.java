@@ -50,7 +50,6 @@ public class MKWorkspaceIdentityRenameService {
                 workspace.exteriorAirMargin(),
                 workspace.previewMargin(),
                 workspace.verticalAccessSpec(),
-                workspace.floorSettings(),
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
                 workspace.linearRunFamilies(),

@@ -276,7 +276,6 @@ public class MKStructureWorkspaceImportService {
                 settings.exteriorAirMargin(),
                 settings.previewMargin(),
                 verticalAccessSpec,
-                MKTowerWorkspaceFloorSettings.defaultSettings(),
                 familyDefinitions,
                 openingProfiles,
                 linearRunFamilies,

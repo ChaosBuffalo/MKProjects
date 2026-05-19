@@ -124,7 +124,6 @@ public class MKStructureWorkspaceService {
                     workspace.exteriorAirMargin(),
                     workspace.previewMargin(),
                     workspace.verticalAccessSpec(),
-                    workspace.floorSettings(),
                     workspace.familyDefinitions(),
                     workspace.openingProfiles(),
                     workspace.linearRunFamilies(),
@@ -575,7 +574,6 @@ public class MKStructureWorkspaceService {
                 exteriorAirMargin,
                 previewMargin,
                 alignVerticalAccessMaterials(workspace.verticalAccessSpec(), palette),
-                workspace.floorSettings(),
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
                 workspace.linearRunFamilies(),
@@ -601,7 +599,6 @@ public class MKStructureWorkspaceService {
                 source.exteriorAirMargin(),
                 source.previewMargin(),
                 alignVerticalAccessMaterials(source.verticalAccessSpec(), materialSource.palette()),
-                source.floorSettings(),
                 source.familyDefinitions().stream()
                         .map(family -> materialSource.familyDefinitions().stream()
                                 .filter(requested -> requested.baseName().equals(family.baseName()))
