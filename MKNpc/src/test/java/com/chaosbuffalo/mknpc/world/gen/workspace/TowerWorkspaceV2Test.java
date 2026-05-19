@@ -1723,7 +1723,7 @@ class TowerWorkspaceV2Test {
         assertEquals("main_endings/main", endingConnector.incomingPoolName());
         assertEquals("minecraft:empty", endingConnector.targetPoolName());
         assertEquals("true", plannedEnding.tags().get(MKWorkspaceRuntimePieceInfo.MAIN_PATH_ENDING_TAG));
-        assertEquals("main", plannedEnding.tags().get(MKWorkspaceRuntimePieceInfo.CATEGORY_TAG));
+        assertEquals("main", plannedEnding.tags().get(MKWorkspaceRuntimePieceInfo.TOPOLOGY_GROUP_TAG));
     }
 
     @Test

@@ -663,7 +663,7 @@ public record MKWorkspaceExportManifest(
             boolean allowOnBranchPath,
             boolean terminal,
             boolean topCapOnly,
-            String category,
+            String topologyGroup,
             boolean mainPathEnding,
             boolean branchCap,
             MKWorkspaceFoundationPolicy foundationPolicy
@@ -676,7 +676,7 @@ public record MKWorkspaceExportManifest(
                 Codec.BOOL.fieldOf("allow_on_branch_path").forGetter(ExportRuntimePieceMetadata::allowOnBranchPath),
                 Codec.BOOL.fieldOf("terminal").forGetter(ExportRuntimePieceMetadata::terminal),
                 Codec.BOOL.fieldOf("top_cap_only").forGetter(ExportRuntimePieceMetadata::topCapOnly),
-                Codec.STRING.optionalFieldOf("category", "").forGetter(ExportRuntimePieceMetadata::category),
+                Codec.STRING.optionalFieldOf("topology_group", "").forGetter(ExportRuntimePieceMetadata::topologyGroup),
                 Codec.BOOL.optionalFieldOf("main_path_ending", false).forGetter(ExportRuntimePieceMetadata::mainPathEnding),
                 Codec.BOOL.optionalFieldOf("branch_cap", false).forGetter(ExportRuntimePieceMetadata::branchCap),
                 MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundation_policy", MKWorkspaceFoundationPolicy.none())
@@ -693,7 +693,7 @@ public record MKWorkspaceExportManifest(
                     runtimeInfo.allowOnBranchPath(),
                     runtimeInfo.terminal(),
                     runtimeInfo.topCapOnly(),
-                    runtimeInfo.category(),
+                    runtimeInfo.topologyGroup(),
                     runtimeInfo.mainPathEnding(),
                     runtimeInfo.branchCap(),
                     foundationPolicy

@@ -384,12 +384,12 @@ public class MKStructureWorkspace {
         if (stackSettings.isPresent()) {
             return Optional.of(stackSettings.get().height());
         }
-        int fallbackHeight = legacyHeightForTopologyGroup(
+        int fallbackHeight = defaultHeightForTopologyGroup(
                 MKWorkspaceTopologySlotMetadata.fromFamily(familyDefinition).topologyGroupId());
         return Optional.of(Math.max(fallbackHeight, familyDefinition.roomHeight()));
     }
 
-    private int legacyHeightForTopologyGroup(String topologyGroupId) {
+    private int defaultHeightForTopologyGroup(String topologyGroupId) {
         return switch (topologyGroupId) {
             case "entry" -> dimensions.entranceHeight();
             case "basement", "basement_cap" -> dimensions.basementHeight();

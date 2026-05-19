@@ -85,7 +85,7 @@ public class MKWorkspaceExportArchiveWriter {
                     templateGroup.pieceMetadata().allowOnBranchPath(),
                     templateGroup.pieceMetadata().terminal(),
                     templateGroup.pieceMetadata().topCapOnly(),
-                    templateGroup.pieceMetadata().category(),
+                    templateGroup.pieceMetadata().topologyGroup(),
                     templateGroup.pieceMetadata().mainPathEnding(),
                     templateGroup.pieceMetadata().branchCap(),
                     templateGroup.pieceMetadata().foundationPolicy()

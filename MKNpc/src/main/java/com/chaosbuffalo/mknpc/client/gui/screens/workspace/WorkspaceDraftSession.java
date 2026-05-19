@@ -1542,11 +1542,11 @@ public class WorkspaceDraftSession {
         return supportsVerticalAccess ? Math.max(length, verticalAccessSpec.shaftSize()) : length;
     }
 
-    public int normalizeFamilyWidthForCategory(int requestedWidth, boolean supportsVerticalAccess) {
+    public int normalizeFamilyWidthForTopologySlot(int requestedWidth, boolean supportsVerticalAccess) {
         return normalizeFamilyWidth(requestedWidth, supportsVerticalAccess, currentVerticalAccessSpec());
     }
 
-    public int normalizeFamilyLengthForCategory(int requestedLength, boolean supportsVerticalAccess) {
+    public int normalizeFamilyLengthForTopologySlot(int requestedLength, boolean supportsVerticalAccess) {
         return normalizeFamilyLength(requestedLength, supportsVerticalAccess, currentVerticalAccessSpec());
     }
 

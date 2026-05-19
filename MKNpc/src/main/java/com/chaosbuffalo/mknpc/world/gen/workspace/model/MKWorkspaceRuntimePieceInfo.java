@@ -14,7 +14,7 @@ public record MKWorkspaceRuntimePieceInfo(
         boolean allowOnBranchPath,
         boolean terminal,
         boolean topCapOnly,
-        String category,
+        String topologyGroup,
         boolean mainPathEnding,
         boolean branchCap
 ) {
@@ -26,7 +26,7 @@ public record MKWorkspaceRuntimePieceInfo(
     public static final String ALLOW_ON_BRANCH_PATH_TAG = "runtime_allow_on_branch_path";
     public static final String TERMINAL_TAG = "runtime_terminal";
     public static final String TOP_CAP_ONLY_TAG = "runtime_top_cap_only";
-    public static final String CATEGORY_TAG = "runtime_category";
+    public static final String TOPOLOGY_GROUP_TAG = "runtime_topology_group";
     public static final String MAIN_PATH_ENDING_TAG = "runtime_main_path_ending";
     public static final String BRANCH_CAP_TAG = "runtime_branch_cap";
 
@@ -41,10 +41,10 @@ public record MKWorkspaceRuntimePieceInfo(
     public MKWorkspaceRuntimePieceInfo(boolean start, MKJigsawPieceRole role,
                                        int progressionDelta, int verticalLevelDelta,
                                        boolean allowOnMainPath, boolean allowOnBranchPath,
-                                       boolean terminal, boolean topCapOnly, String category,
+                                       boolean terminal, boolean topCapOnly, String topologyGroup,
                                        boolean mainPathEnding) {
         this(start, role, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
-                topCapOnly, category, mainPathEnding, false);
+                topCapOnly, topologyGroup, mainPathEnding, false);
     }
 
     public void applyToTags(Map<String, String> tags) {
@@ -56,7 +56,7 @@ public record MKWorkspaceRuntimePieceInfo(
         tags.put(ALLOW_ON_BRANCH_PATH_TAG, Boolean.toString(allowOnBranchPath));
         tags.put(TERMINAL_TAG, Boolean.toString(terminal));
         tags.put(TOP_CAP_ONLY_TAG, Boolean.toString(topCapOnly));
-        tags.put(CATEGORY_TAG, category);
+        tags.put(TOPOLOGY_GROUP_TAG, topologyGroup);
         tags.put(MAIN_PATH_ENDING_TAG, Boolean.toString(mainPathEnding));
         tags.put(BRANCH_CAP_TAG, Boolean.toString(branchCap));
     }
@@ -75,7 +75,7 @@ public record MKWorkspaceRuntimePieceInfo(
                 parseBoolean(tags, ALLOW_ON_BRANCH_PATH_TAG, false),
                 parseBoolean(tags, TERMINAL_TAG, false),
                 parseBoolean(tags, TOP_CAP_ONLY_TAG, false),
-                tags.getOrDefault(CATEGORY_TAG, ""),
+                tags.getOrDefault(TOPOLOGY_GROUP_TAG, ""),
                 parseBoolean(tags, MAIN_PATH_ENDING_TAG, false),
                 parseBoolean(tags, BRANCH_CAP_TAG, false)
         ));

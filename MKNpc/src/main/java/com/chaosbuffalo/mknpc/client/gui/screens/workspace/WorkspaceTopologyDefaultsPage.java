@@ -134,14 +134,14 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
         content.addConstraintToWidget(MarginConstraint.LEFT, header);
 
         MKText summary = screen.makeWhiteText(Component.literal(
-                (showCategoryPathControls(editor, topologyGroupId) ? "path " +
+                (showTopologyGroupPathControls(editor, topologyGroupId) ? "path " +
                         pathSettings.minMainPathPieces() + "-" + pathSettings.maxMainPathPieces() + "  |  " : "") +
                         "branch cap " + pathSettings.maxBranchPiecesBeforeCap()));
         summary.setWidth(screen.contentWidth());
         summary.setMultiline(true);
         content.addWidget(summary);
         content.addConstraintToWidget(MarginConstraint.LEFT, summary);
-        if (showCategoryPathControls(editor, topologyGroupId)) {
+        if (showTopologyGroupPathControls(editor, topologyGroupId)) {
             MKIntegerSlider minPathSlider = new MKIntegerSlider("Min", 180, 20, 0, 10, 1,
                     pathSettings.minMainPathPieces(),
                     value -> editor.topologyPathMinMainPathPieces(topologyGroupId, value));
@@ -430,7 +430,7 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
         addRow(screen, content, screen.makeWhiteText(Component.literal(label)), modeButton);
     }
 
-    private boolean showCategoryPathControls(WorkspaceDraftSession editor, String topologyGroupId) {
+    private boolean showTopologyGroupPathControls(WorkspaceDraftSession editor, String topologyGroupId) {
         return hasMainPathContinuationFamily(editor, topologyGroupId) || !hasMainPathEndingFamily(editor, topologyGroupId);
     }
 
