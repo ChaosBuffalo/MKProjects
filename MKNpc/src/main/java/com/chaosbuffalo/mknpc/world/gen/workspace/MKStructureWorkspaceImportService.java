@@ -12,6 +12,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizon
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
@@ -204,32 +205,53 @@ public class MKStructureWorkspaceImportService {
                 floorSettingsExport.basementCapApproachEnabled()
         );
         List<MKTowerWorkspaceFamilyDefinition> familyDefinitions = settings.familyDefinitions().stream()
-                .map(family -> new MKTowerWorkspaceFamilyDefinition(
-                        family.baseName(),
-                        family.category(),
-                        family.pieceRole(),
-                        family.topologySlotId(),
-                        family.verticalAccessGroupId(),
-                        family.supportsVerticalAccess(),
-                        family.roomWidth(),
-                        family.roomLength(),
-                        family.roomHeight(),
-                        family.horizontalExtrusionMode(),
-                        family.horizontalExits().stream()
-                                .map(exit -> new MKWorkspaceFamilyHorizontalExitDefinition(
-                                        Direction.byName(exit.direction()),
-                                        exit.pathKind(),
-                                        exit.openingProfileId(),
-                                        exit.connectionMode(),
-                                        exit.sideOffset(),
-                                        exit.verticalOffset()
-                                ))
-                                .toList(),
-                        family.topVoidMargin(),
-                        family.bottomVoidMargin(),
-                        family.foundationPolicy(),
-                        family.paletteOverride()
-                ))
+                .map(family -> {
+                    List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits = family.horizontalExits().stream()
+                            .map(exit -> new MKWorkspaceFamilyHorizontalExitDefinition(
+                                    Direction.byName(exit.direction()),
+                                    exit.pathKind(),
+                                    exit.openingProfileId(),
+                                    exit.connectionMode(),
+                                    exit.sideOffset(),
+                                    exit.verticalOffset()
+                            ))
+                            .toList();
+                    String stackId = MKTowerWorkspaceStackSlot.stackIdForTopologySlot(family.topologySlotId())
+                            .orElse(family.verticalAccessGroupId());
+                    return MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId())
+                            .map(slot -> MKTowerWorkspaceFamilyDefinition.forTowerStackSlot(
+                                    family.baseName(),
+                                    slot,
+                                    stackId,
+                                    family.verticalAccessGroupId(),
+                                    family.supportsVerticalAccess(),
+                                    family.roomWidth(),
+                                    family.roomLength(),
+                                    family.roomHeight(),
+                                    family.horizontalExtrusionMode(),
+                                    horizontalExits,
+                                    family.topVoidMargin(),
+                                    family.bottomVoidMargin(),
+                                    family.foundationPolicy(),
+                                    family.paletteOverride()))
+                            .orElseGet(() -> new MKTowerWorkspaceFamilyDefinition(
+                                    family.baseName(),
+                                    family.category(),
+                                    family.pieceRole(),
+                                    family.topologySlotId(),
+                                    family.verticalAccessGroupId(),
+                                    family.supportsVerticalAccess(),
+                                    family.roomWidth(),
+                                    family.roomLength(),
+                                    family.roomHeight(),
+                                    family.horizontalExtrusionMode(),
+                                    horizontalExits,
+                                    family.topVoidMargin(),
+                                    family.bottomVoidMargin(),
+                                    family.foundationPolicy(),
+                                    family.paletteOverride()
+                            ));
+                })
                 .toList();
         List<MKHorizontalOpeningProfile> openingProfiles = settings.openingProfiles().stream()
                 .map(profile -> new MKHorizontalOpeningProfile(
