@@ -18,17 +18,17 @@ public class MKWorkspaceDimensions {
             Codec.INT.optionalFieldOf("entranceHeight").forGetter(dimensions -> java.util.Optional.of(dimensions.entranceHeight())),
             Codec.INT.fieldOf("roomHeight").forGetter(MKWorkspaceDimensions::roomHeight),
             Codec.INT.optionalFieldOf("basementHeight").forGetter(dimensions -> java.util.Optional.of(dimensions.basementHeight())),
-            Codec.INT.fieldOf("hallwayWidth").forGetter(MKWorkspaceDimensions::hallwayWidth),
+            Codec.INT.fieldOf("shaftWidth").forGetter(MKWorkspaceDimensions::shaftWidth),
             Codec.INT.fieldOf("doorwayWidth").forGetter(MKWorkspaceDimensions::doorwayWidth),
             Codec.INT.fieldOf("doorwayHeight").forGetter(MKWorkspaceDimensions::doorwayHeight)
-    ).apply(instance, (roomWidth, roomLength, entranceHeight, roomHeight, basementHeight, hallwayWidth,
+    ).apply(instance, (roomWidth, roomLength, entranceHeight, roomHeight, basementHeight, shaftWidth,
                        doorwayWidth, doorwayHeight) -> new MKWorkspaceDimensions(
             roomWidth,
             roomLength,
             entranceHeight.orElse(roomHeight),
             roomHeight,
             basementHeight.orElse(roomHeight),
-            hallwayWidth,
+            shaftWidth,
             doorwayWidth,
             doorwayHeight
     )));
@@ -38,27 +38,27 @@ public class MKWorkspaceDimensions {
     private final int entranceHeight;
     private final int roomHeight;
     private final int basementHeight;
-    private final int hallwayWidth;
+    private final int shaftWidth;
     private final int doorwayWidth;
     private final int doorwayHeight;
 
     public MKWorkspaceDimensions(int roomWidth, int roomLength, int entranceHeight, int roomHeight, int basementHeight,
-                                 int hallwayWidth, int doorwayWidth, int doorwayHeight) {
+                                 int shaftWidth, int doorwayWidth, int doorwayHeight) {
         this.roomWidth = roomWidth;
         this.roomLength = roomLength;
         this.entranceHeight = entranceHeight;
         this.roomHeight = roomHeight;
         this.basementHeight = basementHeight;
-        this.hallwayWidth = hallwayWidth;
+        this.shaftWidth = shaftWidth;
         this.doorwayWidth = doorwayWidth;
         this.doorwayHeight = doorwayHeight;
     }
 
     public static MKWorkspaceDimensions defaultDimensions() {
-        int defaultHallwayWidth = 3;
-        int defaultHeight = MKVerticalAccessProfile.getAllowedHeights(MKWorkspaceStairMode.AUTO, defaultHallwayWidth, 3, 4)
+        int defaultShaftWidth = 3;
+        int defaultHeight = MKVerticalAccessProfile.getAllowedHeights(MKWorkspaceStairMode.AUTO, defaultShaftWidth, 3, 4)
                 .getFirst();
-        return new MKWorkspaceDimensions(9, 9, defaultHeight, defaultHeight, defaultHeight, defaultHallwayWidth, 3, 3);
+        return new MKWorkspaceDimensions(9, 9, defaultHeight, defaultHeight, defaultHeight, defaultShaftWidth, 3, 3);
     }
 
     public static MKWorkspaceDimensions fromTag(CompoundTag tag) {
@@ -82,19 +82,19 @@ public class MKWorkspaceDimensions {
         if (basementHeight < 3) {
             errors.add("basement height must be at least 3");
         }
-        validateOdd(errors, "hallway width", hallwayWidth, 1);
+        validateOdd(errors, "shaft width", shaftWidth, 1);
         validateOdd(errors, "doorway width", doorwayWidth, 1);
         if (doorwayHeight < 2) {
             errors.add("doorway height must be at least 2");
         }
-        if (doorwayWidth > hallwayWidth) {
-            errors.add("doorway width must be less than or equal to hallway width");
+        if (doorwayWidth > shaftWidth) {
+            errors.add("doorway width must be less than or equal to shaft width");
         }
-        if (hallwayWidth > roomWidth) {
-            errors.add("hallway width must be less than or equal to room width");
+        if (shaftWidth > roomWidth) {
+            errors.add("shaft width must be less than or equal to room width");
         }
-        if (hallwayWidth > roomLength) {
-            errors.add("hallway width must be less than or equal to room length");
+        if (shaftWidth > roomLength) {
+            errors.add("shaft width must be less than or equal to room length");
         }
         if (doorwayHeight > entranceHeight) {
             errors.add("doorway height must be less than or equal to entrance height");
@@ -136,26 +136,26 @@ public class MKWorkspaceDimensions {
                 .orElse(snapped);
     }
 
-    public static int getTowerShaftPerimeter(int hallwayWidth) {
-        return MKVerticalAccessProfile.getPerimeterStepCount(hallwayWidth, hallwayWidth);
+    public static int getTowerShaftPerimeter(int shaftWidth) {
+        return MKVerticalAccessProfile.getPerimeterStepCount(shaftWidth, shaftWidth);
     }
 
-    public static List<Integer> getAllowedTowerHeights(MKWorkspaceStairMode stairMode, int hallwayWidth, int minimumHeight,
+    public static List<Integer> getAllowedTowerHeights(MKWorkspaceStairMode stairMode, int shaftWidth, int minimumHeight,
                                                         int count) {
-        return MKVerticalAccessProfile.getAllowedHeights(stairMode, hallwayWidth, minimumHeight, count);
+        return MKVerticalAccessProfile.getAllowedHeights(stairMode, shaftWidth, minimumHeight, count);
     }
 
-    public static List<Integer> getAllowedTowerHeights(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
+    public static List<Integer> getAllowedTowerHeights(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
                                                        int minimumHeight, int count) {
         MKWorkspaceStairMode mode = MKVerticalAccessProfile.normalizeMode(stairConfig.mode());
         if (mode == MKWorkspaceStairMode.LADDER || mode == MKWorkspaceStairMode.NONE) {
-            return MKVerticalAccessProfile.getAllowedHeights(MKWorkspaceStairMode.LADDER, hallwayWidth, minimumHeight, count);
+            return MKVerticalAccessProfile.getAllowedHeights(MKWorkspaceStairMode.LADDER, shaftWidth, minimumHeight, count);
         }
         java.util.List<Integer> values = new java.util.ArrayList<>();
         int candidate = Math.max(1, minimumHeight);
         int maxCandidate = Math.max(candidate + 255, candidate + (count * 64));
         while (values.size() < count && candidate <= maxCandidate) {
-            if (MKResolvedVerticalAccessProfile.resolve(stairConfig, hallwayWidth, hallwayWidth, candidate).isPresent()) {
+            if (MKResolvedVerticalAccessProfile.resolve(stairConfig, shaftWidth, shaftWidth, candidate).isPresent()) {
                 values.add(candidate);
             }
             candidate++;
@@ -169,26 +169,26 @@ public class MKWorkspaceDimensions {
         return values;
     }
 
-    public static int snapToNearestAllowedTowerHeight(MKWorkspaceStairMode stairMode, int hallwayWidth, int requestedHeight,
+    public static int snapToNearestAllowedTowerHeight(MKWorkspaceStairMode stairMode, int shaftWidth, int requestedHeight,
                                                       int minimumHeight, int count) {
-        return MKVerticalAccessProfile.snapToNearestAllowedHeight(stairMode, hallwayWidth, requestedHeight, minimumHeight,
+        return MKVerticalAccessProfile.snapToNearestAllowedHeight(stairMode, shaftWidth, requestedHeight, minimumHeight,
                 count);
     }
 
-    public static int snapToNearestAllowedTowerHeight(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
+    public static int snapToNearestAllowedTowerHeight(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
                                                       int requestedHeight, int minimumHeight, int count) {
-        List<Integer> allowedHeights = getAllowedTowerHeights(stairConfig, hallwayWidth, minimumHeight, count);
+        List<Integer> allowedHeights = getAllowedTowerHeights(stairConfig, shaftWidth, minimumHeight, count);
         return allowedHeights.stream()
                 .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedHeight)))
                 .orElse(Math.max(minimumHeight, Math.min(MAX_BAND_HEIGHT_EXCLUSIVE - 1, requestedHeight)));
     }
 
-    public static List<Integer> getAllowedEntranceHeights(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
+    public static List<Integer> getAllowedEntranceHeights(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
                                                           int referenceRoomHeight, int minimumHeight, int count) {
-        List<Integer> allowedHeights = getAllowedTowerHeights(stairConfig, hallwayWidth, minimumHeight, Math.max(count * 3, count));
+        List<Integer> allowedHeights = getAllowedTowerHeights(stairConfig, shaftWidth, minimumHeight, Math.max(count * 3, count));
         List<Integer> aligned = new java.util.ArrayList<>();
         for (int height : allowedHeights) {
-            if (MKResolvedVerticalAccessProfile.resolve(stairConfig, hallwayWidth, hallwayWidth, height).isPresent()) {
+            if (MKResolvedVerticalAccessProfile.resolve(stairConfig, shaftWidth, shaftWidth, height).isPresent()) {
                 aligned.add(height);
                 if (aligned.size() >= count) {
                     break;
@@ -196,50 +196,50 @@ public class MKWorkspaceDimensions {
             }
         }
         if (aligned.isEmpty()) {
-            aligned.add(snapToNearestAllowedTowerHeight(stairConfig, hallwayWidth, referenceRoomHeight, minimumHeight, count));
+            aligned.add(snapToNearestAllowedTowerHeight(stairConfig, shaftWidth, referenceRoomHeight, minimumHeight, count));
         }
         return aligned;
     }
 
-    public static List<Integer> getAllowedBandHeights(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
+    public static List<Integer> getAllowedBandHeights(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
                                                       int referenceRoomHeight, int minimumHeight, int count) {
-        BandHeightCacheKey key = BandHeightCacheKey.from(stairConfig, hallwayWidth, minimumHeight);
+        BandHeightCacheKey key = BandHeightCacheKey.from(stairConfig, shaftWidth, minimumHeight);
         List<Integer> allowedHeights = ALLOWED_BAND_HEIGHT_CACHE.computeIfAbsent(key,
-                ignored -> computeAllowedBandHeights(stairConfig, key.hallwayWidth(), key.minimumHeight()));
+                ignored -> computeAllowedBandHeights(stairConfig, key.shaftWidth(), key.minimumHeight()));
         return allowedHeights;
     }
 
-    public static int snapToNearestAllowedEntranceHeight(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
+    public static int snapToNearestAllowedEntranceHeight(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
                                                          int referenceRoomHeight, int requestedHeight, int minimumHeight,
                                                          int count) {
-        List<Integer> allowedHeights = getAllowedEntranceHeights(stairConfig, hallwayWidth, referenceRoomHeight, minimumHeight,
+        List<Integer> allowedHeights = getAllowedEntranceHeights(stairConfig, shaftWidth, referenceRoomHeight, minimumHeight,
                 count);
         return allowedHeights.stream()
                 .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedHeight)))
                 .orElse(Math.max(minimumHeight, Math.min(MAX_BAND_HEIGHT_EXCLUSIVE - 1, requestedHeight)));
     }
 
-    public static int snapToNearestAllowedBandHeight(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
+    public static int snapToNearestAllowedBandHeight(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
                                                      int referenceRoomHeight, int requestedHeight, int minimumHeight,
                                                      int count) {
-        List<Integer> allowedHeights = getAllowedBandHeights(stairConfig, hallwayWidth, referenceRoomHeight,
+        List<Integer> allowedHeights = getAllowedBandHeights(stairConfig, shaftWidth, referenceRoomHeight,
                 minimumHeight, count);
         return allowedHeights.stream()
                 .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedHeight)))
                 .orElse(Math.max(minimumHeight, Math.min(MAX_BAND_HEIGHT_EXCLUSIVE - 1, requestedHeight)));
     }
 
-    public static List<Integer> getAllowedStairWidths(int hallwayWidth) {
+    public static List<Integer> getAllowedStairWidths(int shaftWidth) {
         List<Integer> allowed = new ArrayList<>();
-        int maxWidth = Math.max(1, hallwayWidth / 2);
+        int maxWidth = Math.max(1, shaftWidth / 2);
         for (int width = 1; width <= maxWidth; width++) {
             allowed.add(width);
         }
         return allowed;
     }
 
-    public static int snapToNearestAllowedStairWidth(int hallwayWidth, int requestedWidth) {
-        List<Integer> allowedWidths = getAllowedStairWidths(hallwayWidth);
+    public static int snapToNearestAllowedStairWidth(int shaftWidth, int requestedWidth) {
+        List<Integer> allowedWidths = getAllowedStairWidths(shaftWidth);
         return allowedWidths.stream()
                 .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedWidth)))
                 .orElseGet(() -> allowedWidths.getFirst());
@@ -255,10 +255,10 @@ public class MKWorkspaceDimensions {
     }
 
     private static List<Integer> computeAllowedBandHeights(MKWorkspaceStairAuthoringConfig stairConfig,
-                                                           int hallwayWidth, int minimumHeight) {
+                                                           int shaftWidth, int minimumHeight) {
         List<Integer> aligned = new java.util.ArrayList<>();
         for (int height = minimumHeight; height < MAX_BAND_HEIGHT_EXCLUSIVE; height++) {
-            if (MKResolvedVerticalAccessProfile.resolve(stairConfig, hallwayWidth, hallwayWidth, height).isPresent()) {
+            if (MKResolvedVerticalAccessProfile.resolve(stairConfig, shaftWidth, shaftWidth, height).isPresent()) {
                 aligned.add(height);
             }
         }
@@ -281,14 +281,14 @@ public class MKWorkspaceDimensions {
     }
 
     private record BandHeightCacheKey(MKWorkspaceStairMode mode, MKWorkspaceStairRiseType riseType, int stairWidth,
-                                      int hallwayWidth, int minimumHeight) {
-        private static BandHeightCacheKey from(MKWorkspaceStairAuthoringConfig stairConfig, int hallwayWidth,
+                                      int shaftWidth, int minimumHeight) {
+        private static BandHeightCacheKey from(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
                                                int minimumHeight) {
             return new BandHeightCacheKey(
                     MKVerticalAccessProfile.normalizeMode(stairConfig.mode()),
                     stairConfig.riseType(),
                     Math.max(1, stairConfig.stairWidth()),
-                    Math.max(1, hallwayWidth),
+                    Math.max(1, shaftWidth),
                     Math.max(1, minimumHeight)
             );
         }
@@ -314,8 +314,8 @@ public class MKWorkspaceDimensions {
         return basementHeight;
     }
 
-    public int hallwayWidth() {
-        return hallwayWidth;
+    public int shaftWidth() {
+        return shaftWidth;
     }
 
     public int doorwayWidth() {

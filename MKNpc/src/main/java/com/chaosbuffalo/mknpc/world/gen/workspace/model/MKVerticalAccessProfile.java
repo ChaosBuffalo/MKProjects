@@ -45,7 +45,7 @@ public record MKVerticalAccessProfile(MKWorkspaceStairMode mode, MKWorkspaceStai
         return Math.max(1, (2 * shaftWidth) + (2 * shaftLength) - 4);
     }
 
-    public static List<Integer> getAllowedHeights(MKWorkspaceStairMode requestedMode, int hallwayWidth, int minimumHeight,
+    public static List<Integer> getAllowedHeights(MKWorkspaceStairMode requestedMode, int shaftWidth, int minimumHeight,
                                                   int count) {
         MKVerticalAccessProfile profile = forTemplateReuse(
                 new MKWorkspaceStairAuthoringConfig(requestedMode,
@@ -55,7 +55,7 @@ public record MKVerticalAccessProfile(MKWorkspaceStairMode mode, MKWorkspaceStai
                         1, net.minecraft.resources.ResourceLocation.parse("minecraft:stone_brick_stairs"),
                         net.minecraft.resources.ResourceLocation.parse("minecraft:stone_brick_slab"),
                         net.minecraft.resources.ResourceLocation.parse("minecraft:ladder")),
-                hallwayWidth, hallwayWidth, minimumHeight);
+                shaftWidth, shaftWidth, minimumHeight);
         if (profile.mode() == MKWorkspaceStairMode.LADDER || profile.mode() == MKWorkspaceStairMode.NONE) {
             List<Integer> values = new ArrayList<>();
             for (int i = 0; i < count; i++) {
@@ -75,7 +75,7 @@ public record MKVerticalAccessProfile(MKWorkspaceStairMode mode, MKWorkspaceStai
                             1, net.minecraft.resources.ResourceLocation.parse("minecraft:stone_brick_stairs"),
                             net.minecraft.resources.ResourceLocation.parse("minecraft:stone_brick_slab"),
                             net.minecraft.resources.ResourceLocation.parse("minecraft:ladder")),
-                    hallwayWidth, hallwayWidth, candidate).isPresent()) {
+                    shaftWidth, shaftWidth, candidate).isPresent()) {
                 values.add(candidate);
             }
             candidate++;
@@ -89,9 +89,9 @@ public record MKVerticalAccessProfile(MKWorkspaceStairMode mode, MKWorkspaceStai
         return values;
     }
 
-    public static int snapToNearestAllowedHeight(MKWorkspaceStairMode requestedMode, int hallwayWidth, int requestedHeight,
+    public static int snapToNearestAllowedHeight(MKWorkspaceStairMode requestedMode, int shaftWidth, int requestedHeight,
                                                  int minimumHeight, int count) {
-        List<Integer> allowed = getAllowedHeights(requestedMode, hallwayWidth, minimumHeight, count);
+        List<Integer> allowed = getAllowedHeights(requestedMode, shaftWidth, minimumHeight, count);
         return allowed.stream()
                 .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedHeight)))
                 .orElseGet(() -> allowed.getFirst());

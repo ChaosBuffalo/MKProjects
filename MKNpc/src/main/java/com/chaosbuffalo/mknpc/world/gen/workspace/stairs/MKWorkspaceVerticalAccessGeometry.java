@@ -38,12 +38,12 @@ public class MKWorkspaceVerticalAccessGeometry {
                 .filter(connector -> connector.facing() == Direction.UP || connector.facing() == Direction.DOWN)
                 .mapToInt(MKWorkspaceConnectorDefinition::openingWidth)
                 .findFirst()
-                .orElse(workspace.dimensions().hallwayWidth());
+                .orElse(workspace.dimensions().shaftWidth());
         int openingLength = piece.connectors().stream()
                 .filter(connector -> connector.facing() == Direction.UP || connector.facing() == Direction.DOWN)
                 .mapToInt(MKWorkspaceConnectorDefinition::openingHeight)
                 .findFirst()
-                .orElse(workspace.dimensions().hallwayWidth());
+                .orElse(workspace.dimensions().shaftWidth());
         MKVerticalAccessPlacement placement = MKVerticalAccessPlacement.fromSerializedName(
                 MKWorkspaceVerticalAccessTags.placement(piece.tags(), workspace.verticalAccessPlacement().getSerializedName())
         );

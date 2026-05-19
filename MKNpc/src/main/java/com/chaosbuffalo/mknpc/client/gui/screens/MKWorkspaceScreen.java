@@ -302,7 +302,7 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public void openWorkspaceTopologySlot(String topologyKey) {
         selectedTopologyKey = topologyKey;
-        resetCategoryOverrides();
+        resetTopologySlotOverrides();
         pushState(WorkspaceTopologySlotPage.ID);
         flagNeedSetup();
     }
@@ -323,7 +323,7 @@ public class MKWorkspaceScreen extends MKScreen {
         return selectedTopologyKey;
     }
 
-    public List<MKWorkspacePieceDefinition> selectedCategoryPieces() {
+    public List<MKWorkspacePieceDefinition> selectedTopologySlotPieces() {
         if (selectedTopologyKey == null) {
             return List.of();
         }
@@ -334,71 +334,71 @@ public class MKWorkspaceScreen extends MKScreen {
         selectedTopologyKey = null;
     }
 
-    public int categoryShaftWidth() {
-        return workspace.dimensions().hallwayWidth();
+    public int topologySlotShaftWidth() {
+        return workspace.dimensions().shaftWidth();
     }
 
-    private MKWorkspaceStairAuthoringConfig categoryStairConfig() {
-        ensureCategoryOverridesInitialized();
+    private MKWorkspaceStairAuthoringConfig topologySlotStairConfig() {
+        ensureTopologySlotOverridesInitialized();
         return detailStairConfig;
     }
 
-    public MKWorkspaceStairMode categoryStairMode() {
-        return categoryStairConfig().mode();
+    public MKWorkspaceStairMode topologySlotStairMode() {
+        return topologySlotStairConfig().mode();
     }
 
-    public void categoryStairMode(MKWorkspaceStairMode value) {
-        MKWorkspaceStairAuthoringConfig config = categoryStairConfig();
+    public void topologySlotStairMode(MKWorkspaceStairMode value) {
+        MKWorkspaceStairAuthoringConfig config = topologySlotStairConfig();
         detailStairConfig = new MKWorkspaceStairAuthoringConfig(value, config.riseType(), config.stairWidth(),
                 config.stairBlock(), config.slabBlock(), config.ladderBlock());
     }
 
-    public MKWorkspaceStairRiseType categoryStairRiseType() {
-        return categoryStairConfig().riseType();
+    public MKWorkspaceStairRiseType topologySlotStairRiseType() {
+        return topologySlotStairConfig().riseType();
     }
 
-    public void categoryStairRiseType(MKWorkspaceStairRiseType value) {
-        MKWorkspaceStairAuthoringConfig config = categoryStairConfig();
+    public void topologySlotStairRiseType(MKWorkspaceStairRiseType value) {
+        MKWorkspaceStairAuthoringConfig config = topologySlotStairConfig();
         detailStairConfig = new MKWorkspaceStairAuthoringConfig(config.mode(), value, config.stairWidth(),
                 config.stairBlock(), config.slabBlock(), config.ladderBlock());
     }
 
-    public int categoryStairWidth() {
-        return categoryStairConfig().stairWidth();
+    public int topologySlotStairWidth() {
+        return topologySlotStairConfig().stairWidth();
     }
 
-    public void categoryStairWidth(int value) {
-        MKWorkspaceStairAuthoringConfig config = categoryStairConfig();
+    public void topologySlotStairWidth(int value) {
+        MKWorkspaceStairAuthoringConfig config = topologySlotStairConfig();
         detailStairConfig = new MKWorkspaceStairAuthoringConfig(config.mode(), config.riseType(), value,
                 config.stairBlock(), config.slabBlock(), config.ladderBlock());
     }
 
-    public ResourceLocation categoryStairBlock() {
-        return categoryStairConfig().stairBlock();
+    public ResourceLocation topologySlotStairBlock() {
+        return topologySlotStairConfig().stairBlock();
     }
 
-    public void categoryStairBlock(ResourceLocation value) {
-        MKWorkspaceStairAuthoringConfig config = categoryStairConfig();
+    public void topologySlotStairBlock(ResourceLocation value) {
+        MKWorkspaceStairAuthoringConfig config = topologySlotStairConfig();
         detailStairConfig = new MKWorkspaceStairAuthoringConfig(config.mode(), config.riseType(), config.stairWidth(),
                 value, config.slabBlock(), config.ladderBlock());
     }
 
-    public ResourceLocation categorySlabBlock() {
-        return categoryStairConfig().slabBlock();
+    public ResourceLocation topologySlotSlabBlock() {
+        return topologySlotStairConfig().slabBlock();
     }
 
-    public void categorySlabBlock(ResourceLocation value) {
-        MKWorkspaceStairAuthoringConfig config = categoryStairConfig();
+    public void topologySlotSlabBlock(ResourceLocation value) {
+        MKWorkspaceStairAuthoringConfig config = topologySlotStairConfig();
         detailStairConfig = new MKWorkspaceStairAuthoringConfig(config.mode(), config.riseType(), config.stairWidth(),
                 config.stairBlock(), value, config.ladderBlock());
     }
 
-    public ResourceLocation categoryLadderBlock() {
-        return categoryStairConfig().ladderBlock();
+    public ResourceLocation topologySlotLadderBlock() {
+        return topologySlotStairConfig().ladderBlock();
     }
 
-    public void categoryLadderBlock(ResourceLocation value) {
-        MKWorkspaceStairAuthoringConfig config = categoryStairConfig();
+    public void topologySlotLadderBlock(ResourceLocation value) {
+        MKWorkspaceStairAuthoringConfig config = topologySlotStairConfig();
         detailStairConfig = new MKWorkspaceStairAuthoringConfig(config.mode(), config.riseType(), config.stairWidth(),
                 config.stairBlock(), config.slabBlock(), value);
     }
@@ -916,8 +916,9 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private List<String> getInitialStatesForRefresh(MKStructureWorkspace updatedWorkspace) {
         String currentState = getState();
-        if ("category".equals(currentState) && selectedTopologyKey != null && updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
-            return List.of("workspace", "category");
+        if (WorkspaceTopologySlotPage.ID.equals(currentState) && selectedTopologyKey != null &&
+                updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
+            return List.of("workspace", WorkspaceTopologySlotPage.ID);
         }
         if ("backups".equals(currentState) && updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
             return List.of("workspace", "backups");
@@ -957,7 +958,7 @@ public class MKWorkspaceScreen extends MKScreen {
         flagNeedSetup();
     }
 
-    public void resetCategoryOverrides() {
+    public void resetTopologySlotOverrides() {
         if (workspace == null) {
             MKWorkspaceMaterialPalette palette = MKWorkspaceMaterialPalette.defaultPalette();
             detailStairConfig = new MKWorkspaceStairAuthoringConfig(
@@ -980,9 +981,9 @@ public class MKWorkspaceScreen extends MKScreen {
         );
     }
 
-    public void ensureCategoryOverridesInitialized() {
+    public void ensureTopologySlotOverridesInitialized() {
         if (detailStairConfig == null) {
-            resetCategoryOverrides();
+            resetTopologySlotOverrides();
         }
     }
 

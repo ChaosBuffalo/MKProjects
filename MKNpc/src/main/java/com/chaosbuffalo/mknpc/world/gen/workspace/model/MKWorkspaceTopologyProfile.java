@@ -140,20 +140,20 @@ public record MKWorkspaceTopologyProfile(
                 pathSettings);
     }
 
-    public Optional<MKWorkspaceTopologyPathSettings> pathSettings(String categoryId) {
-        return MKWorkspaceTopologyPathSettings.find(pathSettings, categoryId);
+    public Optional<MKWorkspaceTopologyPathSettings> pathSettings(String topologyGroupId) {
+        return MKWorkspaceTopologyPathSettings.find(pathSettings, topologyGroupId);
     }
 
-    public MKWorkspaceTopologyPathSettings pathSettingsOrDefault(String categoryId) {
-        return pathSettings(categoryId)
-                .orElseGet(() -> MKWorkspaceTopologyPathSettings.defaultForCategory(categoryId));
+    public MKWorkspaceTopologyPathSettings pathSettingsOrDefault(String topologyGroupId) {
+        return pathSettings(topologyGroupId)
+                .orElseGet(() -> MKWorkspaceTopologyPathSettings.defaultForTopologyGroup(topologyGroupId));
     }
 
     public MKWorkspaceTopologyProfile withPathSettings(MKWorkspaceTopologyPathSettings updatedSettings) {
         ArrayList<MKWorkspaceTopologyPathSettings> updated = new ArrayList<>();
         boolean replaced = false;
         for (MKWorkspaceTopologyPathSettings settings : pathSettings) {
-            if (settings.categoryId().equals(updatedSettings.categoryId())) {
+            if (settings.topologyGroupId().equals(updatedSettings.topologyGroupId())) {
                 updated.add(updatedSettings);
                 replaced = true;
             } else {

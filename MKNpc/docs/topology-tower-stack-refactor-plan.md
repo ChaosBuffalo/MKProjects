@@ -311,7 +311,7 @@ Family-level validation should focus on override legality:
 - The legacy family-category detail page and selected-family-category UI state have been removed; room families are edited from the topology slot family page.
 - Editor-created, copied, and imported room families now use topology-slot metadata factories instead of manually reconstructing category/role constructor arguments.
 - Draft-session fallback metadata is now derived from topology schema role records before falling back to existing family metadata.
-- The remaining work is to keep broadening resolver use in scaffold/export code and reduce legacy constructor use in tests where safe. Linear-run UI and planner internals have been renamed away from hallway terminology; the remaining hallway strings are serialized/runtime compatibility names or the older shared dimensions field.
+- The remaining work is to keep broadening resolver use in scaffold/export code and reduce legacy constructor use in tests where safe. Linear-run UI, planner internals, serialized values, runtime pool paths, and the older shared dimensions shaft-width field now use topology/linear-run/shaft terminology.
 
 ### Phase 1: Model Reusable Tower Stack Slots
 

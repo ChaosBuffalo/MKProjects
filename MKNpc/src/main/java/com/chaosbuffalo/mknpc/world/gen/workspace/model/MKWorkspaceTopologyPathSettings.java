@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public record MKWorkspaceTopologyPathSettings(
-        String categoryId,
+        String topologyGroupId,
         int minMainPathPieces,
         int maxMainPathPieces,
         int maxBranchPiecesBeforeCap
@@ -27,7 +27,7 @@ public record MKWorkspaceTopologyPathSettings(
             "basement_cap"
     );
     public static final Codec<MKWorkspaceTopologyPathSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.STRING.fieldOf("category_id").forGetter(MKWorkspaceTopologyPathSettings::categoryId),
+            Codec.STRING.fieldOf("topology_group_id").forGetter(MKWorkspaceTopologyPathSettings::topologyGroupId),
             Codec.INT.optionalFieldOf("min_main_path_pieces", DEFAULT_MIN_MAIN_PATH_PIECES)
                     .forGetter(MKWorkspaceTopologyPathSettings::minMainPathPieces),
             Codec.INT.optionalFieldOf("max_main_path_pieces", DEFAULT_MAX_MAIN_PATH_PIECES)
@@ -37,7 +37,7 @@ public record MKWorkspaceTopologyPathSettings(
     ).apply(instance, MKWorkspaceTopologyPathSettings::new));
 
     public MKWorkspaceTopologyPathSettings {
-        categoryId = categoryId == null || categoryId.isBlank() ? "main" : categoryId;
+        topologyGroupId = topologyGroupId == null || topologyGroupId.isBlank() ? "main" : topologyGroupId;
         minMainPathPieces = Math.max(0, minMainPathPieces);
         maxMainPathPieces = Math.max(minMainPathPieces, maxMainPathPieces);
         maxBranchPiecesBeforeCap = Math.max(0, Math.min(
@@ -47,14 +47,14 @@ public record MKWorkspaceTopologyPathSettings(
     public static List<MKWorkspaceTopologyPathSettings> defaults() {
         ArrayList<MKWorkspaceTopologyPathSettings> defaults = new ArrayList<>();
         for (String topologyGroupId : DEFAULT_TOPOLOGY_GROUP_IDS) {
-            defaults.add(defaultForCategory(topologyGroupId));
+            defaults.add(defaultForTopologyGroup(topologyGroupId));
         }
         return List.copyOf(defaults);
     }
 
-    public static MKWorkspaceTopologyPathSettings defaultForCategory(String categoryId) {
+    public static MKWorkspaceTopologyPathSettings defaultForTopologyGroup(String topologyGroupId) {
         return new MKWorkspaceTopologyPathSettings(
-                categoryId,
+                topologyGroupId,
                 DEFAULT_MIN_MAIN_PATH_PIECES,
                 DEFAULT_MAX_MAIN_PATH_PIECES,
                 DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP
@@ -62,36 +62,36 @@ public record MKWorkspaceTopologyPathSettings(
     }
 
     public static List<MKWorkspaceTopologyPathSettings> normalize(List<MKWorkspaceTopologyPathSettings> settings) {
-        Map<String, MKWorkspaceTopologyPathSettings> byCategory = new LinkedHashMap<>();
+        Map<String, MKWorkspaceTopologyPathSettings> byTopologyGroup = new LinkedHashMap<>();
         for (MKWorkspaceTopologyPathSettings defaultSetting : defaults()) {
-            byCategory.put(defaultSetting.categoryId(), defaultSetting);
+            byTopologyGroup.put(defaultSetting.topologyGroupId(), defaultSetting);
         }
         if (settings != null) {
             for (MKWorkspaceTopologyPathSettings setting : settings) {
-                byCategory.put(setting.categoryId(), setting);
+                byTopologyGroup.put(setting.topologyGroupId(), setting);
             }
         }
-        return List.copyOf(byCategory.values());
+        return List.copyOf(byTopologyGroup.values());
     }
 
     public static Optional<MKWorkspaceTopologyPathSettings> find(List<MKWorkspaceTopologyPathSettings> settings,
-                                                                 String categoryId) {
+                                                                 String topologyGroupId) {
         return normalize(settings).stream()
-                .filter(setting -> setting.categoryId().equals(categoryId))
+                .filter(setting -> setting.topologyGroupId().equals(topologyGroupId))
                 .findFirst();
     }
 
     public MKWorkspaceTopologyPathSettings withMinMainPathPieces(int value) {
-        return new MKWorkspaceTopologyPathSettings(categoryId, value, Math.max(value, maxMainPathPieces),
+        return new MKWorkspaceTopologyPathSettings(topologyGroupId, value, Math.max(value, maxMainPathPieces),
                 maxBranchPiecesBeforeCap);
     }
 
     public MKWorkspaceTopologyPathSettings withMaxMainPathPieces(int value) {
-        return new MKWorkspaceTopologyPathSettings(categoryId, Math.min(minMainPathPieces, value), value,
+        return new MKWorkspaceTopologyPathSettings(topologyGroupId, Math.min(minMainPathPieces, value), value,
                 maxBranchPiecesBeforeCap);
     }
 
     public MKWorkspaceTopologyPathSettings withMaxBranchPiecesBeforeCap(int value) {
-        return new MKWorkspaceTopologyPathSettings(categoryId, minMainPathPieces, maxMainPathPieces, value);
+        return new MKWorkspaceTopologyPathSettings(topologyGroupId, minMainPathPieces, maxMainPathPieces, value);
     }
 }

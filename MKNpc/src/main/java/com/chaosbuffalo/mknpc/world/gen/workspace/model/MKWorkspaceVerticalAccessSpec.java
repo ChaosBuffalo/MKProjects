@@ -29,7 +29,7 @@ public class MKWorkspaceVerticalAccessSpec {
 
     public static MKWorkspaceVerticalAccessSpec defaultSpec() {
         MKWorkspaceDimensions defaults = MKWorkspaceDimensions.defaultDimensions();
-        return new MKWorkspaceVerticalAccessSpec(defaults.hallwayWidth(), MKVerticalAccessPlacement.CENTER,
+        return new MKWorkspaceVerticalAccessSpec(defaults.shaftWidth(), MKVerticalAccessPlacement.CENTER,
                 MKWorkspaceStairAuthoringConfig.defaultConfig());
     }
 

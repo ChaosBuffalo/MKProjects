@@ -20,7 +20,7 @@ public class WorkspaceTopologySlotEditor {
     }
 
     public List<MKWorkspacePieceDefinition> selectedPieces() {
-        return screen.selectedCategoryPieces();
+        return screen.selectedTopologySlotPieces();
     }
 
     public void clearSelection() {
@@ -28,62 +28,62 @@ public class WorkspaceTopologySlotEditor {
     }
 
     public void ensureOverridesInitialized() {
-        screen.ensureCategoryOverridesInitialized();
+        screen.ensureTopologySlotOverridesInitialized();
     }
 
     public void resetOverrides() {
-        screen.resetCategoryOverrides();
+        screen.resetTopologySlotOverrides();
     }
 
     public int shaftWidth() {
-        return screen.categoryShaftWidth();
+        return screen.topologySlotShaftWidth();
     }
 
     public MKWorkspaceStairMode stairMode() {
-        return screen.categoryStairMode();
+        return screen.topologySlotStairMode();
     }
 
     public void stairMode(MKWorkspaceStairMode value) {
-        screen.categoryStairMode(value);
+        screen.topologySlotStairMode(value);
     }
 
     public MKWorkspaceStairRiseType stairRiseType() {
-        return screen.categoryStairRiseType();
+        return screen.topologySlotStairRiseType();
     }
 
     public void stairRiseType(MKWorkspaceStairRiseType value) {
-        screen.categoryStairRiseType(value);
+        screen.topologySlotStairRiseType(value);
     }
 
     public int stairWidth() {
-        return screen.categoryStairWidth();
+        return screen.topologySlotStairWidth();
     }
 
     public void stairWidth(int value) {
-        screen.categoryStairWidth(value);
+        screen.topologySlotStairWidth(value);
     }
 
     public ResourceLocation stairBlock() {
-        return screen.categoryStairBlock();
+        return screen.topologySlotStairBlock();
     }
 
     public void stairBlock(ResourceLocation value) {
-        screen.categoryStairBlock(value);
+        screen.topologySlotStairBlock(value);
     }
 
     public ResourceLocation slabBlock() {
-        return screen.categorySlabBlock();
+        return screen.topologySlotSlabBlock();
     }
 
     public void slabBlock(ResourceLocation value) {
-        screen.categorySlabBlock(value);
+        screen.topologySlotSlabBlock(value);
     }
 
     public ResourceLocation ladderBlock() {
-        return screen.categoryLadderBlock();
+        return screen.topologySlotLadderBlock();
     }
 
     public void ladderBlock(ResourceLocation value) {
-        screen.categoryLadderBlock(value);
+        screen.topologySlotLadderBlock(value);
     }
 }

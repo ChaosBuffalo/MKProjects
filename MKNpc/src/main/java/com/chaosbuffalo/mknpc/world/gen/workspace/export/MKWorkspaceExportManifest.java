@@ -252,7 +252,7 @@ public record MKWorkspaceExportManifest(
             int entranceHeight,
             int roomHeight,
             int basementHeight,
-            int hallwayWidth,
+            int shaftWidth,
             int doorwayWidth,
             int doorwayHeight
     ) {
@@ -262,7 +262,7 @@ public record MKWorkspaceExportManifest(
                 Codec.INT.fieldOf("entrance_height").forGetter(ExportDimensions::entranceHeight),
                 Codec.INT.fieldOf("room_height").forGetter(ExportDimensions::roomHeight),
                 Codec.INT.fieldOf("basement_height").forGetter(ExportDimensions::basementHeight),
-                Codec.INT.fieldOf("hallway_width").forGetter(ExportDimensions::hallwayWidth),
+                Codec.INT.fieldOf("shaft_width").forGetter(ExportDimensions::shaftWidth),
                 Codec.INT.fieldOf("doorway_width").forGetter(ExportDimensions::doorwayWidth),
                 Codec.INT.fieldOf("doorway_height").forGetter(ExportDimensions::doorwayHeight)
         ).apply(instance, ExportDimensions::new));
@@ -274,7 +274,7 @@ public record MKWorkspaceExportManifest(
                     dimensions.entranceHeight(),
                     dimensions.roomHeight(),
                     dimensions.basementHeight(),
-                    dimensions.hallwayWidth(),
+                    dimensions.shaftWidth(),
                     dimensions.doorwayWidth(),
                     dimensions.doorwayHeight()
             );
@@ -953,7 +953,7 @@ public record MKWorkspaceExportManifest(
 
     private static boolean isBranchRuntimePool(MKStructureWorkspace workspace, ResourceLocation poolId) {
         String path = runtimePoolPath(workspace, poolId);
-        return path.startsWith("hallways/branch/") || path.startsWith("linear_runs/branch/") ||
+        return path.startsWith("linear_runs/branch/") ||
                 path.startsWith("rooms/branch/") ||
                 path.startsWith("branch_caps/");
     }

@@ -89,7 +89,7 @@ public class MKNpcLanguageProvider extends NpcLanguageProvider {
         add("item.mknpc.mk_workspace_dev", "Workspace Dev Block");
         add("mknpc.workspace.screen.title", "Tower Workspace Authoring");
         add("mknpc.workspace.screen.help",
-                "Configure a tower template workspace. Dimensions should stay odd for centered connectors. Hallways can be as tight as 1 wide and 2 high.");
+                "Configure a tower template workspace. Dimensions should stay odd for centered connectors. Linear runs can be as tight as 1 wide and 2 high.");
         add("mknpc.workspace.screen.generate", "Create + Generate");
         add("mknpc.workspace.screen.manage_title", "Tower Workspace Pieces");
         add("mknpc.workspace.screen.manage_summary", "Workspace %s:%s currently has %s generated pieces.");

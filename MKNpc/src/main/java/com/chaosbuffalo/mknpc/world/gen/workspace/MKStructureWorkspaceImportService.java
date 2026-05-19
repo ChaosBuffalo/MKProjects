@@ -169,7 +169,7 @@ public class MKStructureWorkspaceImportService {
                 dimensions.entranceHeight(),
                 dimensions.roomHeight(),
                 dimensions.basementHeight(),
-                dimensions.hallwayWidth(),
+                dimensions.shaftWidth(),
                 dimensions.doorwayWidth(),
                 dimensions.doorwayHeight()
         );
@@ -419,7 +419,7 @@ public class MKStructureWorkspaceImportService {
                 dimensions.entranceHeight(),
                 dimensions.roomHeight(),
                 dimensions.basementHeight(),
-                dimensions.hallwayWidth(),
+                dimensions.shaftWidth(),
                 dimensions.doorwayWidth(),
                 dimensions.doorwayHeight()
         );

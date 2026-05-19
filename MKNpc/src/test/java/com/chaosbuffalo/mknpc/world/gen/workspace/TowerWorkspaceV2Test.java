@@ -463,6 +463,26 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void workspaceDimensionsSerializeShaftWidthWithoutObsoleteField() {
+        CompoundTag tag = MKWorkspaceDimensions.defaultDimensions().toTag();
+
+        assertTrue(tag.contains("shaftWidth"));
+        assertFalse(tag.contains("hall" + "wayWidth"));
+    }
+
+    @Test
+    void exportDimensionsUseShaftWidthAndLinearRunConnectionMode() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false)),
+                List.of()
+        );
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.snapshotFromWorkspace(workspace, 4, "test");
+
+        assertEquals(workspace.dimensions().shaftWidth(), manifest.settings().dimensions().shaftWidth());
+        assertEquals("linear_run", MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN.getSerializedName());
+    }
+
+    @Test
     void resolvedFamilyMetadataComesFromTopologySlot() {
         MKTowerWorkspaceFamilyDefinition mismatchedFamily = topologyFamily(
                 "custom_top",

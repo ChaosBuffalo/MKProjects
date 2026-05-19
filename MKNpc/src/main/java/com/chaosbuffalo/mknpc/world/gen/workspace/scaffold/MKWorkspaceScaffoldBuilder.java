@@ -185,7 +185,7 @@ public class MKWorkspaceScaffoldBuilder {
                 plannedPiece.interiorHeight(),
                 plannedPiece.interiorHeight(),
                 plannedPiece.interiorHeight(),
-                workspace.dimensions().hallwayWidth(),
+                workspace.dimensions().shaftWidth(),
                 workspace.dimensions().doorwayWidth(),
                 workspace.dimensions().doorwayHeight()
         );
