@@ -52,6 +52,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerStackDefinition
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerStackPlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
+import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -477,9 +479,16 @@ class TowerWorkspaceV2Test {
                 List.of()
         );
         MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.snapshotFromWorkspace(workspace, 4, "test");
+        JsonObject json = MKWorkspaceExportManifest.CODEC.encodeStart(JsonOps.INSTANCE, manifest)
+                .getOrThrow()
+                .getAsJsonObject();
 
         assertEquals(workspace.dimensions().shaftWidth(), manifest.settings().dimensions().shaftWidth());
         assertEquals("linear_run", MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN.getSerializedName());
+        assertTrue(json.has("template_groups"));
+        assertFalse(json.has("categories"));
+        assertTrue(json.getAsJsonObject("runtime_hints").has("template_groups"));
+        assertFalse(json.getAsJsonObject("runtime_hints").has("categories"));
     }
 
     @Test
@@ -577,7 +586,7 @@ class TowerWorkspaceV2Test {
                 manifest.updatedAt(),
                 staleSettings,
                 manifest.runtimeHints(),
-                manifest.categories(),
+                manifest.templateGroups(),
                 manifest.pieces());
 
         MKStructureWorkspace imported = new MKStructureWorkspaceImportService().workspaceFromManifest(
@@ -1172,11 +1181,11 @@ class TowerWorkspaceV2Test {
                 .toList();
         MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace.withPieces(exportedPieces), 1, "now");
 
-        MKWorkspaceExportManifest.ExportRuntimeCategory roomCategory = manifest.runtimeHints().categories().stream()
+        MKWorkspaceExportManifest.ExportRuntimeTemplateGroup roomCategory = manifest.runtimeHints().templateGroups().stream()
                 .filter(category -> category.baseName().equals("keep_center_entry"))
                 .findFirst()
                 .orElseThrow();
-        MKWorkspaceExportManifest.ExportRuntimeCategory runCategory = manifest.runtimeHints().categories().stream()
+        MKWorkspaceExportManifest.ExportRuntimeTemplateGroup runCategory = manifest.runtimeHints().templateGroups().stream()
                 .filter(category -> category.baseName().equals("keep_wall_north"))
                 .findFirst()
                 .orElseThrow();
@@ -1215,7 +1224,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace exportedWorkspace = workspace.withPieces(List.of(
                 pieceToDefinitionWithConnectors(workspace, centerEntry)));
         MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(exportedWorkspace, 1, "now");
-        MKWorkspaceExportManifest.ExportRuntimeCategory centerEntryCategory = manifest.runtimeHints().categories().stream()
+        MKWorkspaceExportManifest.ExportRuntimeTemplateGroup centerEntryCategory = manifest.runtimeHints().templateGroups().stream()
                 .filter(category -> category.baseName().equals("keep_center_entry"))
                 .findFirst()
                 .orElseThrow();
@@ -1787,8 +1796,8 @@ class TowerWorkspaceV2Test {
                 .map(piece -> pieceToDefinitionWithConnectors(branchCapWorkspace, piece))
                 .toList());
         MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(exportedWorkspace, 4, "test");
-        MKWorkspaceExportManifest.ExportRuntimeCategory category = manifest.runtimeHints().categories().stream()
-                .filter(runtimeCategory -> runtimeCategory.baseName().equals("branch_cap"))
+        MKWorkspaceExportManifest.ExportRuntimeTemplateGroup templateGroup = manifest.runtimeHints().templateGroups().stream()
+                .filter(runtimeGroup -> runtimeGroup.baseName().equals("branch_cap"))
                 .findFirst()
                 .orElseThrow();
         MKWorkspaceExportManifest.ExportRuntimePool capPool = manifest.runtimeHints().pools().stream()
@@ -1796,7 +1805,7 @@ class TowerWorkspaceV2Test {
                 .findFirst()
                 .orElseThrow();
 
-        assertTrue(category.pieceMetadata().branchCap());
+        assertTrue(templateGroup.pieceMetadata().branchCap());
         assertEquals(List.of("branch_cap"), capPool.childBaseNames());
     }
 

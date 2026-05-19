@@ -55,7 +55,7 @@ public record MKWorkspaceExportManifest(
         long updatedAt,
         ExportWorkspaceSettings settings,
         ExportRuntimeHints runtimeHints,
-        List<ExportCategory> categories,
+        List<ExportTemplateGroup> templateGroups,
         List<ExportPiece> pieces
 ) {
     private static final Codec<UUID> UUID_CODEC = Codec.STRING.xmap(UUID::fromString, UUID::toString);
@@ -72,7 +72,7 @@ public record MKWorkspaceExportManifest(
             Codec.LONG.fieldOf("updated_at").forGetter(MKWorkspaceExportManifest::updatedAt),
             ExportWorkspaceSettings.CODEC.fieldOf("settings").forGetter(MKWorkspaceExportManifest::settings),
             ExportRuntimeHints.CODEC.fieldOf("runtime_hints").forGetter(MKWorkspaceExportManifest::runtimeHints),
-            ExportCategory.CODEC.listOf().fieldOf("categories").forGetter(MKWorkspaceExportManifest::categories),
+            ExportTemplateGroup.CODEC.listOf().fieldOf("template_groups").forGetter(MKWorkspaceExportManifest::templateGroups),
             ExportPiece.CODEC.listOf().fieldOf("pieces").forGetter(MKWorkspaceExportManifest::pieces)
     ).apply(instance, MKWorkspaceExportManifest::new));
 
@@ -126,7 +126,7 @@ public record MKWorkspaceExportManifest(
                         workspace.linearRunFamilies().stream().map(ExportLinearRunFamily::from).toList()
                 ),
                 runtimeHints,
-                buildCategories(workspace),
+                buildTemplateGroups(workspace),
                 workspace.pieces().stream().map(piece -> ExportPiece.from(workspace, piece)).toList()
         );
     }
@@ -168,14 +168,14 @@ public record MKWorkspaceExportManifest(
         return List.copyOf(errors);
     }
 
-    private static List<ExportCategory> buildCategories(MKStructureWorkspace workspace) {
+    private static List<ExportTemplateGroup> buildTemplateGroups(MKStructureWorkspace workspace) {
         Map<String, List<MKWorkspacePieceDefinition>> grouped = workspace.pieces().stream()
                 .collect(Collectors.groupingBy(
                         piece -> piece.tags().getOrDefault("workspace_base_name", piece.pieceName()),
                         LinkedHashMap::new,
                         Collectors.toList()));
         return grouped.entrySet().stream()
-                .map(entry -> new ExportCategory(
+                .map(entry -> new ExportTemplateGroup(
                         entry.getKey(),
                         entry.getValue().get(0).roleId(),
                         entry.getValue().stream()
@@ -562,22 +562,22 @@ public record MKWorkspaceExportManifest(
 
     public record ExportRuntimeHints(
             String startBaseName,
-            List<ExportRuntimeCategory> categories,
+            List<ExportRuntimeTemplateGroup> templateGroups,
             List<ExportRuntimePool> pools
     ) {
         public static final Codec<ExportRuntimeHints> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("start_base_name").forGetter(ExportRuntimeHints::startBaseName),
-                ExportRuntimeCategory.CODEC.listOf().fieldOf("categories").forGetter(ExportRuntimeHints::categories),
+                ExportRuntimeTemplateGroup.CODEC.listOf().fieldOf("template_groups").forGetter(ExportRuntimeHints::templateGroups),
                 ExportRuntimePool.CODEC.listOf().optionalFieldOf("pools", List.of()).forGetter(ExportRuntimeHints::pools)
         ).apply(instance, ExportRuntimeHints::new));
 
         public static ExportRuntimeHints forWorkspace(MKStructureWorkspace workspace) {
-            List<ExportRuntimeCategory> categories = buildCategories(workspace).stream()
-                    .map(category -> ExportRuntimeCategory.forCategory(workspace, category))
+            List<ExportRuntimeTemplateGroup> templateGroups = buildTemplateGroups(workspace).stream()
+                    .map(templateGroup -> ExportRuntimeTemplateGroup.forTemplateGroup(workspace, templateGroup))
                     .flatMap(java.util.Optional::stream)
                     .toList();
             String startBaseName = findStartBaseName(workspace);
-            return new ExportRuntimeHints(startBaseName, categories, buildRuntimePools(workspace));
+            return new ExportRuntimeHints(startBaseName, templateGroups, buildRuntimePools(workspace));
         }
 
         public static ExportRuntimeHints forWorkspaceIfValid(MKStructureWorkspace workspace) {
@@ -605,20 +605,20 @@ public record MKWorkspaceExportManifest(
         ).apply(instance, ExportRuntimePool::new));
     }
 
-    public record ExportRuntimeCategory(
+    public record ExportRuntimeTemplateGroup(
             String baseName,
             String roleId,
             ExportRuntimePieceMetadata pieceMetadata
     ) {
-        public static final Codec<ExportRuntimeCategory> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                Codec.STRING.fieldOf("base_name").forGetter(ExportRuntimeCategory::baseName),
-                Codec.STRING.fieldOf("role_id").forGetter(ExportRuntimeCategory::roleId),
-                ExportRuntimePieceMetadata.CODEC.fieldOf("piece_metadata").forGetter(ExportRuntimeCategory::pieceMetadata)
-        ).apply(instance, ExportRuntimeCategory::new));
+        public static final Codec<ExportRuntimeTemplateGroup> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.STRING.fieldOf("base_name").forGetter(ExportRuntimeTemplateGroup::baseName),
+                Codec.STRING.fieldOf("role_id").forGetter(ExportRuntimeTemplateGroup::roleId),
+                ExportRuntimePieceMetadata.CODEC.fieldOf("piece_metadata").forGetter(ExportRuntimeTemplateGroup::pieceMetadata)
+        ).apply(instance, ExportRuntimeTemplateGroup::new));
 
-        public static java.util.Optional<ExportRuntimeCategory> forCategory(MKStructureWorkspace workspace, ExportCategory category) {
+        public static java.util.Optional<ExportRuntimeTemplateGroup> forTemplateGroup(MKStructureWorkspace workspace, ExportTemplateGroup templateGroup) {
             java.util.Optional<MKWorkspacePieceDefinition> runtimePiece = workspace.pieces().stream()
-                    .filter(piece -> category.baseName().equals(piece.tags().getOrDefault("workspace_base_name", piece.pieceName())))
+                    .filter(piece -> templateGroup.baseName().equals(piece.tags().getOrDefault("workspace_base_name", piece.pieceName())))
                     .findFirst();
             java.util.Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = runtimePiece
                     .map(MKWorkspacePieceDefinition::tags)
@@ -626,9 +626,9 @@ public record MKWorkspaceExportManifest(
             if (runtimeInfo.isEmpty() || runtimePiece.isEmpty()) {
                 return java.util.Optional.empty();
             }
-            return java.util.Optional.of(new ExportRuntimeCategory(
-                    category.baseName(),
-                    category.roleId(),
+            return java.util.Optional.of(new ExportRuntimeTemplateGroup(
+                    templateGroup.baseName(),
+                    templateGroup.roleId(),
                     ExportRuntimePieceMetadata.from(runtimeInfo.get(), foundationPolicyForPiece(workspace, runtimePiece.get()))
             ));
         }
@@ -714,12 +714,12 @@ public record MKWorkspaceExportManifest(
         ).apply(instance, ExportStairConfig::new));
     }
 
-    public record ExportCategory(String baseName, String roleId, List<String> pieces) {
-        public static final Codec<ExportCategory> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                Codec.STRING.fieldOf("base_name").forGetter(ExportCategory::baseName),
-                Codec.STRING.fieldOf("role_id").forGetter(ExportCategory::roleId),
-                Codec.STRING.listOf().fieldOf("pieces").forGetter(ExportCategory::pieces)
-        ).apply(instance, ExportCategory::new));
+    public record ExportTemplateGroup(String baseName, String roleId, List<String> pieces) {
+        public static final Codec<ExportTemplateGroup> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.STRING.fieldOf("base_name").forGetter(ExportTemplateGroup::baseName),
+                Codec.STRING.fieldOf("role_id").forGetter(ExportTemplateGroup::roleId),
+                Codec.STRING.listOf().fieldOf("pieces").forGetter(ExportTemplateGroup::pieces)
+        ).apply(instance, ExportTemplateGroup::new));
     }
 
     public record ExportPositionRef(ExportBlockPos absolute, ExportBlockPos offset) {

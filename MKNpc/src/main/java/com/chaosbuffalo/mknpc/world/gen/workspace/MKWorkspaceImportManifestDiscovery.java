@@ -12,7 +12,7 @@ public class MKWorkspaceImportManifestDiscovery {
     private final Path moduleRoot;
     private final String namespace;
 
-    public record ImportCandidate(ResourceLocation id, String familyType, int pieceCount, int categoryCount, Path path) {
+    public record ImportCandidate(ResourceLocation id, String familyType, int pieceCount, int templateGroupCount, Path path) {
     }
 
     public MKWorkspaceImportManifestDiscovery(Path moduleRoot, String namespace) {
@@ -38,7 +38,7 @@ public class MKWorkspaceImportManifestDiscovery {
                 ResourceLocation.fromNamespaceAndPath(manifest.namespace(), manifest.structureName()),
                 manifest.familyType().getSerializedName(),
                 manifest.pieces().size(),
-                manifest.categories().size(),
+                manifest.templateGroups().size(),
                 loaded.path()
         );
     }

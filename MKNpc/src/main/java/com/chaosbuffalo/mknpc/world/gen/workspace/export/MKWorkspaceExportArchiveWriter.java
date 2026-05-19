@@ -63,9 +63,9 @@ public class MKWorkspaceExportArchiveWriter {
     }
 
     private int writePieceMetadata(ZipOutputStream output, MKWorkspaceExportManifest manifest) throws IOException {
-        Map<String, MKWorkspaceExportManifest.ExportRuntimeCategory> categoryByBaseName = new LinkedHashMap<>();
-        for (MKWorkspaceExportManifest.ExportRuntimeCategory category : manifest.runtimeHints().categories()) {
-            categoryByBaseName.put(category.baseName(), category);
+        Map<String, MKWorkspaceExportManifest.ExportRuntimeTemplateGroup> groupByBaseName = new LinkedHashMap<>();
+        for (MKWorkspaceExportManifest.ExportRuntimeTemplateGroup templateGroup : manifest.runtimeHints().templateGroups()) {
+            groupByBaseName.put(templateGroup.baseName(), templateGroup);
         }
 
         int written = 0;
@@ -73,22 +73,22 @@ public class MKWorkspaceExportArchiveWriter {
             if ("template".equals(piece.workspacePieceKind())) {
                 continue;
             }
-            MKWorkspaceExportManifest.ExportRuntimeCategory category = categoryByBaseName.get(piece.baseName());
-            if (category == null) {
+            MKWorkspaceExportManifest.ExportRuntimeTemplateGroup templateGroup = groupByBaseName.get(piece.baseName());
+            if (templateGroup == null) {
                 continue;
             }
             MKJigsawPieceMetadata metadata = new MKJigsawPieceMetadata(
-                    category.pieceMetadata().role(),
-                    category.pieceMetadata().progressionDelta(),
-                    category.pieceMetadata().verticalLevelDelta(),
-                    category.pieceMetadata().allowOnMainPath(),
-                    category.pieceMetadata().allowOnBranchPath(),
-                    category.pieceMetadata().terminal(),
-                    category.pieceMetadata().topCapOnly(),
-                    category.pieceMetadata().category(),
-                    category.pieceMetadata().mainPathEnding(),
-                    category.pieceMetadata().branchCap(),
-                    category.pieceMetadata().foundationPolicy()
+                    templateGroup.pieceMetadata().role(),
+                    templateGroup.pieceMetadata().progressionDelta(),
+                    templateGroup.pieceMetadata().verticalLevelDelta(),
+                    templateGroup.pieceMetadata().allowOnMainPath(),
+                    templateGroup.pieceMetadata().allowOnBranchPath(),
+                    templateGroup.pieceMetadata().terminal(),
+                    templateGroup.pieceMetadata().topCapOnly(),
+                    templateGroup.pieceMetadata().category(),
+                    templateGroup.pieceMetadata().mainPathEnding(),
+                    templateGroup.pieceMetadata().branchCap(),
+                    templateGroup.pieceMetadata().foundationPolicy()
             );
             writeJson(output, metadataEntryName(manifest, piece), MKJigsawPieceMetadata.CODEC
                     .encodeStart(JsonOps.INSTANCE, metadata)

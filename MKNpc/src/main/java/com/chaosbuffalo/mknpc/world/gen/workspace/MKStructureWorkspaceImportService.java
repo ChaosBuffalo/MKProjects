@@ -295,8 +295,8 @@ public class MKStructureWorkspaceImportService {
         Map<String, MKWorkspaceExportManifest.ExportPiece> byName = manifest.pieces().stream()
                 .collect(Collectors.toMap(MKWorkspaceExportManifest.ExportPiece::pieceName, piece -> piece));
         List<MKPlannedPiece> plannedPieces = new ArrayList<>();
-        for (MKWorkspaceExportManifest.ExportCategory category : manifest.categories()) {
-            for (String pieceName : category.pieces()) {
+        for (MKWorkspaceExportManifest.ExportTemplateGroup templateGroup : manifest.templateGroups()) {
+            for (String pieceName : templateGroup.pieces()) {
                 MKWorkspaceExportManifest.ExportPiece piece = byName.get(pieceName);
                 if (piece != null) {
                     plannedPieces.add(toPlannedPiece(piece));
