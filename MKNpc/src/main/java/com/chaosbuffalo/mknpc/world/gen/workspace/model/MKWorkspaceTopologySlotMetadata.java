@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 public record MKWorkspaceTopologySlotMetadata(
         String topologySlotId,
@@ -11,13 +13,18 @@ public record MKWorkspaceTopologySlotMetadata(
         boolean terminal,
         MKJigsawPieceRole jigsawPieceRole
 ) {
+    public static final Codec<MKWorkspaceTopologySlotMetadata> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.STRING.fieldOf("topology_slot_id").forGetter(MKWorkspaceTopologySlotMetadata::topologySlotId),
+            Codec.STRING.fieldOf("role_kind").forGetter(MKWorkspaceTopologySlotMetadata::roleKind),
+            Codec.STRING.fieldOf("piece_kind").forGetter(MKWorkspaceTopologySlotMetadata::pieceKind),
+            Codec.BOOL.fieldOf("terminal").forGetter(MKWorkspaceTopologySlotMetadata::terminal)
+    ).apply(instance, MKWorkspaceTopologySlotMetadata::fromTopologyRole));
+
     public static MKWorkspaceTopologySlotMetadata fromFamily(MKTowerWorkspaceFamilyDefinition family) {
         return family.slotMetadata();
     }
 
-    public static MKWorkspaceTopologySlotMetadata fromTopologySlotIdOrHints(String topologySlotId,
-                                                                            MKTowerWorkspaceCategory category,
-                                                                            MKWorkspacePieceRole pieceRole) {
+    public static MKWorkspaceTopologySlotMetadata fromTopologySlotId(String topologySlotId) {
         return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
                 .map(slot -> new MKWorkspaceTopologySlotMetadata(
                         topologySlotId,
@@ -27,15 +34,20 @@ public record MKWorkspaceTopologySlotMetadata(
                         slot.pieceKind(),
                         slot.terminal(),
                         jigsawRoleFor(slot.pieceRole())))
-                .orElseGet(() -> legacy(topologySlotId, category, pieceRole));
+                .orElseGet(() -> fromTopologyRole(topologySlotId, "floor", "room", false));
     }
 
-    public static MKWorkspaceTopologySlotMetadata explicit(String topologySlotId,
-                                                           MKTowerWorkspaceCategory category,
-                                                           MKWorkspacePieceRole pieceRole,
-                                                           String roleKind,
-                                                           String pieceKind,
-                                                           boolean terminal) {
+    public static MKWorkspaceTopologySlotMetadata fromTowerStackSlot(MKTowerWorkspaceStackSlot slot, String stackId) {
+        return fromTopologySlotId(slot.slotId(stackId));
+    }
+
+    public static MKWorkspaceTopologySlotMetadata explicit(String topologySlotId, String roleKind,
+                                                           String pieceKind, boolean terminal) {
+        return fromTopologyRole(topologySlotId, roleKind, pieceKind, terminal);
+    }
+
+    public static MKWorkspaceTopologySlotMetadata fromTopologyRole(String topologySlotId, String roleKind,
+                                                                   String pieceKind, boolean terminal) {
         return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
                 .map(slot -> new MKWorkspaceTopologySlotMetadata(
                         topologySlotId,
@@ -45,50 +57,41 @@ public record MKWorkspaceTopologySlotMetadata(
                         slot.pieceKind(),
                         slot.terminal(),
                         jigsawRoleFor(slot.pieceRole())))
-                .orElseGet(() -> new MKWorkspaceTopologySlotMetadata(
-                        topologySlotId,
-                        category,
-                        pieceRole,
-                        roleKind,
-                        pieceKind,
-                        terminal,
-                        jigsawRoleFor(pieceRole)));
+                .orElseGet(() -> {
+                    MKWorkspacePieceRole pieceRole = pieceRoleForTopologyRole(roleKind, pieceKind);
+                    return new MKWorkspaceTopologySlotMetadata(
+                            topologySlotId,
+                            categoryForTopologyRole(roleKind, pieceKind),
+                            pieceRole,
+                            roleKind,
+                            pieceKind,
+                            terminal,
+                            jigsawRoleFor(pieceRole));
+                });
     }
 
-    private static MKWorkspaceTopologySlotMetadata legacy(String topologySlotId,
-                                                          MKTowerWorkspaceCategory category,
-                                                          MKWorkspacePieceRole pieceRole) {
-        return new MKWorkspaceTopologySlotMetadata(
-                topologySlotId,
-                category,
-                pieceRole,
-                legacyRoleKind(pieceRole),
-                legacyPieceKind(pieceRole),
-                legacyTerminal(pieceRole),
-                jigsawRoleFor(pieceRole)
-        );
+    public MKWorkspaceTopologySlotMetadata withTopologySlotId(String topologySlotId) {
+        return fromTopologyRole(topologySlotId, roleKind, pieceKind, terminal);
     }
 
-    private static String legacyRoleKind(MKWorkspacePieceRole pieceRole) {
-        return switch (pieceRole) {
-            case TOP_CAP, BASEMENT_CAP -> "cap";
-            case TOP_CAP_APPROACH, BASEMENT_CAP_APPROACH -> "cap_approach";
-            case HALLWAY -> "linear_run";
-            default -> "floor";
+    private static MKTowerWorkspaceCategory categoryForTopologyRole(String roleKind, String pieceKind) {
+        return switch (roleKind) {
+            case "entry" -> MKTowerWorkspaceCategory.ENTRY;
+            case "cap", "cap_approach" -> "terminal_bottom".equals(pieceKind) ?
+                    MKTowerWorkspaceCategory.BASEMENT_CAP : MKTowerWorkspaceCategory.TOP_CAP;
+            default -> MKTowerWorkspaceCategory.MAIN;
         };
     }
 
-    private static String legacyPieceKind(MKWorkspacePieceRole pieceRole) {
-        return switch (pieceRole) {
-            case TOP_CAP -> "top_cap";
-            case BASEMENT_CAP -> "terminal_bottom";
-            case HALLWAY -> "linear_run";
-            default -> "room";
+    private static MKWorkspacePieceRole pieceRoleForTopologyRole(String roleKind, String pieceKind) {
+        return switch (roleKind) {
+            case "entry" -> MKWorkspacePieceRole.ENTRY;
+            case "cap" -> "terminal_bottom".equals(pieceKind) ?
+                    MKWorkspacePieceRole.BASEMENT_CAP : MKWorkspacePieceRole.TOP_CAP;
+            case "cap_approach" -> "terminal_bottom".equals(pieceKind) ?
+                    MKWorkspacePieceRole.BASEMENT_CAP_APPROACH : MKWorkspacePieceRole.TOP_CAP_APPROACH;
+            default -> MKWorkspacePieceRole.FLOOR_MAIN;
         };
-    }
-
-    private static boolean legacyTerminal(MKWorkspacePieceRole pieceRole) {
-        return pieceRole == MKWorkspacePieceRole.TOP_CAP || pieceRole == MKWorkspacePieceRole.BASEMENT_CAP;
     }
 
     private static MKJigsawPieceRole jigsawRoleFor(MKWorkspacePieceRole pieceRole) {

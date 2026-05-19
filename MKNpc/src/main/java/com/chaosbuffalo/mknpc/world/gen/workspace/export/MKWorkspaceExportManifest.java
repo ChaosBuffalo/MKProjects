@@ -3,10 +3,8 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.export;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
@@ -197,10 +195,6 @@ public record MKWorkspaceExportManifest(
 
     private static Codec<MKVerticalAccessPlacement> verticalAccessPlacementCodec() {
         return Codec.STRING.xmap(MKVerticalAccessPlacement::fromSerializedName, MKVerticalAccessPlacement::getSerializedName);
-    }
-
-    private static Codec<MKTowerWorkspaceCategory> towerCategoryCodec() {
-        return Codec.STRING.xmap(MKTowerWorkspaceCategory::fromSerializedName, MKTowerWorkspaceCategory::getSerializedName);
     }
 
     private static Codec<MKWorkspacePieceRole> pieceRoleCodec() {
@@ -397,9 +391,7 @@ public record MKWorkspaceExportManifest(
 
     public record ExportFamilyDefinition(
             String baseName,
-            MKTowerWorkspaceCategory category,
-            MKWorkspacePieceRole pieceRole,
-            String topologySlotId,
+            MKWorkspaceTopologySlotMetadata slotMetadata,
             String verticalAccessGroupId,
             boolean supportsVerticalAccess,
             int roomWidth,
@@ -414,11 +406,8 @@ public record MKWorkspaceExportManifest(
     ) {
         public static final Codec<ExportFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("base_name").forGetter(ExportFamilyDefinition::baseName),
-                towerCategoryCodec().optionalFieldOf("category")
-                        .forGetter(ExportFamilyDefinition::serializedCategoryHintOpt),
-                pieceRoleCodec().optionalFieldOf("piece_role")
-                        .forGetter(ExportFamilyDefinition::serializedPieceRoleHintOpt),
-                Codec.STRING.optionalFieldOf("topology_slot_id", "").forGetter(ExportFamilyDefinition::topologySlotId),
+                MKWorkspaceTopologySlotMetadata.CODEC.fieldOf("slot_metadata")
+                        .forGetter(ExportFamilyDefinition::slotMetadata),
                 Codec.STRING.optionalFieldOf("vertical_access_group_id", "").forGetter(ExportFamilyDefinition::verticalAccessGroupId),
                 Codec.BOOL.fieldOf("supports_vertical_access").forGetter(ExportFamilyDefinition::supportsVerticalAccess),
             Codec.INT.optionalFieldOf("room_width", 0).forGetter(ExportFamilyDefinition::roomWidth),
@@ -435,14 +424,11 @@ public record MKWorkspaceExportManifest(
                     .forGetter(ExportFamilyDefinition::foundationPolicyOverrideOpt),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
                     .forGetter(ExportFamilyDefinition::paletteOverrideOpt)
-        ).apply(instance, (baseName, category, pieceRole, topologySlotId, verticalAccessGroupId, supportsVerticalAccess,
+        ).apply(instance, (baseName, slotMetadata, verticalAccessGroupId, supportsVerticalAccess,
                            roomWidth, roomLength, roomHeight,
                            horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin, foundationPolicy,
                            paletteOverride) ->
-                new ExportFamilyDefinition(baseName,
-                        categoryForTopologySlotOrHint(topologySlotId, category),
-                        pieceRoleForTopologySlotOrHint(topologySlotId, pieceRole), topologySlotId, verticalAccessGroupId,
-                        supportsVerticalAccess,
+                new ExportFamilyDefinition(baseName, slotMetadata, verticalAccessGroupId, supportsVerticalAccess,
                         roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
                         topVoidMargin, bottomVoidMargin, foundationPolicy.orElse(null), paletteOverride.orElse(null))));
 
@@ -450,9 +436,7 @@ public record MKWorkspaceExportManifest(
             MKWorkspaceTopologySlotMetadata metadata = MKWorkspaceTopologySlotMetadata.fromFamily(familyDefinition);
             return new ExportFamilyDefinition(
                     familyDefinition.baseName(),
-                    metadata.category(),
-                    metadata.pieceRole(),
-                    familyDefinition.topologySlotId(),
+                    metadata,
                     familyDefinition.verticalAccessGroupId(),
                     familyDefinition.supportsVerticalAccess(),
                     familyDefinition.roomWidth(),
@@ -475,30 +459,8 @@ public record MKWorkspaceExportManifest(
             return Optional.ofNullable(paletteOverride);
         }
 
-        private Optional<MKTowerWorkspaceCategory> serializedCategoryHintOpt() {
-            return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId).isPresent()
-                    ? Optional.empty()
-                    : Optional.of(category);
-        }
-
-        private Optional<MKWorkspacePieceRole> serializedPieceRoleHintOpt() {
-            return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId).isPresent()
-                    ? Optional.empty()
-                    : Optional.of(pieceRole);
-        }
-
-        private static MKTowerWorkspaceCategory categoryForTopologySlotOrHint(String topologySlotId,
-                                                                             Optional<MKTowerWorkspaceCategory> hint) {
-            return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
-                    .map(MKTowerWorkspaceStackSlot::category)
-                    .orElseGet(() -> hint.orElse(MKTowerWorkspaceCategory.MAIN));
-        }
-
-        private static MKWorkspacePieceRole pieceRoleForTopologySlotOrHint(String topologySlotId,
-                                                                           Optional<MKWorkspacePieceRole> hint) {
-            return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
-                    .map(MKTowerWorkspaceStackSlot::pieceRole)
-                    .orElseGet(() -> hint.orElse(MKWorkspacePieceRole.FLOOR_MAIN));
+        public String topologySlotId() {
+            return slotMetadata.topologySlotId();
         }
     }
 

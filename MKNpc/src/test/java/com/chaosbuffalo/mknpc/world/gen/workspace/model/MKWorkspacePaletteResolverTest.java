@@ -25,11 +25,9 @@ class MKWorkspacePaletteResolverTest {
                 null,
                 null
         );
-        MKTowerWorkspaceFamilyDefinition family = new MKTowerWorkspaceFamilyDefinition(
+        MKTowerWorkspaceFamilyDefinition family = MKTowerWorkspaceFamilyDefinition.forTopologySlot(
                 "floor_main",
-                MKTowerWorkspaceCategory.MAIN,
-                MKWorkspacePieceRole.FLOOR_MAIN,
-                "legacy.main",
+                MKWorkspaceTopologySlotMetadata.fromTopologyRole("legacy.main", "floor", "room", false),
                 "",
                 true,
                 9,
@@ -66,11 +64,10 @@ class MKWorkspacePaletteResolverTest {
                 null,
                 null
         );
-        MKTowerWorkspaceFamilyDefinition family = new MKTowerWorkspaceFamilyDefinition(
+        MKTowerWorkspaceFamilyDefinition family = MKTowerWorkspaceFamilyDefinition.forTowerStackSlot(
                 "floor_main",
-                MKTowerWorkspaceCategory.MAIN,
-                MKWorkspacePieceRole.FLOOR_MAIN,
-                MKTowerWorkspaceStackSlot.MAIN_FLOOR.slotId("tower.primary"),
+                MKTowerWorkspaceStackSlot.MAIN_FLOOR,
+                "tower.primary",
                 true,
                 0,
                 0,
@@ -130,16 +127,18 @@ class MKWorkspacePaletteResolverTest {
                 id("deepslate_brick_slab"),
                 id("vine")
         );
-        MKTowerWorkspaceFamilyDefinition family = new MKTowerWorkspaceFamilyDefinition(
+        MKTowerWorkspaceFamilyDefinition family = MKTowerWorkspaceFamilyDefinition.forTopologySlot(
                 "floor_main",
-                MKTowerWorkspaceCategory.MAIN,
-                MKWorkspacePieceRole.FLOOR_MAIN,
+                MKWorkspaceTopologySlotMetadata.fromTopologySlotId("tower.primary.main_floor"),
+                "tower.primary",
                 true,
                 9,
                 9,
                 5,
                 MKWorkspaceHorizontalExtrusionMode.FULL_BODY,
                 List.of(),
+                0,
+                0,
                 familyOverride
         );
         MKStructureWorkspace workspace = workspace(base, List.of(family), List.of());
@@ -172,9 +171,10 @@ class MKWorkspacePaletteResolverTest {
                 null,
                 id("vine")
         );
-        MKTowerWorkspaceFamilyDefinition family = new MKTowerWorkspaceFamilyDefinition(
-                "floor_main", MKTowerWorkspaceCategory.MAIN, MKWorkspacePieceRole.FLOOR_MAIN,
-                true, 9, 9, 5, MKWorkspaceHorizontalExtrusionMode.FULL_BODY, List.of(),
+        MKTowerWorkspaceFamilyDefinition family = MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                "floor_main", MKWorkspaceTopologySlotMetadata.fromTopologySlotId("tower.primary.main_floor"),
+                "tower.primary", true, 9, 9, 5, MKWorkspaceHorizontalExtrusionMode.FULL_BODY, List.of(),
+                0, 0,
                 familyOverride);
         MKWorkspaceLinearRunFamilyDefinition linearRun = new MKWorkspaceLinearRunFamilyDefinition(
                 "branch", MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR, "branch_opening", 5, 3, 3,

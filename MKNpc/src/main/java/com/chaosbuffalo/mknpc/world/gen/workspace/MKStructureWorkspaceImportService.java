@@ -22,7 +22,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthorin
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
@@ -218,8 +217,7 @@ public class MKStructureWorkspaceImportService {
                             .toList();
                     return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
                             family.baseName(),
-                            MKWorkspaceTopologySlotMetadata.fromTopologySlotIdOrHints(
-                                    family.topologySlotId(), family.category(), family.pieceRole()),
+                            family.slotMetadata(),
                             family.verticalAccessGroupId(),
                             family.supportsVerticalAccess(),
                             family.roomWidth(),

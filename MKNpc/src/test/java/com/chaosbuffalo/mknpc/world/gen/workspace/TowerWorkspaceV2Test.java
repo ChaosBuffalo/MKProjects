@@ -16,6 +16,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStackBudget;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
@@ -42,6 +43,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
@@ -449,11 +451,10 @@ class TowerWorkspaceV2Test {
 
     @Test
     void resolvedFamilyMetadataComesFromTopologySlot() {
-        MKTowerWorkspaceFamilyDefinition mismatchedFamily = new MKTowerWorkspaceFamilyDefinition(
+        MKTowerWorkspaceFamilyDefinition mismatchedFamily = topologyFamily(
                 "custom_top",
-                MKTowerWorkspaceCategory.MAIN,
-                MKWorkspacePieceRole.FLOOR_MAIN,
                 "tower.primary.top_cap",
+                "tower.primary",
                 true,
                 0,
                 0,
@@ -481,8 +482,8 @@ class TowerWorkspaceV2Test {
 
         MKWorkspaceExportManifest.ExportFamilyDefinition exported =
                 MKWorkspaceExportManifest.ExportFamilyDefinition.from(mismatchedFamily);
-        assertEquals(MKTowerWorkspaceCategory.TOP_CAP, exported.category());
-        assertEquals(MKWorkspacePieceRole.TOP_CAP, exported.pieceRole());
+        assertEquals(MKTowerWorkspaceCategory.TOP_CAP, exported.slotMetadata().category());
+        assertEquals(MKWorkspacePieceRole.TOP_CAP, exported.slotMetadata().pieceRole());
 
         CompoundTag tag = mismatchedFamily.toTag();
         assertFalse(tag.contains("category"));
@@ -505,9 +506,7 @@ class TowerWorkspaceV2Test {
         MKWorkspaceExportManifest.ExportFamilyDefinition staleFamily =
                 new MKWorkspaceExportManifest.ExportFamilyDefinition(
                         "imported_stale_top",
-                        MKTowerWorkspaceCategory.MAIN,
-                        MKWorkspacePieceRole.FLOOR_MAIN,
-                        "tower.primary.top_cap",
+                        MKWorkspaceTopologySlotMetadata.fromTopologySlotId("tower.primary.top_cap"),
                         "tower.primary",
                         true,
                         0,
@@ -571,10 +570,8 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
                 MKWorkspaceTopologyProfile.walledKeep(false),
-                List.of(new MKTowerWorkspaceFamilyDefinition(
+                List.of(topologyFamily(
                         "keep_center_entry",
-                        MKTowerWorkspaceCategory.ENTRY,
-                        MKWorkspacePieceRole.ENTRY,
                         "keep.center.entry",
                         "keep.center",
                         true,
@@ -732,11 +729,9 @@ class TowerWorkspaceV2Test {
         List<MKTowerWorkspaceFamilyDefinition> families = MKTowerWorkspaceFamilyDefinition
                 .createDefaults(dimensions).stream()
                 .map(family -> family.baseName().equals("floor_main") ?
-                        new MKTowerWorkspaceFamilyDefinition(
+                        MKTowerWorkspaceFamilyDefinition.forTopologySlot(
                                 family.baseName(),
-                                family.slotMetadata().category(),
-                                family.slotMetadata().pieceRole(),
-                                family.topologySlotId(),
+                                family.slotMetadata(),
                                 family.verticalAccessGroupId(),
                                 family.supportsVerticalAccess(),
                                 family.roomWidth(),
@@ -787,10 +782,8 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
                 topologyProfile,
-                List.of(new MKTowerWorkspaceFamilyDefinition(
+                List.of(topologyFamily(
                         "keep_center_entry",
-                        MKTowerWorkspaceCategory.ENTRY,
-                        MKWorkspacePieceRole.ENTRY,
                         "keep.center.entry",
                         "keep.center",
                         true,
@@ -889,10 +882,8 @@ class TowerWorkspaceV2Test {
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
                 MKWorkspaceTopologyProfile.walledKeep(false),
                 List.of(
-                        new MKTowerWorkspaceFamilyDefinition(
+                        topologyFamily(
                                 "keep_center_entry",
-                                MKTowerWorkspaceCategory.ENTRY,
-                                MKWorkspacePieceRole.ENTRY,
                                 "keep.center.entry",
                                 "keep.center",
                                 false,
@@ -906,11 +897,9 @@ class TowerWorkspaceV2Test {
                                 MKWorkspaceFoundationPolicy.none(),
                                 null
                         ),
-                        new MKTowerWorkspaceFamilyDefinition(
+                        topologyFamily(
                                 "keep_gate_main",
-                                MKTowerWorkspaceCategory.ENTRY,
-                                MKWorkspacePieceRole.ENTRY,
-                                "keep.gate.main",
+                                MKWorkspaceTopologySlotMetadata.explicit("keep.gate.main", "entry", "room", false),
                                 "keep.gate",
                                 false,
                                 7,
@@ -923,10 +912,8 @@ class TowerWorkspaceV2Test {
                                 MKWorkspaceFoundationPolicy.none(),
                                 null
                         ),
-                        new MKTowerWorkspaceFamilyDefinition(
+                        topologyFamily(
                                 "keep_corner_shared",
-                                MKTowerWorkspaceCategory.MAIN,
-                                MKWorkspacePieceRole.FLOOR_MAIN,
                                 "keep.corner.shared",
                                 "keep.corner",
                                 false,
@@ -998,10 +985,8 @@ class TowerWorkspaceV2Test {
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
                 MKWorkspaceTopologyProfile.walledKeep(false, false, true, false),
                 List.of(
-                        new MKTowerWorkspaceFamilyDefinition(
+                        topologyFamily(
                                 "keep_center_entry",
-                                MKTowerWorkspaceCategory.ENTRY,
-                                MKWorkspacePieceRole.ENTRY,
                                 "keep.center.entry",
                                 "keep.center",
                                 false,
@@ -1015,10 +1000,8 @@ class TowerWorkspaceV2Test {
                                 MKWorkspaceFoundationPolicy.none(),
                                 null
                         ),
-                        new MKTowerWorkspaceFamilyDefinition(
+                        topologyFamily(
                                 "keep_corner_shared",
-                                MKTowerWorkspaceCategory.MAIN,
-                                MKWorkspacePieceRole.FLOOR_MAIN,
                                 "keep.corner.shared",
                                 "keep.corner",
                                 false,
@@ -1032,10 +1015,8 @@ class TowerWorkspaceV2Test {
                                 MKWorkspaceFoundationPolicy.none(),
                                 null
                         ),
-                        new MKTowerWorkspaceFamilyDefinition(
+                        topologyFamily(
                                 "keep_corner_south_east",
-                                MKTowerWorkspaceCategory.MAIN,
-                                MKWorkspacePieceRole.FLOOR_MAIN,
                                 "keep.corner.south_east",
                                 "keep.corner.south_east",
                                 false,
@@ -1072,10 +1053,8 @@ class TowerWorkspaceV2Test {
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 MKWorkspaceTopologyProfile.walledKeep(true),
                 List.of(
-                        new MKTowerWorkspaceFamilyDefinition(
+                        topologyFamily(
                                 "keep_corner_shared",
-                                MKTowerWorkspaceCategory.MAIN,
-                                MKWorkspacePieceRole.FLOOR_MAIN,
                                 "keep.corner.shared",
                                 "keep.corner.shared",
                                 true,
@@ -1089,10 +1068,8 @@ class TowerWorkspaceV2Test {
                                 MKWorkspaceFoundationPolicy.none(),
                                 null
                         ),
-                        new MKTowerWorkspaceFamilyDefinition(
+                        topologyFamily(
                                 "keep_corner_north_west",
-                                MKTowerWorkspaceCategory.MAIN,
-                                MKWorkspacePieceRole.FLOOR_MAIN,
                                 "keep.corner.north_west",
                                 "keep.corner.north_west",
                                 true,
@@ -1126,10 +1103,8 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
                 MKWorkspaceTopologyProfile.walledKeep(false),
-                List.of(new MKTowerWorkspaceFamilyDefinition(
+                List.of(topologyFamily(
                         "keep_center_entry",
-                        MKTowerWorkspaceCategory.ENTRY,
-                        MKWorkspacePieceRole.ENTRY,
                         "keep.center.entry",
                         "keep.center",
                         true,
@@ -1323,10 +1298,8 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
                 MKWorkspaceTopologyProfile.walledKeep(false),
-                List.of(new MKTowerWorkspaceFamilyDefinition(
+                List.of(topologyFamily(
                         "keep_center_entry",
-                        MKTowerWorkspaceCategory.ENTRY,
-                        MKWorkspacePieceRole.ENTRY,
                         "keep.center.entry",
                         "keep.center",
                         true,
@@ -1395,20 +1368,24 @@ class TowerWorkspaceV2Test {
                 .filter(family -> family.baseName().equals("entry"))
                 .findFirst()
                 .orElseThrow();
-        MKTowerWorkspaceFamilyDefinition updatedEntry = new MKTowerWorkspaceFamilyDefinition(
+        MKTowerWorkspaceFamilyDefinition updatedEntry = MKTowerWorkspaceFamilyDefinition.forTopologySlot(
                 entryFamily.baseName(),
-                entryFamily.slotMetadata().category(),
-                entryFamily.slotMetadata().pieceRole(),
+                entryFamily.slotMetadata(),
+                entryFamily.verticalAccessGroupId(),
                 entryFamily.supportsVerticalAccess(),
                 entryFamily.roomWidth(),
                 entryFamily.roomLength(),
                 entryFamily.roomHeight(),
+                entryFamily.horizontalExtrusionMode(),
                 List.of(
                         new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
                                 MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY, "entry_main"),
                         new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
                                 MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "entry_main")
-                )
+                ),
+                entryFamily.topVoidMargin(),
+                entryFamily.bottomVoidMargin(),
+                entryFamily.paletteOverride()
         );
         workspace = new MKStructureWorkspace(
                 workspace.id(),
@@ -1451,10 +1428,10 @@ class TowerWorkspaceV2Test {
 
     @Test
     void familyDefinitionCodecRoundTripPreservesVoidMargins() {
-        MKTowerWorkspaceFamilyDefinition family = new MKTowerWorkspaceFamilyDefinition(
+        MKTowerWorkspaceFamilyDefinition family = topologyFamily(
                 "side_room",
-                MKTowerWorkspaceCategory.TOP_CAP,
-                MKWorkspacePieceRole.TOP_CAP,
+                "tower.primary.top_cap",
+                "tower.primary",
                 false,
                 9,
                 9,
@@ -1463,6 +1440,7 @@ class TowerWorkspaceV2Test {
                 List.of(),
                 4,
                 0,
+                null,
                 null
         );
 
@@ -1483,9 +1461,9 @@ class TowerWorkspaceV2Test {
                 List.of()
         );
         List<MKTowerWorkspaceFamilyDefinition> families = new java.util.ArrayList<>(workspace.familyDefinitions());
-        families.add(new MKTowerWorkspaceFamilyDefinition("main_side_room", MKTowerWorkspaceCategory.MAIN,
-                MKWorkspacePieceRole.FLOOR_MAIN, false, 9, 9, workspace.dimensions().roomHeight(),
-                MKWorkspaceHorizontalExtrusionMode.FULL_BODY, List.of(), 2, 1, null));
+        families.add(topologyFamily("main_side_room", "tower.primary.main_floor", "tower.primary",
+                false, 9, 9, workspace.dimensions().roomHeight(),
+                MKWorkspaceHorizontalExtrusionMode.FULL_BODY, List.of(), 2, 1, null, null));
         workspace = new MKStructureWorkspace(
                 workspace.id(),
                 workspace.anchor(),
@@ -1531,15 +1509,20 @@ class TowerWorkspaceV2Test {
 
     @Test
     void familyDefinitionCodecRoundTripPreservesSingleVerticalExit() {
-        MKTowerWorkspaceFamilyDefinition family = new MKTowerWorkspaceFamilyDefinition(
+        MKTowerWorkspaceFamilyDefinition family = topologyFamily(
                 "top_only",
-                MKTowerWorkspaceCategory.MAIN,
-                MKWorkspacePieceRole.FLOOR_MAIN,
+                "tower.primary.main_floor",
+                "tower.primary",
                 false,
                 9,
                 9,
                 MKWorkspaceDimensions.defaultDimensions().roomHeight(),
-                List.of(MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(net.minecraft.core.Direction.UP))
+                MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
+                List.of(MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(net.minecraft.core.Direction.UP)),
+                0,
+                0,
+                null,
+                null
         );
 
         MKTowerWorkspaceFamilyDefinition decoded = MKTowerWorkspaceFamilyDefinition.fromTag(family.toTag());
@@ -1558,10 +1541,10 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        MKTowerWorkspaceFamilyDefinition topOnlyMain = new MKTowerWorkspaceFamilyDefinition(
+        MKTowerWorkspaceFamilyDefinition topOnlyMain = topologyFamily(
                 "floor_main",
-                MKTowerWorkspaceCategory.MAIN,
-                MKWorkspacePieceRole.FLOOR_MAIN,
+                "tower.primary.main_floor",
+                "tower.primary",
                 false,
                 9,
                 9,
@@ -1571,7 +1554,11 @@ class TowerWorkspaceV2Test {
                         new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
                                 MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch"),
                         MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(net.minecraft.core.Direction.UP)
-                )
+                ),
+                0,
+                0,
+                null,
+                null
         );
         workspace = withFamilyDefinitions(workspace, workspace.familyDefinitions().stream()
                 .map(family -> family.baseName().equals("floor_main") ? topOnlyMain : family)
@@ -1649,16 +1636,21 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        MKTowerWorkspaceFamilyDefinition endingFamily = new MKTowerWorkspaceFamilyDefinition(
+        MKTowerWorkspaceFamilyDefinition endingFamily = topologyFamily(
                 "main_end",
-                MKTowerWorkspaceCategory.MAIN,
-                MKWorkspacePieceRole.FLOOR_MAIN,
+                "tower.primary.main_floor",
+                "tower.primary",
                 false,
                 9,
                 9,
                 5,
+                MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                 List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
-                        MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY, "entry_main"))
+                        MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY, "entry_main")),
+                0,
+                0,
+                null,
+                null
         );
         workspace = new MKStructureWorkspace(
                 workspace.id(),
@@ -1707,16 +1699,21 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        MKTowerWorkspaceFamilyDefinition branchCapFamily = new MKTowerWorkspaceFamilyDefinition(
+        MKTowerWorkspaceFamilyDefinition branchCapFamily = topologyFamily(
                 "branch_cap",
-                MKTowerWorkspaceCategory.MAIN,
-                MKWorkspacePieceRole.FLOOR_MAIN,
+                "tower.primary.main_floor",
+                "tower.primary",
                 false,
                 9,
                 9,
                 5,
+                MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                 List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
-                        MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY, "main_branch"))
+                        MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY, "main_branch")),
+                0,
+                0,
+                null,
+                null
         );
         workspace = new MKStructureWorkspace(
                 workspace.id(),
@@ -1786,20 +1783,25 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        MKTowerWorkspaceFamilyDefinition invalidEnding = new MKTowerWorkspaceFamilyDefinition(
+        MKTowerWorkspaceFamilyDefinition invalidEnding = topologyFamily(
                 "invalid_end",
-                MKTowerWorkspaceCategory.MAIN,
-                MKWorkspacePieceRole.FLOOR_MAIN,
+                "tower.primary.main_floor",
+                "tower.primary",
                 false,
                 9,
                 9,
                 5,
+                MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                 List.of(
                         new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
                                 MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY, "entry_main"),
                         new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
                                 MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "entry_main")
-                )
+                ),
+                0,
+                0,
+                null,
+                null
         );
         workspace = new MKStructureWorkspace(
                 workspace.id(),
@@ -1837,14 +1839,15 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        MKTowerWorkspaceFamilyDefinition invalidCap = new MKTowerWorkspaceFamilyDefinition(
+        MKTowerWorkspaceFamilyDefinition invalidCap = topologyFamily(
                 "invalid_cap",
-                MKTowerWorkspaceCategory.MAIN,
-                MKWorkspacePieceRole.FLOOR_MAIN,
+                "tower.primary.main_floor",
+                "tower.primary",
                 false,
                 9,
                 9,
                 5,
+                MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                 List.of(
                         new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
                                 MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY, "main_branch",
@@ -1852,7 +1855,11 @@ class TowerWorkspaceV2Test {
                         new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
                                 MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "entry_main",
                                 MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM)
-                )
+                ),
+                0,
+                0,
+                null,
+                null
         );
         workspace = new MKStructureWorkspace(
                 workspace.id(),
@@ -1995,14 +2002,15 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        MKTowerWorkspaceFamilyDefinition updatedMain = new MKTowerWorkspaceFamilyDefinition(
+        MKTowerWorkspaceFamilyDefinition updatedMain = topologyFamily(
                 "floor_main",
-                MKTowerWorkspaceCategory.MAIN,
-                MKWorkspacePieceRole.FLOOR_MAIN,
+                "tower.primary.main_floor",
+                "tower.primary",
                 true,
                 9,
                 9,
                 workspace.dimensions().roomHeight(),
+                MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                 List.of(
                         new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
                                 MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch",
@@ -2016,7 +2024,11 @@ class TowerWorkspaceV2Test {
                         new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.WEST,
                                 MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch",
                                 MKWorkspaceHorizontalExitConnectionMode.HALLWAY, 2, 1)
-                )
+                ),
+                0,
+                0,
+                null,
+                null
         );
         workspace = new MKStructureWorkspace(
                 workspace.id(),
@@ -2185,10 +2197,10 @@ class TowerWorkspaceV2Test {
         List<MKTowerWorkspaceFamilyDefinition> updatedFamilies = workspace.familyDefinitions().stream()
                 .map(family -> {
                     if (family.baseName().equals("entry")) {
-                        return new MKTowerWorkspaceFamilyDefinition(
+                        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
                                 family.baseName(),
-                                family.slotMetadata().category(),
-                                family.slotMetadata().pieceRole(),
+                                family.slotMetadata(),
+                                family.verticalAccessGroupId(),
                                 family.supportsVerticalAccess(),
                                 family.roomWidth(),
                                 family.roomLength(),
@@ -2199,14 +2211,17 @@ class TowerWorkspaceV2Test {
                                         MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
                                         "entry_main",
                                         MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM
-                                ))
+                                )),
+                                0,
+                                0,
+                                family.paletteOverride()
                         );
                     }
                     if (family.baseName().equals("floor_main")) {
-                        return new MKTowerWorkspaceFamilyDefinition(
+                        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
                                 family.baseName(),
-                                family.slotMetadata().category(),
-                                family.slotMetadata().pieceRole(),
+                                family.slotMetadata(),
+                                family.verticalAccessGroupId(),
                                 family.supportsVerticalAccess(),
                                 family.roomWidth(),
                                 family.roomLength(),
@@ -2217,7 +2232,10 @@ class TowerWorkspaceV2Test {
                                         MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY,
                                         "entry_main",
                                         MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM
-                                ))
+                                )),
+                                0,
+                                0,
+                                family.paletteOverride()
                         );
                     }
                     return family;
@@ -2280,16 +2298,21 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        MKTowerWorkspaceFamilyDefinition updatedMain = new MKTowerWorkspaceFamilyDefinition(
+        MKTowerWorkspaceFamilyDefinition updatedMain = topologyFamily(
                 "floor_main",
-                MKTowerWorkspaceCategory.MAIN,
-                MKWorkspacePieceRole.FLOOR_MAIN,
+                "tower.primary.main_floor",
+                "tower.primary",
                 true,
                 9,
                 9,
                 workspace.dimensions().roomHeight(),
+                MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                 List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
-                        MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch"))
+                        MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch")),
+                0,
+                0,
+                null,
+                null
         );
         workspace = new MKStructureWorkspace(
                 workspace.id(),
@@ -2806,32 +2829,34 @@ class TowerWorkspaceV2Test {
                 verticalAccessSpec,
                 MKTowerWorkspaceFloorSettings.defaultSettings(),
                 List.of(
-                        new MKTowerWorkspaceFamilyDefinition("entry", MKTowerWorkspaceCategory.ENTRY, MKWorkspacePieceRole.ENTRY, true,
-                                0, 0, 0,
+                        MKTowerWorkspaceFamilyDefinition.forTowerStackSlot("entry", MKTowerWorkspaceStackSlot.ENTRY,
+                                "tower.primary", true, 0, 0, 0, MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                                 List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
-                                        MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "entry_main"))),
-                        new MKTowerWorkspaceFamilyDefinition("floor_main", MKTowerWorkspaceCategory.MAIN, MKWorkspacePieceRole.FLOOR_MAIN, true,
-                                0, 0, 0,
+                                        MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "entry_main")),
+                                0, 0, null, null),
+                        MKTowerWorkspaceFamilyDefinition.forTowerStackSlot("floor_main", MKTowerWorkspaceStackSlot.MAIN_FLOOR,
+                                "tower.primary", true, 0, 0, 0, MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                                 List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
-                                        MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch"))),
-                        new MKTowerWorkspaceFamilyDefinition("top_cap_approach", MKTowerWorkspaceCategory.TOP_CAP, MKWorkspacePieceRole.TOP_CAP_APPROACH, true,
-                                0, 0, 0,
-                                List.of()),
-                        new MKTowerWorkspaceFamilyDefinition("top_cap", MKTowerWorkspaceCategory.TOP_CAP, MKWorkspacePieceRole.TOP_CAP, true,
-                                0, 0, 0,
-                                List.of()),
-                        new MKTowerWorkspaceFamilyDefinition("basement_entry", MKTowerWorkspaceCategory.BASEMENT, MKWorkspacePieceRole.BASEMENT_ENTRY, true,
-                                0, 0, 0,
-                                List.of()),
-                        new MKTowerWorkspaceFamilyDefinition("basement_main", MKTowerWorkspaceCategory.BASEMENT, MKWorkspacePieceRole.BASEMENT_MAIN, true,
-                                0, 0, 0,
-                                List.of()),
-                        new MKTowerWorkspaceFamilyDefinition("basement_cap_approach", MKTowerWorkspaceCategory.BASEMENT_CAP, MKWorkspacePieceRole.BASEMENT_CAP_APPROACH, true,
-                                0, 0, 0,
-                                List.of()),
-                        new MKTowerWorkspaceFamilyDefinition("basement_cap", MKTowerWorkspaceCategory.BASEMENT_CAP, MKWorkspacePieceRole.BASEMENT_CAP, true,
-                                0, 0, 0,
-                                List.of())
+                                        MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch")),
+                                0, 0, null, null),
+                        MKTowerWorkspaceFamilyDefinition.forTowerStackSlot("top_cap_approach",
+                                MKTowerWorkspaceStackSlot.TOP_CAP_APPROACH, "tower.primary", true, 0, 0, 0,
+                                MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, List.of(), 0, 0, null, null),
+                        MKTowerWorkspaceFamilyDefinition.forTowerStackSlot("top_cap", MKTowerWorkspaceStackSlot.TOP_CAP,
+                                "tower.primary", true, 0, 0, 0, MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
+                                List.of(), 0, 0, null, null),
+                        MKTowerWorkspaceFamilyDefinition.forTowerStackSlot("basement_entry",
+                                MKTowerWorkspaceStackSlot.BASEMENT_ENTRY, "tower.primary", true, 0, 0, 0,
+                                MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, List.of(), 0, 0, null, null),
+                        MKTowerWorkspaceFamilyDefinition.forTowerStackSlot("basement_main",
+                                MKTowerWorkspaceStackSlot.BASEMENT_FLOOR, "tower.primary", true, 0, 0, 0,
+                                MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, List.of(), 0, 0, null, null),
+                        MKTowerWorkspaceFamilyDefinition.forTowerStackSlot("basement_cap_approach",
+                                MKTowerWorkspaceStackSlot.BASEMENT_CAP_APPROACH, "tower.primary", true, 0, 0, 0,
+                                MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, List.of(), 0, 0, null, null),
+                        MKTowerWorkspaceFamilyDefinition.forTowerStackSlot("basement_cap",
+                                MKTowerWorkspaceStackSlot.BASEMENT_CAP, "tower.primary", true, 0, 0, 0,
+                                MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, List.of(), 0, 0, null, null)
                 ),
                 openingProfiles,
                 linearRunFamilies,
@@ -2868,6 +2893,43 @@ class TowerWorkspaceV2Test {
                 workspace.updatedAt(),
                 workspace.pieces()
         );
+    }
+
+    private static MKTowerWorkspaceFamilyDefinition topologyFamily(String baseName,
+                                                                   String topologySlotId,
+                                                                   String verticalAccessGroupId,
+                                                                   boolean supportsVerticalAccess,
+                                                                   int roomWidth,
+                                                                   int roomLength,
+                                                                   int roomHeight,
+                                                                   MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
+                                                                   List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
+                                                                   int topVoidMargin,
+                                                                   int bottomVoidMargin,
+                                                                   MKWorkspaceFoundationPolicy foundationPolicy,
+                                                                   MKWorkspacePaletteOverride paletteOverride) {
+        return topologyFamily(baseName, MKWorkspaceTopologySlotMetadata.fromTopologySlotId(topologySlotId),
+                verticalAccessGroupId, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
+                horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin, foundationPolicy,
+                paletteOverride);
+    }
+
+    private static MKTowerWorkspaceFamilyDefinition topologyFamily(String baseName,
+                                                                   MKWorkspaceTopologySlotMetadata slotMetadata,
+                                                                   String verticalAccessGroupId,
+                                                                   boolean supportsVerticalAccess,
+                                                                   int roomWidth,
+                                                                   int roomLength,
+                                                                   int roomHeight,
+                                                                   MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
+                                                                   List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
+                                                                   int topVoidMargin,
+                                                                   int bottomVoidMargin,
+                                                                   MKWorkspaceFoundationPolicy foundationPolicy,
+                                                                   MKWorkspacePaletteOverride paletteOverride) {
+        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(baseName, slotMetadata, verticalAccessGroupId,
+                supportsVerticalAccess, roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
+                topVoidMargin, bottomVoidMargin, foundationPolicy, paletteOverride);
     }
 
     private static MKStructureWorkspace withFloorSettings(MKStructureWorkspace workspace,
@@ -3042,11 +3104,9 @@ class TowerWorkspaceV2Test {
 
     private static MKTowerWorkspaceFamilyDefinition copyFamilyWithHeight(MKTowerWorkspaceFamilyDefinition family,
                                                                          int height) {
-        return new MKTowerWorkspaceFamilyDefinition(
+        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
                 family.baseName(),
-                family.slotMetadata().category(),
-                family.slotMetadata().pieceRole(),
-                family.topologySlotId(),
+                family.slotMetadata(),
                 family.verticalAccessGroupId(),
                 family.supportsVerticalAccess(),
                 family.roomWidth(),
@@ -3063,11 +3123,9 @@ class TowerWorkspaceV2Test {
 
     private static MKTowerWorkspaceFamilyDefinition copyFamilyWithGeometry(MKTowerWorkspaceFamilyDefinition family,
                                                                            int width, int length, int height) {
-        return new MKTowerWorkspaceFamilyDefinition(
+        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
                 family.baseName(),
-                family.slotMetadata().category(),
-                family.slotMetadata().pieceRole(),
-                family.topologySlotId(),
+                family.slotMetadata(),
                 family.verticalAccessGroupId(),
                 family.supportsVerticalAccess(),
                 width,
@@ -3084,11 +3142,9 @@ class TowerWorkspaceV2Test {
 
     private static MKTowerWorkspaceFamilyDefinition copyFamilyWithFoundation(MKTowerWorkspaceFamilyDefinition family,
                                                                              MKWorkspaceFoundationPolicy foundationPolicy) {
-        return new MKTowerWorkspaceFamilyDefinition(
+        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
                 family.baseName(),
-                family.slotMetadata().category(),
-                family.slotMetadata().pieceRole(),
-                family.topologySlotId(),
+                family.slotMetadata(),
                 family.verticalAccessGroupId(),
                 family.supportsVerticalAccess(),
                 family.roomWidth(),

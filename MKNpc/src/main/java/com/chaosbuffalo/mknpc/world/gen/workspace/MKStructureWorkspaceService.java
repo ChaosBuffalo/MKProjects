@@ -608,11 +608,9 @@ public class MKStructureWorkspaceService {
                                 .findFirst()
                                 .map(requested -> {
                                     MKWorkspaceTopologySlotMetadata metadata = MKWorkspaceTopologySlotMetadata.fromFamily(family);
-                                    return new com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition(
+                                    return com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition.forTopologySlot(
                                             family.baseName(),
-                                            metadata.category(),
-                                            metadata.pieceRole(),
-                                            family.topologySlotId(),
+                                            metadata,
                                             family.verticalAccessGroupId(),
                                             family.supportsVerticalAccess(),
                                             family.roomWidth(),

@@ -19,11 +19,8 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
 
     public static final Codec<MKTowerWorkspaceFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("baseName").forGetter(MKTowerWorkspaceFamilyDefinition::baseName),
-            MKWorkspaceCodecs.TOWER_CATEGORY_CODEC.optionalFieldOf("category")
-                    .forGetter(MKTowerWorkspaceFamilyDefinition::serializedCategoryHintOpt),
-            MKWorkspaceCodecs.PIECE_ROLE_CODEC.optionalFieldOf("pieceRole")
-                    .forGetter(MKTowerWorkspaceFamilyDefinition::serializedPieceRoleHintOpt),
-            Codec.STRING.optionalFieldOf("topologySlotId", "").forGetter(MKTowerWorkspaceFamilyDefinition::topologySlotId),
+            MKWorkspaceTopologySlotMetadata.CODEC.fieldOf("slotMetadata")
+                    .forGetter(MKTowerWorkspaceFamilyDefinition::slotMetadata),
             Codec.STRING.optionalFieldOf("verticalAccessGroupId", "").forGetter(MKTowerWorkspaceFamilyDefinition::verticalAccessGroupId),
             Codec.BOOL.fieldOf("supportsVerticalAccess")
                     .forGetter(MKTowerWorkspaceFamilyDefinition::supportsVerticalAccess),
@@ -40,15 +37,13 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                     .forGetter(MKTowerWorkspaceFamilyDefinition::foundationPolicyOverrideOpt),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("paletteOverride")
                     .forGetter(MKTowerWorkspaceFamilyDefinition::paletteOverrideOpt)
-    ).apply(instance, (baseName, category, pieceRole, topologySlotId, verticalAccessGroupId, supportsVerticalAccess,
+    ).apply(instance, (baseName, slotMetadata, verticalAccessGroupId, supportsVerticalAccess,
                        roomWidth, roomLength, roomHeight,
                        horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin, foundationPolicyOverride,
                        paletteOverride) ->
-            new MKTowerWorkspaceFamilyDefinition(baseName, category.orElse(MKTowerWorkspaceCategory.MAIN),
-                    pieceRole.orElse(MKWorkspacePieceRole.FLOOR_MAIN), topologySlotId, verticalAccessGroupId,
-                    supportsVerticalAccess,
-                    roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
-                    topVoidMargin, bottomVoidMargin, foundationPolicyOverride.orElse(null),
+            MKTowerWorkspaceFamilyDefinition.forTopologySlot(baseName, slotMetadata, verticalAccessGroupId,
+                    supportsVerticalAccess, roomWidth, roomLength, roomHeight, horizontalExtrusionMode,
+                    horizontalExits, topVoidMargin, bottomVoidMargin, foundationPolicyOverride.orElse(null),
                     paletteOverride.orElse(null))));
 
     private final String baseName;
@@ -67,99 +62,6 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
     private final MKWorkspaceFoundationPolicy foundationPolicyOverride;
     @Nullable
     private final MKWorkspacePaletteOverride paletteOverride;
-
-    public MKTowerWorkspaceFamilyDefinition(String baseName, MKTowerWorkspaceCategory category,
-                                            MKWorkspacePieceRole pieceRole, boolean supportsVerticalAccess,
-                                            int roomWidth, int roomLength, int roomHeight,
-                                            List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits) {
-        this(baseName, category, pieceRole, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
-                MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, horizontalExits);
-    }
-
-    public MKTowerWorkspaceFamilyDefinition(String baseName, MKTowerWorkspaceCategory category,
-                                            MKWorkspacePieceRole pieceRole, boolean supportsVerticalAccess,
-                                            int roomWidth, int roomLength, int roomHeight,
-                                            MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
-                                            List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits) {
-        this(baseName, category, pieceRole, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
-                horizontalExtrusionMode, horizontalExits, null);
-    }
-
-    public MKTowerWorkspaceFamilyDefinition(String baseName, MKTowerWorkspaceCategory category,
-                                            MKWorkspacePieceRole pieceRole, boolean supportsVerticalAccess,
-                                            int roomWidth, int roomLength, int roomHeight,
-                                            MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
-                                            List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
-                                            @Nullable MKWorkspacePaletteOverride paletteOverride) {
-        this(baseName, category, pieceRole, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
-                horizontalExtrusionMode, horizontalExits, 0, 0, null, paletteOverride);
-    }
-
-    public MKTowerWorkspaceFamilyDefinition(String baseName, MKTowerWorkspaceCategory category,
-                                            MKWorkspacePieceRole pieceRole, boolean supportsVerticalAccess,
-                                            int roomWidth, int roomLength, int roomHeight,
-                                            MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
-                                            List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
-                                            int topVoidMargin, int bottomVoidMargin,
-                                            @Nullable MKWorkspacePaletteOverride paletteOverride) {
-        this(baseName, category, pieceRole, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
-                horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin,
-                null, paletteOverride);
-    }
-
-    public MKTowerWorkspaceFamilyDefinition(String baseName, MKTowerWorkspaceCategory category,
-                                            MKWorkspacePieceRole pieceRole, boolean supportsVerticalAccess,
-                                            int roomWidth, int roomLength, int roomHeight,
-                                            MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
-                                            List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
-                                            int topVoidMargin, int bottomVoidMargin,
-                                            @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
-                                            @Nullable MKWorkspacePaletteOverride paletteOverride) {
-        this(baseName, category, pieceRole, defaultTopologySlotId(pieceRole), supportsVerticalAccess,
-                roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits, topVoidMargin,
-                bottomVoidMargin, foundationPolicy, paletteOverride);
-    }
-
-    public MKTowerWorkspaceFamilyDefinition(String baseName, MKTowerWorkspaceCategory category,
-                                            MKWorkspacePieceRole pieceRole, String topologySlotId,
-                                            boolean supportsVerticalAccess,
-                                            int roomWidth, int roomLength, int roomHeight,
-                                            MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
-                                            List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
-                                            int topVoidMargin, int bottomVoidMargin,
-                                            @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
-                                            @Nullable MKWorkspacePaletteOverride paletteOverride) {
-        this(baseName, category, pieceRole, topologySlotId, defaultVerticalAccessGroupId(supportsVerticalAccess),
-                supportsVerticalAccess, roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
-                topVoidMargin, bottomVoidMargin, foundationPolicy, paletteOverride);
-    }
-
-    public MKTowerWorkspaceFamilyDefinition(String baseName, MKTowerWorkspaceCategory category,
-                                            MKWorkspacePieceRole pieceRole, String topologySlotId,
-                                            String verticalAccessGroupId, boolean supportsVerticalAccess,
-                                            int roomWidth, int roomLength, int roomHeight,
-                                            MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
-                                            List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
-                                            int topVoidMargin, int bottomVoidMargin,
-                                            @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
-                                            @Nullable MKWorkspacePaletteOverride paletteOverride) {
-        this(baseName,
-                MKWorkspaceTopologySlotMetadata.fromTopologySlotIdOrHints(
-                        topologySlotId == null || topologySlotId.isBlank() ? defaultTopologySlotId(pieceRole) : topologySlotId,
-                        category, pieceRole),
-                topologySlotId == null || topologySlotId.isBlank() ? defaultTopologySlotId(pieceRole) : topologySlotId,
-                verticalAccessGroupId,
-                supportsVerticalAccess,
-                roomWidth,
-                roomLength,
-                roomHeight,
-                horizontalExtrusionMode,
-                horizontalExits,
-                topVoidMargin,
-                bottomVoidMargin,
-                foundationPolicy,
-                paletteOverride);
-    }
 
     private MKTowerWorkspaceFamilyDefinition(String baseName,
                                              MKWorkspaceTopologySlotMetadata slotMetadata,
@@ -203,8 +105,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                                                                     @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
                                                                     @Nullable MKWorkspacePaletteOverride paletteOverride) {
         return forTopologySlot(baseName,
-                MKWorkspaceTopologySlotMetadata.fromTopologySlotIdOrHints(
-                        topologySlotId, MKTowerWorkspaceCategory.MAIN, MKWorkspacePieceRole.FLOOR_MAIN),
+                MKWorkspaceTopologySlotMetadata.fromTopologySlotId(topologySlotId),
                 verticalAccessGroupId,
                 supportsVerticalAccess,
                 roomWidth,
@@ -288,8 +189,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                                                                      @Nullable MKWorkspacePaletteOverride paletteOverride) {
         return forTopologySlot(
                 baseName,
-                MKWorkspaceTopologySlotMetadata.explicit(slot.slotId(stackId), slot.category(), slot.pieceRole(),
-                        slot.roleKind(), slot.pieceKind(), slot.terminal()),
+                MKWorkspaceTopologySlotMetadata.fromTowerStackSlot(slot, stackId),
                 verticalAccessGroupId,
                 supportsVerticalAccess,
                 roomWidth,
@@ -301,20 +201,6 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                 bottomVoidMargin,
                 foundationPolicy,
                 paletteOverride);
-    }
-
-    private static Optional<MKTowerWorkspaceCategory> serializedCategoryHintOpt(
-            MKTowerWorkspaceFamilyDefinition family) {
-        return MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId()).isPresent()
-                ? Optional.empty()
-                : Optional.of(family.slotMetadata().category());
-    }
-
-    private static Optional<MKWorkspacePieceRole> serializedPieceRoleHintOpt(
-            MKTowerWorkspaceFamilyDefinition family) {
-        return MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId()).isPresent()
-                ? Optional.empty()
-                : Optional.of(family.slotMetadata().pieceRole());
     }
 
     public static List<MKTowerWorkspaceFamilyDefinition> createDefaults() {
@@ -377,8 +263,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         families.addAll(createKeepTowerStackDefaults("keep_corner_shared", "keep.corner.shared",
                 cornerFootprint, cornerFootprint, keepHeight));
         families.add(forTopologySlot("keep_gate_main",
-                MKWorkspaceTopologySlotMetadata.explicit("keep.gate.main", MKTowerWorkspaceCategory.ENTRY,
-                        MKWorkspacePieceRole.ENTRY, "entry", "room", false),
+                MKWorkspaceTopologySlotMetadata.explicit("keep.gate.main", "entry", "room", false),
                 "keep.gate", false,
                 7, 5, keepHeight,
                 MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
@@ -784,20 +669,6 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         if (value % 2 == 0) {
             errors.add(label + " must be odd");
         }
-    }
-
-    private static String defaultTopologySlotId(MKWorkspacePieceRole pieceRole) {
-        return switch (pieceRole) {
-            case ENTRY -> MKTowerWorkspaceStackSlot.ENTRY.slotId(PRIMARY_TOWER_STACK_ID);
-            case FLOOR_MAIN -> MKTowerWorkspaceStackSlot.MAIN_FLOOR.slotId(PRIMARY_TOWER_STACK_ID);
-            case TOP_CAP_APPROACH -> MKTowerWorkspaceStackSlot.TOP_CAP_APPROACH.slotId(PRIMARY_TOWER_STACK_ID);
-            case TOP_CAP -> MKTowerWorkspaceStackSlot.TOP_CAP.slotId(PRIMARY_TOWER_STACK_ID);
-            case BASEMENT_ENTRY -> MKTowerWorkspaceStackSlot.BASEMENT_ENTRY.slotId(PRIMARY_TOWER_STACK_ID);
-            case BASEMENT_MAIN -> MKTowerWorkspaceStackSlot.BASEMENT_FLOOR.slotId(PRIMARY_TOWER_STACK_ID);
-            case BASEMENT_CAP_APPROACH -> MKTowerWorkspaceStackSlot.BASEMENT_CAP_APPROACH.slotId(PRIMARY_TOWER_STACK_ID);
-            case BASEMENT_CAP -> MKTowerWorkspaceStackSlot.BASEMENT_CAP.slotId(PRIMARY_TOWER_STACK_ID);
-            case HALLWAY -> "tower.linear_run.branch";
-        };
     }
 
     private static String defaultVerticalAccessGroupId(boolean supportsVerticalAccess) {

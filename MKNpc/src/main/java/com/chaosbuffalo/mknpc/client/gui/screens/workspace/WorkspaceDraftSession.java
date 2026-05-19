@@ -1940,56 +1940,24 @@ public class WorkspaceDraftSession {
                                                                  MKWorkspaceTopologySlotMetadata fallback) {
         return topologySlot(topologySlotId)
                 .map(this::topologySlotMetadata)
-                .orElseGet(() -> MKWorkspaceTopologySlotMetadata.fromTopologySlotIdOrHints(
-                        topologySlotId, fallback.category(), fallback.pieceRole()));
+                .orElseGet(() -> fallback.withTopologySlotId(topologySlotId));
     }
 
     private MKWorkspaceTopologySlotMetadata topologySlotMetadata(MKWorkspaceSlotSchema slot) {
         Optional<MKTowerWorkspaceStackSlot> stackSlot = MKTowerWorkspaceStackSlot.fromTopologySlotId(slot.slotId());
         if (stackSlot.isPresent()) {
-            MKTowerWorkspaceStackSlot towerSlot = stackSlot.get();
-            return MKWorkspaceTopologySlotMetadata.explicit(
-                    slot.slotId(),
-                    towerSlot.category(),
-                    towerSlot.pieceRole(),
-                    towerSlot.roleKind(),
-                    towerSlot.pieceKind(),
-                    towerSlot.terminal());
+            return MKWorkspaceTopologySlotMetadata.fromTopologySlotId(slot.slotId());
         }
         MKWorkspaceRoleSchema role = topologySchema().roles().stream()
                 .filter(candidate -> candidate.roleId().equals(slot.roleId()))
                 .findFirst()
                 .orElse(new MKWorkspaceRoleSchema(slot.roleId(), slot.slotKind(), "room",
                         false, false, java.util.Set.of()));
-        return MKWorkspaceTopologySlotMetadata.explicit(
+        return MKWorkspaceTopologySlotMetadata.fromTopologyRole(
                 slot.slotId(),
-                categoryForTopologyRole(role),
-                pieceRoleForTopologyRole(role),
                 role.roleKind(),
                 role.runtimeRoleHint(),
                 role.terminal());
-    }
-
-    private MKTowerWorkspaceCategory categoryForTopologyRole(MKWorkspaceRoleSchema role) {
-        return switch (role.roleKind()) {
-            case "entry" -> MKTowerWorkspaceCategory.ENTRY;
-            case "cap" -> "terminal_bottom".equals(role.runtimeRoleHint()) ?
-                    MKTowerWorkspaceCategory.BASEMENT_CAP : MKTowerWorkspaceCategory.TOP_CAP;
-            case "cap_approach" -> "terminal_bottom".equals(role.runtimeRoleHint()) ?
-                    MKTowerWorkspaceCategory.BASEMENT_CAP : MKTowerWorkspaceCategory.TOP_CAP;
-            default -> MKTowerWorkspaceCategory.MAIN;
-        };
-    }
-
-    private MKWorkspacePieceRole pieceRoleForTopologyRole(MKWorkspaceRoleSchema role) {
-        return switch (role.roleKind()) {
-            case "entry" -> MKWorkspacePieceRole.ENTRY;
-            case "cap" -> "terminal_bottom".equals(role.runtimeRoleHint()) ?
-                    MKWorkspacePieceRole.BASEMENT_CAP : MKWorkspacePieceRole.TOP_CAP;
-            case "cap_approach" -> "terminal_bottom".equals(role.runtimeRoleHint()) ?
-                    MKWorkspacePieceRole.BASEMENT_CAP_APPROACH : MKWorkspacePieceRole.TOP_CAP_APPROACH;
-            default -> MKWorkspacePieceRole.FLOOR_MAIN;
-        };
     }
 
     public Optional<String> firstCompatibleOpeningProfileId(MKWorkspaceHorizontalExitPathKind pathKind) {
