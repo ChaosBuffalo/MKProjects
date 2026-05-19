@@ -5,7 +5,6 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
@@ -212,8 +211,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 .filter(family -> isCenterStackSlot(family.topologySlotId()))
                 .toList();
         MKWorkspaceTowerStackSettings settings = workspace.topologyProfile().towerStackSettingsOrDefault("keep.center");
-        MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped("keep.center",
-                floorSettingsForStack(settings), true, settings);
+        MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped("keep.center", true, settings);
         ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
         return towerStackPlanner.createRoomPieces(workspace, stackDefinition, centerFamilies).stream()
                 .map(piece -> withRoomLayoutConnectors(piece, slots, opening))
@@ -227,8 +225,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                     .filter(family -> family.topologySlotId().startsWith(stackId + "."))
                     .toList();
             MKWorkspaceTowerStackSettings settings = workspace.topologyProfile().towerStackSettingsOrDefault(stackId);
-            MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped(stackId,
-                    floorSettingsForStack(settings), false, settings);
+            MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped(stackId, false, settings);
             ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
             towerStackPlanner.createRoomPieces(workspace, stackDefinition, stackFamilies).stream()
                     .map(piece -> withRoomLayoutConnectors(piece, slots, opening))
@@ -246,15 +243,6 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 .filter(workspace.topologyProfile()::uniqueCornerTower)
                 .forEach(stackIds::add);
         return List.copyOf(stackIds);
-    }
-
-    private MKTowerWorkspaceFloorSettings floorSettingsForStack(MKWorkspaceTowerStackSettings settings) {
-        return new MKTowerWorkspaceFloorSettings(
-                settings.mainFloors(),
-                settings.basementFloors(),
-                settings.topCapApproachEnabled(),
-                settings.basementCapApproachEnabled()
-        );
     }
 
     private MKPlannedPiece withRoomLayoutConnectors(MKPlannedPiece piece, SlotAvailability slots,

@@ -108,8 +108,23 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
+        MKWorkspaceTowerStackSettings stackSettings = workspace.topologyProfile()
+                .towerStackSettingsOrDefault("tower.primary");
         MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped(
-                "keep.center", workspace.floorSettings(), true);
+                "keep.center", true, new MKWorkspaceTowerStackSettings(
+                        "keep.center",
+                        stackSettings.mainFloors(),
+                        stackSettings.basementFloors(),
+                        stackSettings.height(),
+                        stackSettings.width(),
+                        stackSettings.length(),
+                        stackSettings.shaftSize(),
+                        stackSettings.verticalAccessPlacement(),
+                        stackSettings.stairConfig(),
+                        stackSettings.topCapApproachEnabled(),
+                        stackSettings.basementCapApproachEnabled(),
+                        stackSettings.foundationPolicy(),
+                        stackSettings.paletteOverride()));
 
         List<MKPlannedPiece> pieces = new MKTowerStackPlanner().createRoomPieces(
                 workspace, stackDefinition, workspace.familyDefinitions());
