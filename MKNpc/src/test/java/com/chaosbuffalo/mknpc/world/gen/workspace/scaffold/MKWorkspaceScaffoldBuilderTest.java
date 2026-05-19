@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.scaffold;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.junit.jupiter.api.Test;
@@ -45,7 +44,7 @@ class MKWorkspaceScaffoldBuilderTest {
 
     private static MKPlannedPiece linearRun(String kind) {
         return new MKPlannedPiece(
-                MKWorkspacePieceRole.HALLWAY,
+                "test.linear_run." + kind,
                 "test_" + kind,
                 5,
                 5,

@@ -6,7 +6,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVoidMarginTag
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
@@ -62,7 +61,7 @@ class MKWorkspaceStairBuilderTest {
     void pieceWithoutDownExitClipsEditsAboveBottomShell() {
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
         MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
-        MKWorkspacePieceDefinition topOnly = verticalPiece(MKWorkspacePieceRole.FLOOR_MAIN,
+        MKWorkspacePieceDefinition topOnly = verticalPiece("tower.primary.main_floor",
                 Map.of(MKWorkspaceVerticalAccessTags.ENABLED_TAG, "true"),
                 List.of(verticalConnector(Direction.UP)));
 
@@ -77,7 +76,7 @@ class MKWorkspaceStairBuilderTest {
     void pieceWithoutUpExitUsesTopCapTraversalRange() {
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
         MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
-        MKWorkspacePieceDefinition bottomOnly = verticalPiece(MKWorkspacePieceRole.FLOOR_MAIN,
+        MKWorkspacePieceDefinition bottomOnly = verticalPiece("tower.primary.main_floor",
                 Map.of(MKWorkspaceVerticalAccessTags.ENABLED_TAG, "true"),
                 List.of(verticalConnector(Direction.DOWN)));
 
@@ -135,7 +134,7 @@ class MKWorkspaceStairBuilderTest {
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
         MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
         MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry = builder.getGenerationGeometry(workspace,
-                verticalPiece(MKWorkspacePieceRole.TOP_CAP_APPROACH, Map.of(MKWorkspaceVerticalAccessTags.ENABLED_TAG, "true")));
+                verticalPiece("tower.primary.top_cap_approach", Map.of(MKWorkspaceVerticalAccessTags.ENABLED_TAG, "true")));
 
         assertEquals(0, geometry.interiorMinY());
         assertEquals(6, geometry.interiorMaxY());
@@ -269,23 +268,23 @@ class MKWorkspaceStairBuilderTest {
     }
 
     private MKWorkspacePieceDefinition verticalPiece() {
-        return verticalPiece(MKWorkspacePieceRole.FLOOR_MAIN,
+        return verticalPiece("tower.primary.main_floor",
                 Map.of(MKWorkspaceVerticalAccessTags.ENABLED_TAG, "true"));
     }
 
-    private MKWorkspacePieceDefinition verticalPiece(MKWorkspacePieceRole role, Map<String, String> tags) {
-        return verticalPiece(role, tags, List.of(verticalConnector(Direction.UP), verticalConnector(Direction.DOWN)));
+    private MKWorkspacePieceDefinition verticalPiece(String roleId, Map<String, String> tags) {
+        return verticalPiece(roleId, tags, List.of(verticalConnector(Direction.UP), verticalConnector(Direction.DOWN)));
     }
 
-    private MKWorkspacePieceDefinition verticalPiece(MKWorkspacePieceRole role, Map<String, String> tags,
+    private MKWorkspacePieceDefinition verticalPiece(String roleId, Map<String, String> tags,
                                                      List<MKWorkspaceConnectorDefinition> connectors) {
         UUID workspaceId = UUID.randomUUID();
         BoundingBox bounds = new BoundingBox(0, 0, 0, 10, 6, 10);
         return new MKWorkspacePieceDefinition(
                 UUID.randomUUID(),
                 workspaceId,
-                role.getSerializedName(),
-                role,
+                roleId,
+                roleId,
                 0,
                 new MKWorkspaceDimensions(9, 9, 5, 5, 5, 3, 3, 3),
                 1,
@@ -316,7 +315,7 @@ class MKWorkspaceStairBuilderTest {
                 UUID.randomUUID(),
                 workspaceId,
                 "cap",
-                MKWorkspacePieceRole.TOP_CAP,
+                "tower.primary.top_cap",
                 0,
                 MKWorkspaceDimensions.defaultDimensions(),
                 1,

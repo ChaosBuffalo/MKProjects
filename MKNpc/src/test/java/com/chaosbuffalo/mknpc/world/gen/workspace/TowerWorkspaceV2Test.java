@@ -35,7 +35,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverri
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKResolvedVerticalAccessProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
@@ -93,7 +92,7 @@ class TowerWorkspaceV2Test {
                 .map(MKPlannedPiece::pieceName)
                 .toList();
         List<String> towerRoomPieceNames = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace).stream()
-                .filter(piece -> piece.role() != MKWorkspacePieceRole.HALLWAY)
+                .filter(piece -> !"linear_run".equals(piece.tags().get("tower_piece_kind")))
                 .map(MKPlannedPiece::pieceName)
                 .toList();
 
@@ -477,8 +476,8 @@ class TowerWorkspaceV2Test {
                 workspace.resolveFamilySettings(mismatchedFamily).slotMetadata().category());
         assertEquals(MKJigsawPieceRole.TOP_CAP,
                 workspace.resolveFamilySettings(mismatchedFamily).slotMetadata().jigsawPieceRole());
-        assertEquals(MKWorkspacePieceRole.TOP_CAP,
-                new MKTowerStackPlanner().createPieceForFamily(workspace, mismatchedFamily).role());
+        assertEquals("tower.primary.top_cap",
+                new MKTowerStackPlanner().createPieceForFamily(workspace, mismatchedFamily).roleId());
 
         MKWorkspaceExportManifest.ExportFamilyDefinition exported =
                 MKWorkspaceExportManifest.ExportFamilyDefinition.from(mismatchedFamily);
@@ -557,8 +556,8 @@ class TowerWorkspaceV2Test {
 
         assertEquals(MKTowerWorkspaceCategory.TOP_CAP, importedFamily.slotMetadata().category());
         assertEquals(MKJigsawPieceRole.TOP_CAP, importedFamily.slotMetadata().jigsawPieceRole());
-        assertEquals(MKWorkspacePieceRole.TOP_CAP,
-                new MKTowerStackPlanner().createPieceForFamily(imported, importedFamily).role());
+        assertEquals("tower.primary.top_cap",
+                new MKTowerStackPlanner().createPieceForFamily(imported, importedFamily).roleId());
     }
 
     @Test
@@ -622,7 +621,7 @@ class TowerWorkspaceV2Test {
                 connector.role() == MKConnectorRole.CONNECT_DOWN &&
                         "tower_stacks/keep/center/connect_down_entry".equals(connector.targetPoolName())));
 
-        assertEquals(MKWorkspacePieceRole.HALLWAY, northWall.role());
+        assertEquals("linear_run", northWall.tags().get("tower_piece_kind"));
         assertEquals("keep.perimeter.north", northWall.tags().get("workspace_topology_slot_id"));
         assertEquals("solid_wall", northWall.tags().get("workspace_linear_run_kind"));
         assertEquals(MKWorkspaceFoundationMode.MASKED_EXTEND_BOTTOM_BLOCKS.getSerializedName(),
@@ -1490,12 +1489,11 @@ class TowerWorkspaceV2Test {
 
         List<MKPlannedPiece> pieces = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace);
 
-        MKPlannedPiece topCap = pieces.stream().filter(piece -> piece.role() == MKWorkspacePieceRole.TOP_CAP)
+        MKPlannedPiece topCap = pieces.stream().filter(piece -> piece.pieceName().equals("top_cap"))
                 .findFirst().orElseThrow();
-        MKPlannedPiece basementCap = pieces.stream().filter(piece -> piece.role() == MKWorkspacePieceRole.BASEMENT_CAP)
+        MKPlannedPiece basementCap = pieces.stream().filter(piece -> piece.pieceName().equals("basement_cap"))
                 .findFirst().orElseThrow();
-        MKPlannedPiece floor = pieces.stream().filter(piece -> piece.role() == MKWorkspacePieceRole.FLOOR_MAIN)
-                .filter(piece -> piece.pieceName().equals("floor_main"))
+        MKPlannedPiece floor = pieces.stream().filter(piece -> piece.pieceName().equals("floor_main"))
                 .findFirst().orElseThrow();
         MKPlannedPiece sideRoom = pieces.stream().filter(piece -> piece.pieceName().equals("main_side_room"))
                 .findFirst().orElseThrow();
@@ -2140,7 +2138,7 @@ class TowerWorkspaceV2Test {
                 .findFirst()
                 .orElseThrow();
 
-        assertTrue(pieces.stream().noneMatch(piece -> piece.role() == MKWorkspacePieceRole.TOP_CAP_APPROACH));
+        assertTrue(pieces.stream().noneMatch(piece -> piece.pieceName().equals("top_cap_approach")));
         assertTrue(topCap.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_DOWN &&
                         "connect_up".equals(connector.incomingPoolName())));
@@ -2661,7 +2659,7 @@ class TowerWorkspaceV2Test {
                         UUID.randomUUID(),
                         UUID.randomUUID(),
                         "entry_template",
-                        MKWorkspacePieceRole.ENTRY,
+                        "tower.primary.entry",
                         2,
                         dimensions,
                         1,
@@ -2735,7 +2733,7 @@ class TowerWorkspaceV2Test {
                         UUID.randomUUID(),
                         UUID.randomUUID(),
                         "entry_template",
-                        MKWorkspacePieceRole.ENTRY,
+                        "tower.primary.entry",
                         0,
                         dimensions,
                         1,
@@ -2785,7 +2783,7 @@ class TowerWorkspaceV2Test {
                         UUID.randomUUID(),
                         UUID.randomUUID(),
                         "entry_template",
-                        MKWorkspacePieceRole.ENTRY,
+                        "tower.primary.entry",
                         0,
                         dimensions,
                         1,
@@ -3027,7 +3025,7 @@ class TowerWorkspaceV2Test {
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 pieceName,
-                MKWorkspacePieceRole.FLOOR_MAIN,
+                "tower.primary.main_floor",
                 0,
                 MKWorkspaceDimensions.defaultDimensions(),
                 1,
@@ -3076,7 +3074,7 @@ class TowerWorkspaceV2Test {
                 UUID.randomUUID(),
                 workspace.id(),
                 plannedPiece.pieceName(),
-                plannedPiece.role(),
+                plannedPiece.roleId(),
                 0,
                 MKWorkspaceDimensions.defaultDimensions(),
                 1,
