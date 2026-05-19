@@ -314,7 +314,7 @@ Family-level validation should focus on override legality:
 - Workspace runtime tags and export runtime metadata now serialize topology groups as `runtime_topology_group` and `topology_group`.
 - Runtime layout path-budget rules have been renamed from dungeon category rules to topology group rules, with `topology_group_rules` and `topology_group` serialized fields.
 - Linear-run UI, planner internals, serialized values, runtime pool paths, export grouping, and the shared dimensions shaft-width field now use topology/linear-run/shaft terminology.
-- The remaining work is to keep broadening resolver use in scaffold/export code and reduce legacy constructor use in tests where safe.
+- Planner and scaffold cleanup now consumes resolved vertical access specs for room tags and derives scaffold effective shaft/doorway metadata from planned connectors where available. Export/import snapshot paths intentionally preserve raw override storage.
 
 ### Phase 1: Model Reusable Tower Stack Slots
 
@@ -363,7 +363,7 @@ Family-level validation should focus on override legality:
 ### Phase 7: Resolver and Validation
 
 - Introduce resolved settings objects. Initial room-family resolver bridge is in place.
-- Update planners, scaffold generation, export, and validation to consume resolved settings. Room planners now consume resolved family settings for dimensions, foundations, palette, topology slot metadata, and stack-local vertical access specs; scaffold/export/validation should continue moving away from raw family enum hints.
+- Update planners, scaffold generation, export, and validation to consume resolved settings. Room planners consume resolved family settings for dimensions, foundations, palette, topology slot metadata, and stack-local vertical access specs. Scaffold metadata now derives connector dimensions from planned connectors where possible; export/import snapshot paths preserve raw override storage.
 - Split topology validation from family override validation.
 - Replace global topology-band/floor validation with per-stack validation for topology-driven workspaces. Done for explicit tower stack settings.
 

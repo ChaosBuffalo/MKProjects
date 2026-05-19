@@ -185,9 +185,9 @@ public class MKWorkspaceScaffoldBuilder {
                 plannedPiece.interiorHeight(),
                 plannedPiece.interiorHeight(),
                 plannedPiece.interiorHeight(),
-                workspace.dimensions().shaftWidth(),
-                workspace.dimensions().doorwayWidth(),
-                workspace.dimensions().doorwayHeight()
+                effectiveShaftWidth(workspace, connectors),
+                effectiveDoorwayWidth(workspace, connectors),
+                effectiveDoorwayHeight(workspace, connectors)
         );
         return new MKWorkspacePieceDefinition(
                 UUID.randomUUID(),
@@ -207,6 +207,30 @@ public class MKWorkspaceScaffoldBuilder {
                 generatedStairPositions,
                 pieceTags
         );
+    }
+
+    private int effectiveShaftWidth(MKStructureWorkspace workspace, List<MKWorkspaceConnectorDefinition> connectors) {
+        return connectors.stream()
+                .filter(connector -> connector.facing().getAxis().isVertical())
+                .mapToInt(MKWorkspaceConnectorDefinition::openingWidth)
+                .findFirst()
+                .orElse(workspace.dimensions().shaftWidth());
+    }
+
+    private int effectiveDoorwayWidth(MKStructureWorkspace workspace, List<MKWorkspaceConnectorDefinition> connectors) {
+        return connectors.stream()
+                .filter(connector -> !connector.facing().getAxis().isVertical())
+                .mapToInt(MKWorkspaceConnectorDefinition::openingWidth)
+                .findFirst()
+                .orElse(workspace.dimensions().doorwayWidth());
+    }
+
+    private int effectiveDoorwayHeight(MKStructureWorkspace workspace, List<MKWorkspaceConnectorDefinition> connectors) {
+        return connectors.stream()
+                .filter(connector -> !connector.facing().getAxis().isVertical())
+                .mapToInt(MKWorkspaceConnectorDefinition::openingHeight)
+                .findFirst()
+                .orElse(workspace.dimensions().doorwayHeight());
     }
 
     private List<BlockPos> remapGeneratedStairPositions(MKWorkspacePieceDefinition templatePiece, BlockPos exportOrigin) {

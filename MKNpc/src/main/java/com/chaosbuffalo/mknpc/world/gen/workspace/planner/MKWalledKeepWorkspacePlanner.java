@@ -513,7 +513,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, Boolean.toString(family.supportsVerticalAccess()));
         if (family.supportsVerticalAccess()) {
             tags.put("workspace_vertical_access_group_id", family.verticalAccessGroupId());
-            tags.put(MKWorkspaceVerticalAccessTags.PLACEMENT_TAG, workspace.verticalAccessSpec().placement().getSerializedName());
+            tags.put(MKWorkspaceVerticalAccessTags.PLACEMENT_TAG,
+                    resolvedFamily.verticalAccessSpec().placement().getSerializedName());
             tags.put(MKWorkspaceVerticalAccessTags.DIRECTION_TAG, verticalAccessDirectionTag(family));
         }
         runtimeInfoForRoom(family).applyToTags(tags);

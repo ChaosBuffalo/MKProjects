@@ -16,6 +16,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthorin
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
 import net.minecraft.core.Direction;
 
@@ -75,16 +76,11 @@ public class MKTowerStackPlanner {
     public MKPlannedPiece createPieceForFamily(MKStructureWorkspace workspace,
                                                MKTowerStackDefinition stackDefinition,
                                                MKTowerWorkspaceFamilyDefinition family) {
-        String stairPlacement = stackDefinition.verticalAccessPlacement() == null ?
-                workspace.verticalAccessSpec().placement().getSerializedName() :
-                stackDefinition.verticalAccessPlacement().getSerializedName();
-        int shaftWidth = stackDefinition.shaftSize() > 0 ?
-                stackDefinition.shaftSize() :
-                workspace.verticalAccessSpec().shaftSize();
-        MKWorkspaceStairAuthoringConfig stairConfig = stackDefinition.stairConfig() == null ?
-                workspace.verticalAccessSpec().stairConfig() :
-                stackDefinition.stairConfig();
         MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
+        MKWorkspaceVerticalAccessSpec verticalAccessSpec = resolvedFamily.verticalAccessSpec();
+        String stairPlacement = verticalAccessSpec.placement().getSerializedName();
+        int shaftWidth = verticalAccessSpec.shaftSize();
+        MKWorkspaceStairAuthoringConfig stairConfig = verticalAccessSpec.stairConfig();
         MKWorkspaceTopologySlotMetadata slotMetadata = resolvedFamily.slotMetadata();
         MKTowerWorkspaceStackSlot stackSlot = MKTowerWorkspaceStackSlot.fromTopologySlotId(slotMetadata.topologySlotId())
                 .orElseThrow(() -> new IllegalStateException("family " + family.baseName() +

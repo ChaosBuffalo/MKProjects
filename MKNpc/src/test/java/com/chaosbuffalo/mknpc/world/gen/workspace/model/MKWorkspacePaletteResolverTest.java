@@ -27,7 +27,7 @@ class MKWorkspacePaletteResolverTest {
         );
         MKTowerWorkspaceFamilyDefinition family = MKTowerWorkspaceFamilyDefinition.forTopologySlot(
                 "floor_main",
-                MKWorkspaceTopologySlotMetadata.fromTopologyRole("legacy.main", "floor", "room", false),
+                MKWorkspaceTopologySlotMetadata.fromTopologyRole("custom.main", "floor", "room", false),
                 "",
                 true,
                 9,

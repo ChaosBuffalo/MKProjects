@@ -1369,7 +1369,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void walledKeepPlannerIgnoresLegacySeparateWallAndParapetSlots() {
+    void walledKeepPlannerUsesAssignedPerimeterRunSlotsOnly() {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
                 MKWorkspaceTopologyProfile.walledKeep(false),
