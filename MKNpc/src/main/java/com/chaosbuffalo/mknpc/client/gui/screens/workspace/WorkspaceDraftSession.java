@@ -708,7 +708,7 @@ public class WorkspaceDraftSession {
 
     public long familyCount(MKTowerWorkspaceCategory category) {
         return draft().familyDefinitions.stream()
-                .filter(family -> family.category() == category)
+                .filter(family -> family.slotMetadata().category() == category)
                 .count();
     }
 
@@ -909,7 +909,7 @@ public class WorkspaceDraftSession {
     }
 
     public MKWorkspaceMaterialPalette resolveFamilyInheritedPalette(MKTowerWorkspaceFamilyDefinition family) {
-        MKWorkspaceMaterialPalette categoryPalette = resolveCategoryPalette(family.category());
+        MKWorkspaceMaterialPalette categoryPalette = resolveCategoryPalette(family.slotMetadata().category());
         String stackId = stackIdForFamily(family);
         if (stackId.isBlank()) {
             return categoryPalette;
@@ -1008,7 +1008,7 @@ public class WorkspaceDraftSession {
     public void replaceFamilyTopologySlotId(int index, String topologySlotId) {
         MKTowerWorkspaceFamilyDefinition family = draft().familyDefinitions.get(index);
         replaceFamilyDefinitionExact(index, new MKTowerWorkspaceFamilyDefinition(
-                family.baseName(), family.category(), family.pieceRole(), topologySlotId,
+                family.baseName(), family.slotMetadata().category(), family.slotMetadata().pieceRole(), topologySlotId,
                 family.verticalAccessGroupId(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
                 family.horizontalExits(), family.topVoidMargin(), family.bottomVoidMargin(),
@@ -1018,7 +1018,7 @@ public class WorkspaceDraftSession {
     public void replaceFamilyVerticalAccessGroupId(int index, String verticalAccessGroupId) {
         MKTowerWorkspaceFamilyDefinition family = draft().familyDefinitions.get(index);
         replaceFamilyDefinitionExact(index, new MKTowerWorkspaceFamilyDefinition(
-                family.baseName(), family.category(), family.pieceRole(), family.topologySlotId(),
+                family.baseName(), family.slotMetadata().category(), family.slotMetadata().pieceRole(), family.topologySlotId(),
                 verticalAccessGroupId, family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
                 family.horizontalExits(), family.topVoidMargin(), family.bottomVoidMargin(),
@@ -1032,7 +1032,7 @@ public class WorkspaceDraftSession {
     public void replaceFamilyFoundationPolicyOverride(int index, Optional<MKWorkspaceFoundationPolicy> foundationPolicy) {
         MKTowerWorkspaceFamilyDefinition family = draft().familyDefinitions.get(index);
         replaceFamilyDefinitionExact(index, new MKTowerWorkspaceFamilyDefinition(
-                family.baseName(), family.category(), family.pieceRole(), family.topologySlotId(),
+                family.baseName(), family.slotMetadata().category(), family.slotMetadata().pieceRole(), family.topologySlotId(),
                 family.verticalAccessGroupId(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
                 family.horizontalExits(), family.topVoidMargin(), family.bottomVoidMargin(),
@@ -1078,7 +1078,7 @@ public class WorkspaceDraftSession {
             }
         }
         replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
-                family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
+                family.baseName(), family.slotMetadata().category(), family.slotMetadata().pieceRole(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits,
                 family.topVoidMargin(), family.bottomVoidMargin(), family.paletteOverride()
         ));
@@ -1104,7 +1104,7 @@ public class WorkspaceDraftSession {
         java.util.ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
         exits.remove(exitIndex);
         replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
-                family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
+                family.baseName(), family.slotMetadata().category(), family.slotMetadata().pieceRole(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits,
                 family.topVoidMargin(), family.bottomVoidMargin(), family.paletteOverride()
         ));
@@ -1116,7 +1116,7 @@ public class WorkspaceDraftSession {
         if (direction.getAxis().isVertical()) {
             exits.add(MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(direction));
             replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
-                    family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
+                    family.baseName(), family.slotMetadata().category(), family.slotMetadata().pieceRole(), family.supportsVerticalAccess(),
                     family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits,
                     0, 0, family.paletteOverride()
             ));
@@ -1133,7 +1133,7 @@ public class WorkspaceDraftSession {
                         .orElseGet(() -> draft().openingProfiles.isEmpty() ? "opening_1" : draft().openingProfiles.getFirst().profileId())
         ));
         replaceFamilyDefinition(familyIndex, new MKTowerWorkspaceFamilyDefinition(
-                family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
+                family.baseName(), family.slotMetadata().category(), family.slotMetadata().pieceRole(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits,
                 family.topVoidMargin(), family.bottomVoidMargin(), family.paletteOverride()
         ));
@@ -1548,8 +1548,8 @@ public class WorkspaceDraftSession {
                 clamp(family.bottomVoidMargin(), 0, availableVoidMargin - topVoidMargin);
         MKTowerWorkspaceFamilyDefinition normalizedGeometry = new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(),
-                family.category(),
-                family.pieceRole(),
+                family.slotMetadata().category(),
+                family.slotMetadata().pieceRole(),
                 family.topologySlotId(),
                 family.verticalAccessGroupId(),
                 family.supportsVerticalAccess(),
@@ -1565,8 +1565,8 @@ public class WorkspaceDraftSession {
         );
         return new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(),
-                family.category(),
-                family.pieceRole(),
+                family.slotMetadata().category(),
+                family.slotMetadata().pieceRole(),
                 family.topologySlotId(),
                 family.verticalAccessGroupId(),
                 family.supportsVerticalAccess(),
@@ -1761,8 +1761,8 @@ public class WorkspaceDraftSession {
                                                                     int roomWidth, int roomLength, int roomHeight) {
         return new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(),
-                family.category(),
-                family.pieceRole(),
+                family.slotMetadata().category(),
+                family.slotMetadata().pieceRole(),
                 family.topologySlotId(),
                 family.verticalAccessGroupId(),
                 family.supportsVerticalAccess(),
@@ -1935,9 +1935,9 @@ public class WorkspaceDraftSession {
                                                                        String topologySlotId) {
         Optional<MKTowerWorkspaceStackSlot> stackSlot = MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId);
         MKTowerWorkspaceCategory category = stackSlot.map(MKTowerWorkspaceStackSlot::category)
-                .orElse(existing.category());
+                .orElse(existing.slotMetadata().category());
         MKWorkspacePieceRole role = stackSlot.map(MKTowerWorkspaceStackSlot::pieceRole)
-                .orElse(existing.pieceRole());
+                .orElse(existing.slotMetadata().pieceRole());
         return new MKTowerWorkspaceFamilyDefinition(
                 nextUniqueFamilyBaseName(),
                 category,
@@ -2131,8 +2131,8 @@ public class WorkspaceDraftSession {
                                                                  Optional<MKWorkspacePaletteOverride> paletteOverride) {
         return new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(),
-                family.category(),
-                family.pieceRole(),
+                family.slotMetadata().category(),
+                family.slotMetadata().pieceRole(),
                 family.topologySlotId(),
                 family.verticalAccessGroupId(),
                 family.supportsVerticalAccess(),
@@ -2173,8 +2173,8 @@ public class WorkspaceDraftSession {
                                                                     MKTowerWorkspaceFamilyDefinition updated) {
         return new MKTowerWorkspaceFamilyDefinition(
                 updated.baseName(),
-                updated.category(),
-                updated.pieceRole(),
+                updated.slotMetadata().category(),
+                updated.slotMetadata().pieceRole(),
                 existing.topologySlotId(),
                 existing.verticalAccessGroupId(),
                 updated.supportsVerticalAccess(),

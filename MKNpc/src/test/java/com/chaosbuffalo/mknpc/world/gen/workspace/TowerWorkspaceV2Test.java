@@ -488,8 +488,8 @@ class TowerWorkspaceV2Test {
         assertFalse(tag.contains("category"));
         assertFalse(tag.contains("pieceRole"));
         MKTowerWorkspaceFamilyDefinition decoded = MKTowerWorkspaceFamilyDefinition.fromTag(tag);
-        assertEquals(MKTowerWorkspaceCategory.TOP_CAP, decoded.category());
-        assertEquals(MKWorkspacePieceRole.TOP_CAP, decoded.pieceRole());
+        assertEquals(MKTowerWorkspaceCategory.TOP_CAP, decoded.slotMetadata().category());
+        assertEquals(MKWorkspacePieceRole.TOP_CAP, decoded.slotMetadata().pieceRole());
     }
 
     @Test
@@ -556,8 +556,8 @@ class TowerWorkspaceV2Test {
                 .findFirst()
                 .orElseThrow();
 
-        assertEquals(MKTowerWorkspaceCategory.TOP_CAP, importedFamily.category());
-        assertEquals(MKWorkspacePieceRole.TOP_CAP, importedFamily.pieceRole());
+        assertEquals(MKTowerWorkspaceCategory.TOP_CAP, importedFamily.slotMetadata().category());
+        assertEquals(MKWorkspacePieceRole.TOP_CAP, importedFamily.slotMetadata().pieceRole());
         assertEquals(MKWorkspacePieceRole.TOP_CAP,
                 new MKTowerStackPlanner().createPieceForFamily(imported, importedFamily).role());
     }
@@ -734,8 +734,8 @@ class TowerWorkspaceV2Test {
                 .map(family -> family.baseName().equals("floor_main") ?
                         new MKTowerWorkspaceFamilyDefinition(
                                 family.baseName(),
-                                family.category(),
-                                family.pieceRole(),
+                                family.slotMetadata().category(),
+                                family.slotMetadata().pieceRole(),
                                 family.topologySlotId(),
                                 family.verticalAccessGroupId(),
                                 family.supportsVerticalAccess(),
@@ -1397,8 +1397,8 @@ class TowerWorkspaceV2Test {
                 .orElseThrow();
         MKTowerWorkspaceFamilyDefinition updatedEntry = new MKTowerWorkspaceFamilyDefinition(
                 entryFamily.baseName(),
-                entryFamily.category(),
-                entryFamily.pieceRole(),
+                entryFamily.slotMetadata().category(),
+                entryFamily.slotMetadata().pieceRole(),
                 entryFamily.supportsVerticalAccess(),
                 entryFamily.roomWidth(),
                 entryFamily.roomLength(),
@@ -1594,7 +1594,7 @@ class TowerWorkspaceV2Test {
     void defaultTowerMainEntranceIsOpeningOnly() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKTowerWorkspaceFamilyDefinition entryFamily = MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions).stream()
-                .filter(family -> family.pieceRole() == MKWorkspacePieceRole.ENTRY)
+                .filter(family -> family.slotMetadata().pieceRole() == MKWorkspacePieceRole.ENTRY)
                 .findFirst()
                 .orElseThrow();
         MKWorkspaceFamilyHorizontalExitDefinition entrance = entryFamily.horizontalExits().getFirst();
@@ -2187,8 +2187,8 @@ class TowerWorkspaceV2Test {
                     if (family.baseName().equals("entry")) {
                         return new MKTowerWorkspaceFamilyDefinition(
                                 family.baseName(),
-                                family.category(),
-                                family.pieceRole(),
+                                family.slotMetadata().category(),
+                                family.slotMetadata().pieceRole(),
                                 family.supportsVerticalAccess(),
                                 family.roomWidth(),
                                 family.roomLength(),
@@ -2205,8 +2205,8 @@ class TowerWorkspaceV2Test {
                     if (family.baseName().equals("floor_main")) {
                         return new MKTowerWorkspaceFamilyDefinition(
                                 family.baseName(),
-                                family.category(),
-                                family.pieceRole(),
+                                family.slotMetadata().category(),
+                                family.slotMetadata().pieceRole(),
                                 family.supportsVerticalAccess(),
                                 family.roomWidth(),
                                 family.roomLength(),
@@ -3044,8 +3044,8 @@ class TowerWorkspaceV2Test {
                                                                          int height) {
         return new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(),
-                family.category(),
-                family.pieceRole(),
+                family.slotMetadata().category(),
+                family.slotMetadata().pieceRole(),
                 family.topologySlotId(),
                 family.verticalAccessGroupId(),
                 family.supportsVerticalAccess(),
@@ -3065,8 +3065,8 @@ class TowerWorkspaceV2Test {
                                                                            int width, int length, int height) {
         return new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(),
-                family.category(),
-                family.pieceRole(),
+                family.slotMetadata().category(),
+                family.slotMetadata().pieceRole(),
                 family.topologySlotId(),
                 family.verticalAccessGroupId(),
                 family.supportsVerticalAccess(),
@@ -3086,8 +3086,8 @@ class TowerWorkspaceV2Test {
                                                                              MKWorkspaceFoundationPolicy foundationPolicy) {
         return new MKTowerWorkspaceFamilyDefinition(
                 family.baseName(),
-                family.category(),
-                family.pieceRole(),
+                family.slotMetadata().category(),
+                family.slotMetadata().pieceRole(),
                 family.topologySlotId(),
                 family.verticalAccessGroupId(),
                 family.supportsVerticalAccess(),

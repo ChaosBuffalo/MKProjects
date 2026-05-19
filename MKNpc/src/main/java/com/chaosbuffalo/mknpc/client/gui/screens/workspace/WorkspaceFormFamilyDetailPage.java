@@ -71,7 +71,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         MKTextFieldWidget baseNameField = makeField(screen, "Base Name", family.baseName());
         baseNameField.setTextChangeCallback((field, text) -> editor.replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
                 text.trim().isBlank() ? family.baseName() : text.trim(),
-                family.category(), family.pieceRole(), family.supportsVerticalAccess(),
+                family.slotMetadata().category(), family.slotMetadata().pieceRole(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
                 family.horizontalExits(), family.topVoidMargin(), family.bottomVoidMargin(), family.paletteOverride())));
         MKTextFieldWidget topologySlotField = makeField(screen, "Topology Slot", family.topologySlotId());
@@ -95,7 +95,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         MKButton extrusionModeButton = new MKButton(Component.literal(formatFamilyExtrusionMode(family.horizontalExtrusionMode())), 180, 20);
         extrusionModeButton.setPressedCallback((button, mouseButton) -> {
             editor.replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
-                    family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
+                    family.baseName(), family.slotMetadata().category(), family.slotMetadata().pieceRole(), family.supportsVerticalAccess(),
                     family.roomWidth(), family.roomLength(), family.roomHeight(),
                     cycleValue(List.of(MKWorkspaceHorizontalExtrusionMode.values()), family.horizontalExtrusionMode(),
                             isReverseClick(mouseButton)),
@@ -548,7 +548,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         MKIntegerSlider topVoidMarginSlider = new MKIntegerSlider("Margin", 180, 20, 0, topMarginMax, 1,
                 clamp(family.topVoidMargin(), 0, topMarginMax), value ->
                 editor.replaceFamilyDefinition(familyIndex, editor.normalizeFamilyDefinition(new MKTowerWorkspaceFamilyDefinition(
-                        family.baseName(), family.category(), family.pieceRole(), false,
+                        family.baseName(), family.slotMetadata().category(), family.slotMetadata().pieceRole(), false,
                         family.roomWidth(), family.roomLength(), family.roomHeight(),
                         family.horizontalExtrusionMode(), family.horizontalExits(),
                         value, family.bottomVoidMargin(), family.paletteOverride()))));
@@ -556,7 +556,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         MKIntegerSlider bottomVoidMarginSlider = new MKIntegerSlider("Margin", 180, 20, 0, bottomMarginMax, 1,
                 clamp(family.bottomVoidMargin(), 0, bottomMarginMax), value ->
                 editor.replaceFamilyDefinition(familyIndex, editor.normalizeFamilyDefinition(new MKTowerWorkspaceFamilyDefinition(
-                        family.baseName(), family.category(), family.pieceRole(), false,
+                        family.baseName(), family.slotMetadata().category(), family.slotMetadata().pieceRole(), false,
                         family.roomWidth(), family.roomLength(), family.roomHeight(),
                         family.horizontalExtrusionMode(), family.horizontalExits(),
                         family.topVoidMargin(), value, family.paletteOverride()))));
@@ -576,7 +576,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
     private MKTowerWorkspaceFamilyDefinition copyFamilyWithGeometry(MKTowerWorkspaceFamilyDefinition family,
                                                                     int roomWidth, int roomLength, int roomHeight) {
         return new MKTowerWorkspaceFamilyDefinition(
-                family.baseName(), family.category(), family.pieceRole(), family.supportsVerticalAccess(),
+                family.baseName(), family.slotMetadata().category(), family.slotMetadata().pieceRole(), family.supportsVerticalAccess(),
                 roomWidth, roomLength, roomHeight, family.horizontalExtrusionMode(), family.horizontalExits(),
                 family.topVoidMargin(), family.bottomVoidMargin(), family.paletteOverride());
     }

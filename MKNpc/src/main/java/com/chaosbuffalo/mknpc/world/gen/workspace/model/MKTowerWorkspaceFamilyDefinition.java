@@ -525,14 +525,6 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         return baseName;
     }
 
-    public MKTowerWorkspaceCategory category() {
-        return slotMetadata.category();
-    }
-
-    public MKWorkspacePieceRole pieceRole() {
-        return slotMetadata.pieceRole();
-    }
-
     public MKWorkspaceTopologySlotMetadata slotMetadata() {
         return slotMetadata;
     }

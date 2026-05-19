@@ -48,7 +48,7 @@ public class WorkspaceFormFamilyCategoryPage extends WorkspacePageBase {
         MKStackLayoutVertical content = createContentStack(screen);
         List<MKTowerWorkspaceFamilyDefinition> families = editor.familyDefinitions();
         List<Integer> familyIndexes = families.stream()
-                .filter(family -> family.category() == selectedCategory)
+                .filter(family -> family.slotMetadata().category() == selectedCategory)
                 .map(families::indexOf)
                 .toList();
         for (int index : familyIndexes) {

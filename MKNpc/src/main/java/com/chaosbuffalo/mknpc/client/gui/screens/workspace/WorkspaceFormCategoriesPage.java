@@ -437,7 +437,7 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
 
     private boolean hasMainPathContinuationFamily(WorkspaceDraftSession editor, MKTowerWorkspaceCategory category) {
         return editor.draft().familyDefinitions.stream()
-                .filter(family -> family.category() == category)
+                .filter(family -> family.slotMetadata().category() == category)
                 .filter(family -> !family.mainPathEnding())
                 .flatMap(family -> family.horizontalExits().stream())
                 .anyMatch(exit -> exit.pathKind().usesMainPath() &&
@@ -446,7 +446,7 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
 
     private boolean hasMainPathEndingFamily(WorkspaceDraftSession editor, MKTowerWorkspaceCategory category) {
         return editor.draft().familyDefinitions.stream()
-                .filter(family -> family.category() == category)
+                .filter(family -> family.slotMetadata().category() == category)
                 .anyMatch(MKTowerWorkspaceFamilyDefinition::mainPathEnding);
     }
 
