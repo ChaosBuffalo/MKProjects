@@ -26,26 +26,6 @@ public record MKTowerStackDefinition(
         stackId = stackId == null ? "" : stackId;
     }
 
-    public static MKTowerStackDefinition legacyTower(MKTowerWorkspaceFloorSettings floorSettings) {
-        return new MKTowerStackDefinition(
-                "",
-                floorSettings.mainFloors(),
-                floorSettings.basementFloors(),
-                0,
-                null,
-                null,
-                floorSettings.topCapApproachEnabled(),
-                floorSettings.basementCapApproachEnabled(),
-                true,
-                "connect_up",
-                "connect_down_entry",
-                "connect_down",
-                "top_cap",
-                "bottom_cap",
-                false
-        );
-    }
-
     public static MKTowerStackDefinition towerPrimary(MKWorkspaceTowerStackSettings stackSettings) {
         return new MKTowerStackDefinition(
                 stackSettings.stackId(),

@@ -157,7 +157,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
     private MKTowerStackDefinition towerStackDefinition(MKStructureWorkspace workspace) {
         return workspace.topologyProfile().towerStackSettings("tower.primary")
                 .map(MKTowerStackDefinition::towerPrimary)
-                .orElseGet(() -> MKTowerStackDefinition.legacyTower(workspace.floorSettings()));
+                .orElseThrow(() -> new IllegalStateException("tower topology is missing tower.primary stack settings"));
     }
 
     private List<MKPlannedPiece> createLinearRunPieces(MKStructureWorkspace workspace) {

@@ -47,7 +47,7 @@ public class MKTowerStackPlanner {
 
     public List<MKPlannedPiece> createRoomPieces(MKStructureWorkspace workspace,
                                                  List<MKTowerWorkspaceFamilyDefinition> families) {
-        return createRoomPieces(workspace, MKTowerStackDefinition.legacyTower(workspace.floorSettings()), families);
+        return createRoomPieces(workspace, primaryStackDefinition(workspace), families);
     }
 
     public List<MKPlannedPiece> createRoomPieces(MKStructureWorkspace workspace,
@@ -70,7 +70,7 @@ public class MKTowerStackPlanner {
     }
 
     public MKPlannedPiece createPieceForFamily(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family) {
-        return createPieceForFamily(workspace, MKTowerStackDefinition.legacyTower(workspace.floorSettings()), family);
+        return createPieceForFamily(workspace, primaryStackDefinition(workspace), family);
     }
 
     public MKPlannedPiece createPieceForFamily(MKStructureWorkspace workspace,
@@ -242,6 +242,12 @@ public class MKTowerStackPlanner {
                             basementCapRuntimeInfo(stackDefinition, family))
             );
         };
+    }
+
+    private MKTowerStackDefinition primaryStackDefinition(MKStructureWorkspace workspace) {
+        return workspace.topologyProfile().towerStackSettings("tower.primary")
+                .map(MKTowerStackDefinition::towerPrimary)
+                .orElseThrow(() -> new IllegalStateException("tower topology is missing tower.primary stack settings"));
     }
 
     private List<MKPlannedConnector> topCapConnectors(MKTowerStackDefinition stackDefinition, int hallWidth) {
