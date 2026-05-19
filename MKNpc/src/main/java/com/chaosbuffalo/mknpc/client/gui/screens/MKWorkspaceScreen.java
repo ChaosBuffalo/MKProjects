@@ -13,7 +13,6 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceDraftSession;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormCategoriesPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormFamiliesPage;
-import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormFamilyCategoryPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormFamilyDetailPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormHallwaysPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormHallwayDetailPage;
@@ -25,7 +24,6 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePageBase;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePieceDisplay;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceUtilitiesPage;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
@@ -128,14 +126,13 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace,
                              List<String> importManifestIds, List<String> backupManifestFiles) {
-        this(anchor, workspace, importManifestIds, backupManifestFiles, List.of(), null, null, -1, -1, -1, -1,
+        this(anchor, workspace, importManifestIds, backupManifestFiles, List.of(), null, -1, -1, -1, -1,
                 null);
     }
 
     private MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace, List<String> importManifestIds,
                               List<String> backupManifestFiles,
                               List<String> initialStates,
-                              MKTowerWorkspaceCategory selectedFormCategory,
                               String selectedTopologyKey,
                               int selectedFamilyIndex,
                               int selectedFamilyExitIndex,
@@ -150,7 +147,7 @@ public class MKWorkspaceScreen extends MKScreen {
         this.initialStates = List.copyOf(initialStates);
         this.selectedTopologyKey = selectedTopologyKey;
         this.detailStairConfig = detailStairConfig;
-        this.draftSession = new WorkspaceDraftSession(this, selectedFormCategory, selectedFamilyIndex,
+        this.draftSession = new WorkspaceDraftSession(this, selectedFamilyIndex,
                 selectedFamilyExitIndex, selectedOpeningIndex, selectedHallwayIndex);
     }
 
@@ -162,7 +159,7 @@ public class MKWorkspaceScreen extends MKScreen {
                                                List<String> updatedBackupManifestFiles) {
         return new MKWorkspaceScreen(anchor, updatedWorkspace, updatedImportManifestIds, updatedBackupManifestFiles,
                 getInitialStatesForRefresh(updatedWorkspace),
-                draftSession.selectedFamilyCategory(), selectedTopologyKey, draftSession.selectedFamilyIndex(),
+                selectedTopologyKey, draftSession.selectedFamilyIndex(),
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
                 draftSession.selectedHallwayIndex(),
                 detailStairConfig);
@@ -181,7 +178,6 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(categoriesPage);
         addState(WorkspaceFormCategoriesPage.DETAIL_ID, () -> categoriesPage.build(this));
         addWorkspacePage(new WorkspaceFormFamiliesPage());
-        addWorkspacePage(new WorkspaceFormFamilyCategoryPage());
         WorkspaceFormFamilyDetailPage familyDetailPage = new WorkspaceFormFamilyDetailPage();
         addWorkspacePage(familyDetailPage);
         addState(WorkspaceFormFamilyDetailPage.EXIT_DETAIL_ID, () -> familyDetailPage.build(this));

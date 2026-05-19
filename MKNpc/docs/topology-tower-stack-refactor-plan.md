@@ -307,14 +307,18 @@ Family-level validation should focus on override legality:
 - Import/deserialization restores topology profile, stack settings, run settings, and family definitions directly without materializing category-profile defaults.
 - Material-copy flows now preserve topology stack palette overrides alongside workspace, family, and linear-run palette settings.
 - Workspace drafts no longer carry stored category profiles.
-- The remaining work is to collapse the stored legacy `category`/`pieceRole` family hints into topology slot metadata, broaden resolver use in import/export/scaffold code, and remove old hallway naming from linear-run UI internals where safe.
+- Room family definitions now store topology slot metadata instead of direct `category`/`pieceRole` fields, and the compatibility accessors have been removed.
+- The legacy family-category detail page and selected-family-category UI state have been removed; room families are edited from the topology slot family page.
+- Editor-created, copied, and imported room families now use topology-slot metadata factories instead of manually reconstructing category/role constructor arguments.
+- Draft-session fallback metadata is now derived from topology schema role records before falling back to existing family metadata.
+- The remaining work is to keep broadening resolver use in scaffold/export code, reduce legacy constructor use in tests and compatibility code, and remove old hallway naming from linear-run UI internals where safe.
 
 ### Phase 1: Model Reusable Tower Stack Slots
 
 - Add a stack slot id helper that maps `{stackId}` plus stack role to concrete slot ids. Done for current tower-stack slots.
 - Add a reusable tower stack schema builder.
 - Expand `MKWorkspaceTowerStackSettings` with per-slot or per-stack-role heights, dimensions, cap approach toggles, and vertical access settings.
-- Keep current tower and walled keep behavior working while the remaining enum-backed family hints are replaced with topology metadata.
+- Keep current tower and walled keep behavior working while remaining enum-backed test and compatibility paths are replaced with topology metadata.
 - Continue moving standalone tower defaults to `tower.primary` until the legacy non-stack workspace settings can be removed.
 
 ### Phase 2: Extract Tower Stack Planner

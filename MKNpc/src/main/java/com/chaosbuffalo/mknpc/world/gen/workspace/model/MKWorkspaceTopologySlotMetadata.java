@@ -30,6 +30,31 @@ public record MKWorkspaceTopologySlotMetadata(
                 .orElseGet(() -> legacy(topologySlotId, category, pieceRole));
     }
 
+    public static MKWorkspaceTopologySlotMetadata explicit(String topologySlotId,
+                                                           MKTowerWorkspaceCategory category,
+                                                           MKWorkspacePieceRole pieceRole,
+                                                           String roleKind,
+                                                           String pieceKind,
+                                                           boolean terminal) {
+        return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
+                .map(slot -> new MKWorkspaceTopologySlotMetadata(
+                        topologySlotId,
+                        slot.category(),
+                        slot.pieceRole(),
+                        slot.roleKind(),
+                        slot.pieceKind(),
+                        slot.terminal(),
+                        jigsawRoleFor(slot.pieceRole())))
+                .orElseGet(() -> new MKWorkspaceTopologySlotMetadata(
+                        topologySlotId,
+                        category,
+                        pieceRole,
+                        roleKind,
+                        pieceKind,
+                        terminal,
+                        jigsawRoleFor(pieceRole)));
+    }
+
     private static MKWorkspaceTopologySlotMetadata legacy(String topologySlotId,
                                                           MKTowerWorkspaceCategory category,
                                                           MKWorkspacePieceRole pieceRole) {

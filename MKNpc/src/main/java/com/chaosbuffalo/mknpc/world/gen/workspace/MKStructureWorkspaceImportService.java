@@ -12,7 +12,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizon
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
@@ -23,6 +22,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthorin
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
@@ -216,41 +216,21 @@ public class MKStructureWorkspaceImportService {
                                     exit.verticalOffset()
                             ))
                             .toList();
-                    String stackId = MKTowerWorkspaceStackSlot.stackIdForTopologySlot(family.topologySlotId())
-                            .orElse(family.verticalAccessGroupId());
-                    return MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId())
-                            .map(slot -> MKTowerWorkspaceFamilyDefinition.forTowerStackSlot(
-                                    family.baseName(),
-                                    slot,
-                                    stackId,
-                                    family.verticalAccessGroupId(),
-                                    family.supportsVerticalAccess(),
-                                    family.roomWidth(),
-                                    family.roomLength(),
-                                    family.roomHeight(),
-                                    family.horizontalExtrusionMode(),
-                                    horizontalExits,
-                                    family.topVoidMargin(),
-                                    family.bottomVoidMargin(),
-                                    family.foundationPolicy(),
-                                    family.paletteOverride()))
-                            .orElseGet(() -> new MKTowerWorkspaceFamilyDefinition(
-                                    family.baseName(),
-                                    family.category(),
-                                    family.pieceRole(),
-                                    family.topologySlotId(),
-                                    family.verticalAccessGroupId(),
-                                    family.supportsVerticalAccess(),
-                                    family.roomWidth(),
-                                    family.roomLength(),
-                                    family.roomHeight(),
-                                    family.horizontalExtrusionMode(),
-                                    horizontalExits,
-                                    family.topVoidMargin(),
-                                    family.bottomVoidMargin(),
-                                    family.foundationPolicy(),
-                                    family.paletteOverride()
-                            ));
+                    return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                            family.baseName(),
+                            MKWorkspaceTopologySlotMetadata.fromTopologySlotIdOrHints(
+                                    family.topologySlotId(), family.category(), family.pieceRole()),
+                            family.verticalAccessGroupId(),
+                            family.supportsVerticalAccess(),
+                            family.roomWidth(),
+                            family.roomLength(),
+                            family.roomHeight(),
+                            family.horizontalExtrusionMode(),
+                            horizontalExits,
+                            family.topVoidMargin(),
+                            family.bottomVoidMargin(),
+                            family.foundationPolicy(),
+                            family.paletteOverride());
                 })
                 .toList();
         List<MKHorizontalOpeningProfile> openingProfiles = settings.openingProfiles().stream()

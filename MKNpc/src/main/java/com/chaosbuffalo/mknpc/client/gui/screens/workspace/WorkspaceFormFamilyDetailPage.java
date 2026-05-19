@@ -69,9 +69,10 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         MKStackLayoutVertical content = createContentStack(screen);
 
         MKTextFieldWidget baseNameField = makeField(screen, "Base Name", family.baseName());
-        baseNameField.setTextChangeCallback((field, text) -> editor.replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
+        baseNameField.setTextChangeCallback((field, text) -> editor.replaceFamilyDefinition(index,
+                MKTowerWorkspaceFamilyDefinition.forTopologySlot(
                 text.trim().isBlank() ? family.baseName() : text.trim(),
-                family.slotMetadata().category(), family.slotMetadata().pieceRole(), family.supportsVerticalAccess(),
+                family.slotMetadata(), family.verticalAccessGroupId(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
                 family.horizontalExits(), family.topVoidMargin(), family.bottomVoidMargin(), family.paletteOverride())));
         MKTextFieldWidget topologySlotField = makeField(screen, "Topology Slot", family.topologySlotId());
@@ -94,8 +95,8 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         });
         MKButton extrusionModeButton = new MKButton(Component.literal(formatFamilyExtrusionMode(family.horizontalExtrusionMode())), 180, 20);
         extrusionModeButton.setPressedCallback((button, mouseButton) -> {
-            editor.replaceFamilyDefinition(index, new MKTowerWorkspaceFamilyDefinition(
-                    family.baseName(), family.slotMetadata().category(), family.slotMetadata().pieceRole(), family.supportsVerticalAccess(),
+            editor.replaceFamilyDefinition(index, MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                    family.baseName(), family.slotMetadata(), family.verticalAccessGroupId(), family.supportsVerticalAccess(),
                     family.roomWidth(), family.roomLength(), family.roomHeight(),
                     cycleValue(List.of(MKWorkspaceHorizontalExtrusionMode.values()), family.horizontalExtrusionMode(),
                             isReverseClick(mouseButton)),
@@ -547,19 +548,21 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         int topMarginMax = Math.max(0, resolvedHeight - family.bottomVoidMargin() - minInteriorHeight);
         MKIntegerSlider topVoidMarginSlider = new MKIntegerSlider("Margin", 180, 20, 0, topMarginMax, 1,
                 clamp(family.topVoidMargin(), 0, topMarginMax), value ->
-                editor.replaceFamilyDefinition(familyIndex, editor.normalizeFamilyDefinition(new MKTowerWorkspaceFamilyDefinition(
-                        family.baseName(), family.slotMetadata().category(), family.slotMetadata().pieceRole(), false,
-                        family.roomWidth(), family.roomLength(), family.roomHeight(),
-                        family.horizontalExtrusionMode(), family.horizontalExits(),
-                        value, family.bottomVoidMargin(), family.paletteOverride()))));
+                editor.replaceFamilyDefinition(familyIndex, editor.normalizeFamilyDefinition(
+                        MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                                family.baseName(), family.slotMetadata(), family.verticalAccessGroupId(), false,
+                                family.roomWidth(), family.roomLength(), family.roomHeight(),
+                                family.horizontalExtrusionMode(), family.horizontalExits(),
+                                value, family.bottomVoidMargin(), family.paletteOverride()))));
         int bottomMarginMax = Math.max(0, resolvedHeight - family.topVoidMargin() - minInteriorHeight);
         MKIntegerSlider bottomVoidMarginSlider = new MKIntegerSlider("Margin", 180, 20, 0, bottomMarginMax, 1,
                 clamp(family.bottomVoidMargin(), 0, bottomMarginMax), value ->
-                editor.replaceFamilyDefinition(familyIndex, editor.normalizeFamilyDefinition(new MKTowerWorkspaceFamilyDefinition(
-                        family.baseName(), family.slotMetadata().category(), family.slotMetadata().pieceRole(), false,
-                        family.roomWidth(), family.roomLength(), family.roomHeight(),
-                        family.horizontalExtrusionMode(), family.horizontalExits(),
-                        family.topVoidMargin(), value, family.paletteOverride()))));
+                editor.replaceFamilyDefinition(familyIndex, editor.normalizeFamilyDefinition(
+                        MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                                family.baseName(), family.slotMetadata(), family.verticalAccessGroupId(), false,
+                                family.roomWidth(), family.roomLength(), family.roomHeight(),
+                                family.horizontalExtrusionMode(), family.horizontalExits(),
+                                family.topVoidMargin(), value, family.paletteOverride()))));
         addRow(screen, root, screen.makeWhiteText(Component.literal("Top Void Margin")), topVoidMarginSlider);
         addRow(screen, root, screen.makeWhiteText(Component.literal("Bottom Void Margin")), bottomVoidMarginSlider);
     }
@@ -575,8 +578,8 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
 
     private MKTowerWorkspaceFamilyDefinition copyFamilyWithGeometry(MKTowerWorkspaceFamilyDefinition family,
                                                                     int roomWidth, int roomLength, int roomHeight) {
-        return new MKTowerWorkspaceFamilyDefinition(
-                family.baseName(), family.slotMetadata().category(), family.slotMetadata().pieceRole(), family.supportsVerticalAccess(),
+        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                family.baseName(), family.slotMetadata(), family.verticalAccessGroupId(), family.supportsVerticalAccess(),
                 roomWidth, roomLength, roomHeight, family.horizontalExtrusionMode(), family.horizontalExits(),
                 family.topVoidMargin(), family.bottomVoidMargin(), family.paletteOverride());
     }
