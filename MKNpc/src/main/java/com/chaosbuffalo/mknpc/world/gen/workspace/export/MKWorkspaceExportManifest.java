@@ -4,7 +4,6 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
@@ -121,7 +120,6 @@ public record MKWorkspaceExportManifest(
                                 workspace.stairConfig().ladderBlock()
                         ),
                         ExportVerticalAccessSpec.from(workspace.verticalAccessSpec()),
-                        ExportFloorSettings.from(workspace.floorSettings()),
                         workspace.topologyProfile(),
                         workspace.familyDefinitions().stream().map(ExportFamilyDefinition::from).toList(),
                         workspace.openingProfiles().stream().map(ExportOpeningProfile::from).toList(),
@@ -309,7 +307,6 @@ public record MKWorkspaceExportManifest(
             ExportPalette palette,
             ExportStairConfig stairConfig,
             ExportVerticalAccessSpec verticalAccessSpec,
-            ExportFloorSettings floorSettings,
             MKWorkspaceTopologyProfile topologyProfile,
             List<ExportFamilyDefinition> familyDefinitions,
             List<ExportOpeningProfile> openingProfiles,
@@ -326,8 +323,6 @@ public record MKWorkspaceExportManifest(
                 ExportStairConfig.CODEC.fieldOf("stair_config").forGetter(ExportWorkspaceSettings::stairConfig),
                 ExportVerticalAccessSpec.CODEC.fieldOf("vertical_access_spec")
                         .forGetter(ExportWorkspaceSettings::verticalAccessSpec),
-                ExportFloorSettings.CODEC.fieldOf("floor_settings")
-                        .forGetter(ExportWorkspaceSettings::floorSettings),
                 MKWorkspaceTopologyProfile.CODEC.optionalFieldOf("topology_profile", MKWorkspaceTopologyProfile.tower())
                         .forGetter(ExportWorkspaceSettings::topologyProfile),
                 ExportFamilyDefinition.CODEC.listOf().optionalFieldOf("family_definitions", List.of()).forGetter(ExportWorkspaceSettings::familyDefinitions),
@@ -360,27 +355,6 @@ public record MKWorkspaceExportManifest(
                             spec.stairConfig().ladderBlock()
                     )
             );
-        }
-    }
-
-    public record ExportFloorSettings(
-            int mainFloors,
-            int basementFloors,
-            boolean topCapApproachEnabled,
-            boolean basementCapApproachEnabled
-    ) {
-        public static final Codec<ExportFloorSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                Codec.INT.fieldOf("main_floors").forGetter(ExportFloorSettings::mainFloors),
-                Codec.INT.fieldOf("basement_floors").forGetter(ExportFloorSettings::basementFloors),
-                Codec.BOOL.optionalFieldOf("top_cap_approach_enabled", true)
-                        .forGetter(ExportFloorSettings::topCapApproachEnabled),
-                Codec.BOOL.optionalFieldOf("basement_cap_approach_enabled", false)
-                        .forGetter(ExportFloorSettings::basementCapApproachEnabled)
-        ).apply(instance, ExportFloorSettings::new));
-
-        public static ExportFloorSettings from(MKTowerWorkspaceFloorSettings settings) {
-            return new ExportFloorSettings(settings.mainFloors(), settings.basementFloors(),
-                    settings.topCapApproachEnabled(), settings.basementCapApproachEnabled());
         }
     }
 

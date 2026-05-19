@@ -528,7 +528,6 @@ class TowerWorkspaceV2Test {
                         settings.palette(),
                         settings.stairConfig(),
                         settings.verticalAccessSpec(),
-                        settings.floorSettings(),
                         settings.topologyProfile(),
                         List.of(staleFamily),
                         settings.openingProfiles(),

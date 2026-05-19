@@ -33,7 +33,6 @@ public class MKStructureWorkspace {
     private final MKWorkspaceStairAuthoringConfig stairConfig;
     private final MKVerticalAccessPlacement verticalAccessPlacement;
     private final MKWorkspaceVerticalAccessSpec verticalAccessSpec;
-    private final MKTowerWorkspaceFloorSettings floorSettings;
     private final List<MKTowerWorkspaceFamilyDefinition> familyDefinitions;
     private final List<MKHorizontalOpeningProfile> openingProfiles;
     private final List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies;
@@ -86,7 +85,6 @@ public class MKStructureWorkspace {
         this.stairConfig = stairConfig;
         this.verticalAccessPlacement = verticalAccessPlacement;
         this.verticalAccessSpec = verticalAccessSpec;
-        this.floorSettings = floorSettings;
         this.familyDefinitions = List.copyOf(familyDefinitions);
         this.openingProfiles = List.copyOf(openingProfiles);
         this.linearRunFamilies = List.copyOf(linearRunFamilies);
@@ -136,7 +134,6 @@ public class MKStructureWorkspace {
                                                            SerializedWorkspaceCore core,
                                                            SerializedWorkspaceContent content) {
         MKWorkspaceVerticalAccessSpec resolvedVerticalAccessSpec = core.verticalAccessSpec();
-        MKTowerWorkspaceFloorSettings resolvedFloorSettings = content.floorSettings();
         List<MKTowerWorkspaceFamilyDefinition> resolvedFamilyDefinitions = List.copyOf(content.familyDefinitions());
         List<MKHorizontalOpeningProfile> resolvedOpeningProfiles = content.openingProfiles().isEmpty() ?
                 MKHorizontalOpeningProfile.createDefaults(core.dimensions()) : List.copyOf(content.openingProfiles());
@@ -156,7 +153,7 @@ public class MKStructureWorkspace {
                 core.exteriorAirMargin(),
                 core.previewMargin(),
                 resolvedVerticalAccessSpec,
-                resolvedFloorSettings,
+                MKTowerWorkspaceFloorSettings.defaultSettings(),
                 resolvedFamilyDefinitions,
                 resolvedOpeningProfiles,
                 resolvedLinearRunFamilies,
@@ -183,7 +180,6 @@ public class MKStructureWorkspace {
 
     private SerializedWorkspaceContent serializedContent() {
         return new SerializedWorkspaceContent(
-                floorSettings,
                 familyDefinitions,
                 openingProfiles,
                 linearRunFamilies,
@@ -226,7 +222,6 @@ public class MKStructureWorkspace {
     }
 
     private record SerializedWorkspaceContent(
-            MKTowerWorkspaceFloorSettings floorSettings,
             List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
             List<MKHorizontalOpeningProfile> openingProfiles,
             List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
@@ -235,8 +230,6 @@ public class MKStructureWorkspace {
             List<MKWorkspacePieceDefinition> pieces
     ) {
         private static final MapCodec<SerializedWorkspaceContent> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                MKTowerWorkspaceFloorSettings.CODEC.fieldOf("floorSettings")
-                        .forGetter(SerializedWorkspaceContent::floorSettings),
                 MKTowerWorkspaceFamilyDefinition.CODEC.listOf().optionalFieldOf("familyDefinitions", List.of())
                         .forGetter(SerializedWorkspaceContent::familyDefinitions),
                 MKHorizontalOpeningProfile.CODEC.listOf().optionalFieldOf("openingProfiles", List.of())
@@ -253,7 +246,7 @@ public class MKStructureWorkspace {
     public List<String> validate() {
         List<String> errors = new ArrayList<>(verticalAccessSpec.validate());
         if (topologyProfile.towerStackSettings().isEmpty()) {
-            errors.addAll(floorSettings.validate(MKTowerStackBudget.fromDimensions(dimensions)));
+            errors.addAll(floorSettings().validate(MKTowerStackBudget.fromDimensions(dimensions)));
         } else {
             for (MKWorkspaceTowerStackSettings settings : topologyProfile.towerStackSettings()) {
                 errors.addAll(validateTowerStackFloorSettings(settings));
@@ -388,7 +381,7 @@ public class MKStructureWorkspace {
                     MKTowerWorkspaceCategory.ENTRY,
                     MKTowerWorkspaceCategory.BASEMENT,
                     MKTowerWorkspaceCategory.BASEMENT_CAP));
-            if (floorSettings.topCapApproachEnabled()) {
+            if (floorSettings().topCapApproachEnabled()) {
                 stairBandCategories.add(MKTowerWorkspaceCategory.TOP_CAP);
             }
             for (MKTowerWorkspaceCategory category : stairBandCategories) {
@@ -518,7 +511,7 @@ public class MKStructureWorkspace {
     public MKStructureWorkspace withPieces(List<MKWorkspacePieceDefinition> newPieces) {
         return new MKStructureWorkspace(id, anchor, namespace, structureName, familyType, topologyProfile, dimensions, palette,
                 stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
-                floorSettings, familyDefinitions, openingProfiles, linearRunFamilies,
+                floorSettings(), familyDefinitions, openingProfiles, linearRunFamilies,
                 createdAt, System.currentTimeMillis(), newPieces);
     }
 
@@ -571,7 +564,20 @@ public class MKStructureWorkspace {
     }
 
     public MKTowerWorkspaceFloorSettings floorSettings() {
-        return floorSettings;
+        return topologyProfile.towerStackSettings(primaryFloorSettingsStackId())
+                .map(settings -> new MKTowerWorkspaceFloorSettings(
+                        settings.mainFloors(),
+                        settings.basementFloors(),
+                        settings.topCapApproachEnabled(),
+                        settings.basementCapApproachEnabled()))
+                .orElse(MKTowerWorkspaceFloorSettings.defaultSettings());
+    }
+
+    private String primaryFloorSettingsStackId() {
+        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(topologyProfile.profileType())) {
+            return "keep.center";
+        }
+        return "tower.primary";
     }
 
     public List<MKTowerWorkspaceFamilyDefinition> familyDefinitions() {

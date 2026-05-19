@@ -195,13 +195,6 @@ public class MKStructureWorkspaceImportService {
                         verticalAccessSpecExport.stairConfig().ladderBlock()
                 )
         );
-        MKWorkspaceExportManifest.ExportFloorSettings floorSettingsExport = settings.floorSettings();
-        MKTowerWorkspaceFloorSettings floorSettings = new MKTowerWorkspaceFloorSettings(
-                floorSettingsExport.mainFloors(),
-                floorSettingsExport.basementFloors(),
-                floorSettingsExport.topCapApproachEnabled(),
-                floorSettingsExport.basementCapApproachEnabled()
-        );
         List<MKTowerWorkspaceFamilyDefinition> familyDefinitions = settings.familyDefinitions().stream()
                 .map(family -> {
                     List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits = family.horizontalExits().stream()
@@ -283,7 +276,7 @@ public class MKStructureWorkspaceImportService {
                 settings.exteriorAirMargin(),
                 settings.previewMargin(),
                 verticalAccessSpec,
-                floorSettings,
+                MKTowerWorkspaceFloorSettings.defaultSettings(),
                 familyDefinitions,
                 openingProfiles,
                 linearRunFamilies,
