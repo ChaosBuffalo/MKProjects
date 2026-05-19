@@ -35,8 +35,8 @@ public class WorkspaceTopologySlotEditor {
         screen.resetCategoryOverrides();
     }
 
-    public int hallwayWidth() {
-        return screen.categoryHallwayWidth();
+    public int shaftWidth() {
+        return screen.categoryShaftWidth();
     }
 
     public MKWorkspaceStairMode stairMode() {

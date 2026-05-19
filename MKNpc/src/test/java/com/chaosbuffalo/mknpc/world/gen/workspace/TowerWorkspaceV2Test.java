@@ -2018,16 +2018,16 @@ class TowerWorkspaceV2Test {
                 List.of(
                         new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
                                 MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch",
-                                MKWorkspaceHorizontalExitConnectionMode.HALLWAY, 2, 1),
+                                MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN, 2, 1),
                         new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
                                 MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch",
-                                MKWorkspaceHorizontalExitConnectionMode.HALLWAY, 2, 1),
+                                MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN, 2, 1),
                         new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.EAST,
                                 MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch",
-                                MKWorkspaceHorizontalExitConnectionMode.HALLWAY, 2, 1),
+                                MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN, 2, 1),
                         new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.WEST,
                                 MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch",
-                                MKWorkspaceHorizontalExitConnectionMode.HALLWAY, 2, 1)
+                                MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN, 2, 1)
                 ),
                 0,
                 0,

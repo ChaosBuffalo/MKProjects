@@ -28,13 +28,13 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
     private record ResolvedOpeningProfile(String profileId, int openingWidth, int openingHeight) {
     }
 
-    private enum HallwayPathKind {
+    private enum LinearRunPathKind {
         MAIN("main"),
         BRANCH("branch");
 
         private final String serializedName;
 
-        HallwayPathKind(String serializedName) {
+        LinearRunPathKind(String serializedName) {
             this.serializedName = serializedName;
         }
     }
@@ -178,17 +178,17 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
             return List.of();
         }
         if (linearRun.allowOnMainPath()) {
-            pieces.add(createLinearRunPiece(workspace, linearRun, opening, HallwayPathKind.MAIN));
+            pieces.add(createLinearRunPiece(workspace, linearRun, opening, LinearRunPathKind.MAIN));
         }
         if (linearRun.allowOnBranchPath()) {
-            pieces.add(createLinearRunPiece(workspace, linearRun, opening, HallwayPathKind.BRANCH));
+            pieces.add(createLinearRunPiece(workspace, linearRun, opening, LinearRunPathKind.BRANCH));
         }
         return List.copyOf(pieces);
     }
 
     private MKPlannedPiece createLinearRunPiece(MKStructureWorkspace workspace,
                                                 MKWorkspaceLinearRunFamilyDefinition linearRun,
-                                                ResolvedOpeningProfile opening, HallwayPathKind pathKind) {
+                                                ResolvedOpeningProfile opening, LinearRunPathKind pathKind) {
         int westOffset = Math.max(0, -linearRun.slopeDelta());
         int eastOffset = Math.max(0, linearRun.slopeDelta());
         LinkedHashMap<String, String> tags = new LinkedHashMap<>();
@@ -206,10 +206,10 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
         applyFoundationTags(linearRun.foundationPolicy(), tags);
         MKWorkspacePaletteTags.apply(tags, paletteResolver.resolveFamily(workspace, linearRun));
         new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
-                pathKind == HallwayPathKind.MAIN, pathKind == HallwayPathKind.BRANCH, false, false).applyToTags(tags);
-        String linearRunPool = hallwayPoolName(linearRun.openingProfileId(), pathKind);
-        MKConnectorRole westRole = pathKind == HallwayPathKind.MAIN ? MKConnectorRole.MAIN_FORWARD : MKConnectorRole.BRANCH;
-        MKConnectorRole eastRole = pathKind == HallwayPathKind.MAIN ? MKConnectorRole.MAIN_BACK : MKConnectorRole.BRANCH;
+                pathKind == LinearRunPathKind.MAIN, pathKind == LinearRunPathKind.BRANCH, false, false).applyToTags(tags);
+        String linearRunPool = linearRunPoolName(linearRun.openingProfileId(), pathKind);
+        MKConnectorRole westRole = pathKind == LinearRunPathKind.MAIN ? MKConnectorRole.MAIN_FORWARD : MKConnectorRole.BRANCH;
+        MKConnectorRole eastRole = pathKind == LinearRunPathKind.MAIN ? MKConnectorRole.MAIN_BACK : MKConnectorRole.BRANCH;
         return new MKPlannedPiece(
                 topologySlotId(linearRun, pathKind),
                 "linear_run_" + linearRun.linearRunId() + "_" + pathKind.serializedName,
@@ -228,7 +228,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
         );
     }
 
-    private String hallwayPoolName(String openingProfileId, HallwayPathKind pathKind) {
+    private String linearRunPoolName(String openingProfileId, LinearRunPathKind pathKind) {
         return LINEAR_RUN_POOL_PREFIX + "/" + pathKind.serializedName + "/" + openingProfileId;
     }
 
@@ -240,8 +240,8 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
         }
     }
 
-    private String topologySlotId(MKWorkspaceLinearRunFamilyDefinition linearRun, HallwayPathKind pathKind) {
-        if (pathKind == HallwayPathKind.MAIN) {
+    private String topologySlotId(MKWorkspaceLinearRunFamilyDefinition linearRun, LinearRunPathKind pathKind) {
+        if (pathKind == LinearRunPathKind.MAIN) {
             return linearRun.allowOnMainPath() && !linearRun.allowOnBranchPath() ?
                     linearRun.topologySlotId() : "tower.linear_run.main";
         }

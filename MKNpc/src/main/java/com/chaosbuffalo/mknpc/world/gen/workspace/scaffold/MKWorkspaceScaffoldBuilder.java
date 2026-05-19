@@ -470,8 +470,7 @@ public class MKWorkspaceScaffoldBuilder {
     }
 
     LinearRunScaffoldStyle linearRunScaffoldStyle(MKPlannedPiece piece) {
-        if (!"linear_run".equals(piece.tags().get("tower_piece_kind")) &&
-                !"hallway".equals(piece.tags().get("tower_piece_kind"))) {
+        if (!"linear_run".equals(piece.tags().get("tower_piece_kind"))) {
             return LinearRunScaffoldStyle.ENCLOSED_CORRIDOR;
         }
         String kind = piece.tags().getOrDefault(LINEAR_RUN_KIND_TAG, "enclosed_corridor");
@@ -567,7 +566,7 @@ public class MKWorkspaceScaffoldBuilder {
     private void decoratePieceInterior(ServerLevel level, BlockPos geometryOrigin, MKPlannedPiece piece, int shellMargin,
                                        int verticalShellThickness, int geometryInteriorHeight, BlockState floorState) {
         String pieceKind = piece.tags().get("tower_piece_kind");
-        if (!"hallway".equals(pieceKind) && !"linear_run".equals(pieceKind)) {
+        if (!"linear_run".equals(pieceKind)) {
             return;
         }
         int slopeDelta = parseIntTag(piece.tags(), LINEAR_RUN_SLOPE_DELTA_TAG, 0);

@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
 public enum MKWorkspaceHorizontalExitConnectionMode {
-    HALLWAY("hallway"),
+    LINEAR_RUN("hallway"),
     DIRECT_ROOM("direct_room"),
     NO_CONNECTION("no_connection");
 
@@ -21,14 +21,14 @@ public enum MKWorkspaceHorizontalExitConnectionMode {
                 return mode;
             }
         }
-        return HALLWAY;
+        return LINEAR_RUN;
     }
 
     public MKWorkspaceHorizontalExitConnectionMode next() {
         return switch (this) {
-            case HALLWAY -> DIRECT_ROOM;
+            case LINEAR_RUN -> DIRECT_ROOM;
             case DIRECT_ROOM -> NO_CONNECTION;
-            case NO_CONNECTION -> HALLWAY;
+            case NO_CONNECTION -> LINEAR_RUN;
         };
     }
 }

@@ -52,7 +52,7 @@ public class WorkspaceTopologySlotPage extends WorkspacePageBase {
 
         editor.ensureOverridesInitialized();
         editor.stairWidth(MKWorkspaceDimensions.snapToNearestAllowedStairWidth(
-                editor.hallwayWidth(), editor.stairWidth()));
+                editor.shaftWidth(), editor.stairWidth()));
 
         MKLayout root = createPanel(screen);
 
@@ -160,7 +160,7 @@ public class WorkspaceTopologySlotPage extends WorkspacePageBase {
                 screen.buttonHeight());
         addRow(content, widthLabel, widthButton);
         widthButton.setPressedCallback((button, mouseButton) -> {
-            editor.stairWidth(cycleAllowedStairWidth(editor.hallwayWidth(), editor.stairWidth(),
+            editor.stairWidth(cycleAllowedStairWidth(editor.shaftWidth(), editor.stairWidth(),
                     isReverseClick(mouseButton)));
             button.buttonText = Component.literal(Integer.toString(editor.stairWidth()));
             return true;
@@ -260,9 +260,9 @@ public class WorkspaceTopologySlotPage extends WorkspacePageBase {
         return values.get(nextIndex);
     }
 
-    private int cycleAllowedStairWidth(int hallwayWidth, int currentWidth, boolean reverse) {
-        List<Integer> allowedWidths = MKWorkspaceDimensions.getAllowedStairWidths(hallwayWidth);
-        int snapped = MKWorkspaceDimensions.snapToNearestAllowedStairWidth(hallwayWidth, currentWidth);
+    private int cycleAllowedStairWidth(int shaftWidth, int currentWidth, boolean reverse) {
+        List<Integer> allowedWidths = MKWorkspaceDimensions.getAllowedStairWidths(shaftWidth);
+        int snapped = MKWorkspaceDimensions.snapToNearestAllowedStairWidth(shaftWidth, currentWidth);
         return cycleValue(allowedWidths, snapped, reverse, currentWidth);
     }
 }

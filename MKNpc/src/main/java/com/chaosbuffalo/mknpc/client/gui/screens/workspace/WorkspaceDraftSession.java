@@ -51,7 +51,7 @@ public class WorkspaceDraftSession {
     private int selectedFamilyIndex;
     private int selectedFamilyExitIndex;
     private int selectedOpeningIndex;
-    private int selectedHallwayIndex;
+    private int selectedLinearRunIndex;
     private static final List<String> KEEP_CORNER_STACK_IDS = List.of(
             "keep.corner.north_west",
             "keep.corner.north_east",
@@ -61,12 +61,12 @@ public class WorkspaceDraftSession {
     private static final String TOWER_PRIMARY_STACK_ID = "tower.primary";
 
     public WorkspaceDraftSession(MKWorkspaceScreen screen, int selectedFamilyIndex, int selectedFamilyExitIndex, int selectedOpeningIndex,
-                                 int selectedHallwayIndex) {
+                                 int selectedLinearRunIndex) {
         this.screen = screen;
         this.selectedFamilyIndex = selectedFamilyIndex;
         this.selectedFamilyExitIndex = selectedFamilyExitIndex;
         this.selectedOpeningIndex = selectedOpeningIndex;
-        this.selectedHallwayIndex = selectedHallwayIndex;
+        this.selectedLinearRunIndex = selectedLinearRunIndex;
     }
 
     public Draft draft() {
@@ -623,7 +623,7 @@ public class WorkspaceDraftSession {
         selectedFamilyIndex = -1;
         selectedFamilyExitIndex = -1;
         selectedOpeningIndex = -1;
-        selectedHallwayIndex = -1;
+        selectedLinearRunIndex = -1;
         snapDraftVerticalAccess();
     }
 
@@ -758,12 +758,12 @@ public class WorkspaceDraftSession {
         selectedOpeningIndex = index;
     }
 
-    public int selectedHallwayIndex() {
-        return selectedHallwayIndex;
+    public int selectedLinearRunIndex() {
+        return selectedLinearRunIndex;
     }
 
-    public void selectedHallwayIndex(int index) {
-        selectedHallwayIndex = index;
+    public void selectedLinearRunIndex(int index) {
+        selectedLinearRunIndex = index;
     }
 
     public List<MKTowerWorkspaceFamilyDefinition> familyDefinitions() {

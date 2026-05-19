@@ -13,8 +13,8 @@ import net.minecraft.network.chat.Component;
 
 import java.util.List;
 
-public class WorkspaceFormHallwaysPage extends WorkspacePageBase {
-    public static final String ID = "form_hallways";
+public class WorkspaceFormLinearRunsPage extends WorkspacePageBase {
+    public static final String ID = "form_linear_runs";
 
     @Override
     public String id() {
@@ -32,21 +32,21 @@ public class WorkspaceFormHallwaysPage extends WorkspacePageBase {
         MKScrollView scrollView = addScrollBelowHeader(screen, root, helpText);
         MKStackLayoutVertical content = createContentStack(screen);
         WorkspaceDraftSession editor = screen.draftSession();
-        List<MKWorkspaceLinearRunFamilyDefinition> hallways = editor.linearRunFamilies();
+        List<MKWorkspaceLinearRunFamilyDefinition> linearRuns = editor.linearRunFamilies();
 
-        for (int i = 0; i < hallways.size(); i++) {
+        for (int i = 0; i < linearRuns.size(); i++) {
             int index = i;
-            MKWorkspaceLinearRunFamilyDefinition hallway = hallways.get(index);
-            MKText header = screen.makeWhiteText(Component.literal(hallway.linearRunId()));
+            MKWorkspaceLinearRunFamilyDefinition linearRun = linearRuns.get(index);
+            MKText header = screen.makeWhiteText(Component.literal(linearRun.linearRunId()));
             content.addWidget(header);
             content.addConstraintToWidget(MarginConstraint.LEFT, header);
 
             MKText summary = screen.makeWhiteText(Component.literal(
-                    formatTopologyLabel(hallway.kind().getSerializedName()) + "  |  " +
-                            hallway.topologySlotId() + "  |  " + hallway.openingProfileId() + "  |  " + hallway.length() + "x" +
-                            hallway.interiorWidth() + "x" + hallway.interiorHeight() +
-                            "  |  slope " + hallway.slopeDelta() + "  |  " +
-                            describePathAccess(hallway.allowOnMainPath(), hallway.allowOnBranchPath())));
+                    formatTopologyLabel(linearRun.kind().getSerializedName()) + "  |  " +
+                            linearRun.topologySlotId() + "  |  " + linearRun.openingProfileId() + "  |  " + linearRun.length() + "x" +
+                            linearRun.interiorWidth() + "x" + linearRun.interiorHeight() +
+                            "  |  slope " + linearRun.slopeDelta() + "  |  " +
+                            describePathAccess(linearRun.allowOnMainPath(), linearRun.allowOnBranchPath())));
             summary.setWidth(screen.contentWidth());
             summary.setMultiline(true);
             content.addWidget(summary);
@@ -56,8 +56,8 @@ public class WorkspaceFormHallwaysPage extends WorkspacePageBase {
             content.addWidget(openButton);
             content.addConstraintToWidget(new CenterXConstraint(), openButton);
             openButton.setPressedCallback((button, mouseButton) -> {
-                editor.selectedHallwayIndex(index);
-                screen.pushState("form_hallway_detail");
+                editor.selectedLinearRunIndex(index);
+                screen.pushState(WorkspaceFormLinearRunDetailPage.ID);
                 screen.flagNeedSetup();
                 return true;
             });
@@ -65,10 +65,10 @@ public class WorkspaceFormHallwaysPage extends WorkspacePageBase {
 
         finishScrollContent(screen, scrollView, content);
 
-        MKButton addHallway = addBottomButton(screen, root, Component.literal("Add Run"), 180, 1);
-        addHallway.setPressedCallback((button, mouseButton) -> {
-            editor.selectedHallwayIndex(editor.addLinearRunFamily());
-            screen.pushState("form_hallway_detail");
+        MKButton addLinearRun = addBottomButton(screen, root, Component.literal("Add Run"), 180, 1);
+        addLinearRun.setPressedCallback((button, mouseButton) -> {
+            editor.selectedLinearRunIndex(editor.addLinearRunFamily());
+            screen.pushState(WorkspaceFormLinearRunDetailPage.ID);
             screen.flagNeedSetup();
             return true;
         });

@@ -303,7 +303,7 @@ public class MKStructureWorkspace {
                     errors.add("family " + familyDefinition.baseName() + " " +
                             exit.pathKind().getSerializedName() + " must place a connector");
                 }
-                if (exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.HALLWAY &&
+                if (exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN &&
                         exit.pathKind() != MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY &&
                         exit.pathKind() != MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY) {
                     boolean hasCompatibleLinearRun = linearRunFamilies.stream().anyMatch(linearRun ->

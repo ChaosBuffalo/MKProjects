@@ -33,13 +33,13 @@ public class MKTowerStackPlanner {
     private record ResolvedOpeningProfile(String profileId, int openingWidth, int openingHeight) {
     }
 
-    private enum HallwayPathKind {
+    private enum LinearRunPathKind {
         MAIN("main"),
         BRANCH("branch");
 
         private final String serializedName;
 
-        HallwayPathKind(String serializedName) {
+        LinearRunPathKind(String serializedName) {
             this.serializedName = serializedName;
         }
     }
@@ -78,7 +78,7 @@ public class MKTowerStackPlanner {
         String stairPlacement = stackDefinition.verticalAccessPlacement() == null ?
                 workspace.verticalAccessSpec().placement().getSerializedName() :
                 stackDefinition.verticalAccessPlacement().getSerializedName();
-        int hallWidth = stackDefinition.shaftSize() > 0 ?
+        int shaftWidth = stackDefinition.shaftSize() > 0 ?
                 stackDefinition.shaftSize() :
                 workspace.verticalAccessSpec().shaftSize();
         MKWorkspaceStairAuthoringConfig stairConfig = stackDefinition.stairConfig() == null ?
@@ -99,9 +99,9 @@ public class MKTowerStackPlanner {
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
                                     List.of(
-                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, shaftWidth, shaftWidth,
                                                     stackDefinition.connectUpPool()),
-                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, shaftWidth, shaftWidth,
                                                     stackDefinition.connectDownEntryPool())
                                     ) : List.of(),
                             family,
@@ -119,9 +119,9 @@ public class MKTowerStackPlanner {
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
                                     List.of(
-                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, shaftWidth, shaftWidth,
                                                     EMPTY_POOL, stackDefinition.connectUpPool()),
-                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, shaftWidth, shaftWidth,
                                                     stackDefinition.connectUpPool())
                                     ) : List.of(),
                             family,
@@ -139,9 +139,9 @@ public class MKTowerStackPlanner {
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
                                     List.of(
-                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, shaftWidth, shaftWidth,
                                                     EMPTY_POOL, stackDefinition.connectUpPool()),
-                                            new MKPlannedConnector(MKConnectorRole.TOP_CAP_FORWARD, Direction.UP, hallWidth, hallWidth,
+                                            new MKPlannedConnector(MKConnectorRole.TOP_CAP_FORWARD, Direction.UP, shaftWidth, shaftWidth,
                                                     stackDefinition.topCapPool())
                                     ) : List.of(),
                             family,
@@ -158,7 +158,7 @@ public class MKTowerStackPlanner {
                     resolvedFamily.roomHeight(),
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
-                                    topCapConnectors(stackDefinition, hallWidth) : List.of(),
+                                    topCapConnectors(stackDefinition, shaftWidth) : List.of(),
                             family,
                             workspace
                     ),
@@ -174,9 +174,9 @@ public class MKTowerStackPlanner {
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
                                     List.of(
-                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, shaftWidth, shaftWidth,
                                                     EMPTY_POOL, stackDefinition.connectDownEntryPool()),
-                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, shaftWidth, shaftWidth,
                                                     stackDefinition.connectDownPool())
                                     ) : List.of(),
                             family,
@@ -194,9 +194,9 @@ public class MKTowerStackPlanner {
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
                                     List.of(
-                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, shaftWidth, shaftWidth,
                                                     EMPTY_POOL, stackDefinition.connectDownPool()),
-                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, shaftWidth, shaftWidth,
                                                     stackDefinition.connectDownPool())
                                     ) : List.of(),
                             family,
@@ -214,9 +214,9 @@ public class MKTowerStackPlanner {
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
                                     List.of(
-                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
+                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, shaftWidth, shaftWidth,
                                                     EMPTY_POOL, stackDefinition.connectDownPool()),
-                                            new MKPlannedConnector(MKConnectorRole.TOP_CAP_FORWARD, Direction.DOWN, hallWidth, hallWidth,
+                                            new MKPlannedConnector(MKConnectorRole.TOP_CAP_FORWARD, Direction.DOWN, shaftWidth, shaftWidth,
                                                     stackDefinition.bottomCapPool())
                                     ) : List.of(),
                             family,
@@ -233,7 +233,7 @@ public class MKTowerStackPlanner {
                     resolvedFamily.roomHeight(),
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
-                                    basementCapConnectors(stackDefinition, hallWidth) : List.of(),
+                                    basementCapConnectors(stackDefinition, shaftWidth) : List.of(),
                             family,
                             workspace
                     ),
@@ -249,12 +249,12 @@ public class MKTowerStackPlanner {
                 .orElseThrow(() -> new IllegalStateException("tower topology is missing tower.primary stack settings"));
     }
 
-    private List<MKPlannedConnector> topCapConnectors(MKTowerStackDefinition stackDefinition, int hallWidth) {
+    private List<MKPlannedConnector> topCapConnectors(MKTowerStackDefinition stackDefinition, int shaftWidth) {
         if (stackDefinition.topCapApproachEnabled()) {
-            return List.of(new MKPlannedConnector(MKConnectorRole.TOP_CAP_BACK, Direction.DOWN, hallWidth, hallWidth,
+            return List.of(new MKPlannedConnector(MKConnectorRole.TOP_CAP_BACK, Direction.DOWN, shaftWidth, shaftWidth,
                     EMPTY_POOL, stackDefinition.topCapPool()));
         }
-        return List.of(new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, hallWidth, hallWidth,
+        return List.of(new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, shaftWidth, shaftWidth,
                 EMPTY_POOL, stackDefinition.connectUpPool()));
     }
 
@@ -266,12 +266,12 @@ public class MKTowerStackPlanner {
         return roomRuntimeInfo(false, MKJigsawPieceRole.TOP_CAP, 1, 1, true, true, family);
     }
 
-    private List<MKPlannedConnector> basementCapConnectors(MKTowerStackDefinition stackDefinition, int hallWidth) {
+    private List<MKPlannedConnector> basementCapConnectors(MKTowerStackDefinition stackDefinition, int shaftWidth) {
         if (stackDefinition.basementCapApproachEnabled()) {
-            return List.of(new MKPlannedConnector(MKConnectorRole.TOP_CAP_BACK, Direction.UP, hallWidth, hallWidth,
+            return List.of(new MKPlannedConnector(MKConnectorRole.TOP_CAP_BACK, Direction.UP, shaftWidth, shaftWidth,
                     EMPTY_POOL, stackDefinition.bottomCapPool()));
         }
-        return List.of(new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, hallWidth, hallWidth,
+        return List.of(new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, shaftWidth, shaftWidth,
                 EMPTY_POOL, stackDefinition.connectDownPool()));
     }
 
@@ -295,7 +295,7 @@ public class MKTowerStackPlanner {
             ResolvedOpeningProfile opening = resolveOpeningProfile(workspace, exit.openingProfileId())
                     .orElseThrow(() -> new IllegalStateException("missing opening profile " + exit.openingProfileId() +
                             " for family " + family.baseName()));
-            HallwayPathKind hallwayPathKind = exit.pathKind().usesMainPath() ? HallwayPathKind.MAIN : HallwayPathKind.BRANCH;
+            LinearRunPathKind linearRunPathKind = exit.pathKind().usesMainPath() ? LinearRunPathKind.MAIN : LinearRunPathKind.BRANCH;
             MKConnectorRole role = switch (exit.pathKind()) {
                 case MAIN_ENTRY, MAIN_ENDING_ENTRY -> MKConnectorRole.MAIN_FORWARD;
                 case MAIN_EXIT -> MKConnectorRole.MAIN_BACK;
@@ -322,7 +322,7 @@ public class MKTowerStackPlanner {
             }
             String targetPool = exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM ?
                     directRoomTargetPoolName(opening.profileId(), role) :
-                    resolveHallwayPool(workspace, opening.profileId(), hallwayPathKind);
+                    resolveLinearRunPool(workspace, opening.profileId(), linearRunPathKind);
             String incomingPool = exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM ?
                     directRoomIncomingPoolName(opening.profileId(), role) : null;
             connectors.add(new MKPlannedConnector(role, exit.direction(),
@@ -347,14 +347,14 @@ public class MKTowerStackPlanner {
                 .map(profile -> new ResolvedOpeningProfile(profile.profileId(), profile.openingWidth(), profile.openingHeight()));
     }
 
-    private String resolveHallwayPool(MKStructureWorkspace workspace, String openingProfileId, HallwayPathKind pathKind) {
+    private String resolveLinearRunPool(MKStructureWorkspace workspace, String openingProfileId, LinearRunPathKind pathKind) {
         boolean hasCompatibleLinearRun = workspace.linearRunFamilies().stream().anyMatch(linearRun ->
                 linearRun.openingProfileId().equals(openingProfileId) &&
-                        (pathKind == HallwayPathKind.MAIN ? linearRun.allowOnMainPath() : linearRun.allowOnBranchPath()));
-        return hasCompatibleLinearRun ? hallwayPoolName(openingProfileId, pathKind) : EMPTY_POOL;
+                        (pathKind == LinearRunPathKind.MAIN ? linearRun.allowOnMainPath() : linearRun.allowOnBranchPath()));
+        return hasCompatibleLinearRun ? linearRunPoolName(openingProfileId, pathKind) : EMPTY_POOL;
     }
 
-    private String hallwayPoolName(String openingProfileId, HallwayPathKind pathKind) {
+    private String linearRunPoolName(String openingProfileId, LinearRunPathKind pathKind) {
         return LINEAR_RUN_POOL_PREFIX + "/" + pathKind.serializedName + "/" + openingProfileId;
     }
 

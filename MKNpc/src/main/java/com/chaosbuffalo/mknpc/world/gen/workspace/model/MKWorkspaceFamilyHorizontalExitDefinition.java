@@ -19,7 +19,7 @@ public record MKWorkspaceFamilyHorizontalExitDefinition(
                     .forGetter(MKWorkspaceFamilyHorizontalExitDefinition::pathKind),
             Codec.STRING.fieldOf("openingProfileId").forGetter(MKWorkspaceFamilyHorizontalExitDefinition::openingProfileId),
             MKWorkspaceCodecs.HORIZONTAL_EXIT_CONNECTION_MODE_CODEC.optionalFieldOf("connectionMode",
-                            MKWorkspaceHorizontalExitConnectionMode.HALLWAY)
+                            MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN)
                     .forGetter(MKWorkspaceFamilyHorizontalExitDefinition::connectionMode),
             Codec.INT.optionalFieldOf("sideOffset", 0).forGetter(MKWorkspaceFamilyHorizontalExitDefinition::sideOffset),
             Codec.INT.optionalFieldOf("verticalOffset", 0).forGetter(MKWorkspaceFamilyHorizontalExitDefinition::verticalOffset)
@@ -28,7 +28,7 @@ public record MKWorkspaceFamilyHorizontalExitDefinition(
     public MKWorkspaceFamilyHorizontalExitDefinition(Direction direction,
                                                      MKWorkspaceHorizontalExitPathKind pathKind,
                                                      String openingProfileId) {
-        this(direction, pathKind, openingProfileId, MKWorkspaceHorizontalExitConnectionMode.HALLWAY);
+        this(direction, pathKind, openingProfileId, MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN);
     }
 
     public MKWorkspaceFamilyHorizontalExitDefinition(Direction direction,

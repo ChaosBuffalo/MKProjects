@@ -34,7 +34,7 @@ public class WorkspaceFormPage extends WorkspacePageBase {
         addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 4),
                 "Opening Profiles", "form_openings");
         addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 5),
-                "Linear Run Families", "form_hallways");
+                "Linear Run Families", WorkspaceFormLinearRunsPage.ID);
 
         MKButton resetDefaults = new MKButton(Component.literal("Reset Topology Defaults"), 220,
                 screen.buttonHeight());

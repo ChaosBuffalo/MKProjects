@@ -488,9 +488,9 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
         ), current, reverse);
     }
 
-    private int cycleAllowedStairWidth(int hallwayWidth, int currentWidth, boolean reverse) {
-        List<Integer> allowedWidths = MKWorkspaceDimensions.getAllowedStairWidths(hallwayWidth);
-        int snapped = MKWorkspaceDimensions.snapToNearestAllowedStairWidth(hallwayWidth, currentWidth);
+    private int cycleAllowedStairWidth(int shaftWidth, int currentWidth, boolean reverse) {
+        List<Integer> allowedWidths = MKWorkspaceDimensions.getAllowedStairWidths(shaftWidth);
+        int snapped = MKWorkspaceDimensions.snapToNearestAllowedStairWidth(shaftWidth, currentWidth);
         if (allowedWidths.isEmpty()) {
             return currentWidth;
         }

@@ -11,8 +11,8 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceDraftSession;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormFamiliesPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormFamilyDetailPage;
-import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormHallwaysPage;
-import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormHallwayDetailPage;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormLinearRunsPage;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormLinearRunDetailPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormMaterialsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormOpeningsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormOpeningDetailPage;
@@ -137,7 +137,7 @@ public class MKWorkspaceScreen extends MKScreen {
                               int selectedFamilyIndex,
                               int selectedFamilyExitIndex,
                               int selectedOpeningIndex,
-                              int selectedHallwayIndex,
+                              int selectedLinearRunIndex,
                               MKWorkspaceStairAuthoringConfig detailStairConfig) {
         super(Component.literal("Tower Workspace"));
         this.anchor = anchor;
@@ -148,7 +148,7 @@ public class MKWorkspaceScreen extends MKScreen {
         this.selectedTopologyKey = selectedTopologyKey;
         this.detailStairConfig = detailStairConfig;
         this.draftSession = new WorkspaceDraftSession(this, selectedFamilyIndex,
-                selectedFamilyExitIndex, selectedOpeningIndex, selectedHallwayIndex);
+                selectedFamilyExitIndex, selectedOpeningIndex, selectedLinearRunIndex);
     }
 
     public MKWorkspaceScreen copyWithWorkspace(MKStructureWorkspace updatedWorkspace, List<String> updatedImportManifestIds) {
@@ -161,7 +161,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 getInitialStatesForRefresh(updatedWorkspace),
                 selectedTopologyKey, draftSession.selectedFamilyIndex(),
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
-                draftSession.selectedHallwayIndex(),
+                draftSession.selectedLinearRunIndex(),
                 detailStairConfig);
     }
 
@@ -183,8 +183,8 @@ public class MKWorkspaceScreen extends MKScreen {
         addState(WorkspaceFormFamilyDetailPage.EXIT_DETAIL_ID, () -> familyDetailPage.build(this));
         addWorkspacePage(new WorkspaceFormOpeningsPage());
         addWorkspacePage(new WorkspaceFormOpeningDetailPage());
-        addWorkspacePage(new WorkspaceFormHallwaysPage());
-        addWorkspacePage(new WorkspaceFormHallwayDetailPage());
+        addWorkspacePage(new WorkspaceFormLinearRunsPage());
+        addWorkspacePage(new WorkspaceFormLinearRunDetailPage());
         addWorkspacePage(new WorkspaceManagePage());
         addWorkspacePage(new WorkspaceUtilitiesPage());
         addWorkspacePage(new WorkspaceBlockSwapPage());
@@ -334,7 +334,7 @@ public class MKWorkspaceScreen extends MKScreen {
         selectedTopologyKey = null;
     }
 
-    public int categoryHallwayWidth() {
+    public int categoryShaftWidth() {
         return workspace.dimensions().hallwayWidth();
     }
 

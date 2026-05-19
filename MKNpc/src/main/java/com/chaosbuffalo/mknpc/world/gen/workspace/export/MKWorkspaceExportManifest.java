@@ -448,7 +448,7 @@ public record MKWorkspaceExportManifest(
                         .fieldOf("path_kind").forGetter(ExportFamilyHorizontalExit::pathKind),
                 Codec.STRING.optionalFieldOf("opening_profile_id", "").forGetter(ExportFamilyHorizontalExit::openingProfileId),
                 horizontalExitConnectionModeCodec().optionalFieldOf("connection_mode",
-                                MKWorkspaceHorizontalExitConnectionMode.HALLWAY)
+                                MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN)
                         .forGetter(ExportFamilyHorizontalExit::connectionMode),
                 Codec.INT.optionalFieldOf("side_offset", 0).forGetter(ExportFamilyHorizontalExit::sideOffset),
                 Codec.INT.optionalFieldOf("vertical_offset", 0).forGetter(ExportFamilyHorizontalExit::verticalOffset)
