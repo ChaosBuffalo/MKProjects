@@ -19,8 +19,10 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
 
     public static final Codec<MKTowerWorkspaceFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("baseName").forGetter(MKTowerWorkspaceFamilyDefinition::baseName),
-            MKWorkspaceCodecs.TOWER_CATEGORY_CODEC.fieldOf("category").forGetter(MKTowerWorkspaceFamilyDefinition::category),
-            MKWorkspaceCodecs.PIECE_ROLE_CODEC.fieldOf("pieceRole").forGetter(MKTowerWorkspaceFamilyDefinition::pieceRole),
+            MKWorkspaceCodecs.TOWER_CATEGORY_CODEC.optionalFieldOf("category")
+                    .forGetter(MKTowerWorkspaceFamilyDefinition::serializedCategoryHintOpt),
+            MKWorkspaceCodecs.PIECE_ROLE_CODEC.optionalFieldOf("pieceRole")
+                    .forGetter(MKTowerWorkspaceFamilyDefinition::serializedPieceRoleHintOpt),
             Codec.STRING.optionalFieldOf("topologySlotId", "").forGetter(MKTowerWorkspaceFamilyDefinition::topologySlotId),
             Codec.STRING.optionalFieldOf("verticalAccessGroupId", "").forGetter(MKTowerWorkspaceFamilyDefinition::verticalAccessGroupId),
             Codec.BOOL.fieldOf("supportsVerticalAccess")
@@ -42,7 +44,9 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                        roomWidth, roomLength, roomHeight,
                        horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin, foundationPolicyOverride,
                        paletteOverride) ->
-            new MKTowerWorkspaceFamilyDefinition(baseName, category, pieceRole, topologySlotId, verticalAccessGroupId,
+            new MKTowerWorkspaceFamilyDefinition(baseName,
+                    categoryForTopologySlotOrHint(topologySlotId, category),
+                    pieceRoleForTopologySlotOrHint(topologySlotId, pieceRole), topologySlotId, verticalAccessGroupId,
                     supportsVerticalAccess,
                     roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
                     topVoidMargin, bottomVoidMargin, foundationPolicyOverride.orElse(null),
@@ -209,6 +213,34 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                 bottomVoidMargin,
                 foundationPolicy,
                 paletteOverride);
+    }
+
+    private static Optional<MKTowerWorkspaceCategory> serializedCategoryHintOpt(
+            MKTowerWorkspaceFamilyDefinition family) {
+        return MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId()).isPresent()
+                ? Optional.empty()
+                : Optional.of(family.category());
+    }
+
+    private static Optional<MKWorkspacePieceRole> serializedPieceRoleHintOpt(
+            MKTowerWorkspaceFamilyDefinition family) {
+        return MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId()).isPresent()
+                ? Optional.empty()
+                : Optional.of(family.pieceRole());
+    }
+
+    private static MKTowerWorkspaceCategory categoryForTopologySlotOrHint(String topologySlotId,
+                                                                         Optional<MKTowerWorkspaceCategory> hint) {
+        return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
+                .map(MKTowerWorkspaceStackSlot::category)
+                .orElseGet(() -> hint.orElse(MKTowerWorkspaceCategory.MAIN));
+    }
+
+    private static MKWorkspacePieceRole pieceRoleForTopologySlotOrHint(String topologySlotId,
+                                                                       Optional<MKWorkspacePieceRole> hint) {
+        return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
+                .map(MKTowerWorkspaceStackSlot::pieceRole)
+                .orElseGet(() -> hint.orElse(MKWorkspacePieceRole.FLOOR_MAIN));
     }
 
     public static List<MKTowerWorkspaceFamilyDefinition> createDefaults() {

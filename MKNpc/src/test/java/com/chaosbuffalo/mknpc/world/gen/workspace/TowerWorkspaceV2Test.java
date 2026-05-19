@@ -483,6 +483,83 @@ class TowerWorkspaceV2Test {
                 MKWorkspaceExportManifest.ExportFamilyDefinition.from(mismatchedFamily);
         assertEquals(MKTowerWorkspaceCategory.TOP_CAP, exported.category());
         assertEquals(MKWorkspacePieceRole.TOP_CAP, exported.pieceRole());
+
+        CompoundTag tag = mismatchedFamily.toTag();
+        assertFalse(tag.contains("category"));
+        assertFalse(tag.contains("pieceRole"));
+        MKTowerWorkspaceFamilyDefinition decoded = MKTowerWorkspaceFamilyDefinition.fromTag(tag);
+        assertEquals(MKTowerWorkspaceCategory.TOP_CAP, decoded.category());
+        assertEquals(MKWorkspacePieceRole.TOP_CAP, decoded.pieceRole());
+    }
+
+    @Test
+    void importNormalizesStackFamilyMetadataFromTopologySlot() {
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(List.of(new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false)), List.of()),
+                MKWorkspaceTopologyProfile.tower(),
+                List.of(),
+                List.of()
+        );
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.snapshotFromWorkspace(workspace, 4, "test");
+        MKWorkspaceExportManifest.ExportWorkspaceSettings settings = manifest.settings();
+        MKWorkspaceExportManifest.ExportFamilyDefinition staleFamily =
+                new MKWorkspaceExportManifest.ExportFamilyDefinition(
+                        "imported_stale_top",
+                        MKTowerWorkspaceCategory.MAIN,
+                        MKWorkspacePieceRole.FLOOR_MAIN,
+                        "tower.primary.top_cap",
+                        "tower.primary",
+                        true,
+                        0,
+                        0,
+                        0,
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                        List.of(),
+                        0,
+                        0,
+                        null,
+                        null);
+        MKWorkspaceExportManifest.ExportWorkspaceSettings staleSettings =
+                new MKWorkspaceExportManifest.ExportWorkspaceSettings(
+                        settings.anchor(),
+                        settings.shellMargin(),
+                        settings.exteriorAirMargin(),
+                        settings.previewMargin(),
+                        settings.verticalAccessPlacement(),
+                        settings.dimensions(),
+                        settings.palette(),
+                        settings.stairConfig(),
+                        settings.verticalAccessSpec(),
+                        settings.floorSettings(),
+                        settings.topologyProfile(),
+                        List.of(staleFamily),
+                        settings.openingProfiles(),
+                        settings.linearRunFamilies());
+        MKWorkspaceExportManifest staleManifest = new MKWorkspaceExportManifest(
+                manifest.schemaVersion(),
+                manifest.workspaceId(),
+                manifest.namespace(),
+                manifest.structureName(),
+                manifest.familyType(),
+                manifest.exportedAt(),
+                manifest.createdAt(),
+                manifest.updatedAt(),
+                staleSettings,
+                manifest.runtimeHints(),
+                manifest.categories(),
+                manifest.pieces());
+
+        MKStructureWorkspace imported = new MKStructureWorkspaceImportService().workspaceFromManifest(
+                UUID.randomUUID(), new BlockPos(7, 80, 7), 123L, staleManifest);
+        MKTowerWorkspaceFamilyDefinition importedFamily = imported.familyDefinitions().stream()
+                .filter(family -> family.baseName().equals("imported_stale_top"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(MKTowerWorkspaceCategory.TOP_CAP, importedFamily.category());
+        assertEquals(MKWorkspacePieceRole.TOP_CAP, importedFamily.pieceRole());
+        assertEquals(MKWorkspacePieceRole.TOP_CAP,
+                new MKTowerStackPlanner().createPieceForFamily(imported, importedFamily).role());
     }
 
     @Test
