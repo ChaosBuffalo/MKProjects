@@ -9,6 +9,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
@@ -605,22 +606,25 @@ public class MKStructureWorkspaceService {
                         .map(family -> materialSource.familyDefinitions().stream()
                                 .filter(requested -> requested.baseName().equals(family.baseName()))
                                 .findFirst()
-                                .map(requested -> new com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition(
-                                        family.baseName(),
-                                        family.category(),
-                                        family.pieceRole(),
-                                        family.topologySlotId(),
-                                        family.verticalAccessGroupId(),
-                                        family.supportsVerticalAccess(),
-                                        family.roomWidth(),
-                                        family.roomLength(),
-                                        family.roomHeight(),
-                                        family.horizontalExtrusionMode(),
-                                        family.horizontalExits(),
-                                        family.topVoidMargin(),
-                                        family.bottomVoidMargin(),
-                                        family.foundationPolicyOverride(),
-                                        requested.paletteOverride()))
+                                .map(requested -> {
+                                    MKWorkspaceTopologySlotMetadata metadata = MKWorkspaceTopologySlotMetadata.fromFamily(family);
+                                    return new com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition(
+                                            family.baseName(),
+                                            metadata.category(),
+                                            metadata.pieceRole(),
+                                            family.topologySlotId(),
+                                            family.verticalAccessGroupId(),
+                                            family.supportsVerticalAccess(),
+                                            family.roomWidth(),
+                                            family.roomLength(),
+                                            family.roomHeight(),
+                                            family.horizontalExtrusionMode(),
+                                            family.horizontalExits(),
+                                            family.topVoidMargin(),
+                                            family.bottomVoidMargin(),
+                                            family.foundationPolicyOverride(),
+                                            requested.paletteOverride());
+                                })
                                 .orElse(family))
                         .toList(),
                 source.openingProfiles(),

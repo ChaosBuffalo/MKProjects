@@ -26,6 +26,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
@@ -441,10 +442,11 @@ public record MKWorkspaceExportManifest(
                         topVoidMargin, bottomVoidMargin, foundationPolicy.orElse(null), paletteOverride.orElse(null))));
 
         public static ExportFamilyDefinition from(MKTowerWorkspaceFamilyDefinition familyDefinition) {
+            MKWorkspaceTopologySlotMetadata metadata = MKWorkspaceTopologySlotMetadata.fromFamily(familyDefinition);
             return new ExportFamilyDefinition(
                     familyDefinition.baseName(),
-                    familyDefinition.category(),
-                    familyDefinition.pieceRole(),
+                    metadata.category(),
+                    metadata.pieceRole(),
                     familyDefinition.topologySlotId(),
                     familyDefinition.verticalAccessGroupId(),
                     familyDefinition.supportsVerticalAccess(),

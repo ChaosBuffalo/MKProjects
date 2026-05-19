@@ -478,6 +478,11 @@ class TowerWorkspaceV2Test {
                 workspace.resolveFamilySettings(mismatchedFamily).slotMetadata().pieceRole());
         assertEquals(MKWorkspacePieceRole.TOP_CAP,
                 new MKTowerStackPlanner().createPieceForFamily(workspace, mismatchedFamily).role());
+
+        MKWorkspaceExportManifest.ExportFamilyDefinition exported =
+                MKWorkspaceExportManifest.ExportFamilyDefinition.from(mismatchedFamily);
+        assertEquals(MKTowerWorkspaceCategory.TOP_CAP, exported.category());
+        assertEquals(MKWorkspacePieceRole.TOP_CAP, exported.pieceRole());
     }
 
     @Test

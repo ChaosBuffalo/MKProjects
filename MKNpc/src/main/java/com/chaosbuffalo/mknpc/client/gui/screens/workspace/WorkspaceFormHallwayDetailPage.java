@@ -162,7 +162,7 @@ public class WorkspaceFormHallwayDetailPage extends WorkspacePageBase {
 
         finishScrollContent(screen, scrollView, content);
 
-        MKButton remove = addBottomButton(screen, root, Component.literal("Remove Hallway"), 180, 1);
+        MKButton remove = addBottomButton(screen, root, Component.literal("Remove Run"), 180, 1);
         remove.setPressedCallback((button, mouseButton) -> {
             editor.removeLinearRunFamily(index);
             editor.selectedHallwayIndex(-1);
