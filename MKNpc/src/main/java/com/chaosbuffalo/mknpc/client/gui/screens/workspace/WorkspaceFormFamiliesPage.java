@@ -123,7 +123,7 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
 
     private String formatExitConnectionMode(MKWorkspaceHorizontalExitConnectionMode connectionMode) {
         return switch (connectionMode) {
-            case HALLWAY -> "Hallway";
+            case HALLWAY -> "Linear Run";
             case DIRECT_ROOM -> "Direct Room";
             case NO_CONNECTION -> "No Connection";
         };
