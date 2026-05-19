@@ -193,7 +193,7 @@ public class MKWorkspaceScaffoldBuilder {
                 UUID.randomUUID(),
                 workspace.id(),
                 plannedPiece.pieceName(),
-                plannedPiece.role(),
+                plannedPiece.roleId(),
                 getVariantIndex(plannedPiece),
                 effectiveDimensions,
                 getShellMargin(plannedPiece, workspace.shellMargin()),
@@ -1065,7 +1065,7 @@ public class MKWorkspaceScaffoldBuilder {
             SignText text = sign.getFrontText()
                     .setMessage(0, Component.literal(workspace.namespace()))
                     .setMessage(1, Component.literal(workspace.structureName()))
-                    .setMessage(2, Component.literal(piece.role().getSerializedName()))
+                    .setMessage(2, Component.literal(piece.roleId()))
                     .setMessage(3, Component.literal(piece.pieceName()));
             sign.setText(text, true);
             sign.setText(text, false);

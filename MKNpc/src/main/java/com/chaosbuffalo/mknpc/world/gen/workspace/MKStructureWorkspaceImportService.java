@@ -17,7 +17,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
@@ -323,7 +322,7 @@ public class MKStructureWorkspaceImportService {
                 .toList();
         LinkedHashMap<String, String> tags = new LinkedHashMap<>(piece.tags());
         return new MKPlannedPiece(
-                MKPlannedPiece.roleIdFromTags(tags, piece.role()),
+                tags.getOrDefault("workspace_topology_slot_id", piece.roleId()),
                 piece.pieceName(),
                 dimensions.roomWidth(),
                 dimensions.roomLength(),
@@ -363,7 +362,7 @@ public class MKStructureWorkspaceImportService {
                 generatedPiece.pieceId(),
                 workspaceId,
                 generatedPiece.pieceName(),
-                generatedPiece.role(),
+                generatedPiece.roleId(),
                 generatedPiece.variantIndex(),
                 generatedPiece.effectiveDimensions(),
                 generatedPiece.shellMargin(),
@@ -402,7 +401,7 @@ public class MKStructureWorkspaceImportService {
                 piece.pieceId(),
                 workspace.id(),
                 piece.pieceName(),
-                piece.role(),
+                piece.roleId(),
                 piece.variantIndex(),
                 dimensionsFromExport(piece.effectiveDimensions()),
                 piece.shellMargin(),

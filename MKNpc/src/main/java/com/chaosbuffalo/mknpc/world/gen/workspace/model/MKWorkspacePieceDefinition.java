@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
@@ -15,7 +16,7 @@ public class MKWorkspacePieceDefinition {
             MKWorkspaceCodecs.UUID_CODEC.fieldOf("pieceId").forGetter(MKWorkspacePieceDefinition::pieceId),
             MKWorkspaceCodecs.UUID_CODEC.fieldOf("workspaceId").forGetter(MKWorkspacePieceDefinition::workspaceId),
             Codec.STRING.fieldOf("pieceName").forGetter(MKWorkspacePieceDefinition::pieceName),
-            MKWorkspaceCodecs.PIECE_ROLE_CODEC.fieldOf("role").forGetter(MKWorkspacePieceDefinition::role),
+            Codec.STRING.fieldOf("roleId").forGetter(MKWorkspacePieceDefinition::roleId),
             Codec.INT.fieldOf("variantIndex").forGetter(MKWorkspacePieceDefinition::variantIndex),
             MKWorkspaceDimensions.CODEC.fieldOf("effectiveDimensions").forGetter(MKWorkspacePieceDefinition::effectiveDimensions),
             Codec.INT.fieldOf("shellMargin").forGetter(MKWorkspacePieceDefinition::shellMargin),
@@ -37,7 +38,7 @@ public class MKWorkspacePieceDefinition {
     private final UUID pieceId;
     private final UUID workspaceId;
     private final String pieceName;
-    private final MKWorkspacePieceRole role;
+    private final String roleId;
     private final int variantIndex;
     private final MKWorkspaceDimensions effectiveDimensions;
     private final int shellMargin;
@@ -57,10 +58,21 @@ public class MKWorkspacePieceDefinition {
                                       BoundingBox exportBounds, BoundingBox previewBounds, BlockPos structureBlockPos,
                                       BlockPos signPos, List<BlockPos> markerPositions,
                                       List<BlockPos> generatedStairPositions, Map<String, String> tags) {
+        this(pieceId, workspaceId, pieceName, role.getSerializedName(), variantIndex, effectiveDimensions, shellMargin,
+                connectors, worldOrigin, exportBounds, previewBounds, structureBlockPos, signPos, markerPositions,
+                generatedStairPositions, tags);
+    }
+
+    public MKWorkspacePieceDefinition(UUID pieceId, UUID workspaceId, String pieceName, String roleId,
+                                      int variantIndex, MKWorkspaceDimensions effectiveDimensions, int shellMargin,
+                                      List<MKWorkspaceConnectorDefinition> connectors, BlockPos worldOrigin,
+                                      BoundingBox exportBounds, BoundingBox previewBounds, BlockPos structureBlockPos,
+                                      BlockPos signPos, List<BlockPos> markerPositions,
+                                      List<BlockPos> generatedStairPositions, Map<String, String> tags) {
         this.pieceId = pieceId;
         this.workspaceId = workspaceId;
         this.pieceName = pieceName;
-        this.role = role;
+        this.roleId = roleId;
         this.variantIndex = variantIndex;
         this.effectiveDimensions = effectiveDimensions;
         this.shellMargin = shellMargin;
@@ -95,8 +107,19 @@ public class MKWorkspacePieceDefinition {
         return pieceName;
     }
 
+    public String roleId() {
+        return roleId;
+    }
+
     public MKWorkspacePieceRole role() {
-        return role;
+        MKWorkspacePieceRole parsed = parseWorkspacePieceRole(roleId);
+        if (parsed != null) {
+            return parsed;
+        }
+        String topologySlotId = tags.getOrDefault("workspace_topology_slot_id", roleId);
+        return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
+                .map(MKTowerWorkspaceStackSlot::pieceRole)
+                .orElseGet(this::legacyRoleFromTags);
     }
 
     public int variantIndex() {
@@ -148,8 +171,52 @@ public class MKWorkspacePieceDefinition {
     }
 
     public MKWorkspacePieceDefinition withGeneratedStairs(List<BlockPos> newGeneratedStairPositions, Map<String, String> newTags) {
-        return new MKWorkspacePieceDefinition(pieceId, workspaceId, pieceName, role, variantIndex, effectiveDimensions,
+        return new MKWorkspacePieceDefinition(pieceId, workspaceId, pieceName, roleId, variantIndex, effectiveDimensions,
                 shellMargin, connectors, worldOrigin, exportBounds, previewBounds, structureBlockPos, signPos,
                 markerPositions, newGeneratedStairPositions, newTags);
+    }
+
+    private MKWorkspacePieceRole legacyRoleFromTags() {
+        if ("linear_run".equals(tags.get("tower_piece_kind"))) {
+            return MKWorkspacePieceRole.HALLWAY;
+        }
+        if (roleId.endsWith(".entry") || roleId.endsWith("_entry") || roleId.contains(".gate.")) {
+            return MKWorkspacePieceRole.ENTRY;
+        }
+        if (roleId.endsWith(".top_cap") || roleId.endsWith("_top_cap")) {
+            return MKWorkspacePieceRole.TOP_CAP;
+        }
+        if (roleId.endsWith(".top_cap_approach") || roleId.endsWith("_top_cap_approach")) {
+            return MKWorkspacePieceRole.TOP_CAP_APPROACH;
+        }
+        if (roleId.endsWith(".basement_cap") || roleId.endsWith("_basement_cap")) {
+            return MKWorkspacePieceRole.BASEMENT_CAP;
+        }
+        if (roleId.endsWith(".basement_cap_approach") || roleId.endsWith("_basement_cap_approach")) {
+            return MKWorkspacePieceRole.BASEMENT_CAP_APPROACH;
+        }
+        return MKWorkspaceRuntimePieceInfo.fromTags(tags)
+                .map(MKWorkspaceRuntimePieceInfo::role)
+                .map(this::legacyRoleForJigsawRole)
+                .orElse(MKWorkspacePieceRole.FLOOR_MAIN);
+    }
+
+    private MKWorkspacePieceRole legacyRoleForJigsawRole(MKJigsawPieceRole role) {
+        return switch (role) {
+            case TOP_CAP -> MKWorkspacePieceRole.TOP_CAP;
+            case TOP_CAP_APPROACH -> MKWorkspacePieceRole.TOP_CAP_APPROACH;
+            case BASEMENT_CAP_APPROACH -> MKWorkspacePieceRole.BASEMENT_CAP_APPROACH;
+            case TERMINAL -> MKWorkspacePieceRole.BASEMENT_CAP;
+            default -> MKWorkspacePieceRole.FLOOR_MAIN;
+        };
+    }
+
+    private static MKWorkspacePieceRole parseWorkspacePieceRole(String roleId) {
+        for (MKWorkspacePieceRole role : MKWorkspacePieceRole.values()) {
+            if (role.getSerializedName().equals(roleId)) {
+                return role;
+            }
+        }
+        return null;
     }
 }

@@ -21,7 +21,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
@@ -180,7 +179,7 @@ public record MKWorkspaceExportManifest(
         return grouped.entrySet().stream()
                 .map(entry -> new ExportCategory(
                         entry.getKey(),
-                        entry.getValue().get(0).role(),
+                        entry.getValue().get(0).roleId(),
                         entry.getValue().stream()
                                 .sorted(Comparator.comparingInt(MKWorkspacePieceDefinition::variantIndex))
                                 .map(MKWorkspacePieceDefinition::pieceName)
@@ -195,10 +194,6 @@ public record MKWorkspaceExportManifest(
 
     private static Codec<MKVerticalAccessPlacement> verticalAccessPlacementCodec() {
         return Codec.STRING.xmap(MKVerticalAccessPlacement::fromSerializedName, MKVerticalAccessPlacement::getSerializedName);
-    }
-
-    private static Codec<MKWorkspacePieceRole> pieceRoleCodec() {
-        return Codec.STRING.xmap(MKWorkspacePieceRole::fromSerializedName, MKWorkspacePieceRole::getSerializedName);
     }
 
     private static Codec<MKWorkspaceHorizontalExtrusionMode> horizontalExtrusionModeCodec() {
@@ -638,12 +633,12 @@ public record MKWorkspaceExportManifest(
 
     public record ExportRuntimeCategory(
             String baseName,
-            MKWorkspacePieceRole role,
+            String roleId,
             ExportRuntimePieceMetadata pieceMetadata
     ) {
         public static final Codec<ExportRuntimeCategory> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("base_name").forGetter(ExportRuntimeCategory::baseName),
-                pieceRoleCodec().fieldOf("role").forGetter(ExportRuntimeCategory::role),
+                Codec.STRING.fieldOf("role_id").forGetter(ExportRuntimeCategory::roleId),
                 ExportRuntimePieceMetadata.CODEC.fieldOf("piece_metadata").forGetter(ExportRuntimeCategory::pieceMetadata)
         ).apply(instance, ExportRuntimeCategory::new));
 
@@ -659,7 +654,7 @@ public record MKWorkspaceExportManifest(
             }
             return java.util.Optional.of(new ExportRuntimeCategory(
                     category.baseName(),
-                    category.role(),
+                    category.roleId(),
                     ExportRuntimePieceMetadata.from(runtimeInfo.get(), foundationPolicyForPiece(workspace, runtimePiece.get()))
             ));
         }
@@ -745,10 +740,10 @@ public record MKWorkspaceExportManifest(
         ).apply(instance, ExportStairConfig::new));
     }
 
-    public record ExportCategory(String baseName, MKWorkspacePieceRole role, List<String> pieces) {
+    public record ExportCategory(String baseName, String roleId, List<String> pieces) {
         public static final Codec<ExportCategory> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("base_name").forGetter(ExportCategory::baseName),
-                pieceRoleCodec().fieldOf("role").forGetter(ExportCategory::role),
+                Codec.STRING.fieldOf("role_id").forGetter(ExportCategory::roleId),
                 Codec.STRING.listOf().fieldOf("pieces").forGetter(ExportCategory::pieces)
         ).apply(instance, ExportCategory::new));
     }
@@ -839,7 +834,7 @@ public record MKWorkspaceExportManifest(
             UUID pieceId,
             String pieceName,
             String baseName,
-            MKWorkspacePieceRole role,
+            String roleId,
             int variantIndex,
             String workspacePieceKind,
             String structureId,
@@ -855,7 +850,7 @@ public record MKWorkspaceExportManifest(
                 UUID_CODEC.fieldOf("piece_id").forGetter(ExportPiece::pieceId),
                 Codec.STRING.fieldOf("piece_name").forGetter(ExportPiece::pieceName),
                 Codec.STRING.fieldOf("base_name").forGetter(ExportPiece::baseName),
-                pieceRoleCodec().fieldOf("role").forGetter(ExportPiece::role),
+                Codec.STRING.fieldOf("role_id").forGetter(ExportPiece::roleId),
                 Codec.INT.fieldOf("variant_index").forGetter(ExportPiece::variantIndex),
                 Codec.STRING.fieldOf("workspace_piece_kind").forGetter(ExportPiece::workspacePieceKind),
                 Codec.STRING.fieldOf("structure_id").forGetter(ExportPiece::structureId),
@@ -873,7 +868,7 @@ public record MKWorkspaceExportManifest(
                     piece.pieceId(),
                     piece.pieceName(),
                     piece.tags().getOrDefault("workspace_base_name", piece.pieceName()),
-                    piece.role(),
+                    piece.roleId(),
                     piece.variantIndex(),
                     piece.tags().getOrDefault("workspace_piece_kind", "instance"),
                     workspace.namespace() + ":" + workspace.structureName() + "/" + piece.pieceName(),

@@ -31,10 +31,6 @@ public record MKPlannedPiece(
         return legacyRole();
     }
 
-    public static String roleIdFromTags(Map<String, String> tags, MKWorkspacePieceRole fallback) {
-        return tags.getOrDefault("workspace_topology_slot_id", fallback.getSerializedName());
-    }
-
     public MKWorkspacePieceRole legacyRole() {
         MKWorkspacePieceRole parsed = parseWorkspacePieceRole(roleId);
         if (parsed != null) {

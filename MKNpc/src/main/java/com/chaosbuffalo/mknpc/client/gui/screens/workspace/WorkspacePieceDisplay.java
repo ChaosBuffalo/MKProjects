@@ -39,7 +39,7 @@ public final class WorkspacePieceDisplay {
                     piece.tags().getOrDefault("workspace_category", "main")) + ":" +
                     familyId + ":" + piece.tags().getOrDefault("workspace_horizontal_exits", "none");
         }
-        return "role:" + piece.role().getSerializedName();
+        return "role:" + piece.roleId();
     }
 
     public static String buildWorkspaceGroupLabel(MKWorkspacePieceDefinition piece) {
@@ -55,7 +55,7 @@ public final class WorkspacePieceDisplay {
                     " / " + familyId +
                     " / exits " + piece.tags().getOrDefault("workspace_horizontal_exits", "none");
         }
-        return formatTopologyLabel(piece.role().getSerializedName());
+        return formatTopologyLabel(piece.roleId());
     }
 
     public static String getBaseName(MKWorkspacePieceDefinition piece) {

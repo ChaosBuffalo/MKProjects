@@ -99,7 +99,7 @@ public class MKWorkspacePieceRelayoutService {
                 original.pieceId(),
                 workspace.id(),
                 original.pieceName(),
-                original.role(),
+                original.roleId(),
                 original.variantIndex(),
                 original.effectiveDimensions(),
                 original.shellMargin(),
@@ -118,7 +118,7 @@ public class MKWorkspacePieceRelayoutService {
     private MKPlannedPiece toPlannedPiece(MKWorkspacePieceDefinition piece) {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>(piece.tags());
         return new MKPlannedPiece(
-                MKPlannedPiece.roleIdFromTags(tags, piece.role()),
+                tags.getOrDefault("workspace_topology_slot_id", piece.roleId()),
                 piece.pieceName(),
                 piece.effectiveDimensions().roomWidth(),
                 piece.effectiveDimensions().roomLength(),

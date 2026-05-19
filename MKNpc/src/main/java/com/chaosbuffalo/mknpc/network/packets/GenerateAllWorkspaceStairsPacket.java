@@ -51,7 +51,7 @@ public class GenerateAllWorkspaceStairsPacket implements CustomPacketPayload {
                             .filter(piece -> MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags()))
                             .filter(piece -> MKWorkspaceStairMode.NONE.getSerializedName()
                                     .equals(piece.tags().get("generated_stair_mode")))
-                            .map(piece -> piece.pieceName() + " [" + piece.role().getSerializedName() + "]")
+                            .map(piece -> piece.pieceName() + " [" + piece.roleId() + "]")
                             .toList();
                     if (!unresolvedPieces.isEmpty() && updated.stairConfig().mode() != MKWorkspaceStairMode.NONE) {
                         player.displayClientMessage(Component.literal("Workspace stairs: no valid profile for " +

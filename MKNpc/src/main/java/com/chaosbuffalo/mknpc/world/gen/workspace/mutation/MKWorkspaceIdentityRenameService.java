@@ -82,7 +82,7 @@ public class MKWorkspaceIdentityRenameService {
                 piece.pieceId(),
                 piece.workspaceId(),
                 piece.pieceName(),
-                piece.role(),
+                piece.roleId(),
                 piece.variantIndex(),
                 piece.effectiveDimensions(),
                 piece.shellMargin(),
@@ -166,7 +166,7 @@ public class MKWorkspaceIdentityRenameService {
             SignText text = sign.getFrontText()
                     .setMessage(0, Component.literal(namespace))
                     .setMessage(1, Component.literal(structureName))
-                    .setMessage(2, Component.literal(piece.role().getSerializedName()))
+                    .setMessage(2, Component.literal(piece.roleId()))
                     .setMessage(3, Component.literal(piece.pieceName()));
             sign.setText(text, true);
             sign.setText(text, false);

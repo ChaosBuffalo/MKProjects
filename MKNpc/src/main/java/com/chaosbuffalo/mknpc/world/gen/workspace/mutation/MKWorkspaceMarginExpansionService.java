@@ -148,7 +148,7 @@ public class MKWorkspaceMarginExpansionService {
                 original.pieceId(),
                 workspace.id(),
                 original.pieceName(),
-                original.role(),
+                original.roleId(),
                 original.variantIndex(),
                 original.effectiveDimensions(),
                 context.shellMargin(),
@@ -409,7 +409,7 @@ public class MKWorkspaceMarginExpansionService {
             SignText text = sign.getFrontText()
                     .setMessage(0, Component.literal(workspace.namespace()))
                     .setMessage(1, Component.literal(workspace.structureName()))
-                    .setMessage(2, Component.literal(piece.role().getSerializedName()))
+                    .setMessage(2, Component.literal(piece.roleId()))
                     .setMessage(3, Component.literal(piece.pieceName()));
             sign.setText(text, true);
             sign.setText(text, false);
@@ -420,7 +420,7 @@ public class MKWorkspaceMarginExpansionService {
     private MKPlannedPiece toPlannedPiece(MKWorkspacePieceDefinition piece) {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>(piece.tags());
         return new MKPlannedPiece(
-                MKPlannedPiece.roleIdFromTags(tags, piece.role()),
+                tags.getOrDefault("workspace_topology_slot_id", piece.roleId()),
                 piece.pieceName(),
                 piece.effectiveDimensions().roomWidth(),
                 piece.effectiveDimensions().roomLength(),
