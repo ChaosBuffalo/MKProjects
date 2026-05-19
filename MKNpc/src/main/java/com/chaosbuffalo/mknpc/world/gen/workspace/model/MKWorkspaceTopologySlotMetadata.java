@@ -12,27 +12,35 @@ public record MKWorkspaceTopologySlotMetadata(
         MKJigsawPieceRole jigsawPieceRole
 ) {
     public static MKWorkspaceTopologySlotMetadata fromFamily(MKTowerWorkspaceFamilyDefinition family) {
-        return MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId())
+        return family.slotMetadata();
+    }
+
+    public static MKWorkspaceTopologySlotMetadata fromTopologySlotIdOrHints(String topologySlotId,
+                                                                            MKTowerWorkspaceCategory category,
+                                                                            MKWorkspacePieceRole pieceRole) {
+        return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
                 .map(slot -> new MKWorkspaceTopologySlotMetadata(
-                        family.topologySlotId(),
+                        topologySlotId,
                         slot.category(),
                         slot.pieceRole(),
                         slot.roleKind(),
                         slot.pieceKind(),
                         slot.terminal(),
                         jigsawRoleFor(slot.pieceRole())))
-                .orElseGet(() -> legacy(family));
+                .orElseGet(() -> legacy(topologySlotId, category, pieceRole));
     }
 
-    private static MKWorkspaceTopologySlotMetadata legacy(MKTowerWorkspaceFamilyDefinition family) {
+    private static MKWorkspaceTopologySlotMetadata legacy(String topologySlotId,
+                                                          MKTowerWorkspaceCategory category,
+                                                          MKWorkspacePieceRole pieceRole) {
         return new MKWorkspaceTopologySlotMetadata(
-                family.topologySlotId(),
-                family.category(),
-                family.pieceRole(),
-                legacyRoleKind(family.pieceRole()),
-                legacyPieceKind(family.pieceRole()),
-                legacyTerminal(family.pieceRole()),
-                jigsawRoleFor(family.pieceRole())
+                topologySlotId,
+                category,
+                pieceRole,
+                legacyRoleKind(pieceRole),
+                legacyPieceKind(pieceRole),
+                legacyTerminal(pieceRole),
+                jigsawRoleFor(pieceRole)
         );
     }
 

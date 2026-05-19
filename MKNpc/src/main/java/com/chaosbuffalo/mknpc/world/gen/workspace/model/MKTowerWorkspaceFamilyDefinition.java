@@ -44,17 +44,15 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                        roomWidth, roomLength, roomHeight,
                        horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin, foundationPolicyOverride,
                        paletteOverride) ->
-            new MKTowerWorkspaceFamilyDefinition(baseName,
-                    categoryForTopologySlotOrHint(topologySlotId, category),
-                    pieceRoleForTopologySlotOrHint(topologySlotId, pieceRole), topologySlotId, verticalAccessGroupId,
+            new MKTowerWorkspaceFamilyDefinition(baseName, category.orElse(MKTowerWorkspaceCategory.MAIN),
+                    pieceRole.orElse(MKWorkspacePieceRole.FLOOR_MAIN), topologySlotId, verticalAccessGroupId,
                     supportsVerticalAccess,
                     roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
                     topVoidMargin, bottomVoidMargin, foundationPolicyOverride.orElse(null),
                     paletteOverride.orElse(null))));
 
     private final String baseName;
-    private final MKTowerWorkspaceCategory category;
-    private final MKWorkspacePieceRole pieceRole;
+    private final MKWorkspaceTopologySlotMetadata slotMetadata;
     private final String topologySlotId;
     private final String verticalAccessGroupId;
     private final boolean supportsVerticalAccess;
@@ -146,17 +144,17 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                                             @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
                                             @Nullable MKWorkspacePaletteOverride paletteOverride) {
         this.baseName = baseName;
-        this.category = category;
-        this.pieceRole = pieceRole;
         this.topologySlotId = topologySlotId == null || topologySlotId.isBlank() ?
                 defaultTopologySlotId(pieceRole) : topologySlotId;
+        this.slotMetadata = MKWorkspaceTopologySlotMetadata.fromTopologySlotIdOrHints(
+                this.topologySlotId, category, pieceRole);
         this.verticalAccessGroupId = verticalAccessGroupId == null || verticalAccessGroupId.isBlank() ?
                 defaultVerticalAccessGroupId(supportsVerticalAccess) : verticalAccessGroupId;
         this.roomWidth = roomWidth;
         this.roomLength = roomLength;
         this.roomHeight = roomHeight;
         this.horizontalExtrusionMode = horizontalExtrusionMode;
-        this.horizontalExits = normalizeFamilyExits(pieceRole, supportsVerticalAccess, horizontalExits);
+        this.horizontalExits = normalizeFamilyExits(slotMetadata.pieceRole(), supportsVerticalAccess, horizontalExits);
         this.supportsVerticalAccess = this.horizontalExits.stream()
                 .anyMatch(MKWorkspaceFamilyHorizontalExitDefinition::isVerticalAccess);
         this.topVoidMargin = Math.max(0, topVoidMargin);
@@ -219,28 +217,14 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
             MKTowerWorkspaceFamilyDefinition family) {
         return MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId()).isPresent()
                 ? Optional.empty()
-                : Optional.of(family.category());
+                : Optional.of(family.slotMetadata().category());
     }
 
     private static Optional<MKWorkspacePieceRole> serializedPieceRoleHintOpt(
             MKTowerWorkspaceFamilyDefinition family) {
         return MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId()).isPresent()
                 ? Optional.empty()
-                : Optional.of(family.pieceRole());
-    }
-
-    private static MKTowerWorkspaceCategory categoryForTopologySlotOrHint(String topologySlotId,
-                                                                         Optional<MKTowerWorkspaceCategory> hint) {
-        return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
-                .map(MKTowerWorkspaceStackSlot::category)
-                .orElseGet(() -> hint.orElse(MKTowerWorkspaceCategory.MAIN));
-    }
-
-    private static MKWorkspacePieceRole pieceRoleForTopologySlotOrHint(String topologySlotId,
-                                                                       Optional<MKWorkspacePieceRole> hint) {
-        return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
-                .map(MKTowerWorkspaceStackSlot::pieceRole)
-                .orElseGet(() -> hint.orElse(MKWorkspacePieceRole.FLOOR_MAIN));
+                : Optional.of(family.slotMetadata().pieceRole());
     }
 
     public static List<MKTowerWorkspaceFamilyDefinition> createDefaults() {
@@ -471,7 +455,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                 .anyMatch(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH)) {
             errors.add("family " + baseName + " cannot define a branch cap entry and a branch exit");
         }
-        Set<Direction> reserved = reservedHorizontalDirections(pieceRole);
+        Set<Direction> reserved = reservedHorizontalDirections(slotMetadata.pieceRole());
         Set<Direction> seenDirections = new LinkedHashSet<>();
         for (MKWorkspaceFamilyHorizontalExitDefinition exit : horizontalExits) {
             if (!seenDirections.add(exit.direction())) {
@@ -495,7 +479,8 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
             }
             if (reserved.contains(exit.direction())) {
                 errors.add("family " + baseName + " cannot place a horizontal exit on reserved direction " +
-                        exit.direction().getSerializedName() + " for role " + pieceRole.getSerializedName());
+                        exit.direction().getSerializedName() + " for role " +
+                        slotMetadata.pieceRole().getSerializedName());
             }
             if (exit.openingProfileId().isBlank()) {
                 errors.add("family " + baseName + " horizontal exit opening profile cannot be blank");
@@ -541,11 +526,15 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
     }
 
     public MKTowerWorkspaceCategory category() {
-        return category;
+        return slotMetadata.category();
     }
 
     public MKWorkspacePieceRole pieceRole() {
-        return pieceRole;
+        return slotMetadata.pieceRole();
+    }
+
+    public MKWorkspaceTopologySlotMetadata slotMetadata() {
+        return slotMetadata;
     }
 
     public String topologySlotId() {
@@ -637,7 +626,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
 
     @Override
     public Optional<MKTowerWorkspaceCategory> paletteCategoryOpt() {
-        return Optional.of(category);
+        return Optional.of(slotMetadata.category());
     }
 
     @Override
