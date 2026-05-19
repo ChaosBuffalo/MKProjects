@@ -102,9 +102,10 @@ public class MKDungeonLayoutController {
         if (childMetadata.progressionDelta() == 0 && parentState.piecesOnFloor() >= settings.maxPiecesPerFloor()) {
             return Optional.of("per_floor_budget");
         }
-        Optional<String> categoryRejection = getCategoryPathRejection(parentState, nextOnMainPath, childMetadata);
-        if (categoryRejection.isPresent()) {
-            return categoryRejection;
+        Optional<String> topologyGroupRejection = getTopologyGroupPathRejection(parentState, nextOnMainPath,
+                childMetadata);
+        if (topologyGroupRejection.isPresent()) {
+            return topologyGroupRejection;
         }
         Optional<String> branchCapRejection = getBranchCapRejection(parentState, connector, nextOnMainPath,
                 childMetadata, branchCapsAvailable);
@@ -126,7 +127,7 @@ public class MKDungeonLayoutController {
                 childMetadata.branchCap()) {
             return Optional.empty();
         }
-        return settings.categoryRule(parentState.category())
+        return settings.topologyGroupRule(parentState.topologyGroup())
                 .filter(rule -> parentState.branchDepth() >= rule.maxBranchPiecesBeforeCap())
                 .map(rule -> "branch_cap_required");
     }
@@ -149,33 +150,36 @@ public class MKDungeonLayoutController {
         } else {
             nextBranchDepth = parentState.branchDepth();
         }
-        CategoryProgress categoryProgress = nextCategoryProgress(parentState, childMetadata, nextOnMainPath, random);
+        TopologyGroupProgress topologyGroupProgress = nextTopologyGroupProgress(parentState, childMetadata,
+                nextOnMainPath, random);
         return new MKDungeonPieceState(nextFloor, nextVertical, nextPiecesOnFloor, nextBranchDepth, nextOnMainPath,
-                parentState.targetFloors(), categoryProgress.category(), categoryProgress.piecesInCategory(),
-                categoryProgress.targetInCategory());
+                parentState.targetFloors(), topologyGroupProgress.topologyGroup(),
+                topologyGroupProgress.piecesInTopologyGroup(),
+                topologyGroupProgress.targetInTopologyGroup());
     }
 
     public Optional<ResourceLocation> endingPoolForState(MKDungeonPieceState parentState, MKConnectorInfo connector) {
         if (!parentState.onMainPath() || connector.role() == MKConnectorRole.BRANCH) {
             return Optional.empty();
         }
-        return settings.categoryRule(parentState.category())
+        return settings.topologyGroupRule(parentState.topologyGroup())
                 .filter(rule -> rule.hasMainPathEndings() &&
                         (!rule.hasMainPathContinuations() ||
-                                parentState.mainPathPiecesInCategory() >= parentState.mainPathTargetInCategory()))
-                .flatMap(MKDungeonCategoryRule::mainPathEndingPoolOpt);
+                                parentState.mainPathPiecesInTopologyGroup() >=
+                                        parentState.mainPathTargetInTopologyGroup()))
+                .flatMap(MKDungeonTopologyGroupRule::mainPathEndingPoolOpt);
     }
 
-    private Optional<String> getCategoryPathRejection(MKDungeonPieceState parentState, boolean nextOnMainPath,
-                                                       MKJigsawPieceMetadata childMetadata) {
-        if (!nextOnMainPath || childMetadata.category().isBlank()) {
+    private Optional<String> getTopologyGroupPathRejection(MKDungeonPieceState parentState, boolean nextOnMainPath,
+                                                           MKJigsawPieceMetadata childMetadata) {
+        if (!nextOnMainPath || childMetadata.topologyGroup().isBlank()) {
             return Optional.empty();
         }
-        Optional<MKDungeonCategoryRule> ruleOpt = settings.categoryRule(childMetadata.category());
+        Optional<MKDungeonTopologyGroupRule> ruleOpt = settings.topologyGroupRule(childMetadata.topologyGroup());
         if (ruleOpt.isEmpty()) {
             return childMetadata.mainPathEnding() ? Optional.of("main_path_ending_unconfigured") : Optional.empty();
         }
-        MKDungeonCategoryRule rule = ruleOpt.get();
+        MKDungeonTopologyGroupRule rule = ruleOpt.get();
         if (childMetadata.mainPathEnding()) {
             if (!rule.hasMainPathEndings()) {
                 return Optional.of("main_path_ending_unavailable");
@@ -183,10 +187,10 @@ public class MKDungeonLayoutController {
             if (!rule.hasMainPathContinuations()) {
                 return Optional.empty();
             }
-            if (!parentState.category().equals(childMetadata.category())) {
+            if (!parentState.topologyGroup().equals(childMetadata.topologyGroup())) {
                 return Optional.of("main_path_ending_early");
             }
-            if (parentState.mainPathPiecesInCategory() < parentState.mainPathTargetInCategory()) {
+            if (parentState.mainPathPiecesInTopologyGroup() < parentState.mainPathTargetInTopologyGroup()) {
                 return Optional.of("main_path_ending_early");
             }
             return Optional.empty();
@@ -195,40 +199,44 @@ public class MKDungeonLayoutController {
             return Optional.of("main_path_direct_ending_required");
         }
         if (rule.hasMainPathContinuations() && rule.hasMainPathEndings() &&
-                parentState.category().equals(childMetadata.category()) &&
-                parentState.mainPathPiecesInCategory() >= parentState.mainPathTargetInCategory()) {
+                parentState.topologyGroup().equals(childMetadata.topologyGroup()) &&
+                parentState.mainPathPiecesInTopologyGroup() >= parentState.mainPathTargetInTopologyGroup()) {
             return Optional.of("main_path_ending_required");
         }
         return Optional.empty();
     }
 
-    private CategoryProgress nextCategoryProgress(MKDungeonPieceState parentState, MKJigsawPieceMetadata childMetadata,
-                                                  boolean nextOnMainPath, RandomSource random) {
-        if (!nextOnMainPath || childMetadata.category().isBlank()) {
-            return new CategoryProgress(parentState.category(), parentState.mainPathPiecesInCategory(),
-                    parentState.mainPathTargetInCategory());
+    private TopologyGroupProgress nextTopologyGroupProgress(MKDungeonPieceState parentState,
+                                                            MKJigsawPieceMetadata childMetadata,
+                                                            boolean nextOnMainPath, RandomSource random) {
+        if (!nextOnMainPath || childMetadata.topologyGroup().isBlank()) {
+            return new TopologyGroupProgress(parentState.topologyGroup(),
+                    parentState.mainPathPiecesInTopologyGroup(),
+                    parentState.mainPathTargetInTopologyGroup());
         }
-        if (parentState.category().equals(childMetadata.category())) {
-            return new CategoryProgress(parentState.category(), parentState.mainPathPiecesInCategory() + 1,
-                    parentState.mainPathTargetInCategory());
+        if (parentState.topologyGroup().equals(childMetadata.topologyGroup())) {
+            return new TopologyGroupProgress(parentState.topologyGroup(),
+                    parentState.mainPathPiecesInTopologyGroup() + 1,
+                    parentState.mainPathTargetInTopologyGroup());
         }
-        int target = chooseMainPathTarget(childMetadata.category(), random);
-        return new CategoryProgress(childMetadata.category(), 1, target);
+        int target = chooseMainPathTarget(childMetadata.topologyGroup(), random);
+        return new TopologyGroupProgress(childMetadata.topologyGroup(), 1, target);
     }
 
-    private int chooseMainPathTarget(String category, RandomSource random) {
-        Optional<MKDungeonCategoryRule> ruleOpt = settings.categoryRule(category);
+    private int chooseMainPathTarget(String topologyGroup, RandomSource random) {
+        Optional<MKDungeonTopologyGroupRule> ruleOpt = settings.topologyGroupRule(topologyGroup);
         if (ruleOpt.isEmpty()) {
             return 0;
         }
-        MKDungeonCategoryRule rule = ruleOpt.get();
+        MKDungeonTopologyGroupRule rule = ruleOpt.get();
         if (rule.minMainPathPieces() == rule.maxMainPathPieces() || random == null) {
             return rule.maxMainPathPieces();
         }
         return random.nextInt(rule.maxMainPathPieces() - rule.minMainPathPieces() + 1) + rule.minMainPathPieces();
     }
 
-    private record CategoryProgress(String category, int piecesInCategory, int targetInCategory) {
+    private record TopologyGroupProgress(String topologyGroup, int piecesInTopologyGroup,
+                                         int targetInTopologyGroup) {
     }
 
     private boolean isMainPathContinuation(MKDungeonPieceState parentState, MKConnectorInfo connector, MKJigsawPieceMetadata childMetadata) {

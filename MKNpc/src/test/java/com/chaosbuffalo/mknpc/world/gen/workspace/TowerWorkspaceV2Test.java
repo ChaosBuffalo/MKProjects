@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonCategoryRule;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonTopologyGroupRule;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonConnectorSettings;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonLayoutController;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonLayoutSettings;
@@ -492,6 +492,40 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void pathBudgetCodecsUseTopologyGroupTerminology() {
+        MKDungeonLayoutSettings settings = new MKDungeonLayoutSettings(
+                1,
+                3,
+                1,
+                4,
+                2,
+                false,
+                MKVerticalProgressionMode.MIXED,
+                true,
+                false,
+                List.of(new MKDungeonTopologyGroupRule("main", 1, 2, true, null)),
+                connectorSettings()
+        );
+        JsonObject settingsJson = MKDungeonLayoutSettings.CODEC.encodeStart(JsonOps.INSTANCE, settings)
+                .getOrThrow()
+                .getAsJsonObject();
+        JsonObject ruleJson = settingsJson.getAsJsonArray("topology_group_rules").get(0).getAsJsonObject();
+
+        assertTrue(settingsJson.has("topology_group_rules"));
+        assertFalse(settingsJson.has("category_rules"));
+        assertEquals("main", ruleJson.get("topology_group").getAsString());
+        assertFalse(ruleJson.has("category"));
+
+        MKJigsawPieceMetadata metadata = new MKJigsawPieceMetadata(MKJigsawPieceRole.ROOM, 0, 0,
+                true, false, false, false, "main", false);
+        JsonObject metadataJson = MKJigsawPieceMetadata.CODEC.encodeStart(JsonOps.INSTANCE, metadata)
+                .getOrThrow()
+                .getAsJsonObject();
+        assertEquals("main", metadataJson.get("topology_group").getAsString());
+        assertFalse(metadataJson.has("category"));
+    }
+
+    @Test
     void resolvedFamilyMetadataComesFromTopologySlot() {
         MKTowerWorkspaceFamilyDefinition mismatchedFamily = topologyFamily(
                 "custom_top",
@@ -741,7 +775,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void stackFloorValidationIgnoresLegacyGlobalCategoryHeightsWhenStackSettingsExist() {
+    void stackFloorValidationIgnoresGlobalDefaultHeightsWhenStackSettingsExist() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
                 .withTowerStackSettings(new MKWorkspaceTowerStackSettings("tower.primary", 1, 1, 7));
@@ -1181,21 +1215,21 @@ class TowerWorkspaceV2Test {
                 .toList();
         MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace.withPieces(exportedPieces), 1, "now");
 
-        MKWorkspaceExportManifest.ExportRuntimeTemplateGroup roomCategory = manifest.runtimeHints().templateGroups().stream()
-                .filter(category -> category.baseName().equals("keep_center_entry"))
+        MKWorkspaceExportManifest.ExportRuntimeTemplateGroup roomGroup = manifest.runtimeHints().templateGroups().stream()
+                .filter(group -> group.baseName().equals("keep_center_entry"))
                 .findFirst()
                 .orElseThrow();
-        MKWorkspaceExportManifest.ExportRuntimeTemplateGroup runCategory = manifest.runtimeHints().templateGroups().stream()
-                .filter(category -> category.baseName().equals("keep_wall_north"))
+        MKWorkspaceExportManifest.ExportRuntimeTemplateGroup runGroup = manifest.runtimeHints().templateGroups().stream()
+                .filter(group -> group.baseName().equals("keep_wall_north"))
                 .findFirst()
                 .orElseThrow();
 
-        assertEquals(MKWorkspaceFoundationMode.UNIFORM_STATE, roomCategory.pieceMetadata().foundationPolicy().mode());
+        assertEquals(MKWorkspaceFoundationMode.UNIFORM_STATE, roomGroup.pieceMetadata().foundationPolicy().mode());
         assertEquals(ResourceLocation.parse("minecraft:stone_bricks"),
-                roomCategory.pieceMetadata().foundationPolicy().foundationBlock());
-        assertEquals(MKWorkspaceFoundationMode.MASKED_EXTEND_BOTTOM_BLOCKS, runCategory.pieceMetadata().foundationPolicy().mode());
+                roomGroup.pieceMetadata().foundationPolicy().foundationBlock());
+        assertEquals(MKWorkspaceFoundationMode.MASKED_EXTEND_BOTTOM_BLOCKS, runGroup.pieceMetadata().foundationPolicy().mode());
         assertEquals(List.of(ResourceLocation.parse("minecraft:stone_bricks")),
-                runCategory.pieceMetadata().foundationPolicy().maskBlocks());
+                runGroup.pieceMetadata().foundationPolicy().maskBlocks());
     }
 
     @Test
@@ -1224,12 +1258,12 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace exportedWorkspace = workspace.withPieces(List.of(
                 pieceToDefinitionWithConnectors(workspace, centerEntry)));
         MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(exportedWorkspace, 1, "now");
-        MKWorkspaceExportManifest.ExportRuntimeTemplateGroup centerEntryCategory = manifest.runtimeHints().templateGroups().stream()
-                .filter(category -> category.baseName().equals("keep_center_entry"))
+        MKWorkspaceExportManifest.ExportRuntimeTemplateGroup centerEntryGroup = manifest.runtimeHints().templateGroups().stream()
+                .filter(group -> group.baseName().equals("keep_center_entry"))
                 .findFirst()
                 .orElseThrow();
         assertEquals(MKWorkspaceFoundationMode.UNIFORM_STATE,
-                centerEntryCategory.pieceMetadata().foundationPolicy().mode());
+                centerEntryGroup.pieceMetadata().foundationPolicy().mode());
     }
 
     @Test
@@ -1923,7 +1957,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void layoutControllerSwitchesFromContinuationToEndingAtCategoryTarget() {
+    void layoutControllerSwitchesFromContinuationToEndingAtTopologyGroupTarget() {
         ResourceLocation endingPool = ResourceLocation.fromNamespaceAndPath("mknpc", "test/main_endings/main");
         MKDungeonLayoutController controller = new MKDungeonLayoutController(new MKDungeonLayoutSettings(
                 1,
@@ -1935,7 +1969,7 @@ class TowerWorkspaceV2Test {
                 MKVerticalProgressionMode.MIXED,
                 true,
                 false,
-                List.of(new MKDungeonCategoryRule("main", 2, 2, true, endingPool)),
+                List.of(new MKDungeonTopologyGroupRule("main", 2, 2, true, endingPool)),
                 connectorSettings()
         ));
         MKDungeonPieceState beforeTarget = new MKDungeonPieceState(0, 0, 1, 0, true, 3,
@@ -1962,7 +1996,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void layoutControllerRequiresBranchCapAtCategoryBranchLimitWhenCapsAvailable() {
+    void layoutControllerRequiresBranchCapAtTopologyGroupBranchLimitWhenCapsAvailable() {
         MKDungeonLayoutController controller = new MKDungeonLayoutController(new MKDungeonLayoutSettings(
                 1,
                 3,
@@ -1973,7 +2007,7 @@ class TowerWorkspaceV2Test {
                 MKVerticalProgressionMode.MIXED,
                 true,
                 false,
-                List.of(new MKDungeonCategoryRule("main", 1, 2, 2, true, null)),
+                List.of(new MKDungeonTopologyGroupRule("main", 1, 2, 2, true, null)),
                 connectorSettings()
         ));
         MKDungeonPieceState atBranchLimit = new MKDungeonPieceState(0, 0, 2, 2, false, 3,
@@ -2574,7 +2608,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void validationAllowsCategoryBandsWithIndependentlyResolvedCanonicalProfiles() {
+    void validationAllowsTopologyBandsWithIndependentlyResolvedCanonicalProfiles() {
         MKStructureWorkspace workspace = baseWorkspace(
                 List.of(
                         new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),

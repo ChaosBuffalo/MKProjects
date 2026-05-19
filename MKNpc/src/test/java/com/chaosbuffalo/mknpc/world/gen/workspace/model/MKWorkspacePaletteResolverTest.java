@@ -91,7 +91,7 @@ class MKWorkspacePaletteResolverTest {
     }
 
     @Test
-    void linearRunFamilyUsesSameResolverWithoutCategory() {
+    void linearRunFamilyUsesSameResolverWithoutTopologySlotMetadata() {
         MKWorkspaceMaterialPalette base = palette("smooth_stone", "stone_bricks", "smooth_stone",
                 "stone_brick_stairs", "stone_brick_slab", "ladder");
         MKWorkspacePaletteOverride linearRunOverride = new MKWorkspacePaletteOverride(

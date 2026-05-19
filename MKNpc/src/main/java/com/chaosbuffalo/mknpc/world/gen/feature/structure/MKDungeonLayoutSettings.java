@@ -18,7 +18,7 @@ public record MKDungeonLayoutSettings(
         MKVerticalProgressionMode verticalProgressionMode,
         boolean topCapApproachEnabled,
         boolean basementCapApproachEnabled,
-        List<MKDungeonCategoryRule> categoryRules,
+        List<MKDungeonTopologyGroupRule> topologyGroupRules,
         MKDungeonConnectorSettings connectors
 ) {
     public static final Codec<MKDungeonLayoutSettings> CODEC = RecordCodecBuilder.<MKDungeonLayoutSettings>create(instance -> instance.group(
@@ -31,7 +31,7 @@ public record MKDungeonLayoutSettings(
             MKVerticalProgressionMode.CODEC.optionalFieldOf("vertical_progression_mode", MKVerticalProgressionMode.MIXED).forGetter(MKDungeonLayoutSettings::verticalProgressionMode),
             Codec.BOOL.optionalFieldOf("top_cap_approach_enabled", true).forGetter(MKDungeonLayoutSettings::topCapApproachEnabled),
             Codec.BOOL.optionalFieldOf("basement_cap_approach_enabled", false).forGetter(MKDungeonLayoutSettings::basementCapApproachEnabled),
-            MKDungeonCategoryRule.CODEC.listOf().optionalFieldOf("category_rules", List.of()).forGetter(MKDungeonLayoutSettings::categoryRules),
+            MKDungeonTopologyGroupRule.CODEC.listOf().optionalFieldOf("topology_group_rules", List.of()).forGetter(MKDungeonLayoutSettings::topologyGroupRules),
             MKDungeonConnectorSettings.CODEC.fieldOf("connectors").forGetter(MKDungeonLayoutSettings::connectors)
     ).apply(instance, MKDungeonLayoutSettings::new)).flatXmap(MKDungeonLayoutSettings::validate, MKDungeonLayoutSettings::validate);
 
@@ -50,25 +50,25 @@ public record MKDungeonLayoutSettings(
         if (settings.minPiecesPerFloor() > settings.maxPiecesPerFloor()) {
             return DataResult.error(() -> "min_pieces_per_floor must be <= max_pieces_per_floor");
         }
-        for (MKDungeonCategoryRule rule : settings.categoryRules()) {
+        for (MKDungeonTopologyGroupRule rule : settings.topologyGroupRules()) {
             if (rule.minMainPathPieces() > rule.maxMainPathPieces()) {
-                return DataResult.error(() -> "category rule " + rule.category() +
+                return DataResult.error(() -> "topology group rule " + rule.topologyGroup() +
                         " min_main_path_pieces must be <= max_main_path_pieces");
             }
             if (rule.maxBranchPiecesBeforeCap() < 0) {
-                return DataResult.error(() -> "category rule " + rule.category() +
+                return DataResult.error(() -> "topology group rule " + rule.topologyGroup() +
                         " max_branch_pieces_before_cap must be >= 0");
             }
         }
         return DataResult.success(settings);
     }
 
-    public Optional<MKDungeonCategoryRule> categoryRule(String category) {
-        if (category == null || category.isBlank()) {
+    public Optional<MKDungeonTopologyGroupRule> topologyGroupRule(String topologyGroup) {
+        if (topologyGroup == null || topologyGroup.isBlank()) {
             return Optional.empty();
         }
-        return categoryRules.stream()
-                .filter(rule -> rule.category().equals(category))
+        return topologyGroupRules.stream()
+                .filter(rule -> rule.topologyGroup().equals(topologyGroup))
                 .findFirst();
     }
 

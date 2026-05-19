@@ -7,9 +7,9 @@ public record MKDungeonPieceState(
         int branchDepth,
         boolean onMainPath,
         int targetFloors,
-        String category,
-        int mainPathPiecesInCategory,
-        int mainPathTargetInCategory
+        String topologyGroup,
+        int mainPathPiecesInTopologyGroup,
+        int mainPathTargetInTopologyGroup
 ) {
     public MKDungeonPieceState(int progressionFloorIndex, int verticalLevelIndex, int piecesOnFloor,
                                int branchDepth, boolean onMainPath, int targetFloors) {
