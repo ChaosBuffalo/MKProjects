@@ -1,12 +1,12 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonCategoryRule;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonConnectorSettings;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonLayoutController;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonLayoutSettings;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonPieceState;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceMetadata;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKVerticalProgressionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
@@ -475,22 +475,22 @@ class TowerWorkspaceV2Test {
 
         assertEquals(MKTowerWorkspaceCategory.TOP_CAP,
                 workspace.resolveFamilySettings(mismatchedFamily).slotMetadata().category());
-        assertEquals(MKWorkspacePieceRole.TOP_CAP,
-                workspace.resolveFamilySettings(mismatchedFamily).slotMetadata().pieceRole());
+        assertEquals(MKJigsawPieceRole.TOP_CAP,
+                workspace.resolveFamilySettings(mismatchedFamily).slotMetadata().jigsawPieceRole());
         assertEquals(MKWorkspacePieceRole.TOP_CAP,
                 new MKTowerStackPlanner().createPieceForFamily(workspace, mismatchedFamily).role());
 
         MKWorkspaceExportManifest.ExportFamilyDefinition exported =
                 MKWorkspaceExportManifest.ExportFamilyDefinition.from(mismatchedFamily);
         assertEquals(MKTowerWorkspaceCategory.TOP_CAP, exported.slotMetadata().category());
-        assertEquals(MKWorkspacePieceRole.TOP_CAP, exported.slotMetadata().pieceRole());
+        assertEquals(MKJigsawPieceRole.TOP_CAP, exported.slotMetadata().jigsawPieceRole());
 
         CompoundTag tag = mismatchedFamily.toTag();
         assertFalse(tag.contains("category"));
         assertFalse(tag.contains("pieceRole"));
         MKTowerWorkspaceFamilyDefinition decoded = MKTowerWorkspaceFamilyDefinition.fromTag(tag);
         assertEquals(MKTowerWorkspaceCategory.TOP_CAP, decoded.slotMetadata().category());
-        assertEquals(MKWorkspacePieceRole.TOP_CAP, decoded.slotMetadata().pieceRole());
+        assertEquals(MKJigsawPieceRole.TOP_CAP, decoded.slotMetadata().jigsawPieceRole());
     }
 
     @Test
@@ -556,7 +556,7 @@ class TowerWorkspaceV2Test {
                 .orElseThrow();
 
         assertEquals(MKTowerWorkspaceCategory.TOP_CAP, importedFamily.slotMetadata().category());
-        assertEquals(MKWorkspacePieceRole.TOP_CAP, importedFamily.slotMetadata().pieceRole());
+        assertEquals(MKJigsawPieceRole.TOP_CAP, importedFamily.slotMetadata().jigsawPieceRole());
         assertEquals(MKWorkspacePieceRole.TOP_CAP,
                 new MKTowerStackPlanner().createPieceForFamily(imported, importedFamily).role());
     }
@@ -1581,7 +1581,7 @@ class TowerWorkspaceV2Test {
     void defaultTowerMainEntranceIsOpeningOnly() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKTowerWorkspaceFamilyDefinition entryFamily = MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions).stream()
-                .filter(family -> family.slotMetadata().pieceRole() == MKWorkspacePieceRole.ENTRY)
+                .filter(family -> family.topologySlotId().endsWith(".entry"))
                 .findFirst()
                 .orElseThrow();
         MKWorkspaceFamilyHorizontalExitDefinition entrance = entryFamily.horizontalExits().getFirst();

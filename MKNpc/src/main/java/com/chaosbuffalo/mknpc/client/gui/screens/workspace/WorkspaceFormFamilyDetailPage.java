@@ -118,7 +118,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         addReadOnlyRow(screen, content, "Topology Category",
                 formatTopologyLabel(slotMetadata.category().getSerializedName()));
         addReadOnlyRow(screen, content, "Topology Role",
-                formatTopologyLabel(slotMetadata.pieceRole().getSerializedName()));
+                formatTopologyLabel(slotMetadata.roleKind()) + " / " + formatTopologyLabel(slotMetadata.pieceKind()));
         addRow(screen, content, screen.makeWhiteText(Component.literal("Horizontal Extrusion")), extrusionModeButton);
         addGeometryRows(screen, content, editor, index, family);
         screen.addPaletteOverrideRows(content, "Palette Overrides", editor.resolveFamilyInheritedPalette(family),

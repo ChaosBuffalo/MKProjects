@@ -7,12 +7,10 @@ import net.minecraft.nbt.CompoundTag;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.Set;
 
 public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamily {
     private static final String PRIMARY_TOWER_STACK_ID = "tower.primary";
@@ -82,7 +80,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         this.roomLength = roomLength;
         this.roomHeight = roomHeight;
         this.horizontalExtrusionMode = horizontalExtrusionMode;
-        this.horizontalExits = normalizeFamilyExits(slotMetadata.pieceRole(), supportsVerticalAccess, horizontalExits);
+        this.horizontalExits = normalizeFamilyExits(slotMetadata, supportsVerticalAccess, horizontalExits);
         this.supportsVerticalAccess = this.horizontalExits.stream()
                 .anyMatch(MKWorkspaceFamilyHorizontalExitDefinition::isVerticalAccess);
         this.topVoidMargin = Math.max(0, topVoidMargin);
@@ -300,26 +298,25 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
     }
 
     private static List<MKWorkspaceFamilyHorizontalExitDefinition> normalizeFamilyExits(
-            MKWorkspacePieceRole pieceRole, boolean supportsVerticalAccess,
+            MKWorkspaceTopologySlotMetadata slotMetadata, boolean supportsVerticalAccess,
             List<MKWorkspaceFamilyHorizontalExitDefinition> exits) {
         ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> normalized = new ArrayList<>(exits);
         boolean hasVerticalExit = normalized.stream()
                 .anyMatch(MKWorkspaceFamilyHorizontalExitDefinition::isVerticalAccess);
         if (supportsVerticalAccess && !hasVerticalExit) {
-            for (Direction direction : defaultVerticalAccessDirections(pieceRole)) {
+            for (Direction direction : defaultVerticalAccessDirections(slotMetadata)) {
                 normalized.add(MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(direction));
             }
         }
         return List.copyOf(normalized);
     }
 
-    private static List<Direction> defaultVerticalAccessDirections(MKWorkspacePieceRole pieceRole) {
-        return switch (pieceRole) {
-            case ENTRY, FLOOR_MAIN, TOP_CAP_APPROACH, BASEMENT_ENTRY, BASEMENT_MAIN, BASEMENT_CAP_APPROACH ->
-                    List.of(Direction.UP, Direction.DOWN);
-            case TOP_CAP -> List.of(Direction.DOWN);
-            case BASEMENT_CAP -> List.of(Direction.UP);
-            case HALLWAY -> List.of();
+    private static List<Direction> defaultVerticalAccessDirections(MKWorkspaceTopologySlotMetadata slotMetadata) {
+        return switch (slotMetadata.roleKind()) {
+            case "entry", "floor", "cap_approach" -> List.of(Direction.UP, Direction.DOWN);
+            case "cap" -> "terminal_bottom".equals(slotMetadata.pieceKind()) ?
+                    List.of(Direction.UP) : List.of(Direction.DOWN);
+            default -> List.of();
         };
     }
 
@@ -355,8 +352,8 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         if (duplicates > 1) {
             errors.add("tower workspace family base name must be unique: " + baseName);
         }
-        if (slotMetadata.pieceRole() == MKWorkspacePieceRole.HALLWAY) {
-            errors.add("tower workspace room families cannot use hallway role");
+        if ("linear_run".equals(slotMetadata.roleKind())) {
+            errors.add("tower workspace room families cannot use linear run role");
         }
         if (topologySlotId.isBlank()) {
             errors.add("family " + baseName + " topology slot id cannot be blank");
@@ -432,8 +429,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                 .anyMatch(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH)) {
             errors.add("family " + baseName + " cannot define a branch cap entry and a branch exit");
         }
-        Set<Direction> reserved = reservedHorizontalDirections(slotMetadata.pieceRole());
-        Set<Direction> seenDirections = new LinkedHashSet<>();
+        LinkedHashSet<Direction> seenDirections = new LinkedHashSet<>();
         for (MKWorkspaceFamilyHorizontalExitDefinition exit : horizontalExits) {
             if (!seenDirections.add(exit.direction())) {
                 errors.add("family " + baseName + " cannot define multiple exits on " +
@@ -454,11 +450,6 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
             if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.VERTICAL_ACCESS) {
                 errors.add("family " + baseName + " horizontal exit cannot use vertical_access kind");
             }
-            if (reserved.contains(exit.direction())) {
-                errors.add("family " + baseName + " cannot place a horizontal exit on reserved direction " +
-                        exit.direction().getSerializedName() + " for role " +
-                        slotMetadata.pieceRole().getSerializedName());
-            }
             if (exit.openingProfileId().isBlank()) {
                 errors.add("family " + baseName + " horizontal exit opening profile cannot be blank");
             }
@@ -466,19 +457,8 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         return errors;
     }
 
-    public static boolean defaultSupportsVerticalAccess(MKWorkspacePieceRole pieceRole) {
-        return switch (pieceRole) {
-            case ENTRY, FLOOR_MAIN, TOP_CAP_APPROACH, TOP_CAP, BASEMENT_ENTRY, BASEMENT_MAIN,
-                 BASEMENT_CAP_APPROACH, BASEMENT_CAP -> true;
-            case HALLWAY -> false;
-        };
-    }
-
-    public static Set<Direction> reservedHorizontalDirections(MKWorkspacePieceRole pieceRole) {
-        return switch (pieceRole) {
-            case HALLWAY -> EnumSet.noneOf(Direction.class);
-            default -> EnumSet.noneOf(Direction.class);
-        };
+    public static boolean defaultSupportsVerticalAccess(MKWorkspaceTopologySlotMetadata slotMetadata) {
+        return !defaultVerticalAccessDirections(slotMetadata).isEmpty();
     }
 
     public static List<MKTowerWorkspaceFamilyDefinition> normalize(List<MKTowerWorkspaceFamilyDefinition> families) {

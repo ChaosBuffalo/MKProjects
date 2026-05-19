@@ -55,9 +55,6 @@ public final class MKWorkspaceCodecs {
     public static final Codec<MKTowerWorkspaceCategory> TOWER_CATEGORY_CODEC = Codec.STRING.xmap(
             MKTowerWorkspaceCategory::fromSerializedName, MKTowerWorkspaceCategory::getSerializedName
     );
-    public static final Codec<MKWorkspacePieceRole> PIECE_ROLE_CODEC = Codec.STRING.xmap(
-            MKWorkspacePieceRole::fromSerializedName, MKWorkspacePieceRole::getSerializedName
-    );
     public static final Codec<MKVerticalAccessPlacement> VERTICAL_ACCESS_PLACEMENT_CODEC = Codec.STRING.xmap(
             MKVerticalAccessPlacement::fromSerializedName, MKVerticalAccessPlacement::getSerializedName
     );

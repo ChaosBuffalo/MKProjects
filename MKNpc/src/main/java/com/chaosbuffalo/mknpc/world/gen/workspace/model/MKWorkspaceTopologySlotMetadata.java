@@ -7,7 +7,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 public record MKWorkspaceTopologySlotMetadata(
         String topologySlotId,
         MKTowerWorkspaceCategory category,
-        MKWorkspacePieceRole pieceRole,
         String roleKind,
         String pieceKind,
         boolean terminal,
@@ -29,11 +28,10 @@ public record MKWorkspaceTopologySlotMetadata(
                 .map(slot -> new MKWorkspaceTopologySlotMetadata(
                         topologySlotId,
                         slot.category(),
-                        slot.pieceRole(),
                         slot.roleKind(),
                         slot.pieceKind(),
                         slot.terminal(),
-                        jigsawRoleFor(slot.pieceRole())))
+                        jigsawRoleFor(slot.roleKind(), slot.pieceKind())))
                 .orElseGet(() -> fromTopologyRole(topologySlotId, "floor", "room", false));
     }
 
@@ -52,21 +50,18 @@ public record MKWorkspaceTopologySlotMetadata(
                 .map(slot -> new MKWorkspaceTopologySlotMetadata(
                         topologySlotId,
                         slot.category(),
-                        slot.pieceRole(),
                         slot.roleKind(),
                         slot.pieceKind(),
                         slot.terminal(),
-                        jigsawRoleFor(slot.pieceRole())))
+                        jigsawRoleFor(slot.roleKind(), slot.pieceKind())))
                 .orElseGet(() -> {
-                    MKWorkspacePieceRole pieceRole = pieceRoleForTopologyRole(roleKind, pieceKind);
                     return new MKWorkspaceTopologySlotMetadata(
                             topologySlotId,
                             categoryForTopologyRole(roleKind, pieceKind),
-                            pieceRole,
                             roleKind,
                             pieceKind,
                             terminal,
-                            jigsawRoleFor(pieceRole));
+                            jigsawRoleFor(roleKind, pieceKind));
                 });
     }
 
@@ -83,23 +78,11 @@ public record MKWorkspaceTopologySlotMetadata(
         };
     }
 
-    private static MKWorkspacePieceRole pieceRoleForTopologyRole(String roleKind, String pieceKind) {
+    private static MKJigsawPieceRole jigsawRoleFor(String roleKind, String pieceKind) {
         return switch (roleKind) {
-            case "entry" -> MKWorkspacePieceRole.ENTRY;
-            case "cap" -> "terminal_bottom".equals(pieceKind) ?
-                    MKWorkspacePieceRole.BASEMENT_CAP : MKWorkspacePieceRole.TOP_CAP;
+            case "cap" -> "terminal_bottom".equals(pieceKind) ? MKJigsawPieceRole.TERMINAL : MKJigsawPieceRole.TOP_CAP;
             case "cap_approach" -> "terminal_bottom".equals(pieceKind) ?
-                    MKWorkspacePieceRole.BASEMENT_CAP_APPROACH : MKWorkspacePieceRole.TOP_CAP_APPROACH;
-            default -> MKWorkspacePieceRole.FLOOR_MAIN;
-        };
-    }
-
-    private static MKJigsawPieceRole jigsawRoleFor(MKWorkspacePieceRole pieceRole) {
-        return switch (pieceRole) {
-            case TOP_CAP -> MKJigsawPieceRole.TOP_CAP;
-            case TOP_CAP_APPROACH -> MKJigsawPieceRole.TOP_CAP_APPROACH;
-            case BASEMENT_CAP_APPROACH -> MKJigsawPieceRole.BASEMENT_CAP_APPROACH;
-            case BASEMENT_CAP -> MKJigsawPieceRole.TERMINAL;
+                    MKJigsawPieceRole.BASEMENT_CAP_APPROACH : MKJigsawPieceRole.TOP_CAP_APPROACH;
             default -> MKJigsawPieceRole.ROOM;
         };
     }

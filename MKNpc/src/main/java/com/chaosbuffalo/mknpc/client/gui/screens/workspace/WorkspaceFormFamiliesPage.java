@@ -66,7 +66,8 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
                                 editor.resolvedFamilyRoomLength(family) + "x" +
                                 editor.resolvedFamilyRoomHeight(family) +
                                 (editor.familyHasTopologyStack(family) ? " stack" : "") + "  |  " +
-                                formatTopologyLabel(slotMetadata.pieceRole().getSerializedName()) + "  |  exits " +
+                                formatTopologyLabel(slotMetadata.roleKind()) + " / " +
+                                formatTopologyLabel(slotMetadata.pieceKind()) + "  |  exits " +
                                 summarizeFamilyExits(family) + "  |  shaft " +
                                 (family.supportsVerticalAccess() ? "yes" : "no")));
                 familySummary.setWidth(screen.contentWidth());

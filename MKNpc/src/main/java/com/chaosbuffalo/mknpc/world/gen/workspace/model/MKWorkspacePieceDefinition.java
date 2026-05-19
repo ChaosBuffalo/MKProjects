@@ -118,7 +118,7 @@ public class MKWorkspacePieceDefinition {
         }
         String topologySlotId = tags.getOrDefault("workspace_topology_slot_id", roleId);
         return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
-                .map(MKTowerWorkspaceStackSlot::pieceRole)
+                .map(MKWorkspacePieceDefinition::legacyRoleForStackSlot)
                 .orElseGet(this::legacyRoleFromTags);
     }
 
@@ -208,6 +208,19 @@ public class MKWorkspacePieceDefinition {
             case BASEMENT_CAP_APPROACH -> MKWorkspacePieceRole.BASEMENT_CAP_APPROACH;
             case TERMINAL -> MKWorkspacePieceRole.BASEMENT_CAP;
             default -> MKWorkspacePieceRole.FLOOR_MAIN;
+        };
+    }
+
+    private static MKWorkspacePieceRole legacyRoleForStackSlot(MKTowerWorkspaceStackSlot slot) {
+        return switch (slot) {
+            case ENTRY -> MKWorkspacePieceRole.ENTRY;
+            case MAIN_FLOOR -> MKWorkspacePieceRole.FLOOR_MAIN;
+            case TOP_CAP_APPROACH -> MKWorkspacePieceRole.TOP_CAP_APPROACH;
+            case TOP_CAP -> MKWorkspacePieceRole.TOP_CAP;
+            case BASEMENT_ENTRY -> MKWorkspacePieceRole.BASEMENT_ENTRY;
+            case BASEMENT_FLOOR -> MKWorkspacePieceRole.BASEMENT_MAIN;
+            case BASEMENT_CAP_APPROACH -> MKWorkspacePieceRole.BASEMENT_CAP_APPROACH;
+            case BASEMENT_CAP -> MKWorkspacePieceRole.BASEMENT_CAP;
         };
     }
 
