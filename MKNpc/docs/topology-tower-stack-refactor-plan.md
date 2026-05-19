@@ -22,7 +22,7 @@ The standalone tower profile has a full vertical stack pattern:
 - basement cap approach
 - basement cap
 
-The walled keep center tower has explicit slots for:
+The walled keep center tower now expands through the reusable tower stack slots:
 
 - `keep.center.entry`
 - `keep.center.main_floor`
@@ -30,7 +30,7 @@ The walled keep center tower has explicit slots for:
 - `keep.center.basement_floor`
 - `keep.center.basement_cap`
 
-The walled keep corner towers currently have only one room slot per active corner template:
+The walled keep corner towers also expand through the same tower stack slots. Designers can keep a shared corner stack, opt individual corners into unique stacks, or mix the two modes:
 
 - `keep.corner.shared`
 - `keep.corner.north_west`
@@ -38,7 +38,7 @@ The walled keep corner towers currently have only one room slot per active corne
 - `keep.corner.south_east`
 - `keep.corner.south_west`
 
-Those corner slots have vertical access and can now configure height and floor counts, but they do not yet generate a full stack with top and bottom caps.
+Each active corner stack has independent sizing, floor counts, vertical access, foundation, and palette defaults, and generates the same cap/approach/floor pattern as the center keep stack and standalone tower stack.
 
 ## Target Model
 
@@ -274,7 +274,7 @@ Family-level validation should focus on override legality:
 
 - Phase 2 is implemented: the standalone tower planner delegates room stack planning to `MKTowerStackPlanner`.
 - Phase 3 is implemented: the walled keep center stack uses the reusable stack planner with scoped stack pools.
-- Phase 4 is partially implemented: default shared corner towers now generate as full tower stacks, and the walled keep planner can plan active shared or unique corner stacks through the reusable stack planner.
+- Phase 4 is implemented for the current walled keep model: default shared corner towers generate as full tower stacks, and the walled keep planner can plan active shared or unique corner stacks through the reusable stack planner.
 - A reusable tower stack slot helper now defines the standard stack suffixes, default family order, schema role metadata, and stack-id extraction for tower-stack topology slots.
 - Stack-level width, length, height, floor counts, and cap approach toggles are now represented in `MKWorkspaceTowerStackSettings`. Stack-backed family defaults inherit those values instead of eagerly copying them.
 - Stack-level vertical access shaft size, placement, stair mode, rise type, stair width, and stair/slab/ladder blocks are now represented in `MKWorkspaceTowerStackSettings` and used by walled keep stack planning, validation, and default stair generation.
@@ -283,9 +283,9 @@ Family-level validation should focus on override legality:
 - Stack-scoped stair config lookup is no longer walled-keep-only; any generated piece tagged with a tower stack id can resolve that stack's stair settings.
 - Standalone tower schema and default room families now use `tower.primary.*` topology slots, and the topology defaults page exposes `tower.primary` stack sizing, floor counts, cap toggles, and stair material controls.
 - The resolver now consumes tower stack dimensions for matching room families and treats positive family dimensions as explicit per-field overrides. A stored family dimension of `0` means inherit from the topology stack.
-- Validation now uses per-stack floor budgets from topology stack settings. The old workspace-global category-band fallback has been removed.
+- Validation now uses per-stack floor budgets from topology stack settings. The old workspace-global topology-band fallback has been removed.
 - Draft normalization preserves inherited stack-backed family geometry and no longer copies stack dimensions into each family.
-- The standalone tower topology defaults page no longer exposes category-profile room geometry controls; topology stack/run settings are now the primary defaults surface.
+- The standalone tower topology defaults page no longer exposes old room-geometry profile controls; topology stack/run settings are now the primary defaults surface.
 - Family and linear-run foundation block fields now use block pickers, and masked foundations expose editable/addable/removable block entries instead of a comma-separated text field.
 - Tower stack settings now carry foundation defaults, and resolved room pieces inherit the stack foundation policy when the family does not define one.
 - The topology defaults page now exposes stack-level foundation mode, block, and mask controls for the standalone tower, center keep stack, and active corner stacks.
@@ -302,23 +302,26 @@ Family-level validation should focus on override legality:
 - Category-profile storage and the generated compatibility layer have been removed; topology stack/run settings are now the stored source of truth.
 - `MKWorkspaceResolvedFamilySettings` now carries topology slot metadata and the effective vertical access spec, giving planners a single place to read resolved family dimensions, foundation, palette, topology group/role classification, and stack-local shaft settings.
 - Tower stack and walled keep room planning now use resolved topology slot metadata for planned piece roles, runtime topology groups, and jigsaw role hints.
-- Workspace template grouping and the family editor now present room families by topology slot first, and the old category template editor has been renamed to topology-slot terminology.
+- Workspace template grouping and the family editor now present room families by topology slot first, and the old template editor has been renamed to topology-slot terminology.
 - Stack-backed family palette resolution now inherits directly from topology stack palette defaults and family overrides instead of routing through category-profile palette overrides.
 - Import/deserialization restores topology profile, stack settings, run settings, and family definitions directly without materializing category-profile defaults.
 - Material-copy flows now preserve topology stack palette overrides alongside workspace, family, and linear-run palette settings.
 - Workspace drafts no longer carry stored category profiles.
-- Room family definitions now store topology slot metadata instead of direct `category`/`pieceRole` fields, and the compatibility accessors have been removed. `MKTowerWorkspaceCategory` has also been replaced by string topology group ids.
-- The legacy family-category detail page and selected-family-category UI state have been removed; room families are edited from the topology slot family page.
-- Editor-created, copied, and imported room families now use topology-slot metadata factories instead of manually reconstructing category/role constructor arguments.
+- Room family definitions now store topology slot metadata instead of direct legacy role fields, and the compatibility accessors have been removed. The former category enum has also been replaced by string topology group ids.
+- The legacy family detail page and selected-family UI state have been removed; room families are edited from the topology slot family page.
+- Editor-created, copied, and imported room families now use topology-slot metadata factories instead of manually reconstructing legacy constructor arguments.
 - Draft-session fallback metadata is now derived from topology schema role records before falling back to existing family metadata.
-- The remaining work is to keep broadening resolver use in scaffold/export code and reduce legacy constructor use in tests where safe. Linear-run UI, planner internals, serialized values, runtime pool paths, and the older shared dimensions shaft-width field now use topology/linear-run/shaft terminology.
+- Workspace runtime tags and export runtime metadata now serialize topology groups as `runtime_topology_group` and `topology_group`.
+- Runtime layout path-budget rules have been renamed from dungeon category rules to topology group rules, with `topology_group_rules` and `topology_group` serialized fields.
+- Linear-run UI, planner internals, serialized values, runtime pool paths, export grouping, and the shared dimensions shaft-width field now use topology/linear-run/shaft terminology.
+- The remaining work is to keep broadening resolver use in scaffold/export code and reduce legacy constructor use in tests where safe.
 
 ### Phase 1: Model Reusable Tower Stack Slots
 
 - Add a stack slot id helper that maps `{stackId}` plus stack role to concrete slot ids. Done for current tower-stack slots.
 - Add a reusable tower stack schema builder.
 - Expand `MKWorkspaceTowerStackSettings` with per-slot or per-stack-role heights, dimensions, cap approach toggles, and vertical access settings.
-- Keep current tower and walled keep behavior working while remaining compatibility paths are replaced with topology metadata.
+- Keep current tower and walled keep behavior working while remaining compatibility paths are replaced with topology metadata. The stored compatibility layer has been removed.
 - Standalone tower defaults now live on `tower.primary`; legacy non-stack workspace floor settings have been removed.
 
 ### Phase 2: Extract Tower Stack Planner
@@ -360,9 +363,9 @@ Family-level validation should focus on override legality:
 ### Phase 7: Resolver and Validation
 
 - Introduce resolved settings objects. Initial room-family resolver bridge is in place.
-- Update planners, scaffold generation, export, and validation to consume resolved settings. Room planners now consume resolved family settings for dimensions, foundations, palette, topology role/category metadata, and stack-local vertical access specs; scaffold/export/validation should continue moving away from raw family enum hints.
+- Update planners, scaffold generation, export, and validation to consume resolved settings. Room planners now consume resolved family settings for dimensions, foundations, palette, topology slot metadata, and stack-local vertical access specs; scaffold/export/validation should continue moving away from raw family enum hints.
 - Split topology validation from family override validation.
-- Replace global category-band/floor validation with per-stack validation for topology-driven workspaces. Done for explicit tower stack settings.
+- Replace global topology-band/floor validation with per-stack validation for topology-driven workspaces. Done for explicit tower stack settings.
 
 ### Phase 8: Tests
 
@@ -378,7 +381,7 @@ Family-level validation should focus on override legality:
 
 ## Design Decisions
 
-- Category profiles should be removed entirely as part of the topology profile refactor. Topology stack/run settings should become the primary configuration surface.
+- Category profiles have been removed from workspace storage. Topology stack/run settings are the primary configuration surface.
 - Vertical access shaft direction is configured through the existing exit mask widget; no new dedicated up/down control is planned.
 - Shared corner stack settings should only appear if at least one concrete corner uses shared mode. Unique corner stack settings should only appear for corners opted into unique mode.
 - Vertical band height validation should be per-stack, not workspace-global.
