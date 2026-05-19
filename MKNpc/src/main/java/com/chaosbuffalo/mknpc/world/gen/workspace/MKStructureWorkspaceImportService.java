@@ -321,14 +321,15 @@ public class MKStructureWorkspaceImportService {
         List<MKPlannedConnector> connectors = piece.connectors().stream()
                 .map(this::toPlannedConnector)
                 .toList();
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>(piece.tags());
         return new MKPlannedPiece(
-                piece.role(),
+                MKPlannedPiece.roleIdFromTags(tags, piece.role()),
                 piece.pieceName(),
                 dimensions.roomWidth(),
                 dimensions.roomLength(),
                 dimensions.roomHeight(),
                 connectors,
-                new LinkedHashMap<>(piece.tags())
+                tags
         );
     }
 

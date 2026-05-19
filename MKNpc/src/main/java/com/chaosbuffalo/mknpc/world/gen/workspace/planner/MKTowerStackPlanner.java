@@ -15,6 +15,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamil
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
 import net.minecraft.core.Direction;
@@ -59,11 +60,13 @@ public class MKTowerStackPlanner {
     }
 
     public boolean shouldCreateFamily(MKTowerStackDefinition stackDefinition, MKTowerWorkspaceFamilyDefinition family) {
-        return switch (MKWorkspaceTopologySlotMetadata.fromFamily(family).pieceRole()) {
+        Optional<MKTowerWorkspaceStackSlot> stackSlot = MKTowerWorkspaceStackSlot.fromTopologySlotId(
+                MKWorkspaceTopologySlotMetadata.fromFamily(family).topologySlotId());
+        return stackSlot.map(slot -> switch (slot) {
             case TOP_CAP_APPROACH -> stackDefinition.topCapApproachEnabled();
             case BASEMENT_CAP_APPROACH -> stackDefinition.basementCapApproachEnabled();
             default -> true;
-        };
+        }).orElse(true);
     }
 
     public MKPlannedPiece createPieceForFamily(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family) {
@@ -84,9 +87,12 @@ public class MKTowerStackPlanner {
                 stackDefinition.stairConfig();
         MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
         MKWorkspaceTopologySlotMetadata slotMetadata = resolvedFamily.slotMetadata();
-        return switch (slotMetadata.pieceRole()) {
+        MKTowerWorkspaceStackSlot stackSlot = MKTowerWorkspaceStackSlot.fromTopologySlotId(slotMetadata.topologySlotId())
+                .orElseThrow(() -> new IllegalStateException("family " + family.baseName() +
+                        " is not a tower stack slot: " + slotMetadata.topologySlotId()));
+        return switch (stackSlot) {
             case ENTRY -> new MKPlannedPiece(
-                    slotMetadata.pieceRole(),
+                    slotMetadata.topologySlotId(),
                     family.baseName(),
                     resolvedFamily.roomWidth(),
                     resolvedFamily.roomLength(),
@@ -105,8 +111,8 @@ public class MKTowerStackPlanner {
                     buildRoomTags(workspace, "entry", stackDefinition, family, stairPlacement, stairConfig, "both",
                             roomRuntimeInfo(stackDefinition.startPiece(), MKJigsawPieceRole.ROOM, 0, 0, false, false, family))
             );
-            case FLOOR_MAIN -> new MKPlannedPiece(
-                    slotMetadata.pieceRole(),
+            case MAIN_FLOOR -> new MKPlannedPiece(
+                    slotMetadata.topologySlotId(),
                     family.baseName(),
                     resolvedFamily.roomWidth(),
                     resolvedFamily.roomLength(),
@@ -126,7 +132,7 @@ public class MKTowerStackPlanner {
                             roomRuntimeInfo(false, MKJigsawPieceRole.ROOM, 1, 1, false, false, family))
             );
             case TOP_CAP_APPROACH -> new MKPlannedPiece(
-                    slotMetadata.pieceRole(),
+                    slotMetadata.topologySlotId(),
                     family.baseName(),
                     resolvedFamily.roomWidth(),
                     resolvedFamily.roomLength(),
@@ -146,7 +152,7 @@ public class MKTowerStackPlanner {
                             roomRuntimeInfo(false, MKJigsawPieceRole.TOP_CAP_APPROACH, 1, 1, false, true, family))
             );
             case TOP_CAP -> new MKPlannedPiece(
-                    slotMetadata.pieceRole(),
+                    slotMetadata.topologySlotId(),
                     family.baseName(),
                     resolvedFamily.roomWidth(),
                     resolvedFamily.roomLength(),
@@ -161,7 +167,7 @@ public class MKTowerStackPlanner {
                             topCapRuntimeInfo(stackDefinition, family))
             );
             case BASEMENT_ENTRY -> new MKPlannedPiece(
-                    slotMetadata.pieceRole(),
+                    slotMetadata.topologySlotId(),
                     family.baseName(),
                     resolvedFamily.roomWidth(),
                     resolvedFamily.roomLength(),
@@ -180,8 +186,8 @@ public class MKTowerStackPlanner {
                     buildRoomTags(workspace, "basement_entry", stackDefinition, family, stairPlacement, stairConfig, "down",
                             roomRuntimeInfo(false, MKJigsawPieceRole.ROOM, 1, -1, false, false, family))
             );
-            case BASEMENT_MAIN -> new MKPlannedPiece(
-                    slotMetadata.pieceRole(),
+            case BASEMENT_FLOOR -> new MKPlannedPiece(
+                    slotMetadata.topologySlotId(),
                     family.baseName(),
                     resolvedFamily.roomWidth(),
                     resolvedFamily.roomLength(),
@@ -201,7 +207,7 @@ public class MKTowerStackPlanner {
                             roomRuntimeInfo(false, MKJigsawPieceRole.ROOM, 1, -1, false, false, family))
             );
             case BASEMENT_CAP_APPROACH -> new MKPlannedPiece(
-                    slotMetadata.pieceRole(),
+                    slotMetadata.topologySlotId(),
                     family.baseName(),
                     resolvedFamily.roomWidth(),
                     resolvedFamily.roomLength(),
@@ -221,7 +227,7 @@ public class MKTowerStackPlanner {
                             roomRuntimeInfo(false, MKJigsawPieceRole.BASEMENT_CAP_APPROACH, 1, -1, false, true, family))
             );
             case BASEMENT_CAP -> new MKPlannedPiece(
-                    slotMetadata.pieceRole(),
+                    slotMetadata.topologySlotId(),
                     family.baseName(),
                     resolvedFamily.roomWidth(),
                     resolvedFamily.roomLength(),
@@ -235,7 +241,6 @@ public class MKTowerStackPlanner {
                     buildRoomTags(workspace, "basement_cap", stackDefinition, family, stairPlacement, stairConfig, "down", false, true,
                             basementCapRuntimeInfo(stackDefinition, family))
             );
-            case HALLWAY -> throw new IllegalStateException("tower families do not directly create hallway pieces");
         };
     }
 

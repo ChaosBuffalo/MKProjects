@@ -432,7 +432,7 @@ public class MKStructureWorkspaceService {
 
     private MKPlannedPiece toTemplatePiece(MKPlannedPiece basePiece) {
         return new MKPlannedPiece(
-                basePiece.role(),
+                basePiece.roleId(),
                 basePiece.pieceName() + "_template",
                 basePiece.interiorWidth(),
                 basePiece.interiorLength(),
@@ -444,7 +444,7 @@ public class MKStructureWorkspaceService {
 
     private MKPlannedPiece toVariantPiece(MKPlannedPiece basePiece, int variantIndex) {
         return new MKPlannedPiece(
-                basePiece.role(),
+                basePiece.roleId(),
                 basePiece.pieceName() + "_" + variantIndex,
                 basePiece.interiorWidth(),
                 basePiece.interiorLength(),
@@ -461,7 +461,7 @@ public class MKStructureWorkspaceService {
             throw new IllegalStateException("missing canonical piece for base name " + baseName);
         }
         return new MKPlannedPiece(
-                basePiece.role(),
+                basePiece.roleId(),
                 piece.pieceName(),
                 basePiece.interiorWidth(),
                 basePiece.interiorLength(),

@@ -11,7 +11,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFami
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamilySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
@@ -268,7 +267,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>(piece.connectors());
         connectors.addAll(layoutConnectors);
         return new MKPlannedPiece(
-                piece.role(),
+                piece.roleId(),
                 piece.pieceName(),
                 piece.interiorWidth(),
                 piece.interiorLength(),
@@ -325,7 +324,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         }
         connectors.addAll(roomLayoutConnectors(family.topologySlotId(), slots, opening));
         return new MKPlannedPiece(
-                resolvedFamily.slotMetadata().pieceRole(),
+                resolvedFamily.slotMetadata().topologySlotId(),
                 family.baseName(),
                 resolvedFamily.roomWidth(),
                 resolvedFamily.roomLength(),
@@ -346,7 +345,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                         linearRun.openingProfileId()));
         DirectionPair directions = directionsForSlot(linearRun.topologySlotId());
         return List.of(new MKPlannedPiece(
-                MKWorkspacePieceRole.HALLWAY,
+                linearRun.topologySlotId(),
                 linearRun.linearRunId(),
                 directions.eastWest() ? linearRun.length() : linearRun.interiorWidth(),
                 directions.eastWest() ? linearRun.interiorWidth() : linearRun.length(),
