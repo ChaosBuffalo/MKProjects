@@ -104,11 +104,12 @@ public record MKWorkspaceTowerStackSettings(
     }
 
     public static MKWorkspaceTowerStackSettings defaults(String stackId, int height) {
-        MKTowerWorkspaceFloorSettings defaults = MKTowerWorkspaceFloorSettings.defaultSettings();
-        return new MKWorkspaceTowerStackSettings(stackId, defaults.mainFloors(), defaults.basementFloors(), height,
+        return new MKWorkspaceTowerStackSettings(stackId, MKWorkspaceTowerStackFloorCounts.DEFAULT_MAIN_FLOORS,
+                MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_FLOORS, height,
                 defaultFootprint(stackId), defaultFootprint(stackId),
                 defaultShaftSize(), MKVerticalAccessPlacement.CENTER, defaultStairConfig(),
-                defaults.topCapApproachEnabled(), defaults.basementCapApproachEnabled(),
+                MKWorkspaceTowerStackFloorCounts.DEFAULT_TOP_CAP_APPROACH_ENABLED,
+                MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_CAP_APPROACH_ENABLED,
                 MKWorkspaceFoundationPolicy.none(), null);
     }
 

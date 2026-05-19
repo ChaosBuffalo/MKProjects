@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 public record MKWorkspaceTopologySlotMetadata(
         String topologySlotId,
-        MKTowerWorkspaceCategory category,
+        String topologyGroupId,
         String roleKind,
         String pieceKind,
         boolean terminal,
@@ -27,7 +27,7 @@ public record MKWorkspaceTopologySlotMetadata(
         return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
                 .map(slot -> new MKWorkspaceTopologySlotMetadata(
                         topologySlotId,
-                        slot.category(),
+                        slot.topologyGroupId(),
                         slot.roleKind(),
                         slot.pieceKind(),
                         slot.terminal(),
@@ -49,7 +49,7 @@ public record MKWorkspaceTopologySlotMetadata(
         return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
                 .map(slot -> new MKWorkspaceTopologySlotMetadata(
                         topologySlotId,
-                        slot.category(),
+                        slot.topologyGroupId(),
                         slot.roleKind(),
                         slot.pieceKind(),
                         slot.terminal(),
@@ -57,7 +57,7 @@ public record MKWorkspaceTopologySlotMetadata(
                 .orElseGet(() -> {
                     return new MKWorkspaceTopologySlotMetadata(
                             topologySlotId,
-                            categoryForTopologyRole(roleKind, pieceKind),
+                            topologyGroupForRole(roleKind, pieceKind),
                             roleKind,
                             pieceKind,
                             terminal,
@@ -69,12 +69,12 @@ public record MKWorkspaceTopologySlotMetadata(
         return fromTopologyRole(topologySlotId, roleKind, pieceKind, terminal);
     }
 
-    private static MKTowerWorkspaceCategory categoryForTopologyRole(String roleKind, String pieceKind) {
+    private static String topologyGroupForRole(String roleKind, String pieceKind) {
         return switch (roleKind) {
-            case "entry" -> MKTowerWorkspaceCategory.ENTRY;
+            case "entry" -> "entry";
             case "cap", "cap_approach" -> "terminal_bottom".equals(pieceKind) ?
-                    MKTowerWorkspaceCategory.BASEMENT_CAP : MKTowerWorkspaceCategory.TOP_CAP;
-            default -> MKTowerWorkspaceCategory.MAIN;
+                    "basement_cap" : "top_cap";
+            default -> "main";
         };
     }
 

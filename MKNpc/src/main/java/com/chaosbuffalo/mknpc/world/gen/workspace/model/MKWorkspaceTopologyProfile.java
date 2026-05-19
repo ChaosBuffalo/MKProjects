@@ -41,12 +41,13 @@ public record MKWorkspaceTopologyProfile(
 
     public static MKWorkspaceTopologyProfile tower() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
-        MKTowerWorkspaceFloorSettings floorSettings = MKTowerWorkspaceFloorSettings.defaultSettings();
         return new MKWorkspaceTopologyProfile(TOWER_PROFILE_TYPE, false, false, false, false, false,
-                List.of(new MKWorkspaceTowerStackSettings("tower.primary", floorSettings.mainFloors(),
-                        floorSettings.basementFloors(), dimensions.roomHeight(), dimensions.roomWidth(),
-                        dimensions.roomLength(), floorSettings.topCapApproachEnabled(),
-                        floorSettings.basementCapApproachEnabled())),
+                List.of(new MKWorkspaceTowerStackSettings("tower.primary",
+                        MKWorkspaceTowerStackFloorCounts.DEFAULT_MAIN_FLOORS,
+                        MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_FLOORS,
+                        dimensions.roomHeight(), dimensions.roomWidth(), dimensions.roomLength(),
+                        MKWorkspaceTowerStackFloorCounts.DEFAULT_TOP_CAP_APPROACH_ENABLED,
+                        MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_CAP_APPROACH_ENABLED)),
                 MKWorkspaceTopologyPathSettings.defaults());
     }
 

@@ -76,7 +76,7 @@ public class WorkspaceManagePage extends WorkspacePageBase {
             content.addWidget(openCategory);
             content.addConstraintToWidget(new CenterXConstraint(), openCategory);
             openCategory.setPressedCallback((button, mouseButton) -> {
-                screen.openWorkspaceCategory(topologyKey);
+                screen.openWorkspaceTopologySlot(topologyKey);
                 return true;
             });
         }

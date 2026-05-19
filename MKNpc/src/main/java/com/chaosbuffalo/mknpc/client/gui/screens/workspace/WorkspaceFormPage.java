@@ -28,7 +28,7 @@ public class WorkspaceFormPage extends WorkspacePageBase {
         addNavigationButton(screen, root, firstButtonY + screen.buttonHeight() + screen.buttonGap(),
                 "Materials", "form_materials");
         addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 2),
-                "Topology Defaults", "form_categories");
+                "Topology Defaults", WorkspaceTopologyDefaultsPage.ID);
         addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 3),
                 "Topology Slot Families", "form_families");
         addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 4),

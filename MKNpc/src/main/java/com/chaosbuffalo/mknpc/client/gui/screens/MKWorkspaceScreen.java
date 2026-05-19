@@ -3,15 +3,12 @@ package com.chaosbuffalo.mknpc.client.gui.screens;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKBlockingModal;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceBlockSwapPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceBackupPage;
-import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceCategoryEditor;
-import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceCategoryPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceHomePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceImportPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceGenerateConfirmPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormIdentityPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceDraftSession;
-import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormCategoriesPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormFamiliesPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormFamilyDetailPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormHallwaysPage;
@@ -22,6 +19,9 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormOpeningD
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceManagePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePageBase;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePieceDisplay;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTopologySlotEditor;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTopologySlotPage;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTopologyDefaultsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceUtilitiesPage;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
@@ -86,7 +86,7 @@ public class MKWorkspaceScreen extends MKScreen {
     private ResourceLocation blockSwapTargetBlock;
     private boolean wasResized;
     private final MKCreativeBlockPickerSource blockPickerSource = new MKCreativeBlockPickerSource();
-    private final WorkspaceCategoryEditor categoryEditor = new WorkspaceCategoryEditor(this);
+    private final WorkspaceTopologySlotEditor topologySlotEditor = new WorkspaceTopologySlotEditor(this);
     private final WorkspaceDraftSession draftSession;
 
     private record ScrollViewState(double offsetX, double offsetY) {
@@ -174,9 +174,9 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(new WorkspaceGenerateConfirmPage());
         addWorkspacePage(new WorkspaceFormIdentityPage());
         addWorkspacePage(new WorkspaceFormMaterialsPage());
-        WorkspaceFormCategoriesPage categoriesPage = new WorkspaceFormCategoriesPage();
-        addWorkspacePage(categoriesPage);
-        addState(WorkspaceFormCategoriesPage.DETAIL_ID, () -> categoriesPage.build(this));
+        WorkspaceTopologyDefaultsPage topologyDefaultsPage = new WorkspaceTopologyDefaultsPage();
+        addWorkspacePage(topologyDefaultsPage);
+        addState(WorkspaceTopologyDefaultsPage.DETAIL_ID, () -> topologyDefaultsPage.build(this));
         addWorkspacePage(new WorkspaceFormFamiliesPage());
         WorkspaceFormFamilyDetailPage familyDetailPage = new WorkspaceFormFamilyDetailPage();
         addWorkspacePage(familyDetailPage);
@@ -189,7 +189,7 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(new WorkspaceUtilitiesPage());
         addWorkspacePage(new WorkspaceBlockSwapPage());
         addWorkspacePage(new WorkspaceBackupPage());
-        addWorkspacePage(new WorkspaceCategoryPage());
+        addWorkspacePage(new WorkspaceTopologySlotPage());
         List<String> statesToPush = initialStates.isEmpty() ? getDefaultInitialStates() : initialStates;
         for (String state : statesToPush) {
             pushState(state);
@@ -300,15 +300,15 @@ public class MKWorkspaceScreen extends MKScreen {
         onClose();
     }
 
-    public void openWorkspaceCategory(String topologyKey) {
+    public void openWorkspaceTopologySlot(String topologyKey) {
         selectedTopologyKey = topologyKey;
         resetCategoryOverrides();
-        pushState("category");
+        pushState(WorkspaceTopologySlotPage.ID);
         flagNeedSetup();
     }
 
-    public WorkspaceCategoryEditor categoryEditor() {
-        return categoryEditor;
+    public WorkspaceTopologySlotEditor topologySlotEditor() {
+        return topologySlotEditor;
     }
 
     public WorkspaceDraftSession draftSession() {

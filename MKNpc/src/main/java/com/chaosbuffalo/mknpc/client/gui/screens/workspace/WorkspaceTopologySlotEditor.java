@@ -8,10 +8,10 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
-public class WorkspaceCategoryEditor {
+public class WorkspaceTopologySlotEditor {
     private final MKWorkspaceScreen screen;
 
-    public WorkspaceCategoryEditor(MKWorkspaceScreen screen) {
+    public WorkspaceTopologySlotEditor(MKWorkspaceScreen screen) {
         this.screen = screen;
     }
 

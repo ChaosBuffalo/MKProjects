@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.client.gui.widgets.MKIntegerSlider;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
@@ -26,9 +25,9 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
-    public static final String ID = "form_categories";
-    public static final String DETAIL_ID = "form_category_detail";
+public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
+    public static final String ID = "topology_defaults";
+    public static final String DETAIL_ID = "topology_defaults_detail";
 
     @Override
     public String id() {
@@ -117,8 +116,8 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
         content.addWidget(pathText);
         content.addConstraintToWidget(MarginConstraint.LEFT, pathText);
 
-        for (MKTowerWorkspaceCategory category : MKTowerWorkspaceCategory.values()) {
-            addTowerPathDefaultsSection(screen, content, category);
+        for (String topologyGroupId : MKWorkspaceTopologyPathSettings.DEFAULT_TOPOLOGY_GROUP_IDS) {
+            addTowerPathDefaultsSection(screen, content, topologyGroupId);
         }
 
         finishScrollContent(screen, scrollView, content);
@@ -127,35 +126,35 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
     }
 
     private void addTowerPathDefaultsSection(MKWorkspaceScreen screen, MKStackLayoutVertical content,
-                                             MKTowerWorkspaceCategory category) {
+                                             String topologyGroupId) {
         WorkspaceDraftSession editor = screen.draftSession();
-        MKWorkspaceTopologyPathSettings pathSettings = editor.topologyPathSettings(category);
-        MKText header = screen.makeWhiteText(Component.literal(formatTopologyLabel(category.getSerializedName())));
+        MKWorkspaceTopologyPathSettings pathSettings = editor.topologyPathSettings(topologyGroupId);
+        MKText header = screen.makeWhiteText(Component.literal(formatTopologyLabel(topologyGroupId)));
         content.addWidget(header);
         content.addConstraintToWidget(MarginConstraint.LEFT, header);
 
         MKText summary = screen.makeWhiteText(Component.literal(
-                (showCategoryPathControls(editor, category) ? "path " +
+                (showCategoryPathControls(editor, topologyGroupId) ? "path " +
                         pathSettings.minMainPathPieces() + "-" + pathSettings.maxMainPathPieces() + "  |  " : "") +
                         "branch cap " + pathSettings.maxBranchPiecesBeforeCap()));
         summary.setWidth(screen.contentWidth());
         summary.setMultiline(true);
         content.addWidget(summary);
         content.addConstraintToWidget(MarginConstraint.LEFT, summary);
-        if (showCategoryPathControls(editor, category)) {
+        if (showCategoryPathControls(editor, topologyGroupId)) {
             MKIntegerSlider minPathSlider = new MKIntegerSlider("Min", 180, 20, 0, 10, 1,
                     pathSettings.minMainPathPieces(),
-                    value -> editor.topologyPathMinMainPathPieces(category, value));
+                    value -> editor.topologyPathMinMainPathPieces(topologyGroupId, value));
             MKIntegerSlider maxPathSlider = new MKIntegerSlider("Max", 180, 20, 0, 10, 1,
                     pathSettings.maxMainPathPieces(),
-                    value -> editor.topologyPathMaxMainPathPieces(category, value));
+                    value -> editor.topologyPathMaxMainPathPieces(topologyGroupId, value));
             addRow(screen, content, screen.makeWhiteText(Component.literal("Main Path Min")), minPathSlider);
             addRow(screen, content, screen.makeWhiteText(Component.literal("Main Path Max")), maxPathSlider);
         }
         MKIntegerSlider maxBranchBeforeCapSlider = new MKIntegerSlider("Max", 180, 20, 0,
                 MKWorkspaceTopologyPathSettings.MAX_BRANCH_PIECES_BEFORE_CAP, 1,
                 pathSettings.maxBranchPiecesBeforeCap(),
-                value -> editor.topologyPathMaxBranchPiecesBeforeCap(category, value));
+                value -> editor.topologyPathMaxBranchPiecesBeforeCap(topologyGroupId, value));
         addRow(screen, content, screen.makeWhiteText(Component.literal("Branch Cap Max")), maxBranchBeforeCapSlider);
     }
 
@@ -431,22 +430,22 @@ public class WorkspaceFormCategoriesPage extends WorkspacePageBase {
         addRow(screen, content, screen.makeWhiteText(Component.literal(label)), modeButton);
     }
 
-    private boolean showCategoryPathControls(WorkspaceDraftSession editor, MKTowerWorkspaceCategory category) {
-        return hasMainPathContinuationFamily(editor, category) || !hasMainPathEndingFamily(editor, category);
+    private boolean showCategoryPathControls(WorkspaceDraftSession editor, String topologyGroupId) {
+        return hasMainPathContinuationFamily(editor, topologyGroupId) || !hasMainPathEndingFamily(editor, topologyGroupId);
     }
 
-    private boolean hasMainPathContinuationFamily(WorkspaceDraftSession editor, MKTowerWorkspaceCategory category) {
+    private boolean hasMainPathContinuationFamily(WorkspaceDraftSession editor, String topologyGroupId) {
         return editor.draft().familyDefinitions.stream()
-                .filter(family -> family.slotMetadata().category() == category)
+                .filter(family -> family.slotMetadata().topologyGroupId().equals(topologyGroupId))
                 .filter(family -> !family.mainPathEnding())
                 .flatMap(family -> family.horizontalExits().stream())
                 .anyMatch(exit -> exit.pathKind().usesMainPath() &&
                         exit.pathKind() != MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY);
     }
 
-    private boolean hasMainPathEndingFamily(WorkspaceDraftSession editor, MKTowerWorkspaceCategory category) {
+    private boolean hasMainPathEndingFamily(WorkspaceDraftSession editor, String topologyGroupId) {
         return editor.draft().familyDefinitions.stream()
-                .filter(family -> family.slotMetadata().category() == category)
+                .filter(family -> family.slotMetadata().topologyGroupId().equals(topologyGroupId))
                 .anyMatch(MKTowerWorkspaceFamilyDefinition::mainPathEnding);
     }
 

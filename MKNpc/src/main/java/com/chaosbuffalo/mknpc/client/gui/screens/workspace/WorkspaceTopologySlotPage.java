@@ -21,8 +21,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
 
-public class WorkspaceCategoryPage extends WorkspacePageBase {
-    public static final String ID = "category";
+public class WorkspaceTopologySlotPage extends WorkspacePageBase {
+    public static final String ID = "topology_slot";
 
     @Override
     public String id() {
@@ -31,7 +31,7 @@ public class WorkspaceCategoryPage extends WorkspacePageBase {
 
     @Override
     public MKLayout build(MKWorkspaceScreen screen) {
-        WorkspaceCategoryEditor editor = screen.categoryEditor();
+        WorkspaceTopologySlotEditor editor = screen.topologySlotEditor();
         if (editor.selectedTopologyKey() == null) {
             screen.switchToExistingState(WorkspaceManagePage.ID);
             return new WorkspaceManagePage().build(screen);
@@ -132,7 +132,7 @@ public class WorkspaceCategoryPage extends WorkspacePageBase {
         return root;
     }
 
-    private void addStairControls(MKWorkspaceScreen screen, WorkspaceCategoryEditor editor,
+    private void addStairControls(MKWorkspaceScreen screen, WorkspaceTopologySlotEditor editor,
                                   MKStackLayoutVertical content) {
         MKText stairModeLabel = screen.makeWhiteText(Component.translatable("mknpc.workspace.field.stair_mode"));
         MKButton stairModeButton = new MKButton(getStairModeComponent(editor.stairMode()), 180,
@@ -167,7 +167,7 @@ public class WorkspaceCategoryPage extends WorkspacePageBase {
         });
     }
 
-    private void addPieceControls(MKWorkspaceScreen screen, WorkspaceCategoryEditor editor,
+    private void addPieceControls(MKWorkspaceScreen screen, WorkspaceTopologySlotEditor editor,
                                   MKStackLayoutVertical content, boolean stairCategory,
                                   MKWorkspacePieceDefinition piece) {
         MKText pieceText = screen.makeWhiteText(Component.literal(WorkspacePieceDisplay.describePiece(piece)));

@@ -5,9 +5,7 @@ import com.chaosbuffalo.mknpc.network.packets.CreateWorkspacePacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStackBudget;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
@@ -28,6 +26,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackFloorCounts;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
@@ -92,12 +91,11 @@ public class WorkspaceDraftSession {
         draft.shellMargin = workspace != null ? workspace.shellMargin() : 1;
         draft.exteriorAirMargin = workspace != null ? workspace.exteriorAirMargin() : 2;
         draft.previewMargin = workspace != null ? workspace.previewMargin() : 4;
-        draft.mainFloors = workspace != null ? workspace.floorSettings().mainFloors() : MKTowerWorkspaceFloorSettings.defaultSettings().mainFloors();
-        draft.basementFloors = workspace != null ? workspace.floorSettings().basementFloors() : MKTowerWorkspaceFloorSettings.defaultSettings().basementFloors();
-        draft.topCapApproachEnabled = workspace != null ? workspace.floorSettings().topCapApproachEnabled() :
-                MKTowerWorkspaceFloorSettings.defaultSettings().topCapApproachEnabled();
-        draft.basementCapApproachEnabled = workspace != null ? workspace.floorSettings().basementCapApproachEnabled() :
-                MKTowerWorkspaceFloorSettings.defaultSettings().basementCapApproachEnabled();
+        MKWorkspaceTowerStackSettings primaryStackSettings = primaryStackSettings(draft.topologyProfile);
+        draft.mainFloors = primaryStackSettings.mainFloors();
+        draft.basementFloors = primaryStackSettings.basementFloors();
+        draft.topCapApproachEnabled = primaryStackSettings.topCapApproachEnabled();
+        draft.basementCapApproachEnabled = primaryStackSettings.basementCapApproachEnabled();
         draft.familyDefinitions = List.copyOf(workspace != null ? workspace.familyDefinitions() :
                 MKTowerWorkspaceFamilyDefinition.createDefaults());
         draft.openingProfiles = List.copyOf(workspace != null ? workspace.openingProfiles() :
@@ -596,16 +594,15 @@ public class WorkspaceDraftSession {
     public void resetCurrentTopologyDefaults() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceStairAuthoringConfig defaultStairConfig = MKWorkspaceStairAuthoringConfig.defaultConfig();
-        MKTowerWorkspaceFloorSettings defaultFloorSettings = MKTowerWorkspaceFloorSettings.defaultSettings();
         draft().stairMode = defaultStairConfig.mode();
         draft().stairRiseType = defaultStairConfig.riseType();
         draft().stairWidth = defaultStairConfig.stairWidth();
         draft().verticalAccessPlacement = MKWorkspaceVerticalAccessSpec.defaultSpec().placement();
         draft().shaftSize = MKWorkspaceVerticalAccessSpec.defaultSpec().shaftSize();
-        draft().mainFloors = defaultFloorSettings.mainFloors();
-        draft().basementFloors = defaultFloorSettings.basementFloors();
-        draft().topCapApproachEnabled = defaultFloorSettings.topCapApproachEnabled();
-        draft().basementCapApproachEnabled = defaultFloorSettings.basementCapApproachEnabled();
+        draft().mainFloors = MKWorkspaceTowerStackFloorCounts.DEFAULT_MAIN_FLOORS;
+        draft().basementFloors = MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_FLOORS;
+        draft().topCapApproachEnabled = MKWorkspaceTowerStackFloorCounts.DEFAULT_TOP_CAP_APPROACH_ENABLED;
+        draft().basementCapApproachEnabled = MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_CAP_APPROACH_ENABLED;
         draft().openingProfiles = MKHorizontalOpeningProfile.createDefaults(dimensions);
         if (MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(draft().topologyProfile.profileType())) {
             draft().topologyProfile = MKWorkspaceTopologyProfile.walledKeep(
@@ -860,19 +857,19 @@ public class WorkspaceDraftSession {
         return basePalette();
     }
 
-    public MKWorkspaceMaterialPalette resolveCategoryPalette(MKTowerWorkspaceCategory category) {
+    public MKWorkspaceMaterialPalette resolveTopologyGroupPalette(String topologyGroupId) {
         return draftBasePalette();
     }
 
     public MKWorkspaceMaterialPalette resolveFamilyInheritedPalette(MKTowerWorkspaceFamilyDefinition family) {
-        MKWorkspaceMaterialPalette categoryPalette = resolveCategoryPalette(family.slotMetadata().category());
+        MKWorkspaceMaterialPalette topologyGroupPalette = resolveTopologyGroupPalette(family.slotMetadata().topologyGroupId());
         String stackId = stackIdForFamily(family);
         if (stackId.isBlank()) {
-            return categoryPalette;
+            return topologyGroupPalette;
         }
         return towerStackSettings(stackId).paletteOverrideOpt()
-                .map(override -> override.resolve(categoryPalette))
-                .orElse(categoryPalette);
+                .map(override -> override.resolve(topologyGroupPalette))
+                .orElse(topologyGroupPalette);
     }
 
     public MKWorkspaceFoundationPolicy resolveFamilyInheritedFoundation(MKTowerWorkspaceFamilyDefinition family) {
@@ -933,20 +930,20 @@ public class WorkspaceDraftSession {
         applyTowerStackSettingsToFamilies();
     }
 
-    public MKWorkspaceTopologyPathSettings topologyPathSettings(MKTowerWorkspaceCategory category) {
-        return draft().topologyProfile.pathSettingsOrDefault(category.getSerializedName());
+    public MKWorkspaceTopologyPathSettings topologyPathSettings(String topologyGroupId) {
+        return draft().topologyProfile.pathSettingsOrDefault(topologyGroupId);
     }
 
-    public void topologyPathMinMainPathPieces(MKTowerWorkspaceCategory category, int value) {
-        replaceTopologyPathSettings(topologyPathSettings(category).withMinMainPathPieces(value));
+    public void topologyPathMinMainPathPieces(String topologyGroupId, int value) {
+        replaceTopologyPathSettings(topologyPathSettings(topologyGroupId).withMinMainPathPieces(value));
     }
 
-    public void topologyPathMaxMainPathPieces(MKTowerWorkspaceCategory category, int value) {
-        replaceTopologyPathSettings(topologyPathSettings(category).withMaxMainPathPieces(value));
+    public void topologyPathMaxMainPathPieces(String topologyGroupId, int value) {
+        replaceTopologyPathSettings(topologyPathSettings(topologyGroupId).withMaxMainPathPieces(value));
     }
 
-    public void topologyPathMaxBranchPiecesBeforeCap(MKTowerWorkspaceCategory category, int value) {
-        replaceTopologyPathSettings(topologyPathSettings(category).withMaxBranchPiecesBeforeCap(value));
+    public void topologyPathMaxBranchPiecesBeforeCap(String topologyGroupId, int value) {
+        replaceTopologyPathSettings(topologyPathSettings(topologyGroupId).withMaxBranchPiecesBeforeCap(value));
     }
 
     private void replaceTopologyPathSettings(MKWorkspaceTopologyPathSettings settings) {
@@ -1325,6 +1322,13 @@ public class WorkspaceDraftSession {
         return new MKWorkspaceVerticalAccessSpec(draft().shaftSize, draft().verticalAccessPlacement, makeStairConfig());
     }
 
+    private static MKWorkspaceTowerStackSettings primaryStackSettings(MKWorkspaceTopologyProfile profile) {
+        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(profile.profileType())) {
+            return profile.towerStackSettingsOrDefault("keep.center");
+        }
+        return profile.towerStackSettingsOrDefault(TOWER_PRIMARY_STACK_ID);
+    }
+
     public int[] verticalAccessFootprint() {
         MKWorkspaceTowerStackSettings settings = primaryDimensionStackSettings();
         return new int[]{settings.width(), settings.length()};
@@ -1332,21 +1336,6 @@ public class WorkspaceDraftSession {
 
     private int[] getDraftVerticalAccessFootprint() {
         return verticalAccessFootprint();
-    }
-
-    public List<Integer> allowedFullHeightsForCategory(MKTowerWorkspaceCategory category) {
-        if (category == MKTowerWorkspaceCategory.TOP_CAP && !draft().topCapApproachEnabled) {
-            return integerRange(3, MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE - 1);
-        }
-        MKWorkspaceVerticalAccessSpec verticalAccessSpec = currentVerticalAccessSpec();
-        int referenceHeight = primaryDimensionStackSettings().height();
-        return MKWorkspaceDimensions.getAllowedBandHeights(
-                verticalAccessSpec.stairConfig(),
-                verticalAccessSpec.shaftSize(),
-                referenceHeight,
-                3,
-                MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE
-        );
     }
 
     public List<Integer> allowedMainFloorCounts(int basementFloors) {
@@ -1437,12 +1426,12 @@ public class WorkspaceDraftSession {
     }
 
     private List<Integer> allowedTowerStackMainFloorCounts(MKWorkspaceTowerStackSettings settings, int basementFloors) {
-        return MKTowerWorkspaceFloorSettings.allowedMainFloorCounts(MKTowerStackBudget.fromStackSettings(settings),
+        return MKWorkspaceTowerStackFloorCounts.allowedMainFloorCounts(MKTowerStackBudget.fromStackSettings(settings),
                 basementFloors, settings.topCapApproachEnabled(), settings.basementCapApproachEnabled());
     }
 
     private List<Integer> allowedTowerStackBasementFloorCounts(MKWorkspaceTowerStackSettings settings, int mainFloors) {
-        return MKTowerWorkspaceFloorSettings.allowedBasementFloorCounts(MKTowerStackBudget.fromStackSettings(settings),
+        return MKWorkspaceTowerStackFloorCounts.allowedBasementFloorCounts(MKTowerStackBudget.fromStackSettings(settings),
                 mainFloors, settings.topCapApproachEnabled(), settings.basementCapApproachEnabled());
     }
 
@@ -1458,22 +1447,6 @@ public class WorkspaceDraftSession {
         return allowedTowerStackBasementFloorCounts(settings, mainFloors).stream()
                 .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedCount)))
                 .orElse(0);
-    }
-
-    private int normalizeCategoryFullHeight(MKTowerWorkspaceCategory category, int requestedHeight,
-                                            MKWorkspaceVerticalAccessSpec verticalAccessSpec,
-                                            int mainReferenceHeight) {
-        if (category == MKTowerWorkspaceCategory.TOP_CAP && !draft().topCapApproachEnabled) {
-            return Math.max(3, Math.min(MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE - 1, requestedHeight));
-        }
-        return MKWorkspaceDimensions.snapToNearestAllowedBandHeight(
-                verticalAccessSpec.stairConfig(),
-                verticalAccessSpec.shaftSize(),
-                mainReferenceHeight,
-                requestedHeight,
-                3,
-                MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE
-        );
     }
 
     public MKTowerWorkspaceFamilyDefinition normalizeFamilyDefinition(MKTowerWorkspaceFamilyDefinition family) {

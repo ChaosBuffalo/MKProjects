@@ -322,7 +322,7 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
     }
 
     @Override
-    public Optional<MKTowerWorkspaceCategory> paletteCategoryOpt() {
+    public Optional<String> paletteTopologyGroupIdOpt() {
         return Optional.empty();
     }
 

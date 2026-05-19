@@ -508,7 +508,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                     tags.put("workspace_tower_stack_basement_floors", Integer.toString(settings.basementFloors()));
                 });
         MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
-        tags.put("workspace_category", resolvedFamily.slotMetadata().category().getSerializedName());
+        tags.put("workspace_topology_group", resolvedFamily.slotMetadata().topologyGroupId());
         applyFoundationTags(resolvedFamily.foundationPolicy(), tags);
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, Boolean.toString(family.supportsVerticalAccess()));
         if (family.supportsVerticalAccess()) {
@@ -565,7 +565,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         MKWorkspaceTopologySlotMetadata slotMetadata = MKWorkspaceTopologySlotMetadata.fromFamily(family);
         boolean start = family.topologySlotId().equals("keep.center.entry");
         return new MKWorkspaceRuntimePieceInfo(start, slotMetadata.jigsawPieceRole(), 0, 0, true, true,
-                slotMetadata.terminal(), false, slotMetadata.category().getSerializedName(), false, false);
+                slotMetadata.terminal(), false, slotMetadata.topologyGroupId(), false, false);
     }
 
     private Optional<ResolvedOpeningProfile> resolveOpeningProfile(MKStructureWorkspace workspace, String profileId) {

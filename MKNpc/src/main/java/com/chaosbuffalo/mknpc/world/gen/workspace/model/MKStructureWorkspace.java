@@ -241,12 +241,10 @@ public class MKStructureWorkspace {
 
     public List<String> validate() {
         List<String> errors = new ArrayList<>(verticalAccessSpec.validate());
-        if (topologyProfile.towerStackSettings().isEmpty()) {
-            errors.addAll(floorSettings().validate(MKTowerStackBudget.fromDimensions(dimensions)));
-        } else {
-            for (MKWorkspaceTowerStackSettings settings : topologyProfile.towerStackSettings()) {
-                errors.addAll(validateTowerStackFloorSettings(settings));
-            }
+        for (MKWorkspaceTowerStackSettings settings : topologyProfile.towerStackSettings()) {
+            errors.addAll(MKWorkspaceTowerStackFloorCounts.validate(settings).stream()
+                    .map(error -> "tower stack " + settings.stackId() + " " + error)
+                    .toList());
         }
         for (MKWorkspaceTowerStackSettings settings : topologyProfile.towerStackSettings()) {
             MKWorkspaceVerticalAccessSpec stackSpec = new MKWorkspaceVerticalAccessSpec(
@@ -363,40 +361,6 @@ public class MKStructureWorkspace {
                 }
             }
         }
-        if (topologyProfile.towerStackSettings().isEmpty()) {
-            int mainHeight = dimensions.roomHeight();
-            List<Integer> allowedBandHeights = MKWorkspaceDimensions.getAllowedBandHeights(
-                    verticalAccessSpec.stairConfig(),
-                    verticalAccessSpec.shaftSize(),
-                    mainHeight,
-                    3,
-                    16
-            );
-            List<MKTowerWorkspaceCategory> stairBandCategories = new ArrayList<>(List.of(
-                    MKTowerWorkspaceCategory.MAIN,
-                    MKTowerWorkspaceCategory.ENTRY,
-                    MKTowerWorkspaceCategory.BASEMENT,
-                    MKTowerWorkspaceCategory.BASEMENT_CAP));
-            if (floorSettings().topCapApproachEnabled()) {
-                stairBandCategories.add(MKTowerWorkspaceCategory.TOP_CAP);
-            }
-            for (MKTowerWorkspaceCategory category : stairBandCategories) {
-                int categoryHeight = legacyHeightForCategory(category);
-                if (!allowedBandHeights.contains(categoryHeight)) {
-                    errors.add(category.getSerializedName() + " full height must be one of " +
-                            allowedBandHeights + " to stay in phase with main room height " +
-                            mainHeight);
-                }
-            }
-            int bandCap = verticalAccessSpec.getBandCapForRequestedHeight(mainHeight);
-            for (MKWorkspaceLinearRunFamilyDefinition linearRunFamily : linearRunFamilies) {
-                int linearRunTopHeight = linearRunFamily.interiorHeight() + Math.abs(linearRunFamily.slopeDelta());
-                if (linearRunTopHeight > bandCap) {
-                    errors.add("linear run family " + linearRunFamily.linearRunId() + " height " + linearRunTopHeight +
-                            " exceeds main vertical band cap " + bandCap);
-                }
-            }
-        }
         if (namespace.isBlank()) {
             errors.add("namespace cannot be blank");
         }
@@ -415,32 +379,21 @@ public class MKStructureWorkspace {
         return errors;
     }
 
-    private List<String> validateTowerStackFloorSettings(MKWorkspaceTowerStackSettings settings) {
-        MKTowerWorkspaceFloorSettings stackFloorSettings = new MKTowerWorkspaceFloorSettings(
-                settings.mainFloors(),
-                settings.basementFloors(),
-                settings.topCapApproachEnabled(),
-                settings.basementCapApproachEnabled()
-        );
-        return stackFloorSettings.validate(MKTowerStackBudget.fromStackSettings(settings)).stream()
-                .map(error -> "tower stack " + settings.stackId() + " " + error)
-                .toList();
-    }
-
     private Optional<Integer> maxRoomHeightForFamily(MKTowerWorkspaceFamilyDefinition familyDefinition) {
         Optional<MKWorkspaceTowerStackSettings> stackSettings = towerStackSettingsForFamily(familyDefinition);
         if (stackSettings.isPresent()) {
             return Optional.of(stackSettings.get().height());
         }
-        int fallbackHeight = legacyHeightForCategory(MKWorkspaceTopologySlotMetadata.fromFamily(familyDefinition).category());
+        int fallbackHeight = legacyHeightForTopologyGroup(
+                MKWorkspaceTopologySlotMetadata.fromFamily(familyDefinition).topologyGroupId());
         return Optional.of(Math.max(fallbackHeight, familyDefinition.roomHeight()));
     }
 
-    private int legacyHeightForCategory(MKTowerWorkspaceCategory category) {
-        return switch (category) {
-            case ENTRY -> dimensions.entranceHeight();
-            case MAIN, TOP_CAP -> dimensions.roomHeight();
-            case BASEMENT, BASEMENT_CAP -> dimensions.basementHeight();
+    private int legacyHeightForTopologyGroup(String topologyGroupId) {
+        return switch (topologyGroupId) {
+            case "entry" -> dimensions.entranceHeight();
+            case "basement", "basement_cap" -> dimensions.basementHeight();
+            default -> dimensions.roomHeight();
         };
     }
 
@@ -535,8 +488,8 @@ public class MKStructureWorkspace {
         return topologyProfile;
     }
 
-    public MKWorkspaceTopologyPathSettings topologyPathSettings(MKTowerWorkspaceCategory category) {
-        return topologyProfile.pathSettingsOrDefault(category.getSerializedName());
+    public MKWorkspaceTopologyPathSettings topologyPathSettings(String topologyGroupId) {
+        return topologyProfile.pathSettingsOrDefault(topologyGroupId);
     }
 
     public MKWorkspaceDimensions dimensions() {
@@ -557,23 +510,6 @@ public class MKStructureWorkspace {
 
     public MKWorkspaceVerticalAccessSpec verticalAccessSpec() {
         return verticalAccessSpec;
-    }
-
-    public MKTowerWorkspaceFloorSettings floorSettings() {
-        return topologyProfile.towerStackSettings(primaryFloorSettingsStackId())
-                .map(settings -> new MKTowerWorkspaceFloorSettings(
-                        settings.mainFloors(),
-                        settings.basementFloors(),
-                        settings.topCapApproachEnabled(),
-                        settings.basementCapApproachEnabled()))
-                .orElse(MKTowerWorkspaceFloorSettings.defaultSettings());
-    }
-
-    private String primaryFloorSettingsStackId() {
-        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(topologyProfile.profileType())) {
-            return "keep.center";
-        }
-        return "tower.primary";
     }
 
     public List<MKTowerWorkspaceFamilyDefinition> familyDefinitions() {

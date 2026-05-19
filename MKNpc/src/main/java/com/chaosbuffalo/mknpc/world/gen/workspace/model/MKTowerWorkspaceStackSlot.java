@@ -4,21 +4,21 @@ import java.util.List;
 import java.util.Optional;
 
 public enum MKTowerWorkspaceStackSlot {
-    BASEMENT_CAP("basement_cap", MKTowerWorkspaceCategory.BASEMENT_CAP,
+    BASEMENT_CAP("basement_cap", "basement_cap",
             "cap", "terminal_bottom", true),
-    BASEMENT_CAP_APPROACH("basement_cap_approach", MKTowerWorkspaceCategory.BASEMENT_CAP,
+    BASEMENT_CAP_APPROACH("basement_cap_approach", "basement_cap",
             "cap_approach", "room", false),
-    BASEMENT_ENTRY("basement_entry", MKTowerWorkspaceCategory.BASEMENT,
+    BASEMENT_ENTRY("basement_entry", "basement",
             "floor", "room", false),
-    BASEMENT_FLOOR("basement_floor", MKTowerWorkspaceCategory.BASEMENT,
+    BASEMENT_FLOOR("basement_floor", "basement",
             "floor", "room", false),
-    ENTRY("entry", MKTowerWorkspaceCategory.ENTRY,
+    ENTRY("entry", "entry",
             "floor", "room", false),
-    MAIN_FLOOR("main_floor", MKTowerWorkspaceCategory.MAIN,
+    MAIN_FLOOR("main_floor", "main",
             "floor", "room", false),
-    TOP_CAP_APPROACH("top_cap_approach", MKTowerWorkspaceCategory.TOP_CAP,
+    TOP_CAP_APPROACH("top_cap_approach", "top_cap",
             "cap_approach", "room", false),
-    TOP_CAP("top_cap", MKTowerWorkspaceCategory.TOP_CAP,
+    TOP_CAP("top_cap", "top_cap",
             "cap", "top_cap", true);
 
     private static final List<MKTowerWorkspaceStackSlot> SCHEMA_ORDER = List.of(
@@ -43,16 +43,16 @@ public enum MKTowerWorkspaceStackSlot {
     );
 
     private final String suffix;
-    private final MKTowerWorkspaceCategory category;
+    private final String topologyGroupId;
     private final String roleKind;
     private final String pieceKind;
     private final boolean terminal;
 
-    MKTowerWorkspaceStackSlot(String suffix, MKTowerWorkspaceCategory category,
+    MKTowerWorkspaceStackSlot(String suffix, String topologyGroupId,
                               String roleKind,
                               String pieceKind, boolean terminal) {
         this.suffix = suffix;
-        this.category = category;
+        this.topologyGroupId = topologyGroupId;
         this.roleKind = roleKind;
         this.pieceKind = pieceKind;
         this.terminal = terminal;
@@ -62,8 +62,8 @@ public enum MKTowerWorkspaceStackSlot {
         return suffix;
     }
 
-    public MKTowerWorkspaceCategory category() {
-        return category;
+    public String topologyGroupId() {
+        return topologyGroupId;
     }
 
     public String roleKind() {

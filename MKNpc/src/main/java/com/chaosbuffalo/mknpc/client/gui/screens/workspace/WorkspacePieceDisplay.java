@@ -36,7 +36,7 @@ public final class WorkspacePieceDisplay {
         String familyId = piece.tags().get("workspace_family_id");
         if (familyId != null) {
             return "room:" + piece.tags().getOrDefault("workspace_topology_slot_id",
-                    piece.tags().getOrDefault("workspace_category", "main")) + ":" +
+                    piece.tags().getOrDefault("workspace_topology_group", "main")) + ":" +
                     familyId + ":" + piece.tags().getOrDefault("workspace_horizontal_exits", "none");
         }
         return "role:" + piece.roleId();
@@ -51,7 +51,7 @@ public final class WorkspacePieceDisplay {
         String familyId = piece.tags().get("workspace_family_id");
         if (familyId != null) {
             return formatTopologyLabel(piece.tags().getOrDefault("workspace_topology_slot_id",
-                    piece.tags().getOrDefault("workspace_category", "main"))) +
+                    piece.tags().getOrDefault("workspace_topology_group", "main"))) +
                     " / " + familyId +
                     " / exits " + piece.tags().getOrDefault("workspace_horizontal_exits", "none");
         }

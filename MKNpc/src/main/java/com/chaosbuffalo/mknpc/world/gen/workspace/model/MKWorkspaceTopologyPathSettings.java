@@ -19,6 +19,13 @@ public record MKWorkspaceTopologyPathSettings(
     public static final int DEFAULT_MAX_MAIN_PATH_PIECES = 2;
     public static final int DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP = 10;
     public static final int MAX_BRANCH_PIECES_BEFORE_CAP = DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP;
+    public static final List<String> DEFAULT_TOPOLOGY_GROUP_IDS = List.of(
+            "entry",
+            "main",
+            "basement",
+            "top_cap",
+            "basement_cap"
+    );
     public static final Codec<MKWorkspaceTopologyPathSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("category_id").forGetter(MKWorkspaceTopologyPathSettings::categoryId),
             Codec.INT.optionalFieldOf("min_main_path_pieces", DEFAULT_MIN_MAIN_PATH_PIECES)
@@ -39,8 +46,8 @@ public record MKWorkspaceTopologyPathSettings(
 
     public static List<MKWorkspaceTopologyPathSettings> defaults() {
         ArrayList<MKWorkspaceTopologyPathSettings> defaults = new ArrayList<>();
-        for (MKTowerWorkspaceCategory category : MKTowerWorkspaceCategory.values()) {
-            defaults.add(defaultForCategory(category.getSerializedName()));
+        for (String topologyGroupId : DEFAULT_TOPOLOGY_GROUP_IDS) {
+            defaults.add(defaultForCategory(topologyGroupId));
         }
         return List.copyOf(defaults);
     }

@@ -13,9 +13,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManife
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFloorSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStackBudget;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
@@ -43,6 +41,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackFloorCounts;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
@@ -404,7 +403,7 @@ class TowerWorkspaceV2Test {
                 .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 3, 2, 11,
                         23, 25, 5, MKVerticalAccessPlacement.WEST, centerStairs, false, true))
                 .withPathSettings(new MKWorkspaceTopologyPathSettings(
-                        MKTowerWorkspaceCategory.MAIN.getSerializedName(), 2, 4, 3));
+                        "main", 2, 4, 3));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false)), List.of()),
                 topologyProfile,
@@ -431,7 +430,7 @@ class TowerWorkspaceV2Test {
         assertEquals(5, centerSettings.shaftSize());
         assertEquals(MKVerticalAccessPlacement.WEST, centerSettings.verticalAccessPlacement());
         assertEquals(MKWorkspaceStairMode.LADDER, centerSettings.stairConfig().mode());
-        assertEquals(3, imported.topologyPathSettings(MKTowerWorkspaceCategory.MAIN).maxBranchPiecesBeforeCap());
+        assertEquals(3, imported.topologyPathSettings("main").maxBranchPiecesBeforeCap());
     }
 
     @Test
@@ -441,7 +440,7 @@ class TowerWorkspaceV2Test {
                         15, 17, 3, MKVerticalAccessPlacement.CENTER,
                         MKWorkspaceStairAuthoringConfig.defaultConfig(), true, false))
                 .withPathSettings(new MKWorkspaceTopologyPathSettings(
-                        MKTowerWorkspaceCategory.MAIN.getSerializedName(), 2, 5, 4));
+                        "main", 2, 5, 4));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false)), List.of()),
                 topologyProfile,
@@ -453,7 +452,7 @@ class TowerWorkspaceV2Test {
         MKWorkspaceTowerStackSettings exportedStack = manifest.settings().topologyProfile().towerStackSettings("tower.primary")
                 .orElseThrow();
         MKWorkspaceTopologyPathSettings exportedPath =
-                manifest.settings().topologyProfile().pathSettingsOrDefault(MKTowerWorkspaceCategory.MAIN.getSerializedName());
+                manifest.settings().topologyProfile().pathSettingsOrDefault("main");
 
         assertEquals(15, exportedStack.width());
         assertEquals(17, exportedStack.length());
@@ -487,8 +486,8 @@ class TowerWorkspaceV2Test {
                 List.of()
         );
 
-        assertEquals(MKTowerWorkspaceCategory.TOP_CAP,
-                workspace.resolveFamilySettings(mismatchedFamily).slotMetadata().category());
+        assertEquals("top_cap",
+                workspace.resolveFamilySettings(mismatchedFamily).slotMetadata().topologyGroupId());
         assertEquals(MKJigsawPieceRole.TOP_CAP,
                 workspace.resolveFamilySettings(mismatchedFamily).slotMetadata().jigsawPieceRole());
         assertEquals("tower.primary.top_cap",
@@ -496,14 +495,14 @@ class TowerWorkspaceV2Test {
 
         MKWorkspaceExportManifest.ExportFamilyDefinition exported =
                 MKWorkspaceExportManifest.ExportFamilyDefinition.from(mismatchedFamily);
-        assertEquals(MKTowerWorkspaceCategory.TOP_CAP, exported.slotMetadata().category());
+        assertEquals("top_cap", exported.slotMetadata().topologyGroupId());
         assertEquals(MKJigsawPieceRole.TOP_CAP, exported.slotMetadata().jigsawPieceRole());
 
         CompoundTag tag = mismatchedFamily.toTag();
         assertFalse(tag.contains("category"));
         assertFalse(tag.contains("pieceRole"));
         MKTowerWorkspaceFamilyDefinition decoded = MKTowerWorkspaceFamilyDefinition.fromTag(tag);
-        assertEquals(MKTowerWorkspaceCategory.TOP_CAP, decoded.slotMetadata().category());
+        assertEquals("top_cap", decoded.slotMetadata().topologyGroupId());
         assertEquals(MKJigsawPieceRole.TOP_CAP, decoded.slotMetadata().jigsawPieceRole());
     }
 
@@ -568,7 +567,7 @@ class TowerWorkspaceV2Test {
                 .findFirst()
                 .orElseThrow();
 
-        assertEquals(MKTowerWorkspaceCategory.TOP_CAP, importedFamily.slotMetadata().category());
+        assertEquals("top_cap", importedFamily.slotMetadata().topologyGroupId());
         assertEquals(MKJigsawPieceRole.TOP_CAP, importedFamily.slotMetadata().jigsawPieceRole());
         assertEquals("tower.primary.top_cap",
                 new MKTowerStackPlanner().createPieceForFamily(imported, importedFamily).roleId());
@@ -1299,7 +1298,7 @@ class TowerWorkspaceV2Test {
 
         MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.snapshotFromWorkspace(workspace, 1, "now");
         MKWorkspaceTopologyPathSettings mainPath =
-                manifest.settings().topologyProfile().pathSettingsOrDefault(MKTowerWorkspaceCategory.MAIN.getSerializedName());
+                manifest.settings().topologyProfile().pathSettingsOrDefault("main");
 
         assertEquals(3, mainPath.minMainPathPieces());
         assertEquals(5, mainPath.maxMainPathPieces());
@@ -1978,9 +1977,9 @@ class TowerWorkspaceV2Test {
                 List.of()
         );
         workspace = withTopologyAndLinearRuns(
-                workspace,
-                workspace.topologyProfile().withPathSettings(
-                        workspace.topologyPathSettings(MKTowerWorkspaceCategory.MAIN)
+                        workspace,
+                        workspace.topologyProfile().withPathSettings(
+                        workspace.topologyPathSettings("main")
                                 .withMaxBranchPiecesBeforeCap(3)),
                 List.of(),
                 List.of()
@@ -1993,7 +1992,7 @@ class TowerWorkspaceV2Test {
                 .toList());
         MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(exportWorkspace, 4, "test");
         MKWorkspaceTopologyPathSettings mainPath =
-                manifest.settings().topologyProfile().pathSettingsOrDefault(MKTowerWorkspaceCategory.MAIN.getSerializedName());
+                manifest.settings().topologyProfile().pathSettingsOrDefault("main");
 
         assertEquals(3, mainPath.maxBranchPiecesBeforeCap());
     }
@@ -2074,24 +2073,22 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void floorSettingsDefaultCapApproachFlags() {
-        MKTowerWorkspaceFloorSettings settings = MKTowerWorkspaceFloorSettings.defaultSettings();
-
-        assertTrue(settings.topCapApproachEnabled());
-        assertFalse(settings.basementCapApproachEnabled());
+    void towerStackFloorCountsDefaultCapApproachFlags() {
+        assertTrue(MKWorkspaceTowerStackFloorCounts.DEFAULT_TOP_CAP_APPROACH_ENABLED);
+        assertFalse(MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_CAP_APPROACH_ENABLED);
     }
 
     @Test
     void floorCountsReflectOptionalCapApproachPieces() {
         MKTowerStackBudget budget = MKTowerStackBudget.fromDimensions(MKWorkspaceDimensions.defaultDimensions());
 
-        List<Integer> mainWithApproach = MKTowerWorkspaceFloorSettings.allowedMainFloorCounts(budget,
+        List<Integer> mainWithApproach = MKWorkspaceTowerStackFloorCounts.allowedMainFloorCounts(budget,
                 1, true, false);
-        List<Integer> mainWithoutApproach = MKTowerWorkspaceFloorSettings.allowedMainFloorCounts(budget,
+        List<Integer> mainWithoutApproach = MKWorkspaceTowerStackFloorCounts.allowedMainFloorCounts(budget,
                 1, false, false);
-        List<Integer> basementWithoutApproach = MKTowerWorkspaceFloorSettings.allowedBasementFloorCounts(budget,
+        List<Integer> basementWithoutApproach = MKWorkspaceTowerStackFloorCounts.allowedBasementFloorCounts(budget,
                 1, true, false);
-        List<Integer> basementWithApproach = MKTowerWorkspaceFloorSettings.allowedBasementFloorCounts(budget,
+        List<Integer> basementWithApproach = MKWorkspaceTowerStackFloorCounts.allowedBasementFloorCounts(budget,
                 1, true, true);
 
         assertTrue(mainWithoutApproach.getLast() >= mainWithApproach.getLast());
@@ -2129,13 +2126,13 @@ class TowerWorkspaceV2Test {
 
     @Test
     void plannerConnectsTopCapDirectlyWhenApproachDisabled() {
-        MKStructureWorkspace workspace = withFloorSettings(baseWorkspace(
+        MKStructureWorkspace workspace = withTowerStackFloorCounts(baseWorkspace(
                         List.of(
                                 new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
                                 new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
                         ),
                         List.of()),
-                new MKTowerWorkspaceFloorSettings(1, 1, false, false));
+                1, 1, false, false);
 
         List<MKPlannedPiece> pieces = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace);
         MKPlannedPiece topCap = pieces.stream()
@@ -2155,13 +2152,13 @@ class TowerWorkspaceV2Test {
 
     @Test
     void plannerConnectsBasementCapThroughApproachWhenEnabled() {
-        MKStructureWorkspace workspace = withFloorSettings(baseWorkspace(
+        MKStructureWorkspace workspace = withTowerStackFloorCounts(baseWorkspace(
                         List.of(
                                 new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
                                 new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
                         ),
                         List.of()),
-                new MKTowerWorkspaceFloorSettings(1, 1, true, true));
+                1, 1, true, true);
 
         List<MKPlannedPiece> pieces = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace);
         MKPlannedPiece approach = pieces.stream()
@@ -2691,8 +2688,10 @@ class TowerWorkspaceV2Test {
         assertEquals(workspace.id(), decoded.id());
         assertEquals(workspace.anchor(), decoded.anchor());
         assertEquals(workspace.verticalAccessSpec().shaftSize(), decoded.verticalAccessSpec().shaftSize());
-        assertEquals(workspace.floorSettings().mainFloors(), decoded.floorSettings().mainFloors());
-        assertEquals(workspace.floorSettings().basementFloors(), decoded.floorSettings().basementFloors());
+        assertEquals(workspace.topologyProfile().towerStackSettings("tower.primary").orElseThrow().mainFloors(),
+                decoded.topologyProfile().towerStackSettings("tower.primary").orElseThrow().mainFloors());
+        assertEquals(workspace.topologyProfile().towerStackSettings("tower.primary").orElseThrow().basementFloors(),
+                decoded.topologyProfile().towerStackSettings("tower.primary").orElseThrow().basementFloors());
         assertEquals(workspace.familyDefinitions().get(0).horizontalExtrusionMode(),
                 decoded.familyDefinitions().get(0).horizontalExtrusionMode());
         assertEquals(workspace.familyDefinitions().get(0).horizontalExits(),
@@ -2923,15 +2922,18 @@ class TowerWorkspaceV2Test {
                 topVoidMargin, bottomVoidMargin, foundationPolicy, paletteOverride);
     }
 
-    private static MKStructureWorkspace withFloorSettings(MKStructureWorkspace workspace,
-                                                          MKTowerWorkspaceFloorSettings floorSettings) {
+    private static MKStructureWorkspace withTowerStackFloorCounts(MKStructureWorkspace workspace,
+                                                                  int mainFloors,
+                                                                  int basementFloors,
+                                                                  boolean topCapApproachEnabled,
+                                                                  boolean basementCapApproachEnabled) {
         MKWorkspaceTopologyProfile topologyProfile = workspace.topologyProfile()
                 .towerStackSettings("tower.primary")
                 .map(settings -> workspace.topologyProfile().withTowerStackSettings(settings
-                        .withMainFloors(floorSettings.mainFloors())
-                        .withBasementFloors(floorSettings.basementFloors())
-                        .withTopCapApproachEnabled(floorSettings.topCapApproachEnabled())
-                        .withBasementCapApproachEnabled(floorSettings.basementCapApproachEnabled())))
+                        .withMainFloors(mainFloors)
+                        .withBasementFloors(basementFloors)
+                        .withTopCapApproachEnabled(topCapApproachEnabled)
+                        .withBasementCapApproachEnabled(basementCapApproachEnabled)))
                 .orElse(workspace.topologyProfile());
         return new MKStructureWorkspace(
                 workspace.id(),

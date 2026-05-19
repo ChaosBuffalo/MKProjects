@@ -4,7 +4,6 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceCategory;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
@@ -307,7 +306,7 @@ public class MKTowerStackPlanner {
             if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY) {
                 connectors.add(new MKPlannedConnector(role, exit.direction(),
                         opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset(),
-                        EMPTY_POOL, mainEndingPoolName(slotMetadata.category())));
+                        EMPTY_POOL, mainEndingPoolName(slotMetadata.topologyGroupId())));
                 continue;
             }
             if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY) {
@@ -367,8 +366,8 @@ public class MKTowerStackPlanner {
         return ROOM_POOL_PREFIX + "/" + role.getSerializedName() + "/" + openingProfileId;
     }
 
-    public static String mainEndingPoolName(MKTowerWorkspaceCategory category) {
-        return "main_endings/" + category.getSerializedName();
+    public static String mainEndingPoolName(String topologyGroupId) {
+        return "main_endings/" + topologyGroupId;
     }
 
     public static String branchCapPoolName(String openingProfileId) {
@@ -401,7 +400,7 @@ public class MKTowerStackPlanner {
                 branchOnlyHorizontalFamily,
                 terminal || branchCap,
                 topCapOnly,
-                MKWorkspaceTopologySlotMetadata.fromFamily(family).category().getSerializedName(),
+                MKWorkspaceTopologySlotMetadata.fromFamily(family).topologyGroupId(),
                 family.mainPathEnding(),
                 branchCap
         );
@@ -431,7 +430,7 @@ public class MKTowerStackPlanner {
         tags.put("workspace_horizontal_exits", family.horizontalExitSummary());
         tags.put("workspace_horizontal_extrusion_mode", family.horizontalExtrusionMode().getSerializedName());
         MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
-        tags.put("workspace_category", resolvedFamily.slotMetadata().category().getSerializedName());
+        tags.put("workspace_topology_group", resolvedFamily.slotMetadata().topologyGroupId());
         if (!stackDefinition.stackId().isBlank()) {
             tags.put("workspace_tower_stack_id", stackDefinition.stackId());
             tags.put("workspace_tower_stack_main_floors", Integer.toString(stackDefinition.mainFloors()));

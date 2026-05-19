@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 import java.util.Optional;
 
 public final class MKWorkspacePaletteResolver {
-    public MKWorkspaceMaterialPalette resolveCategory(MKStructureWorkspace workspace, MKTowerWorkspaceCategory category) {
+    public MKWorkspaceMaterialPalette resolveTopologyGroup(MKStructureWorkspace workspace, String topologyGroupId) {
         return workspace.palette();
     }
 
@@ -11,8 +11,8 @@ public final class MKWorkspacePaletteResolver {
         if (family instanceof MKTowerWorkspaceFamilyDefinition towerFamily) {
             Optional<MKWorkspaceTowerStackSettings> stackSettings = workspace.towerStackSettingsForFamily(towerFamily);
             MKWorkspaceMaterialPalette stackParent = stackSettings.isPresent() ? workspace.palette() :
-                    family.paletteCategoryOpt()
-                            .map(category -> resolveCategory(workspace, category))
+                    family.paletteTopologyGroupIdOpt()
+                            .map(topologyGroupId -> resolveTopologyGroup(workspace, topologyGroupId))
                             .orElse(workspace.palette());
             MKWorkspaceMaterialPalette parent = stackSettings
                     .flatMap(MKWorkspaceTowerStackSettings::paletteOverrideOpt)
@@ -22,8 +22,8 @@ public final class MKWorkspacePaletteResolver {
                     .map(override -> override.resolve(parent))
                     .orElse(parent);
         }
-        MKWorkspaceMaterialPalette parent = family.paletteCategoryOpt()
-                .map(category -> resolveCategory(workspace, category))
+        MKWorkspaceMaterialPalette parent = family.paletteTopologyGroupIdOpt()
+                .map(topologyGroupId -> resolveTopologyGroup(workspace, topologyGroupId))
                 .orElse(workspace.palette());
         return family.paletteOverrideOpt()
                 .map(override -> override.resolve(parent))
@@ -46,9 +46,9 @@ public final class MKWorkspacePaletteResolver {
                     .findFirst()
                     .map(family -> resolveFamily(workspace, family));
         }
-        String categoryId = piece.tags().get("workspace_category");
-        if (categoryId != null && !categoryId.isBlank()) {
-            return Optional.of(resolveCategory(workspace, MKTowerWorkspaceCategory.fromSerializedName(categoryId)));
+        String topologyGroupId = piece.tags().get("workspace_topology_group");
+        if (topologyGroupId != null && !topologyGroupId.isBlank()) {
+            return Optional.of(resolveTopologyGroup(workspace, topologyGroupId));
         }
         return Optional.empty();
     }

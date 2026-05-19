@@ -115,8 +115,8 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Mode")), foundationModeButton);
         addFoundationBlockPickerRow(screen, content, index, family);
         addFoundationMaskRows(screen, content, index, family);
-        addReadOnlyRow(screen, content, "Topology Category",
-                formatTopologyLabel(slotMetadata.category().getSerializedName()));
+        addReadOnlyRow(screen, content, "Topology Group",
+                formatTopologyLabel(slotMetadata.topologyGroupId()));
         addReadOnlyRow(screen, content, "Topology Role",
                 formatTopologyLabel(slotMetadata.roleKind()) + " / " + formatTopologyLabel(slotMetadata.pieceKind()));
         addRow(screen, content, screen.makeWhiteText(Component.literal("Horizontal Extrusion")), extrusionModeButton);

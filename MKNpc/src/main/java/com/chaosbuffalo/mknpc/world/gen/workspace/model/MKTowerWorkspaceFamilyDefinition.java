@@ -574,8 +574,8 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
     }
 
     @Override
-    public Optional<MKTowerWorkspaceCategory> paletteCategoryOpt() {
-        return Optional.of(slotMetadata.category());
+    public Optional<String> paletteTopologyGroupIdOpt() {
+        return Optional.of(slotMetadata.topologyGroupId());
     }
 
     @Override
