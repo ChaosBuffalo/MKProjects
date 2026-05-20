@@ -294,6 +294,7 @@ Family-level validation should focus on override legality:
 - Topology profiles now carry path-depth settings for topology groups, and the topology defaults page edits those settings directly.
 - Family geometry override UI now shows resolved stack values, exposes inherit/override toggles per editable dimension, and keeps topology group/role classification read-only on the family detail page.
 - Family list pages now summarize resolved geometry instead of raw override storage.
+- Topology defaults now exposes reset controls for stack sections, path-depth groups, and walled-keep perimeter runs. Walled keep topology defaults also exposes perimeter wall/parapet kind and path-depth settings, while family detail pages expose explicit foundation-inherit and void-margin reset actions.
 - Export/import family dimension defaults now preserve inherited geometry by using `0` as the missing/default value.
 - Stack-backed family validation now resolves its allowed room height from the owning topology stack instead of any workspace-global band.
 - Draft-level dimensions and floor-count snapping now derive their budget profiles from the active topology stack settings.

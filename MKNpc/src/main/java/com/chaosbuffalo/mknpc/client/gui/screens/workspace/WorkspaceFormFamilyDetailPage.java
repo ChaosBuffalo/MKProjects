@@ -115,6 +115,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Mode")), foundationModeButton);
         addFoundationBlockPickerRow(screen, content, index, family);
         addFoundationMaskRows(screen, content, index, family);
+        addFoundationOverrideResetRow(screen, content, index, family);
         addReadOnlyRow(screen, content, "Topology Group",
                 formatTopologyLabel(slotMetadata.topologyGroupId()));
         addReadOnlyRow(screen, content, "Topology Role",
@@ -565,6 +566,34 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                                 family.topVoidMargin(), value, family.paletteOverride()))));
         addRow(screen, root, screen.makeWhiteText(Component.literal("Top Void Margin")), topVoidMarginSlider);
         addRow(screen, root, screen.makeWhiteText(Component.literal("Bottom Void Margin")), bottomVoidMarginSlider);
+        if (family.topVoidMargin() > 0 || family.bottomVoidMargin() > 0) {
+            MKButton clearMarginsButton = new MKButton(Component.literal("Clear Margins"), 180, 20);
+            clearMarginsButton.setPressedCallback((button, mouseButton) -> {
+                editor.replaceFamilyDefinition(familyIndex, editor.normalizeFamilyDefinition(
+                        MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                                family.baseName(), family.slotMetadata(), family.verticalAccessGroupId(), false,
+                                family.roomWidth(), family.roomLength(), family.roomHeight(),
+                                family.horizontalExtrusionMode(), family.horizontalExits(),
+                                0, 0, family.foundationPolicyOverride(), family.paletteOverride())));
+                screen.flagNeedSetup();
+                return true;
+            });
+            addRow(screen, root, screen.makeWhiteText(Component.literal("Void Margins")), clearMarginsButton);
+        }
+    }
+
+    private void addFoundationOverrideResetRow(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                               int familyIndex, MKTowerWorkspaceFamilyDefinition family) {
+        if (family.foundationPolicyOverrideOpt().isEmpty()) {
+            return;
+        }
+        MKButton inheritButton = new MKButton(Component.literal("Inherit Stack Default"), 180, 20);
+        inheritButton.setPressedCallback((button, mouseButton) -> {
+            screen.draftSession().replaceFamilyFoundationPolicyOverride(familyIndex, Optional.empty());
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Override")), inheritButton);
     }
 
     private MKTowerWorkspaceFamilyDefinition copyFamilyWithDimension(MKTowerWorkspaceFamilyDefinition family,

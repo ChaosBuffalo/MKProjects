@@ -8,6 +8,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
@@ -58,8 +59,17 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
             addCornerModeRow(screen, content, "SE Corner", "keep.corner.south_east");
             addCornerModeRow(screen, content, "SW Corner", "keep.corner.south_west");
 
-            addTowerStackSizingRows(screen, content, "keep.center", "Center");
-            addTowerStackFloorRows(screen, content, "keep.center");
+            addTowerStackSection(screen, content, "keep.center", "Center");
+
+            MKButton perimeterKindButton = new MKButton(
+                    Component.literal(formatTopologyLabel(editor.perimeterRunKind().getSerializedName())), 180, 20);
+            perimeterKindButton.setPressedCallback((button, mouseButton) -> {
+                editor.perimeterRunKind(cycleValue(List.of(MKWorkspaceLinearRunKind.SOLID_WALL,
+                        MKWorkspaceLinearRunKind.PARAPET), editor.perimeterRunKind(), isReverseClick(mouseButton)));
+                screen.flagNeedSetup();
+                return true;
+            });
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Perimeter Kind")), perimeterKindButton);
 
             MKIntegerSlider wallHeightSlider = new MKIntegerSlider("Height", 180, 20, 2,
                     MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE - 1, 1,
@@ -76,6 +86,10 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
                 screen.flagNeedSetup();
             });
             addRow(screen, content, screen.makeWhiteText(Component.literal("Wall Top Void Margin")), wallTopVoidSlider);
+            addResetRow(screen, content, "Perimeter Runs", () -> {
+                editor.resetWalledKeepPerimeterDefaults();
+                screen.flagNeedSetup();
+            });
 
             for (String cornerSlot : editor.activeCornerTopologySlots()) {
                 addCornerSizingSection(screen, content, cornerSlot);
@@ -87,6 +101,8 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
             perimeterText.setMultiline(true);
             content.addWidget(perimeterText);
             content.addConstraintToWidget(MarginConstraint.LEFT, perimeterText);
+
+            addPathDefaultsSections(screen, content);
 
             finishScrollContent(screen, scrollView, content);
             addBackButton(screen, root, WorkspaceFormPage.ID);
@@ -106,8 +122,7 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
         content.addWidget(topologyText);
         content.addConstraintToWidget(MarginConstraint.LEFT, topologyText);
 
-        addTowerStackSizingRows(screen, content, "tower.primary", "Primary Tower");
-        addTowerStackFloorRows(screen, content, "tower.primary");
+        addTowerStackSection(screen, content, "tower.primary", "Primary Tower");
 
         MKText pathText = screen.makeWhiteText(Component.literal(
                 "Path depth defaults are topology settings. Family pages only override individual authored templates."));
@@ -116,13 +131,21 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
         content.addWidget(pathText);
         content.addConstraintToWidget(MarginConstraint.LEFT, pathText);
 
-        for (String topologyGroupId : MKWorkspaceTopologyPathSettings.DEFAULT_TOPOLOGY_GROUP_IDS) {
-            addTowerPathDefaultsSection(screen, content, topologyGroupId);
-        }
+        addPathDefaultsSections(screen, content);
 
         finishScrollContent(screen, scrollView, content);
         addBackButton(screen, root, WorkspaceFormPage.ID);
         return root;
+    }
+
+    private void addPathDefaultsSections(MKWorkspaceScreen screen, MKStackLayoutVertical content) {
+        MKText pathHeader = screen.makeWhiteText(Component.literal("Path Depth Defaults"));
+        pathHeader.setWidth(screen.contentWidth());
+        content.addWidget(pathHeader);
+        content.addConstraintToWidget(MarginConstraint.LEFT, pathHeader);
+        for (String topologyGroupId : MKWorkspaceTopologyPathSettings.DEFAULT_TOPOLOGY_GROUP_IDS) {
+            addTowerPathDefaultsSection(screen, content, topologyGroupId);
+        }
     }
 
     private void addTowerPathDefaultsSection(MKWorkspaceScreen screen, MKStackLayoutVertical content,
@@ -156,6 +179,10 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
                 pathSettings.maxBranchPiecesBeforeCap(),
                 value -> editor.topologyPathMaxBranchPiecesBeforeCap(topologyGroupId, value));
         addRow(screen, content, screen.makeWhiteText(Component.literal("Branch Cap Max")), maxBranchBeforeCapSlider);
+        addResetRow(screen, content, formatTopologyLabel(topologyGroupId) + " Paths", () -> {
+            editor.resetTopologyPathDefaults(topologyGroupId);
+            screen.flagNeedSetup();
+        });
     }
 
     private void addCornerSizingSection(MKWorkspaceScreen screen, MKStackLayoutVertical content, String topologySlotId) {
@@ -164,8 +191,17 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
         content.addWidget(header);
         content.addConstraintToWidget(MarginConstraint.LEFT, header);
 
-        addTowerStackSizingRows(screen, content, topologySlotId, "Corner");
-        addTowerStackFloorRows(screen, content, topologySlotId);
+        addTowerStackSection(screen, content, topologySlotId, "Corner");
+    }
+
+    private void addTowerStackSection(MKWorkspaceScreen screen, MKStackLayoutVertical content, String stackId,
+                                      String labelPrefix) {
+        addTowerStackSizingRows(screen, content, stackId, labelPrefix);
+        addTowerStackFloorRows(screen, content, stackId);
+        addResetRow(screen, content, labelPrefix + " Stack", () -> {
+            screen.draftSession().resetTowerStackDefaults(stackId);
+            screen.flagNeedSetup();
+        });
     }
 
     private void addTowerStackSizingRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, String stackId,
@@ -463,6 +499,15 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
         root.addConstraintToWidget(MarginConstraint.LEFT, label);
         root.addWidget(slider);
         root.addConstraintToWidget(new CenterXConstraint(), slider);
+    }
+
+    private void addResetRow(MKWorkspaceScreen screen, MKStackLayoutVertical root, String label, Runnable resetter) {
+        MKButton resetButton = new MKButton(Component.literal("Reset Defaults"), 180, screen.buttonHeight());
+        resetButton.setPressedCallback((button, mouseButton) -> {
+            resetter.run();
+            return true;
+        });
+        addRow(screen, root, screen.makeWhiteText(Component.literal(label)), resetButton);
     }
 
     private MKText makeLabel(MKWorkspaceScreen screen, String translationKey) {
