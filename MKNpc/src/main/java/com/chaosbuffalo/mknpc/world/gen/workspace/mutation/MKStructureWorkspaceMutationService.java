@@ -6,6 +6,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteSwapSafety;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
@@ -78,6 +79,9 @@ public class MKStructureWorkspaceMutationService {
 
     private LinkedHashMap<ResourceLocation, ResourceLocation> replacementsFor(MKWorkspaceMaterialPalette sourcePalette,
                                                                               MKWorkspaceMaterialPalette targetPalette) {
+        if (!MKWorkspacePaletteSwapSafety.canRepresentAsBlockReplacement(sourcePalette, targetPalette)) {
+            throw new IllegalArgumentException("palette swap cannot be represented as a role-blind block replacement");
+        }
         LinkedHashMap<ResourceLocation, ResourceLocation> replacements = new LinkedHashMap<>();
         addReplacement(replacements, sourcePalette.floorBlock(), targetPalette.floorBlock());
         addReplacement(replacements, sourcePalette.wallBlock(), targetPalette.wallBlock());

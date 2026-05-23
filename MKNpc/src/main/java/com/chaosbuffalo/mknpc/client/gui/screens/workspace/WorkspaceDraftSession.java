@@ -19,6 +19,9 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPiec
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunProjection;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteSwapSafety;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomGeometry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
@@ -1186,12 +1189,30 @@ public class WorkspaceDraftSession {
 
     private boolean canSwapPaletteOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
         MKStructureWorkspace existingWithRequestedMaterials = withMaterialSettings(existing, requested);
+        if (!canSwapMaterialPalettesWithoutRoleAmbiguity(existing, existingWithRequestedMaterials)) {
+            return false;
+        }
         if (settingsComparisonTag(existing, existing.id(), existing.previewMargin())
                 .equals(settingsComparisonTag(existingWithRequestedMaterials, existing.id(), existing.previewMargin()))) {
             return false;
         }
         return settingsComparisonTag(existingWithRequestedMaterials, existing.id(), existing.previewMargin())
                 .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin()));
+    }
+
+    private boolean canSwapMaterialPalettesWithoutRoleAmbiguity(MKStructureWorkspace existing,
+                                                                MKStructureWorkspace requested) {
+        MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
+        for (MKWorkspacePieceDefinition piece : existing.pieces()) {
+            MKWorkspaceMaterialPalette sourcePalette = paletteResolver.resolvePiece(existing, piece)
+                    .orElse(existing.palette());
+            MKWorkspaceMaterialPalette targetPalette = paletteResolver.resolvePiece(requested, piece)
+                    .orElse(requested.palette());
+            if (!MKWorkspacePaletteSwapSafety.canRepresentAsBlockReplacement(sourcePalette, targetPalette)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean canRenameIdentityOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {

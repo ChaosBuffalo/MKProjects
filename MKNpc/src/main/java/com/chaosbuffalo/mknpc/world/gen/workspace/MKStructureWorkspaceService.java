@@ -8,6 +8,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteSwapSafety;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
@@ -66,6 +68,7 @@ public class MKStructureWorkspaceService {
     private final MKWorkspaceMarginExpansionService marginExpansionService = new MKWorkspaceMarginExpansionService();
     private final MKStructureWorkspaceMutationService mutationService = new MKStructureWorkspaceMutationService();
     private final MKWorkspaceIdentityRenameService identityRenameService = new MKWorkspaceIdentityRenameService();
+    private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
 
     public Optional<MKStructureWorkspace> createOrUpdateTowerWorkspace(ServerLevel level, MKStructureWorkspace workspace) {
         List<String> errors = workspace.validate();
@@ -495,12 +498,27 @@ public class MKStructureWorkspaceService {
             return false;
         }
         MKStructureWorkspace existingWithRequestedMaterials = withMaterialSettings(existing, requested);
+        if (!canSwapMaterialPalettesWithoutRoleAmbiguity(existing, existingWithRequestedMaterials)) {
+            return false;
+        }
         if (settingsComparisonTag(existing, existing.id(), existing.previewMargin())
                 .equals(settingsComparisonTag(existingWithRequestedMaterials, existing.id(), existing.previewMargin()))) {
             return false;
         }
         return settingsComparisonTag(existingWithRequestedMaterials, existing.id(), existing.previewMargin())
                 .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin()));
+    }
+
+    private boolean canSwapMaterialPalettesWithoutRoleAmbiguity(MKStructureWorkspace existing,
+                                                                MKStructureWorkspace requested) {
+        for (MKWorkspacePieceDefinition piece : existing.pieces()) {
+            var sourcePalette = paletteResolver.resolvePiece(existing, piece).orElse(existing.palette());
+            var targetPalette = paletteResolver.resolvePiece(requested, piece).orElse(requested.palette());
+            if (!MKWorkspacePaletteSwapSafety.canRepresentAsBlockReplacement(sourcePalette, targetPalette)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean canRenameIdentityOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {

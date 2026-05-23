@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MKWorkspacePaletteResolverTest {
@@ -192,6 +193,26 @@ class MKWorkspacePaletteResolverTest {
                 roundTripped.familyDefinitions().getFirst().paletteOverrideOpt().orElseThrow().stairBlockOpt().orElseThrow());
         assertEquals(id("vine"),
                 roundTripped.linearRunFamilies().getFirst().paletteOverrideOpt().orElseThrow().ladderBlockOpt().orElseThrow());
+    }
+
+    @Test
+    void paletteSwapSafetyRejectsSharedSourceBlockWithDivergentTargets() {
+        MKWorkspaceMaterialPalette source = palette("smooth_stone", "stone_bricks", "smooth_stone",
+                "stone_brick_stairs", "stone_brick_slab", "ladder");
+        MKWorkspaceMaterialPalette target = palette("smooth_stone", "stone_bricks", "deepslate_bricks",
+                "stone_brick_stairs", "stone_brick_slab", "ladder");
+
+        assertFalse(MKWorkspacePaletteSwapSafety.canRepresentAsBlockReplacement(source, target));
+    }
+
+    @Test
+    void paletteSwapSafetyAllowsSharedSourceBlockWhenTargetIsSharedToo() {
+        MKWorkspaceMaterialPalette source = palette("smooth_stone", "stone_bricks", "smooth_stone",
+                "stone_brick_stairs", "stone_brick_slab", "ladder");
+        MKWorkspaceMaterialPalette target = palette("deepslate_bricks", "stone_bricks", "deepslate_bricks",
+                "stone_brick_stairs", "stone_brick_slab", "ladder");
+
+        assertTrue(MKWorkspacePaletteSwapSafety.canRepresentAsBlockReplacement(source, target));
     }
 
     private static MKStructureWorkspace workspace(MKWorkspaceMaterialPalette palette,
