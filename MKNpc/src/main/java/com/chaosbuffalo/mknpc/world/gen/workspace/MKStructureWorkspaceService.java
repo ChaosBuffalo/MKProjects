@@ -3,7 +3,6 @@ package com.chaosbuffalo.mknpc.world.gen.workspace;
 import com.chaosbuffalo.mknpc.block_entities.MKWorkspaceDevBlockEntity;
 import com.chaosbuffalo.mknpc.network.packets.OpenWorkspaceScreenPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
@@ -34,6 +33,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -72,7 +72,7 @@ public class MKStructureWorkspaceService {
 
     public Optional<MKStructureWorkspace> createOrUpdateTowerWorkspace(ServerLevel level, MKStructureWorkspace workspace) {
         List<String> errors = workspace.validate();
-        if (!errors.isEmpty() || workspace.familyType() != MKStructureFamilyType.TOWER) {
+        if (!errors.isEmpty()) {
             return Optional.empty();
         }
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
@@ -117,7 +117,6 @@ public class MKStructureWorkspaceService {
                     workspace.anchor(),
                     workspace.namespace(),
                     workspace.structureName(),
-                    workspace.familyType(),
                     workspace.topologyProfile(),
                     workspace.dimensions(),
                     workspace.palette(),
@@ -178,9 +177,6 @@ public class MKStructureWorkspaceService {
             return Optional.empty();
         }
         MKStructureWorkspace workspace = workspaceOpt.get();
-        if (workspace.familyType() != MKStructureFamilyType.TOWER) {
-            return Optional.empty();
-        }
         if (!workspace.validate().isEmpty()) {
             return Optional.empty();
         }
@@ -205,7 +201,7 @@ public class MKStructureWorkspaceService {
             return Optional.empty();
         }
         MKStructureWorkspace workspace = workspaceOpt.get();
-        if (workspace.familyType() != MKStructureFamilyType.TOWER || workspace.pieces().isEmpty()) {
+        if (workspace.pieces().isEmpty()) {
             return Optional.empty();
         }
 
@@ -274,7 +270,7 @@ public class MKStructureWorkspaceService {
         }
 
         MKStructureWorkspace workspace = workspaceOpt.get();
-        if (workspace.familyType() != MKStructureFamilyType.TOWER || workspace.pieces().isEmpty()) {
+        if (workspace.pieces().isEmpty()) {
             return Optional.empty();
         }
 
@@ -284,14 +280,66 @@ public class MKStructureWorkspaceService {
                 .distinct()
                 .toList();
 
-        Optional<MKStructureWorkspace> current = Optional.of(workspace);
+        List<MKPlannedPiece> canonicalPieces = plannerRegistry.plannerFor(workspace).createCanonicalPieces(workspace);
+        Map<String, MKPlannedPiece> canonicalByBaseName = canonicalPieces.stream()
+                .collect(Collectors.toMap(MKPlannedPiece::pieceName, piece -> piece));
+
+        List<MKPlannedPiece> layoutPieces = canonicalPieces.stream()
+                .map(this::toTemplatePiece)
+                .collect(Collectors.toCollection(ArrayList::new));
+        layoutPieces.addAll(workspace.pieces().stream()
+                .filter(piece -> piece.variantIndex() > 0)
+                .map(piece -> toExistingVariantPiece(piece, canonicalByBaseName))
+                .toList());
+
+        List<MKWorkspacePieceDefinition> templatePieces = new ArrayList<>();
+        List<MKPlannedPiece> variantPieces = new ArrayList<>();
+        Integer rowVariantIndex = null;
+        boolean sameVariantRow = true;
         for (String basePieceName : basePieceNames) {
-            current = addTowerWorkspaceVariant(level, anchor, basePieceName);
-            if (current.isEmpty()) {
+            MKPlannedPiece basePiece = canonicalByBaseName.get(basePieceName);
+            if (basePiece == null) {
                 return Optional.empty();
             }
+            MKWorkspacePieceDefinition templatePiece = workspace.pieces().stream()
+                    .filter(piece -> piece.variantIndex() == 0 && basePieceName.equals(getBaseName(piece)))
+                    .findFirst()
+                    .orElse(null);
+            if (templatePiece == null) {
+                return Optional.empty();
+            }
+            int nextVariantIndex = workspace.pieces().stream()
+                    .filter(piece -> basePieceName.equals(getBaseName(piece)))
+                    .mapToInt(MKWorkspacePieceDefinition::variantIndex)
+                    .max()
+                    .orElse(0) + 1;
+            if (rowVariantIndex == null) {
+                rowVariantIndex = nextVariantIndex;
+            } else if (rowVariantIndex != nextVariantIndex) {
+                sameVariantRow = false;
+            }
+            MKPlannedPiece variantPiece = toVariantPiece(basePiece, nextVariantIndex);
+            layoutPieces.add(variantPiece);
+            templatePieces.add(templatePiece);
+            variantPieces.add(variantPiece);
         }
-        return current;
+
+        if (sameVariantRow) {
+            scaffoldBuilder.clearLayoutAreaForPieces(level, workspace, layoutPieces, variantPieces);
+        }
+
+        List<MKWorkspacePieceDefinition> generatedPieces = new ArrayList<>();
+        for (int i = 0; i < variantPieces.size(); i++) {
+            generatedPieces.add(scaffoldBuilder.cloneFromTemplate(level, workspace, templatePieces.get(i),
+                    variantPieces.get(i), layoutPieces));
+        }
+
+        List<MKWorkspacePieceDefinition> updatedPieces = new ArrayList<>(workspace.pieces());
+        updatedPieces.addAll(generatedPieces);
+        MKStructureWorkspace updated = workspace.withPieces(updatedPieces);
+        data.updateWorkspace(updated);
+        syncBlockEntity(level, anchor, updated.id());
+        return Optional.of(updated);
     }
 
     public Optional<MKWorkspaceExportResult> exportWorkspacePieces(ServerLevel level, BlockPos anchor) {
@@ -582,7 +630,6 @@ public class MKStructureWorkspaceService {
                 workspace.anchor(),
                 namespace,
                 structureName,
-                workspace.familyType(),
                 workspace.topologyProfile(),
                 workspace.dimensions(),
                 palette,
@@ -607,7 +654,6 @@ public class MKStructureWorkspaceService {
                 source.anchor(),
                 source.namespace(),
                 source.structureName(),
-                source.familyType(),
                 withMaterialStackSettings(source.topologyProfile(), materialSource.topologyProfile()),
                 source.dimensions(),
                 materialSource.palette(),

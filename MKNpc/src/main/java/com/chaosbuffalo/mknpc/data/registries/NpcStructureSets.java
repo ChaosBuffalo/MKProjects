@@ -14,6 +14,7 @@ public class NpcStructureSets {
 
     public static final ResourceKey<StructureSet> TEST_STRUCTURES = createKey("test_structures");
     public static final ResourceKey<StructureSet> TEST_TOWER = createKey("test_tower");
+    public static final ResourceKey<StructureSet> TEST_KEEP = createKey("test_keep");
 
     private static ResourceKey<StructureSet> createKey(String name) {
         return ResourceKey.create(Registries.STRUCTURE_SET, MKNpc.id(name));
@@ -27,5 +28,8 @@ public class NpcStructureSets {
         context.register(TEST_TOWER,
                 new StructureSet(structures.getOrThrow(NpcStructures.TEST_TOWER),
                         new RandomSpreadStructurePlacement(28, 12, RandomSpreadType.LINEAR, 908341221)));
+        context.register(TEST_KEEP,
+                new StructureSet(structures.getOrThrow(NpcStructures.TEST_KEEP),
+                        new RandomSpreadStructurePlacement(32, 14, RandomSpreadType.LINEAR, 148039274)));
     }
 }

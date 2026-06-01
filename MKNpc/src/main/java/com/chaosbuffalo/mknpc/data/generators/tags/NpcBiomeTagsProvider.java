@@ -22,5 +22,7 @@ public class NpcBiomeTagsProvider extends BiomeTagsProvider {
         tag(NpcTags.Biomes.HAS_TEST_STRUCTURES);
         tag(NpcTags.Biomes.HAS_TEST_TOWER)
                 .addTag(BiomeTags.IS_OVERWORLD);
+        tag(NpcTags.Biomes.HAS_TEST_KEEP)
+                .addTag(BiomeTags.IS_OVERWORLD);
     }
 }

@@ -11,7 +11,6 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceMetadata;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKVerticalProgressionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
@@ -614,7 +613,6 @@ class TowerWorkspaceV2Test {
                 manifest.workspaceId(),
                 manifest.namespace(),
                 manifest.structureName(),
-                manifest.familyType(),
                 manifest.exportedAt(),
                 manifest.createdAt(),
                 manifest.updatedAt(),
@@ -732,22 +730,22 @@ class TowerWorkspaceV2Test {
         assertEquals(7, centerEntry.interiorHeight());
         assertEquals("keep.center.entry", centerEntry.tags().get("workspace_topology_slot_id"));
         MKPlannedPiece sharedCorner = pieces.stream()
-                .filter(piece -> piece.pieceName().equals("keep_corner_shared_entry"))
+                .filter(piece -> piece.pieceName().equals("keep_corner_north_west_entry"))
                 .findFirst()
                 .orElseThrow();
-        assertEquals("keep.corner.shared.entry", sharedCorner.tags().get("workspace_topology_slot_id"));
+        assertEquals("keep.corner.north_west.entry", sharedCorner.tags().get("workspace_topology_slot_id"));
         assertTrue(sharedCorner.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_UP));
         assertTrue(sharedCorner.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_DOWN));
-        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_shared_top_cap")));
-        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_shared_basement_cap")));
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_top_cap")));
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_basement_cap")));
         MKPlannedPiece northWall = pieces.stream()
                 .filter(piece -> piece.pieceName().equals("keep_wall_north"))
                 .findFirst()
                 .orElseThrow();
         assertEquals(7, northWall.interiorHeight());
-        assertEquals("solid_wall", northWall.tags().get("workspace_linear_run_kind"));
+        assertEquals("defensive_wall", northWall.tags().get("workspace_linear_run_kind"));
         assertFalse(pieces.stream().anyMatch(piece -> "parapet".equals(piece.tags().get("workspace_linear_run_kind"))));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_walkway_south") &&
                 "open_walkway".equals(piece.tags().get("workspace_linear_run_kind"))));
@@ -946,9 +944,9 @@ class TowerWorkspaceV2Test {
                 .anyMatch(connector -> connector.openingWidth() == 5 && connector.openingHeight() == 5));
         assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_top_cap_approach")));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_basement_cap_approach")));
-        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_shared_top_cap_approach")));
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_top_cap_approach")));
         assertFalse(pieces.stream().anyMatch(piece ->
-                piece.pieceName().equals("keep_corner_shared_basement_cap_approach")));
+                piece.pieceName().equals("keep_corner_north_west_basement_cap_approach")));
     }
 
     @Test
@@ -1467,7 +1465,6 @@ class TowerWorkspaceV2Test {
                 workspace.anchor(),
                 workspace.namespace(),
                 workspace.structureName(),
-                workspace.familyType(),
                 workspace.topologyProfile(),
                 workspace.dimensions(),
                 workspace.palette(),
@@ -1543,7 +1540,6 @@ class TowerWorkspaceV2Test {
                 workspace.anchor(),
                 workspace.namespace(),
                 workspace.structureName(),
-                workspace.familyType(),
                 workspace.topologyProfile(),
                 workspace.dimensions(),
                 workspace.palette(),
@@ -1667,7 +1663,6 @@ class TowerWorkspaceV2Test {
                 BlockPos.ZERO,
                 "mkdev",
                 "default_entrance",
-                MKStructureFamilyType.TOWER,
                 dimensions,
                 workspacePalette(),
                 MKWorkspaceStairAuthoringConfig.defaultConfig(),
@@ -1728,7 +1723,6 @@ class TowerWorkspaceV2Test {
                 workspace.anchor(),
                 workspace.namespace(),
                 workspace.structureName(),
-                workspace.familyType(),
                 workspace.dimensions(),
                 workspace.palette(),
                 workspace.stairConfig(),
@@ -1790,7 +1784,6 @@ class TowerWorkspaceV2Test {
                 workspace.anchor(),
                 workspace.namespace(),
                 workspace.structureName(),
-                workspace.familyType(),
                 workspace.dimensions(),
                 workspace.palette(),
                 workspace.stairConfig(),
@@ -1877,7 +1870,6 @@ class TowerWorkspaceV2Test {
                 workspace.anchor(),
                 workspace.namespace(),
                 workspace.structureName(),
-                workspace.familyType(),
                 workspace.dimensions(),
                 workspace.palette(),
                 workspace.stairConfig(),
@@ -1934,7 +1926,6 @@ class TowerWorkspaceV2Test {
                 workspace.anchor(),
                 workspace.namespace(),
                 workspace.structureName(),
-                workspace.familyType(),
                 workspace.dimensions(),
                 workspace.palette(),
                 workspace.stairConfig(),
@@ -2102,7 +2093,6 @@ class TowerWorkspaceV2Test {
                 workspace.anchor(),
                 workspace.namespace(),
                 workspace.structureName(),
-                workspace.familyType(),
                 workspace.dimensions(),
                 workspace.palette(),
                 workspace.stairConfig(),
@@ -2167,7 +2157,6 @@ class TowerWorkspaceV2Test {
                 BlockPos.ZERO,
                 "mkdev",
                 "default_validation",
-                MKStructureFamilyType.TOWER,
                 dimensions,
                 palette,
                 MKWorkspaceStairAuthoringConfig.defaultConfig(),
@@ -2309,7 +2298,6 @@ class TowerWorkspaceV2Test {
                 workspace.anchor(),
                 workspace.namespace(),
                 workspace.structureName(),
-                workspace.familyType(),
                 workspace.dimensions(),
                 workspace.palette(),
                 workspace.stairConfig(),
@@ -2381,7 +2369,6 @@ class TowerWorkspaceV2Test {
                 workspace.anchor(),
                 workspace.namespace(),
                 workspace.structureName(),
-                workspace.familyType(),
                 workspace.dimensions(),
                 workspace.palette(),
                 workspace.stairConfig(),
@@ -2418,7 +2405,6 @@ class TowerWorkspaceV2Test {
                 BlockPos.ZERO,
                 "mkdev",
                 "pool_filter_test",
-                MKStructureFamilyType.TOWER,
                 dimensions,
                 workspacePalette(),
                 MKWorkspaceStairAuthoringConfig.defaultConfig(),
@@ -2466,7 +2452,6 @@ class TowerWorkspaceV2Test {
                 BlockPos.ZERO,
                 "mkdev",
                 "validation_test",
-                MKStructureFamilyType.TOWER,
                 MKWorkspaceDimensions.defaultDimensions(),
                 workspacePalette(),
                 MKWorkspaceStairAuthoringConfig.defaultConfig(),
@@ -2586,7 +2571,6 @@ class TowerWorkspaceV2Test {
                 workspace.anchor(),
                 workspace.namespace(),
                 workspace.structureName(),
-                workspace.familyType(),
                 workspace.topologyProfile(),
                 workspace.dimensions(),
                 workspace.palette(),
@@ -2621,7 +2605,6 @@ class TowerWorkspaceV2Test {
                 workspace.anchor(),
                 workspace.namespace(),
                 workspace.structureName(),
-                workspace.familyType(),
                 workspace.topologyProfile(),
                 workspace.dimensions(),
                 workspace.palette(),
@@ -2664,7 +2647,6 @@ class TowerWorkspaceV2Test {
                 workspace.anchor(),
                 workspace.namespace(),
                 workspace.structureName(),
-                workspace.familyType(),
                 topologyProfile,
                 workspace.dimensions(),
                 workspace.palette(),
@@ -2695,7 +2677,6 @@ class TowerWorkspaceV2Test {
                 new BlockPos(32, 80, 32),
                 "mkdev",
                 "codec_round_trip",
-                MKStructureFamilyType.TOWER,
                 dimensions,
                 workspacePalette(),
                 MKWorkspaceStairAuthoringConfig.defaultConfig(),
@@ -2773,7 +2754,6 @@ class TowerWorkspaceV2Test {
                 new BlockPos(32, 80, 32),
                 "mkdev",
                 "template_only_backup",
-                MKStructureFamilyType.TOWER,
                 dimensions,
                 workspacePalette(),
                 MKWorkspaceStairAuthoringConfig.defaultConfig(),
@@ -2822,7 +2802,6 @@ class TowerWorkspaceV2Test {
                 new BlockPos(32, 80, 32),
                 "mkdev",
                 "template_only_export",
-                MKStructureFamilyType.TOWER,
                 dimensions,
                 workspacePalette(),
                 MKWorkspaceStairAuthoringConfig.defaultConfig(),
@@ -2873,7 +2852,6 @@ class TowerWorkspaceV2Test {
                 BlockPos.ZERO,
                 "mkdev",
                 "planner_test",
-                MKStructureFamilyType.TOWER,
                 dimensions,
                 workspacePalette(),
                 MKWorkspaceStairAuthoringConfig.defaultConfig(),
@@ -2929,7 +2907,6 @@ class TowerWorkspaceV2Test {
                 workspace.anchor(),
                 workspace.namespace(),
                 workspace.structureName(),
-                workspace.familyType(),
                 topologyProfile,
                 workspace.dimensions(),
                 workspace.palette(),
@@ -3003,7 +2980,6 @@ class TowerWorkspaceV2Test {
                 workspace.anchor(),
                 workspace.namespace(),
                 workspace.structureName(),
-                workspace.familyType(),
                 topologyProfile,
                 workspace.dimensions(),
                 workspace.palette(),
@@ -3029,7 +3005,6 @@ class TowerWorkspaceV2Test {
                 workspace.anchor(),
                 workspace.namespace(),
                 workspace.structureName(),
-                workspace.familyType(),
                 workspace.dimensions(),
                 workspace.palette(),
                 workspace.stairConfig(),

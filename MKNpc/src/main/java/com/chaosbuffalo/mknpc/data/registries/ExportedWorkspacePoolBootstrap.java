@@ -22,20 +22,19 @@ public final class ExportedWorkspacePoolBootstrap {
     private ExportedWorkspacePoolBootstrap() {
     }
 
-    public static void bootstrapTowerPoolsForNamespace(BootstrapContext<StructureTemplatePool> context,
-                                                       Holder<StructureTemplatePool> empty,
-                                                       Path moduleRoot,
-                                                       String namespace) {
+    public static void bootstrapExportedPoolsForNamespace(BootstrapContext<StructureTemplatePool> context,
+                                                          Holder<StructureTemplatePool> empty,
+                                                          Path moduleRoot,
+                                                          String namespace) {
         MKWorkspaceExportManifestLoader.loadAllFromModSource(moduleRoot, namespace).stream()
                 .map(MKWorkspaceExportManifestLoader.LoadedManifest::manifest)
-                .filter(manifest -> manifest.familyType().getSerializedName().equals("tower"))
                 .filter(manifest -> manifest.namespace().equals(namespace))
-                .forEach(manifest -> registerExportedTowerPools(context, empty, manifest));
+                .forEach(manifest -> registerExportedPools(context, empty, manifest));
     }
 
-    private static void registerExportedTowerPools(BootstrapContext<StructureTemplatePool> context,
-                                                   Holder<StructureTemplatePool> empty,
-                                                   MKWorkspaceExportManifest manifest) {
+    private static void registerExportedPools(BootstrapContext<StructureTemplatePool> context,
+                                              Holder<StructureTemplatePool> empty,
+                                              MKWorkspaceExportManifest manifest) {
         List<String> validationErrors = manifest.validateRuntimeStructureExport();
         if (!validationErrors.isEmpty()) {
             throw new IllegalStateException("Workspace export " + manifest.namespace() + ":" +

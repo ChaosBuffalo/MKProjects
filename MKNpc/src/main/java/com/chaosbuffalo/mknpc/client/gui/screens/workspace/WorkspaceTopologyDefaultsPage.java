@@ -64,8 +64,9 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
             MKButton perimeterKindButton = new MKButton(
                     Component.literal(formatTopologyLabel(editor.perimeterRunKind().getSerializedName())), 180, 20);
             perimeterKindButton.setPressedCallback((button, mouseButton) -> {
-                editor.perimeterRunKind(cycleValue(List.of(MKWorkspaceLinearRunKind.SOLID_WALL,
-                        MKWorkspaceLinearRunKind.PARAPET), editor.perimeterRunKind(), isReverseClick(mouseButton)));
+                editor.perimeterRunKind(cycleValue(List.of(MKWorkspaceLinearRunKind.DEFENSIVE_WALL,
+                        MKWorkspaceLinearRunKind.SOLID_WALL, MKWorkspaceLinearRunKind.PARAPET),
+                        editor.perimeterRunKind(), isReverseClick(mouseButton)));
                 screen.flagNeedSetup();
                 return true;
             });
@@ -96,7 +97,7 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
             }
 
             MKText perimeterText = screen.makeWhiteText(Component.literal(
-                    "Perimeter sides use one linear-run slot each. Choose wall or parapet by assigning one family to each keep.perimeter slot."));
+                    "Perimeter sides use one linear-run slot each. Choose defensive wall, solid wall, or parapet by assigning one family to each keep.perimeter slot."));
             perimeterText.setWidth(screen.contentWidth());
             perimeterText.setMultiline(true);
             content.addWidget(perimeterText);

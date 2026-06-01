@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc.network.packets;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.world.gen.workspace.MKStructureWorkspaceService;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -59,11 +58,6 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
         List<String> errors = workspace.validate();
         if (!errors.isEmpty()) {
             MKWorkspaceValidationMessages.displayValidationErrors(player, errors);
-            return;
-        }
-        if (workspace.familyType() != MKStructureFamilyType.TOWER) {
-            MKWorkspaceValidationMessages.displayFailure(player,
-                    "Workspace creation failed: only tower workspaces are supported.");
             return;
         }
         MKStructureWorkspaceService service = new MKStructureWorkspaceService();

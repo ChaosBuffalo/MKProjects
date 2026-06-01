@@ -49,9 +49,6 @@ public final class MKWorkspaceCodecs {
             },
             Direction::getSerializedName
     );
-    public static final Codec<MKStructureFamilyType> FAMILY_TYPE_CODEC = Codec.STRING.xmap(
-            MKStructureFamilyType::fromSerializedName, MKStructureFamilyType::getSerializedName
-    );
     public static final Codec<MKVerticalAccessPlacement> VERTICAL_ACCESS_PLACEMENT_CODEC = Codec.STRING.xmap(
             MKVerticalAccessPlacement::fromSerializedName, MKVerticalAccessPlacement::getSerializedName
     );

@@ -1,0 +1,14 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 148039274,
+    "separation": 14,
+    "spacing": 32
+  },
+  "structures": [
+    {
+      "structure": "mknpc:test_keep",
+      "weight": 1
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
@@ -151,13 +152,13 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             addTowerStackRoles(roles, cornerSlot, Set.of("corner_tower", "unique_corner_template"));
         }
         roles.add(new MKWorkspaceRoleSchema("keep.perimeter.north", "linear_run", "defensive_run",
-                false, false, Set.of("solid_wall", "parapet")));
+                false, false, Set.of("defensive_wall", "solid_wall", "parapet")));
         roles.add(new MKWorkspaceRoleSchema("keep.perimeter.east", "linear_run", "defensive_run",
-                false, false, Set.of("solid_wall", "parapet")));
+                false, false, Set.of("defensive_wall", "solid_wall", "parapet")));
         roles.add(new MKWorkspaceRoleSchema("keep.perimeter.south", "linear_run", "defensive_run",
-                false, false, Set.of("solid_wall", "parapet")));
+                false, false, Set.of("defensive_wall", "solid_wall", "parapet")));
         roles.add(new MKWorkspaceRoleSchema("keep.perimeter.west", "linear_run", "defensive_run",
-                false, false, Set.of("solid_wall", "parapet")));
+                false, false, Set.of("defensive_wall", "solid_wall", "parapet")));
         roles.add(new MKWorkspaceRoleSchema("keep.walkway.north", "linear_run", "walkway",
                 false, false, Set.of("open_walkway", "terrain_matched_allowed")));
         roles.add(new MKWorkspaceRoleSchema("keep.walkway.east", "linear_run", "walkway",
@@ -220,29 +221,60 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
 
     private List<MKPlannedPiece> createCornerStackPieces(MKStructureWorkspace workspace, SlotAvailability slots) {
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
-        for (String stackId : activeCornerStackIds(workspace)) {
-            List<MKTowerWorkspaceFamilyDefinition> stackFamilies = workspace.familyDefinitions().stream()
-                    .filter(family -> family.topologySlotId().startsWith(stackId + "."))
-                    .toList();
-            MKWorkspaceTowerStackSettings settings = workspace.topologyProfile().towerStackSettingsOrDefault(stackId);
-            MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped(stackId, false, settings);
-            ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
-            towerStackPlanner.createRoomPieces(workspace, stackDefinition, stackFamilies).stream()
-                    .map(piece -> withRoomLayoutConnectors(piece, slots, opening))
-                    .forEach(pieces::add);
+        List<MKTowerWorkspaceFamilyDefinition> sharedFamilies = workspace.familyDefinitions().stream()
+                .filter(family -> family.topologySlotId().startsWith("keep.corner.shared."))
+                .toList();
+        for (String stackId : CONCRETE_CORNER_SLOTS) {
+            List<MKTowerWorkspaceFamilyDefinition> stackFamilies;
+            if (workspace.topologyProfile().uniqueCornerTower(stackId)) {
+                stackFamilies = workspace.familyDefinitions().stream()
+                        .filter(family -> family.topologySlotId().startsWith(stackId + "."))
+                        .toList();
+            } else {
+                stackFamilies = sharedFamilies.stream()
+                        .map(family -> remapSharedCornerFamily(family, stackId))
+                        .toList();
+            }
+            addCornerStackPieces(pieces, workspace, slots, stackId, stackFamilies);
         }
         return List.copyOf(pieces);
     }
 
-    private List<String> activeCornerStackIds(MKStructureWorkspace workspace) {
-        ArrayList<String> stackIds = new ArrayList<>();
-        if (workspace.topologyProfile().anySharedCornerTower()) {
-            stackIds.add("keep.corner.shared");
+    private void addCornerStackPieces(List<MKPlannedPiece> pieces, MKStructureWorkspace workspace,
+                                      SlotAvailability slots, String stackId,
+                                      List<MKTowerWorkspaceFamilyDefinition> stackFamilies) {
+        if (stackFamilies.isEmpty()) {
+            return;
         }
-        CONCRETE_CORNER_SLOTS.stream()
-                .filter(workspace.topologyProfile()::uniqueCornerTower)
-                .forEach(stackIds::add);
-        return List.copyOf(stackIds);
+        MKWorkspaceTowerStackSettings settings = workspace.topologyProfile().towerStackSettingsOrDefault(
+                workspace.topologyProfile().uniqueCornerTower(stackId) ? stackId : "keep.corner.shared");
+        MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped(stackId, false, settings);
+        ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
+        towerStackPlanner.createRoomPieces(workspace, stackDefinition, stackFamilies).stream()
+                .map(piece -> withRoomLayoutConnectors(piece, slots, opening))
+                .forEach(pieces::add);
+    }
+
+    private MKTowerWorkspaceFamilyDefinition remapSharedCornerFamily(MKTowerWorkspaceFamilyDefinition family,
+                                                                     String targetStackId) {
+        String targetBasePrefix = targetStackId.replace('.', '_');
+        String baseName = family.baseName().replace("keep_corner_shared", targetBasePrefix);
+        String topologySlotId = family.topologySlotId().replace("keep.corner.shared", targetStackId);
+        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                baseName,
+                topologySlotId,
+                targetStackId,
+                family.supportsVerticalAccess(),
+                family.roomWidth(),
+                family.roomLength(),
+                family.roomHeight(),
+                family.horizontalExtrusionMode(),
+                family.horizontalExits(),
+                family.topVoidMargin(),
+                family.bottomVoidMargin(),
+                family.foundationPolicyOverride(),
+                family.paletteOverride()
+        );
     }
 
     private MKPlannedPiece withRoomLayoutConnectors(MKPlannedPiece piece, SlotAvailability slots,
@@ -501,6 +533,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         tags.put("workspace_family_id", family.baseName());
         tags.put("workspace_horizontal_exits", family.horizontalExitSummary());
         tags.put("workspace_horizontal_extrusion_mode", family.horizontalExtrusionMode().getSerializedName());
+        tags.put("workspace_connector_stitch", "full_face");
         workspace.topologyProfile().towerStackSettings(stackIdForFamily(family))
                 .ifPresent(settings -> {
                     tags.put("workspace_tower_stack_id", settings.stackId());
@@ -537,6 +570,9 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         tags.put("workspace_linear_run_path_kind", "keep");
         tags.put("workspace_linear_run_slope_delta", Integer.toString(linearRun.slopeDelta()));
         tags.put("workspace_opening_profile_id", linearRun.openingProfileId());
+        if (linearRun.kind() == MKWorkspaceLinearRunKind.DEFENSIVE_WALL) {
+            tags.put("workspace_connector_stitch", "wall_run");
+        }
         if (linearRun.topVoidMargin() > 0) {
             tags.put(MKWorkspaceVoidMarginTags.TOP_VOID_MARGIN_TAG, Integer.toString(linearRun.topVoidMargin()));
         }

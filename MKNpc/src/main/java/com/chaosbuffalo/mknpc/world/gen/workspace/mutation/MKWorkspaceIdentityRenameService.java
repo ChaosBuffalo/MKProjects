@@ -40,7 +40,6 @@ public class MKWorkspaceIdentityRenameService {
                 workspace.anchor(),
                 namespace,
                 structureName,
-                workspace.familyType(),
                 workspace.topologyProfile(),
                 workspace.dimensions(),
                 workspace.palette(),

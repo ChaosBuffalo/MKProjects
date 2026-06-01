@@ -25,6 +25,7 @@ public class NpcStructurePools {
     public static final ResourceKey<StructureTemplatePool> DIGGER_ROAD_POOL = createKey("digger/diggerroad");
 
     public static final ResourceKey<StructureTemplatePool> TEST_TOWER_START_POOL = createKey("test_tower/start");
+    public static final ResourceKey<StructureTemplatePool> TEST_KEEP_START_POOL = createKey("test_keep/start");
 
     private static final ResourceLocation DIGGER_TENT_DBL_1 = MKNpc.id("digger/diggertentdbl1");
     private static final ResourceLocation DIGGER_TENT_SGL_1 = MKNpc.id("digger/diggertentsgl1");
@@ -62,6 +63,6 @@ public class NpcStructurePools {
                 ),
                 StructureTemplatePool.Projection.TERRAIN_MATCHING));
 
-        ExportedWorkspacePoolBootstrap.bootstrapTowerPoolsForNamespace(pContext, empty, MODULE_ROOT, MKNpc.MODID);
+        ExportedWorkspacePoolBootstrap.bootstrapExportedPoolsForNamespace(pContext, empty, MODULE_ROOT, MKNpc.MODID);
     }
 }

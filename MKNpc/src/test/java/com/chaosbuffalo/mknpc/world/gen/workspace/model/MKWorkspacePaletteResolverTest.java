@@ -233,7 +233,6 @@ class MKWorkspacePaletteResolverTest {
                 BlockPos.ZERO,
                 "mknpc",
                 "palette_test",
-                MKStructureFamilyType.TOWER,
                 topologyProfile,
                 dimensions,
                 palette,

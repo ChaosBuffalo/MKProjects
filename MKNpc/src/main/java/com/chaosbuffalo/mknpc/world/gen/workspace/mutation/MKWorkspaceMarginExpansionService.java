@@ -617,7 +617,6 @@ public class MKWorkspaceMarginExpansionService {
                 workspace.anchor(),
                 workspace.namespace(),
                 workspace.structureName(),
-                workspace.familyType(),
                 workspace.topologyProfile(),
                 workspace.dimensions(),
                 workspace.palette(),

@@ -178,14 +178,14 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
                 palette.wallBlock()
         ));
         return List.of(
-                keepRun("keep_wall_north", "keep.perimeter.north", MKWorkspaceLinearRunKind.SOLID_WALL,
-                        "branch_opening", 15, 3, keepHeight, false, true, wallFoundation),
-                keepRun("keep_wall_east", "keep.perimeter.east", MKWorkspaceLinearRunKind.SOLID_WALL,
-                        "branch_opening", 15, 3, keepHeight, false, true, wallFoundation),
-                keepRun("keep_wall_south", "keep.perimeter.south", MKWorkspaceLinearRunKind.SOLID_WALL,
-                        "branch_opening", 15, 3, keepHeight, false, true, wallFoundation),
-                keepRun("keep_wall_west", "keep.perimeter.west", MKWorkspaceLinearRunKind.SOLID_WALL,
-                        "branch_opening", 15, 3, keepHeight, false, true, wallFoundation),
+            keepRun("keep_wall_north", "keep.perimeter.north", MKWorkspaceLinearRunKind.DEFENSIVE_WALL,
+                    "branch_opening", 15, 3, keepHeight, false, true, wallFoundation),
+            keepRun("keep_wall_east", "keep.perimeter.east", MKWorkspaceLinearRunKind.DEFENSIVE_WALL,
+                    "branch_opening", 15, 3, keepHeight, false, true, wallFoundation),
+            keepRun("keep_wall_south", "keep.perimeter.south", MKWorkspaceLinearRunKind.DEFENSIVE_WALL,
+                    "branch_opening", 15, 3, keepHeight, false, true, wallFoundation),
+            keepRun("keep_wall_west", "keep.perimeter.west", MKWorkspaceLinearRunKind.DEFENSIVE_WALL,
+                    "branch_opening", 15, 3, keepHeight, false, true, wallFoundation),
                 keepRun("keep_walkway_south", "keep.walkway.south", MKWorkspaceLinearRunKind.OPEN_WALKWAY,
                         "main_opening", 9, dimensions.shaftWidth(), keepHeight, true, false, MKWorkspaceFoundationPolicy.none())
         );

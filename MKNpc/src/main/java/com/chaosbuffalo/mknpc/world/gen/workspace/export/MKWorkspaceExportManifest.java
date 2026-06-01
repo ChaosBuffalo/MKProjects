@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.export;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
@@ -49,7 +48,6 @@ public record MKWorkspaceExportManifest(
         UUID workspaceId,
         String namespace,
         String structureName,
-        MKStructureFamilyType familyType,
         String exportedAt,
         long createdAt,
         long updatedAt,
@@ -66,7 +64,6 @@ public record MKWorkspaceExportManifest(
             UUID_CODEC.fieldOf("workspace_id").forGetter(MKWorkspaceExportManifest::workspaceId),
             Codec.STRING.fieldOf("namespace").forGetter(MKWorkspaceExportManifest::namespace),
             Codec.STRING.fieldOf("structure_name").forGetter(MKWorkspaceExportManifest::structureName),
-            familyTypeCodec().fieldOf("family_type").forGetter(MKWorkspaceExportManifest::familyType),
             Codec.STRING.fieldOf("exported_at").forGetter(MKWorkspaceExportManifest::exportedAt),
             Codec.LONG.fieldOf("created_at").forGetter(MKWorkspaceExportManifest::createdAt),
             Codec.LONG.fieldOf("updated_at").forGetter(MKWorkspaceExportManifest::updatedAt),
@@ -92,7 +89,6 @@ public record MKWorkspaceExportManifest(
                 workspace.id(),
                 workspace.namespace(),
                 workspace.structureName(),
-                workspace.familyType(),
                 exportedAt,
                 workspace.createdAt(),
                 workspace.updatedAt(),
@@ -184,10 +180,6 @@ public record MKWorkspaceExportManifest(
                                 .toList()
                 ))
                 .toList();
-    }
-
-    private static Codec<MKStructureFamilyType> familyTypeCodec() {
-        return Codec.STRING.xmap(MKStructureFamilyType::fromSerializedName, MKStructureFamilyType::getSerializedName);
     }
 
     private static Codec<MKVerticalAccessPlacement> verticalAccessPlacementCodec() {

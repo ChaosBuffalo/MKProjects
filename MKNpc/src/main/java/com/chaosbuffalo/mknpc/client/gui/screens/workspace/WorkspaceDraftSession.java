@@ -4,7 +4,6 @@ import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.network.packets.CreateWorkspacePacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureFamilyType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStackBudget;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
@@ -571,7 +570,7 @@ public class WorkspaceDraftSession {
                 .filter(linearRun -> linearRun.topologySlotId().startsWith("keep.perimeter."))
                 .findFirst()
                 .map(MKWorkspaceLinearRunFamilyDefinition::kind)
-                .orElse(MKWorkspaceLinearRunKind.SOLID_WALL);
+                .orElse(MKWorkspaceLinearRunKind.DEFENSIVE_WALL);
     }
 
     public void perimeterRunKind(MKWorkspaceLinearRunKind value) {
@@ -956,7 +955,6 @@ public class WorkspaceDraftSession {
                 screen.anchor(),
                 draft().namespace.trim(),
                 draft().structureName.trim(),
-                MKStructureFamilyType.TOWER,
                 draft().topologyProfile,
                 dimensions,
                 palette,
@@ -1266,7 +1264,6 @@ public class WorkspaceDraftSession {
                 workspace.anchor(),
                 namespace,
                 structureName,
-                workspace.familyType(),
                 workspace.topologyProfile(),
                 workspace.dimensions(),
                 palette,
@@ -1291,7 +1288,6 @@ public class WorkspaceDraftSession {
                 source.anchor(),
                 source.namespace(),
                 source.structureName(),
-                source.familyType(),
                 withMaterialStackSettings(source.topologyProfile(), materialSource.topologyProfile()),
                 source.dimensions(),
                 materialSource.palette(),
@@ -1736,10 +1732,10 @@ public class WorkspaceDraftSession {
 
     private MKWorkspaceLinearRunFamilyDefinition preferPerimeterLinearRun(MKWorkspaceLinearRunFamilyDefinition existing,
                                                                           MKWorkspaceLinearRunFamilyDefinition candidate) {
-        if (existing.kind() == MKWorkspaceLinearRunKind.SOLID_WALL) {
+        if (existing.kind() == MKWorkspaceLinearRunKind.DEFENSIVE_WALL) {
             return existing;
         }
-        if (candidate.kind() == MKWorkspaceLinearRunKind.SOLID_WALL) {
+        if (candidate.kind() == MKWorkspaceLinearRunKind.DEFENSIVE_WALL) {
             return candidate;
         }
         return existing;

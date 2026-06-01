@@ -26,6 +26,7 @@ import java.util.Map;
 public class NpcStructures {
     public static final ResourceKey<Structure> TEST_JIGSAW = createKey("test_jigsaw");
     public static final ResourceKey<Structure> TEST_TOWER = createKey("test_tower");
+    public static final ResourceKey<Structure> TEST_KEEP = createKey("test_keep");
 
     private static ResourceKey<Structure> createKey(String name) {
         return ResourceKey.create(Registries.STRUCTURE, MKNpc.id(name));
@@ -66,6 +67,15 @@ public class NpcStructures {
                                         connector("boss_back")
                                 )
                         ))
+                        .build());
+
+        context.register(TEST_KEEP,
+                new MKJigsawBuilder(
+                        emptySpawnsStructure(biomes.getOrThrow(NpcTags.Biomes.HAS_TEST_KEEP),
+                                GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.BEARD_THIN),
+                        templates.getOrThrow(NpcStructurePools.TEST_KEEP_START_POOL))
+                        .setMaxDepth(18)
+                        .setMaxDistFromCenter(116)
                         .build());
     }
 

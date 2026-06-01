@@ -23,5 +23,7 @@ public class NpcStructureTagsProvider extends StructureTagsProvider {
                 .add(NpcStructures.TEST_JIGSAW);
         tag(NpcTags.Structures.TEST_TOWER)
                 .add(NpcStructures.TEST_TOWER);
+        tag(NpcTags.Structures.TEST_KEEP)
+                .add(NpcStructures.TEST_KEEP);
     }
 }

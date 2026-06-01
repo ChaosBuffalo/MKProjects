@@ -1,6 +1,1 @@
-{
-  "category": "basement",
-  "vertical_level_delta": -1,
-  "role": "room",
-  "progression_delta": 1
-}
+{"topology_group":"basement","vertical_level_delta":-1,"role":"room","progression_delta":1}
