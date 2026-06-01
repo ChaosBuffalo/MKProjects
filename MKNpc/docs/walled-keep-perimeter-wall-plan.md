@@ -58,33 +58,34 @@ segmentCount = ceil(usableWallSpan / preferredWallSegmentLength)
 actualSideSpan = segmentCount * preferredWallSegmentLength + cornerAttachmentAllowance
 ```
 
-For the first implementation, prefer growing the keep footprint to fit whole repeated segments instead of creating one variable-length filler segment. That keeps authoring simple and avoids requiring odd custom wall pieces.
+For the first implementation, grow the keep footprint to fit whole repeated segments instead of creating one variable-length filler segment. It is acceptable for the generated keep to be slightly larger than the requested minimum span. This keeps authoring simple and avoids requiring odd custom wall pieces.
 
 ## Pool Graph
 
 The perimeter should not rely on an open-ended loop where any wall can attach to any matching wall pool. Use directed logical pools so each segment knows the next intended slot.
 
-Example south side from gatehouse:
+Generation should grow clockwise from the gatehouse. This gives the perimeter one deterministic expansion order while avoiding the complexity of two independent arms that need to meet cleanly.
+
+Example clockwise path from gatehouse:
 
 ```text
 gate.main
   -> keep.perimeter.south.west.0
   -> keep.perimeter.south.west.1
   -> keep.corner.south_west
-
-gate.main
-  -> keep.perimeter.south.east.0
-  -> keep.perimeter.south.east.1
-  -> keep.corner.south_east
 ```
 
 Then continue around the keep with deterministic segment chains:
 
 ```text
+gate.main -> south west chain -> south_west corner
 south_west corner -> west chain -> north_west corner
 north_west corner -> north chain -> north_east corner
 north_east corner -> east chain -> south_east corner
+south_east corner -> south east chain -> gate-adjacent terminal segment
 ```
+
+The final south-east chain should terminate adjacent to the gatehouse instead of targeting the already placed gatehouse as a jigsaw child. That keeps the graph acyclic while still allowing the computed span to bring the wall back to the gate visually.
 
 This avoids asking jigsaw placement to close a cycle between two already placed endpoints. It also makes failures easier to diagnose because each segment targets one expected next pool.
 
@@ -96,18 +97,13 @@ Default authoring should remain simple:
 - Optional override families can be added later for start, middle, end, corner-adjacent, or gate-adjacent wall segments.
 - Logical segment names should not imply unique designer templates unless an override is present.
 
-Suggested family model:
+Use one default wall segment family:
 
 ```text
 keep_wall_segment
-keep_wall_segment_start        optional
-keep_wall_segment_middle       optional
-keep_wall_segment_end          optional
-keep_wall_gate_adjacent        optional
-keep_wall_corner_adjacent      optional
 ```
 
-The planner can select the most specific available family, falling back to `keep_wall_segment`.
+North/east/south/west walls should collapse into this shared family by default. Direction-specific variation can be added later as an explicit override feature if we need it, but the baseline should make a simple keep authorable from one wall segment template.
 
 ## Defensive Wall Interior Blocks
 
@@ -141,8 +137,8 @@ Structure void should remain reserved for exterior decoration margins, where pre
 
 7. Re-scaffold and re-export `test_keep` so NBT templates include the current defensive wall stitching and air-carved interiors.
 
-## Open Questions
+## Decisions
 
-- Should the default graph grow clockwise from the gatehouse, or as two arms from the gatehouse that meet only through deterministic corner paths?
-- Do we want exact footprint dimensions with a filler segment, or whole-segment expansion only?
-- Should north/east/south/west walls remain separate default families for palette variation, or should they collapse to one shared `keep_wall_segment` family with side tags?
+- Grow the perimeter clockwise from the gatehouse.
+- Use whole-segment expansion only; generated keeps may be slightly larger than the requested minimum span.
+- Collapse default perimeter authoring to one shared `keep_wall_segment` family.

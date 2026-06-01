@@ -97,7 +97,7 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
             }
 
             MKText perimeterText = screen.makeWhiteText(Component.literal(
-                    "Perimeter sides use one linear-run slot each. Choose defensive wall, solid wall, or parapet by assigning one family to each keep.perimeter slot."));
+                    "Perimeter walls use one shared linear-run slot. The keep planner repeats it clockwise as whole wall segments."));
             perimeterText.setWidth(screen.contentWidth());
             perimeterText.setMultiline(true);
             content.addWidget(perimeterText);

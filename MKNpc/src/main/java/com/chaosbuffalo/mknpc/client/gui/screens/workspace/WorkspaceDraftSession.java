@@ -559,7 +559,7 @@ public class WorkspaceDraftSession {
 
     public int wallHeight() {
         return draft().linearRunFamilies.stream()
-                .filter(linearRun -> linearRun.topologySlotId().startsWith("keep.perimeter."))
+                .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))
                 .findFirst()
                 .map(MKWorkspaceLinearRunFamilyDefinition::interiorHeight)
                 .orElse(7);
@@ -567,7 +567,7 @@ public class WorkspaceDraftSession {
 
     public MKWorkspaceLinearRunKind perimeterRunKind() {
         return draft().linearRunFamilies.stream()
-                .filter(linearRun -> linearRun.topologySlotId().startsWith("keep.perimeter."))
+                .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))
                 .findFirst()
                 .map(MKWorkspaceLinearRunFamilyDefinition::kind)
                 .orElse(MKWorkspaceLinearRunKind.DEFENSIVE_WALL);
@@ -575,7 +575,7 @@ public class WorkspaceDraftSession {
 
     public void perimeterRunKind(MKWorkspaceLinearRunKind value) {
         draft().linearRunFamilies = draft().linearRunFamilies.stream()
-                .map(linearRun -> linearRun.topologySlotId().startsWith("keep.perimeter.") ?
+                .map(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()) ?
                         copyLinearRunWithKind(linearRun, value) :
                         linearRun)
                 .toList();
@@ -584,7 +584,7 @@ public class WorkspaceDraftSession {
     public void wallHeight(int value) {
         int height = Math.max(2, value);
         draft().linearRunFamilies = draft().linearRunFamilies.stream()
-                .map(linearRun -> linearRun.topologySlotId().startsWith("keep.perimeter.") ?
+                .map(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()) ?
                         copyLinearRunWithTopologyHeightAndTopVoid(linearRun, linearRun.topologySlotId(), height,
                                 Math.min(linearRun.topVoidMargin(), Math.max(0, height - 1))) :
                         linearRun)
@@ -593,7 +593,7 @@ public class WorkspaceDraftSession {
 
     public int wallTopVoidMargin() {
         return draft().linearRunFamilies.stream()
-                .filter(linearRun -> linearRun.topologySlotId().startsWith("keep.perimeter."))
+                .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))
                 .findFirst()
                 .map(MKWorkspaceLinearRunFamilyDefinition::topVoidMargin)
                 .orElse(0);
@@ -602,7 +602,7 @@ public class WorkspaceDraftSession {
     public void wallTopVoidMargin(int value) {
         int margin = Math.max(0, value);
         draft().linearRunFamilies = draft().linearRunFamilies.stream()
-                .map(linearRun -> linearRun.topologySlotId().startsWith("keep.perimeter.") ?
+                .map(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()) ?
                         copyLinearRunWithTopologyHeightAndTopVoid(linearRun, linearRun.topologySlotId(),
                                 linearRun.interiorHeight(), Math.min(margin, Math.max(0, linearRun.interiorHeight() - 1))) :
                         linearRun)
@@ -623,7 +623,7 @@ public class WorkspaceDraftSession {
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(MKWorkspaceDimensions.defaultDimensions(),
                                 draft().palette)
                         .stream()
-                        .filter(linearRun -> linearRun.topologySlotId().startsWith("keep.perimeter."))
+                        .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))
                         .collect(java.util.stream.Collectors.toMap(
                                 MKWorkspaceLinearRunFamilyDefinition::topologySlotId,
                                 linearRun -> linearRun,
@@ -634,7 +634,9 @@ public class WorkspaceDraftSession {
         for (MKWorkspaceLinearRunFamilyDefinition linearRun : draft().linearRunFamilies) {
             MKWorkspaceLinearRunFamilyDefinition defaultRun = defaultsBySlot.get(linearRun.topologySlotId());
             if (defaultRun == null) {
-                updated.add(linearRun);
+                if (!isPerimeterTopologySlot(linearRun.topologySlotId())) {
+                    updated.add(linearRun);
+                }
                 continue;
             }
             if (resetSlots.add(linearRun.topologySlotId())) {
@@ -1712,13 +1714,13 @@ public class WorkspaceDraftSession {
             String perimeterSlot = legacyPerimeterSlot(linearRun.topologySlotId());
             if (perimeterSlot == null) {
                 current.add(linearRun);
-                if (linearRun.topologySlotId().startsWith("keep.perimeter.")) {
+                if (isPerimeterTopologySlot(linearRun.topologySlotId())) {
                     existingPerimeterSlots.add(linearRun.topologySlotId());
                 }
                 continue;
             }
             MKWorkspaceLinearRunFamilyDefinition converted =
-                    copyLinearRunWithTopologyAndHeight(linearRun, perimeterSlot, linearRun.interiorHeight());
+                    copyPerimeterLinearRun(linearRun, perimeterSlot);
             convertedByPerimeterSlot.merge(perimeterSlot, converted, this::preferPerimeterLinearRun);
         }
         for (Map.Entry<String, MKWorkspaceLinearRunFamilyDefinition> entry : convertedByPerimeterSlot.entrySet()) {
@@ -1742,13 +1744,20 @@ public class WorkspaceDraftSession {
     }
 
     private String legacyPerimeterSlot(String topologySlotId) {
+        if (isPerimeterTopologySlot(topologySlotId)) {
+            return "keep.perimeter";
+        }
         if (topologySlotId.startsWith("keep.wall.")) {
-            return "keep.perimeter." + topologySlotId.substring("keep.wall.".length());
+            return "keep.perimeter";
         }
         if (topologySlotId.startsWith("keep.parapet.")) {
-            return "keep.perimeter." + topologySlotId.substring("keep.parapet.".length());
+            return "keep.perimeter";
         }
         return null;
+    }
+
+    private boolean isPerimeterTopologySlot(String topologySlotId) {
+        return topologySlotId.equals("keep.perimeter") || topologySlotId.startsWith("keep.perimeter.");
     }
 
     private MKTowerWorkspaceFamilyDefinition copyFamilyWithGeometry(MKTowerWorkspaceFamilyDefinition family,
@@ -1774,6 +1783,27 @@ public class WorkspaceDraftSession {
             MKWorkspaceLinearRunFamilyDefinition linearRun, String topologySlotId, int interiorHeight) {
         return copyLinearRunWithTopologyHeightAndTopVoid(linearRun, topologySlotId, interiorHeight,
                 Math.min(linearRun.topVoidMargin(), Math.max(0, interiorHeight - 1)));
+    }
+
+    private MKWorkspaceLinearRunFamilyDefinition copyPerimeterLinearRun(MKWorkspaceLinearRunFamilyDefinition linearRun,
+                                                                        String topologySlotId) {
+        return new MKWorkspaceLinearRunFamilyDefinition(
+                "keep_wall_segment",
+                topologySlotId,
+                linearRun.kind(),
+                linearRun.openingProfileId(),
+                linearRun.length(),
+                linearRun.interiorWidth(),
+                linearRun.interiorHeight(),
+                linearRun.slopeDelta(),
+                linearRun.allowOnMainPath(),
+                linearRun.allowOnBranchPath(),
+                linearRun.projection(),
+                linearRun.supportedShapes(),
+                Math.min(linearRun.topVoidMargin(), Math.max(0, linearRun.interiorHeight() - 1)),
+                linearRun.foundationPolicy(),
+                linearRun.paletteOverride()
+        );
     }
 
     private MKWorkspaceLinearRunFamilyDefinition copyLinearRunWithKind(MKWorkspaceLinearRunFamilyDefinition linearRun,

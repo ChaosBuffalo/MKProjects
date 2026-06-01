@@ -31,6 +31,8 @@ import java.util.Set;
 
 public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner {
     private static final String EMPTY_POOL = "minecraft:empty";
+    private static final String PERIMETER_ROOT_SLOT = "keep.perimeter";
+    private static final int DEFAULT_COURTYARD_CLEARANCE = 5;
     private static final String SLOT_POOL_PREFIX = "keep_slots/";
     private static final List<String> CONCRETE_CORNER_SLOTS = List.of(
             "keep.corner.north_west",
@@ -49,6 +51,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             "keep.corner.north_east",
             "keep.corner.south_east",
             "keep.corner.south_west",
+            PERIMETER_ROOT_SLOT,
             "keep.perimeter.north",
             "keep.perimeter.east",
             "keep.perimeter.south",
@@ -65,7 +68,68 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     private record ResolvedOpeningProfile(String profileId, int openingWidth, int openingHeight) {
     }
 
-    private record SlotAvailability(Set<String> availableSlots, Set<String> sharedCornerSlots) {
+    private record PerimeterSegment(String chainId,
+                                    String side,
+                                    int index,
+                                    int count,
+                                    String slotId,
+                                    String pieceName,
+                                    boolean eastWest,
+                                    Direction incomingFacing,
+                                    Direction outgoingFacing,
+                                    String outgoingTargetSlotId,
+                                    boolean terminal,
+                                    MKWorkspaceLinearRunFamilyDefinition family) {
+    }
+
+    private record PerimeterPlan(List<PerimeterSegment> southWest,
+                                 List<PerimeterSegment> west,
+                                 List<PerimeterSegment> north,
+                                 List<PerimeterSegment> east,
+                                 List<PerimeterSegment> southEast) {
+        private List<PerimeterSegment> allSegments() {
+            ArrayList<PerimeterSegment> segments = new ArrayList<>();
+            segments.addAll(southWest);
+            segments.addAll(west);
+            segments.addAll(north);
+            segments.addAll(east);
+            segments.addAll(southEast);
+            return List.copyOf(segments);
+        }
+
+        private Optional<PerimeterSegment> firstSouthWest() {
+            return first(southWest);
+        }
+
+        private Optional<PerimeterSegment> firstWest() {
+            return first(west);
+        }
+
+        private Optional<PerimeterSegment> firstNorth() {
+            return first(north);
+        }
+
+        private Optional<PerimeterSegment> firstEast() {
+            return first(east);
+        }
+
+        private Optional<PerimeterSegment> firstSouthEast() {
+            return first(southEast);
+        }
+
+        private Set<String> slotIds() {
+            return allSegments().stream()
+                    .map(PerimeterSegment::slotId)
+                    .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        }
+
+        private static Optional<PerimeterSegment> first(List<PerimeterSegment> segments) {
+            return segments.stream().findFirst();
+        }
+    }
+
+    private record SlotAvailability(Set<String> availableSlots, Set<String> sharedCornerSlots,
+                                    PerimeterPlan perimeterPlan) {
     }
 
     @Override
@@ -92,10 +156,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                         new MKWorkspaceLinkSchema("keep.corner.north_east.vertical", "keep.corner.north_east.basement_cap", "keep.corner.north_east.top_cap", "vertical_access_group:keep.corner.north_east"),
                         new MKWorkspaceLinkSchema("keep.corner.south_east.vertical", "keep.corner.south_east.basement_cap", "keep.corner.south_east.top_cap", "vertical_access_group:keep.corner.south_east"),
                         new MKWorkspaceLinkSchema("keep.corner.south_west.vertical", "keep.corner.south_west.basement_cap", "keep.corner.south_west.top_cap", "vertical_access_group:keep.corner.south_west"),
-                        new MKWorkspaceLinkSchema("keep.perimeter.north", "keep.corner.north_west.entry", "keep.corner.north_east.entry", "linear_run"),
-                        new MKWorkspaceLinkSchema("keep.perimeter.east", "keep.corner.north_east.entry", "keep.corner.south_east.entry", "linear_run"),
-                        new MKWorkspaceLinkSchema("keep.perimeter.south", "keep.corner.south_west.entry", "keep.corner.south_east.entry", "linear_run"),
-                        new MKWorkspaceLinkSchema("keep.perimeter.west", "keep.corner.north_west.entry", "keep.corner.south_west.entry", "linear_run")
+                        new MKWorkspaceLinkSchema("keep.perimeter.clockwise", "keep.gate.main", "keep.gate.main", "linear_run")
                 ),
                 walledKeepRoles()
         );
@@ -108,14 +169,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         for (String cornerSlot : CONCRETE_CORNER_SLOTS) {
             addTowerStackSlots(slots, cornerSlot, "keep.corner_towers");
         }
-        slots.add(new MKWorkspaceSlotSchema("keep.perimeter.north", "keep.perimeter_runs", "defensive_run",
-                "keep.perimeter.north", MKWorkspaceSlotSchema.Repeat.DERIVED));
-        slots.add(new MKWorkspaceSlotSchema("keep.perimeter.east", "keep.perimeter_runs", "defensive_run",
-                "keep.perimeter.east", MKWorkspaceSlotSchema.Repeat.DERIVED));
-        slots.add(new MKWorkspaceSlotSchema("keep.perimeter.south", "keep.perimeter_runs", "defensive_run",
-                "keep.perimeter.south", MKWorkspaceSlotSchema.Repeat.DERIVED));
-        slots.add(new MKWorkspaceSlotSchema("keep.perimeter.west", "keep.perimeter_runs", "defensive_run",
-                "keep.perimeter.west", MKWorkspaceSlotSchema.Repeat.DERIVED));
+        slots.add(new MKWorkspaceSlotSchema(PERIMETER_ROOT_SLOT, "keep.perimeter_runs", "defensive_run",
+                PERIMETER_ROOT_SLOT, MKWorkspaceSlotSchema.Repeat.DERIVED));
         slots.add(new MKWorkspaceSlotSchema("keep.walkway.north", "keep.walkways", "open_walkway",
                 "keep.walkway.north", MKWorkspaceSlotSchema.Repeat.DERIVED));
         slots.add(new MKWorkspaceSlotSchema("keep.walkway.east", "keep.walkways", "open_walkway",
@@ -151,13 +206,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         for (String cornerSlot : CONCRETE_CORNER_SLOTS) {
             addTowerStackRoles(roles, cornerSlot, Set.of("corner_tower", "unique_corner_template"));
         }
-        roles.add(new MKWorkspaceRoleSchema("keep.perimeter.north", "linear_run", "defensive_run",
-                false, false, Set.of("defensive_wall", "solid_wall", "parapet")));
-        roles.add(new MKWorkspaceRoleSchema("keep.perimeter.east", "linear_run", "defensive_run",
-                false, false, Set.of("defensive_wall", "solid_wall", "parapet")));
-        roles.add(new MKWorkspaceRoleSchema("keep.perimeter.south", "linear_run", "defensive_run",
-                false, false, Set.of("defensive_wall", "solid_wall", "parapet")));
-        roles.add(new MKWorkspaceRoleSchema("keep.perimeter.west", "linear_run", "defensive_run",
+        roles.add(new MKWorkspaceRoleSchema(PERIMETER_ROOT_SLOT, "linear_run", "defensive_run",
                 false, false, Set.of("defensive_wall", "solid_wall", "parapet")));
         roles.add(new MKWorkspaceRoleSchema("keep.walkway.north", "linear_run", "walkway",
                 false, false, Set.of("open_walkway", "terrain_matched_allowed")));
@@ -190,7 +239,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     @Override
     public List<MKPlannedPiece> createCanonicalPieces(MKStructureWorkspace workspace) {
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
-        SlotAvailability slots = collectAvailableSlots(workspace);
+        PerimeterPlan perimeterPlan = createPerimeterPlan(workspace);
+        SlotAvailability slots = collectAvailableSlots(workspace, perimeterPlan);
         pieces.addAll(createCenterStackPieces(workspace, slots));
         pieces.addAll(createCornerStackPieces(workspace, slots));
         workspace.familyDefinitions().stream()
@@ -201,8 +251,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 .forEach(pieces::add);
         workspace.linearRunFamilies().stream()
                 .filter(linearRun -> isKnownKeepSlot(linearRun.topologySlotId()))
+                .filter(linearRun -> !isPerimeterRunFamily(linearRun))
                 .flatMap(linearRun -> createLinearRunPieces(workspace, linearRun, slots.availableSlots()).stream())
                 .forEach(pieces::add);
+        pieces.addAll(createPerimeterPieces(workspace, perimeterPlan));
         return List.copyOf(pieces);
     }
 
@@ -297,7 +349,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         );
     }
 
-    private SlotAvailability collectAvailableSlots(MKStructureWorkspace workspace) {
+    private SlotAvailability collectAvailableSlots(MKStructureWorkspace workspace, PerimeterPlan perimeterPlan) {
         LinkedHashSet<String> slots = new LinkedHashSet<>();
         workspace.familyDefinitions().stream()
                 .map(MKTowerWorkspaceFamilyDefinition::topologySlotId)
@@ -308,6 +360,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 .map(MKWorkspaceLinearRunFamilyDefinition::topologySlotId)
                 .filter(MKWalledKeepWorkspacePlanner::isKnownKeepSlot)
                 .forEach(slots::add);
+        slots.addAll(perimeterPlan.slotIds());
         LinkedHashSet<String> sharedCornerSlots = new LinkedHashSet<>();
         if (slots.contains("keep.corner.shared")) {
             CONCRETE_CORNER_SLOTS.stream()
@@ -316,7 +369,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                     .forEach(sharedCornerSlots::add);
             slots.addAll(sharedCornerSlots);
         }
-        return new SlotAvailability(Set.copyOf(slots), Set.copyOf(sharedCornerSlots));
+        return new SlotAvailability(Set.copyOf(slots), Set.copyOf(sharedCornerSlots), perimeterPlan);
     }
 
     private static void addAvailableSlot(Set<String> slots, String topologySlotId) {
@@ -375,6 +428,140 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         ));
     }
 
+    private PerimeterPlan createPerimeterPlan(MKStructureWorkspace workspace) {
+        Optional<MKWorkspaceLinearRunFamilyDefinition> south = perimeterFamilyForSide(workspace, "keep.perimeter.south");
+        Optional<MKWorkspaceLinearRunFamilyDefinition> west = perimeterFamilyForSide(workspace, "keep.perimeter.west");
+        Optional<MKWorkspaceLinearRunFamilyDefinition> north = perimeterFamilyForSide(workspace, "keep.perimeter.north");
+        Optional<MKWorkspaceLinearRunFamilyDefinition> east = perimeterFamilyForSide(workspace, "keep.perimeter.east");
+        int horizontalSegments = south.map(family -> segmentCountForSpan(family, horizontalPerimeterSpan(workspace)))
+                .or(() -> north.map(family -> segmentCountForSpan(family, horizontalPerimeterSpan(workspace))))
+                .orElse(0);
+        int verticalSegments = west.map(family -> segmentCountForSpan(family, verticalPerimeterSpan(workspace)))
+                .or(() -> east.map(family -> segmentCountForSpan(family, verticalPerimeterSpan(workspace))))
+                .orElse(0);
+        int southWestSegments = horizontalSegments > 0 ? Math.max(1, (int) Math.ceil(horizontalSegments / 2.0)) : 0;
+        int southEastSegments = horizontalSegments > 0 ? Math.max(1, horizontalSegments - southWestSegments) : 0;
+        return new PerimeterPlan(
+                south.map(family -> createPerimeterChain("south_west", "south", family, southWestSegments,
+                        true, Direction.EAST, Direction.WEST, "keep.corner.south_west"))
+                        .orElse(List.of()),
+                west.map(family -> createPerimeterChain("west", "west", family, verticalSegments,
+                        false, Direction.SOUTH, Direction.NORTH, "keep.corner.north_west"))
+                        .orElse(List.of()),
+                north.map(family -> createPerimeterChain("north", "north", family, horizontalSegments,
+                        true, Direction.WEST, Direction.EAST, "keep.corner.north_east"))
+                        .orElse(List.of()),
+                east.map(family -> createPerimeterChain("east", "east", family, verticalSegments,
+                        false, Direction.NORTH, Direction.SOUTH, "keep.corner.south_east"))
+                        .orElse(List.of()),
+                south.map(family -> createPerimeterChain("south_east", "south", family, southEastSegments,
+                        true, Direction.EAST, Direction.WEST, null))
+                        .orElse(List.of())
+        );
+    }
+
+    private List<PerimeterSegment> createPerimeterChain(String chainId, String side,
+                                                        MKWorkspaceLinearRunFamilyDefinition family,
+                                                        int segmentCount, boolean eastWest,
+                                                        Direction incomingFacing, Direction outgoingFacing,
+                                                        String terminalTargetSlotId) {
+        ArrayList<PerimeterSegment> segments = new ArrayList<>();
+        for (int index = 0; index < segmentCount; index++) {
+            String slotId = PERIMETER_ROOT_SLOT + "." + chainId + "." + index;
+            String pieceName = family.linearRunId() + "_" + chainId + "_" + index;
+            String nextTarget = index + 1 < segmentCount ?
+                    PERIMETER_ROOT_SLOT + "." + chainId + "." + (index + 1) :
+                    terminalTargetSlotId;
+            boolean terminal = nextTarget == null;
+            segments.add(new PerimeterSegment(chainId, side, index, segmentCount, slotId, pieceName, eastWest,
+                    incomingFacing, outgoingFacing, nextTarget, terminal, family));
+        }
+        return List.copyOf(segments);
+    }
+
+    private Optional<MKWorkspaceLinearRunFamilyDefinition> perimeterFamilyForSide(MKStructureWorkspace workspace,
+                                                                                  String sideSlotId) {
+        Optional<MKWorkspaceLinearRunFamilyDefinition> rootFamily = workspace.linearRunFamilies().stream()
+                .filter(linearRun -> linearRun.topologySlotId().equals(PERIMETER_ROOT_SLOT))
+                .findFirst();
+        Optional<MKWorkspaceLinearRunFamilyDefinition> sideFamily = workspace.linearRunFamilies().stream()
+                .filter(linearRun -> linearRun.topologySlotId().equals(sideSlotId))
+                .findFirst();
+        return sideFamily.or(() -> rootFamily);
+    }
+
+    private int horizontalPerimeterSpan(MKStructureWorkspace workspace) {
+        return cornerWidth(workspace) + DEFAULT_COURTYARD_CLEARANCE + centerWidth(workspace) +
+                DEFAULT_COURTYARD_CLEARANCE + cornerWidth(workspace);
+    }
+
+    private int verticalPerimeterSpan(MKStructureWorkspace workspace) {
+        return cornerLength(workspace) + DEFAULT_COURTYARD_CLEARANCE + centerLength(workspace) +
+                DEFAULT_COURTYARD_CLEARANCE + cornerLength(workspace);
+    }
+
+    private int segmentCountForSpan(MKWorkspaceLinearRunFamilyDefinition family, int span) {
+        return Math.max(1, (int) Math.ceil(span / (double) Math.max(1, family.length())));
+    }
+
+    private int centerWidth(MKStructureWorkspace workspace) {
+        return workspace.topologyProfile().towerStackSettingsOrDefault("keep.center").width();
+    }
+
+    private int centerLength(MKStructureWorkspace workspace) {
+        return workspace.topologyProfile().towerStackSettingsOrDefault("keep.center").length();
+    }
+
+    private int cornerWidth(MKStructureWorkspace workspace) {
+        return workspace.topologyProfile().towerStackSettingsOrDefault(cornerSettingsSlot(workspace)).width();
+    }
+
+    private int cornerLength(MKStructureWorkspace workspace) {
+        return workspace.topologyProfile().towerStackSettingsOrDefault(cornerSettingsSlot(workspace)).length();
+    }
+
+    private String cornerSettingsSlot(MKStructureWorkspace workspace) {
+        return workspace.topologyProfile().anySharedCornerTower() ? "keep.corner.shared" : "keep.corner.north_west";
+    }
+
+    private List<MKPlannedPiece> createPerimeterPieces(MKStructureWorkspace workspace, PerimeterPlan perimeterPlan) {
+        ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
+        for (PerimeterSegment segment : perimeterPlan.allSegments()) {
+            MKWorkspaceLinearRunFamilyDefinition family = segment.family();
+            if (!family.supportedShapes().contains(MKWorkspaceLinearRunPieceShape.STRAIGHT)) {
+                continue;
+            }
+            ResolvedOpeningProfile opening = resolveOpeningProfile(workspace, family.openingProfileId())
+                    .orElseThrow(() -> new IllegalStateException("missing linear run opening profile " +
+                            family.openingProfileId()));
+            pieces.add(new MKPlannedPiece(
+                    segment.slotId(),
+                    segment.pieceName(),
+                    segment.eastWest() ? family.length() : family.interiorWidth(),
+                    segment.eastWest() ? family.interiorWidth() : family.length(),
+                    family.interiorHeight() + Math.abs(family.slopeDelta()),
+                    perimeterSegmentConnectors(segment, opening),
+                    buildLinearRunTags(workspace, family, segment)
+            ));
+        }
+        return List.copyOf(pieces);
+    }
+
+    private List<MKPlannedConnector> perimeterSegmentConnectors(PerimeterSegment segment,
+                                                                ResolvedOpeningProfile opening) {
+        ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
+        connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, segment.incomingFacing(),
+                opening.openingWidth(), opening.openingHeight(), 0, 0, EMPTY_POOL, slotPool(segment.slotId())));
+        if (segment.terminal()) {
+            connectors.add(MKPlannedConnector.openingOnly(MKConnectorRole.BRANCH, segment.outgoingFacing(),
+                    opening.openingWidth(), opening.openingHeight(), 0, 0));
+        } else {
+            connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, segment.outgoingFacing(),
+                    opening.openingWidth(), opening.openingHeight(), slotPool(segment.outgoingTargetSlotId())));
+        }
+        return List.copyOf(connectors);
+    }
+
     private List<MKPlannedConnector> roomLayoutConnectors(String topologySlotId, SlotAvailability slots,
                                                           ResolvedOpeningProfile opening) {
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
@@ -389,20 +576,22 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             case "keep.gate.main" -> {
                 connectors.add(new MKPlannedConnector(MKConnectorRole.MAIN_FORWARD, Direction.NORTH,
                         opening.openingWidth(), opening.openingHeight(), EMPTY_POOL, slotPool("keep.gate.main")));
-                addBranchTarget(connectors, Direction.WEST, "keep.perimeter.south", availableSlots, opening);
-                addBranchTarget(connectors, Direction.EAST, "keep.perimeter.south", availableSlots, opening);
+                slots.perimeterPlan().firstSouthWest()
+                        .ifPresent(segment -> addBranchTargetDirect(connectors, Direction.WEST,
+                                segment.slotId(), opening));
             }
             case "keep.corner.shared" -> addSharedCornerConnectors(connectors, slots.sharedCornerSlots(),
-                    availableSlots, opening);
+                    slots.perimeterPlan(), opening);
             case "keep.corner.shared.entry" -> addSharedCornerConnectors(connectors, slots.sharedCornerSlots(),
-                    availableSlots, opening);
+                    slots.perimeterPlan(), opening);
             case "keep.corner.north_west", "keep.corner.north_east", "keep.corner.south_east",
-                 "keep.corner.south_west" -> addConcreteCornerConnectors(connectors, topologySlotId, availableSlots,
+                 "keep.corner.south_west" -> addConcreteCornerConnectors(connectors, topologySlotId,
+                    slots.perimeterPlan(),
                     opening);
             case "keep.corner.north_west.entry", "keep.corner.north_east.entry", "keep.corner.south_east.entry",
                  "keep.corner.south_west.entry" -> addConcreteCornerConnectors(connectors,
-                    topologySlotId.substring(0, topologySlotId.length() - ".entry".length()), availableSlots,
-                    opening);
+                    topologySlotId.substring(0, topologySlotId.length() - ".entry".length()),
+                    slots.perimeterPlan(), opening);
             default -> {
             }
         }
@@ -459,68 +648,67 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     }
 
     private void addSharedCornerConnectors(List<MKPlannedConnector> connectors, Set<String> sharedCornerSlots,
-                                           Set<String> availableSlots,
-                                           ResolvedOpeningProfile opening) {
+                                           PerimeterPlan perimeterPlan, ResolvedOpeningProfile opening) {
         if (sharedCornerSlots.contains("keep.corner.north_west")) {
-            addCornerEntryConnector(connectors, "keep.corner.north_west", Direction.EAST, "keep.perimeter.north",
-                    availableSlots, opening);
+            addConcreteCornerConnectors(connectors, "keep.corner.north_west", perimeterPlan, opening);
         }
         if (sharedCornerSlots.contains("keep.corner.north_east")) {
-            addCornerEntryConnector(connectors, "keep.corner.north_east", Direction.WEST, "keep.perimeter.north",
-                    availableSlots, opening);
+            addConcreteCornerConnectors(connectors, "keep.corner.north_east", perimeterPlan, opening);
         }
         if (sharedCornerSlots.contains("keep.corner.south_east")) {
-            addCornerEntryConnector(connectors, "keep.corner.south_east", Direction.WEST, "keep.perimeter.south",
-                    availableSlots, opening);
+            addConcreteCornerConnectors(connectors, "keep.corner.south_east", perimeterPlan, opening);
         }
         if (sharedCornerSlots.contains("keep.corner.south_west")) {
-            addCornerEntryConnector(connectors, "keep.corner.south_west", Direction.EAST, "keep.perimeter.south",
-                    availableSlots, opening);
+            addConcreteCornerConnectors(connectors, "keep.corner.south_west", perimeterPlan, opening);
         }
     }
 
     private void addConcreteCornerConnectors(List<MKPlannedConnector> connectors, String cornerSlotId,
-                                             Set<String> availableSlots, ResolvedOpeningProfile opening) {
+                                             PerimeterPlan perimeterPlan, ResolvedOpeningProfile opening) {
         switch (cornerSlotId) {
             case "keep.corner.north_west" -> {
-                addCornerEntryConnector(connectors, cornerSlotId, Direction.EAST, "keep.perimeter.north",
-                        availableSlots, opening);
-                addBranchTarget(connectors, Direction.SOUTH, "keep.perimeter.west", availableSlots, opening);
+                addIncomingCornerConnector(connectors, cornerSlotId, Direction.SOUTH, opening);
+                perimeterPlan.firstNorth().ifPresent(segment -> addBranchTargetDirect(connectors, Direction.EAST,
+                        segment.slotId(), opening));
             }
             case "keep.corner.north_east" -> {
-                addCornerEntryConnector(connectors, cornerSlotId, Direction.WEST, "keep.perimeter.north",
-                        availableSlots, opening);
-                addBranchTarget(connectors, Direction.SOUTH, "keep.perimeter.east", availableSlots, opening);
+                addIncomingCornerConnector(connectors, cornerSlotId, Direction.WEST, opening);
+                perimeterPlan.firstEast().ifPresent(segment -> addBranchTargetDirect(connectors, Direction.SOUTH,
+                        segment.slotId(), opening));
             }
             case "keep.corner.south_east" -> {
-                addCornerEntryConnector(connectors, cornerSlotId, Direction.WEST, "keep.perimeter.south",
-                        availableSlots, opening);
-                addBranchTarget(connectors, Direction.NORTH, "keep.perimeter.east", availableSlots, opening);
+                addIncomingCornerConnector(connectors, cornerSlotId, Direction.NORTH, opening);
+                perimeterPlan.firstSouthEast().ifPresent(segment -> addBranchTargetDirect(connectors, Direction.WEST,
+                        segment.slotId(), opening));
             }
             case "keep.corner.south_west" -> {
-                addCornerEntryConnector(connectors, cornerSlotId, Direction.EAST, "keep.perimeter.south",
-                        availableSlots, opening);
-                addBranchTarget(connectors, Direction.NORTH, "keep.perimeter.west", availableSlots, opening);
+                addIncomingCornerConnector(connectors, cornerSlotId, Direction.EAST, opening);
+                perimeterPlan.firstWest().ifPresent(segment -> addBranchTargetDirect(connectors, Direction.NORTH,
+                        segment.slotId(), opening));
             }
             default -> {
             }
         }
     }
 
-    private void addCornerEntryConnector(List<MKPlannedConnector> connectors, String cornerSlotId, Direction facing,
-                                         String targetPerimeterSlotId, Set<String> availableSlots,
-                                         ResolvedOpeningProfile opening) {
+    private void addIncomingCornerConnector(List<MKPlannedConnector> connectors, String cornerSlotId,
+                                            Direction facing, ResolvedOpeningProfile opening) {
         connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, facing,
                 opening.openingWidth(), opening.openingHeight(), 0, 0,
-                poolOrEmpty(targetPerimeterSlotId, availableSlots), slotPool(cornerSlotId)));
+                EMPTY_POOL, slotPool(cornerSlotId)));
     }
 
     private void addBranchTarget(List<MKPlannedConnector> connectors, Direction facing, String targetSlotId,
                                  Set<String> availableSlots, ResolvedOpeningProfile opening) {
         if (availableSlots.contains(targetSlotId)) {
-            connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, facing,
-                    opening.openingWidth(), opening.openingHeight(), slotPool(targetSlotId)));
+            addBranchTargetDirect(connectors, facing, targetSlotId, opening);
         }
+    }
+
+    private void addBranchTargetDirect(List<MKPlannedConnector> connectors, Direction facing, String targetSlotId,
+                                       ResolvedOpeningProfile opening) {
+        connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, facing,
+                opening.openingWidth(), opening.openingHeight(), slotPool(targetSlotId)));
     }
 
     private Map<String, String> buildRoomTags(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family) {
@@ -557,10 +745,29 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
 
     private Map<String, String> buildLinearRunTags(MKStructureWorkspace workspace,
                                                    MKWorkspaceLinearRunFamilyDefinition linearRun) {
+        return buildLinearRunTags(workspace, linearRun, linearRun.topologySlotId());
+    }
+
+    private Map<String, String> buildLinearRunTags(MKStructureWorkspace workspace,
+                                                   MKWorkspaceLinearRunFamilyDefinition linearRun,
+                                                   PerimeterSegment segment) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>(
+                buildLinearRunTags(workspace, linearRun, segment.slotId()));
+        tags.put("workspace_perimeter_source_slot_id", linearRun.topologySlotId());
+        tags.put("workspace_perimeter_chain_id", segment.chainId());
+        tags.put("workspace_perimeter_side", segment.side());
+        tags.put("workspace_perimeter_segment_index", Integer.toString(segment.index()));
+        tags.put("workspace_perimeter_segment_count", Integer.toString(segment.count()));
+        return tags;
+    }
+
+    private Map<String, String> buildLinearRunTags(MKStructureWorkspace workspace,
+                                                   MKWorkspaceLinearRunFamilyDefinition linearRun,
+                                                   String topologySlotId) {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>();
-        tags.put("topology_role", linearRun.topologySlotId());
-        tags.put("workspace_topology_slot_id", linearRun.topologySlotId());
-        tags.put("workspace_topology_role_id", linearRun.topologySlotId());
+        tags.put("topology_role", topologySlotId);
+        tags.put("workspace_topology_slot_id", topologySlotId);
+        tags.put("workspace_topology_role_id", topologySlotId);
         tags.put("tower_piece_kind", "linear_run");
         tags.put("workspace_piece_kind", "instance");
         tags.put("workspace_linear_run_family_id", linearRun.linearRunId());
@@ -648,8 +855,14 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
 
     private static boolean isKnownKeepSlot(String topologySlotId) {
         return KNOWN_KEEP_SLOTS.contains(topologySlotId) ||
+                topologySlotId.startsWith(PERIMETER_ROOT_SLOT + ".") ||
                 isCenterStackSlot(topologySlotId) ||
                 isCornerStackSlot(topologySlotId);
+    }
+
+    private static boolean isPerimeterRunFamily(MKWorkspaceLinearRunFamilyDefinition linearRun) {
+        return linearRun.topologySlotId().equals(PERIMETER_ROOT_SLOT) ||
+                linearRun.topologySlotId().startsWith(PERIMETER_ROOT_SLOT + ".");
     }
 
     private static boolean isCenterStackSlot(String topologySlotId) {
