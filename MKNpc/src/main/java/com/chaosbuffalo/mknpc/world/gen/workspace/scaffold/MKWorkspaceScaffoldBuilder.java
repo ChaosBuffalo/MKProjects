@@ -49,6 +49,7 @@ public class MKWorkspaceScaffoldBuilder {
     private static final String LINEAR_RUN_KIND_TAG = "workspace_linear_run_kind";
     private static final String HORIZONTAL_EXTRUSION_MODE_TAG = "workspace_horizontal_extrusion_mode";
     private static final String CONNECTOR_STITCH_TAG = "workspace_connector_stitch";
+    private static final ResourceLocation EMPTY_POOL = ResourceLocation.parse("minecraft:empty");
 
     private final MKWorkspaceGridLayout gridLayout = new MKWorkspaceGridLayout();
 
@@ -683,10 +684,10 @@ public class MKWorkspaceScaffoldBuilder {
         level.setBlock(connectorPos, Blocks.JIGSAW.defaultBlockState()
                 .setValue(JigsawBlock.ORIENTATION, getJigsawOrientation(facing)), Block.UPDATE_ALL);
         BlockEntity entity = level.getBlockEntity(connectorPos);
-        ResourceLocation name = ResourceLocation.fromNamespaceAndPath(workspace.namespace(), plannedConnector.role().getSerializedName());
-        ResourceLocation target = ResourceLocation.fromNamespaceAndPath(workspace.namespace(), getTargetName(plannedConnector.role()));
         ResourceLocation pool = getConnectorPool(workspace, plannedConnector.targetPoolName(), piece);
         ResourceLocation incomingPool = getIncomingConnectorPool(workspace, plannedConnector.incomingPoolName());
+        ResourceLocation name = getJigsawName(workspace, plannedConnector, incomingPool);
+        ResourceLocation target = getJigsawTarget(workspace, plannedConnector, pool);
         if (entity instanceof JigsawBlockEntity jigsaw) {
             jigsaw.setName(name);
             jigsaw.setTarget(target);
@@ -708,6 +709,26 @@ public class MKWorkspaceScaffoldBuilder {
                 pool,
                 incomingPool
         );
+    }
+
+    private ResourceLocation getJigsawName(MKStructureWorkspace workspace, MKPlannedConnector connector,
+                                           ResourceLocation incomingPool) {
+        if (!isEmptyPool(incomingPool)) {
+            return incomingPool;
+        }
+        return ResourceLocation.fromNamespaceAndPath(workspace.namespace(), connector.role().getSerializedName());
+    }
+
+    private ResourceLocation getJigsawTarget(MKStructureWorkspace workspace, MKPlannedConnector connector,
+                                             ResourceLocation targetPool) {
+        if (!isEmptyPool(targetPool)) {
+            return targetPool;
+        }
+        return ResourceLocation.fromNamespaceAndPath(workspace.namespace(), getTargetName(connector.role()));
+    }
+
+    private boolean isEmptyPool(ResourceLocation pool) {
+        return EMPTY_POOL.equals(pool);
     }
 
     private void extendHorizontalConnectorShell(ServerLevel level, BoundingBox exportBounds, BlockPos geometryOrigin,
