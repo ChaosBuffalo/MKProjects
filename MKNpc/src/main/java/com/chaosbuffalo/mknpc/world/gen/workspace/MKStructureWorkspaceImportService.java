@@ -19,6 +19,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceI
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
@@ -111,6 +112,10 @@ public class MKStructureWorkspaceImportService {
             if (exported == null) {
                 continue;
             }
+            if (MKWorkspaceTemplateReuseTags.isDerived(exported.tags())) {
+                importedPieces.add(mergeImportedPiece(piece, exported, workspace));
+                continue;
+            }
             StructureTemplate template = templatesByPieceName.get(piece.pieceName());
             if (template == null || !placeSavedStructure(level, template, piece.worldOrigin())) {
                 return MKWorkspaceImportOutcome.failed();
@@ -140,6 +145,9 @@ public class MKStructureWorkspaceImportService {
                 MKNpc.LOGGER.warn("Workspace manifest {} is missing exported piece data for planned piece {}",
                         manifestId, plannedPiece.pieceName());
                 return Optional.empty();
+            }
+            if (MKWorkspaceTemplateReuseTags.isDerived(exported.tags())) {
+                continue;
             }
             ResourceLocation structureId = ResourceLocation.parse(exported.structureId());
             Optional<StructureTemplate> templateOpt = level.getStructureManager().get(structureId);

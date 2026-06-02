@@ -8,6 +8,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
@@ -76,13 +77,29 @@ public class MKWorkspaceScaffoldBuilder {
 
     public List<MKWorkspacePieceDefinition> build(ServerLevel level, MKStructureWorkspace workspace,
                                                   List<MKPlannedPiece> plannedPieces) {
-        List<MKWorkspaceGridLayout.Placement> placements = gridLayout.assignPlacements(workspace.anchor(), plannedPieces,
+        List<MKPlannedPiece> authoringPieces = plannedPieces.stream()
+                .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
+                .toList();
+        List<MKWorkspaceGridLayout.Placement> placements = gridLayout.assignPlacements(workspace.anchor(), authoringPieces,
                 workspace.shellMargin(), workspace.exteriorAirMargin(), workspace.previewMargin(), GRID_COLUMNS,
                 CELL_PADDING);
         clearWorkspaceArea(level, workspace, placements);
+        Map<String, MKWorkspacePieceDefinition> authoringByBaseName = new HashMap<>();
+        Map<MKPlannedPiece, MKWorkspacePieceDefinition> generatedByPlan = new HashMap<>();
+        for (int i = 0; i < authoringPieces.size(); i++) {
+            MKPlannedPiece plannedPiece = authoringPieces.get(i);
+            MKWorkspacePieceDefinition generated = buildPiece(level, workspace, plannedPiece, placements.get(i));
+            generatedByPlan.put(plannedPiece, generated);
+            authoringByBaseName.put(plannedPiece.tags().getOrDefault(MKWorkspaceGridLayout.TAG_BASE_NAME,
+                    plannedPiece.pieceName()), generated);
+        }
         List<MKWorkspacePieceDefinition> generatedPieces = new ArrayList<>();
-        for (int i = 0; i < plannedPieces.size(); i++) {
-            generatedPieces.add(buildPiece(level, workspace, plannedPieces.get(i), placements.get(i)));
+        for (MKPlannedPiece plannedPiece : plannedPieces) {
+            if (MKWorkspaceTemplateReuseTags.isDerived(plannedPiece.tags())) {
+                generatedPieces.add(createDerivedLogicalPiece(workspace, plannedPiece, authoringByBaseName));
+            } else {
+                generatedPieces.add(generatedByPlan.get(plannedPiece));
+            }
         }
         return generatedPieces;
     }
@@ -102,6 +119,9 @@ public class MKWorkspaceScaffoldBuilder {
     public MKWorkspacePieceDefinition cloneFromTemplate(ServerLevel level, MKStructureWorkspace workspace,
                                                         MKWorkspacePieceDefinition templatePiece, MKPlannedPiece targetPiece,
                                                         List<MKPlannedPiece> layoutPieces) {
+        if (MKWorkspaceTemplateReuseTags.isDerived(targetPiece.tags())) {
+            return createDerivedLogicalPiece(workspace, targetPiece, templatePiece);
+        }
         List<MKWorkspaceGridLayout.Placement> placements = gridLayout.assignPlacements(workspace.anchor(), layoutPieces,
                 workspace.shellMargin(), workspace.exteriorAirMargin(), workspace.previewMargin(), GRID_COLUMNS,
                 CELL_PADDING);
@@ -126,6 +146,33 @@ public class MKWorkspaceScaffoldBuilder {
         copyGeneratedStairTags(templatePiece, pieceTags);
         return createPieceDefinition(workspace, targetPiece, placements.get(index), context, connectors,
                 structureBlockPos, signPos, markerPositions, generatedStairPositions, pieceTags);
+    }
+
+    public MKWorkspacePieceDefinition createDerivedLogicalPiece(MKStructureWorkspace workspace, MKPlannedPiece targetPiece,
+                                                                MKWorkspacePieceDefinition sourcePiece) {
+        PieceBuildContext context = createBuildContext(workspace, targetPiece, placementFromSource(sourcePiece));
+        List<MKWorkspaceConnectorDefinition> connectors = createLogicalConnectors(workspace, targetPiece, context);
+        return createPieceDefinition(workspace, targetPiece, placementFromSource(sourcePiece), context, connectors,
+                context.exportOrigin(), context.exportOrigin(), List.of(), List.of(), new HashMap<>(targetPiece.tags()));
+    }
+
+    private MKWorkspacePieceDefinition createDerivedLogicalPiece(MKStructureWorkspace workspace, MKPlannedPiece targetPiece,
+                                                                 Map<String, MKWorkspacePieceDefinition> authoringByBaseName) {
+        String sourceId = MKWorkspaceTemplateReuseTags.sourceId(targetPiece.tags());
+        MKWorkspacePieceDefinition sourcePiece = authoringByBaseName.get(sourceId);
+        if (sourcePiece == null) {
+            throw new IllegalStateException("derived workspace piece " + targetPiece.pieceName() +
+                    " references missing authoring source " + sourceId);
+        }
+        return createDerivedLogicalPiece(workspace, targetPiece, sourcePiece);
+    }
+
+    private MKWorkspaceGridLayout.Placement placementFromSource(MKWorkspacePieceDefinition sourcePiece) {
+        return new MKWorkspaceGridLayout.Placement(
+                new BlockPos(sourcePiece.previewBounds().minX(), sourcePiece.previewBounds().minY(),
+                        sourcePiece.previewBounds().minZ()),
+                sourcePiece.previewBounds()
+        );
     }
 
     public void clearLayoutAreaForPieces(ServerLevel level, MKStructureWorkspace workspace,
@@ -259,6 +306,61 @@ public class MKWorkspaceScaffoldBuilder {
                 .mapToInt(MKWorkspaceConnectorDefinition::openingHeight)
                 .findFirst()
                 .orElse(workspace.dimensions().doorwayHeight());
+    }
+
+    private List<MKWorkspaceConnectorDefinition> createLogicalConnectors(MKStructureWorkspace workspace,
+                                                                         MKPlannedPiece targetPiece,
+                                                                         PieceBuildContext context) {
+        List<MKWorkspaceConnectorDefinition> connectors = new ArrayList<>();
+        int shellMargin = getShellMargin(targetPiece, workspace.shellMargin());
+        int verticalShellThickness = getVerticalShellThickness(targetPiece);
+        for (MKPlannedConnector plannedConnector : targetPiece.connectors()) {
+            MKWorkspaceConnectorDefinition connector = createLogicalConnector(workspace, targetPiece, plannedConnector,
+                    context.exportOrigin(), context.exportBounds(), context.geometryOrigin(), shellMargin,
+                    verticalShellThickness, context.geometryBounds().getXSpan(), context.geometryBounds().getZSpan(),
+                    context.geometryBounds().getYSpan(), context.geometryInteriorHeight());
+            if (connector != null) {
+                connectors.add(connector);
+            }
+        }
+        return connectors;
+    }
+
+    private MKWorkspaceConnectorDefinition createLogicalConnector(MKStructureWorkspace workspace, MKPlannedPiece piece,
+                                                                  MKPlannedConnector plannedConnector,
+                                                                  BlockPos exportOrigin, BoundingBox exportBounds,
+                                                                  BlockPos geometryOrigin, int shellMargin,
+                                                                  int verticalShellThickness, int geometryWidth,
+                                                                  int geometryLength, int geometryHeight,
+                                                                  int geometryInteriorHeight) {
+        Direction facing = plannedConnector.facing();
+        int interiorCenterX = getConnectorCenterX(geometryOrigin, piece, shellMargin, plannedConnector);
+        int interiorCenterZ = getConnectorCenterZ(geometryOrigin, piece, shellMargin, plannedConnector);
+        int openingBaseY = getOpeningBaseY(geometryOrigin, verticalShellThickness, plannedConnector);
+        validateConnectorBounds(piece, plannedConnector, shellMargin, openingBaseY - geometryOrigin.getY(),
+                geometryInteriorHeight);
+        if (!plannedConnector.placesJigsaw()) {
+            return null;
+        }
+        BlockPos connectorPos = connectorPosition(facing, exportBounds, geometryOrigin, geometryWidth,
+                geometryLength, geometryHeight, verticalShellThickness, interiorCenterX, interiorCenterZ, openingBaseY);
+        ResourceLocation pool = getConnectorPool(workspace, plannedConnector.targetPoolName(), piece);
+        ResourceLocation incomingPool = getIncomingConnectorPool(workspace, plannedConnector.incomingPoolName());
+        ResourceLocation name = getJigsawName(workspace, plannedConnector, incomingPool);
+        ResourceLocation target = getJigsawTarget(workspace, plannedConnector, pool);
+        return new MKWorkspaceConnectorDefinition(
+                plannedConnector.role(),
+                facing,
+                connectorPos.subtract(exportOrigin),
+                plannedConnector.openingWidth(),
+                plannedConnector.openingHeight(),
+                plannedConnector.lateralOffset(),
+                plannedConnector.verticalOffset(),
+                name,
+                target,
+                pool,
+                incomingPool
+        );
     }
 
     private List<BlockPos> remapGeneratedStairPositions(MKWorkspacePieceDefinition templatePiece, BlockPos exportOrigin) {
@@ -654,24 +756,8 @@ public class MKWorkspaceScaffoldBuilder {
         int openingBaseY = getOpeningBaseY(geometryOrigin, verticalShellThickness, plannedConnector);
         validateConnectorBounds(piece, plannedConnector, shellMargin, openingBaseY - geometryOrigin.getY(),
                 geometryInteriorHeight);
-        BlockPos connectorPos;
-        if (facing == Direction.NORTH) {
-            connectorPos = new BlockPos(interiorCenterX, openingBaseY, exportBounds.minZ());
-        } else if (facing == Direction.SOUTH) {
-            connectorPos = new BlockPos(interiorCenterX, openingBaseY, exportBounds.maxZ());
-        } else if (facing == Direction.WEST) {
-            connectorPos = new BlockPos(exportBounds.minX(), openingBaseY, interiorCenterZ);
-        } else if (facing == Direction.EAST) {
-            connectorPos = new BlockPos(exportBounds.maxX(), openingBaseY, interiorCenterZ);
-        } else if (facing == Direction.UP) {
-            connectorPos = new BlockPos(interiorCenterX,
-                    geometryOrigin.getY() + geometryHeight - Math.max(1, verticalShellThickness),
-                    interiorCenterZ);
-        } else {
-            connectorPos = new BlockPos(interiorCenterX,
-                    geometryOrigin.getY() + Math.max(0, verticalShellThickness - 1),
-                    interiorCenterZ);
-        }
+        BlockPos connectorPos = connectorPosition(facing, exportBounds, geometryOrigin, geometryWidth,
+                geometryLength, geometryHeight, verticalShellThickness, interiorCenterX, interiorCenterZ, openingBaseY);
 
         extendHorizontalConnectorShell(level, exportBounds, geometryOrigin, piece, plannedConnector, shellMargin,
                 verticalShellThickness, geometryWidth, geometryLength, geometryHeight, floorState, wallState,
@@ -709,6 +795,28 @@ public class MKWorkspaceScaffoldBuilder {
                 pool,
                 incomingPool
         );
+    }
+
+    private BlockPos connectorPosition(Direction facing, BoundingBox exportBounds, BlockPos geometryOrigin,
+                                       int geometryWidth, int geometryLength, int geometryHeight,
+                                       int verticalShellThickness, int interiorCenterX, int interiorCenterZ,
+                                       int openingBaseY) {
+        if (facing == Direction.NORTH) {
+            return new BlockPos(interiorCenterX, openingBaseY, exportBounds.minZ());
+        } else if (facing == Direction.SOUTH) {
+            return new BlockPos(interiorCenterX, openingBaseY, exportBounds.maxZ());
+        } else if (facing == Direction.WEST) {
+            return new BlockPos(exportBounds.minX(), openingBaseY, interiorCenterZ);
+        } else if (facing == Direction.EAST) {
+            return new BlockPos(exportBounds.maxX(), openingBaseY, interiorCenterZ);
+        } else if (facing == Direction.UP) {
+            return new BlockPos(interiorCenterX,
+                    geometryOrigin.getY() + geometryHeight - Math.max(1, verticalShellThickness),
+                    interiorCenterZ);
+        }
+        return new BlockPos(interiorCenterX,
+                geometryOrigin.getY() + Math.max(0, verticalShellThickness - 1),
+                interiorCenterZ);
     }
 
     private ResourceLocation getJigsawName(MKStructureWorkspace workspace, MKPlannedConnector connector,

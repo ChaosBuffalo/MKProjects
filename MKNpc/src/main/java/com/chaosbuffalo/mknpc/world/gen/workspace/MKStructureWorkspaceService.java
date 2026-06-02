@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefiniti
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteSwapSafety;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
@@ -244,10 +245,8 @@ public class MKStructureWorkspaceService {
         MKPlannedPiece variantPiece = toVariantPiece(basePiece, nextVariantIndex);
         layoutPieces.add(variantPiece);
 
-        MKWorkspacePieceDefinition templatePiece = sourcePiece != null ? sourcePiece : workspace.pieces().stream()
-                .filter(piece -> piece.variantIndex() == 0 && targetBasePieceName.equals(getBaseName(piece)))
-                .findFirst()
-                .orElse(null);
+        MKWorkspacePieceDefinition templatePiece = resolveVariantSourcePiece(workspace, targetBasePieceName,
+                nextVariantIndex, sourcePiece);
         if (templatePiece == null) {
             return Optional.empty();
         }
@@ -301,13 +300,6 @@ public class MKStructureWorkspaceService {
             if (basePiece == null) {
                 return Optional.empty();
             }
-            MKWorkspacePieceDefinition templatePiece = workspace.pieces().stream()
-                    .filter(piece -> piece.variantIndex() == 0 && basePieceName.equals(getBaseName(piece)))
-                    .findFirst()
-                    .orElse(null);
-            if (templatePiece == null) {
-                return Optional.empty();
-            }
             int nextVariantIndex = workspace.pieces().stream()
                     .filter(piece -> basePieceName.equals(getBaseName(piece)))
                     .mapToInt(MKWorkspacePieceDefinition::variantIndex)
@@ -320,6 +312,11 @@ public class MKStructureWorkspaceService {
             }
             MKPlannedPiece variantPiece = toVariantPiece(basePiece, nextVariantIndex);
             layoutPieces.add(variantPiece);
+            MKWorkspacePieceDefinition templatePiece = resolveVariantSourcePiece(workspace, basePieceName,
+                    nextVariantIndex, null);
+            if (templatePiece == null) {
+                return Optional.empty();
+            }
             templatePieces.add(templatePiece);
             variantPieces.add(variantPiece);
         }
@@ -527,6 +524,38 @@ public class MKStructureWorkspaceService {
         tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, Integer.toString(variantIndex));
         tags.put("workspace_piece_kind", pieceKind);
         return tags;
+    }
+
+    private MKWorkspacePieceDefinition resolveVariantSourcePiece(MKStructureWorkspace workspace, String targetBaseName,
+                                                                 int targetVariantIndex,
+                                                                 MKWorkspacePieceDefinition explicitSourcePiece) {
+        if (explicitSourcePiece != null) {
+            return explicitSourcePiece;
+        }
+        MKWorkspacePieceDefinition baseTemplate = workspace.pieces().stream()
+                .filter(piece -> piece.variantIndex() == 0 && targetBaseName.equals(getBaseName(piece)))
+                .findFirst()
+                .orElse(null);
+        if (baseTemplate == null) {
+            return null;
+        }
+        if (!MKWorkspaceTemplateReuseTags.isDerived(baseTemplate.tags())) {
+            return baseTemplate;
+        }
+        String sourceId = MKWorkspaceTemplateReuseTags.sourceId(baseTemplate.tags());
+        MKWorkspacePieceDefinition sameVariantSource = workspace.pieces().stream()
+                .filter(piece -> piece.variantIndex() == targetVariantIndex)
+                .filter(piece -> sourceId.equals(getBaseName(piece)))
+                .findFirst()
+                .orElse(null);
+        if (sameVariantSource != null) {
+            return sameVariantSource;
+        }
+        return workspace.pieces().stream()
+                .filter(piece -> piece.variantIndex() == 0)
+                .filter(piece -> sourceId.equals(getBaseName(piece)))
+                .findFirst()
+                .orElse(null);
     }
 
     private String getBaseName(MKWorkspacePieceDefinition piece) {

@@ -37,6 +37,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceI
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
@@ -767,6 +768,83 @@ class TowerWorkspaceV2Test {
         assertFalse(pieces.stream().anyMatch(piece -> "parapet".equals(piece.tags().get("workspace_linear_run_kind"))));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_walkway_south") &&
                 "open_walkway".equals(piece.tags().get("workspace_linear_run_kind"))));
+    }
+
+    @Test
+    void walledKeepPlannerMarksRotatedTemplateReuseForWallsAndSharedCorners() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(false),
+                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+        MKPlannedPiece wallSource = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_wall_segment_south_west_0"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece northWall = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_wall_segment_north_0"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece cornerSource = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_corner_north_west_entry"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece southEastCorner = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_corner_south_east_entry"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals("true", wallSource.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
+        assertEquals("keep_wall_segment_south_west_0",
+                wallSource.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
+        assertEquals(MKWorkspaceTemplateReuseTags.ROTATION_NONE,
+                wallSource.tags().get(MKWorkspaceTemplateReuseTags.ROTATION_TAG));
+        assertEquals("false", northWall.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
+        assertEquals("keep_wall_segment_south_west_0",
+                northWall.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
+        assertEquals(MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_180,
+                northWall.tags().get(MKWorkspaceTemplateReuseTags.ROTATION_TAG));
+        assertEquals(MKWorkspaceTemplateReuseTags.REUSE_MODE_ROTATE_EXPORT,
+                northWall.tags().get(MKWorkspaceTemplateReuseTags.REUSE_MODE_TAG));
+
+        assertEquals("true", cornerSource.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
+        assertEquals("keep_corner_north_west_entry",
+                cornerSource.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
+        assertEquals("false", southEastCorner.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
+        assertEquals("keep_corner_north_west_entry",
+                southEastCorner.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
+        assertEquals(MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_180,
+                southEastCorner.tags().get(MKWorkspaceTemplateReuseTags.ROTATION_TAG));
+    }
+
+    @Test
+    void walledKeepSharedCornerPlannerNormalizesHorizontalDimensionsToSquare() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
+                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.corner.shared", 1, 1, 7,
+                        9, 13, true, false));
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                topologyProfile,
+                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+        List<MKPlannedPiece> sharedCornerEntries = pieces.stream()
+                .filter(piece -> piece.pieceName().startsWith("keep_corner_"))
+                .filter(piece -> piece.tags().getOrDefault("workspace_topology_slot_id", "").endsWith(".entry"))
+                .toList();
+
+        assertEquals(4, sharedCornerEntries.size());
+        for (MKPlannedPiece cornerEntry : sharedCornerEntries) {
+            assertEquals(13, cornerEntry.interiorWidth());
+            assertEquals(13, cornerEntry.interiorLength());
+        }
     }
 
     @Test

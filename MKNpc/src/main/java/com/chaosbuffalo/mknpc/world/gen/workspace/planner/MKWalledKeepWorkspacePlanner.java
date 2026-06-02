@@ -13,6 +13,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolv
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamilySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
@@ -276,6 +277,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         List<MKTowerWorkspaceFamilyDefinition> sharedFamilies = workspace.familyDefinitions().stream()
                 .filter(family -> family.topologySlotId().startsWith("keep.corner.shared."))
                 .toList();
+        MKWorkspaceTowerStackSettings sharedCornerSettings = normalizeSharedCornerSettings(
+                workspace.topologyProfile().towerStackSettingsOrDefault("keep.corner.shared"));
         for (String stackId : CONCRETE_CORNER_SLOTS) {
             List<MKTowerWorkspaceFamilyDefinition> stackFamilies;
             if (workspace.topologyProfile().uniqueCornerTower(stackId)) {
@@ -284,7 +287,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                         .toList();
             } else {
                 stackFamilies = sharedFamilies.stream()
-                        .map(family -> remapSharedCornerFamily(family, stackId))
+                        .map(family -> remapSharedCornerFamily(family, stackId, sharedCornerSettings))
                         .toList();
             }
             addCornerStackPieces(pieces, workspace, slots, stackId, stackFamilies);
@@ -298,27 +301,36 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         if (stackFamilies.isEmpty()) {
             return;
         }
+        boolean uniqueCorner = workspace.topologyProfile().uniqueCornerTower(stackId);
         MKWorkspaceTowerStackSettings settings = workspace.topologyProfile().towerStackSettingsOrDefault(
-                workspace.topologyProfile().uniqueCornerTower(stackId) ? stackId : "keep.corner.shared");
+                uniqueCorner ? stackId : "keep.corner.shared");
+        if (!uniqueCorner) {
+            settings = normalizeSharedCornerSettings(settings);
+        }
         MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped(stackId, false, settings);
         ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
         towerStackPlanner.createRoomPieces(workspace, stackDefinition, stackFamilies).stream()
                 .map(piece -> withRoomLayoutConnectors(piece, slots, opening))
+                .map(piece -> uniqueCorner ? piece : withSharedCornerTemplateReuse(piece, stackId))
                 .forEach(pieces::add);
     }
 
     private MKTowerWorkspaceFamilyDefinition remapSharedCornerFamily(MKTowerWorkspaceFamilyDefinition family,
-                                                                     String targetStackId) {
+                                                                     String targetStackId,
+                                                                     MKWorkspaceTowerStackSettings sharedSettings) {
         String targetBasePrefix = targetStackId.replace('.', '_');
         String baseName = family.baseName().replace("keep_corner_shared", targetBasePrefix);
         String topologySlotId = family.topologySlotId().replace("keep.corner.shared", targetStackId);
+        int normalizedRoomWidth = normalizeSharedCornerFamilyDimension(family.roomWidth(), family.roomLength(),
+                sharedSettings.width());
+        int normalizedRoomLength = normalizedRoomWidth;
         return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
                 baseName,
                 topologySlotId,
                 targetStackId,
                 family.supportsVerticalAccess(),
-                family.roomWidth(),
-                family.roomLength(),
+                normalizedRoomWidth,
+                normalizedRoomLength,
                 family.roomHeight(),
                 family.horizontalExtrusionMode(),
                 family.horizontalExits(),
@@ -327,6 +339,47 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 family.foundationPolicyOverride(),
                 family.paletteOverride()
         );
+    }
+
+    private MKWorkspaceTowerStackSettings normalizeSharedCornerSettings(MKWorkspaceTowerStackSettings settings) {
+        int size = Math.max(settings.width(), settings.length());
+        return new MKWorkspaceTowerStackSettings(
+                settings.stackId(),
+                settings.mainFloors(),
+                settings.basementFloors(),
+                settings.height(),
+                size,
+                size,
+                settings.shaftSize(),
+                settings.verticalAccessPlacement(),
+                settings.stairConfig(),
+                settings.topCapApproachEnabled(),
+                settings.basementCapApproachEnabled(),
+                settings.foundationPolicy(),
+                settings.paletteOverride()
+        );
+    }
+
+    private int normalizeSharedCornerFamilyDimension(int width, int length, int fallbackSize) {
+        if (width <= 0 && length <= 0) {
+            return fallbackSize;
+        }
+        return Math.max(width, length);
+    }
+
+    private MKPlannedPiece withSharedCornerTemplateReuse(MKPlannedPiece piece, String stackId) {
+        String sourceId = piece.pieceName().replace(stackId.replace('.', '_'), "keep_corner_north_west");
+        return withTemplateReuse(piece, sourceId, rotationForCornerStack(stackId),
+                "keep.corner.north_west".equals(stackId));
+    }
+
+    private String rotationForCornerStack(String stackId) {
+        return switch (stackId) {
+            case "keep.corner.north_east" -> MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_90;
+            case "keep.corner.south_east" -> MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_180;
+            case "keep.corner.south_west" -> MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_270;
+            default -> MKWorkspaceTemplateReuseTags.ROTATION_NONE;
+        };
     }
 
     private MKPlannedPiece withRoomLayoutConnectors(MKPlannedPiece piece, SlotAvailability slots,
@@ -547,6 +600,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
 
     private List<MKPlannedPiece> createPerimeterPieces(MKStructureWorkspace workspace, PerimeterPlan perimeterPlan) {
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
+        String templateSourceId = perimeterPlan.allSegments().stream()
+                .findFirst()
+                .map(PerimeterSegment::pieceName)
+                .orElse("");
         for (PerimeterSegment segment : perimeterPlan.allSegments()) {
             MKWorkspaceLinearRunFamilyDefinition family = segment.family();
             if (!family.supportedShapes().contains(MKWorkspaceLinearRunPieceShape.STRAIGHT)) {
@@ -555,7 +612,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             ResolvedOpeningProfile opening = resolveOpeningProfile(workspace, family.openingProfileId())
                     .orElseThrow(() -> new IllegalStateException("missing linear run opening profile " +
                             family.openingProfileId()));
-            pieces.add(new MKPlannedPiece(
+            MKPlannedPiece piece = new MKPlannedPiece(
                     segment.slotId(),
                     segment.pieceName(),
                     segment.eastWest() ? family.length() : family.interiorWidth(),
@@ -563,9 +620,41 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                     family.interiorHeight() + Math.abs(family.slopeDelta()),
                     perimeterSegmentConnectors(segment, opening),
                     buildLinearRunTags(workspace, family, segment)
-            ));
+            );
+            boolean authoringSource = segment.pieceName().equals(templateSourceId);
+            pieces.add(templateSourceId.isBlank() ? piece : withTemplateReuse(piece, templateSourceId,
+                    authoringSource ? MKWorkspaceTemplateReuseTags.ROTATION_NONE : rotationForPerimeterSegment(segment),
+                    authoringSource));
         }
         return List.copyOf(pieces);
+    }
+
+    private String rotationForPerimeterSegment(PerimeterSegment segment) {
+        return switch (segment.side()) {
+            case "west" -> MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_90;
+            case "north" -> MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_180;
+            case "east" -> MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_270;
+            default -> MKWorkspaceTemplateReuseTags.ROTATION_NONE;
+        };
+    }
+
+    private MKPlannedPiece withTemplateReuse(MKPlannedPiece piece, String sourceId, String rotation,
+                                             boolean authoringSource) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>(piece.tags());
+        tags.put(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG, sourceId);
+        tags.put(MKWorkspaceTemplateReuseTags.ROTATION_TAG, rotation);
+        tags.put(MKWorkspaceTemplateReuseTags.REUSE_MODE_TAG,
+                MKWorkspaceTemplateReuseTags.REUSE_MODE_ROTATE_EXPORT);
+        tags.put(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG, Boolean.toString(authoringSource));
+        return new MKPlannedPiece(
+                piece.roleId(),
+                piece.pieceName(),
+                piece.interiorWidth(),
+                piece.interiorLength(),
+                piece.interiorHeight(),
+                piece.connectors(),
+                tags
+        );
     }
 
     private List<MKPlannedConnector> perimeterSegmentConnectors(PerimeterSegment segment,
