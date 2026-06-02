@@ -758,6 +758,10 @@ class TowerWorkspaceV2Test {
                 .findFirst()
                 .orElseThrow();
         assertEquals(northWall.interiorWidth(), gatehouse.interiorWidth());
+        assertTrue(gatehouse.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.MAIN_BACK &&
+                        connector.facing() == Direction.SOUTH &&
+                        !connector.placesJigsaw()));
         assertEquals(7, northWall.interiorHeight());
         assertEquals("defensive_wall", northWall.tags().get("workspace_linear_run_kind"));
         assertFalse(pieces.stream().anyMatch(piece -> "parapet".equals(piece.tags().get("workspace_linear_run_kind"))));

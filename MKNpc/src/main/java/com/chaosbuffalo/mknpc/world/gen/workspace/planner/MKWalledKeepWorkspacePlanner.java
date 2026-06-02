@@ -597,6 +597,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             case "keep.gate.main" -> {
                 connectors.add(new MKPlannedConnector(MKConnectorRole.MAIN_FORWARD, Direction.NORTH,
                         opening.openingWidth(), opening.openingHeight(), EMPTY_POOL, slotPool("keep.gate.main")));
+                connectors.add(MKPlannedConnector.openingOnly(MKConnectorRole.MAIN_BACK, Direction.SOUTH,
+                        opening.openingWidth(), opening.openingHeight(), 0, 0));
                 slots.perimeterPlan().firstSouthWest()
                         .ifPresent(segment -> addBranchTargetDirect(connectors, Direction.WEST,
                                 segment.slotId(), opening));
