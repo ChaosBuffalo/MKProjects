@@ -520,25 +520,28 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         int verticalSegments = west.map(family -> segmentCountForSpan(family, verticalPerimeterSpan(workspace)))
                 .or(() -> east.map(family -> segmentCountForSpan(family, verticalPerimeterSpan(workspace))))
                 .orElse(0);
-        int halfHorizontalSegments = horizontalSegments > 0 ?
+        int frontBranchSegments = horizontalSegments > 0 ?
                 Math.max(1, (int) Math.ceil(horizontalSegments / 2.0)) : 0;
+        int northWestSegments = horizontalSegments > 0 ?
+                Math.max(1, (int) Math.ceil(horizontalSegments / 2.0)) : 0;
+        int northEastSegments = Math.max(0, horizontalSegments - northWestSegments);
         return new PerimeterPlan(
-                south.map(family -> createPerimeterChain("south_west", "south", family, halfHorizontalSegments,
+                south.map(family -> createPerimeterChain("south_west", "south", family, frontBranchSegments,
                         true, Direction.EAST, Direction.WEST, "keep.corner.south_west"))
                         .orElse(List.of()),
                 west.map(family -> createPerimeterChain("west", "west", family, verticalSegments,
                         false, Direction.SOUTH, Direction.NORTH, "keep.corner.north_west"))
                         .orElse(List.of()),
-                north.map(family -> createPerimeterChain("north_west", "north", family, halfHorizontalSegments,
+                north.map(family -> createPerimeterChain("north_west", "north", family, northWestSegments,
                         true, Direction.WEST, Direction.EAST, null))
                         .orElse(List.of()),
-                south.map(family -> createPerimeterChain("south_east", "south", family, halfHorizontalSegments,
+                south.map(family -> createPerimeterChain("south_east", "south", family, frontBranchSegments,
                         true, Direction.WEST, Direction.EAST, "keep.corner.south_east"))
                         .orElse(List.of()),
                 east.map(family -> createPerimeterChain("east", "east", family, verticalSegments,
                         false, Direction.SOUTH, Direction.NORTH, "keep.corner.north_east"))
                         .orElse(List.of()),
-                north.map(family -> createPerimeterChain("north_east", "north", family, halfHorizontalSegments,
+                north.map(family -> createPerimeterChain("north_east", "north", family, northEastSegments,
                         true, Direction.EAST, Direction.WEST, null))
                         .orElse(List.of())
         );

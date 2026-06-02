@@ -774,9 +774,13 @@ class TowerWorkspaceV2Test {
         assertEquals(
                 pieces.stream().filter(piece -> "south_west".equals(piece.tags().get("workspace_perimeter_chain_id"))).count(),
                 pieces.stream().filter(piece -> "south_east".equals(piece.tags().get("workspace_perimeter_chain_id"))).count());
-        assertEquals(
-                pieces.stream().filter(piece -> "north_west".equals(piece.tags().get("workspace_perimeter_chain_id"))).count(),
-                pieces.stream().filter(piece -> "north_east".equals(piece.tags().get("workspace_perimeter_chain_id"))).count());
+        long northWestCount = pieces.stream()
+                .filter(piece -> "north_west".equals(piece.tags().get("workspace_perimeter_chain_id")))
+                .count();
+        long northEastCount = pieces.stream()
+                .filter(piece -> "north_east".equals(piece.tags().get("workspace_perimeter_chain_id")))
+                .count();
+        assertEquals(1, northWestCount - northEastCount);
         MKPlannedPiece northWestTerminal = pieces.stream()
                 .filter(piece -> "north_west".equals(piece.tags().get("workspace_perimeter_chain_id")))
                 .filter(piece -> piece.tags().get("workspace_perimeter_segment_index")
