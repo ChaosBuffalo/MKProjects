@@ -333,9 +333,6 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                                                     ResolvedOpeningProfile opening) {
         String topologySlotId = piece.tags().getOrDefault("workspace_topology_slot_id", "");
         List<MKPlannedConnector> layoutConnectors = roomLayoutConnectors(topologySlotId, slots, opening);
-        if (layoutConnectors.isEmpty()) {
-            return piece;
-        }
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>(piece.connectors());
         connectors.addAll(layoutConnectors);
         return new MKPlannedPiece(
@@ -345,8 +342,28 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 piece.interiorLength(),
                 piece.interiorHeight(),
                 List.copyOf(connectors),
-                piece.tags()
+                keepRoomRuntimeTags(piece.tags())
         );
+    }
+
+    private Map<String, String> keepRoomRuntimeTags(Map<String, String> sourceTags) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>(sourceTags);
+        MKWorkspaceRuntimePieceInfo.fromTags(sourceTags)
+                .map(info -> new MKWorkspaceRuntimePieceInfo(
+                        info.start(),
+                        info.role(),
+                        info.progressionDelta(),
+                        info.verticalLevelDelta(),
+                        info.allowOnMainPath(),
+                        true,
+                        info.terminal(),
+                        info.topCapOnly(),
+                        info.topologyGroup(),
+                        info.mainPathEnding(),
+                        info.branchCap()
+                ))
+                .ifPresent(info -> info.applyToTags(tags));
+        return tags;
     }
 
     private SlotAvailability collectAvailableSlots(MKStructureWorkspace workspace, PerimeterPlan perimeterPlan) {

@@ -736,10 +736,16 @@ class TowerWorkspaceV2Test {
                 .findFirst()
                 .orElseThrow();
         assertEquals("keep.corner.north_west.entry", sharedCorner.tags().get("workspace_topology_slot_id"));
+        assertEquals("true", sharedCorner.tags().get(MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG));
         assertTrue(sharedCorner.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_UP));
         assertTrue(sharedCorner.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_DOWN));
+        MKPlannedPiece cornerTopCap = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_corner_north_west_top_cap"))
+                .findFirst()
+                .orElseThrow();
+        assertEquals("true", cornerTopCap.tags().get(MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_top_cap")));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_basement_cap")));
         MKPlannedPiece northWall = pieces.stream()
@@ -1053,6 +1059,11 @@ class TowerWorkspaceV2Test {
         assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/north_east", "keep_corner_shared");
         assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/south_east", "keep_corner_shared");
         assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/south_west", "keep_corner_shared");
+        MKWorkspaceExportManifest.ExportRuntimeTemplateGroup cornerGroup = manifest.runtimeHints().templateGroups().stream()
+                .filter(group -> group.baseName().equals("keep_corner_shared"))
+                .findFirst()
+                .orElseThrow();
+        assertTrue(cornerGroup.pieceMetadata().allowOnBranchPath());
     }
 
     @Test
