@@ -12,6 +12,8 @@ import java.util.Optional;
 import java.util.Set;
 
 public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteFamily {
+    public static final int DEFAULT_WALLED_KEEP_WALL_SEGMENT_LENGTH = 15;
+
     public static final Codec<MKWorkspaceLinearRunFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("linearRunId").forGetter(MKWorkspaceLinearRunFamilyDefinition::linearRunId),
             Codec.STRING.optionalFieldOf("topologySlotId", "").forGetter(MKWorkspaceLinearRunFamilyDefinition::topologySlotId),
@@ -179,7 +181,8 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
         ));
         return List.of(
             keepRun("keep_wall_segment", "keep.perimeter", MKWorkspaceLinearRunKind.DEFENSIVE_WALL,
-                    "branch_opening", 15, 3, keepHeight, false, true, wallFoundation),
+                    "branch_opening", DEFAULT_WALLED_KEEP_WALL_SEGMENT_LENGTH, 3, keepHeight, false, true,
+                    wallFoundation),
                 keepRun("keep_walkway_south", "keep.walkway.south", MKWorkspaceLinearRunKind.OPEN_WALKWAY,
                         "main_opening", 9, dimensions.shaftWidth(), keepHeight, true, false, MKWorkspaceFoundationPolicy.none())
         );

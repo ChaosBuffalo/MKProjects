@@ -737,6 +737,7 @@ class TowerWorkspaceV2Test {
                 .orElseThrow();
         assertEquals("keep.corner.north_west.entry", sharedCorner.tags().get("workspace_topology_slot_id"));
         assertEquals("true", sharedCorner.tags().get(MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG));
+        assertEquals("full_face", sharedCorner.tags().get("workspace_connector_stitch"));
         assertTrue(sharedCorner.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_UP));
         assertTrue(sharedCorner.connectors().stream().anyMatch(connector ->
@@ -752,6 +753,11 @@ class TowerWorkspaceV2Test {
                 .filter(piece -> piece.pieceName().equals("keep_wall_segment_north_0"))
                 .findFirst()
                 .orElseThrow();
+        MKPlannedPiece gatehouse = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_gate_main"))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(northWall.interiorWidth(), gatehouse.interiorWidth());
         assertEquals(7, northWall.interiorHeight());
         assertEquals("defensive_wall", northWall.tags().get("workspace_linear_run_kind"));
         assertFalse(pieces.stream().anyMatch(piece -> "parapet".equals(piece.tags().get("workspace_linear_run_kind"))));

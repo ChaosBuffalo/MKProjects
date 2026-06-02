@@ -263,7 +263,7 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         families.add(forTopologySlot("keep_gate_main",
                 MKWorkspaceTopologySlotMetadata.explicit("keep.gate.main", "entry", "room", false),
                 "keep.gate", false,
-                7, 5, keepHeight,
+                MKWorkspaceLinearRunFamilyDefinition.DEFAULT_WALLED_KEEP_WALL_SEGMENT_LENGTH, 5, keepHeight,
                 MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                 null, null));
         return List.copyOf(families);

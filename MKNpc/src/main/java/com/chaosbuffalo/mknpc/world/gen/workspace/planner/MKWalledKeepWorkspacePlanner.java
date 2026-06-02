@@ -348,6 +348,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
 
     private Map<String, String> keepRoomRuntimeTags(Map<String, String> sourceTags) {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>(sourceTags);
+        String topologySlotId = tags.getOrDefault("workspace_topology_slot_id", "");
+        if (topologySlotId.startsWith("keep.corner.")) {
+            tags.put("workspace_connector_stitch", "full_face");
+        }
         MKWorkspaceRuntimePieceInfo.fromTags(sourceTags)
                 .map(info -> new MKWorkspaceRuntimePieceInfo(
                         info.start(),
