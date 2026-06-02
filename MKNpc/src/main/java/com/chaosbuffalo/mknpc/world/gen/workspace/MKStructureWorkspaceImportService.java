@@ -15,6 +15,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
@@ -114,7 +115,7 @@ public class MKStructureWorkspaceImportService {
             if (template == null || !placeSavedStructure(level, template, piece.worldOrigin())) {
                 return MKWorkspaceImportOutcome.failed();
             }
-            importedPieces.add(mergeImportedPiece(piece, exported, workspace.id()));
+            importedPieces.add(mergeImportedPiece(piece, exported, workspace));
         }
 
         MKStructureWorkspace importedWorkspace = workspace.withPieces(importedPieces);
@@ -342,14 +343,14 @@ public class MKStructureWorkspaceImportService {
 
     private MKWorkspacePieceDefinition mergeImportedPiece(MKWorkspacePieceDefinition generatedPiece,
                                                           MKWorkspaceExportManifest.ExportPiece exportedPiece,
-                                                          UUID workspaceId) {
+                                                          MKStructureWorkspace workspace) {
         List<MKWorkspaceConnectorDefinition> connectors = exportedPiece.connectors().stream()
                 .map(this::toConnectorDefinition)
                 .toList();
         List<BlockPos> generatedStairPositions = remapGeneratedStairPositions(exportedPiece, generatedPiece.worldOrigin());
         return new MKWorkspacePieceDefinition(
                 generatedPiece.pieceId(),
-                workspaceId,
+                workspace.id(),
                 generatedPiece.pieceName(),
                 generatedPiece.roleId(),
                 generatedPiece.variantIndex(),
@@ -363,7 +364,7 @@ public class MKStructureWorkspaceImportService {
                 generatedPiece.signPos(),
                 generatedPiece.markerPositions(),
                 generatedStairPositions,
-                new LinkedHashMap<>(exportedPiece.tags())
+                migrateImportedRuntimeTags(workspace, exportedPiece.tags())
         );
     }
 
@@ -406,8 +407,24 @@ public class MKStructureWorkspaceImportService {
                 piece.generatedStairPositions().stream()
                         .map(position -> offsetFromAnchor(workspace.anchor(), position.offset()))
                         .toList(),
-                new LinkedHashMap<>(piece.tags())
+                migrateImportedRuntimeTags(workspace, piece.tags())
         );
+    }
+
+    static Map<String, String> migrateImportedRuntimeTags(MKStructureWorkspace workspace,
+                                                          Map<String, String> sourceTags) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>(sourceTags);
+        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(workspace.topologyProfile().profileType()) &&
+                isKeepCornerStackPiece(tags)) {
+            tags.put(MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG, "true");
+        }
+        return tags;
+    }
+
+    private static boolean isKeepCornerStackPiece(Map<String, String> tags) {
+        String topologySlotId = tags.getOrDefault("workspace_topology_slot_id", "");
+        String stackId = tags.getOrDefault("workspace_tower_stack_id", "");
+        return topologySlotId.startsWith("keep.corner.") || stackId.startsWith("keep.corner.");
     }
 
     private MKWorkspaceDimensions dimensionsFromExport(MKWorkspaceExportManifest.ExportDimensions dimensions) {

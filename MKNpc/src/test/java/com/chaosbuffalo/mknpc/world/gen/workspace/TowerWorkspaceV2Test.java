@@ -1067,6 +1067,29 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void walledKeepImportMigrationAllowsCornerStackPiecesOnBranches() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKStructureWorkspace keepWorkspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(false),
+                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+        Map<String, String> staleCornerTags = Map.of(
+                "workspace_topology_slot_id", "keep.corner.south_west.entry",
+                MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG, "false"
+        );
+
+        Map<String, String> migrated = MKStructureWorkspaceImportService.migrateImportedRuntimeTags(
+                keepWorkspace, staleCornerTags);
+        Map<String, String> towerMigrated = MKStructureWorkspaceImportService.migrateImportedRuntimeTags(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()), staleCornerTags);
+
+        assertEquals("true", migrated.get(MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG));
+        assertEquals("false", towerMigrated.get(MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG));
+    }
+
+    @Test
     void perCornerUniqueModeUsesSharedOnlyForSharedCorners() {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
