@@ -522,9 +522,11 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 .orElse(0);
         int frontBranchSegments = horizontalSegments > 0 ?
                 Math.max(1, (int) Math.ceil(horizontalSegments / 2.0)) : 0;
-        int northWestSegments = horizontalSegments > 0 ?
-                Math.max(1, (int) Math.ceil(horizontalSegments / 2.0)) : 0;
-        int northEastSegments = Math.max(0, horizontalSegments - northWestSegments);
+        int backWallSegments = backWallSegmentCount(south.isPresent(), north.isPresent(), horizontalSegments,
+                frontBranchSegments);
+        int northWestSegments = backWallSegments > 0 ?
+                Math.max(1, (int) Math.ceil(backWallSegments / 2.0)) : 0;
+        int northEastSegments = Math.max(0, backWallSegments - northWestSegments);
         return new PerimeterPlan(
                 south.map(family -> createPerimeterChain("south_west", "south", family, frontBranchSegments,
                         true, Direction.EAST, Direction.WEST, "keep.corner.south_west"))
@@ -545,6 +547,17 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                         true, Direction.EAST, Direction.WEST, null))
                         .orElse(List.of())
         );
+    }
+
+    private int backWallSegmentCount(boolean hasFrontWall, boolean hasBackWall, int horizontalSegments,
+                                     int frontBranchSegments) {
+        if (!hasBackWall) {
+            return 0;
+        }
+        if (hasFrontWall && frontBranchSegments > 0) {
+            return frontBranchSegments * 2 + 1;
+        }
+        return horizontalSegments;
     }
 
     private List<PerimeterSegment> createPerimeterChain(String chainId, String side,

@@ -771,15 +771,20 @@ class TowerWorkspaceV2Test {
                 connector.role() == MKConnectorRole.BRANCH &&
                         connector.facing() == Direction.EAST &&
                         "keep_slots/keep/perimeter/south_east/0".equals(connector.targetPoolName())));
-        assertEquals(
-                pieces.stream().filter(piece -> "south_west".equals(piece.tags().get("workspace_perimeter_chain_id"))).count(),
-                pieces.stream().filter(piece -> "south_east".equals(piece.tags().get("workspace_perimeter_chain_id"))).count());
+        long southWestCount = pieces.stream()
+                .filter(piece -> "south_west".equals(piece.tags().get("workspace_perimeter_chain_id")))
+                .count();
+        long southEastCount = pieces.stream()
+                .filter(piece -> "south_east".equals(piece.tags().get("workspace_perimeter_chain_id")))
+                .count();
+        assertEquals(southWestCount, southEastCount);
         long northWestCount = pieces.stream()
                 .filter(piece -> "north_west".equals(piece.tags().get("workspace_perimeter_chain_id")))
                 .count();
         long northEastCount = pieces.stream()
                 .filter(piece -> "north_east".equals(piece.tags().get("workspace_perimeter_chain_id")))
                 .count();
+        assertEquals(southWestCount + southEastCount + 1, northWestCount + northEastCount);
         assertEquals(1, northWestCount - northEastCount);
         MKPlannedPiece northWestTerminal = pieces.stream()
                 .filter(piece -> "north_west".equals(piece.tags().get("workspace_perimeter_chain_id")))
