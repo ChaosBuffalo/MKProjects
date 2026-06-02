@@ -30,6 +30,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import javax.annotation.Nullable;
@@ -356,6 +358,19 @@ public class MKStructureWorkspaceService {
             throw new IllegalStateException("Failed to export workspace archive for " + workspace.namespace() + ":" +
                     workspace.structureName(), e);
         }
+    }
+
+    public boolean deleteWorkspace(ServerLevel level, BlockPos anchor) {
+        IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
+        Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
+        if (workspaceOpt.isEmpty()) {
+            return false;
+        }
+        MKStructureWorkspace workspace = workspaceOpt.get();
+        scaffoldBuilder.clearExistingWorkspaceArea(level, workspace, anchor);
+        data.deleteWorkspace(workspace.id());
+        level.setBlock(anchor, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+        return true;
     }
 
     public Optional<MKStructureWorkspace> generateTowerWorkspaceStairs(ServerLevel level, BlockPos anchor, String pieceName,

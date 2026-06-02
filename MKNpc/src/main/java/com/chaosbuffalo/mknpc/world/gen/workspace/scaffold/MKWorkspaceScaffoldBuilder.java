@@ -183,6 +183,32 @@ public class MKWorkspaceScaffoldBuilder {
         }
     }
 
+    public void clearExistingWorkspaceArea(ServerLevel level, MKStructureWorkspace workspace, BlockPos excludedPos) {
+        BoundingBox bounds = existingWorkspaceClearBounds(workspace);
+        if (bounds != null) {
+            clearWorkspaceHeightBounds(level, bounds, excludedPos);
+        }
+        for (MKWorkspacePieceDefinition piece : workspace.pieces()) {
+            clearBlock(level, piece.structureBlockPos(), excludedPos);
+            clearBlock(level, piece.signPos(), excludedPos);
+            for (BlockPos markerPos : piece.markerPositions()) {
+                clearBlock(level, markerPos, excludedPos);
+            }
+            for (BlockPos stairPos : piece.generatedStairPositions()) {
+                clearBlock(level, stairPos, excludedPos);
+            }
+        }
+    }
+
+    BoundingBox existingWorkspaceClearBounds(MKStructureWorkspace workspace) {
+        BoundingBox workspaceBounds = null;
+        for (MKWorkspacePieceDefinition existingPiece : workspace.pieces()) {
+            BoundingBox expanded = expandBounds(existingPiece.previewBounds(), CLEAR_MARGIN);
+            workspaceBounds = workspaceBounds == null ? expanded : mergeBounds(workspaceBounds, expanded);
+        }
+        return workspaceBounds;
+    }
+
     BoundingBox layoutClearBoundsForPieces(MKStructureWorkspace workspace, List<MKPlannedPiece> layoutPieces,
                                            List<MKPlannedPiece> piecesToClear) {
         List<MKWorkspaceGridLayout.Placement> placements = gridLayout.assignPlacements(workspace.anchor(), layoutPieces,
@@ -499,11 +525,7 @@ public class MKWorkspaceScaffoldBuilder {
 
     private void clearWorkspaceArea(ServerLevel level, MKStructureWorkspace workspace,
                                     List<MKWorkspaceGridLayout.Placement> placements) {
-        BoundingBox workspaceBounds = null;
-        for (MKWorkspacePieceDefinition existingPiece : workspace.pieces()) {
-            BoundingBox expanded = expandBounds(existingPiece.previewBounds(), CLEAR_MARGIN);
-            workspaceBounds = workspaceBounds == null ? expanded : mergeBounds(workspaceBounds, expanded);
-        }
+        BoundingBox workspaceBounds = existingWorkspaceClearBounds(workspace);
         for (MKWorkspaceGridLayout.Placement placement : placements) {
             BoundingBox expanded = expandBounds(placement.previewBounds(), CLEAR_MARGIN);
             workspaceBounds = workspaceBounds == null ? expanded : mergeBounds(workspaceBounds, expanded);
@@ -515,6 +537,10 @@ public class MKWorkspaceScaffoldBuilder {
 
     void clearWorkspaceHeightBounds(ServerLevel level, BoundingBox bounds) {
         clearBounds(level, extendToWorkspaceClearHeight(level, bounds));
+    }
+
+    private void clearWorkspaceHeightBounds(ServerLevel level, BoundingBox bounds, BlockPos excludedPos) {
+        clearBounds(level, extendToWorkspaceClearHeight(level, bounds), excludedPos);
     }
 
     BoundingBox extendToWorkspaceClearHeight(ServerLevel level, BoundingBox bounds) {
@@ -530,6 +556,23 @@ public class MKWorkspaceScaffoldBuilder {
                 maxBuildY,
                 bounds.maxZ()
         );
+    }
+
+    private void clearBounds(ServerLevel level, BoundingBox bounds, BlockPos excludedPos) {
+        for (int x = bounds.minX(); x <= bounds.maxX(); x++) {
+            for (int y = bounds.minY(); y <= bounds.maxY(); y++) {
+                for (int z = bounds.minZ(); z <= bounds.maxZ(); z++) {
+                    clearBlock(level, new BlockPos(x, y, z), excludedPos);
+                }
+            }
+        }
+    }
+
+    private void clearBlock(ServerLevel level, BlockPos pos, BlockPos excludedPos) {
+        if (pos.equals(excludedPos)) {
+            return;
+        }
+        level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
     }
 
     private BoundingBox expandBounds(BoundingBox bounds, int margin) {

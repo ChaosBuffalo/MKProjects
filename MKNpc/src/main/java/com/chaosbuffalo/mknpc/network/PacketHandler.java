@@ -15,6 +15,7 @@ import com.chaosbuffalo.mknpc.network.packets.NpcDefinitionClientUpdatePacket;
 import com.chaosbuffalo.mknpc.network.packets.OpenWorkspaceScreenPacket;
 import com.chaosbuffalo.mknpc.network.packets.OpenMKSpawnerPacket;
 import com.chaosbuffalo.mknpc.network.packets.CreateWorkspacePacket;
+import com.chaosbuffalo.mknpc.network.packets.DeleteWorkspacePacket;
 import com.chaosbuffalo.mknpc.network.packets.RestoreWorkspaceBackupPacket;
 import com.chaosbuffalo.mknpc.network.packets.SetSpawnListPacket;
 import com.chaosbuffalo.mknpc.network.packets.SwapWorkspaceBlockPacket;
@@ -111,6 +112,11 @@ public class PacketHandler {
                 RestoreWorkspaceBackupPacket.TYPE,
                 RestoreWorkspaceBackupPacket.STREAM_CODEC,
                 RestoreWorkspaceBackupPacket::handle
+        );
+        registrar.playToServer(
+                DeleteWorkspacePacket.TYPE,
+                DeleteWorkspacePacket.STREAM_CODEC,
+                DeleteWorkspacePacket::handle
         );
     }
 }

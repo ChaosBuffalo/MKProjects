@@ -70,6 +70,15 @@ public class WorkspaceUtilitiesPage extends WorkspacePageBase {
             return true;
         });
 
+        MKButton deleteWorkspace = new MKButton(Component.literal("Delete Workspace"), 180, 20);
+        content.addWidget(deleteWorkspace);
+        content.addConstraintToWidget(new CenterXConstraint(), deleteWorkspace);
+        deleteWorkspace.setPressedCallback((button, mouseButton) -> {
+            screen.pushState(WorkspaceDeleteConfirmPage.ID);
+            screen.flagNeedSetup();
+            return true;
+        });
+
         finishScrollContent(screen, scrollView, content);
 
         addBackButton(screen, root, "workspace");

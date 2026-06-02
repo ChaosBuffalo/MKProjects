@@ -9,6 +9,7 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceGenerateConf
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormIdentityPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceDraftSession;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceDeleteConfirmPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormFamiliesPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormFamilyDetailPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormLinearRunsPage;
@@ -187,6 +188,7 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(new WorkspaceFormLinearRunDetailPage());
         addWorkspacePage(new WorkspaceManagePage());
         addWorkspacePage(new WorkspaceUtilitiesPage());
+        addWorkspacePage(new WorkspaceDeleteConfirmPage());
         addWorkspacePage(new WorkspaceBlockSwapPage());
         addWorkspacePage(new WorkspaceBackupPage());
         addWorkspacePage(new WorkspaceTopologySlotPage());

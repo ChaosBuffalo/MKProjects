@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.scaffold;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -69,6 +72,25 @@ class MKWorkspaceScaffoldBuilderTest {
         assertEquals(53, clearBounds.maxZ());
     }
 
+    @Test
+    void existingWorkspaceClearBoundsMergeExpandedPiecePreviewBounds() {
+        MKWorkspaceScaffoldBuilder builder = new MKWorkspaceScaffoldBuilder();
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO).withPieces(List.of(
+                piece("piece_a", new BoundingBox(10, 70, 20, 18, 78, 28)),
+                piece("piece_b", new BoundingBox(30, 80, 40, 38, 88, 48))
+        ));
+
+        BoundingBox clearBounds = builder.existingWorkspaceClearBounds(workspace);
+
+        assertNotNull(clearBounds);
+        assertEquals(6, clearBounds.minX());
+        assertEquals(66, clearBounds.minY());
+        assertEquals(16, clearBounds.minZ());
+        assertEquals(42, clearBounds.maxX());
+        assertEquals(92, clearBounds.maxY());
+        assertEquals(52, clearBounds.maxZ());
+    }
+
     private static MKPlannedPiece linearRun(String kind) {
         return new MKPlannedPiece(
                 "test.linear_run." + kind,
@@ -96,6 +118,27 @@ class MKWorkspaceScaffoldBuilderTest {
                         MKWorkspaceGridLayout.TAG_BASE_NAME, baseName,
                         MKWorkspaceGridLayout.TAG_VARIANT_INDEX, String.valueOf(variantIndex)
                 )
+        );
+    }
+
+    private static MKWorkspacePieceDefinition piece(String pieceName, BoundingBox previewBounds) {
+        return new MKWorkspacePieceDefinition(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                pieceName,
+                "test." + pieceName,
+                0,
+                MKWorkspaceDimensions.defaultDimensions(),
+                1,
+                List.of(),
+                new BlockPos(previewBounds.minX(), previewBounds.minY(), previewBounds.minZ()),
+                previewBounds,
+                previewBounds,
+                BlockPos.ZERO,
+                BlockPos.ZERO,
+                List.of(),
+                List.of(),
+                Map.of()
         );
     }
 }
