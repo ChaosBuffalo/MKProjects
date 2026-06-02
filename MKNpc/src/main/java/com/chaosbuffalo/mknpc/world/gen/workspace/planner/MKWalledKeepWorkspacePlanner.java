@@ -85,16 +85,18 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
 
     private record PerimeterPlan(List<PerimeterSegment> southWest,
                                  List<PerimeterSegment> west,
-                                 List<PerimeterSegment> north,
+                                 List<PerimeterSegment> northWest,
+                                 List<PerimeterSegment> southEast,
                                  List<PerimeterSegment> east,
-                                 List<PerimeterSegment> southEast) {
+                                 List<PerimeterSegment> northEast) {
         private List<PerimeterSegment> allSegments() {
             ArrayList<PerimeterSegment> segments = new ArrayList<>();
             segments.addAll(southWest);
             segments.addAll(west);
-            segments.addAll(north);
-            segments.addAll(east);
+            segments.addAll(northWest);
             segments.addAll(southEast);
+            segments.addAll(east);
+            segments.addAll(northEast);
             return List.copyOf(segments);
         }
 
@@ -106,8 +108,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             return first(west);
         }
 
-        private Optional<PerimeterSegment> firstNorth() {
-            return first(north);
+        private Optional<PerimeterSegment> firstNorthWest() {
+            return first(northWest);
         }
 
         private Optional<PerimeterSegment> firstEast() {
@@ -116,6 +118,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
 
         private Optional<PerimeterSegment> firstSouthEast() {
             return first(southEast);
+        }
+
+        private Optional<PerimeterSegment> firstNorthEast() {
+            return first(northEast);
         }
 
         private Set<String> slotIds() {
@@ -157,7 +163,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                         new MKWorkspaceLinkSchema("keep.corner.north_east.vertical", "keep.corner.north_east.basement_cap", "keep.corner.north_east.top_cap", "vertical_access_group:keep.corner.north_east"),
                         new MKWorkspaceLinkSchema("keep.corner.south_east.vertical", "keep.corner.south_east.basement_cap", "keep.corner.south_east.top_cap", "vertical_access_group:keep.corner.south_east"),
                         new MKWorkspaceLinkSchema("keep.corner.south_west.vertical", "keep.corner.south_west.basement_cap", "keep.corner.south_west.top_cap", "vertical_access_group:keep.corner.south_west"),
-                        new MKWorkspaceLinkSchema("keep.perimeter.clockwise", "keep.gate.main", "keep.gate.main", "linear_run")
+                        new MKWorkspaceLinkSchema("keep.perimeter.west_branch", "keep.gate.main", "keep.perimeter.north_west", "linear_run"),
+                        new MKWorkspaceLinkSchema("keep.perimeter.east_branch", "keep.gate.main", "keep.perimeter.north_east", "linear_run")
                 ),
                 walledKeepRoles()
         );
@@ -513,22 +520,25 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         int verticalSegments = west.map(family -> segmentCountForSpan(family, verticalPerimeterSpan(workspace)))
                 .or(() -> east.map(family -> segmentCountForSpan(family, verticalPerimeterSpan(workspace))))
                 .orElse(0);
-        int southWestSegments = horizontalSegments > 0 ? Math.max(1, (int) Math.ceil(horizontalSegments / 2.0)) : 0;
-        int southEastSegments = horizontalSegments > 0 ? Math.max(1, horizontalSegments - southWestSegments) : 0;
+        int halfHorizontalSegments = horizontalSegments > 0 ?
+                Math.max(1, (int) Math.ceil(horizontalSegments / 2.0)) : 0;
         return new PerimeterPlan(
-                south.map(family -> createPerimeterChain("south_west", "south", family, southWestSegments,
+                south.map(family -> createPerimeterChain("south_west", "south", family, halfHorizontalSegments,
                         true, Direction.EAST, Direction.WEST, "keep.corner.south_west"))
                         .orElse(List.of()),
                 west.map(family -> createPerimeterChain("west", "west", family, verticalSegments,
                         false, Direction.SOUTH, Direction.NORTH, "keep.corner.north_west"))
                         .orElse(List.of()),
-                north.map(family -> createPerimeterChain("north", "north", family, horizontalSegments,
-                        true, Direction.WEST, Direction.EAST, "keep.corner.north_east"))
+                north.map(family -> createPerimeterChain("north_west", "north", family, halfHorizontalSegments,
+                        true, Direction.WEST, Direction.EAST, null))
+                        .orElse(List.of()),
+                south.map(family -> createPerimeterChain("south_east", "south", family, halfHorizontalSegments,
+                        true, Direction.WEST, Direction.EAST, "keep.corner.south_east"))
                         .orElse(List.of()),
                 east.map(family -> createPerimeterChain("east", "east", family, verticalSegments,
-                        false, Direction.NORTH, Direction.SOUTH, "keep.corner.south_east"))
+                        false, Direction.SOUTH, Direction.NORTH, "keep.corner.north_east"))
                         .orElse(List.of()),
-                south.map(family -> createPerimeterChain("south_east", "south", family, southEastSegments,
+                north.map(family -> createPerimeterChain("north_east", "north", family, halfHorizontalSegments,
                         true, Direction.EAST, Direction.WEST, null))
                         .orElse(List.of())
         );
@@ -691,6 +701,9 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 slots.perimeterPlan().firstSouthWest()
                         .ifPresent(segment -> addBranchTargetDirect(connectors, Direction.WEST,
                                 segment.slotId(), opening));
+                slots.perimeterPlan().firstSouthEast()
+                        .ifPresent(segment -> addBranchTargetDirect(connectors, Direction.EAST,
+                                segment.slotId(), opening));
             }
             case "keep.corner.shared" -> addSharedCornerConnectors(connectors, slots.sharedCornerSlots(),
                     slots.perimeterPlan(), opening);
@@ -780,17 +793,17 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         switch (cornerSlotId) {
             case "keep.corner.north_west" -> {
                 addIncomingCornerConnector(connectors, cornerSlotId, Direction.SOUTH, opening);
-                perimeterPlan.firstNorth().ifPresent(segment -> addBranchTargetDirect(connectors, Direction.EAST,
+                perimeterPlan.firstNorthWest().ifPresent(segment -> addBranchTargetDirect(connectors, Direction.EAST,
                         segment.slotId(), opening));
             }
             case "keep.corner.north_east" -> {
-                addIncomingCornerConnector(connectors, cornerSlotId, Direction.WEST, opening);
-                perimeterPlan.firstEast().ifPresent(segment -> addBranchTargetDirect(connectors, Direction.SOUTH,
+                addIncomingCornerConnector(connectors, cornerSlotId, Direction.SOUTH, opening);
+                perimeterPlan.firstNorthEast().ifPresent(segment -> addBranchTargetDirect(connectors, Direction.WEST,
                         segment.slotId(), opening));
             }
             case "keep.corner.south_east" -> {
-                addIncomingCornerConnector(connectors, cornerSlotId, Direction.NORTH, opening);
-                perimeterPlan.firstSouthEast().ifPresent(segment -> addBranchTargetDirect(connectors, Direction.WEST,
+                addIncomingCornerConnector(connectors, cornerSlotId, Direction.WEST, opening);
+                perimeterPlan.firstEast().ifPresent(segment -> addBranchTargetDirect(connectors, Direction.NORTH,
                         segment.slotId(), opening));
             }
             case "keep.corner.south_west" -> {

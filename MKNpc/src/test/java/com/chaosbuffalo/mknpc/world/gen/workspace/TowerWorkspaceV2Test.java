@@ -683,7 +683,7 @@ class TowerWorkspaceV2Test {
                 .findFirst()
                 .orElseThrow();
         MKPlannedPiece northWall = pieces.stream()
-                .filter(piece -> piece.pieceName().equals("keep_wall_north_north_0"))
+                .filter(piece -> piece.pieceName().equals("keep_wall_north_north_west_0"))
                 .findFirst()
                 .orElseThrow();
 
@@ -697,18 +697,18 @@ class TowerWorkspaceV2Test {
                         "tower_stacks/keep/center/connect_down_entry".equals(connector.targetPoolName())));
 
         assertEquals("linear_run", northWall.tags().get("tower_piece_kind"));
-        assertEquals("keep.perimeter.north.0", northWall.tags().get("workspace_topology_slot_id"));
+        assertEquals("keep.perimeter.north_west.0", northWall.tags().get("workspace_topology_slot_id"));
         assertEquals("keep.perimeter.north", northWall.tags().get("workspace_perimeter_source_slot_id"));
-        assertEquals("north", northWall.tags().get("workspace_perimeter_chain_id"));
+        assertEquals("north_west", northWall.tags().get("workspace_perimeter_chain_id"));
         assertEquals("solid_wall", northWall.tags().get("workspace_linear_run_kind"));
         assertEquals(MKWorkspaceFoundationMode.MASKED_EXTEND_BOTTOM_BLOCKS.getSerializedName(),
                 northWall.tags().get(MKWorkspaceFoundationPolicy.MODE_TAG));
         assertTrue(northWall.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.WEST &&
-                        "keep_slots/keep/perimeter/north/0".equals(connector.incomingPoolName())));
+                        "keep_slots/keep/perimeter/north_west/0".equals(connector.incomingPoolName())));
         assertTrue(northWall.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.EAST &&
-                        "keep_slots/keep/perimeter/north/1".equals(connector.targetPoolName())));
+                        "keep_slots/keep/perimeter/north_west/1".equals(connector.targetPoolName())));
     }
 
     @Test
@@ -751,7 +751,7 @@ class TowerWorkspaceV2Test {
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_top_cap")));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_basement_cap")));
         MKPlannedPiece northWall = pieces.stream()
-                .filter(piece -> piece.pieceName().equals("keep_wall_segment_north_0"))
+                .filter(piece -> piece.pieceName().equals("keep_wall_segment_north_west_0"))
                 .findFirst()
                 .orElseThrow();
         MKPlannedPiece gatehouse = pieces.stream()
@@ -762,6 +762,40 @@ class TowerWorkspaceV2Test {
         assertTrue(gatehouse.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.MAIN_BACK &&
                         connector.facing() == Direction.SOUTH &&
+                        !connector.placesJigsaw()));
+        assertTrue(gatehouse.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.BRANCH &&
+                        connector.facing() == Direction.WEST &&
+                        "keep_slots/keep/perimeter/south_west/0".equals(connector.targetPoolName())));
+        assertTrue(gatehouse.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.BRANCH &&
+                        connector.facing() == Direction.EAST &&
+                        "keep_slots/keep/perimeter/south_east/0".equals(connector.targetPoolName())));
+        assertEquals(
+                pieces.stream().filter(piece -> "south_west".equals(piece.tags().get("workspace_perimeter_chain_id"))).count(),
+                pieces.stream().filter(piece -> "south_east".equals(piece.tags().get("workspace_perimeter_chain_id"))).count());
+        assertEquals(
+                pieces.stream().filter(piece -> "north_west".equals(piece.tags().get("workspace_perimeter_chain_id"))).count(),
+                pieces.stream().filter(piece -> "north_east".equals(piece.tags().get("workspace_perimeter_chain_id"))).count());
+        MKPlannedPiece northWestTerminal = pieces.stream()
+                .filter(piece -> "north_west".equals(piece.tags().get("workspace_perimeter_chain_id")))
+                .filter(piece -> piece.tags().get("workspace_perimeter_segment_index")
+                        .equals(Integer.toString(Integer.parseInt(piece.tags().get("workspace_perimeter_segment_count")) - 1)))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece northEastTerminal = pieces.stream()
+                .filter(piece -> "north_east".equals(piece.tags().get("workspace_perimeter_chain_id")))
+                .filter(piece -> piece.tags().get("workspace_perimeter_segment_index")
+                        .equals(Integer.toString(Integer.parseInt(piece.tags().get("workspace_perimeter_segment_count")) - 1)))
+                .findFirst()
+                .orElseThrow();
+        assertTrue(northWestTerminal.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.BRANCH &&
+                        connector.facing() == Direction.EAST &&
+                        !connector.placesJigsaw()));
+        assertTrue(northEastTerminal.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.BRANCH &&
+                        connector.facing() == Direction.WEST &&
                         !connector.placesJigsaw()));
         assertEquals(7, northWall.interiorHeight());
         assertEquals("defensive_wall", northWall.tags().get("workspace_linear_run_kind"));
@@ -786,7 +820,7 @@ class TowerWorkspaceV2Test {
                 .findFirst()
                 .orElseThrow();
         MKPlannedPiece northWall = pieces.stream()
-                .filter(piece -> piece.pieceName().equals("keep_wall_segment_north_0"))
+                .filter(piece -> piece.pieceName().equals("keep_wall_segment_north_west_0"))
                 .findFirst()
                 .orElseThrow();
         MKPlannedPiece cornerSource = pieces.stream()
@@ -991,7 +1025,7 @@ class TowerWorkspaceV2Test {
                 .findFirst()
                 .orElseThrow();
         MKPlannedPiece northWall = pieces.stream()
-                .filter(piece -> piece.pieceName().equals("keep_wall_north_north_0"))
+                .filter(piece -> piece.pieceName().equals("keep_wall_north_north_west_0"))
                 .findFirst()
                 .orElseThrow();
 
@@ -1143,6 +1177,8 @@ class TowerWorkspaceV2Test {
         assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/gate/main", "keep_gate_main");
         assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/perimeter/south_west/0",
                 "keep_wall_south_south_west_0");
+        assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/perimeter/south_east/0",
+                "keep_wall_south_south_east_0");
         assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/north_west", "keep_corner_shared");
         assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/north_east", "keep_corner_shared");
         assertRuntimePoolContains(workspace, manifest, "keep_slots/keep/corner/south_east", "keep_corner_shared");
@@ -1343,7 +1379,7 @@ class TowerWorkspaceV2Test {
                 .findFirst()
                 .orElseThrow();
         MKWorkspaceExportManifest.ExportRuntimeTemplateGroup runGroup = manifest.runtimeHints().templateGroups().stream()
-                .filter(group -> group.baseName().equals("keep_wall_north_north_0"))
+                .filter(group -> group.baseName().equals("keep_wall_north_north_west_0"))
                 .findFirst()
                 .orElseThrow();
 
