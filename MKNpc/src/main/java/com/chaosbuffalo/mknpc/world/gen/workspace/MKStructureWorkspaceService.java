@@ -236,16 +236,9 @@ public class MKStructureWorkspaceService {
                 .max()
                 .orElse(0) + 1;
 
-        List<MKPlannedPiece> layoutPieces = canonicalPieces.stream()
-                .map(this::toTemplatePiece)
-                .collect(Collectors.toList());
-        layoutPieces.addAll(workspace.pieces().stream()
-                .filter(piece -> piece.variantIndex() > 0)
-                .map(piece -> toExistingVariantPiece(piece, canonicalByBaseName))
-                .toList());
-
         MKPlannedPiece variantPiece = toVariantPiece(basePiece, nextVariantIndex);
-        layoutPieces.add(variantPiece);
+        List<MKPlannedPiece> layoutPieces = physicalVariantLayoutPieces(workspace, canonicalPieces, canonicalByBaseName,
+                List.of(variantPiece));
 
         MKWorkspacePieceDefinition templatePiece = resolveVariantSourcePiece(workspace, targetBasePieceName,
                 nextVariantIndex, sourcePiece);
@@ -285,14 +278,6 @@ public class MKStructureWorkspaceService {
         Map<String, MKPlannedPiece> canonicalByBaseName = canonicalPieces.stream()
                 .collect(Collectors.toMap(MKPlannedPiece::pieceName, piece -> piece));
 
-        List<MKPlannedPiece> layoutPieces = canonicalPieces.stream()
-                .map(this::toTemplatePiece)
-                .collect(Collectors.toCollection(ArrayList::new));
-        layoutPieces.addAll(workspace.pieces().stream()
-                .filter(piece -> piece.variantIndex() > 0)
-                .map(piece -> toExistingVariantPiece(piece, canonicalByBaseName))
-                .toList());
-
         List<MKWorkspacePieceDefinition> templatePieces = new ArrayList<>();
         List<MKPlannedPiece> variantPieces = new ArrayList<>();
         Integer rowVariantIndex = null;
@@ -313,7 +298,6 @@ public class MKStructureWorkspaceService {
                 sameVariantRow = false;
             }
             MKPlannedPiece variantPiece = toVariantPiece(basePiece, nextVariantIndex);
-            layoutPieces.add(variantPiece);
             MKWorkspacePieceDefinition templatePiece = resolveVariantSourcePiece(workspace, basePieceName,
                     nextVariantIndex, null);
             if (templatePiece == null) {
@@ -323,8 +307,13 @@ public class MKStructureWorkspaceService {
             variantPieces.add(variantPiece);
         }
 
+        List<MKPlannedPiece> physicalVariantPieces = variantPieces.stream()
+                .filter(this::usesPhysicalWorkspaceCell)
+                .toList();
+        List<MKPlannedPiece> layoutPieces = physicalVariantLayoutPieces(workspace, canonicalPieces, canonicalByBaseName,
+                physicalVariantPieces);
         if (sameVariantRow) {
-            scaffoldBuilder.clearLayoutAreaForPieces(level, workspace, layoutPieces, variantPieces);
+            scaffoldBuilder.clearLayoutAreaForPieces(level, workspace, layoutPieces, physicalVariantPieces);
         }
 
         List<MKWorkspacePieceDefinition> generatedPieces = new ArrayList<>();
@@ -339,6 +328,25 @@ public class MKStructureWorkspaceService {
         data.updateWorkspace(updated);
         syncBlockEntity(level, anchor, updated.id());
         return Optional.of(updated);
+    }
+
+    List<MKPlannedPiece> physicalVariantLayoutPieces(MKStructureWorkspace workspace,
+                                                     List<MKPlannedPiece> canonicalPieces,
+                                                     Map<String, MKPlannedPiece> canonicalByBaseName,
+                                                     List<MKPlannedPiece> newVariantPieces) {
+        ArrayList<MKPlannedPiece> layoutPieces = canonicalPieces.stream()
+                .filter(this::usesPhysicalWorkspaceCell)
+                .map(this::toTemplatePiece)
+                .collect(Collectors.toCollection(ArrayList::new));
+        layoutPieces.addAll(workspace.pieces().stream()
+                .filter(piece -> piece.variantIndex() > 0)
+                .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
+                .map(piece -> toExistingVariantPiece(piece, canonicalByBaseName))
+                .toList());
+        layoutPieces.addAll(newVariantPieces.stream()
+                .filter(this::usesPhysicalWorkspaceCell)
+                .toList());
+        return List.copyOf(layoutPieces);
     }
 
     public Optional<MKWorkspaceExportResult> exportWorkspacePieces(ServerLevel level, BlockPos anchor) {
@@ -531,6 +539,14 @@ public class MKStructureWorkspaceService {
                 basePiece.connectors(),
                 withWorkspaceTags(basePiece, "instance", piece.variantIndex())
         );
+    }
+
+    private boolean usesPhysicalWorkspaceCell(MKPlannedPiece piece) {
+        return usesPhysicalWorkspaceCell(piece.tags());
+    }
+
+    private boolean usesPhysicalWorkspaceCell(Map<String, String> tags) {
+        return !MKWorkspaceTemplateReuseTags.isDerived(tags);
     }
 
     private Map<String, String> withWorkspaceTags(MKPlannedPiece basePiece, String pieceKind, int variantIndex) {

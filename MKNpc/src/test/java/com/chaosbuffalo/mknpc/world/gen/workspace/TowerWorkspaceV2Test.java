@@ -52,6 +52,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerStackDefinition
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerStackPlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
+import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
+import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceScaffoldBuilder;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.core.BlockPos;
@@ -62,6 +64,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.junit.jupiter.api.Test;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -862,6 +865,37 @@ class TowerWorkspaceV2Test {
                 southEastCorner.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
         assertEquals(MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_180,
                 southEastCorner.tags().get(MKWorkspaceTemplateReuseTags.ROTATION_TAG));
+    }
+
+    @Test
+    void walledKeepVariantLayoutIgnoresDerivedLogicalPieces() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(false),
+                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+        List<MKPlannedPiece> canonicalPieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+        Map<String, MKPlannedPiece> canonicalByName = new LinkedHashMap<>();
+        canonicalPieces.forEach(piece -> canonicalByName.put(piece.pieceName(), piece));
+
+        List<MKPlannedPiece> variantPieces = List.of(
+                workspacePlannedPiece(canonicalByName.get("keep_gate_main"), "_1", "instance", 1),
+                workspacePlannedPiece(canonicalByName.get("keep_walkway_south"), "_1", "instance", 1),
+                workspacePlannedPiece(canonicalByName.get("keep_wall_segment_south_west_0"), "_1", "instance", 1)
+        );
+        List<MKPlannedPiece> layoutPieces = new MKStructureWorkspaceService().physicalVariantLayoutPieces(
+                workspace, canonicalPieces, canonicalByName, variantPieces);
+
+        assertFalse(layoutPieces.stream()
+                .anyMatch(piece -> piece.pieceName().equals("keep_wall_segment_north_west_0_template")));
+        Map<String, MKWorkspaceGridLayout.Placement> placementsByName = workspacePlacementsByPieceName(
+                workspace, layoutPieces);
+
+        assertVariantSharesTemplateColumn(placementsByName, "keep_gate_main");
+        assertVariantSharesTemplateColumn(placementsByName, "keep_walkway_south");
+        assertVariantSharesTemplateColumn(placementsByName, "keep_wall_segment_south_west_0");
     }
 
     @Test
@@ -3066,6 +3100,49 @@ class TowerWorkspaceV2Test {
                 System.currentTimeMillis(),
                 List.of()
         );
+    }
+
+    private static MKPlannedPiece workspacePlannedPiece(MKPlannedPiece basePiece, String suffix, String pieceKind,
+                                                        int variantIndex) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>(basePiece.tags());
+        tags.put(MKWorkspaceGridLayout.TAG_BASE_NAME, basePiece.pieceName());
+        tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, Integer.toString(variantIndex));
+        tags.put("workspace_piece_kind", pieceKind);
+        return new MKPlannedPiece(
+                basePiece.roleId(),
+                basePiece.pieceName() + suffix,
+                basePiece.interiorWidth(),
+                basePiece.interiorLength(),
+                basePiece.interiorHeight(),
+                basePiece.connectors(),
+                tags
+        );
+    }
+
+    private static Map<String, MKWorkspaceGridLayout.Placement> workspacePlacementsByPieceName(
+            MKStructureWorkspace workspace, List<MKPlannedPiece> pieces) {
+        List<MKWorkspaceGridLayout.Placement> placements = new MKWorkspaceGridLayout().assignPlacements(
+                workspace.anchor(),
+                pieces,
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                MKWorkspaceScaffoldBuilder.GRID_COLUMNS,
+                MKWorkspaceScaffoldBuilder.CELL_PADDING
+        );
+        LinkedHashMap<String, MKWorkspaceGridLayout.Placement> placementsByName = new LinkedHashMap<>();
+        for (int i = 0; i < pieces.size(); i++) {
+            placementsByName.put(pieces.get(i).pieceName(), placements.get(i));
+        }
+        return placementsByName;
+    }
+
+    private static void assertVariantSharesTemplateColumn(Map<String, MKWorkspaceGridLayout.Placement> placementsByName,
+                                                          String baseName) {
+        MKWorkspaceGridLayout.Placement templatePlacement = placementsByName.get(baseName + "_template");
+        MKWorkspaceGridLayout.Placement variantPlacement = placementsByName.get(baseName + "_1");
+        assertEquals(templatePlacement.previewOrigin().getX(), variantPlacement.previewOrigin().getX());
+        assertTrue(variantPlacement.previewOrigin().getZ() > templatePlacement.previewOrigin().getZ());
     }
 
     private static MKStructureWorkspace withTopologyAndLinearRuns(MKStructureWorkspace workspace,
