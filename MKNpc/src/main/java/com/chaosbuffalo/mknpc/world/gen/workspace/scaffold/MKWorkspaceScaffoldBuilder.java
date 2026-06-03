@@ -767,34 +767,67 @@ public class MKWorkspaceScaffoldBuilder {
         int centerZ = (interiorMinZ + interiorMaxZ) / 2;
         int floorY = geometryOrigin.getY() + Math.max(0, verticalShellThickness - 1);
         placeCourtyardWalkwayRow(level, centerX, centerZ, halfWidth, true, floorY, floorState);
+        placeCourtyardWalkwayRow(level, centerX, centerZ, halfWidth, false, floorY, floorState);
         for (MKPlannedConnector connector : piece.connectors()) {
             if (connector.facing().getAxis().isVertical()) {
                 continue;
             }
-            switch (connector.facing()) {
-                case NORTH -> {
-                    for (int z = interiorMinZ; z <= centerZ; z++) {
-                        placeCourtyardWalkwayRow(level, centerX, z, halfWidth, true, floorY, floorState);
-                    }
-                }
-                case SOUTH -> {
-                    for (int z = centerZ; z <= interiorMaxZ; z++) {
-                        placeCourtyardWalkwayRow(level, centerX, z, halfWidth, true, floorY, floorState);
-                    }
-                }
-                case EAST -> {
-                    for (int x = centerX; x <= interiorMaxX; x++) {
-                        placeCourtyardWalkwayRow(level, x, centerZ, halfWidth, false, floorY, floorState);
-                    }
-                }
-                case WEST -> {
-                    for (int x = interiorMinX; x <= centerX; x++) {
-                        placeCourtyardWalkwayRow(level, x, centerZ, halfWidth, false, floorY, floorState);
-                    }
-                }
-                default -> {
+            placeCourtyardPathConnectorLeg(level, geometryOrigin, piece, shellMargin, connector, centerX, centerZ,
+                    interiorMinX, interiorMaxX, interiorMinZ, interiorMaxZ, halfWidth, floorY, floorState);
+        }
+    }
+
+    private void placeCourtyardPathConnectorLeg(ServerLevel level, BlockPos geometryOrigin, MKPlannedPiece piece,
+                                                int shellMargin, MKPlannedConnector connector, int centerX,
+                                                int centerZ, int interiorMinX, int interiorMaxX, int interiorMinZ,
+                                                int interiorMaxZ, int halfWidth, int floorY, BlockState floorState) {
+        int connectorCenterX = getConnectorCenterX(geometryOrigin, piece, shellMargin, connector);
+        int connectorCenterZ = getConnectorCenterZ(geometryOrigin, piece, shellMargin, connector);
+        switch (connector.facing()) {
+            case NORTH -> {
+                placeCourtyardHorizontalWalkway(level, centerX, connectorCenterX, centerZ, halfWidth, floorY,
+                        floorState);
+                for (int z = interiorMinZ; z <= centerZ; z++) {
+                    placeCourtyardWalkwayRow(level, connectorCenterX, z, halfWidth, true, floorY, floorState);
                 }
             }
+            case SOUTH -> {
+                placeCourtyardHorizontalWalkway(level, centerX, connectorCenterX, centerZ, halfWidth, floorY,
+                        floorState);
+                for (int z = centerZ; z <= interiorMaxZ; z++) {
+                    placeCourtyardWalkwayRow(level, connectorCenterX, z, halfWidth, true, floorY, floorState);
+                }
+            }
+            case EAST -> {
+                placeCourtyardVerticalWalkway(level, centerX, centerZ, connectorCenterZ, halfWidth, floorY,
+                        floorState);
+                for (int x = centerX; x <= interiorMaxX; x++) {
+                    placeCourtyardWalkwayRow(level, x, connectorCenterZ, halfWidth, false, floorY, floorState);
+                }
+            }
+            case WEST -> {
+                placeCourtyardVerticalWalkway(level, centerX, centerZ, connectorCenterZ, halfWidth, floorY,
+                        floorState);
+                for (int x = interiorMinX; x <= centerX; x++) {
+                    placeCourtyardWalkwayRow(level, x, connectorCenterZ, halfWidth, false, floorY, floorState);
+                }
+            }
+            default -> {
+            }
+        }
+    }
+
+    private void placeCourtyardHorizontalWalkway(ServerLevel level, int startX, int endX, int z, int halfWidth,
+                                                 int floorY, BlockState floorState) {
+        for (int x = Math.min(startX, endX); x <= Math.max(startX, endX); x++) {
+            placeCourtyardWalkwayRow(level, x, z, halfWidth, false, floorY, floorState);
+        }
+    }
+
+    private void placeCourtyardVerticalWalkway(ServerLevel level, int x, int startZ, int endZ, int halfWidth,
+                                               int floorY, BlockState floorState) {
+        for (int z = Math.min(startZ, endZ); z <= Math.max(startZ, endZ); z++) {
+            placeCourtyardWalkwayRow(level, x, z, halfWidth, true, floorY, floorState);
         }
     }
 

@@ -737,7 +737,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 pathSize,
                 pathSize,
                 height,
-                courtyardPathConnectors(path, availableSlots, opening),
+                courtyardPathConnectors(workspace, path, pathSize, availableSlots, opening),
                 buildCourtyardPathTags(workspace, family, path.slotId(), path.shape(), laneInset)
         );
         return withExportCrop(withTemplateReuse(piece, path.sourcePieceName(), path.rotation(), false));
@@ -1224,8 +1224,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         int negativeOffset = Math.max(0, -linearRun.slopeDelta());
         int positiveOffset = Math.max(0, linearRun.slopeDelta());
         return switch (slotId) {
-            case ENTRY_APPROACH_SLOT -> entryApproachConnectors(slotId, availableSlots, opening, negativeOffset,
-                    positiveOffset);
+            case ENTRY_APPROACH_SLOT -> entryApproachConnectors(linearRun, slotId, availableSlots, opening,
+                    negativeOffset, positiveOffset);
             case "keep.walkway.west" -> courtyardWalkwayConnectors(slotId, Direction.SOUTH, Direction.NORTH,
                     "keep.courtyard.north", Direction.WEST, "keep.courtyard.west", availableSlots, opening,
                     negativeOffset, positiveOffset);
@@ -1302,12 +1302,16 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         );
     }
 
-    private List<MKPlannedConnector> courtyardPathConnectors(CourtyardPathDefinition path,
+    private List<MKPlannedConnector> courtyardPathConnectors(MKStructureWorkspace workspace,
+                                                             CourtyardPathDefinition path,
+                                                             int pathSize,
                                                              Set<String> availableSlots,
                                                              ResolvedOpeningProfile opening) {
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
         connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, path.incomingFacing(),
-                opening.openingWidth(), opening.openingHeight(), EMPTY_POOL, slotPool(path.slotId())));
+                opening.openingWidth(), opening.openingHeight(),
+                entryPathIncomingLateralOffset(workspace, path, pathSize, opening), 0,
+                EMPTY_POOL, slotPool(path.slotId())));
         if (path.outgoingTargetSlotId() == null || !availableSlots.contains(path.outgoingTargetSlotId())) {
             connectors.add(MKPlannedConnector.openingOnly(MKConnectorRole.BRANCH, path.outgoingFacing(),
                     opening.openingWidth(), opening.openingHeight(), 0, 0));
@@ -1318,7 +1322,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         return List.copyOf(connectors);
     }
 
-    private List<MKPlannedConnector> entryApproachConnectors(String slotId, Set<String> availableSlots,
+    private List<MKPlannedConnector> entryApproachConnectors(MKWorkspaceLinearRunFamilyDefinition linearRun,
+                                                             String slotId, Set<String> availableSlots,
                                                              ResolvedOpeningProfile opening, int negativeOffset,
                                                              int positiveOffset) {
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
@@ -1328,11 +1333,33 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         connectors.add(new MKPlannedConnector(MKConnectorRole.MAIN_BACK, Direction.SOUTH,
                 opening.openingWidth(), opening.openingHeight(), 0, positiveOffset,
                 poolOrEmpty("keep.gate.main", availableSlots), EMPTY_POOL));
+        int branchOffset = entryApproachCourtyardBranchOffset(linearRun.length(), opening);
         firstAvailableSlot(availableSlots, "keep.courtyard.path.south_west")
-                .ifPresent(targetSlot -> addBranchTargetDirect(connectors, Direction.WEST, targetSlot, opening));
+                .ifPresent(targetSlot -> addBranchTargetDirect(connectors, Direction.WEST, targetSlot, opening,
+                        branchOffset));
         firstAvailableSlot(availableSlots, "keep.courtyard.path.south_east")
-                .ifPresent(targetSlot -> addBranchTargetDirect(connectors, Direction.EAST, targetSlot, opening));
+                .ifPresent(targetSlot -> addBranchTargetDirect(connectors, Direction.EAST, targetSlot, opening,
+                        branchOffset));
         return List.copyOf(connectors);
+    }
+
+    private int entryPathIncomingLateralOffset(MKStructureWorkspace workspace, CourtyardPathDefinition path,
+                                               int pathSize, ResolvedOpeningProfile opening) {
+        if (!"south_west".equals(path.suffix()) && !"south_east".equals(path.suffix())) {
+            return 0;
+        }
+        int entryLength = workspace.linearRunFamilies().stream()
+                .filter(linearRun -> ENTRY_APPROACH_SLOT.equals(linearRun.topologySlotId()))
+                .findFirst()
+                .map(MKWorkspaceLinearRunFamilyDefinition::length)
+                .orElse(9);
+        int entryBranchOffset = entryApproachCourtyardBranchOffset(entryLength, opening);
+        return (entryLength / 2 + entryBranchOffset) - (pathSize / 2);
+    }
+
+    private int entryApproachCourtyardBranchOffset(int entryLength, ResolvedOpeningProfile opening) {
+        int halfOpening = opening.openingWidth() / 2;
+        return Math.max(0, entryLength / 2 - halfOpening);
     }
 
     private List<MKPlannedConnector> perimeterConnectors(String perimeterSlotId, DirectionPair directions,
@@ -1418,8 +1445,13 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
 
     private void addBranchTargetDirect(List<MKPlannedConnector> connectors, Direction facing, String targetSlotId,
                                        ResolvedOpeningProfile opening) {
+        addBranchTargetDirect(connectors, facing, targetSlotId, opening, 0);
+    }
+
+    private void addBranchTargetDirect(List<MKPlannedConnector> connectors, Direction facing, String targetSlotId,
+                                       ResolvedOpeningProfile opening, int lateralOffset) {
         connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, facing,
-                opening.openingWidth(), opening.openingHeight(), slotPool(targetSlotId)));
+                opening.openingWidth(), opening.openingHeight(), lateralOffset, 0, slotPool(targetSlotId)));
     }
 
     private Map<String, String> buildRoomTags(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family) {

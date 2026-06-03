@@ -70,6 +70,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.IntPredicate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -939,15 +940,21 @@ class TowerWorkspaceV2Test {
                 .orElseThrow();
         assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.WEST &&
-                        "keep_slots/keep/courtyard/path/south_west".equals(connector.targetPoolName())));
+                        "keep_slots/keep/courtyard/path/south_west".equals(connector.targetPoolName()) &&
+                        connector.lateralOffset() > 0));
         assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.EAST &&
-                        "keep_slots/keep/courtyard/path/south_east".equals(connector.targetPoolName())));
+                        "keep_slots/keep/courtyard/path/south_east".equals(connector.targetPoolName()) &&
+                        connector.lateralOffset() > 0));
         assertFalse(entryApproach.connectors().stream().anyMatch(connector ->
                 connector.targetPoolName() != null &&
                         connector.targetPoolName().startsWith("keep_slots/keep/courtyard/") &&
                         !connector.targetPoolName().startsWith("keep_slots/keep/courtyard/path/")));
         assertNoDuplicateHorizontalConnectorSlots(entryApproach);
+        assertPieceIncomingOffset(pieces, "keep_courtyard_path_corner_t_south_west",
+                "keep_slots/keep/courtyard/path/south_west", offset -> offset < 0);
+        assertPieceIncomingOffset(pieces, "keep_courtyard_path_corner_t_south_east",
+                "keep_slots/keep/courtyard/path/south_east", offset -> offset < 0);
         assertPieceTargets(pieces, "keep_courtyard_path_corner_t_south_west", "keep_slots/keep/courtyard/south_west");
         assertPieceTargets(pieces, "keep_courtyard_path_corner_t_south_west", "keep_slots/keep/courtyard/path/west");
         assertPieceTargets(pieces, "keep_courtyard_path_t_west", "keep_slots/keep/courtyard/west");
@@ -3732,6 +3739,18 @@ class TowerWorkspaceV2Test {
                 .orElseThrow();
         assertTrue(piece.connectors().stream().anyMatch(connector -> targetPoolName.equals(connector.targetPoolName())),
                 "Expected " + pieceName + " to target " + targetPoolName);
+    }
+
+    private static void assertPieceIncomingOffset(List<MKPlannedPiece> pieces, String pieceName,
+                                                  String incomingPoolName, IntPredicate offsetPredicate) {
+        MKPlannedPiece piece = pieces.stream()
+                .filter(candidate -> candidate.pieceName().equals(pieceName))
+                .findFirst()
+                .orElseThrow();
+        assertTrue(piece.connectors().stream().anyMatch(connector ->
+                        incomingPoolName.equals(connector.incomingPoolName()) &&
+                                offsetPredicate.test(connector.lateralOffset())),
+                "Expected " + pieceName + " to receive " + incomingPoolName + " at the expected lateral offset");
     }
 
     private static void assertNoDuplicateHorizontalConnectorSlots(MKPlannedPiece piece) {
