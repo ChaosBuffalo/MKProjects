@@ -854,8 +854,17 @@ class TowerWorkspaceV2Test {
                 case "keep.courtyard.south_west", "keep.courtyard.south_east" -> "medium";
                 default -> "large";
             };
+            Direction expectedFacing = switch (socketId) {
+                case "keep.courtyard.north_west", "keep.courtyard.north", "keep.courtyard.north_east" ->
+                        Direction.SOUTH;
+                case "keep.courtyard.west", "keep.courtyard.south_west" -> Direction.EAST;
+                case "keep.courtyard.east", "keep.courtyard.south_east" -> Direction.WEST;
+                default -> throw new IllegalStateException("unexpected courtyard socket " + socketId);
+            };
             assertEquals(expectedClass, socketPiece.tags().get("workspace_courtyard_socket_class"));
             assertEquals(expectedClass, socketPiece.tags().get("workspace_content_socket_class"));
+            assertEquals(expectedFacing.getSerializedName(),
+                    socketPiece.tags().get(MKWalledKeepWorkspacePlanner.CONTENT_CONNECTOR_EDGE_TAG));
             assertEquals(switch (expectedClass) {
                 case "small" -> "5";
                 case "medium" -> "7";
@@ -868,7 +877,8 @@ class TowerWorkspaceV2Test {
                     socketPiece.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
             assertEquals("false", socketPiece.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
             assertTrue(socketPiece.connectors().stream().anyMatch(connector ->
-                    ("keep_slots/" + socketId.replace('.', '/')).equals(connector.incomingPoolName())));
+                    connector.facing() == expectedFacing &&
+                            ("keep_slots/" + socketId.replace('.', '/')).equals(connector.incomingPoolName())));
         }
     }
 

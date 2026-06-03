@@ -74,24 +74,24 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             "keep.corner.south_west"
     );
     private static final List<CourtyardSocketDefinition> COURTYARD_SOCKET_DEFINITIONS = List.of(
-            new CourtyardSocketDefinition("north_west", Direction.EAST, "large"),
+            new CourtyardSocketDefinition("north_west", Direction.SOUTH, "large"),
             new CourtyardSocketDefinition("north", Direction.SOUTH, "large"),
             new CourtyardSocketDefinition("north_east", Direction.SOUTH, "large"),
             new CourtyardSocketDefinition("west", Direction.EAST, "small"),
             new CourtyardSocketDefinition("east", Direction.WEST, "small"),
-            new CourtyardSocketDefinition("south_west", Direction.NORTH, "medium"),
+            new CourtyardSocketDefinition("south_west", Direction.EAST, "medium"),
             new CourtyardSocketDefinition("south_east", Direction.WEST, "medium")
     );
     private static final List<CourtyardPathDefinition> COURTYARD_PATH_DEFINITIONS = List.of(
             new CourtyardPathDefinition("south_west", "corner_t", COURTYARD_PATH_CORNER_T_SOURCE,
                     MKWorkspaceTemplateReuseTags.ROTATION_NONE, Direction.EAST, Direction.NORTH,
-                    "keep.courtyard.path.west", Direction.SOUTH, "keep.courtyard.south_west"),
+                    "keep.courtyard.path.west", Direction.WEST, "keep.courtyard.south_west"),
             new CourtyardPathDefinition("west", "t", COURTYARD_PATH_T_SOURCE,
                     MKWorkspaceTemplateReuseTags.ROTATION_NONE, Direction.SOUTH, Direction.NORTH,
                     "keep.courtyard.path.north_west", Direction.WEST, "keep.courtyard.west"),
             new CourtyardPathDefinition("north_west", "corner_t", COURTYARD_PATH_CORNER_T_SOURCE,
                     MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_90, Direction.SOUTH, Direction.EAST,
-                    "keep.courtyard.path.north", Direction.WEST, "keep.courtyard.north_west"),
+                    "keep.courtyard.path.north", Direction.NORTH, "keep.courtyard.north_west"),
             new CourtyardPathDefinition("north", "t", COURTYARD_PATH_T_SOURCE,
                     MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_90, Direction.WEST, Direction.EAST,
                     "keep.courtyard.path.north_east", Direction.NORTH, "keep.courtyard.north"),
