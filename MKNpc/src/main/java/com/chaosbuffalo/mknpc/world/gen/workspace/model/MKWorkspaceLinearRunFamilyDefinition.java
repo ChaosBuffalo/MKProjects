@@ -184,7 +184,8 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
                     "branch_opening", DEFAULT_WALLED_KEEP_WALL_SEGMENT_LENGTH, 3, keepHeight, false, true,
                     wallFoundation),
             keepRun("keep_entry_approach", "keep.entry_approach.main", MKWorkspaceLinearRunKind.OPEN_WALKWAY,
-                    "main_opening", 9, dimensions.shaftWidth(), keepHeight, true, false,
+                    "main_opening", defaultWalledKeepEntryApproachLength(dimensions), dimensions.shaftWidth(),
+                    keepHeight, true, false,
                     MKWorkspaceFoundationPolicy.none()),
             keepRun("keep_walkway_west", "keep.walkway.west", MKWorkspaceLinearRunKind.OPEN_WALKWAY,
                     "branch_opening", 9, dimensions.shaftWidth(), keepHeight, false, true,
@@ -193,6 +194,23 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
                     "branch_opening", 9, dimensions.shaftWidth(), keepHeight, false, true,
                     MKWorkspaceFoundationPolicy.none())
         );
+    }
+
+    private static int defaultWalledKeepEntryApproachLength(MKWorkspaceDimensions dimensions) {
+        int centerSpan = doubledOddFootprint(Math.max(9, dimensions.roomLength()));
+        int laneInset = 1 + 2 + dimensions.shaftWidth() / 2;
+        int gatehouseClearance = 1 + 2 + dimensions.shaftWidth();
+        return smallestOddAtLeast(centerSpan + (2 * laneInset) + gatehouseClearance);
+    }
+
+    private static int doubledOddFootprint(int footprint) {
+        int oddFootprint = footprint % 2 == 0 ? footprint + 1 : footprint;
+        return Math.max(3, (oddFootprint * 2) - 1);
+    }
+
+    private static int smallestOddAtLeast(int value) {
+        int normalized = Math.max(1, value);
+        return normalized % 2 == 0 ? normalized + 1 : normalized;
     }
 
     private static MKWorkspaceLinearRunFamilyDefinition keepRun(String linearRunId, String topologySlotId,

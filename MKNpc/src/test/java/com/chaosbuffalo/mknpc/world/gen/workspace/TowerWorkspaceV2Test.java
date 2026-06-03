@@ -948,23 +948,24 @@ class TowerWorkspaceV2Test {
                 .filter(piece -> piece.pieceName().equals("keep_entry_approach"))
                 .findFirst()
                 .orElseThrow();
+        assertEquals(31, entryApproach.interiorLength());
         assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.WEST &&
                         "keep_slots/keep/courtyard/path/south_west".equals(connector.targetPoolName()) &&
-                        connector.lateralOffset() > 0));
+                        connector.lateralOffset() == 8));
         assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.EAST &&
                         "keep_slots/keep/courtyard/path/south_east".equals(connector.targetPoolName()) &&
-                        connector.lateralOffset() > 0));
+                        connector.lateralOffset() == 8));
         assertFalse(entryApproach.connectors().stream().anyMatch(connector ->
                 connector.targetPoolName() != null &&
                         connector.targetPoolName().startsWith("keep_slots/keep/courtyard/") &&
                         !connector.targetPoolName().startsWith("keep_slots/keep/courtyard/path/")));
         assertNoDuplicateHorizontalConnectorSlots(entryApproach);
         assertPieceIncomingOffset(pieces, "keep_courtyard_path_corner_t_south_west",
-                "keep_slots/keep/courtyard/path/south_west", offset -> offset < 0);
+                "keep_slots/keep/courtyard/path/south_west", offset -> offset == 11);
         assertPieceIncomingOffset(pieces, "keep_courtyard_path_corner_t_south_east",
-                "keep_slots/keep/courtyard/path/south_east", offset -> offset < 0);
+                "keep_slots/keep/courtyard/path/south_east", offset -> offset == 11);
         assertPieceTargets(pieces, "keep_courtyard_path_corner_t_south_west", "keep_slots/keep/courtyard/south_west");
         assertPieceTargets(pieces, "keep_courtyard_path_corner_t_south_west", "keep_slots/keep/courtyard/path/west");
         assertPieceTargets(pieces, "keep_courtyard_path_t_west", "keep_slots/keep/courtyard/west");
@@ -977,6 +978,36 @@ class TowerWorkspaceV2Test {
         assertPieceTargets(pieces, "keep_courtyard_path_corner_t_south_east", "keep_slots/keep/courtyard/south_east");
         assertPieceTargets(pieces, "keep_courtyard_path_corner_t_south_east", "keep_slots/keep/courtyard/path/east");
         assertPieceTargets(pieces, "keep_courtyard_path_t_east", "keep_slots/keep/courtyard/east");
+    }
+
+    @Test
+    void walledKeepEntryApproachPlansDerivedLengthForStaleSavedRunLength() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        List<MKWorkspaceLinearRunFamilyDefinition> staleLinearRuns =
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette()).stream()
+                        .map(linearRun -> "keep.entry_approach.main".equals(linearRun.topologySlotId()) ?
+                                withLinearRunLength(linearRun, 9) : linearRun)
+                        .toList();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(false),
+                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                staleLinearRuns
+        );
+
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+
+        MKPlannedPiece entryApproach = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_entry_approach"))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(31, entryApproach.interiorLength());
+        assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
+                connector.facing() == Direction.WEST &&
+                        "keep_slots/keep/courtyard/path/south_west".equals(connector.targetPoolName()) &&
+                        connector.lateralOffset() == 8));
+        assertPieceIncomingOffset(pieces, "keep_courtyard_path_corner_t_south_west",
+                "keep_slots/keep/courtyard/path/south_west", offset -> offset == 11);
     }
 
     @Test
@@ -3448,6 +3479,27 @@ class TowerWorkspaceV2Test {
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 workspace.pieces()
+        );
+    }
+
+    private static MKWorkspaceLinearRunFamilyDefinition withLinearRunLength(
+            MKWorkspaceLinearRunFamilyDefinition linearRun, int length) {
+        return new MKWorkspaceLinearRunFamilyDefinition(
+                linearRun.linearRunId(),
+                linearRun.topologySlotId(),
+                linearRun.kind(),
+                linearRun.openingProfileId(),
+                length,
+                linearRun.interiorWidth(),
+                linearRun.interiorHeight(),
+                linearRun.slopeDelta(),
+                linearRun.allowOnMainPath(),
+                linearRun.allowOnBranchPath(),
+                linearRun.projection(),
+                linearRun.supportedShapes(),
+                linearRun.topVoidMargin(),
+                linearRun.foundationPolicy(),
+                linearRun.paletteOverride()
         );
     }
 
