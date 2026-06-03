@@ -1031,19 +1031,30 @@ class TowerWorkspaceV2Test {
         assertEquals("true", pathTSource.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
         assertEquals("keep_courtyard_path_t",
                 pathTSource.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
+        assertEquals(25, pathTSource.interiorWidth());
+        assertEquals(25, pathTSource.interiorLength());
+        assertEquals("4", pathTSource.tags().get(MKWalledKeepWorkspacePlanner.COURTYARD_PATH_LANE_INSET_TAG));
+        assertFalse(pathTSource.tags().containsKey(MKWorkspaceTemplateReuseTags.CROP_MODE_TAG));
         assertEquals("false", northPath.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
         assertEquals("keep_courtyard_path_t",
                 northPath.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
         assertEquals(MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_90,
                 northPath.tags().get(MKWorkspaceTemplateReuseTags.ROTATION_TAG));
+        assertEquals(25, northPath.interiorWidth());
+        assertEquals(25, northPath.interiorLength());
+        assertEquals(MKWorkspaceTemplateReuseTags.CROP_MODE_NON_STRUCTURE_VOID,
+                northPath.tags().get(MKWorkspaceTemplateReuseTags.CROP_MODE_TAG));
         assertEquals("true", cornerTSource.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
         assertEquals("keep_courtyard_path_corner_t",
                 cornerTSource.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
+        assertFalse(cornerTSource.tags().containsKey(MKWorkspaceTemplateReuseTags.CROP_MODE_TAG));
         assertEquals("false", southEastPath.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
         assertEquals("keep_courtyard_path_corner_t",
                 southEastPath.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
         assertEquals(MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_270,
                 southEastPath.tags().get(MKWorkspaceTemplateReuseTags.ROTATION_TAG));
+        assertEquals(MKWorkspaceTemplateReuseTags.CROP_MODE_NON_STRUCTURE_VOID,
+                southEastPath.tags().get(MKWorkspaceTemplateReuseTags.CROP_MODE_TAG));
     }
 
     @Test

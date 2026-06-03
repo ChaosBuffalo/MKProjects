@@ -670,9 +670,9 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         MKWorkspaceLinearRunFamilyDefinition family = courtyardPathFamily(workspace);
         ResolvedOpeningProfile opening = resolveOpeningProfile(workspace, family.openingProfileId())
                 .orElseGet(() -> defaultOpeningProfile(workspace));
-        int pathSize = Math.max(family.length(), family.interiorWidth());
+        int laneInset = courtyardPathLaneCenterInset(workspace, opening);
+        int pathSize = courtyardPathSize(workspace, family, laneInset);
         int height = family.interiorHeight() + Math.abs(family.slopeDelta());
-        int laneInset = workspace.exteriorAirMargin() + opening.openingWidth() / 2;
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
         pieces.add(createCourtyardPathSourcePiece(workspace, family, COURTYARD_PATH_T_SOURCE, "t",
                 pathSize, height, laneInset, opening));
@@ -740,7 +740,18 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 courtyardPathConnectors(path, availableSlots, opening),
                 buildCourtyardPathTags(workspace, family, path.slotId(), path.shape(), laneInset)
         );
-        return withTemplateReuse(piece, path.sourcePieceName(), path.rotation(), false);
+        return withExportCrop(withTemplateReuse(piece, path.sourcePieceName(), path.rotation(), false));
+    }
+
+    private int courtyardPathLaneCenterInset(MKStructureWorkspace workspace, ResolvedOpeningProfile opening) {
+        return workspace.shellMargin() + workspace.exteriorAirMargin() + opening.openingWidth() / 2;
+    }
+
+    private int courtyardPathSize(MKStructureWorkspace workspace, MKWorkspaceLinearRunFamilyDefinition family,
+                                  int laneInset) {
+        int centerSpan = Math.max(centerWidth(workspace), centerLength(workspace));
+        int calculated = centerSpan + (2 * laneInset);
+        return smallestOddAtLeast(Math.max(calculated, Math.max(family.length(), family.interiorWidth())));
     }
 
     private PerimeterPlan createPerimeterPlan(MKStructureWorkspace workspace) {
@@ -894,6 +905,11 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             return 0;
         }
         return value % 2 == 0 ? value - 1 : value;
+    }
+
+    private int smallestOddAtLeast(int value) {
+        int clamped = Math.max(1, value);
+        return clamped % 2 == 0 ? clamped + 1 : clamped;
     }
 
     private int centerWidth(MKStructureWorkspace workspace) {
@@ -1094,6 +1110,21 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         tags.put(MKWorkspaceTemplateReuseTags.REUSE_MODE_TAG,
                 MKWorkspaceTemplateReuseTags.REUSE_MODE_ROTATE_EXPORT);
         tags.put(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG, Boolean.toString(authoringSource));
+        return new MKPlannedPiece(
+                piece.roleId(),
+                piece.pieceName(),
+                piece.interiorWidth(),
+                piece.interiorLength(),
+                piece.interiorHeight(),
+                piece.connectors(),
+                tags
+        );
+    }
+
+    private MKPlannedPiece withExportCrop(MKPlannedPiece piece) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>(piece.tags());
+        tags.put(MKWorkspaceTemplateReuseTags.CROP_MODE_TAG,
+                MKWorkspaceTemplateReuseTags.CROP_MODE_NON_STRUCTURE_VOID);
         return new MKPlannedPiece(
                 piece.roleId(),
                 piece.pieceName(),

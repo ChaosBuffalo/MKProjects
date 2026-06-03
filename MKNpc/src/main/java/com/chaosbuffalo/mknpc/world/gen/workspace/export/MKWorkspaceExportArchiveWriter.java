@@ -230,10 +230,76 @@ public class MKWorkspaceExportArchiveWriter {
             jigsawNbt.putInt("z", pos.getZ());
             blocksByPos.put(pos, new ExportBlock(pos, state, jigsawNbt));
         }
+        ExportCrop crop = MKWorkspaceTemplateReuseTags.cropsNonStructureVoid(targetPiece.tags()) ?
+                detectNonStructureVoidCrop(blocksByPos.values(), targetWidth, targetLength) :
+                ExportCrop.full(targetWidth, targetLength);
+        List<ExportBlock> croppedBlocks = cropBlocks(blocksByPos.values(), crop);
         CompoundTag result = sourceTag.copy();
-        result.put("size", intList(targetWidth, sourceHeight, targetLength));
+        result.put("size", intList(crop.width(), sourceHeight, crop.length()));
         result.remove("palettes");
-        writePaletteAndBlocks(result, new ArrayList<>(blocksByPos.values()));
+        writePaletteAndBlocks(result, croppedBlocks);
+        return result;
+    }
+
+    private ExportCrop detectNonStructureVoidCrop(Iterable<ExportBlock> blocks, int width, int length) {
+        int minX = width;
+        int minZ = length;
+        int maxX = -1;
+        int maxZ = -1;
+        for (ExportBlock block : blocks) {
+            if (block.state().is(Blocks.STRUCTURE_VOID)) {
+                continue;
+            }
+            minX = Math.min(minX, block.pos().getX());
+            minZ = Math.min(minZ, block.pos().getZ());
+            maxX = Math.max(maxX, block.pos().getX());
+            maxZ = Math.max(maxZ, block.pos().getZ());
+        }
+        if (maxX < minX || maxZ < minZ) {
+            return ExportCrop.full(width, length);
+        }
+        AxisCrop xCrop = normalizeOddCrop(minX, maxX, width);
+        AxisCrop zCrop = normalizeOddCrop(minZ, maxZ, length);
+        return new ExportCrop(xCrop.min(), xCrop.max(), zCrop.min(), zCrop.max());
+    }
+
+    private AxisCrop normalizeOddCrop(int min, int max, int size) {
+        if (((max - min + 1) & 1) == 1) {
+            return new AxisCrop(min, max);
+        }
+        int center = (size - 1) / 2;
+        int distanceToMin = Math.abs(center - min);
+        int distanceToMax = Math.abs(center - max);
+        if (distanceToMin <= distanceToMax && min > 0) {
+            return new AxisCrop(min - 1, max);
+        }
+        if (max < size - 1) {
+            return new AxisCrop(min, max + 1);
+        }
+        if (min > 0) {
+            return new AxisCrop(min - 1, max);
+        }
+        return new AxisCrop(min, max);
+    }
+
+    private List<ExportBlock> cropBlocks(Iterable<ExportBlock> blocks, ExportCrop crop) {
+        ArrayList<ExportBlock> result = new ArrayList<>();
+        for (ExportBlock block : blocks) {
+            BlockPos pos = block.pos();
+            if (pos.getX() < crop.minX() || pos.getX() > crop.maxX() ||
+                    pos.getZ() < crop.minZ() || pos.getZ() > crop.maxZ()) {
+                continue;
+            }
+            BlockPos croppedPos = new BlockPos(pos.getX() - crop.minX(), pos.getY(),
+                    pos.getZ() - crop.minZ());
+            CompoundTag blockNbt = block.nbt() == null ? null : block.nbt().copy();
+            if (blockNbt != null) {
+                blockNbt.putInt("x", croppedPos.getX());
+                blockNbt.putInt("y", croppedPos.getY());
+                blockNbt.putInt("z", croppedPos.getZ());
+            }
+            result.add(new ExportBlock(croppedPos, block.state(), blockNbt));
+        }
         return result;
     }
 
@@ -299,6 +365,23 @@ public class MKWorkspaceExportArchiveWriter {
     }
 
     private record ExportBlock(BlockPos pos, BlockState state, CompoundTag nbt) {
+    }
+
+    private record AxisCrop(int min, int max) {
+    }
+
+    private record ExportCrop(int minX, int maxX, int minZ, int maxZ) {
+        private static ExportCrop full(int width, int length) {
+            return new ExportCrop(0, width - 1, 0, length - 1);
+        }
+
+        private int width() {
+            return maxX - minX + 1;
+        }
+
+        private int length() {
+            return maxZ - minZ + 1;
+        }
     }
 
     private String manifestEntryName(MKWorkspaceExportManifest manifest) {

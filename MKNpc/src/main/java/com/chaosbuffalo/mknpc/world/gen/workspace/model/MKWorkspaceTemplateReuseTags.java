@@ -9,7 +9,10 @@ public final class MKWorkspaceTemplateReuseTags {
     public static final String ROTATION_TAG = "workspace_template_rotation";
     public static final String REUSE_MODE_TAG = "workspace_template_reuse_mode";
     public static final String AUTHORING_PIECE_TAG = "workspace_authoring_piece";
+    public static final String CROP_MODE_TAG = "workspace_template_crop_mode";
     public static final String REUSE_MODE_ROTATE_EXPORT = "rotate_export";
+    public static final String CROP_MODE_NONE = "none";
+    public static final String CROP_MODE_NON_STRUCTURE_VOID = "non_structure_void";
     public static final String ROTATION_NONE = "none";
     public static final String ROTATION_CLOCKWISE_90 = "clockwise_90";
     public static final String ROTATION_CLOCKWISE_180 = "clockwise_180";
@@ -28,6 +31,10 @@ public final class MKWorkspaceTemplateReuseTags {
 
     public static boolean isAuthoringSource(Map<String, String> tags) {
         return isRotatedExportReuse(tags) && !"false".equals(tags.get(AUTHORING_PIECE_TAG));
+    }
+
+    public static boolean cropsNonStructureVoid(Map<String, String> tags) {
+        return CROP_MODE_NON_STRUCTURE_VOID.equals(tags.getOrDefault(CROP_MODE_TAG, CROP_MODE_NONE));
     }
 
     public static String sourceId(Map<String, String> tags) {
