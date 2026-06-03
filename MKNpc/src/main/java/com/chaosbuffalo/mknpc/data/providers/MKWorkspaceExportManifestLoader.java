@@ -83,7 +83,9 @@ public class MKWorkspaceExportManifestLoader {
     private static java.util.Optional<LoadedManifest> loadOne(Path path, String expectedNamespace) {
         try (Reader reader = Files.newBufferedReader(path)) {
             var json = JsonParser.parseReader(reader);
-            MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
+            MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.CODEC.parse(JsonOps.INSTANCE, json)
+                    .getOrThrow()
+                    .withNormalizedRuntimeHints();
             if (!manifest.namespace().equals(expectedNamespace)) {
                 MKNpc.LOGGER.warn("Skipping workspace export manifest {} because namespace {} did not match expected {}",
                         path, manifest.namespace(), expectedNamespace);

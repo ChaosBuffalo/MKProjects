@@ -189,6 +189,41 @@ public record MKWorkspaceExportManifest(
                 .toList();
     }
 
+    public MKWorkspaceExportManifest withNormalizedRuntimeHints() {
+        ExportRuntimeHints normalizedHints = new ExportRuntimeHints(
+                normalizedStartBaseName(),
+                runtimeHints.templateGroups(),
+                buildRuntimePoolsFromExportPieces(this)
+        );
+        return new MKWorkspaceExportManifest(
+                schemaVersion,
+                workspaceId,
+                namespace,
+                structureName,
+                exportedAt,
+                createdAt,
+                updatedAt,
+                settings,
+                normalizedHints,
+                templateGroups,
+                pieces
+        );
+    }
+
+    private String normalizedStartBaseName() {
+        if (!runtimeHints.startBaseName().isBlank()) {
+            return runtimeHints.startBaseName();
+        }
+        return pieces.stream()
+                .filter(piece -> !"template".equals(piece.workspacePieceKind()))
+                .filter(piece -> MKWorkspaceRuntimePieceInfo.fromTags(piece.tags())
+                        .map(MKWorkspaceRuntimePieceInfo::start)
+                        .orElse(false))
+                .map(ExportPiece::baseName)
+                .findFirst()
+                .orElse("");
+    }
+
     private static Codec<MKVerticalAccessPlacement> verticalAccessPlacementCodec() {
         return Codec.STRING.xmap(MKVerticalAccessPlacement::fromSerializedName, MKVerticalAccessPlacement::getSerializedName);
     }
@@ -946,9 +981,57 @@ public record MKWorkspaceExportManifest(
                 .toList();
     }
 
+    private static List<ExportRuntimePool> buildRuntimePoolsFromExportPieces(MKWorkspaceExportManifest manifest) {
+        LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool = new LinkedHashMap<>();
+        for (ExportPiece piece : manifest.pieces()) {
+            if ("template".equals(piece.workspacePieceKind())) {
+                continue;
+            }
+            Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = MKWorkspaceRuntimePieceInfo.fromTags(piece.tags());
+            for (ExportConnector connector : piece.connectors()) {
+                if (connector.incomingPool().equals(EMPTY_POOL)) {
+                    continue;
+                }
+                if (isBranchCapRuntimePool(manifest, connector.incomingPool()) &&
+                        !runtimeInfo.map(MKWorkspaceRuntimePieceInfo::branchCap).orElse(false)) {
+                    continue;
+                }
+                if (isBranchRuntimePool(manifest, connector.incomingPool()) &&
+                        runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnBranchPath).orElse(false) == false) {
+                    continue;
+                }
+                if (!isBranchRuntimePool(manifest, connector.incomingPool()) &&
+                        runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnMainPath).orElse(true) == false) {
+                    continue;
+                }
+                if (isCourtyardContentSocketRuntimePool(manifest, connector.incomingPool()) &&
+                        !courtyardContentFitsSocket(piece.tags())) {
+                    continue;
+                }
+                childrenByPool.computeIfAbsent(connector.incomingPool(), key -> new LinkedHashSet<>())
+                        .add(piece.baseName());
+            }
+        }
+        return childrenByPool.entrySet().stream()
+                .map(entry -> new ExportRuntimePool(
+                        derivePoolBaseName(manifest, entry.getKey()),
+                        entry.getKey(),
+                        List.copyOf(entry.getValue())
+                ))
+                .toList();
+    }
+
     private static String derivePoolBaseName(MKStructureWorkspace workspace, ResourceLocation poolId) {
         String prefix = workspace.structureName() + "/";
         if (poolId.getNamespace().equals(workspace.namespace()) && poolId.getPath().startsWith(prefix)) {
+            return poolId.getPath().substring(prefix.length());
+        }
+        return poolId.toString();
+    }
+
+    private static String derivePoolBaseName(MKWorkspaceExportManifest manifest, ResourceLocation poolId) {
+        String prefix = manifest.structureName() + "/";
+        if (poolId.getNamespace().equals(manifest.namespace()) && poolId.getPath().startsWith(prefix)) {
             return poolId.getPath().substring(prefix.length());
         }
         return poolId.toString();
@@ -961,8 +1044,19 @@ public record MKWorkspaceExportManifest(
                 path.startsWith("branch_caps/");
     }
 
+    private static boolean isBranchRuntimePool(MKWorkspaceExportManifest manifest, ResourceLocation poolId) {
+        String path = runtimePoolPath(manifest, poolId);
+        return path.startsWith("linear_runs/branch/") ||
+                path.startsWith("rooms/branch/") ||
+                path.startsWith("branch_caps/");
+    }
+
     private static boolean isBranchCapRuntimePool(MKStructureWorkspace workspace, ResourceLocation poolId) {
         return runtimePoolPath(workspace, poolId).startsWith("branch_caps/");
+    }
+
+    private static boolean isBranchCapRuntimePool(MKWorkspaceExportManifest manifest, ResourceLocation poolId) {
+        return runtimePoolPath(manifest, poolId).startsWith("branch_caps/");
     }
 
     private static boolean isCourtyardContentSocketRuntimePool(MKStructureWorkspace workspace, ResourceLocation poolId) {
@@ -971,7 +1065,16 @@ public record MKWorkspaceExportManifest(
     }
 
     private static boolean courtyardContentFitsSocket(MKWorkspacePieceDefinition piece) {
-        Map<String, String> tags = piece.tags();
+        return courtyardContentFitsSocket(piece.tags());
+    }
+
+    private static boolean isCourtyardContentSocketRuntimePool(MKWorkspaceExportManifest manifest,
+                                                               ResourceLocation poolId) {
+        String path = runtimePoolPath(manifest, poolId);
+        return path.startsWith(COURTYARD_SOCKET_POOL_PREFIX) && !path.startsWith(COURTYARD_PATH_POOL_PREFIX);
+    }
+
+    private static boolean courtyardContentFitsSocket(Map<String, String> tags) {
         if (!"courtyard".equals(tags.getOrDefault(CONTENT_KIND_TAG, ""))) {
             return false;
         }
@@ -999,6 +1102,12 @@ public record MKWorkspaceExportManifest(
     private static String runtimePoolPath(MKStructureWorkspace workspace, ResourceLocation poolId) {
         String prefix = workspace.structureName() + "/";
         return poolId.getNamespace().equals(workspace.namespace()) && poolId.getPath().startsWith(prefix) ?
+                poolId.getPath().substring(prefix.length()) : poolId.getPath();
+    }
+
+    private static String runtimePoolPath(MKWorkspaceExportManifest manifest, ResourceLocation poolId) {
+        String prefix = manifest.structureName() + "/";
+        return poolId.getNamespace().equals(manifest.namespace()) && poolId.getPath().startsWith(prefix) ?
                 poolId.getPath().substring(prefix.length()) : poolId.getPath();
     }
 }

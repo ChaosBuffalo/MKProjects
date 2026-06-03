@@ -993,6 +993,48 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void exportedManifestNormalizationRestoresMissingCourtyardPathPools() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(false),
+                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+        List<MKPlannedPiece> plannedPieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+        MKStructureWorkspace workspaceWithPieces = workspace.withPieces(plannedPieces.stream()
+                .map(piece -> pieceToDefinitionWithConnectors(workspace, piece))
+                .toList());
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspaceWithPieces, 4, "test");
+        MKWorkspaceExportManifest staleManifest = new MKWorkspaceExportManifest(
+                manifest.schemaVersion(),
+                manifest.workspaceId(),
+                manifest.namespace(),
+                manifest.structureName(),
+                manifest.exportedAt(),
+                manifest.createdAt(),
+                manifest.updatedAt(),
+                manifest.settings(),
+                new MKWorkspaceExportManifest.ExportRuntimeHints(
+                        manifest.runtimeHints().startBaseName(),
+                        manifest.runtimeHints().templateGroups(),
+                        manifest.runtimeHints().pools().stream()
+                                .filter(pool -> !pool.poolId().getPath().contains("/courtyard/path/"))
+                                .toList()),
+                manifest.templateGroups(),
+                manifest.pieces());
+
+        MKWorkspaceExportManifest normalizedManifest = staleManifest.withNormalizedRuntimeHints();
+
+        assertRuntimePoolContains(workspaceWithPieces, normalizedManifest,
+                "keep_slots/keep/courtyard/path/south_west",
+                "keep_courtyard_path_corner_t_south_west");
+        assertRuntimePoolContains(workspaceWithPieces, normalizedManifest,
+                "keep_slots/keep/courtyard/path/south_east",
+                "keep_courtyard_path_corner_t_south_east");
+    }
+
+    @Test
     void walledKeepPlannerMarksRotatedTemplateReuseForWallsAndSharedCorners() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
