@@ -233,6 +233,9 @@ public class MKStructureWorkspace {
 
     public List<String> validate() {
         List<String> errors = new ArrayList<>(verticalAccessSpec.validate());
+        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(topologyProfile.profileType())) {
+            errors.addAll(topologyProfile.courtyardSettings().validate());
+        }
         for (MKWorkspaceTowerStackSettings settings : topologyProfile.towerStackSettings()) {
             errors.addAll(MKWorkspaceTowerStackFloorCounts.validate(settings).stream()
                     .map(error -> "tower stack " + settings.stackId() + " " + error)

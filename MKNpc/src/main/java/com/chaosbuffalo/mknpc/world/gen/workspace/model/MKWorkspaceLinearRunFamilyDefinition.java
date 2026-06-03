@@ -183,8 +183,15 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
             keepRun("keep_wall_segment", "keep.perimeter", MKWorkspaceLinearRunKind.DEFENSIVE_WALL,
                     "branch_opening", DEFAULT_WALLED_KEEP_WALL_SEGMENT_LENGTH, 3, keepHeight, false, true,
                     wallFoundation),
-                keepRun("keep_walkway_south", "keep.walkway.south", MKWorkspaceLinearRunKind.OPEN_WALKWAY,
-                        "main_opening", 9, dimensions.shaftWidth(), keepHeight, true, false, MKWorkspaceFoundationPolicy.none())
+            keepRun("keep_entry_approach", "keep.entry_approach.main", MKWorkspaceLinearRunKind.OPEN_WALKWAY,
+                    "main_opening", 9, dimensions.shaftWidth(), keepHeight, true, false,
+                    MKWorkspaceFoundationPolicy.none()),
+            keepRun("keep_walkway_west", "keep.walkway.west", MKWorkspaceLinearRunKind.OPEN_WALKWAY,
+                    "branch_opening", 9, dimensions.shaftWidth(), keepHeight, false, true,
+                    MKWorkspaceFoundationPolicy.none()),
+            keepRun("keep_walkway_east", "keep.walkway.east", MKWorkspaceLinearRunKind.OPEN_WALKWAY,
+                    "branch_opening", 9, dimensions.shaftWidth(), keepHeight, false, true,
+                    MKWorkspaceFoundationPolicy.none())
         );
     }
 

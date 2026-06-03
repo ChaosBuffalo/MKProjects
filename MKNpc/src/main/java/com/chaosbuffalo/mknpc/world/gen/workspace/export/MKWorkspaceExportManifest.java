@@ -58,6 +58,12 @@ public record MKWorkspaceExportManifest(
 ) {
     private static final Codec<UUID> UUID_CODEC = Codec.STRING.xmap(UUID::fromString, UUID::toString);
     private static final ResourceLocation EMPTY_POOL = ResourceLocation.parse("minecraft:empty");
+    private static final String COURTYARD_SOCKET_POOL_PREFIX = "keep_slots/keep/courtyard/";
+    private static final String CONTENT_KIND_TAG = "workspace_content_kind";
+    private static final String CONTENT_SOCKET_CLASS_TAG = "workspace_content_socket_class";
+    private static final String CONTENT_SIZE_TAG = "workspace_content_size";
+    private static final String COURTYARD_SOCKET_CLASS_TAG = "workspace_courtyard_socket_class";
+    private static final String COURTYARD_SOCKET_MAX_SIZE_TAG = "workspace_courtyard_socket_max_square_size";
 
     public static final Codec<MKWorkspaceExportManifest> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.INT.fieldOf("schema_version").forGetter(MKWorkspaceExportManifest::schemaVersion),
@@ -923,6 +929,10 @@ public record MKWorkspaceExportManifest(
                         runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnMainPath).orElse(true) == false) {
                     continue;
                 }
+                if (isCourtyardSocketRuntimePool(workspace, connector.incomingPool()) &&
+                        !courtyardContentFitsSocket(piece)) {
+                    continue;
+                }
                 childrenByPool.computeIfAbsent(connector.incomingPool(), key -> new LinkedHashSet<>()).add(baseName);
             }
         }
@@ -952,6 +962,36 @@ public record MKWorkspaceExportManifest(
 
     private static boolean isBranchCapRuntimePool(MKStructureWorkspace workspace, ResourceLocation poolId) {
         return runtimePoolPath(workspace, poolId).startsWith("branch_caps/");
+    }
+
+    private static boolean isCourtyardSocketRuntimePool(MKStructureWorkspace workspace, ResourceLocation poolId) {
+        return runtimePoolPath(workspace, poolId).startsWith(COURTYARD_SOCKET_POOL_PREFIX);
+    }
+
+    private static boolean courtyardContentFitsSocket(MKWorkspacePieceDefinition piece) {
+        Map<String, String> tags = piece.tags();
+        if (!"courtyard".equals(tags.getOrDefault(CONTENT_KIND_TAG, ""))) {
+            return false;
+        }
+        String contentClass = tags.getOrDefault(CONTENT_SOCKET_CLASS_TAG, "");
+        String socketClass = tags.getOrDefault(COURTYARD_SOCKET_CLASS_TAG, "");
+        if (contentClass.isBlank() || !contentClass.equals(socketClass)) {
+            return false;
+        }
+        int contentSize = parsePositiveInt(tags.get(CONTENT_SIZE_TAG));
+        int socketMaxSize = parsePositiveInt(tags.get(COURTYARD_SOCKET_MAX_SIZE_TAG));
+        return contentSize > 0 && socketMaxSize > 0 && contentSize <= socketMaxSize;
+    }
+
+    private static int parsePositiveInt(String value) {
+        if (value == null || value.isBlank()) {
+            return 0;
+        }
+        try {
+            return Math.max(0, Integer.parseInt(value));
+        } catch (NumberFormatException ignored) {
+            return 0;
+        }
     }
 
     private static String runtimePoolPath(MKStructureWorkspace workspace, ResourceLocation poolId) {

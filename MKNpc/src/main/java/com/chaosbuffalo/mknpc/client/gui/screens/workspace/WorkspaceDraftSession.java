@@ -244,7 +244,8 @@ public class WorkspaceDraftSession {
                 southEast,
                 southWest,
                 settings,
-                current.pathSettings()
+                current.pathSettings(),
+                current.courtyardSettings()
         );
     }
 
@@ -2137,7 +2138,8 @@ public class WorkspaceDraftSession {
                 source.uniqueSouthEastCornerTower(),
                 source.uniqueSouthWestCornerTower(),
                 stackSettings,
-                source.pathSettings()
+                source.pathSettings(),
+                source.courtyardSettings()
         );
     }
 

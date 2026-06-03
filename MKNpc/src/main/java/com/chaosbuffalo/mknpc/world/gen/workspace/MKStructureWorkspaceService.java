@@ -789,7 +789,8 @@ public class MKStructureWorkspaceService {
                 source.uniqueSouthEastCornerTower(),
                 source.uniqueSouthWestCornerTower(),
                 stackSettings,
-                source.pathSettings()
+                source.pathSettings(),
+                source.courtyardSettings()
         );
     }
 

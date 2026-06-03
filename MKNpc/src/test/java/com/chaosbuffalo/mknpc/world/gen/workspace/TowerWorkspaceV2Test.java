@@ -812,8 +812,95 @@ class TowerWorkspaceV2Test {
         assertEquals(7, northWall.interiorHeight());
         assertEquals("defensive_wall", northWall.tags().get("workspace_linear_run_kind"));
         assertFalse(pieces.stream().anyMatch(piece -> "parapet".equals(piece.tags().get("workspace_linear_run_kind"))));
-        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_walkway_south") &&
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_entry_approach") &&
                 "open_walkway".equals(piece.tags().get("workspace_linear_run_kind"))));
+    }
+
+    @Test
+    void walledKeepPlannerCreatesCourtyardSocketsAndCompactContentTemplates() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(false),
+                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+
+        assertEquals(List.of(), workspace.validate());
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_courtyard_content_small") &&
+                "small".equals(piece.tags().get("workspace_content_socket_class")) &&
+                "5".equals(piece.tags().get("workspace_content_size")) &&
+                "7".equals(piece.tags().get("workspace_content_height"))));
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_courtyard_content_medium") &&
+                "medium".equals(piece.tags().get("workspace_content_socket_class")) &&
+                "7".equals(piece.tags().get("workspace_content_size"))));
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_courtyard_content_large") &&
+                "large".equals(piece.tags().get("workspace_content_socket_class")) &&
+                "9".equals(piece.tags().get("workspace_content_size"))));
+
+        List<MKPlannedPiece> socketPieces = pieces.stream()
+                .filter(piece -> piece.tags().containsKey("workspace_courtyard_socket_id"))
+                .toList();
+        assertEquals(7, socketPieces.size());
+        assertFalse(socketPieces.stream().anyMatch(piece ->
+                "keep.courtyard.south".equals(piece.tags().get("workspace_courtyard_socket_id"))));
+        for (MKPlannedPiece socketPiece : socketPieces) {
+            String socketId = socketPiece.tags().get("workspace_courtyard_socket_id");
+            assertEquals("large", socketPiece.tags().get("workspace_courtyard_socket_class"));
+            assertEquals("large", socketPiece.tags().get("workspace_content_socket_class"));
+            assertEquals("9", socketPiece.tags().get("workspace_content_size"));
+            int maxSize = Integer.parseInt(socketPiece.tags().get("workspace_courtyard_socket_max_square_size"));
+            assertTrue(maxSize >= 9);
+            assertEquals(1, maxSize % 2);
+            assertEquals("keep_courtyard_content_large",
+                    socketPiece.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
+            assertEquals("false", socketPiece.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
+            assertTrue(socketPiece.connectors().stream().anyMatch(connector ->
+                    ("keep_slots/" + socketId.replace('.', '/')).equals(connector.incomingPoolName())));
+        }
+    }
+
+    @Test
+    void walledKeepEntryApproachConnectsGateCenterWalkwaysAndSockets() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(false),
+                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+        MKPlannedPiece centerEntry = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_center_entry"))
+                .findFirst()
+                .orElseThrow();
+        assertTrue(centerEntry.connectors().stream().anyMatch(connector ->
+                connector.facing() == Direction.SOUTH &&
+                        "keep_slots/keep/entry_approach/main".equals(connector.targetPoolName())));
+        MKPlannedPiece gatehouse = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_gate_main"))
+                .findFirst()
+                .orElseThrow();
+        assertTrue(gatehouse.connectors().stream().anyMatch(connector ->
+                connector.facing() == Direction.NORTH &&
+                        "keep_slots/keep/entry_approach/main".equals(connector.targetPoolName())));
+        MKPlannedPiece entryApproach = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_entry_approach"))
+                .findFirst()
+                .orElseThrow();
+        assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
+                connector.facing() == Direction.WEST &&
+                        "keep_slots/keep/walkway/west".equals(connector.targetPoolName())));
+        assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
+                connector.facing() == Direction.EAST &&
+                        "keep_slots/keep/walkway/east".equals(connector.targetPoolName())));
+        assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
+                "keep_slots/keep/courtyard/north".equals(connector.targetPoolName())));
+        assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
+                "keep_slots/keep/courtyard/south_west".equals(connector.targetPoolName())));
+        assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
+                "keep_slots/keep/courtyard/south_east".equals(connector.targetPoolName())));
     }
 
     @Test
@@ -882,7 +969,7 @@ class TowerWorkspaceV2Test {
 
         List<MKPlannedPiece> variantPieces = List.of(
                 workspacePlannedPiece(canonicalByName.get("keep_gate_main"), "_1", "instance", 1),
-                workspacePlannedPiece(canonicalByName.get("keep_walkway_south"), "_1", "instance", 1),
+                workspacePlannedPiece(canonicalByName.get("keep_entry_approach"), "_1", "instance", 1),
                 workspacePlannedPiece(canonicalByName.get("keep_wall_segment_south_west_0"), "_1", "instance", 1)
         );
         List<MKPlannedPiece> layoutPieces = new MKStructureWorkspaceService().physicalVariantLayoutPieces(
@@ -894,7 +981,7 @@ class TowerWorkspaceV2Test {
                 workspace, layoutPieces);
 
         assertVariantSharesTemplateColumn(placementsByName, "keep_gate_main");
-        assertVariantSharesTemplateColumn(placementsByName, "keep_walkway_south");
+        assertVariantSharesTemplateColumn(placementsByName, "keep_entry_approach");
         assertVariantSharesTemplateColumn(placementsByName, "keep_wall_segment_south_west_0");
     }
 

@@ -15,7 +15,8 @@ public record MKWorkspaceTopologyProfile(
         boolean uniqueSouthEastCornerTower,
         boolean uniqueSouthWestCornerTower,
         List<MKWorkspaceTowerStackSettings> towerStackSettings,
-        List<MKWorkspaceTopologyPathSettings> pathSettings
+        List<MKWorkspaceTopologyPathSettings> pathSettings,
+        MKWalledKeepCourtyardSettings courtyardSettings
 ) {
     public static final String TOWER_PROFILE_TYPE = "tower";
     public static final String WALLED_KEEP_PROFILE_TYPE = "walled_keep";
@@ -36,7 +37,10 @@ public record MKWorkspaceTopologyProfile(
             MKWorkspaceTowerStackSettings.CODEC.listOf().optionalFieldOf("tower_stack_settings", List.of())
                     .forGetter(MKWorkspaceTopologyProfile::towerStackSettings),
             MKWorkspaceTopologyPathSettings.CODEC.listOf().optionalFieldOf("path_settings", List.of())
-                    .forGetter(MKWorkspaceTopologyProfile::pathSettings)
+                    .forGetter(MKWorkspaceTopologyProfile::pathSettings),
+            MKWalledKeepCourtyardSettings.CODEC.optionalFieldOf("courtyard_settings",
+                            MKWalledKeepCourtyardSettings.defaults())
+                    .forGetter(MKWorkspaceTopologyProfile::courtyardSettings)
     ).apply(instance, MKWorkspaceTopologyProfile::new));
 
     public static MKWorkspaceTopologyProfile tower() {
@@ -48,7 +52,8 @@ public record MKWorkspaceTopologyProfile(
                         dimensions.roomHeight(), dimensions.roomWidth(), dimensions.roomLength(),
                         MKWorkspaceTowerStackFloorCounts.DEFAULT_TOP_CAP_APPROACH_ENABLED,
                         MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_CAP_APPROACH_ENABLED)),
-                MKWorkspaceTopologyPathSettings.defaults());
+                MKWorkspaceTopologyPathSettings.defaults(),
+                MKWalledKeepCourtyardSettings.defaults());
     }
 
     public static MKWorkspaceTopologyProfile walledKeep(boolean uniqueCornerTowers) {
@@ -56,7 +61,8 @@ public record MKWorkspaceTopologyProfile(
                 uniqueCornerTowers, uniqueCornerTowers, uniqueCornerTowers, uniqueCornerTowers,
                 defaultWalledKeepTowerStackSettings(uniqueCornerTowers, uniqueCornerTowers, uniqueCornerTowers,
                         uniqueCornerTowers),
-                MKWorkspaceTopologyPathSettings.defaults());
+                MKWorkspaceTopologyPathSettings.defaults(),
+                MKWalledKeepCourtyardSettings.defaults());
     }
 
     public static MKWorkspaceTopologyProfile walledKeep(boolean uniqueNorthWestCornerTower,
@@ -73,7 +79,8 @@ public record MKWorkspaceTopologyProfile(
                 uniqueSouthWestCornerTower,
                 defaultWalledKeepTowerStackSettings(uniqueNorthWestCornerTower, uniqueNorthEastCornerTower,
                         uniqueSouthEastCornerTower, uniqueSouthWestCornerTower),
-                MKWorkspaceTopologyPathSettings.defaults()
+                MKWorkspaceTopologyPathSettings.defaults(),
+                MKWalledKeepCourtyardSettings.defaults()
         );
     }
 
@@ -93,6 +100,7 @@ public record MKWorkspaceTopologyProfile(
                 uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
                 towerStackSettings);
         pathSettings = MKWorkspaceTopologyPathSettings.normalize(pathSettings);
+        courtyardSettings = courtyardSettings == null ? MKWalledKeepCourtyardSettings.defaults() : courtyardSettings;
     }
 
     public boolean anySharedCornerTower() {
@@ -137,7 +145,7 @@ public record MKWorkspaceTopologyProfile(
         }
         return new MKWorkspaceTopologyProfile(profileType, uniqueCornerTowers, uniqueNorthWestCornerTower,
                 uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower, updated,
-                pathSettings);
+                pathSettings, courtyardSettings);
     }
 
     public Optional<MKWorkspaceTopologyPathSettings> pathSettings(String topologyGroupId) {
@@ -165,7 +173,14 @@ public record MKWorkspaceTopologyProfile(
         }
         return new MKWorkspaceTopologyProfile(profileType, uniqueCornerTowers, uniqueNorthWestCornerTower,
                 uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
-                towerStackSettings, updated);
+                towerStackSettings, updated, courtyardSettings);
+    }
+
+    public MKWorkspaceTopologyProfile withCourtyardSettings(MKWalledKeepCourtyardSettings updatedSettings) {
+        return new MKWorkspaceTopologyProfile(profileType, uniqueCornerTowers, uniqueNorthWestCornerTower,
+                uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
+                towerStackSettings, pathSettings,
+                updatedSettings == null ? MKWalledKeepCourtyardSettings.defaults() : updatedSettings);
     }
 
     public static List<MKWorkspaceTowerStackSettings> defaultWalledKeepTowerStackSettings(
