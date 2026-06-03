@@ -64,6 +64,10 @@ public final class WorkspacePieceDisplay {
 
     public static String describePiece(MKWorkspacePieceDefinition piece) {
         String label = piece.variantIndex() == 0 ? "template" : "variant " + piece.variantIndex();
+        String warning = piece.tags().get("workspace_courtyard_disabled_reason");
+        if (warning != null && !warning.isBlank()) {
+            return label + ": " + piece.pieceName() + " | Warning: " + warning;
+        }
         return label + ": " + piece.pieceName();
     }
 

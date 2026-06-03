@@ -46,6 +46,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSet
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepCourtyardSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerStackDefinition;
@@ -847,18 +848,65 @@ class TowerWorkspaceV2Test {
                 "keep.courtyard.south".equals(piece.tags().get("workspace_courtyard_socket_id"))));
         for (MKPlannedPiece socketPiece : socketPieces) {
             String socketId = socketPiece.tags().get("workspace_courtyard_socket_id");
-            assertEquals("large", socketPiece.tags().get("workspace_courtyard_socket_class"));
-            assertEquals("large", socketPiece.tags().get("workspace_content_socket_class"));
-            assertEquals("9", socketPiece.tags().get("workspace_content_size"));
+            String expectedClass = switch (socketId) {
+                case "keep.courtyard.west", "keep.courtyard.east" -> "small";
+                case "keep.courtyard.south_west", "keep.courtyard.south_east" -> "medium";
+                default -> "large";
+            };
+            assertEquals(expectedClass, socketPiece.tags().get("workspace_courtyard_socket_class"));
+            assertEquals(expectedClass, socketPiece.tags().get("workspace_content_socket_class"));
+            assertEquals(switch (expectedClass) {
+                case "small" -> "5";
+                case "medium" -> "7";
+                default -> "9";
+            }, socketPiece.tags().get("workspace_content_size"));
             int maxSize = Integer.parseInt(socketPiece.tags().get("workspace_courtyard_socket_max_square_size"));
             assertTrue(maxSize >= 9);
             assertEquals(1, maxSize % 2);
-            assertEquals("keep_courtyard_content_large",
+            assertEquals("keep_courtyard_content_" + expectedClass,
                     socketPiece.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
             assertEquals("false", socketPiece.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
             assertTrue(socketPiece.connectors().stream().anyMatch(connector ->
                     ("keep_slots/" + socketId.replace('.', '/')).equals(connector.incomingPoolName())));
         }
+    }
+
+    @Test
+    void walledKeepPlannerDisablesCourtyardWhenSocketsDoNotFitAndReportsReason() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
+                .withCourtyardSettings(new MKWalledKeepCourtyardSettings(
+                        true,
+                        true,
+                        MKWalledKeepCourtyardSettings.DEFAULT_CONTENT_TEMPLATE_HEIGHT,
+                        MKWalledKeepCourtyardSettings.DEFAULT_SOCKET_CLEARANCE,
+                        MKWalledKeepCourtyardSettings.DEFAULT_WALKWAY_CONTINUATION_LENGTH,
+                        MKWalledKeepCourtyardSettings.DEFAULT_SMALL_TEMPLATE_SIZE,
+                        MKWalledKeepCourtyardSettings.DEFAULT_MEDIUM_TEMPLATE_SIZE,
+                        99
+                ));
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                topologyProfile,
+                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+
+        assertFalse(pieces.stream().anyMatch(piece ->
+                piece.pieceName().startsWith("keep_courtyard_path_")));
+        assertFalse(pieces.stream().anyMatch(piece ->
+                piece.tags().containsKey(MKWalledKeepWorkspacePlanner.COURTYARD_SOCKET_ID_TAG)));
+        MKPlannedPiece entryApproach = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_entry_approach"))
+                .findFirst()
+                .orElseThrow();
+        assertTrue(entryApproach.tags()
+                .get(MKWalledKeepWorkspacePlanner.COURTYARD_DISABLED_REASON_TAG)
+                .contains("requested max socket size 99"));
+        assertEquals("99", entryApproach.tags()
+                .get(MKWalledKeepWorkspacePlanner.COURTYARD_REQUESTED_MAX_SOCKET_SIZE_TAG));
     }
 
     @Test
@@ -891,25 +939,27 @@ class TowerWorkspaceV2Test {
                 .orElseThrow();
         assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.WEST &&
-                        "keep_slots/keep/walkway/west/south".equals(connector.targetPoolName())));
+                        "keep_slots/keep/courtyard/path/south_west".equals(connector.targetPoolName())));
         assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.EAST &&
-                        "keep_slots/keep/walkway/east/south".equals(connector.targetPoolName())));
+                        "keep_slots/keep/courtyard/path/south_east".equals(connector.targetPoolName())));
         assertFalse(entryApproach.connectors().stream().anyMatch(connector ->
                 connector.targetPoolName() != null &&
-                        connector.targetPoolName().startsWith("keep_slots/keep/courtyard/")));
+                        connector.targetPoolName().startsWith("keep_slots/keep/courtyard/") &&
+                        !connector.targetPoolName().startsWith("keep_slots/keep/courtyard/path/")));
         assertNoDuplicateHorizontalConnectorSlots(entryApproach);
-        assertPieceTargets(pieces, "keep_walkway_west_south", "keep_slots/keep/courtyard/south_west");
-        assertPieceTargets(pieces, "keep_walkway_west_south", "keep_slots/keep/walkway/west/middle");
-        assertPieceTargets(pieces, "keep_walkway_west_middle", "keep_slots/keep/courtyard/west");
-        assertPieceTargets(pieces, "keep_walkway_west_middle", "keep_slots/keep/walkway/west/north");
-        assertPieceTargets(pieces, "keep_walkway_west_north", "keep_slots/keep/courtyard/north_west");
-        assertPieceTargets(pieces, "keep_walkway_west_north", "keep_slots/keep/courtyard/north");
-        assertPieceTargets(pieces, "keep_walkway_east_south", "keep_slots/keep/courtyard/south_east");
-        assertPieceTargets(pieces, "keep_walkway_east_south", "keep_slots/keep/walkway/east/middle");
-        assertPieceTargets(pieces, "keep_walkway_east_middle", "keep_slots/keep/courtyard/east");
-        assertPieceTargets(pieces, "keep_walkway_east_middle", "keep_slots/keep/walkway/east/north");
-        assertPieceTargets(pieces, "keep_walkway_east_north", "keep_slots/keep/courtyard/north_east");
+        assertPieceTargets(pieces, "keep_courtyard_path_corner_t_south_west", "keep_slots/keep/courtyard/south_west");
+        assertPieceTargets(pieces, "keep_courtyard_path_corner_t_south_west", "keep_slots/keep/courtyard/path/west");
+        assertPieceTargets(pieces, "keep_courtyard_path_t_west", "keep_slots/keep/courtyard/west");
+        assertPieceTargets(pieces, "keep_courtyard_path_t_west", "keep_slots/keep/courtyard/path/north_west");
+        assertPieceTargets(pieces, "keep_courtyard_path_corner_t_north_west", "keep_slots/keep/courtyard/north_west");
+        assertPieceTargets(pieces, "keep_courtyard_path_corner_t_north_west", "keep_slots/keep/courtyard/path/north");
+        assertPieceTargets(pieces, "keep_courtyard_path_t_north", "keep_slots/keep/courtyard/north");
+        assertPieceTargets(pieces, "keep_courtyard_path_t_north", "keep_slots/keep/courtyard/path/north_east");
+        assertPieceTargets(pieces, "keep_courtyard_path_corner_t_north_east", "keep_slots/keep/courtyard/north_east");
+        assertPieceTargets(pieces, "keep_courtyard_path_corner_t_south_east", "keep_slots/keep/courtyard/south_east");
+        assertPieceTargets(pieces, "keep_courtyard_path_corner_t_south_east", "keep_slots/keep/courtyard/path/east");
+        assertPieceTargets(pieces, "keep_courtyard_path_t_east", "keep_slots/keep/courtyard/east");
     }
 
     @Test
@@ -939,6 +989,22 @@ class TowerWorkspaceV2Test {
                 .filter(piece -> piece.pieceName().equals("keep_corner_south_east_entry"))
                 .findFirst()
                 .orElseThrow();
+        MKPlannedPiece pathTSource = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_courtyard_path_t"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece northPath = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_courtyard_path_t_north"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece cornerTSource = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_courtyard_path_corner_t"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece southEastPath = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_courtyard_path_corner_t_south_east"))
+                .findFirst()
+                .orElseThrow();
 
         assertEquals("true", wallSource.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
         assertEquals("keep_wall_segment_south_west_0",
@@ -961,6 +1027,23 @@ class TowerWorkspaceV2Test {
                 southEastCorner.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
         assertEquals(MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_180,
                 southEastCorner.tags().get(MKWorkspaceTemplateReuseTags.ROTATION_TAG));
+
+        assertEquals("true", pathTSource.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
+        assertEquals("keep_courtyard_path_t",
+                pathTSource.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
+        assertEquals("false", northPath.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
+        assertEquals("keep_courtyard_path_t",
+                northPath.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
+        assertEquals(MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_90,
+                northPath.tags().get(MKWorkspaceTemplateReuseTags.ROTATION_TAG));
+        assertEquals("true", cornerTSource.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
+        assertEquals("keep_courtyard_path_corner_t",
+                cornerTSource.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
+        assertEquals("false", southEastPath.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
+        assertEquals("keep_courtyard_path_corner_t",
+                southEastPath.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
+        assertEquals(MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_270,
+                southEastPath.tags().get(MKWorkspaceTemplateReuseTags.ROTATION_TAG));
     }
 
     @Test
