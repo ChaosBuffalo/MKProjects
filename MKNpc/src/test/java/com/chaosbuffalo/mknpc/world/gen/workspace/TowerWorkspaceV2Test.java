@@ -791,6 +791,14 @@ class TowerWorkspaceV2Test {
                 .count();
         assertEquals(southWestCount + southEastCount + 1, northWestCount + northEastCount);
         assertEquals(1, northWestCount - northEastCount);
+        long westCount = pieces.stream()
+                .filter(piece -> "west".equals(piece.tags().get("workspace_perimeter_chain_id")))
+                .count();
+        long eastCount = pieces.stream()
+                .filter(piece -> "east".equals(piece.tags().get("workspace_perimeter_chain_id")))
+                .count();
+        assertEquals(5, westCount);
+        assertEquals(5, eastCount);
         MKPlannedPiece northWestTerminal = pieces.stream()
                 .filter(piece -> "north_west".equals(piece.tags().get("workspace_perimeter_chain_id")))
                 .filter(piece -> piece.tags().get("workspace_perimeter_segment_index")
@@ -952,20 +960,20 @@ class TowerWorkspaceV2Test {
         assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.WEST &&
                         "keep_slots/keep/courtyard/path/south_west".equals(connector.targetPoolName()) &&
-                        connector.lateralOffset() == 8));
+                        connector.lateralOffset() == -3));
         assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.EAST &&
                         "keep_slots/keep/courtyard/path/south_east".equals(connector.targetPoolName()) &&
-                        connector.lateralOffset() == 8));
+                        connector.lateralOffset() == -3));
         assertFalse(entryApproach.connectors().stream().anyMatch(connector ->
                 connector.targetPoolName() != null &&
                         connector.targetPoolName().startsWith("keep_slots/keep/courtyard/") &&
                         !connector.targetPoolName().startsWith("keep_slots/keep/courtyard/path/")));
         assertNoDuplicateHorizontalConnectorSlots(entryApproach);
         assertPieceIncomingOffset(pieces, "keep_courtyard_path_corner_t_south_west",
-                "keep_slots/keep/courtyard/path/south_west", offset -> offset == 11);
+                "keep_slots/keep/courtyard/path/south_west", offset -> offset == 0);
         assertPieceIncomingOffset(pieces, "keep_courtyard_path_corner_t_south_east",
-                "keep_slots/keep/courtyard/path/south_east", offset -> offset == 11);
+                "keep_slots/keep/courtyard/path/south_east", offset -> offset == 0);
         assertPieceTargets(pieces, "keep_courtyard_path_corner_t_south_west", "keep_slots/keep/courtyard/south_west");
         assertPieceTargets(pieces, "keep_courtyard_path_corner_t_south_west", "keep_slots/keep/courtyard/path/west");
         assertPieceTargets(pieces, "keep_courtyard_path_t_west", "keep_slots/keep/courtyard/west");
@@ -1005,9 +1013,9 @@ class TowerWorkspaceV2Test {
         assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.WEST &&
                         "keep_slots/keep/courtyard/path/south_west".equals(connector.targetPoolName()) &&
-                        connector.lateralOffset() == 8));
+                        connector.lateralOffset() == -3));
         assertPieceIncomingOffset(pieces, "keep_courtyard_path_corner_t_south_west",
-                "keep_slots/keep/courtyard/path/south_west", offset -> offset == 11);
+                "keep_slots/keep/courtyard/path/south_west", offset -> offset == 0);
     }
 
     @Test
@@ -1121,6 +1129,14 @@ class TowerWorkspaceV2Test {
                 .filter(piece -> piece.pieceName().equals("keep_courtyard_path_corner_t"))
                 .findFirst()
                 .orElseThrow();
+        MKPlannedPiece southWestPath = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_courtyard_path_corner_t_south_west"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece northWestPath = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_courtyard_path_corner_t_north_west"))
+                .findFirst()
+                .orElseThrow();
         MKPlannedPiece southEastPath = pieces.stream()
                 .filter(piece -> piece.pieceName().equals("keep_courtyard_path_corner_t_south_east"))
                 .findFirst()
@@ -1168,6 +1184,16 @@ class TowerWorkspaceV2Test {
         assertEquals("keep_courtyard_path_corner_t",
                 cornerTSource.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
         assertFalse(cornerTSource.tags().containsKey(MKWorkspaceTemplateReuseTags.CROP_MODE_TAG));
+        assertEquals("false", southWestPath.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
+        assertEquals("keep_courtyard_path_corner_t",
+                southWestPath.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
+        assertEquals(MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_270,
+                southWestPath.tags().get(MKWorkspaceTemplateReuseTags.ROTATION_TAG));
+        assertEquals("false", northWestPath.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
+        assertEquals("keep_courtyard_path_corner_t",
+                northWestPath.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
+        assertEquals(MKWorkspaceTemplateReuseTags.ROTATION_NONE,
+                northWestPath.tags().get(MKWorkspaceTemplateReuseTags.ROTATION_TAG));
         assertEquals("false", southEastPath.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
         assertEquals("keep_courtyard_path_corner_t",
                 southEastPath.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));

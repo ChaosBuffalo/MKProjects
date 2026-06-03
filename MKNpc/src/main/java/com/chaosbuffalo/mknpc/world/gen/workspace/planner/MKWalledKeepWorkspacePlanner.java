@@ -84,13 +84,13 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     );
     private static final List<CourtyardPathDefinition> COURTYARD_PATH_DEFINITIONS = List.of(
             new CourtyardPathDefinition("south_west", "corner_t", COURTYARD_PATH_CORNER_T_SOURCE,
-                    MKWorkspaceTemplateReuseTags.ROTATION_NONE, Direction.EAST, Direction.NORTH,
+                    MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_270, Direction.EAST, Direction.NORTH,
                     "keep.courtyard.path.west", Direction.WEST, "keep.courtyard.south_west"),
             new CourtyardPathDefinition("west", "t", COURTYARD_PATH_T_SOURCE,
                     MKWorkspaceTemplateReuseTags.ROTATION_NONE, Direction.SOUTH, Direction.NORTH,
                     "keep.courtyard.path.north_west", Direction.WEST, "keep.courtyard.west"),
             new CourtyardPathDefinition("north_west", "corner_t", COURTYARD_PATH_CORNER_T_SOURCE,
-                    MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_90, Direction.SOUTH, Direction.EAST,
+                    MKWorkspaceTemplateReuseTags.ROTATION_NONE, Direction.SOUTH, Direction.EAST,
                     "keep.courtyard.path.north", Direction.NORTH, "keep.courtyard.north_west"),
             new CourtyardPathDefinition("north", "t", COURTYARD_PATH_T_SOURCE,
                     MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_90, Direction.WEST, Direction.EAST,
@@ -868,8 +868,21 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     }
 
     private int verticalPerimeterSpan(MKStructureWorkspace workspace) {
-        return cornerLength(workspace) + DEFAULT_COURTYARD_CLEARANCE + centerLength(workspace) +
+        int baseSpan = cornerLength(workspace) + DEFAULT_COURTYARD_CLEARANCE + centerLength(workspace) +
                 DEFAULT_COURTYARD_CLEARANCE + cornerLength(workspace);
+        return Math.max(baseSpan, courtyardRequiredVerticalPerimeterSpan(workspace));
+    }
+
+    private int courtyardRequiredVerticalPerimeterSpan(MKStructureWorkspace workspace) {
+        MKWalledKeepCourtyardSettings settings = workspace.topologyProfile().courtyardSettings();
+        if (!settings.courtyardContentEnabled() || !settings.courtyardSocketGenerationEnabled()) {
+            return 0;
+        }
+        MKWorkspaceLinearRunFamilyDefinition pathFamily = courtyardPathFamily(workspace);
+        ResolvedOpeningProfile pathOpening = resolveOpeningProfile(workspace, pathFamily.openingProfileId())
+                .orElseGet(() -> defaultOpeningProfile(workspace));
+        int laneInset = courtyardPathLaneCenterInset(workspace, pathOpening);
+        return centerLength(workspace) + (2 * courtyardPathSize(workspace, pathFamily, laneInset));
     }
 
     private int segmentCountForSpan(MKWorkspaceLinearRunFamilyDefinition family, int span) {
@@ -1338,8 +1351,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                                                              ResolvedOpeningProfile opening) {
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
         connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, path.incomingFacing(),
-                opening.openingWidth(), opening.openingHeight(),
-                entryPathIncomingLateralOffset(workspace, path, pathSize, opening), 0,
+                opening.openingWidth(), opening.openingHeight(), 0, 0,
                 EMPTY_POOL, slotPool(path.slotId())));
         if (path.outgoingTargetSlotId() == null || !availableSlots.contains(path.outgoingTargetSlotId())) {
             connectors.add(MKPlannedConnector.openingOnly(MKConnectorRole.BRANCH, path.outgoingFacing(),
@@ -1373,23 +1385,6 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         return List.copyOf(connectors);
     }
 
-    private int entryPathIncomingLateralOffset(MKStructureWorkspace workspace, CourtyardPathDefinition path,
-                                               int pathSize, ResolvedOpeningProfile opening) {
-        if (!"south_west".equals(path.suffix()) && !"south_east".equals(path.suffix())) {
-            return 0;
-        }
-        Optional<MKWorkspaceLinearRunFamilyDefinition> entryFamily = workspace.linearRunFamilies().stream()
-                .filter(linearRun -> ENTRY_APPROACH_SLOT.equals(linearRun.topologySlotId()))
-                .findFirst();
-        int requestedEntryLength = entryFamily.map(MKWorkspaceLinearRunFamilyDefinition::length).orElse(9);
-        ResolvedOpeningProfile entryOpening = entryFamily
-                .flatMap(linearRun -> resolveOpeningProfile(workspace, linearRun.openingProfileId()))
-                .orElse(opening);
-        int entryLength = effectiveEntryApproachLength(workspace, requestedEntryLength, entryOpening);
-        int branchCenter = entryApproachCourtyardBranchCenter(workspace, entryLength, entryOpening);
-        return branchCenter - (pathSize / 2);
-    }
-
     private int entryApproachCourtyardBranchOffset(MKStructureWorkspace workspace, int entryLength,
                                                    ResolvedOpeningProfile opening) {
         return entryApproachCourtyardBranchCenter(workspace, entryLength, opening) - (entryLength / 2);
@@ -1402,14 +1397,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 .orElseGet(() -> defaultOpeningProfile(workspace));
         int laneInset = courtyardPathLaneCenterInset(workspace, pathOpening);
         int pathSize = courtyardPathSize(workspace, pathFamily, laneInset);
-        int maxPathCenter = (pathSize / 2) + maxLateralOffset(pathSize, pathOpening.openingWidth());
+        int pathCenter = pathSize / 2;
         int gatehouseLimit = entryLength - entryApproachGatehouseClearance(workspace, entryOpening, pathOpening) -
                 (entryOpening.openingWidth() / 2);
-        return Math.max(0, Math.min(maxPathCenter, gatehouseLimit));
-    }
-
-    private int maxLateralOffset(int span, int openingWidth) {
-        return Math.max(0, (span / 2) - (openingWidth / 2));
+        return Math.max(0, Math.min(pathCenter, gatehouseLimit));
     }
 
     private List<MKPlannedConnector> perimeterConnectors(String perimeterSlotId, DirectionPair directions,
