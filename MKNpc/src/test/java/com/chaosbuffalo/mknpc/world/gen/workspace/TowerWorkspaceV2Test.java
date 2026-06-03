@@ -896,11 +896,17 @@ class TowerWorkspaceV2Test {
                 connector.facing() == Direction.EAST &&
                         "keep_slots/keep/walkway/east".equals(connector.targetPoolName())));
         assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
-                "keep_slots/keep/courtyard/north".equals(connector.targetPoolName())));
-        assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
                 "keep_slots/keep/courtyard/south_west".equals(connector.targetPoolName())));
         assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
                 "keep_slots/keep/courtyard/south_east".equals(connector.targetPoolName())));
+        assertNoDuplicateHorizontalConnectorSlots(entryApproach);
+        MKPlannedPiece westWalkway = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_walkway_west"))
+                .findFirst()
+                .orElseThrow();
+        assertTrue(westWalkway.connectors().stream().anyMatch(connector ->
+                connector.facing() == Direction.NORTH &&
+                        "keep_slots/keep/courtyard/north".equals(connector.targetPoolName())));
     }
 
     @Test
@@ -3548,6 +3554,19 @@ class TowerWorkspaceV2Test {
                 .orElseThrow();
         assertFalse(pool.childBaseNames().contains(childBaseName),
                 "Expected " + poolId + " not to contain " + childBaseName + " but found " + pool.childBaseNames());
+    }
+
+    private static void assertNoDuplicateHorizontalConnectorSlots(MKPlannedPiece piece) {
+        Map<String, MKPlannedConnector> connectorsBySlot = new LinkedHashMap<>();
+        for (MKPlannedConnector connector : piece.connectors()) {
+            if (connector.facing().getAxis().isVertical()) {
+                continue;
+            }
+            String slot = connector.facing().getSerializedName() + ":" + connector.lateralOffset() + ":" +
+                    connector.verticalOffset();
+            MKPlannedConnector previous = connectorsBySlot.putIfAbsent(slot, connector);
+            assertTrue(previous == null, "duplicate connector slot " + slot + " on " + piece.pieceName());
+        }
     }
 }
 

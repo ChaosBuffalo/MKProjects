@@ -980,9 +980,11 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             case ENTRY_APPROACH_SLOT -> entryApproachConnectors(slotId, availableSlots, opening, negativeOffset,
                     positiveOffset);
             case "keep.walkway.west" -> courtyardWalkwayConnectors(slotId, Direction.SOUTH, Direction.NORTH,
-                    Direction.WEST, "keep.courtyard.west", availableSlots, opening, negativeOffset, positiveOffset);
+                    "keep.courtyard.north", Direction.WEST, "keep.courtyard.west", availableSlots, opening,
+                    negativeOffset, positiveOffset);
             case "keep.walkway.east" -> courtyardWalkwayConnectors(slotId, Direction.SOUTH, Direction.NORTH,
-                    Direction.EAST, "keep.courtyard.east", availableSlots, opening, negativeOffset, positiveOffset);
+                    null, Direction.EAST, "keep.courtyard.east", availableSlots, opening, negativeOffset,
+                    positiveOffset);
             case "keep.walkway.south" -> List.of(
                     new MKPlannedConnector(MKConnectorRole.MAIN_FORWARD, Direction.NORTH,
                             opening.openingWidth(), opening.openingHeight(), 0, negativeOffset,
@@ -1011,16 +1013,23 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     }
 
     private List<MKPlannedConnector> courtyardWalkwayConnectors(String slotId, Direction incomingFacing,
-                                                                Direction terminalFacing, Direction contentFacing,
-                                                                String contentSlotId, Set<String> availableSlots,
+                                                                Direction terminalFacing, String terminalTargetSlotId,
+                                                                Direction contentFacing, String contentSlotId,
+                                                                Set<String> availableSlots,
                                                                 ResolvedOpeningProfile opening, int negativeOffset,
                                                                 int positiveOffset) {
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
         connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, incomingFacing,
                 opening.openingWidth(), opening.openingHeight(), 0, negativeOffset,
                 EMPTY_POOL, slotPool(slotId)));
-        connectors.add(MKPlannedConnector.openingOnly(MKConnectorRole.BRANCH, terminalFacing,
-                opening.openingWidth(), opening.openingHeight(), 0, positiveOffset));
+        if (terminalTargetSlotId == null || !availableSlots.contains(terminalTargetSlotId)) {
+            connectors.add(MKPlannedConnector.openingOnly(MKConnectorRole.BRANCH, terminalFacing,
+                    opening.openingWidth(), opening.openingHeight(), 0, positiveOffset));
+        } else {
+            connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, terminalFacing,
+                    opening.openingWidth(), opening.openingHeight(), 0, positiveOffset,
+                    slotPool(terminalTargetSlotId)));
+        }
         addBranchTarget(connectors, contentFacing, contentSlotId, availableSlots, opening);
         return List.copyOf(connectors);
     }
@@ -1045,7 +1054,6 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 opening, 3);
         addBranchTargetWithOffset(connectors, Direction.EAST, "keep.courtyard.north_east", availableSlots,
                 opening, 3);
-        addBranchTarget(connectors, Direction.NORTH, "keep.courtyard.north", availableSlots, opening);
         return List.copyOf(connectors);
     }
 
