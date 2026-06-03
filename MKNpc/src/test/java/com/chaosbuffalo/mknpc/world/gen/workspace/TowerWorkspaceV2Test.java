@@ -963,6 +963,36 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void walledKeepRuntimeHintsIncludeCourtyardPathSlotPools() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(false),
+                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+        List<MKPlannedPiece> plannedPieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+        MKStructureWorkspace workspaceWithPieces = workspace.withPieces(plannedPieces.stream()
+                .map(piece -> pieceToDefinitionWithConnectors(workspace, piece))
+                .toList());
+
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspaceWithPieces, 4, "test");
+
+        assertRuntimePoolContains(workspaceWithPieces, manifest,
+                "keep_slots/keep/courtyard/path/south_west",
+                "keep_courtyard_path_corner_t_south_west");
+        assertRuntimePoolContains(workspaceWithPieces, manifest,
+                "keep_slots/keep/courtyard/path/south_east",
+                "keep_courtyard_path_corner_t_south_east");
+        assertRuntimePoolContains(workspaceWithPieces, manifest,
+                "keep_slots/keep/courtyard/south_west",
+                "keep_courtyard_content_medium_south_west");
+        assertRuntimePoolDoesNotContain(workspaceWithPieces, manifest,
+                "keep_slots/keep/courtyard/south_west",
+                "keep_courtyard_path_corner_t_south_west");
+    }
+
+    @Test
     void walledKeepPlannerMarksRotatedTemplateReuseForWallsAndSharedCorners() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(

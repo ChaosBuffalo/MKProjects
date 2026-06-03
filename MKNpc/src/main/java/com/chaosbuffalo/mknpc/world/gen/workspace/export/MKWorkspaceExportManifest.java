@@ -59,6 +59,7 @@ public record MKWorkspaceExportManifest(
     private static final Codec<UUID> UUID_CODEC = Codec.STRING.xmap(UUID::fromString, UUID::toString);
     private static final ResourceLocation EMPTY_POOL = ResourceLocation.parse("minecraft:empty");
     private static final String COURTYARD_SOCKET_POOL_PREFIX = "keep_slots/keep/courtyard/";
+    private static final String COURTYARD_PATH_POOL_PREFIX = "keep_slots/keep/courtyard/path/";
     private static final String CONTENT_KIND_TAG = "workspace_content_kind";
     private static final String CONTENT_SOCKET_CLASS_TAG = "workspace_content_socket_class";
     private static final String CONTENT_SIZE_TAG = "workspace_content_size";
@@ -929,7 +930,7 @@ public record MKWorkspaceExportManifest(
                         runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnMainPath).orElse(true) == false) {
                     continue;
                 }
-                if (isCourtyardSocketRuntimePool(workspace, connector.incomingPool()) &&
+                if (isCourtyardContentSocketRuntimePool(workspace, connector.incomingPool()) &&
                         !courtyardContentFitsSocket(piece)) {
                     continue;
                 }
@@ -964,8 +965,9 @@ public record MKWorkspaceExportManifest(
         return runtimePoolPath(workspace, poolId).startsWith("branch_caps/");
     }
 
-    private static boolean isCourtyardSocketRuntimePool(MKStructureWorkspace workspace, ResourceLocation poolId) {
-        return runtimePoolPath(workspace, poolId).startsWith(COURTYARD_SOCKET_POOL_PREFIX);
+    private static boolean isCourtyardContentSocketRuntimePool(MKStructureWorkspace workspace, ResourceLocation poolId) {
+        String path = runtimePoolPath(workspace, poolId);
+        return path.startsWith(COURTYARD_SOCKET_POOL_PREFIX) && !path.startsWith(COURTYARD_PATH_POOL_PREFIX);
     }
 
     private static boolean courtyardContentFitsSocket(MKWorkspacePieceDefinition piece) {
