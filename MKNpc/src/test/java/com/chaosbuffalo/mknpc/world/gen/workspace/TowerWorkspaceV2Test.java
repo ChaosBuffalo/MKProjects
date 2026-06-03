@@ -891,22 +891,25 @@ class TowerWorkspaceV2Test {
                 .orElseThrow();
         assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.WEST &&
-                        "keep_slots/keep/walkway/west".equals(connector.targetPoolName())));
+                        "keep_slots/keep/walkway/west/south".equals(connector.targetPoolName())));
         assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.EAST &&
-                        "keep_slots/keep/walkway/east".equals(connector.targetPoolName())));
-        assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
-                "keep_slots/keep/courtyard/south_west".equals(connector.targetPoolName())));
-        assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
-                "keep_slots/keep/courtyard/south_east".equals(connector.targetPoolName())));
+                        "keep_slots/keep/walkway/east/south".equals(connector.targetPoolName())));
+        assertFalse(entryApproach.connectors().stream().anyMatch(connector ->
+                connector.targetPoolName() != null &&
+                        connector.targetPoolName().startsWith("keep_slots/keep/courtyard/")));
         assertNoDuplicateHorizontalConnectorSlots(entryApproach);
-        MKPlannedPiece westWalkway = pieces.stream()
-                .filter(piece -> piece.pieceName().equals("keep_walkway_west"))
-                .findFirst()
-                .orElseThrow();
-        assertTrue(westWalkway.connectors().stream().anyMatch(connector ->
-                connector.facing() == Direction.NORTH &&
-                        "keep_slots/keep/courtyard/north".equals(connector.targetPoolName())));
+        assertPieceTargets(pieces, "keep_walkway_west_south", "keep_slots/keep/courtyard/south_west");
+        assertPieceTargets(pieces, "keep_walkway_west_south", "keep_slots/keep/walkway/west/middle");
+        assertPieceTargets(pieces, "keep_walkway_west_middle", "keep_slots/keep/courtyard/west");
+        assertPieceTargets(pieces, "keep_walkway_west_middle", "keep_slots/keep/walkway/west/north");
+        assertPieceTargets(pieces, "keep_walkway_west_north", "keep_slots/keep/courtyard/north_west");
+        assertPieceTargets(pieces, "keep_walkway_west_north", "keep_slots/keep/courtyard/north");
+        assertPieceTargets(pieces, "keep_walkway_east_south", "keep_slots/keep/courtyard/south_east");
+        assertPieceTargets(pieces, "keep_walkway_east_south", "keep_slots/keep/walkway/east/middle");
+        assertPieceTargets(pieces, "keep_walkway_east_middle", "keep_slots/keep/courtyard/east");
+        assertPieceTargets(pieces, "keep_walkway_east_middle", "keep_slots/keep/walkway/east/north");
+        assertPieceTargets(pieces, "keep_walkway_east_north", "keep_slots/keep/courtyard/north_east");
     }
 
     @Test
@@ -3554,6 +3557,15 @@ class TowerWorkspaceV2Test {
                 .orElseThrow();
         assertFalse(pool.childBaseNames().contains(childBaseName),
                 "Expected " + poolId + " not to contain " + childBaseName + " but found " + pool.childBaseNames());
+    }
+
+    private static void assertPieceTargets(List<MKPlannedPiece> pieces, String pieceName, String targetPoolName) {
+        MKPlannedPiece piece = pieces.stream()
+                .filter(candidate -> candidate.pieceName().equals(pieceName))
+                .findFirst()
+                .orElseThrow();
+        assertTrue(piece.connectors().stream().anyMatch(connector -> targetPoolName.equals(connector.targetPoolName())),
+                "Expected " + pieceName + " to target " + targetPoolName);
     }
 
     private static void assertNoDuplicateHorizontalConnectorSlots(MKPlannedPiece piece) {

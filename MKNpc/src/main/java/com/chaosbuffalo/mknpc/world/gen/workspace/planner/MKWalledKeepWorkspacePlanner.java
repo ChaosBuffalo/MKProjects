@@ -35,6 +35,18 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     private static final String EMPTY_POOL = "minecraft:empty";
     private static final String PERIMETER_ROOT_SLOT = "keep.perimeter";
     private static final String ENTRY_APPROACH_SLOT = "keep.entry_approach.main";
+    private static final String WALKWAY_WEST_ROOT_SLOT = "keep.walkway.west";
+    private static final String WALKWAY_EAST_ROOT_SLOT = "keep.walkway.east";
+    private static final List<String> WALKWAY_WEST_CHAIN_SLOTS = List.of(
+            "keep.walkway.west.south",
+            "keep.walkway.west.middle",
+            "keep.walkway.west.north"
+    );
+    private static final List<String> WALKWAY_EAST_CHAIN_SLOTS = List.of(
+            "keep.walkway.east.south",
+            "keep.walkway.east.middle",
+            "keep.walkway.east.north"
+    );
     private static final String COURTYARD_SLOT_PREFIX = "keep.courtyard.";
     private static final String COURTYARD_CONTENT_KIND = "courtyard";
     public static final String CONTENT_KIND_TAG = "workspace_content_kind";
@@ -84,9 +96,9 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             "keep.perimeter.south",
             "keep.perimeter.west",
             "keep.walkway.north",
-            "keep.walkway.east",
+            WALKWAY_EAST_ROOT_SLOT,
             "keep.walkway.south",
-            "keep.walkway.west",
+            WALKWAY_WEST_ROOT_SLOT,
             ENTRY_APPROACH_SLOT,
             "keep.gate.main"
     );
@@ -232,12 +244,20 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 PERIMETER_ROOT_SLOT, MKWorkspaceSlotSchema.Repeat.DERIVED));
         slots.add(new MKWorkspaceSlotSchema("keep.walkway.north", "keep.walkways", "open_walkway",
                 "keep.walkway.north", MKWorkspaceSlotSchema.Repeat.DERIVED));
-        slots.add(new MKWorkspaceSlotSchema("keep.walkway.east", "keep.walkways", "open_walkway",
-                "keep.walkway.east", MKWorkspaceSlotSchema.Repeat.DERIVED));
+        slots.add(new MKWorkspaceSlotSchema(WALKWAY_EAST_ROOT_SLOT, "keep.walkways", "open_walkway",
+                WALKWAY_EAST_ROOT_SLOT, MKWorkspaceSlotSchema.Repeat.DERIVED));
         slots.add(new MKWorkspaceSlotSchema("keep.walkway.south", "keep.walkways", "open_walkway",
                 "keep.walkway.south", MKWorkspaceSlotSchema.Repeat.DERIVED));
-        slots.add(new MKWorkspaceSlotSchema("keep.walkway.west", "keep.walkways", "open_walkway",
-                "keep.walkway.west", MKWorkspaceSlotSchema.Repeat.DERIVED));
+        slots.add(new MKWorkspaceSlotSchema(WALKWAY_WEST_ROOT_SLOT, "keep.walkways", "open_walkway",
+                WALKWAY_WEST_ROOT_SLOT, MKWorkspaceSlotSchema.Repeat.DERIVED));
+        for (String slotId : WALKWAY_WEST_CHAIN_SLOTS) {
+            slots.add(new MKWorkspaceSlotSchema(slotId, "keep.walkways", "open_walkway", slotId,
+                    MKWorkspaceSlotSchema.Repeat.DERIVED));
+        }
+        for (String slotId : WALKWAY_EAST_CHAIN_SLOTS) {
+            slots.add(new MKWorkspaceSlotSchema(slotId, "keep.walkways", "open_walkway", slotId,
+                    MKWorkspaceSlotSchema.Repeat.DERIVED));
+        }
         slots.add(new MKWorkspaceSlotSchema(ENTRY_APPROACH_SLOT, "keep.walkways", "entry_approach",
                 ENTRY_APPROACH_SLOT, MKWorkspaceSlotSchema.Repeat.FIXED));
         for (CourtyardSocketDefinition socket : COURTYARD_SOCKET_DEFINITIONS) {
@@ -275,12 +295,20 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 false, false, Set.of("defensive_wall", "solid_wall", "parapet")));
         roles.add(new MKWorkspaceRoleSchema("keep.walkway.north", "linear_run", "walkway",
                 false, false, Set.of("open_walkway", "terrain_matched_allowed")));
-        roles.add(new MKWorkspaceRoleSchema("keep.walkway.east", "linear_run", "walkway",
+        roles.add(new MKWorkspaceRoleSchema(WALKWAY_EAST_ROOT_SLOT, "linear_run", "walkway",
                 false, false, Set.of("open_walkway", "terrain_matched_allowed")));
         roles.add(new MKWorkspaceRoleSchema("keep.walkway.south", "linear_run", "walkway",
                 false, false, Set.of("open_walkway", "terrain_matched_allowed")));
-        roles.add(new MKWorkspaceRoleSchema("keep.walkway.west", "linear_run", "walkway",
+        roles.add(new MKWorkspaceRoleSchema(WALKWAY_WEST_ROOT_SLOT, "linear_run", "walkway",
                 false, false, Set.of("open_walkway", "terrain_matched_allowed")));
+        for (String slotId : WALKWAY_WEST_CHAIN_SLOTS) {
+            roles.add(new MKWorkspaceRoleSchema(slotId, "linear_run", "walkway",
+                    false, false, Set.of("open_walkway", "terrain_matched_allowed")));
+        }
+        for (String slotId : WALKWAY_EAST_CHAIN_SLOTS) {
+            roles.add(new MKWorkspaceRoleSchema(slotId, "linear_run", "walkway",
+                    false, false, Set.of("open_walkway", "terrain_matched_allowed")));
+        }
         roles.add(new MKWorkspaceRoleSchema(ENTRY_APPROACH_SLOT, "linear_run", "entry_approach",
                 false, false, Set.of("open_walkway", "entry_approach", "terrain_matched_allowed")));
         roles.add(new MKWorkspaceRoleSchema("keep.courtyard.content", "content", "courtyard",
@@ -322,8 +350,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         workspace.linearRunFamilies().stream()
                 .filter(linearRun -> isKnownKeepSlot(linearRun.topologySlotId()))
                 .filter(linearRun -> !isPerimeterRunFamily(linearRun))
+                .filter(linearRun -> !isCourtyardWalkwayRootFamily(linearRun))
                 .flatMap(linearRun -> createLinearRunPieces(workspace, linearRun, slots.availableSlots()).stream())
                 .forEach(pieces::add);
+        pieces.addAll(createCourtyardWalkwayPieces(workspace, slots.availableSlots()));
         pieces.addAll(createPerimeterPieces(workspace, perimeterPlan));
         pieces.addAll(createCourtyardContentPieces(workspace, courtyardPlan));
         return List.copyOf(pieces);
@@ -504,7 +534,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         workspace.linearRunFamilies().stream()
                 .map(MKWorkspaceLinearRunFamilyDefinition::topologySlotId)
                 .filter(MKWalledKeepWorkspacePlanner::isKnownKeepSlot)
-                .forEach(slots::add);
+                .forEach(slot -> addAvailableLinearRunSlot(slots, slot));
         slots.addAll(perimeterPlan.slotIds());
         slots.addAll(courtyardPlan.slotIds());
         if (!courtyardPlan.slotIds().isEmpty()) {
@@ -524,6 +554,15 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     private static void addAvailableSlot(Set<String> slots, String topologySlotId) {
         slots.add(topologySlotId);
         cornerStackIdForSlot(topologySlotId).ifPresent(slots::add);
+    }
+
+    private static void addAvailableLinearRunSlot(Set<String> slots, String topologySlotId) {
+        slots.add(topologySlotId);
+        if (WALKWAY_WEST_ROOT_SLOT.equals(topologySlotId)) {
+            slots.addAll(WALKWAY_WEST_CHAIN_SLOTS);
+        } else if (WALKWAY_EAST_ROOT_SLOT.equals(topologySlotId)) {
+            slots.addAll(WALKWAY_EAST_CHAIN_SLOTS);
+        }
     }
 
     private MKPlannedPiece createRoomPiece(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family,
@@ -575,6 +614,71 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 linearRunLayoutConnectors(linearRun, directions, availableSlots, opening),
                 buildLinearRunTags(workspace, linearRun)
         ));
+    }
+
+    private List<MKPlannedPiece> createCourtyardWalkwayPieces(MKStructureWorkspace workspace,
+                                                              Set<String> availableSlots) {
+        ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
+        courtyardWalkwayFamily(workspace, WALKWAY_WEST_ROOT_SLOT)
+                .ifPresent(family -> addCourtyardWalkwayChain(pieces, workspace, family,
+                        WALKWAY_WEST_CHAIN_SLOTS, Direction.WEST,
+                        List.of("keep.courtyard.south_west", "keep.courtyard.west",
+                                "keep.courtyard.north_west"),
+                        "keep.courtyard.north", availableSlots));
+        courtyardWalkwayFamily(workspace, WALKWAY_EAST_ROOT_SLOT)
+                .ifPresent(family -> addCourtyardWalkwayChain(pieces, workspace, family,
+                        WALKWAY_EAST_CHAIN_SLOTS, Direction.EAST,
+                        List.of("keep.courtyard.south_east", "keep.courtyard.east",
+                                "keep.courtyard.north_east"),
+                        null, availableSlots));
+        return List.copyOf(pieces);
+    }
+
+    private Optional<MKWorkspaceLinearRunFamilyDefinition> courtyardWalkwayFamily(MKStructureWorkspace workspace,
+                                                                                  String rootSlotId) {
+        return workspace.linearRunFamilies().stream()
+                .filter(linearRun -> linearRun.topologySlotId().equals(rootSlotId))
+                .findFirst();
+    }
+
+    private void addCourtyardWalkwayChain(List<MKPlannedPiece> pieces, MKStructureWorkspace workspace,
+                                          MKWorkspaceLinearRunFamilyDefinition family, List<String> chainSlots,
+                                          Direction contentFacing, List<String> contentSlotIds,
+                                          String finalNorthTargetSlotId, Set<String> availableSlots) {
+        if (!family.supportedShapes().contains(MKWorkspaceLinearRunPieceShape.STRAIGHT)) {
+            return;
+        }
+        ResolvedOpeningProfile opening = resolveOpeningProfile(workspace, family.openingProfileId())
+                .orElseThrow(() -> new IllegalStateException("missing linear run opening profile " +
+                        family.openingProfileId()));
+        for (int index = 0; index < chainSlots.size(); index++) {
+            String slotId = chainSlots.get(index);
+            String nextSlotId = index + 1 < chainSlots.size() ? chainSlots.get(index + 1) :
+                    finalNorthTargetSlotId;
+            String contentSlotId = index < contentSlotIds.size() ? contentSlotIds.get(index) : null;
+            String pieceName = family.linearRunId() + "_" + slotId.substring(slotId.lastIndexOf('.') + 1);
+            pieces.add(new MKPlannedPiece(
+                    slotId,
+                    pieceName,
+                    family.interiorWidth(),
+                    family.length(),
+                    family.interiorHeight() + Math.abs(family.slopeDelta()),
+                    courtyardWalkwayChainConnectors(slotId, nextSlotId, contentFacing, contentSlotId,
+                            availableSlots, opening, family.slopeDelta()),
+                    buildCourtyardWalkwayChainTags(workspace, family, slotId, index, chainSlots.size())
+            ));
+        }
+    }
+
+    private Map<String, String> buildCourtyardWalkwayChainTags(MKStructureWorkspace workspace,
+                                                               MKWorkspaceLinearRunFamilyDefinition linearRun,
+                                                               String topologySlotId, int index, int count) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>(buildLinearRunTags(workspace, linearRun,
+                topologySlotId));
+        tags.put("workspace_walkway_source_slot_id", linearRun.topologySlotId());
+        tags.put("workspace_walkway_segment_index", Integer.toString(index));
+        tags.put("workspace_walkway_segment_count", Integer.toString(count));
+        return tags;
     }
 
     private PerimeterPlan createPerimeterPlan(MKStructureWorkspace workspace) {
@@ -1034,6 +1138,29 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         return List.copyOf(connectors);
     }
 
+    private List<MKPlannedConnector> courtyardWalkwayChainConnectors(String slotId, String nextSlotId,
+                                                                     Direction contentFacing, String contentSlotId,
+                                                                     Set<String> availableSlots,
+                                                                     ResolvedOpeningProfile opening, int slopeDelta) {
+        int negativeOffset = Math.max(0, -slopeDelta);
+        int positiveOffset = Math.max(0, slopeDelta);
+        ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
+        connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, Direction.SOUTH,
+                opening.openingWidth(), opening.openingHeight(), 0, negativeOffset,
+                EMPTY_POOL, slotPool(slotId)));
+        if (nextSlotId == null || !availableSlots.contains(nextSlotId)) {
+            connectors.add(MKPlannedConnector.openingOnly(MKConnectorRole.BRANCH, Direction.NORTH,
+                    opening.openingWidth(), opening.openingHeight(), 0, positiveOffset));
+        } else {
+            connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, Direction.NORTH,
+                    opening.openingWidth(), opening.openingHeight(), 0, positiveOffset, slotPool(nextSlotId)));
+        }
+        if (contentSlotId != null) {
+            addBranchTarget(connectors, contentFacing, contentSlotId, availableSlots, opening);
+        }
+        return List.copyOf(connectors);
+    }
+
     private List<MKPlannedConnector> entryApproachConnectors(String slotId, Set<String> availableSlots,
                                                              ResolvedOpeningProfile opening, int negativeOffset,
                                                              int positiveOffset) {
@@ -1044,16 +1171,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         connectors.add(new MKPlannedConnector(MKConnectorRole.MAIN_BACK, Direction.SOUTH,
                 opening.openingWidth(), opening.openingHeight(), 0, positiveOffset,
                 poolOrEmpty("keep.gate.main", availableSlots), EMPTY_POOL));
-        addBranchTarget(connectors, Direction.WEST, "keep.walkway.west", availableSlots, opening);
-        addBranchTarget(connectors, Direction.EAST, "keep.walkway.east", availableSlots, opening);
-        addBranchTargetWithOffset(connectors, Direction.WEST, "keep.courtyard.south_west", availableSlots,
-                opening, -3);
-        addBranchTargetWithOffset(connectors, Direction.EAST, "keep.courtyard.south_east", availableSlots,
-                opening, -3);
-        addBranchTargetWithOffset(connectors, Direction.WEST, "keep.courtyard.north_west", availableSlots,
-                opening, 3);
-        addBranchTargetWithOffset(connectors, Direction.EAST, "keep.courtyard.north_east", availableSlots,
-                opening, 3);
+        firstAvailableSlot(availableSlots, "keep.walkway.west.south", WALKWAY_WEST_ROOT_SLOT)
+                .ifPresent(targetSlot -> addBranchTargetDirect(connectors, Direction.WEST, targetSlot, opening));
+        firstAvailableSlot(availableSlots, "keep.walkway.east.south", WALKWAY_EAST_ROOT_SLOT)
+                .ifPresent(targetSlot -> addBranchTargetDirect(connectors, Direction.EAST, targetSlot, opening));
         return List.copyOf(connectors);
     }
 
@@ -1286,9 +1407,20 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         return availableSlots.contains(topologySlotId) ? slotPool(topologySlotId) : EMPTY_POOL;
     }
 
+    private Optional<String> firstAvailableSlot(Set<String> availableSlots, String... topologySlotIds) {
+        for (String topologySlotId : topologySlotIds) {
+            if (availableSlots.contains(topologySlotId)) {
+                return Optional.of(topologySlotId);
+            }
+        }
+        return Optional.empty();
+    }
+
     private static boolean isKnownKeepSlot(String topologySlotId) {
         return KNOWN_KEEP_SLOTS.contains(topologySlotId) ||
                 topologySlotId.startsWith(PERIMETER_ROOT_SLOT + ".") ||
+                topologySlotId.startsWith(WALKWAY_WEST_ROOT_SLOT + ".") ||
+                topologySlotId.startsWith(WALKWAY_EAST_ROOT_SLOT + ".") ||
                 topologySlotId.startsWith(COURTYARD_SLOT_PREFIX) ||
                 topologySlotId.startsWith("keep.courtyard.content.") ||
                 isCenterStackSlot(topologySlotId) ||
@@ -1298,6 +1430,11 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     private static boolean isPerimeterRunFamily(MKWorkspaceLinearRunFamilyDefinition linearRun) {
         return linearRun.topologySlotId().equals(PERIMETER_ROOT_SLOT) ||
                 linearRun.topologySlotId().startsWith(PERIMETER_ROOT_SLOT + ".");
+    }
+
+    private static boolean isCourtyardWalkwayRootFamily(MKWorkspaceLinearRunFamilyDefinition linearRun) {
+        return linearRun.topologySlotId().equals(WALKWAY_WEST_ROOT_SLOT) ||
+                linearRun.topologySlotId().equals(WALKWAY_EAST_ROOT_SLOT);
     }
 
     private static boolean isCenterStackSlot(String topologySlotId) {
