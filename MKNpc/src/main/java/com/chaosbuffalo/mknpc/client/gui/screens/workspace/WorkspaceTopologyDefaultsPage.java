@@ -185,7 +185,7 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
                 MKWorkspaceTopologyPathSettings.MAX_BRANCH_PIECES_BEFORE_CAP, 1,
                 pathSettings.maxBranchPiecesBeforeCap(),
                 value -> editor.topologyPathMaxBranchPiecesBeforeCap(topologyGroupId, value));
-        addRow(screen, content, screen.makeWhiteText(Component.literal("Branch Cap Max")), maxBranchBeforeCapSlider);
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Max Branches")), maxBranchBeforeCapSlider);
         addResetRow(screen, content, formatTopologyLabel(topologyGroupId) + " Paths", () -> {
             editor.resetTopologyPathDefaults(topologyGroupId);
             screen.flagNeedSetup();

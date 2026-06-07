@@ -337,11 +337,11 @@ public class MKTowerStackSidePreview extends MKWidget {
                                            MKTowerStackSizingReport.SectionInfo section,
                                            int x, int y, int width, int mouseX, int mouseY) {
         graphics.drawString(mc.font, "Floor Paths", x, y + 3, TEXT, false);
-        drawSlider(graphics, mc, "Main Min", controls.floorMinMainPathPieces(section.key()), 0, 10,
+        drawSlider(graphics, mc, "Min Main", controls.floorMinMainPathPieces(section.key()), 0, 10,
                 x, y + 14, width, mouseX, mouseY, "floorMinMain");
-        drawSlider(graphics, mc, "Main Max", controls.floorMaxMainPathPieces(section.key()), 0, 10,
+        drawSlider(graphics, mc, "Max Main", controls.floorMaxMainPathPieces(section.key()), 0, 10,
                 x, y + 36, width, mouseX, mouseY, "floorMaxMain");
-        drawSlider(graphics, mc, "Branch Cap", controls.floorMaxBranchPiecesBeforeCap(section.key()), 0,
+        drawSlider(graphics, mc, "Branches", controls.floorMaxBranchPiecesBeforeCap(section.key()), 0,
                 MKWorkspaceFloorTopologySettings.MAX_BRANCH_PIECES_BEFORE_CAP,
                 x, y + 58, width, mouseX, mouseY, "floorBranchCap");
         ButtonBounds modeBounds = new ButtonBounds(x, y + 80, Math.min(92, width), 16);
@@ -415,8 +415,8 @@ public class MKTowerStackSidePreview extends MKWidget {
             graphics.drawCenteredString(mc.font, Component.literal("No horizontal floor paths"),
                     centerX, centerY + rootH / 2 + 8, MUTED_TEXT);
         }
-        graphics.drawString(mc.font, "main " + controls.floorMinMainPathPieces(section.key()) + "-" +
-                        controls.floorMaxMainPathPieces(section.key()) + "  branch cap " +
+        graphics.drawString(mc.font, "main rooms " + controls.floorMinMainPathPieces(section.key()) + "-" +
+                        controls.floorMaxMainPathPieces(section.key()) + "  branch rooms max " +
                         controls.floorMaxBranchPiecesBeforeCap(section.key()) + "  lead " +
                         controls.effectiveHallwayLeadInPieces(section.key()),
                 panelX + 5, panelY + panelHeight - 13, MUTED_TEXT, false);
@@ -446,26 +446,10 @@ public class MKTowerStackSidePreview extends MKWidget {
                                      MKTowerStackSizingReport.SectionInfo section,
                                      MKWorkspaceFamilyHorizontalExitDefinition exit) {
         boolean main = exit.pathKind().usesMainPath();
-        int pathPieces = main ? controls.floorMaxMainPathPieces(section.key()) :
+        int roomCount = main ? controls.floorMaxMainPathPieces(section.key()) :
                 controls.floorMaxBranchPiecesBeforeCap(section.key());
         int leadIn = controls.effectiveHallwayLeadInPieces(section.key());
         boolean vertical = exit.direction() == Direction.NORTH || exit.direction() == Direction.SOUTH;
-        int requestedSpan = Math.max(vertical ? 6 : 8, (leadIn + pathPieces) * (main ? 10 : 6));
-        int terminalBudget = vertical ? (main ? 28 : 24) : (main ? 44 : 38);
-        int span = Math.min(requestedSpan, maxSpan(panel, root, exit.direction()) - terminalBudget);
-        if (span <= 0) {
-            return;
-        }
-        int thickness = main ? 7 : 5;
-        ButtonBounds path = pathRect(root, exit.direction(), span, thickness);
-        String pathLabel = main ? "Main Path" : "Branch Path";
-        int pathColor = main ? FLOOR_MAIN : FLOOR_BRANCH;
-        segments.add(new FloorPlanSegment(path, pathColor, exit.direction(), pathLabel,
-                pathLabel + "\n" + formatDirection(exit.direction()) +
-                        "\nlead-in " + leadIn +
-                        "\nmax pieces " + pathPieces +
-                        "\nconnector " + formatPathKind(exit.pathKind())));
-
         MKWorkspaceFloorRoomKind roomKind = main ? MKWorkspaceFloorRoomKind.MAIN_ROOM :
                 MKWorkspaceFloorRoomKind.BRANCH_ROOM;
         int configuredWidth = controls.floorRoomWidth(section.key(), roomKind);
@@ -474,19 +458,63 @@ public class MKTowerStackSidePreview extends MKWidget {
                 Math.max(12, Math.min(32, configuredWidth * 2));
         int roomHeight = vertical ? Math.max(8, Math.min(22, configuredLength * 2)) :
                 Math.max(10, Math.min(28, configuredLength * 2));
-        ButtonBounds room = terminalRect(path, exit.direction(), roomWidth, roomHeight);
-        segments.add(new FloorPlanSegment(room, FLOOR_ROOM, exit.direction(), main ? "Main Room" : "Branch Room",
-                (main ? "Main Room" : "Branch Room") +
+        int roomMajor = vertical ? roomHeight : roomWidth;
+        int roomMinor = vertical ? roomWidth : roomHeight;
+        int hallwayMinor = main ? 7 : 5;
+        int capMajor = vertical ? (main ? 10 : 8) : (main ? 14 : 12);
+        int capMinor = vertical ? (main ? 12 : 10) : (main ? 16 : 14);
+        List<FloorPlanStep> steps = floorPlanSteps(main, Math.max(0, roomCount), leadIn, roomMajor, roomMinor,
+                hallwayMinor, capMajor, capMinor, configuredWidth, configuredLength,
+                controls.floorRoomHeight(section.key(), roomKind), exit);
+        int availableSpan = maxSpan(panel, root, exit.direction());
+        if (availableSpan <= 4) {
+            return;
+        }
+        List<Integer> majors = scaleMajors(steps.stream().map(FloorPlanStep::major).toList(), availableSpan);
+        ButtonBounds previous = root;
+        for (int i = 0; i < steps.size(); i++) {
+            FloorPlanStep step = steps.get(i);
+            previous = orientedRectAfter(previous, exit.direction(), majors.get(i), step.minor());
+            if (previous.width() <= 0 || previous.height() <= 0) {
+                continue;
+            }
+            segments.add(new FloorPlanSegment(previous, step.color(), exit.direction(), step.label(),
+                    step.tooltip()));
+        }
+    }
+
+    private List<FloorPlanStep> floorPlanSteps(boolean main, int roomCount, int leadIn, int roomMajor, int roomMinor,
+                                               int hallwayMinor, int capMajor, int capMinor,
+                                               int configuredWidth, int configuredLength, int configuredHeight,
+                                               MKWorkspaceFamilyHorizontalExitDefinition exit) {
+        ArrayList<FloorPlanStep> steps = new ArrayList<>();
+        String pathLabel = main ? "Main Hall" : "Branch Hall";
+        int pathColor = main ? FLOOR_MAIN : FLOOR_BRANCH;
+        int firstHallway = Math.max(5, Math.min(18, Math.max(1, leadIn) * 4));
+        int betweenHallway = main ? 10 : 7;
+        steps.add(new FloorPlanStep(pathLabel, pathColor, firstHallway, hallwayMinor,
+                pathLabel + "\n" + formatDirection(exit.direction()) +
+                        "\nlead-in " + leadIn +
+                        "\nconnector " + formatPathKind(exit.pathKind())));
+        for (int i = 0; i < roomCount; i++) {
+            int roomNumber = i + 1;
+            steps.add(new FloorPlanStep(main ? "M" + roomNumber : "B" + roomNumber, FLOOR_ROOM,
+                    roomMajor, roomMinor,
+                    (main ? "Main Room" : "Branch Room") +
+                            "\n" + formatDirection(exit.direction()) +
+                            "\nconfigured " + configuredWidth + " x " + configuredLength +
+                            "\nheight " + configuredHeight +
+                            "\nroom " + roomNumber + " of max " + roomCount));
+            steps.add(new FloorPlanStep(pathLabel, pathColor, betweenHallway, hallwayMinor,
+                    pathLabel + "\n" + formatDirection(exit.direction()) +
+                            "\nafter room " + roomNumber));
+        }
+        steps.add(new FloorPlanStep(main ? "Main Cap" : "Branch Cap", FLOOR_CAP, capMajor, capMinor,
+                (main ? "Main approach/cap" : "Branch cap") +
                         "\n" + formatDirection(exit.direction()) +
-                        "\nconfigured " + configuredWidth + " x " + configuredLength +
-                        "\nheight " + controls.floorRoomHeight(section.key(), roomKind)));
-        int capWidth = vertical ? (main ? 12 : 10) : (main ? 16 : 14);
-        int capHeight = vertical ? (main ? 10 : 8) : (main ? 14 : 12);
-        ButtonBounds cap = terminalRect(room, exit.direction(), capWidth, capHeight);
-        segments.add(new FloorPlanSegment(cap, FLOOR_CAP, exit.direction(), main ? "Main Cap" : "Branch Cap",
-                (main ? "Main Cap" : "Branch Cap") +
-                        "\n" + formatDirection(exit.direction()) +
-                        "\nterminal content"));
+                        "\nterminal content\nplaced after max " + roomCount +
+                        (main ? " main rooms" : " branch rooms")));
+        return List.copyOf(steps);
     }
 
     private int maxSpan(ButtonBounds panel, ButtonBounds root, Direction direction) {
@@ -497,6 +525,44 @@ public class MKTowerStackSidePreview extends MKWidget {
             case SOUTH -> panel.y() + panel.height() - 20 - (root.y() + root.height());
             case NORTH -> root.y() - (panel.y() + 22);
             default -> 0;
+        };
+    }
+
+    private List<Integer> scaleMajors(List<Integer> majors, int maxSpan) {
+        int gapTotal = majors.size() * 2;
+        int available = Math.max(majors.size(), maxSpan - gapTotal);
+        int desired = majors.stream().mapToInt(Integer::intValue).sum();
+        if (desired <= available) {
+            return majors;
+        }
+        float scale = available / (float) Math.max(1, desired);
+        int minMajor = Math.max(1, Math.min(3, available / Math.max(1, majors.size())));
+        ArrayList<Integer> scaled = new ArrayList<>();
+        for (int major : majors) {
+            scaled.add(Math.max(minMajor, Math.round(major * scale)));
+        }
+        while (scaled.stream().mapToInt(Integer::intValue).sum() > available) {
+            int largestIndex = 0;
+            for (int i = 1; i < scaled.size(); i++) {
+                if (scaled.get(i) > scaled.get(largestIndex)) {
+                    largestIndex = i;
+                }
+            }
+            if (scaled.get(largestIndex) <= minMajor) {
+                break;
+            }
+            scaled.set(largestIndex, scaled.get(largestIndex) - 1);
+        }
+        return List.copyOf(scaled);
+    }
+
+    private ButtonBounds orientedRectAfter(ButtonBounds previous, Direction direction, int major, int minor) {
+        return switch (direction) {
+            case EAST -> terminalRect(previous, direction, major, minor);
+            case WEST -> terminalRect(previous, direction, major, minor);
+            case SOUTH -> terminalRect(previous, direction, minor, major);
+            case NORTH -> terminalRect(previous, direction, minor, major);
+            default -> new ButtonBounds(previous.x(), previous.y(), 1, 1);
         };
     }
 
@@ -1667,6 +1733,9 @@ public class MKTowerStackSidePreview extends MKWidget {
     }
 
     private record FloorPlanSegment(ButtonBounds bounds, int color, Direction direction, String label, String tooltip) {
+    }
+
+    private record FloorPlanStep(String label, int color, int major, int minor, String tooltip) {
     }
 
     private record ExitLayout(int maskX, int maskY, int editorX, int editorY, int editorWidth,
