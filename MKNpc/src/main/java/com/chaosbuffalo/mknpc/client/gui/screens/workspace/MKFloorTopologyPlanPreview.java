@@ -255,7 +255,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         int color = profile.horizontalExits().stream().anyMatch(exit -> exit.direction() == direction) ?
                 (profile.requiredExitDirection(direction) ? EXIT_REQUIRED : EXIT_ACTIVE) : EXIT_INACTIVE;
         if (hitRoomExitDirection(centerX - MASK_SIZE / 2, centerY - MASK_SIZE / 2, mouseX, mouseY) == direction &&
-                profile.optionalBranchExitDirection(direction)) {
+                (profile.optionalBranchExitDirection(direction) || profile.mainExitDirection(direction))) {
             color = CONTROL_ACTIVE;
         }
         switch (direction) {
@@ -429,7 +429,12 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         }
         Direction direction = hitRoomExitDirection(x + width - MASK_SIZE - 8, y + 22, (int) mouseX, (int) mouseY);
         if (direction != null) {
-            if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT || mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+            if (kind == MKWorkspaceFloorRoomKind.MAIN_ROOM &&
+                    mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT &&
+                    profile.mainExitDirection(direction)) {
+                controls.setRoomMainExitDirection(sectionKey, index, direction);
+            } else if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT ||
+                    (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT && kind == MKWorkspaceFloorRoomKind.BRANCH_ROOM)) {
                 controls.toggleRoomBranchExit(sectionKey, kind, index, direction);
             }
             return true;
@@ -494,7 +499,20 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                         return Optional.of(formatDirection(direction) + "\nRequired " +
                                 requiredExitLabel(profile, direction));
                     }
-                    return Optional.of(formatDirection(direction) + "\nOptional branch exit\nClick to toggle");
+                    if (profile.kind() == MKWorkspaceFloorRoomKind.MAIN_ROOM &&
+                            profile.mainExitDirection(direction)) {
+                        boolean current = profile.mainExitDirection()
+                                .map(direction::equals)
+                                .orElse(false);
+                        return Optional.of(formatDirection(direction) +
+                                (current ? "\nMain path exit" : "\nLeft click: set main path exit") +
+                                (profile.optionalBranchExitDirection(direction) ? "\nRight click: toggle branch exit" : ""));
+                    }
+                    if (profile.optionalBranchExitDirection(direction)) {
+                        return Optional.of(formatDirection(direction) +
+                                "\nOptional branch exit\nClick to toggle");
+                    }
+                    return Optional.of(formatDirection(direction));
                 }
                 cursorY += ROOM_ROW_HEIGHT;
             }
@@ -765,6 +783,8 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         void addRoomProfile(String sectionKey, MKWorkspaceFloorRoomKind kind);
 
         void removeRoomProfile(String sectionKey, MKWorkspaceFloorRoomKind kind, int index);
+
+        void setRoomMainExitDirection(String sectionKey, int index, Direction direction);
 
         void toggleRoomBranchExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index, Direction direction);
     }

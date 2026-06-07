@@ -24,6 +24,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
     private static final String PRIMARY_STACK_ID = "tower.primary";
     private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
     private final MKTowerStackPlanner towerStackPlanner = new MKTowerStackPlanner();
+    private final MKFloorTopologyPlanner floorTopologyPlanner = new MKFloorTopologyPlanner();
 
     private record ResolvedOpeningProfile(String profileId, int openingWidth, int openingHeight) {
     }
@@ -151,6 +152,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
                 towerStackDefinition(workspace),
                 workspace.familyDefinitions()));
         pieces.addAll(createLinearRunPieces(workspace));
+        pieces.addAll(floorTopologyPlanner.createFloorTopologyPieces(workspace, workspace.familyDefinitions()));
         return List.copyOf(pieces);
     }
 

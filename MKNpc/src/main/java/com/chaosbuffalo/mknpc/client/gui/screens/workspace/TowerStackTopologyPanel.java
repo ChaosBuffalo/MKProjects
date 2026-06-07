@@ -757,6 +757,12 @@ public class TowerStackTopologyPanel {
             }
 
             @Override
+            public void setRoomMainExitDirection(String sectionKey, int index, Direction direction) {
+                editor.floorTopologySetRoomMainExitDirection(stackId, sectionKey, index, direction);
+                screen.flagNeedSetup();
+            }
+
+            @Override
             public void toggleRoomBranchExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
                                              Direction direction) {
                 editor.floorTopologyToggleRoomBranchExit(stackId, sectionKey, kind, index, direction);

@@ -130,6 +130,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     );
     private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
     private final MKTowerStackPlanner towerStackPlanner = new MKTowerStackPlanner();
+    private final MKFloorTopologyPlanner floorTopologyPlanner = new MKFloorTopologyPlanner();
 
     private record ResolvedOpeningProfile(String profileId, int openingWidth, int openingHeight) {
     }
@@ -404,7 +405,16 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         pieces.addAll(createCourtyardPathPieces(workspace, courtyardPlan, slots.availableSlots()));
         pieces.addAll(createPerimeterPieces(workspace, perimeterPlan));
         pieces.addAll(createCourtyardContentPieces(workspace, courtyardPlan));
+        pieces.addAll(floorTopologyPlanner.createFloorTopologyPieces(workspace,
+                activeTowerStackFamiliesForFloorTopology(workspace)));
         return List.copyOf(pieces);
+    }
+
+    private List<MKTowerWorkspaceFamilyDefinition> activeTowerStackFamiliesForFloorTopology(MKStructureWorkspace workspace) {
+        return workspace.familyDefinitions().stream()
+                .filter(family -> isActiveKeepSlot(workspace, family.topologySlotId()))
+                .filter(family -> isCenterStackSlot(family.topologySlotId()) || isCornerStackSlot(family.topologySlotId()))
+                .toList();
     }
 
     private List<MKPlannedPiece> createCenterStackPieces(MKStructureWorkspace workspace, SlotAvailability slots) {

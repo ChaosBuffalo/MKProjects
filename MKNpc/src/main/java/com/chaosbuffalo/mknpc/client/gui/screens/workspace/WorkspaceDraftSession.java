@@ -1388,6 +1388,31 @@ public class WorkspaceDraftSession {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withRemovedRoomProfile(kind, index));
     }
 
+    public void floorTopologySetRoomMainExitDirection(String stackId, String floorRole, int index,
+                                                      Direction direction) {
+        MKWorkspaceFloorRoomProfile profile = floorTopologyRoomProfile(stackId, floorRole,
+                MKWorkspaceFloorRoomKind.MAIN_ROOM, index);
+        if (!profile.mainExitDirection(direction)) {
+            return;
+        }
+        ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new ArrayList<>();
+        for (MKWorkspaceFamilyHorizontalExitDefinition exit : profile.horizontalExits()) {
+            if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT ||
+                    exit.direction() == direction) {
+                continue;
+            }
+            exits.add(exit);
+        }
+        exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(
+                direction,
+                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID,
+                MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
+        ));
+        replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole)
+                .withRoomProfile(MKWorkspaceFloorRoomKind.MAIN_ROOM, index, profile.withHorizontalExits(exits)));
+    }
+
     public void floorTopologyToggleRoomBranchExit(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind,
                                                   int index, Direction direction) {
         MKWorkspaceFloorRoomProfile profile = floorTopologyRoomProfile(stackId, floorRole, kind, index);
@@ -1404,8 +1429,7 @@ public class WorkspaceDraftSession {
             exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(
                     direction,
                     MKWorkspaceHorizontalExitPathKind.BRANCH,
-                    firstCompatibleOpeningProfileId(MKWorkspaceHorizontalExitPathKind.BRANCH)
-                            .orElse("branch_opening"),
+                    MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID,
                     MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
             ));
         }
