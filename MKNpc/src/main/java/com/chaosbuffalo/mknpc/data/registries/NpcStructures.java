@@ -21,6 +21,7 @@ import net.minecraft.world.level.levelgen.structure.StructureSpawnOverride;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
+import java.util.List;
 import java.util.Map;
 
 public class NpcStructures {
@@ -76,6 +77,27 @@ public class NpcStructures {
                         templates.getOrThrow(NpcStructurePools.TEST_KEEP_START_POOL))
                         .setMaxDepth(18)
                         .setMaxDistFromCenter(116)
+                        .setDungeonLayout(new MKDungeonLayoutSettings(
+                                1,
+                                1,
+                                1,
+                                64,
+                                64,
+                                true,
+                                MKVerticalProgressionMode.MIXED,
+                                true,
+                                false,
+                                List.of(),
+                                new MKDungeonConnectorSettings(
+                                        connector("main_forward"),
+                                        connector("main_back"),
+                                        connector("branch"),
+                                        connector("connect_down"),
+                                        connector("connect_up"),
+                                        connector("boss_forward"),
+                                        connector("boss_back")
+                                )
+                        ))
                         .build());
     }
 

@@ -1,1 +1,1 @@
-{"terminal":true,"top_cap_only":true,"topology_group":"top_cap","role":"top_cap"}
+{"terminal":true,"top_cap_only":true,"topology_group":"top_cap","allow_on_branch_path":true,"role":"top_cap"}

@@ -66,7 +66,9 @@ public class MKBranchExitMaskWidget extends MKWidget {
         if (direction == null) {
             return false;
         }
-        if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT && editCallback != null && exitKind(direction) != ExitKind.NONE) {
+        ExitKind kind = exitKind(direction);
+        if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT && editCallback != null &&
+                kind != ExitKind.NONE && kind != ExitKind.INGRESS) {
             editCallback.accept(direction);
             return true;
         }
@@ -158,6 +160,7 @@ public class MKBranchExitMaskWidget extends MKWidget {
         ExitKind kind = exitKind(direction);
         if (selectedDirection == direction) {
             return switch (kind) {
+                case INGRESS -> SELECTED_MAIN_ENTRY;
                 case MAIN_ENTRY -> SELECTED_MAIN_ENTRY;
                 case MAIN_EXIT -> SELECTED_MAIN_EXIT;
                 case MAIN_ENDING_ENTRY -> SELECTED_MAIN_ENTRY;
@@ -173,6 +176,7 @@ public class MKBranchExitMaskWidget extends MKWidget {
         ExitKind exitKind = exitKind(direction);
         int color = exitKind == ExitKind.NONE ? LABEL_INACTIVE : LABEL_ACTIVE;
         String label = switch (exitKind) {
+            case INGRESS -> direction.getName().substring(0, 1).toUpperCase() + "G";
             case MAIN_ENTRY -> direction.getName().substring(0, 1).toUpperCase() + "I";
             case MAIN_EXIT -> direction.getName().substring(0, 1).toUpperCase() + "O";
             case MAIN_ENDING_ENTRY -> direction.getName().substring(0, 1).toUpperCase() + "E";
@@ -189,6 +193,7 @@ public class MKBranchExitMaskWidget extends MKWidget {
                 .filter(exit -> exit.direction() == direction)
                 .findFirst()
                 .map(exit -> switch (exit.pathKind()) {
+                    case INGRESS -> ExitKind.INGRESS;
                     case MAIN_ENTRY -> ExitKind.MAIN_ENTRY;
                     case MAIN_EXIT -> ExitKind.MAIN_EXIT;
                     case MAIN_ENDING_ENTRY -> ExitKind.MAIN_ENDING_ENTRY;
@@ -240,6 +245,7 @@ public class MKBranchExitMaskWidget extends MKWidget {
 
     private enum ExitKind {
         NONE,
+        INGRESS,
         MAIN_ENTRY,
         MAIN_EXIT,
         MAIN_ENDING_ENTRY,

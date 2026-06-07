@@ -63,8 +63,12 @@ public class MKTowerStackPlanner {
         Optional<MKTowerWorkspaceStackSlot> stackSlot = MKTowerWorkspaceStackSlot.fromTopologySlotId(
                 MKWorkspaceTopologySlotMetadata.fromFamily(family).topologySlotId());
         return stackSlot.map(slot -> switch (slot) {
+            case MAIN_FLOOR -> stackDefinition.mainFloors() > 0;
             case TOP_CAP_APPROACH -> stackDefinition.topCapApproachEnabled();
-            case BASEMENT_CAP_APPROACH -> stackDefinition.basementCapApproachEnabled();
+            case BASEMENT_ENTRY -> stackDefinition.basementFloors() > 0 && stackDefinition.basementEntryEnabled();
+            case BASEMENT_FLOOR, BASEMENT_CAP -> stackDefinition.basementFloors() > 0;
+            case BASEMENT_CAP_APPROACH -> stackDefinition.basementFloors() > 0 &&
+                    stackDefinition.basementCapApproachEnabled();
             default -> true;
         }).orElse(true);
     }
@@ -94,12 +98,7 @@ public class MKTowerStackPlanner {
                     resolvedFamily.roomHeight(),
                     connectorsWithHorizontalExits(
                             family.supportsVerticalAccess() ?
-                                    List.of(
-                                            new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, shaftWidth, shaftWidth,
-                                                    stackDefinition.connectUpPool()),
-                                            new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, shaftWidth, shaftWidth,
-                                                    stackDefinition.connectDownEntryPool())
-                                    ) : List.of(),
+                                    entryConnectors(stackDefinition, shaftWidth) : List.of(),
                             family,
                             workspace
                     ),
@@ -245,6 +244,18 @@ public class MKTowerStackPlanner {
                 .orElseThrow(() -> new IllegalStateException("tower topology is missing tower.primary stack settings"));
     }
 
+    private List<MKPlannedConnector> entryConnectors(MKTowerStackDefinition stackDefinition, int shaftWidth) {
+        ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
+        connectors.add(new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, shaftWidth, shaftWidth,
+                stackDefinition.connectUpPool()));
+        if (stackDefinition.basementFloors() > 0) {
+            connectors.add(new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, shaftWidth, shaftWidth,
+                    stackDefinition.basementEntryEnabled() ? stackDefinition.connectDownEntryPool() :
+                            stackDefinition.connectDownPool()));
+        }
+        return List.copyOf(connectors);
+    }
+
     private List<MKPlannedConnector> topCapConnectors(MKTowerStackDefinition stackDefinition, int shaftWidth) {
         if (stackDefinition.topCapApproachEnabled()) {
             return List.of(new MKPlannedConnector(MKConnectorRole.TOP_CAP_BACK, Direction.DOWN, shaftWidth, shaftWidth,
@@ -291,14 +302,20 @@ public class MKTowerStackPlanner {
             ResolvedOpeningProfile opening = resolveOpeningProfile(workspace, exit.openingProfileId())
                     .orElseThrow(() -> new IllegalStateException("missing opening profile " + exit.openingProfileId() +
                             " for family " + family.baseName()));
+            int lateralOffset = toLateralOffset(exit.direction(), exit.sideOffset());
+            if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.INGRESS) {
+                connectors.add(MKPlannedConnector.openingOnly(MKConnectorRole.MAIN_BACK, exit.direction(),
+                        opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset()));
+                continue;
+            }
             LinearRunPathKind linearRunPathKind = exit.pathKind().usesMainPath() ? LinearRunPathKind.MAIN : LinearRunPathKind.BRANCH;
             MKConnectorRole role = switch (exit.pathKind()) {
                 case MAIN_ENTRY, MAIN_ENDING_ENTRY -> MKConnectorRole.MAIN_FORWARD;
                 case MAIN_EXIT -> MKConnectorRole.MAIN_BACK;
                 case BRANCH, BRANCH_CAP_ENTRY -> MKConnectorRole.BRANCH;
-                case VERTICAL_ACCESS -> throw new IllegalStateException("vertical access exits are not horizontal connectors");
+                case INGRESS, VERTICAL_ACCESS -> throw new IllegalStateException("unsupported horizontal connector kind " +
+                        exit.pathKind().getSerializedName());
             };
-            int lateralOffset = toLateralOffset(exit.direction(), exit.sideOffset());
             if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY) {
                 connectors.add(new MKPlannedConnector(role, exit.direction(),
                         opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset(),
@@ -429,8 +446,18 @@ public class MKTowerStackPlanner {
         tags.put("workspace_topology_group", resolvedFamily.slotMetadata().topologyGroupId());
         if (!stackDefinition.stackId().isBlank()) {
             tags.put("workspace_tower_stack_id", stackDefinition.stackId());
+            tags.put("workspace_tower_stack_min_main_floors", Integer.toString(stackDefinition.minMainFloors()));
             tags.put("workspace_tower_stack_main_floors", Integer.toString(stackDefinition.mainFloors()));
+            tags.put("workspace_tower_stack_min_basement_floors", Integer.toString(stackDefinition.minBasementFloors()));
             tags.put("workspace_tower_stack_basement_floors", Integer.toString(stackDefinition.basementFloors()));
+            MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId())
+                    .ifPresent(slot -> tags.put("workspace_tower_stack_slot", slot.suffix()));
+            tags.put("workspace_tower_stack_top_cap_approach_enabled",
+                    Boolean.toString(stackDefinition.topCapApproachEnabled()));
+            tags.put("workspace_tower_stack_basement_entry_enabled",
+                    Boolean.toString(stackDefinition.basementEntryEnabled()));
+            tags.put("workspace_tower_stack_basement_cap_approach_enabled",
+                    Boolean.toString(stackDefinition.basementCapApproachEnabled()));
         }
         applyVoidMarginTags(family, resolvedFamily, tags);
         applyFoundationTags(resolvedFamily.foundationPolicy(), tags);
@@ -438,13 +465,11 @@ public class MKTowerStackPlanner {
         if (family.supportsVerticalAccess()) {
             tags.put("workspace_vertical_access_group_id", family.verticalAccessGroupId());
             tags.put(MKWorkspaceVerticalAccessTags.PLACEMENT_TAG, stairPlacement);
-            tags.put(MKWorkspaceVerticalAccessTags.DIRECTION_TAG, verticalAccessDirectionTag(family, stairDirection));
+            tags.put(MKWorkspaceVerticalAccessTags.DIRECTION_TAG, verticalAccessDirectionTag(family, stackDefinition,
+                    stairDirection));
             tags.put("workspace_vertical_access_stair_mode", stairConfig.mode().getSerializedName());
             tags.put("workspace_vertical_access_stair_rise_type", stairConfig.riseType().getSerializedName());
             tags.put("workspace_vertical_access_stair_width", Integer.toString(stairConfig.stairWidth()));
-            tags.put("workspace_vertical_access_stair_block", stairConfig.stairBlock().toString());
-            tags.put("workspace_vertical_access_slab_block", stairConfig.slabBlock().toString());
-            tags.put("workspace_vertical_access_ladder_block", stairConfig.ladderBlock().toString());
         }
         if (family.supportsVerticalAccess() && topCap) {
             tags.put(MKWorkspaceVerticalAccessTags.TOP_CAP_TAG, "true");
@@ -460,9 +485,6 @@ public class MKTowerStackPlanner {
     private void applyVoidMarginTags(MKTowerWorkspaceFamilyDefinition family,
                                      MKWorkspaceResolvedFamilySettings resolvedFamily,
                                      Map<String, String> tags) {
-        if (family.supportsVerticalAccess()) {
-            return;
-        }
         if (resolvedFamily.topVoidMargin() > 0) {
             tags.put(MKWorkspaceVoidMarginTags.TOP_VOID_MARGIN_TAG,
                     Integer.toString(resolvedFamily.topVoidMargin()));
@@ -479,9 +501,16 @@ public class MKTowerStackPlanner {
         }
     }
 
-    private String verticalAccessDirectionTag(MKTowerWorkspaceFamilyDefinition family, String fallback) {
+    private String verticalAccessDirectionTag(MKTowerWorkspaceFamilyDefinition family,
+                                              MKTowerStackDefinition stackDefinition, String fallback) {
         boolean up = family.hasVerticalAccess(Direction.UP);
         boolean down = family.hasVerticalAccess(Direction.DOWN);
+        Optional<MKTowerWorkspaceStackSlot> stackSlot = MKTowerWorkspaceStackSlot.fromTopologySlotId(
+                MKWorkspaceTopologySlotMetadata.fromFamily(family).topologySlotId());
+        if (stackSlot.isPresent() && stackSlot.get() == MKTowerWorkspaceStackSlot.ENTRY &&
+                stackDefinition.basementFloors() <= 0) {
+            down = false;
+        }
         if (up && down) {
             return "both";
         }

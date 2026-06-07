@@ -4,7 +4,6 @@ import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
-import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
@@ -63,27 +62,4 @@ public class WorkspaceTopologySlotEditor {
         screen.topologySlotStairWidth(value);
     }
 
-    public ResourceLocation stairBlock() {
-        return screen.topologySlotStairBlock();
-    }
-
-    public void stairBlock(ResourceLocation value) {
-        screen.topologySlotStairBlock(value);
-    }
-
-    public ResourceLocation slabBlock() {
-        return screen.topologySlotSlabBlock();
-    }
-
-    public void slabBlock(ResourceLocation value) {
-        screen.topologySlotSlabBlock(value);
-    }
-
-    public ResourceLocation ladderBlock() {
-        return screen.topologySlotLadderBlock();
-    }
-
-    public void ladderBlock(ResourceLocation value) {
-        screen.topologySlotLadderBlock(value);
-    }
 }

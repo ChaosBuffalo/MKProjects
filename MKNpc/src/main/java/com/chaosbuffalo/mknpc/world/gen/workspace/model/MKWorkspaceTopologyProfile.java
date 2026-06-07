@@ -2,28 +2,37 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public record MKWorkspaceTopologyProfile(
-        String profileType,
+        ResourceLocation plannerId,
         boolean uniqueCornerTowers,
         boolean uniqueNorthWestCornerTower,
         boolean uniqueNorthEastCornerTower,
         boolean uniqueSouthEastCornerTower,
         boolean uniqueSouthWestCornerTower,
         List<MKWorkspaceTowerStackSettings> towerStackSettings,
+        List<MKWorkspaceFloorTopologySettings> floorTopologySettings,
         List<MKWorkspaceTopologyPathSettings> pathSettings,
-        MKWalledKeepCourtyardSettings courtyardSettings
+        MKWalledKeepCourtyardSettings courtyardSettings,
+        TerrainAdjustment terrainAdjustment
 ) {
-    public static final String TOWER_PROFILE_TYPE = "tower";
-    public static final String WALLED_KEEP_PROFILE_TYPE = "walled_keep";
+    public static final ResourceLocation TOWER_PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "tower");
+    public static final ResourceLocation WALLED_KEEP_PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "walled_keep");
+    public static final TerrainAdjustment DEFAULT_WALLED_KEEP_TERRAIN_ADJUSTMENT = TerrainAdjustment.BEARD_THIN;
+    public static final TerrainAdjustment DEFAULT_TOWER_TERRAIN_ADJUSTMENT = TerrainAdjustment.BEARD_THIN;
+    private static final Codec<TerrainAdjustment> TERRAIN_ADJUSTMENT_CODEC =
+            StringRepresentable.fromEnum(TerrainAdjustment::values);
 
     public static final Codec<MKWorkspaceTopologyProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.STRING.optionalFieldOf("profile_type", TOWER_PROFILE_TYPE)
-                    .forGetter(MKWorkspaceTopologyProfile::profileType),
+            ResourceLocation.CODEC.optionalFieldOf("planner_id", TOWER_PLANNER_ID)
+                    .forGetter(MKWorkspaceTopologyProfile::plannerId),
             Codec.BOOL.optionalFieldOf("unique_corner_towers", false)
                     .forGetter(MKWorkspaceTopologyProfile::uniqueCornerTowers),
             Codec.BOOL.optionalFieldOf("unique_north_west_corner_tower", false)
@@ -36,33 +45,42 @@ public record MKWorkspaceTopologyProfile(
                     .forGetter(MKWorkspaceTopologyProfile::uniqueSouthWestCornerTower),
             MKWorkspaceTowerStackSettings.CODEC.listOf().optionalFieldOf("tower_stack_settings", List.of())
                     .forGetter(MKWorkspaceTopologyProfile::towerStackSettings),
+            MKWorkspaceFloorTopologySettings.CODEC.listOf().optionalFieldOf("floor_topology_settings", List.of())
+                    .forGetter(MKWorkspaceTopologyProfile::floorTopologySettings),
             MKWorkspaceTopologyPathSettings.CODEC.listOf().optionalFieldOf("path_settings", List.of())
                     .forGetter(MKWorkspaceTopologyProfile::pathSettings),
             MKWalledKeepCourtyardSettings.CODEC.optionalFieldOf("courtyard_settings",
                             MKWalledKeepCourtyardSettings.defaults())
-                    .forGetter(MKWorkspaceTopologyProfile::courtyardSettings)
+                    .forGetter(MKWorkspaceTopologyProfile::courtyardSettings),
+            TERRAIN_ADJUSTMENT_CODEC.optionalFieldOf("terrain_adjustment", DEFAULT_WALLED_KEEP_TERRAIN_ADJUSTMENT)
+                    .forGetter(MKWorkspaceTopologyProfile::terrainAdjustment)
     ).apply(instance, MKWorkspaceTopologyProfile::new));
 
     public static MKWorkspaceTopologyProfile tower() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
-        return new MKWorkspaceTopologyProfile(TOWER_PROFILE_TYPE, false, false, false, false, false,
+        return new MKWorkspaceTopologyProfile(TOWER_PLANNER_ID, false, false, false, false, false,
                 List.of(new MKWorkspaceTowerStackSettings("tower.primary",
                         MKWorkspaceTowerStackFloorCounts.DEFAULT_MAIN_FLOORS,
                         MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_FLOORS,
                         dimensions.roomHeight(), dimensions.roomWidth(), dimensions.roomLength(),
                         MKWorkspaceTowerStackFloorCounts.DEFAULT_TOP_CAP_APPROACH_ENABLED,
+                        MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_ENTRY_ENABLED,
                         MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_CAP_APPROACH_ENABLED)),
+                List.of(),
                 MKWorkspaceTopologyPathSettings.defaults(),
-                MKWalledKeepCourtyardSettings.defaults());
+                MKWalledKeepCourtyardSettings.defaults(),
+                DEFAULT_TOWER_TERRAIN_ADJUSTMENT);
     }
 
     public static MKWorkspaceTopologyProfile walledKeep(boolean uniqueCornerTowers) {
-        return new MKWorkspaceTopologyProfile(WALLED_KEEP_PROFILE_TYPE, uniqueCornerTowers,
+        return new MKWorkspaceTopologyProfile(WALLED_KEEP_PLANNER_ID, uniqueCornerTowers,
                 uniqueCornerTowers, uniqueCornerTowers, uniqueCornerTowers, uniqueCornerTowers,
                 defaultWalledKeepTowerStackSettings(uniqueCornerTowers, uniqueCornerTowers, uniqueCornerTowers,
                         uniqueCornerTowers),
+                List.of(),
                 MKWorkspaceTopologyPathSettings.defaults(),
-                MKWalledKeepCourtyardSettings.defaults());
+                MKWalledKeepCourtyardSettings.defaults(),
+                DEFAULT_WALLED_KEEP_TERRAIN_ADJUSTMENT);
     }
 
     public static MKWorkspaceTopologyProfile walledKeep(boolean uniqueNorthWestCornerTower,
@@ -70,7 +88,7 @@ public record MKWorkspaceTopologyProfile(
                                                         boolean uniqueSouthEastCornerTower,
                                                         boolean uniqueSouthWestCornerTower) {
         return new MKWorkspaceTopologyProfile(
-                WALLED_KEEP_PROFILE_TYPE,
+                WALLED_KEEP_PLANNER_ID,
                 uniqueNorthWestCornerTower && uniqueNorthEastCornerTower &&
                         uniqueSouthEastCornerTower && uniqueSouthWestCornerTower,
                 uniqueNorthWestCornerTower,
@@ -79,14 +97,16 @@ public record MKWorkspaceTopologyProfile(
                 uniqueSouthWestCornerTower,
                 defaultWalledKeepTowerStackSettings(uniqueNorthWestCornerTower, uniqueNorthEastCornerTower,
                         uniqueSouthEastCornerTower, uniqueSouthWestCornerTower),
+                List.of(),
                 MKWorkspaceTopologyPathSettings.defaults(),
-                MKWalledKeepCourtyardSettings.defaults()
+                MKWalledKeepCourtyardSettings.defaults(),
+                DEFAULT_WALLED_KEEP_TERRAIN_ADJUSTMENT
         );
     }
 
     public MKWorkspaceTopologyProfile {
-        if (profileType == null || profileType.isBlank()) {
-            profileType = TOWER_PROFILE_TYPE;
+        if (plannerId == null) {
+            plannerId = TOWER_PLANNER_ID;
         }
         if (uniqueCornerTowers) {
             uniqueNorthWestCornerTower = true;
@@ -96,11 +116,13 @@ public record MKWorkspaceTopologyProfile(
         }
         uniqueCornerTowers = uniqueNorthWestCornerTower && uniqueNorthEastCornerTower &&
                 uniqueSouthEastCornerTower && uniqueSouthWestCornerTower;
-        towerStackSettings = normalizeTowerStackSettings(profileType, uniqueNorthWestCornerTower,
+        towerStackSettings = normalizeTowerStackSettings(plannerId, uniqueNorthWestCornerTower,
                 uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
                 towerStackSettings);
+        floorTopologySettings = MKWorkspaceFloorTopologySettings.normalize(floorTopologySettings, towerStackSettings);
         pathSettings = MKWorkspaceTopologyPathSettings.normalize(pathSettings);
         courtyardSettings = courtyardSettings == null ? MKWalledKeepCourtyardSettings.defaults() : courtyardSettings;
+        terrainAdjustment = terrainAdjustment == null ? defaultTerrainAdjustment(plannerId) : terrainAdjustment;
     }
 
     public boolean anySharedCornerTower() {
@@ -143,9 +165,38 @@ public record MKWorkspaceTopologyProfile(
         if (!replaced) {
             updated.add(updatedSettings);
         }
-        return new MKWorkspaceTopologyProfile(profileType, uniqueCornerTowers, uniqueNorthWestCornerTower,
+        return new MKWorkspaceTopologyProfile(plannerId, uniqueCornerTowers, uniqueNorthWestCornerTower,
                 uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower, updated,
-                pathSettings, courtyardSettings);
+                floorTopologySettings, pathSettings, courtyardSettings, terrainAdjustment);
+    }
+
+    public Optional<MKWorkspaceFloorTopologySettings> floorTopologySettings(String stackId, String floorRole) {
+        return MKWorkspaceFloorTopologySettings.find(floorTopologySettings, stackId, floorRole);
+    }
+
+    public MKWorkspaceFloorTopologySettings floorTopologySettingsOrDefault(String stackId, String floorRole) {
+        return floorTopologySettings(stackId, floorRole)
+                .orElseGet(() -> MKWorkspaceFloorTopologySettings.defaults(
+                        towerStackSettingsOrDefault(stackId), floorRole));
+    }
+
+    public MKWorkspaceTopologyProfile withFloorTopologySettings(MKWorkspaceFloorTopologySettings updatedSettings) {
+        ArrayList<MKWorkspaceFloorTopologySettings> updated = new ArrayList<>();
+        boolean replaced = false;
+        for (MKWorkspaceFloorTopologySettings settings : floorTopologySettings) {
+            if (settings.key().equals(updatedSettings.key())) {
+                updated.add(updatedSettings);
+                replaced = true;
+            } else {
+                updated.add(settings);
+            }
+        }
+        if (!replaced) {
+            updated.add(updatedSettings);
+        }
+        return new MKWorkspaceTopologyProfile(plannerId, uniqueCornerTowers, uniqueNorthWestCornerTower,
+                uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
+                towerStackSettings, updated, pathSettings, courtyardSettings, terrainAdjustment);
     }
 
     public Optional<MKWorkspaceTopologyPathSettings> pathSettings(String topologyGroupId) {
@@ -171,16 +222,24 @@ public record MKWorkspaceTopologyProfile(
         if (!replaced) {
             updated.add(updatedSettings);
         }
-        return new MKWorkspaceTopologyProfile(profileType, uniqueCornerTowers, uniqueNorthWestCornerTower,
+        return new MKWorkspaceTopologyProfile(plannerId, uniqueCornerTowers, uniqueNorthWestCornerTower,
                 uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
-                towerStackSettings, updated, courtyardSettings);
+                towerStackSettings, floorTopologySettings, updated, courtyardSettings, terrainAdjustment);
     }
 
     public MKWorkspaceTopologyProfile withCourtyardSettings(MKWalledKeepCourtyardSettings updatedSettings) {
-        return new MKWorkspaceTopologyProfile(profileType, uniqueCornerTowers, uniqueNorthWestCornerTower,
+        return new MKWorkspaceTopologyProfile(plannerId, uniqueCornerTowers, uniqueNorthWestCornerTower,
                 uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
-                towerStackSettings, pathSettings,
-                updatedSettings == null ? MKWalledKeepCourtyardSettings.defaults() : updatedSettings);
+                towerStackSettings, floorTopologySettings, pathSettings,
+                updatedSettings == null ? MKWalledKeepCourtyardSettings.defaults() : updatedSettings,
+                terrainAdjustment);
+    }
+
+    public MKWorkspaceTopologyProfile withTerrainAdjustment(TerrainAdjustment updatedTerrainAdjustment) {
+        return new MKWorkspaceTopologyProfile(plannerId, uniqueCornerTowers, uniqueNorthWestCornerTower,
+                uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
+                towerStackSettings, floorTopologySettings, pathSettings, courtyardSettings,
+                updatedTerrainAdjustment == null ? defaultTerrainAdjustment(plannerId) : updatedTerrainAdjustment);
     }
 
     public static List<MKWorkspaceTowerStackSettings> defaultWalledKeepTowerStackSettings(
@@ -189,34 +248,50 @@ public record MKWorkspaceTopologyProfile(
             boolean uniqueSouthEastCornerTower,
             boolean uniqueSouthWestCornerTower) {
         ArrayList<MKWorkspaceTowerStackSettings> settings = new ArrayList<>();
-        settings.add(MKWorkspaceTowerStackSettings.defaults("keep.center", 7));
+        settings.add(walledKeepCenterStackDefaults());
         if (!uniqueNorthWestCornerTower || !uniqueNorthEastCornerTower ||
                 !uniqueSouthEastCornerTower || !uniqueSouthWestCornerTower) {
-            settings.add(MKWorkspaceTowerStackSettings.defaults("keep.corner.shared", 7));
+            settings.add(walledKeepCornerStackDefaults("keep.corner.shared"));
         }
         if (uniqueNorthWestCornerTower) {
-            settings.add(MKWorkspaceTowerStackSettings.defaults("keep.corner.north_west", 7));
+            settings.add(walledKeepCornerStackDefaults("keep.corner.north_west"));
         }
         if (uniqueNorthEastCornerTower) {
-            settings.add(MKWorkspaceTowerStackSettings.defaults("keep.corner.north_east", 7));
+            settings.add(walledKeepCornerStackDefaults("keep.corner.north_east"));
         }
         if (uniqueSouthEastCornerTower) {
-            settings.add(MKWorkspaceTowerStackSettings.defaults("keep.corner.south_east", 7));
+            settings.add(walledKeepCornerStackDefaults("keep.corner.south_east"));
         }
         if (uniqueSouthWestCornerTower) {
-            settings.add(MKWorkspaceTowerStackSettings.defaults("keep.corner.south_west", 7));
+            settings.add(walledKeepCornerStackDefaults("keep.corner.south_west"));
         }
         return List.copyOf(settings);
     }
 
+    private static MKWorkspaceTowerStackSettings walledKeepCenterStackDefaults() {
+        return MKWorkspaceTowerStackSettings.defaults("keep.center", 7)
+                .withTopCapApproachEnabled(false)
+                .withBasementEntryEnabled(false)
+                .withBasementCapApproachEnabled(false);
+    }
+
+    private static MKWorkspaceTowerStackSettings walledKeepCornerStackDefaults(String stackId) {
+        return MKWorkspaceTowerStackSettings.defaults(stackId, 7)
+                .withMainFloors(0)
+                .withBasementFloors(0)
+                .withTopCapApproachEnabled(false)
+                .withBasementEntryEnabled(false)
+                .withBasementCapApproachEnabled(false);
+    }
+
     private static List<MKWorkspaceTowerStackSettings> normalizeTowerStackSettings(
-            String profileType,
+            ResourceLocation plannerId,
             boolean uniqueNorthWestCornerTower,
             boolean uniqueNorthEastCornerTower,
             boolean uniqueSouthEastCornerTower,
             boolean uniqueSouthWestCornerTower,
             List<MKWorkspaceTowerStackSettings> currentSettings) {
-        if (!WALLED_KEEP_PROFILE_TYPE.equals(profileType)) {
+        if (!WALLED_KEEP_PLANNER_ID.equals(plannerId)) {
             return List.copyOf(currentSettings == null ? List.of() : currentSettings);
         }
         ArrayList<MKWorkspaceTowerStackSettings> normalized = new ArrayList<>();
@@ -230,5 +305,10 @@ public record MKWorkspaceTopologyProfile(
             normalized.add(settings == null ? defaultSettings : settings);
         }
         return List.copyOf(normalized);
+    }
+
+    private static TerrainAdjustment defaultTerrainAdjustment(ResourceLocation plannerId) {
+        return WALLED_KEEP_PLANNER_ID.equals(plannerId) ? DEFAULT_WALLED_KEEP_TERRAIN_ADJUSTMENT :
+                DEFAULT_TOWER_TERRAIN_ADJUSTMENT;
     }
 }

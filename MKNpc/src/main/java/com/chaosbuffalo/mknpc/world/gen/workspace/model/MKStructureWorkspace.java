@@ -233,7 +233,7 @@ public class MKStructureWorkspace {
 
     public List<String> validate() {
         List<String> errors = new ArrayList<>(verticalAccessSpec.validate());
-        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(topologyProfile.profileType())) {
+        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(topologyProfile.plannerId())) {
             errors.addAll(topologyProfile.courtyardSettings().validate());
         }
         for (MKWorkspaceTowerStackSettings settings : topologyProfile.towerStackSettings()) {
@@ -282,7 +282,9 @@ public class MKStructureWorkspace {
                             exit.openingProfileId());
                     continue;
                 }
-                if (exit.pathKind().usesMainPath() && !openingProfile.allowOnMainPath()) {
+                if ((exit.pathKind().usesMainPath() ||
+                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.INGRESS) &&
+                        !openingProfile.allowOnMainPath()) {
                     errors.add("family " + familyDefinition.baseName() + " cannot use opening profile " +
                             exit.openingProfileId() + " for a main-path exit because it is not main-path compatible");
                 }
@@ -377,7 +379,7 @@ public class MKStructureWorkspace {
     private Optional<Integer> maxRoomHeightForFamily(MKTowerWorkspaceFamilyDefinition familyDefinition) {
         Optional<MKWorkspaceTowerStackSettings> stackSettings = towerStackSettingsForFamily(familyDefinition);
         if (stackSettings.isPresent()) {
-            return Optional.of(stackSettings.get().height());
+            return Optional.of(stackSettings.get().heightForTopologySlot(familyDefinition.topologySlotId()));
         }
         int fallbackHeight = defaultHeightForTopologyGroup(
                 MKWorkspaceTopologySlotMetadata.fromFamily(familyDefinition).topologyGroupId());
@@ -387,7 +389,7 @@ public class MKStructureWorkspace {
     private int defaultHeightForTopologyGroup(String topologyGroupId) {
         return switch (topologyGroupId) {
             case "entry" -> dimensions.entranceHeight();
-            case "basement", "basement_cap" -> dimensions.basementHeight();
+            case "basement", "basement_entry", "basement_cap" -> dimensions.basementHeight();
             default -> dimensions.roomHeight();
         };
     }
@@ -429,7 +431,7 @@ public class MKStructureWorkspace {
         if (stackId.isBlank()) {
             return Optional.empty();
         }
-        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(topologyProfile.profileType()) &&
+        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(topologyProfile.plannerId()) &&
                 stackId.startsWith("keep.corner.") &&
                 !"keep.corner.shared".equals(stackId) &&
                 !topologyProfile.uniqueCornerTower(stackId)) {
@@ -439,13 +441,13 @@ public class MKStructureWorkspace {
     }
 
     private String towerStackIdForFamily(String topologySlotId) {
-        if (MKWorkspaceTopologyProfile.TOWER_PROFILE_TYPE.equals(topologyProfile.profileType())) {
+        if (MKWorkspaceTopologyProfile.TOWER_PLANNER_ID.equals(topologyProfile.plannerId())) {
             return MKTowerWorkspaceStackSlot.stackIdForTopologySlot(topologySlotId)
                     .filter(stackId -> stackId.equals("tower.primary") || stackId.equals("tower"))
                     .map(stackId -> "tower.primary")
                     .orElse("");
         }
-        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(topologyProfile.profileType())) {
+        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(topologyProfile.plannerId())) {
             return MKTowerWorkspaceStackSlot.stackIdForTopologySlot(topologySlotId)
                     .filter(stackId -> stackId.equals("keep.center") ||
                             stackId.equals("keep.corner.shared") ||

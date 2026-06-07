@@ -7,6 +7,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
@@ -44,7 +46,6 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     private static final String COURTYARD_CONTENT_KIND = "courtyard";
     private static final String COURTYARD_PATH_KIND = "courtyard_path";
     public static final String CONTENT_KIND_TAG = "workspace_content_kind";
-    public static final String CONTENT_SOCKET_CLASS_TAG = "workspace_content_socket_class";
     public static final String CONTENT_SIZE_TAG = "workspace_content_size";
     public static final String CONTENT_WIDTH_TAG = "workspace_content_width";
     public static final String CONTENT_LENGTH_TAG = "workspace_content_length";
@@ -53,7 +54,6 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     public static final String CONTENT_CONNECTOR_EDGE_TAG = "workspace_content_connector_edge";
     public static final String CONTENT_WALKWAY_CONTINUATION_LENGTH_TAG = "workspace_content_walkway_continuation_length";
     public static final String COURTYARD_SOCKET_ID_TAG = "workspace_courtyard_socket_id";
-    public static final String COURTYARD_SOCKET_CLASS_TAG = "workspace_courtyard_socket_class";
     public static final String COURTYARD_SOCKET_MAX_SIZE_TAG = "workspace_courtyard_socket_max_square_size";
     public static final String COURTYARD_DISABLED_REASON_TAG = "workspace_courtyard_disabled_reason";
     public static final String COURTYARD_AVAILABLE_HORIZONTAL_SPAN_TAG = "workspace_courtyard_available_horizontal_span";
@@ -64,7 +64,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     public static final String COURTYARD_PATH_LANE_INSET_TAG = "workspace_courtyard_path_lane_inset";
     private static final int DEFAULT_COURTYARD_CLEARANCE = 5;
     private static final String SLOT_POOL_PREFIX = "keep_slots/";
-    private static final String COURTYARD_CONTENT_SOURCE_PREFIX = "keep_courtyard_content_";
+    private static final String COURTYARD_CONTENT_SOURCE = "keep_courtyard_content";
     private static final String COURTYARD_PATH_T_SOURCE = "keep_courtyard_path_t";
     private static final String COURTYARD_PATH_CORNER_T_SOURCE = "keep_courtyard_path_corner_t";
     private static final List<String> CONCRETE_CORNER_SLOTS = List.of(
@@ -74,13 +74,13 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             "keep.corner.south_west"
     );
     private static final List<CourtyardSocketDefinition> COURTYARD_SOCKET_DEFINITIONS = List.of(
-            new CourtyardSocketDefinition("north_west", Direction.SOUTH, "large"),
-            new CourtyardSocketDefinition("north", Direction.SOUTH, "large"),
-            new CourtyardSocketDefinition("north_east", Direction.SOUTH, "large"),
-            new CourtyardSocketDefinition("west", Direction.EAST, "small"),
-            new CourtyardSocketDefinition("east", Direction.WEST, "small"),
-            new CourtyardSocketDefinition("south_west", Direction.EAST, "medium"),
-            new CourtyardSocketDefinition("south_east", Direction.WEST, "medium")
+            new CourtyardSocketDefinition("north_west", Direction.SOUTH),
+            new CourtyardSocketDefinition("north", Direction.SOUTH),
+            new CourtyardSocketDefinition("north_east", Direction.SOUTH),
+            new CourtyardSocketDefinition("west", Direction.EAST),
+            new CourtyardSocketDefinition("east", Direction.WEST),
+            new CourtyardSocketDefinition("south_west", Direction.EAST),
+            new CourtyardSocketDefinition("south_east", Direction.WEST)
     );
     private static final List<CourtyardPathDefinition> COURTYARD_PATH_DEFINITIONS = List.of(
             new CourtyardPathDefinition("south_west", "corner_t", COURTYARD_PATH_CORNER_T_SOURCE,
@@ -132,6 +132,9 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     private final MKTowerStackPlanner towerStackPlanner = new MKTowerStackPlanner();
 
     private record ResolvedOpeningProfile(String profileId, int openingWidth, int openingHeight) {
+    }
+
+    private record IngressConnection(ResolvedOpeningProfile opening, int lateralOffset, int verticalOffset) {
     }
 
     private record PerimeterSegment(String chainId,
@@ -204,8 +207,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                                     PerimeterPlan perimeterPlan, CourtyardPlan courtyardPlan) {
     }
 
-    private record CourtyardSocketDefinition(String suffix, Direction contentConnectorFacing,
-                                             String preferredClassName) {
+    private record CourtyardSocketDefinition(String suffix, Direction contentConnectorFacing) {
         private String slotId() {
             return COURTYARD_SLOT_PREFIX + suffix;
         }
@@ -229,7 +231,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         }
     }
 
-    private record CourtyardSocket(String slotId, String className, int maxSquareSize,
+    private record CourtyardSocket(String slotId, int maxSquareSize,
                                    Direction contentConnectorFacing, boolean enabled) {
     }
 
@@ -259,14 +261,14 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     }
 
     @Override
-    public String profileType() {
-        return MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE;
+    public net.minecraft.resources.ResourceLocation plannerId() {
+        return MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID;
     }
 
     @Override
     public MKWorkspaceTopologySchema schema() {
         return new MKWorkspaceTopologySchema(
-                profileType(),
+                plannerId(),
                 List.of(
                         new MKWorkspaceRegionSchema("keep.center_tower", "tower_stack", true),
                         new MKWorkspaceRegionSchema("keep.corner_towers", "tower_stack", true),
@@ -414,7 +416,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped("keep.center", true, settings);
         ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
         return towerStackPlanner.createRoomPieces(workspace, stackDefinition, centerFamilies).stream()
-                .map(piece -> withRoomLayoutConnectors(piece, slots, opening))
+                .map(piece -> withRoomLayoutConnectors(workspace, piece, slots, opening))
                 .toList();
     }
 
@@ -456,7 +458,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped(stackId, false, settings);
         ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
         towerStackPlanner.createRoomPieces(workspace, stackDefinition, stackFamilies).stream()
-                .map(piece -> withRoomLayoutConnectors(piece, slots, opening))
+                .map(piece -> withRoomLayoutConnectors(workspace, piece, slots, opening))
                 .map(piece -> uniqueCorner ? piece : withSharedCornerTemplateReuse(piece, stackId))
                 .forEach(pieces::add);
     }
@@ -491,15 +493,18 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         int size = Math.max(settings.width(), settings.length());
         return new MKWorkspaceTowerStackSettings(
                 settings.stackId(),
+                settings.minMainFloors(),
                 settings.mainFloors(),
+                settings.minBasementFloors(),
                 settings.basementFloors(),
-                settings.height(),
+                settings.heights(),
                 size,
                 size,
                 settings.shaftSize(),
                 settings.verticalAccessPlacement(),
                 settings.stairConfig(),
                 settings.topCapApproachEnabled(),
+                settings.basementEntryEnabled(),
                 settings.basementCapApproachEnabled(),
                 settings.foundationPolicy(),
                 settings.paletteOverride()
@@ -528,10 +533,11 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         };
     }
 
-    private MKPlannedPiece withRoomLayoutConnectors(MKPlannedPiece piece, SlotAvailability slots,
+    private MKPlannedPiece withRoomLayoutConnectors(MKStructureWorkspace workspace, MKPlannedPiece piece,
+                                                    SlotAvailability slots,
                                                     ResolvedOpeningProfile opening) {
         String topologySlotId = piece.tags().getOrDefault("workspace_topology_slot_id", "");
-        List<MKPlannedConnector> layoutConnectors = roomLayoutConnectors(topologySlotId, slots, opening);
+        List<MKPlannedConnector> layoutConnectors = roomLayoutConnectors(workspace, topologySlotId, slots, opening);
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>(piece.connectors());
         connectors.addAll(layoutConnectors);
         return new MKPlannedPiece(
@@ -624,7 +630,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                         verticalPool(family.verticalAccessGroupId(), Direction.UP)));
             }
         }
-        connectors.addAll(roomLayoutConnectors(family.topologySlotId(), slots, opening));
+        connectors.addAll(roomLayoutConnectors(workspace, family.topologySlotId(), slots, opening));
         return new MKPlannedPiece(
                 resolvedFamily.slotMetadata().topologySlotId(),
                 family.baseName(),
@@ -710,6 +716,12 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                         MKWorkspaceFoundationPolicy.none(),
                         null
                 ));
+    }
+
+    private Optional<MKWorkspaceLinearRunFamilyDefinition> entryApproachFamily(MKStructureWorkspace workspace) {
+        return workspace.linearRunFamilies().stream()
+                .filter(linearRun -> linearRun.topologySlotId().equals(ENTRY_APPROACH_SLOT))
+                .findFirst();
     }
 
     private MKPlannedPiece createCourtyardPathSourcePiece(MKStructureWorkspace workspace,
@@ -870,23 +882,32 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     private int verticalPerimeterSpan(MKStructureWorkspace workspace) {
         int baseSpan = cornerLength(workspace) + DEFAULT_COURTYARD_CLEARANCE + centerLength(workspace) +
                 DEFAULT_COURTYARD_CLEARANCE + cornerLength(workspace);
-        return Math.max(baseSpan, courtyardRequiredVerticalPerimeterSpan(workspace));
+        return Math.max(baseSpan, entryDrivenVerticalPerimeterSpan(workspace));
     }
 
-    private int courtyardRequiredVerticalPerimeterSpan(MKStructureWorkspace workspace) {
-        MKWalledKeepCourtyardSettings settings = workspace.topologyProfile().courtyardSettings();
-        if (!settings.courtyardContentEnabled() || !settings.courtyardSocketGenerationEnabled()) {
-            return 0;
-        }
+    private int entryDrivenVerticalPerimeterSpan(MKStructureWorkspace workspace) {
         MKWorkspaceLinearRunFamilyDefinition pathFamily = courtyardPathFamily(workspace);
+        MKWorkspaceLinearRunFamilyDefinition entryFamily = entryApproachFamily(workspace).orElse(pathFamily);
         ResolvedOpeningProfile pathOpening = resolveOpeningProfile(workspace, pathFamily.openingProfileId())
                 .orElseGet(() -> defaultOpeningProfile(workspace));
+        ResolvedOpeningProfile entryOpening = resolveOpeningProfile(workspace, entryFamily.openingProfileId())
+                .orElseGet(() -> defaultOpeningProfile(workspace));
         int laneInset = courtyardPathLaneCenterInset(workspace, pathOpening);
-        return centerLength(workspace) + (2 * courtyardPathSize(workspace, pathFamily, laneInset));
+        int entryLength = effectiveEntryApproachLength(workspace, entryFamily.length(), entryOpening);
+        int northBand = DEFAULT_COURTYARD_CLEARANCE + cornerLength(workspace);
+        MKWalledKeepCourtyardSettings settings = workspace.topologyProfile().courtyardSettings();
+        if (settings.courtyardContentEnabled() && settings.courtyardSocketGenerationEnabled()) {
+            northBand = Math.max(northBand, courtyardBandSize(settings, laneInset));
+        }
+        return smallestOddAtLeast(entryLength + (centerLength(workspace) / 2) + northBand);
     }
 
     private int segmentCountForSpan(MKWorkspaceLinearRunFamilyDefinition family, int span) {
         return Math.max(1, (int) Math.ceil(span / (double) Math.max(1, family.length())));
+    }
+
+    private int courtyardBandSize(MKWalledKeepCourtyardSettings settings, int laneInset) {
+        return laneInset + settings.courtyardSocketClearance() + settings.courtyardContentTemplateSize();
     }
 
     private CourtyardPlan createCourtyardPlan(MKStructureWorkspace workspace, PerimeterPlan perimeterPlan) {
@@ -894,50 +915,24 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         if (!settings.courtyardContentEnabled() || !settings.courtyardSocketGenerationEnabled()) {
             return CourtyardPlan.empty();
         }
-        int wallLength = perimeterPlan.allSegments().stream()
-                .findFirst()
-                .map(segment -> segment.family().length())
-                .orElse(MKWorkspaceLinearRunFamilyDefinition.DEFAULT_WALLED_KEEP_WALL_SEGMENT_LENGTH);
-        int frontSpan = Math.max(0, perimeterPlan.southWest().size() + perimeterPlan.southEast().size() + 1) *
-                wallLength;
-        int backSpan = Math.max(0, perimeterPlan.northWest().size() + perimeterPlan.northEast().size()) * wallLength;
-        int sideSpan = Math.max(perimeterPlan.west().size(), perimeterPlan.east().size()) * wallLength;
-        int realizedHorizontalSpan = Math.max(horizontalPerimeterSpan(workspace), Math.max(frontSpan, backSpan));
-        int realizedVerticalSpan = Math.max(verticalPerimeterSpan(workspace), sideSpan);
-        int freeHorizontal = Math.max(0, (realizedHorizontalSpan - centerWidth(workspace)) / 2);
-        int freeVertical = Math.max(0, (realizedVerticalSpan - centerLength(workspace)) / 2);
-        int socketMax = largestOddAtMost(Math.min(freeHorizontal, freeVertical) -
-                settings.courtyardSocketClearance());
-        int requestedMaxSocketSize = settings.courtyardLargeTemplateSize();
-        if (socketMax < requestedMaxSocketSize) {
-            String reason = "walled keep courtyard disabled: requested max socket size " + requestedMaxSocketSize +
+        MKWalledKeepSizingReport sizingReport = new MKWalledKeepSizingCalculator().calculate(workspace);
+        int freeHorizontal = sizingReport.courtyardFreeHorizontalSpan();
+        int freeVertical = sizingReport.courtyardFreeVerticalSpan();
+        int socketMax = sizingReport.courtyardSocketMaxSize();
+        int requestedSocketSize = sizingReport.courtyardRequestedSocketSize();
+        if (socketMax < requestedSocketSize) {
+            String reason = "walled keep courtyard disabled: requested socket size " + requestedSocketSize +
                     " but available interior socket span is " + socketMax + " (horizontal free span " +
                     freeHorizontal + ", vertical free span " + freeVertical + ")";
             MKNpc.LOGGER.warn(reason);
-            return CourtyardPlan.disabled(reason, freeHorizontal, freeVertical, requestedMaxSocketSize);
+            return CourtyardPlan.disabled(reason, freeHorizontal, freeVertical, requestedSocketSize);
         }
         ArrayList<CourtyardSocket> sockets = new ArrayList<>();
         for (CourtyardSocketDefinition definition : COURTYARD_SOCKET_DEFINITIONS) {
-            int requestedSize = courtyardClassSizes(settings).getOrDefault(definition.preferredClassName(), 0);
-            String className = requestedSize > 0 && requestedSize <= socketMax ? definition.preferredClassName() : "";
-            sockets.add(new CourtyardSocket(definition.slotId(), className, socketMax,
-                    definition.contentConnectorFacing(), !className.isBlank()));
+            sockets.add(new CourtyardSocket(definition.slotId(), socketMax, definition.contentConnectorFacing(), true));
         }
         return new CourtyardPlan(List.copyOf(sockets), List.copyOf(COURTYARD_PATH_DEFINITIONS), Optional.empty(),
-                freeHorizontal, freeVertical, requestedMaxSocketSize);
-    }
-
-    private Optional<String> socketClassForMaxSize(MKWalledKeepCourtyardSettings settings, int maxSquareSize) {
-        if (maxSquareSize >= settings.courtyardLargeTemplateSize()) {
-            return Optional.of("large");
-        }
-        if (maxSquareSize >= settings.courtyardMediumTemplateSize()) {
-            return Optional.of("medium");
-        }
-        if (maxSquareSize >= settings.courtyardSmallTemplateSize()) {
-            return Optional.of("small");
-        }
-        return Optional.empty();
+                freeHorizontal, freeVertical, requestedSocketSize);
     }
 
     private int largestOddAtMost(int value) {
@@ -1010,17 +1005,13 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             return List.of();
         }
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
-        Map<String, Integer> classSizes = courtyardClassSizes(settings);
         ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
-        for (Map.Entry<String, Integer> entry : classSizes.entrySet()) {
-            pieces.add(createCourtyardContentSourcePiece(workspace, settings, entry.getKey(), entry.getValue(),
-                    opening));
-        }
+        int contentSize = settings.courtyardContentTemplateSize();
+        pieces.add(createCourtyardContentSourcePiece(workspace, settings, contentSize, opening));
         for (CourtyardSocket socket : courtyardPlan.sockets()) {
             if (!socket.enabled()) {
                 continue;
             }
-            int contentSize = classSizes.getOrDefault(socket.className(), 0);
             if (contentSize <= 0 || contentSize > socket.maxSquareSize()) {
                 continue;
             }
@@ -1029,28 +1020,18 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         return List.copyOf(pieces);
     }
 
-    private Map<String, Integer> courtyardClassSizes(MKWalledKeepCourtyardSettings settings) {
-        LinkedHashMap<String, Integer> sizes = new LinkedHashMap<>();
-        sizes.put("small", settings.courtyardSmallTemplateSize());
-        sizes.put("medium", settings.courtyardMediumTemplateSize());
-        sizes.put("large", settings.courtyardLargeTemplateSize());
-        return sizes;
-    }
-
     private MKPlannedPiece createCourtyardContentSourcePiece(MKStructureWorkspace workspace,
                                                              MKWalledKeepCourtyardSettings settings,
-                                                             String className, int size,
-                                                             ResolvedOpeningProfile opening) {
-        String pieceName = COURTYARD_CONTENT_SOURCE_PREFIX + className;
+                                                             int size, ResolvedOpeningProfile opening) {
         return new MKPlannedPiece(
                 "keep.courtyard.content",
-                pieceName,
+                COURTYARD_CONTENT_SOURCE,
                 size,
                 size,
                 settings.courtyardContentTemplateHeight(),
                 List.of(MKPlannedConnector.openingOnly(MKConnectorRole.BRANCH, Direction.SOUTH,
                         opening.openingWidth(), opening.openingHeight(), 0, 0)),
-                buildCourtyardContentTags(workspace, settings, className, size, Direction.SOUTH, false, null)
+                buildCourtyardContentTags(workspace, settings, size, Direction.SOUTH, false, null)
         );
     }
 
@@ -1060,7 +1041,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                                                              ResolvedOpeningProfile opening) {
         Direction facing = socket.contentConnectorFacing();
         String socketSuffix = socket.slotId().substring(COURTYARD_SLOT_PREFIX.length());
-        String pieceName = COURTYARD_CONTENT_SOURCE_PREFIX + socket.className() + "_" + socketSuffix;
+        String pieceName = COURTYARD_CONTENT_SOURCE + "_" + socketSuffix;
         MKPlannedPiece piece = new MKPlannedPiece(
                 "keep.courtyard.content",
                 pieceName,
@@ -1069,25 +1050,23 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 settings.courtyardContentTemplateHeight(),
                 List.of(new MKPlannedConnector(MKConnectorRole.BRANCH, facing,
                         opening.openingWidth(), opening.openingHeight(), EMPTY_POOL, slotPool(socket.slotId()))),
-                buildCourtyardContentTags(workspace, settings, socket.className(), size, facing, true, socket)
+                buildCourtyardContentTags(workspace, settings, size, facing, true, socket)
         );
-        return withTemplateReuse(piece, COURTYARD_CONTENT_SOURCE_PREFIX + socket.className(),
-                rotationFromSouthTo(facing), false);
+        return withTemplateReuse(piece, COURTYARD_CONTENT_SOURCE, rotationFromSouthTo(facing), false);
     }
 
     private Map<String, String> buildCourtyardContentTags(MKStructureWorkspace workspace,
                                                           MKWalledKeepCourtyardSettings settings,
-                                                          String className, int size, Direction connectorFacing,
+                                                          int size, Direction connectorFacing,
                                                           boolean socketRuntime, CourtyardSocket socket) {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>();
         tags.put("topology_role", "keep.courtyard.content");
         tags.put("workspace_topology_slot_id", socketRuntime && socket != null ? socket.slotId() :
-                "keep.courtyard.content." + className);
+                "keep.courtyard.content");
         tags.put("workspace_topology_role_id", "keep.courtyard.content");
         tags.put("tower_piece_kind", "courtyard_content");
         tags.put("workspace_piece_kind", "instance");
         tags.put(CONTENT_KIND_TAG, COURTYARD_CONTENT_KIND);
-        tags.put(CONTENT_SOCKET_CLASS_TAG, className);
         tags.put(CONTENT_SIZE_TAG, Integer.toString(size));
         tags.put(CONTENT_WIDTH_TAG, Integer.toString(size));
         tags.put(CONTENT_LENGTH_TAG, Integer.toString(size));
@@ -1098,7 +1077,6 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 Integer.toString(settings.courtyardWalkwayContinuationLength()));
         if (socket != null) {
             tags.put(COURTYARD_SOCKET_ID_TAG, socket.slotId());
-            tags.put(COURTYARD_SOCKET_CLASS_TAG, socket.className());
             tags.put(COURTYARD_SOCKET_MAX_SIZE_TAG, Integer.toString(socket.maxSquareSize()));
         }
         new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
@@ -1214,15 +1192,18 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         return List.copyOf(connectors);
     }
 
-    private List<MKPlannedConnector> roomLayoutConnectors(String topologySlotId, SlotAvailability slots,
+    private List<MKPlannedConnector> roomLayoutConnectors(MKStructureWorkspace workspace, String topologySlotId,
+                                                          SlotAvailability slots,
                                                           ResolvedOpeningProfile opening) {
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
         Set<String> availableSlots = slots.availableSlots();
         switch (topologySlotId) {
             case "keep.center.entry" -> {
                 if (availableSlots.contains(ENTRY_APPROACH_SLOT)) {
+                    IngressConnection ingress = centerEntryIngressConnection(workspace, opening);
                     connectors.add(new MKPlannedConnector(MKConnectorRole.MAIN_BACK, Direction.SOUTH,
-                            opening.openingWidth(), opening.openingHeight(), slotPool(ENTRY_APPROACH_SLOT)));
+                            ingress.opening().openingWidth(), ingress.opening().openingHeight(),
+                            ingress.lateralOffset(), ingress.verticalOffset(), slotPool(ENTRY_APPROACH_SLOT)));
                 }
             }
             case "keep.gate.main" -> {
@@ -1369,8 +1350,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                                                              ResolvedOpeningProfile opening, int negativeOffset,
                                                              int positiveOffset) {
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
+        IngressConnection ingress = centerEntryIngressConnection(workspace, opening);
         connectors.add(new MKPlannedConnector(MKConnectorRole.MAIN_FORWARD, Direction.NORTH,
-                opening.openingWidth(), opening.openingHeight(), 0, negativeOffset,
+                ingress.opening().openingWidth(), ingress.opening().openingHeight(),
+                ingress.lateralOffset(), ingress.verticalOffset() + negativeOffset,
                 EMPTY_POOL, slotPool(slotId)));
         connectors.add(new MKPlannedConnector(MKConnectorRole.MAIN_BACK, Direction.SOUTH,
                 opening.openingWidth(), opening.openingHeight(), 0, positiveOffset,
@@ -1594,6 +1577,34 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         boolean start = family.topologySlotId().equals("keep.center.entry");
         return new MKWorkspaceRuntimePieceInfo(start, slotMetadata.jigsawPieceRole(), 0, 0, true, true,
                 slotMetadata.terminal(), false, slotMetadata.topologyGroupId(), false, false);
+    }
+
+    private IngressConnection centerEntryIngressConnection(MKStructureWorkspace workspace,
+                                                           ResolvedOpeningProfile fallbackOpening) {
+        return centerEntryIngress(workspace)
+                .map(exit -> new IngressConnection(
+                        resolveOpeningProfile(workspace, exit.openingProfileId()).orElse(fallbackOpening),
+                        connectorLateralOffset(exit.direction(), exit.sideOffset()),
+                        exit.verticalOffset()
+                ))
+                .orElseGet(() -> new IngressConnection(fallbackOpening, 0, 0));
+    }
+
+    private Optional<MKWorkspaceFamilyHorizontalExitDefinition> centerEntryIngress(MKStructureWorkspace workspace) {
+        return workspace.familyDefinitions().stream()
+                .filter(family -> "keep.center.entry".equals(family.topologySlotId()))
+                .flatMap(family -> family.horizontalOnlyExits().stream())
+                .filter(exit -> exit.direction() == Direction.SOUTH)
+                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.INGRESS)
+                .findFirst();
+    }
+
+    private int connectorLateralOffset(Direction direction, int sideOffset) {
+        return switch (direction) {
+            case NORTH, EAST -> sideOffset;
+            case SOUTH, WEST -> -sideOffset;
+            default -> 0;
+        };
     }
 
     private Optional<ResolvedOpeningProfile> resolveOpeningProfile(MKStructureWorkspace workspace, String profileId) {

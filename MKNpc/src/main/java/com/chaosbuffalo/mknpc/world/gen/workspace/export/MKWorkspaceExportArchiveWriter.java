@@ -108,6 +108,15 @@ public class MKWorkspaceExportArchiveWriter {
                     templateGroup.pieceMetadata().topologyGroup(),
                     templateGroup.pieceMetadata().mainPathEnding(),
                     templateGroup.pieceMetadata().branchCap(),
+                    templateGroup.pieceMetadata().towerStackId(),
+                    templateGroup.pieceMetadata().towerStackSlot(),
+                    templateGroup.pieceMetadata().minMainFloors(),
+                    templateGroup.pieceMetadata().maxMainFloors(),
+                    templateGroup.pieceMetadata().minBasementFloors(),
+                    templateGroup.pieceMetadata().maxBasementFloors(),
+                    templateGroup.pieceMetadata().topCapApproachEnabled(),
+                    templateGroup.pieceMetadata().basementEntryEnabled(),
+                    templateGroup.pieceMetadata().basementCapApproachEnabled(),
                     templateGroup.pieceMetadata().foundationPolicy()
             );
             writeJson(output, metadataEntryName(manifest, piece), MKJigsawPieceMetadata.CODEC

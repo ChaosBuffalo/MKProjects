@@ -18,6 +18,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStackBudget;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
@@ -52,6 +54,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerStackDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerStackPlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingCalculator;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingReport;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceScaffoldBuilder;
@@ -195,28 +199,24 @@ class TowerWorkspaceV2Test {
         assertEquals(9, entry.interiorHeight());
         assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("top_cap_approach")));
         assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("basement_cap_approach")));
+        assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("basement_entry")));
+        assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("basement_main")));
+        assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("basement_cap")));
+        assertFalse(entry.connectors().stream().anyMatch(connector -> connector.role() == MKConnectorRole.CONNECT_DOWN));
+        assertEquals("up", entry.tags().get(MKWorkspaceVerticalAccessTags.DIRECTION_TAG));
     }
 
     @Test
     void mixedRiseStrategyResolvesHeightRejectedByStairOnly() {
-        ResourceLocation stairBlock = ResourceLocation.parse("minecraft:stone_brick_stairs");
-        ResourceLocation slabBlock = ResourceLocation.parse("minecraft:stone_brick_slab");
-        ResourceLocation ladderBlock = ResourceLocation.parse("minecraft:ladder");
         MKWorkspaceStairAuthoringConfig stairOnly = new MKWorkspaceStairAuthoringConfig(
                 MKWorkspaceStairMode.RUN_PROFILE,
                 MKWorkspaceStairRiseType.STAIR,
-                1,
-                stairBlock,
-                slabBlock,
-                ladderBlock
+                1
         );
         MKWorkspaceStairAuthoringConfig mixed = new MKWorkspaceStairAuthoringConfig(
                 MKWorkspaceStairMode.RUN_PROFILE,
                 MKWorkspaceStairRiseType.MIXED,
-                1,
-                stairBlock,
-                slabBlock,
-                ladderBlock
+                1
         );
 
         assertTrue(MKResolvedVerticalAccessProfile.resolve(stairOnly, 5, 5, 6).isEmpty());
@@ -225,24 +225,15 @@ class TowerWorkspaceV2Test {
 
     @Test
     void resolvedRunProfileRequiresTwoBlockSameColumnPassClearance() {
-        ResourceLocation stairBlock = ResourceLocation.parse("minecraft:stone_brick_stairs");
-        ResourceLocation slabBlock = ResourceLocation.parse("minecraft:stone_brick_slab");
-        ResourceLocation ladderBlock = ResourceLocation.parse("minecraft:ladder");
         MKWorkspaceStairAuthoringConfig slabOnly = new MKWorkspaceStairAuthoringConfig(
                 MKWorkspaceStairMode.RUN_PROFILE,
                 MKWorkspaceStairRiseType.SLAB,
-                2,
-                stairBlock,
-                slabBlock,
-                ladderBlock
+                2
         );
         MKWorkspaceStairAuthoringConfig mixed = new MKWorkspaceStairAuthoringConfig(
                 MKWorkspaceStairMode.RUN_PROFILE,
                 MKWorkspaceStairRiseType.MIXED,
-                2,
-                stairBlock,
-                slabBlock,
-                ladderBlock
+                2
         );
 
         assertTrue(MKResolvedVerticalAccessProfile.resolve(slabOnly, 3, 3, 5).isEmpty());
@@ -254,16 +245,10 @@ class TowerWorkspaceV2Test {
 
     @Test
     void allowedBandHeightsIncludeEveryResolvableHeightBelowFortyEight() {
-        ResourceLocation stairBlock = ResourceLocation.parse("minecraft:stone_brick_stairs");
-        ResourceLocation slabBlock = ResourceLocation.parse("minecraft:stone_brick_slab");
-        ResourceLocation ladderBlock = ResourceLocation.parse("minecraft:ladder");
         MKWorkspaceStairAuthoringConfig ladder = new MKWorkspaceStairAuthoringConfig(
                 MKWorkspaceStairMode.LADDER,
                 MKWorkspaceStairRiseType.MIXED,
-                1,
-                stairBlock,
-                slabBlock,
-                ladderBlock
+                1
         );
 
         List<Integer> allowedHeights = MKWorkspaceDimensions.getAllowedBandHeights(ladder, 3, 5, 3, 6);
@@ -276,16 +261,10 @@ class TowerWorkspaceV2Test {
 
     @Test
     void snappingBandHeightFallsBackWhenNoBandHeightsAreResolvable() {
-        ResourceLocation stairBlock = ResourceLocation.parse("minecraft:stone_brick_stairs");
-        ResourceLocation slabBlock = ResourceLocation.parse("minecraft:stone_brick_slab");
-        ResourceLocation ladderBlock = ResourceLocation.parse("minecraft:ladder");
         MKWorkspaceStairAuthoringConfig overwideStairs = new MKWorkspaceStairAuthoringConfig(
                 MKWorkspaceStairMode.RUN_PROFILE,
                 MKWorkspaceStairRiseType.MIXED,
-                4,
-                stairBlock,
-                slabBlock,
-                ladderBlock
+                4
         );
 
         assertTrue(MKWorkspaceDimensions.getAllowedBandHeights(overwideStairs, 3, 5, 3,
@@ -296,16 +275,10 @@ class TowerWorkspaceV2Test {
 
     @Test
     void slabRiseStrategyAllowsThreeByThreeShaftWithReusableBandHeights() {
-        ResourceLocation stairBlock = ResourceLocation.parse("minecraft:stone_brick_stairs");
-        ResourceLocation slabBlock = ResourceLocation.parse("minecraft:stone_brick_slab");
-        ResourceLocation ladderBlock = ResourceLocation.parse("minecraft:ladder");
         MKWorkspaceStairAuthoringConfig slabOnly = new MKWorkspaceStairAuthoringConfig(
                 MKWorkspaceStairMode.RUN_PROFILE,
                 MKWorkspaceStairRiseType.SLAB,
-                1,
-                stairBlock,
-                slabBlock,
-                ladderBlock
+                1
         );
 
         assertFalse(MKWorkspaceDimensions.getAllowedBandHeights(slabOnly, 3, 5, 3,
@@ -360,10 +333,7 @@ class TowerWorkspaceV2Test {
         MKWorkspaceStairAuthoringConfig centerStairs = new MKWorkspaceStairAuthoringConfig(
                 MKWorkspaceStairMode.LADDER,
                 MKWorkspaceStairRiseType.MIXED,
-                2,
-                ResourceLocation.parse("minecraft:oak_stairs"),
-                ResourceLocation.parse("minecraft:oak_slab"),
-                ResourceLocation.parse("minecraft:vine")
+                2
         );
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(true, false, true, false)
                 .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 2, 1, 9,
@@ -377,7 +347,7 @@ class TowerWorkspaceV2Test {
 
         MKStructureWorkspace decoded = MKStructureWorkspace.fromTag(workspace.toTag());
 
-        assertEquals(MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE, decoded.topologyProfile().profileType());
+        assertEquals(MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID, decoded.topologyProfile().plannerId());
         assertTrue(decoded.topologyProfile().uniqueNorthWestCornerTower());
         assertFalse(decoded.topologyProfile().uniqueNorthEastCornerTower());
         assertTrue(decoded.topologyProfile().uniqueSouthEastCornerTower());
@@ -393,7 +363,6 @@ class TowerWorkspaceV2Test {
         assertEquals(MKVerticalAccessPlacement.EAST, centerSettings.verticalAccessPlacement());
         assertEquals(MKWorkspaceStairMode.LADDER, centerSettings.stairConfig().mode());
         assertEquals(2, centerSettings.stairConfig().stairWidth());
-        assertEquals(ResourceLocation.parse("minecraft:vine"), centerSettings.stairConfig().ladderBlock());
     }
 
     @Test
@@ -401,10 +370,7 @@ class TowerWorkspaceV2Test {
         MKWorkspaceStairAuthoringConfig centerStairs = new MKWorkspaceStairAuthoringConfig(
                 MKWorkspaceStairMode.LADDER,
                 MKWorkspaceStairRiseType.MIXED,
-                2,
-                ResourceLocation.parse("minecraft:oak_stairs"),
-                ResourceLocation.parse("minecraft:oak_slab"),
-                ResourceLocation.parse("minecraft:vine")
+                2
         );
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false, true, false, true)
                 .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 3, 2, 11,
@@ -422,8 +388,8 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace imported = new MKStructureWorkspaceImportService().workspaceFromManifest(
                 UUID.randomUUID(), new BlockPos(7, 80, 7), 123L, manifest);
 
-        assertEquals(MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE, manifest.settings().topologyProfile().profileType());
-        assertEquals(MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE, imported.topologyProfile().profileType());
+        assertEquals(MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID, manifest.settings().topologyProfile().plannerId());
+        assertEquals(MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID, imported.topologyProfile().plannerId());
         assertFalse(imported.topologyProfile().uniqueNorthWestCornerTower());
         assertTrue(imported.topologyProfile().uniqueNorthEastCornerTower());
         assertFalse(imported.topologyProfile().uniqueSouthEastCornerTower());
@@ -699,7 +665,7 @@ class TowerWorkspaceV2Test {
                         "tower_stacks/keep/center/connect_up".equals(connector.targetPoolName())));
         assertTrue(centerEntry.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_DOWN &&
-                        "tower_stacks/keep/center/connect_down_entry".equals(connector.targetPoolName())));
+                        "tower_stacks/keep/center/connect_down".equals(connector.targetPoolName())));
 
         assertEquals("linear_run", northWall.tags().get("tower_piece_kind"));
         assertEquals("keep.perimeter.north_west.0", northWall.tags().get("workspace_topology_slot_id"));
@@ -737,6 +703,12 @@ class TowerWorkspaceV2Test {
         assertEquals(17, centerEntry.interiorLength());
         assertEquals(7, centerEntry.interiorHeight());
         assertEquals("keep.center.entry", centerEntry.tags().get("workspace_topology_slot_id"));
+        assertTrue(centerEntry.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.CONNECT_DOWN &&
+                        "tower_stacks/keep/center/connect_down".equals(connector.targetPoolName())));
+        assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_basement_entry")));
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_basement_floor")));
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_basement_cap")));
         MKPlannedPiece sharedCorner = pieces.stream()
                 .filter(piece -> piece.pieceName().equals("keep_corner_north_west_entry"))
                 .findFirst()
@@ -746,15 +718,20 @@ class TowerWorkspaceV2Test {
         assertEquals("full_face", sharedCorner.tags().get("workspace_connector_stitch"));
         assertTrue(sharedCorner.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_UP));
-        assertTrue(sharedCorner.connectors().stream().anyMatch(connector ->
+        assertFalse(sharedCorner.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_DOWN));
+        assertEquals("up", sharedCorner.tags().get(MKWorkspaceVerticalAccessTags.DIRECTION_TAG));
         MKPlannedPiece cornerTopCap = pieces.stream()
                 .filter(piece -> piece.pieceName().equals("keep_corner_north_west_top_cap"))
                 .findFirst()
                 .orElseThrow();
         assertEquals("true", cornerTopCap.tags().get(MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_top_cap")));
-        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_basement_cap")));
+        assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_main_floor")));
+        assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_basement_entry")));
+        assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_basement_floor")));
+        assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_basement_cap")));
+        assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_top_cap_approach")));
         MKPlannedPiece northWall = pieces.stream()
                 .filter(piece -> piece.pieceName().equals("keep_wall_segment_north_west_0"))
                 .findFirst()
@@ -797,8 +774,9 @@ class TowerWorkspaceV2Test {
         long eastCount = pieces.stream()
                 .filter(piece -> "east".equals(piece.tags().get("workspace_perimeter_chain_id")))
                 .count();
-        assertEquals(5, westCount);
-        assertEquals(5, eastCount);
+        MKWalledKeepSizingReport sizingReport = new MKWalledKeepSizingCalculator().calculate(workspace);
+        assertEquals(sizingReport.verticalWallSegments(), westCount);
+        assertEquals(sizingReport.verticalWallSegments(), eastCount);
         MKPlannedPiece northWestTerminal = pieces.stream()
                 .filter(piece -> "north_west".equals(piece.tags().get("workspace_perimeter_chain_id")))
                 .filter(piece -> piece.tags().get("workspace_perimeter_segment_index")
@@ -838,16 +816,9 @@ class TowerWorkspaceV2Test {
 
         assertEquals(List.of(), workspace.validate());
         List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
-        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_courtyard_content_small") &&
-                "small".equals(piece.tags().get("workspace_content_socket_class")) &&
-                "5".equals(piece.tags().get("workspace_content_size")) &&
+        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_courtyard_content") &&
+                "9".equals(piece.tags().get("workspace_content_size")) &&
                 "7".equals(piece.tags().get("workspace_content_height"))));
-        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_courtyard_content_medium") &&
-                "medium".equals(piece.tags().get("workspace_content_socket_class")) &&
-                "7".equals(piece.tags().get("workspace_content_size"))));
-        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_courtyard_content_large") &&
-                "large".equals(piece.tags().get("workspace_content_socket_class")) &&
-                "9".equals(piece.tags().get("workspace_content_size"))));
 
         List<MKPlannedPiece> socketPieces = pieces.stream()
                 .filter(piece -> piece.tags().containsKey("workspace_courtyard_socket_id"))
@@ -857,11 +828,6 @@ class TowerWorkspaceV2Test {
                 "keep.courtyard.south".equals(piece.tags().get("workspace_courtyard_socket_id"))));
         for (MKPlannedPiece socketPiece : socketPieces) {
             String socketId = socketPiece.tags().get("workspace_courtyard_socket_id");
-            String expectedClass = switch (socketId) {
-                case "keep.courtyard.west", "keep.courtyard.east" -> "small";
-                case "keep.courtyard.south_west", "keep.courtyard.south_east" -> "medium";
-                default -> "large";
-            };
             Direction expectedFacing = switch (socketId) {
                 case "keep.courtyard.north_west", "keep.courtyard.north", "keep.courtyard.north_east" ->
                         Direction.SOUTH;
@@ -869,19 +835,14 @@ class TowerWorkspaceV2Test {
                 case "keep.courtyard.east", "keep.courtyard.south_east" -> Direction.WEST;
                 default -> throw new IllegalStateException("unexpected courtyard socket " + socketId);
             };
-            assertEquals(expectedClass, socketPiece.tags().get("workspace_courtyard_socket_class"));
-            assertEquals(expectedClass, socketPiece.tags().get("workspace_content_socket_class"));
             assertEquals(expectedFacing.getSerializedName(),
                     socketPiece.tags().get(MKWalledKeepWorkspacePlanner.CONTENT_CONNECTOR_EDGE_TAG));
-            assertEquals(switch (expectedClass) {
-                case "small" -> "5";
-                case "medium" -> "7";
-                default -> "9";
-            }, socketPiece.tags().get("workspace_content_size"));
+            assertEquals(Integer.toString(MKWalledKeepCourtyardSettings.DEFAULT_CONTENT_TEMPLATE_SIZE),
+                    socketPiece.tags().get("workspace_content_size"));
             int maxSize = Integer.parseInt(socketPiece.tags().get("workspace_courtyard_socket_max_square_size"));
             assertTrue(maxSize >= 9);
             assertEquals(1, maxSize % 2);
-            assertEquals("keep_courtyard_content_" + expectedClass,
+            assertEquals("keep_courtyard_content",
                     socketPiece.tags().get(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG));
             assertEquals("false", socketPiece.tags().get(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG));
             assertTrue(socketPiece.connectors().stream().anyMatch(connector ->
@@ -900,8 +861,6 @@ class TowerWorkspaceV2Test {
                         MKWalledKeepCourtyardSettings.DEFAULT_CONTENT_TEMPLATE_HEIGHT,
                         MKWalledKeepCourtyardSettings.DEFAULT_SOCKET_CLEARANCE,
                         MKWalledKeepCourtyardSettings.DEFAULT_WALKWAY_CONTINUATION_LENGTH,
-                        MKWalledKeepCourtyardSettings.DEFAULT_SMALL_TEMPLATE_SIZE,
-                        MKWalledKeepCourtyardSettings.DEFAULT_MEDIUM_TEMPLATE_SIZE,
                         99
                 ));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
@@ -923,9 +882,31 @@ class TowerWorkspaceV2Test {
                 .orElseThrow();
         assertTrue(entryApproach.tags()
                 .get(MKWalledKeepWorkspacePlanner.COURTYARD_DISABLED_REASON_TAG)
-                .contains("requested max socket size 99"));
+                .contains("requested socket size 99"));
         assertEquals("99", entryApproach.tags()
                 .get(MKWalledKeepWorkspacePlanner.COURTYARD_REQUESTED_MAX_SOCKET_SIZE_TAG));
+    }
+
+    @Test
+    void walledKeepSizingReportUsesTerrainCapAndSingleSocketSize() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(false),
+                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+
+        MKWalledKeepSizingReport report = new MKWalledKeepSizingCalculator().calculate(workspace);
+
+        assertEquals(116, report.maxDistanceFromCenter());
+        assertTrue(report.fitsJigsawCap());
+        assertTrue(report.courtyardSocketFits());
+        assertTrue(report.verticalWallSegments() > 3);
+        assertEquals(MKWalledKeepCourtyardSettings.DEFAULT_CONTENT_TEMPLATE_SIZE,
+                report.courtyardRequestedSocketSize());
+        assertTrue(report.allowedCourtyardContentSizes().contains(
+                MKWalledKeepCourtyardSettings.DEFAULT_CONTENT_TEMPLATE_SIZE));
     }
 
     @Test
@@ -989,6 +970,74 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void walledKeepEntryApproachUsesAuthoredCenterIngressGeometry() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        List<MKHorizontalOpeningProfile> openings = new java.util.ArrayList<>(
+                MKHorizontalOpeningProfile.createDefaults(dimensions));
+        openings.add(new MKHorizontalOpeningProfile("wide_ingress", 5, 4, true, false));
+        List<MKTowerWorkspaceFamilyDefinition> families = MKTowerWorkspaceFamilyDefinition
+                .createWalledKeepDefaults(dimensions)
+                .stream()
+                .map(family -> family.baseName().equals("keep_center_entry") ?
+                        MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                                family.baseName(),
+                                family.slotMetadata(),
+                                family.verticalAccessGroupId(),
+                                family.supportsVerticalAccess(),
+                                family.roomWidth(),
+                                family.roomLength(),
+                                family.roomHeight(),
+                                family.horizontalExtrusionMode(),
+                                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
+                                        Direction.SOUTH,
+                                        MKWorkspaceHorizontalExitPathKind.INGRESS,
+                                        "wide_ingress",
+                                        MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION,
+                                        2,
+                                        1)),
+                                family.topVoidMargin(),
+                                family.bottomVoidMargin(),
+                                family.foundationPolicyOverride(),
+                                family.paletteOverride()) :
+                        family)
+                .toList();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(openings, List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(false),
+                families,
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+
+        assertEquals(List.of(), workspace.validate());
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+        MKPlannedPiece centerEntry = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_center_entry"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece entryApproach = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_entry_approach"))
+                .findFirst()
+                .orElseThrow();
+
+        assertTrue(centerEntry.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.MAIN_BACK &&
+                        connector.facing() == Direction.SOUTH &&
+                        connector.openingWidth() == 5 &&
+                        connector.openingHeight() == 4 &&
+                        connector.lateralOffset() == -2 &&
+                        connector.verticalOffset() == 1 &&
+                        "keep_slots/keep/entry_approach/main".equals(connector.targetPoolName())));
+        assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.MAIN_FORWARD &&
+                        connector.facing() == Direction.NORTH &&
+                        connector.openingWidth() == 5 &&
+                        connector.openingHeight() == 4 &&
+                        connector.lateralOffset() == -2 &&
+                        connector.verticalOffset() == 1 &&
+                        "keep_slots/keep/entry_approach/main".equals(connector.incomingPoolName())));
+    }
+
+    @Test
     void walledKeepEntryApproachPlansDerivedLengthForStaleSavedRunLength() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         List<MKWorkspaceLinearRunFamilyDefinition> staleLinearRuns =
@@ -1042,7 +1091,7 @@ class TowerWorkspaceV2Test {
                 "keep_courtyard_path_corner_t_south_east");
         assertRuntimePoolContains(workspaceWithPieces, manifest,
                 "keep_slots/keep/courtyard/south_west",
-                "keep_courtyard_content_medium_south_west");
+                "keep_courtyard_content_south_west");
         assertRuntimePoolDoesNotContain(workspaceWithPieces, manifest,
                 "keep_slots/keep/courtyard/south_west",
                 "keep_courtyard_path_corner_t_south_west");
@@ -1420,10 +1469,7 @@ class TowerWorkspaceV2Test {
         MKWorkspaceStairAuthoringConfig centerStairs = new MKWorkspaceStairAuthoringConfig(
                 MKWorkspaceStairMode.LADDER,
                 MKWorkspaceStairRiseType.MIXED,
-                2,
-                ResourceLocation.parse("minecraft:stone_brick_stairs"),
-                ResourceLocation.parse("minecraft:stone_brick_slab"),
-                ResourceLocation.parse("minecraft:ladder")
+                2
         );
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
                 .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 1, 1, 7,
@@ -1453,7 +1499,7 @@ class TowerWorkspaceV2Test {
                 .anyMatch(connector -> connector.openingWidth() == 5 && connector.openingHeight() == 5));
         assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_top_cap_approach")));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_basement_cap_approach")));
-        assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_top_cap_approach")));
+        assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_top_cap_approach")));
         assertFalse(pieces.stream().anyMatch(piece ->
                 piece.pieceName().equals("keep_corner_north_west_basement_cap_approach")));
     }
@@ -1907,6 +1953,68 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void towerTopologyCreatesScopedFloorTopologyDefaults() {
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower();
+        MKWorkspaceFloorTopologySettings settings =
+                topologyProfile.floorTopologySettingsOrDefault("tower.primary", "main_floor");
+
+        assertEquals("tower.primary", settings.stackId());
+        assertEquals("main_floor", settings.floorRole());
+        assertEquals(MKWorkspaceFloorTopologySettings.DEFAULT_MIN_MAIN_PATH_PIECES,
+                settings.minMainPathPieces());
+        assertEquals(MKWorkspaceFloorTopologySettings.DEFAULT_MAX_MAIN_PATH_PIECES,
+                settings.maxMainPathPieces());
+        assertEquals(1, settings.mainRoomProfiles().size());
+        assertEquals(1, settings.branchRoomProfiles().size());
+        assertEquals(MKWorkspaceFloorRoomKind.MAIN_ROOM, settings.mainRoomProfiles().getFirst().kind());
+        assertEquals(MKWorkspaceFloorRoomKind.BRANCH_ROOM, settings.branchRoomProfiles().getFirst().kind());
+        assertEquals(MKWorkspaceDimensions.defaultDimensions().roomWidth(), settings.mainRoomProfiles().getFirst().width());
+        assertEquals(MKWorkspaceDimensions.defaultDimensions().roomLength(), settings.mainRoomProfiles().getFirst().length());
+        assertEquals(MKWorkspaceDimensions.defaultDimensions().roomHeight(), settings.mainRoomProfiles().getFirst().height());
+        assertTrue(settings.mainRoomProfiles().getFirst().horizontalExits().stream()
+                .anyMatch(exit -> exit.direction() == Direction.WEST &&
+                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY));
+        assertTrue(settings.mainRoomProfiles().getFirst().horizontalExits().stream()
+                .anyMatch(exit -> exit.direction() == Direction.EAST &&
+                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT));
+        assertTrue(settings.branchRoomProfiles().getFirst().horizontalExits().stream()
+                .anyMatch(exit -> exit.direction() == Direction.SOUTH &&
+                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH));
+        MKWorkspaceFloorTopologySettings resized = settings.withRoomProfile(
+                MKWorkspaceFloorRoomKind.MAIN_ROOM,
+                0,
+                settings.mainRoomProfiles().getFirst().withWidth(13).withLength(15).withHeight(5));
+        assertEquals(MKWorkspaceFloorRoomKind.MAIN_ROOM, resized.mainRoomProfiles().getFirst().kind());
+        assertEquals(13, resized.mainRoomProfiles().getFirst().width());
+        assertEquals(15, resized.mainRoomProfiles().getFirst().length());
+        assertEquals(5, resized.mainRoomProfiles().getFirst().height());
+        MKWorkspaceFloorTopologySettings expanded = resized.withAddedRoomProfile(
+                MKWorkspaceFloorRoomKind.MAIN_ROOM,
+                resized.mainRoomProfiles().getFirst().withIdentity("main_room_1", "Main Room 2"));
+        assertEquals(2, expanded.mainRoomProfiles().size());
+        MKWorkspaceFloorTopologySettings withBranchExit = expanded.withRoomProfile(
+                MKWorkspaceFloorRoomKind.MAIN_ROOM,
+                1,
+                expanded.mainRoomProfiles().get(1).withHorizontalExits(List.of(
+                        new MKWorkspaceFamilyHorizontalExitDefinition(
+                                Direction.NORTH,
+                                MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                "branch_opening"))));
+        assertTrue(withBranchExit.mainRoomProfiles().get(1).horizontalExits().stream()
+                .anyMatch(exit -> exit.direction() == Direction.NORTH &&
+                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH));
+        assertTrue(withBranchExit.mainRoomProfiles().get(1).horizontalExits().stream()
+                .anyMatch(exit -> exit.direction() == Direction.WEST &&
+                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY));
+
+        JsonObject topologyJson = MKWorkspaceTopologyProfile.CODEC.encodeStart(JsonOps.INSTANCE, topologyProfile)
+                .getOrThrow()
+                .getAsJsonObject();
+        assertTrue(topologyJson.has("floor_topology_settings"));
+        assertFalse(topologyJson.getAsJsonArray("floor_topology_settings").isEmpty());
+    }
+
+    @Test
     void walledKeepPlannerUsesAssignedPerimeterRunSlotsOnly() {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
@@ -2186,7 +2294,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void defaultTowerMainEntranceIsOpeningOnly() {
+    void defaultTowerIngressIsOpeningOnly() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKTowerWorkspaceFamilyDefinition entryFamily = MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions).stream()
                 .filter(family -> family.topologySlotId().endsWith(".entry"))
@@ -2195,7 +2303,7 @@ class TowerWorkspaceV2Test {
         MKWorkspaceFamilyHorizontalExitDefinition entrance = entryFamily.horizontalExits().getFirst();
 
         assertEquals(MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, entryFamily.horizontalExtrusionMode());
-        assertEquals(MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY, entrance.pathKind());
+        assertEquals(MKWorkspaceHorizontalExitPathKind.INGRESS, entrance.pathKind());
         assertEquals(MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION, entrance.connectionMode());
 
         MKStructureWorkspace workspace = new MKStructureWorkspace(
@@ -2225,7 +2333,7 @@ class TowerWorkspaceV2Test {
                 .orElseThrow()
                 .connectors()
                 .stream()
-                .filter(connector -> connector.role() == MKConnectorRole.MAIN_FORWARD)
+                .filter(connector -> connector.role() == MKConnectorRole.MAIN_BACK)
                 .findFirst()
                 .orElseThrow();
 
@@ -2562,6 +2670,47 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void layoutControllerEnforcesTowerStackFloorTargets() {
+        MKDungeonLayoutController controller = new MKDungeonLayoutController(new MKDungeonLayoutSettings(
+                1,
+                1,
+                1,
+                64,
+                64,
+                true,
+                MKVerticalProgressionMode.MIXED,
+                connectorSettings()
+        ));
+        MKDungeonPieceState startState = controller.initialStateForStart(
+                new MKDungeonPieceState(0, 0, 1, 0, true, 1),
+                towerStackMetadata("entry", 1, 1, 1, 1, true, false, false,
+                        MKJigsawPieceRole.ROOM, 0, 0, false),
+                null);
+        MKJigsawPieceMetadata mainFloor = towerStackMetadata("main_floor", 1, 1, 1, 1, true, false, false,
+                MKJigsawPieceRole.ROOM, 1, 1, false);
+        MKJigsawPieceMetadata topCapApproach = towerStackMetadata("top_cap_approach", 1, 1, 1, 1, true, false, false,
+                MKJigsawPieceRole.TOP_CAP_APPROACH, 1, 1, false);
+        MKJigsawPieceMetadata basementEntry = towerStackMetadata("basement_entry", 1, 1, 1, 1, true, false, false,
+                MKJigsawPieceRole.ROOM, 1, -1, false);
+        MKJigsawPieceMetadata basementFloor = towerStackMetadata("basement_floor", 1, 1, 1, 1, true, false, false,
+                MKJigsawPieceRole.ROOM, 1, -1, false);
+        var upConnector = connectorInfo(MKConnectorRole.CONNECT_UP);
+        var downConnector = connectorInfo(MKConnectorRole.CONNECT_DOWN);
+
+        assertTrue(controller.getRejectionReason(startState, upConnector, mainFloor).isEmpty());
+        assertEquals(Optional.of("tower_stack_main_floor_required"),
+                controller.getRejectionReason(startState, upConnector, topCapApproach));
+        assertEquals(Optional.of("tower_stack_basement_floor_required"),
+                controller.getRejectionReason(startState, downConnector, basementEntry));
+        assertTrue(controller.getRejectionReason(startState, downConnector, basementFloor).isEmpty());
+
+        MKDungeonPieceState afterMain = controller.nextState(startState, upConnector, mainFloor, null);
+        assertTrue(controller.getRejectionReason(afterMain, upConnector, topCapApproach).isEmpty());
+        assertEquals(Optional.of("tower_stack_top_cap_required"),
+                controller.getRejectionReason(afterMain, upConnector, mainFloor));
+    }
+
+    @Test
     void topologyPathBranchCapLimitExportsToManifest() {
         MKStructureWorkspace workspace = baseWorkspace(
                 List.of(
@@ -2676,13 +2825,13 @@ class TowerWorkspaceV2Test {
         MKTowerStackBudget budget = MKTowerStackBudget.fromDimensions(MKWorkspaceDimensions.defaultDimensions());
 
         List<Integer> mainWithApproach = MKWorkspaceTowerStackFloorCounts.allowedMainFloorCounts(budget,
-                1, true, false);
+                1, true, true, false);
         List<Integer> mainWithoutApproach = MKWorkspaceTowerStackFloorCounts.allowedMainFloorCounts(budget,
-                1, false, false);
+                1, false, true, false);
         List<Integer> basementWithoutApproach = MKWorkspaceTowerStackFloorCounts.allowedBasementFloorCounts(budget,
-                1, true, false);
+                1, true, true, false);
         List<Integer> basementWithApproach = MKWorkspaceTowerStackFloorCounts.allowedBasementFloorCounts(budget,
-                1, true, true);
+                1, true, true, true);
 
         assertTrue(mainWithoutApproach.getLast() >= mainWithApproach.getLast());
         assertTrue(basementWithApproach.getLast() <= basementWithoutApproach.getLast());
@@ -3639,6 +3788,37 @@ class TowerWorkspaceV2Test {
                 ResourceLocation.fromNamespaceAndPath("mknpc", "connect_up"),
                 ResourceLocation.fromNamespaceAndPath("mknpc", "top_cap_forward"),
                 ResourceLocation.fromNamespaceAndPath("mknpc", "top_cap_back")
+        );
+    }
+
+    private static MKJigsawPieceMetadata towerStackMetadata(String slot,
+                                                            int minMainFloors,
+                                                            int maxMainFloors,
+                                                            int minBasementFloors,
+                                                            int maxBasementFloors,
+                                                            boolean topCapApproachEnabled,
+                                                            boolean basementEntryEnabled,
+                                                            boolean basementCapApproachEnabled,
+                                                            MKJigsawPieceRole role,
+                                                            int progressionDelta,
+                                                            int verticalLevelDelta,
+                                                            boolean terminal) {
+        return new MKJigsawPieceMetadata(role, progressionDelta, verticalLevelDelta,
+                true, true, terminal, false,
+                slot, false, false,
+                "keep.center", slot, minMainFloors, maxMainFloors, minBasementFloors, maxBasementFloors,
+                topCapApproachEnabled, basementEntryEnabled, basementCapApproachEnabled,
+                MKWorkspaceFoundationPolicy.none());
+    }
+
+    private static com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorInfo connectorInfo(MKConnectorRole role) {
+        ResourceLocation connector = ResourceLocation.fromNamespaceAndPath("mknpc", role.getSerializedName());
+        return new com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorInfo(
+                connector,
+                connector,
+                net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.TEMPLATE_POOL,
+                        ResourceLocation.fromNamespaceAndPath("mknpc", "test/" + role.getSerializedName())),
+                role
         );
     }
 

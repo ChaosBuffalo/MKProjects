@@ -183,10 +183,7 @@ public class MKStructureWorkspaceMutationService {
         return new MKWorkspaceStairAuthoringConfig(
                 stairConfig.mode(),
                 stairConfig.riseType(),
-                stairConfig.stairWidth(),
-                palette.stairBlock(),
-                palette.slabBlock(),
-                palette.ladderBlock()
+                stairConfig.stairWidth()
         );
     }
 

@@ -27,6 +27,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -61,9 +62,7 @@ public record MKWorkspaceExportManifest(
     private static final String COURTYARD_SOCKET_POOL_PREFIX = "keep_slots/keep/courtyard/";
     private static final String COURTYARD_PATH_POOL_PREFIX = "keep_slots/keep/courtyard/path/";
     private static final String CONTENT_KIND_TAG = "workspace_content_kind";
-    private static final String CONTENT_SOCKET_CLASS_TAG = "workspace_content_socket_class";
     private static final String CONTENT_SIZE_TAG = "workspace_content_size";
-    private static final String COURTYARD_SOCKET_CLASS_TAG = "workspace_courtyard_socket_class";
     private static final String COURTYARD_SOCKET_MAX_SIZE_TAG = "workspace_courtyard_socket_max_square_size";
 
     public static final Codec<MKWorkspaceExportManifest> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -117,10 +116,7 @@ public record MKWorkspaceExportManifest(
                         new ExportStairConfig(
                                 workspace.stairConfig().mode(),
                                 workspace.stairConfig().riseType(),
-                                workspace.stairConfig().stairWidth(),
-                                workspace.stairConfig().stairBlock(),
-                                workspace.stairConfig().slabBlock(),
-                                workspace.stairConfig().ladderBlock()
+                                workspace.stairConfig().stairWidth()
                         ),
                         ExportVerticalAccessSpec.from(workspace.verticalAccessSpec()),
                         workspace.topologyProfile(),
@@ -383,10 +379,7 @@ public record MKWorkspaceExportManifest(
                     new ExportStairConfig(
                             spec.stairConfig().mode(),
                             spec.stairConfig().riseType(),
-                            spec.stairConfig().stairWidth(),
-                            spec.stairConfig().stairBlock(),
-                            spec.stairConfig().slabBlock(),
-                            spec.stairConfig().ladderBlock()
+                            spec.stairConfig().stairWidth()
                     )
             );
         }
@@ -663,7 +656,8 @@ public record MKWorkspaceExportManifest(
             return java.util.Optional.of(new ExportRuntimeTemplateGroup(
                     templateGroup.baseName(),
                     templateGroup.roleId(),
-                    ExportRuntimePieceMetadata.from(runtimeInfo.get(), foundationPolicyForPiece(workspace, runtimePiece.get()))
+                    ExportRuntimePieceMetadata.from(runtimeInfo.get(), runtimePiece.get().tags(),
+                            foundationPolicyForPiece(workspace, runtimePiece.get()))
             ));
         }
 
@@ -700,6 +694,15 @@ public record MKWorkspaceExportManifest(
             String topologyGroup,
             boolean mainPathEnding,
             boolean branchCap,
+            String towerStackId,
+            String towerStackSlot,
+            int minMainFloors,
+            int maxMainFloors,
+            int minBasementFloors,
+            int maxBasementFloors,
+            boolean topCapApproachEnabled,
+            boolean basementEntryEnabled,
+            boolean basementCapApproachEnabled,
             MKWorkspaceFoundationPolicy foundationPolicy
     ) {
         public static final Codec<ExportRuntimePieceMetadata> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -713,11 +716,22 @@ public record MKWorkspaceExportManifest(
                 Codec.STRING.optionalFieldOf("topology_group", "").forGetter(ExportRuntimePieceMetadata::topologyGroup),
                 Codec.BOOL.optionalFieldOf("main_path_ending", false).forGetter(ExportRuntimePieceMetadata::mainPathEnding),
                 Codec.BOOL.optionalFieldOf("branch_cap", false).forGetter(ExportRuntimePieceMetadata::branchCap),
+                ExportTowerStackMetadata.CODEC.forGetter(ExportRuntimePieceMetadata::towerStackMetadata),
                 MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundation_policy", MKWorkspaceFoundationPolicy.none())
                         .forGetter(ExportRuntimePieceMetadata::foundationPolicy)
-        ).apply(instance, ExportRuntimePieceMetadata::new));
+        ).apply(instance, (role, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath,
+                           terminal, topCapOnly, topologyGroup, mainPathEnding, branchCap, towerStackMetadata,
+                           foundationPolicy) ->
+                new ExportRuntimePieceMetadata(role, progressionDelta, verticalLevelDelta, allowOnMainPath,
+                        allowOnBranchPath, terminal, topCapOnly, topologyGroup, mainPathEnding, branchCap,
+                        towerStackMetadata.towerStackId(), towerStackMetadata.towerStackSlot(),
+                        towerStackMetadata.minMainFloors(), towerStackMetadata.maxMainFloors(),
+                        towerStackMetadata.minBasementFloors(), towerStackMetadata.maxBasementFloors(),
+                        towerStackMetadata.topCapApproachEnabled(), towerStackMetadata.basementEntryEnabled(),
+                        towerStackMetadata.basementCapApproachEnabled(), foundationPolicy)));
 
         public static ExportRuntimePieceMetadata from(MKWorkspaceRuntimePieceInfo runtimeInfo,
+                                                      Map<String, String> tags,
                                                       MKWorkspaceFoundationPolicy foundationPolicy) {
             return new ExportRuntimePieceMetadata(
                     runtimeInfo.role(),
@@ -730,21 +744,66 @@ public record MKWorkspaceExportManifest(
                     runtimeInfo.topologyGroup(),
                     runtimeInfo.mainPathEnding(),
                     runtimeInfo.branchCap(),
+                    tags.getOrDefault("workspace_tower_stack_id", ""),
+                    tags.getOrDefault("workspace_tower_stack_slot", ""),
+                    parseInt(tags, "workspace_tower_stack_min_main_floors", 0),
+                    parseInt(tags, "workspace_tower_stack_main_floors", 0),
+                    parseInt(tags, "workspace_tower_stack_min_basement_floors", 0),
+                    parseInt(tags, "workspace_tower_stack_basement_floors", 0),
+                    Boolean.parseBoolean(tags.getOrDefault("workspace_tower_stack_top_cap_approach_enabled", "true")),
+                    Boolean.parseBoolean(tags.getOrDefault("workspace_tower_stack_basement_entry_enabled", "true")),
+                    Boolean.parseBoolean(tags.getOrDefault("workspace_tower_stack_basement_cap_approach_enabled", "false")),
                     foundationPolicy
             );
         }
+
+        private static int parseInt(Map<String, String> tags, String key, int fallback) {
+            String value = tags.get(key);
+            if (value == null || value.isBlank()) {
+                return fallback;
+            }
+            return Integer.parseInt(value);
+        }
+
+        private ExportTowerStackMetadata towerStackMetadata() {
+            return new ExportTowerStackMetadata(towerStackId, towerStackSlot, minMainFloors, maxMainFloors,
+                    minBasementFloors, maxBasementFloors, topCapApproachEnabled, basementEntryEnabled,
+                    basementCapApproachEnabled);
+        }
     }
 
-    public record ExportStairConfig(MKWorkspaceStairMode mode, MKWorkspaceStairRiseType riseType, int stairWidth,
-                                    ResourceLocation stairBlock, ResourceLocation slabBlock,
-                                    ResourceLocation ladderBlock) {
+    private record ExportTowerStackMetadata(
+            String towerStackId,
+            String towerStackSlot,
+            int minMainFloors,
+            int maxMainFloors,
+            int minBasementFloors,
+            int maxBasementFloors,
+            boolean topCapApproachEnabled,
+            boolean basementEntryEnabled,
+            boolean basementCapApproachEnabled
+    ) {
+        private static final MapCodec<ExportTowerStackMetadata> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                Codec.STRING.optionalFieldOf("tower_stack_id", "").forGetter(ExportTowerStackMetadata::towerStackId),
+                Codec.STRING.optionalFieldOf("tower_stack_slot", "").forGetter(ExportTowerStackMetadata::towerStackSlot),
+                Codec.INT.optionalFieldOf("min_main_floors", 0).forGetter(ExportTowerStackMetadata::minMainFloors),
+                Codec.INT.optionalFieldOf("max_main_floors", 0).forGetter(ExportTowerStackMetadata::maxMainFloors),
+                Codec.INT.optionalFieldOf("min_basement_floors", 0).forGetter(ExportTowerStackMetadata::minBasementFloors),
+                Codec.INT.optionalFieldOf("max_basement_floors", 0).forGetter(ExportTowerStackMetadata::maxBasementFloors),
+                Codec.BOOL.optionalFieldOf("top_cap_approach_enabled", true)
+                        .forGetter(ExportTowerStackMetadata::topCapApproachEnabled),
+                Codec.BOOL.optionalFieldOf("basement_entry_enabled", true)
+                        .forGetter(ExportTowerStackMetadata::basementEntryEnabled),
+                Codec.BOOL.optionalFieldOf("basement_cap_approach_enabled", false)
+                        .forGetter(ExportTowerStackMetadata::basementCapApproachEnabled)
+        ).apply(instance, ExportTowerStackMetadata::new));
+    }
+
+    public record ExportStairConfig(MKWorkspaceStairMode mode, MKWorkspaceStairRiseType riseType, int stairWidth) {
         public static final Codec<ExportStairConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 stairModeCodec().fieldOf("mode").forGetter(ExportStairConfig::mode),
                 stairRiseTypeCodec().fieldOf("rise_type").forGetter(ExportStairConfig::riseType),
-                Codec.INT.fieldOf("stair_width").forGetter(ExportStairConfig::stairWidth),
-                ResourceLocation.CODEC.fieldOf("stair_block").forGetter(ExportStairConfig::stairBlock),
-                ResourceLocation.CODEC.fieldOf("slab_block").forGetter(ExportStairConfig::slabBlock),
-                ResourceLocation.CODEC.fieldOf("ladder_block").forGetter(ExportStairConfig::ladderBlock)
+                Codec.INT.fieldOf("stair_width").forGetter(ExportStairConfig::stairWidth)
         ).apply(instance, ExportStairConfig::new));
     }
 
@@ -1076,11 +1135,6 @@ public record MKWorkspaceExportManifest(
 
     private static boolean courtyardContentFitsSocket(Map<String, String> tags) {
         if (!"courtyard".equals(tags.getOrDefault(CONTENT_KIND_TAG, ""))) {
-            return false;
-        }
-        String contentClass = tags.getOrDefault(CONTENT_SOCKET_CLASS_TAG, "");
-        String socketClass = tags.getOrDefault(COURTYARD_SOCKET_CLASS_TAG, "");
-        if (contentClass.isBlank() || !contentClass.equals(socketClass)) {
             return false;
         }
         int contentSize = parsePositiveInt(tags.get(CONTENT_SIZE_TAG));

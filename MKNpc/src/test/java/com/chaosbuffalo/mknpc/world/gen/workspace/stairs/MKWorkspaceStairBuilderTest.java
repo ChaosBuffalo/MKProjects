@@ -146,10 +146,7 @@ class MKWorkspaceStairBuilderTest {
         MKWorkspaceStairAuthoringConfig slabConfig = new MKWorkspaceStairAuthoringConfig(
                 MKWorkspaceStairMode.RUN_PROFILE,
                 MKWorkspaceStairRiseType.SLAB,
-                1,
-                ResourceLocation.parse("minecraft:stone_brick_stairs"),
-                ResourceLocation.parse("minecraft:stone_brick_slab"),
-                ResourceLocation.parse("minecraft:ladder")
+                1
         );
 
         assertEquals(List.of(

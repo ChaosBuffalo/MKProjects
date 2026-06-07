@@ -1,11 +1,12 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
 public interface MKWorkspaceTopologyPlanner extends MKWorkspacePlanner {
-    String profileType();
+    ResourceLocation plannerId();
 
     MKWorkspaceTopologySchema schema();
 

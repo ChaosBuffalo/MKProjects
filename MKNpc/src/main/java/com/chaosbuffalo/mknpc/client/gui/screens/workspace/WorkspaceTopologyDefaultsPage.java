@@ -13,6 +13,9 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingCalculator;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingReport;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
@@ -22,7 +25,9 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -41,102 +46,103 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
         editor.ensureInitialized();
 
         MKLayout root = createPanel(screen);
-        if (!MKWorkspaceTopologyProfile.TOWER_PROFILE_TYPE.equals(editor.topologyProfileType())) {
-            addTitle(screen, root, Component.literal("Topology Defaults"));
-            MKText helpText = addHeaderText(screen, root, Component.literal(
-                    "Set the broad sizing and stack defaults for this topology before editing individual room and linear-run families."));
-            MKScrollView scrollView = addScrollBelowHeader(screen, root, helpText);
-            MKStackLayoutVertical content = createContentStack(screen);
-            MKText topologyText = screen.makeWhiteText(Component.literal(
-                    "Active topology: " + formatTopologyLabel(editor.topologyProfileType())));
-            topologyText.setWidth(screen.contentWidth());
-            topologyText.setMultiline(true);
-            content.addWidget(topologyText);
-            content.addConstraintToWidget(MarginConstraint.LEFT, topologyText);
-
-            addCornerModeRow(screen, content, "NW Corner", "keep.corner.north_west");
-            addCornerModeRow(screen, content, "NE Corner", "keep.corner.north_east");
-            addCornerModeRow(screen, content, "SE Corner", "keep.corner.south_east");
-            addCornerModeRow(screen, content, "SW Corner", "keep.corner.south_west");
-
-            addTowerStackSection(screen, content, "keep.center", "Center");
-
-            MKButton perimeterKindButton = new MKButton(
-                    Component.literal(formatTopologyLabel(editor.perimeterRunKind().getSerializedName())), 180, 20);
-            perimeterKindButton.setPressedCallback((button, mouseButton) -> {
-                editor.perimeterRunKind(cycleValue(List.of(MKWorkspaceLinearRunKind.DEFENSIVE_WALL,
-                        MKWorkspaceLinearRunKind.SOLID_WALL, MKWorkspaceLinearRunKind.PARAPET),
-                        editor.perimeterRunKind(), isReverseClick(mouseButton)));
-                screen.flagNeedSetup();
-                return true;
-            });
-            addRow(screen, content, screen.makeWhiteText(Component.literal("Perimeter Kind")), perimeterKindButton);
-
-            MKIntegerSlider wallHeightSlider = new MKIntegerSlider("Height", 180, 20, 2,
-                    MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE - 1, 1,
-                    editor.wallHeight(), value -> {
-                editor.wallHeight(value);
-                screen.flagNeedSetup();
-            });
-            addRow(screen, content, screen.makeWhiteText(Component.literal("Wall Height")), wallHeightSlider);
-
-            MKIntegerSlider wallTopVoidSlider = new MKIntegerSlider("Margin", 180, 20, 0,
-                    Math.max(0, editor.wallHeight() - 1), 1,
-                    editor.wallTopVoidMargin(), value -> {
-                editor.wallTopVoidMargin(value);
-                screen.flagNeedSetup();
-            });
-            addRow(screen, content, screen.makeWhiteText(Component.literal("Wall Top Void Margin")), wallTopVoidSlider);
-            addResetRow(screen, content, "Perimeter Runs", () -> {
-                editor.resetWalledKeepPerimeterDefaults();
-                screen.flagNeedSetup();
-            });
-
-            for (String cornerSlot : editor.activeCornerTopologySlots()) {
-                addCornerSizingSection(screen, content, cornerSlot);
-            }
-
-            MKText perimeterText = screen.makeWhiteText(Component.literal(
-                    "Perimeter walls use one shared linear-run slot. The keep planner repeats it clockwise as whole wall segments."));
-            perimeterText.setWidth(screen.contentWidth());
-            perimeterText.setMultiline(true);
-            content.addWidget(perimeterText);
-            content.addConstraintToWidget(MarginConstraint.LEFT, perimeterText);
-
-            addPathDefaultsSections(screen, content);
-
-            finishScrollContent(screen, scrollView, content);
-            addBackButton(screen, root, WorkspaceFormPage.ID);
-            return root;
-        }
         addTitle(screen, root, Component.literal("Topology Defaults"));
         MKText helpText = addHeaderText(screen, root, Component.literal(
-                "Configure the primary tower stack before editing individual family overrides."));
+                "Set the broad sizing and stack defaults for this planner before editing individual family overrides."));
 
         MKScrollView scrollView = addScrollBelowHeader(screen, root, helpText);
         MKStackLayoutVertical content = createContentStack(screen);
 
         MKText topologyText = screen.makeWhiteText(Component.literal(
-                "Active topology: " + formatTopologyLabel(editor.topologyProfileType())));
+                "Active planner: " + editor.topologyPlannerId()));
         topologyText.setWidth(screen.contentWidth());
         topologyText.setMultiline(true);
         content.addWidget(topologyText);
         content.addConstraintToWidget(MarginConstraint.LEFT, topologyText);
 
-        addTowerStackSection(screen, content, "tower.primary", "Primary Tower");
-
-        MKText pathText = screen.makeWhiteText(Component.literal(
-                "Path depth defaults are topology settings. Family pages only override individual authored templates."));
-        pathText.setWidth(screen.contentWidth());
-        pathText.setMultiline(true);
-        content.addWidget(pathText);
-        content.addConstraintToWidget(MarginConstraint.LEFT, pathText);
-
-        addPathDefaultsSections(screen, content);
+        WorkspacePlannerUiRegistry.getTopologyUi(editor.topologyPlannerId())
+                .addDefaultsSections(screen, content, editor);
 
         finishScrollContent(screen, scrollView, content);
         addBackButton(screen, root, WorkspaceFormPage.ID);
         return root;
+    }
+
+    private void addWalledKeepSizingSection(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                            WorkspaceDraftSession editor) {
+        MKStructureWorkspace workspaceDraft = editor.buildWorkspaceDraft();
+        MKWalledKeepSizingReport report = new MKWalledKeepSizingCalculator().calculate(workspaceDraft);
+        MKText header = screen.makeWhiteText(Component.literal("Structure Footprint"));
+        header.setWidth(screen.contentWidth());
+        content.addWidget(header);
+        content.addConstraintToWidget(MarginConstraint.LEFT, header);
+
+        MKWalledKeepFootprintPreview preview = new MKWalledKeepFootprintPreview(
+                Math.min(screen.contentWidth(), 260), 190, workspaceDraft, report);
+        content.addWidget(preview);
+        content.addConstraintToWidget(new CenterXConstraint(), preview);
+
+        String status = report.fitsJigsawCap() ? "fits" : "too large";
+        MKText footprint = screen.makeWhiteText(Component.literal(
+                "N " + report.northDistance() + " / S " + report.southDistance() +
+                        " / W " + report.westDistance() + " / E " + report.eastDistance() +
+                        "\nfootprint " + report.footprintWidth() + " x " + report.footprintLength() +
+                        " | required " + report.requiredJigsawRadius() +
+                        " / cap " + report.maxDistanceFromCenter() +
+                        " (" + status + ", headroom " + report.headroom() + ")" +
+                        "\nwall unit " + editor.wallUnitSpan() +
+                        " | recommended " + report.recommendedWallUnitSpan() +
+                        " | passage " + editor.wallPassageWidth() +
+                        " | body " + (editor.wallPassageWidth() + (2 * editor.shellMargin())) +
+                        "\nwall segments front " + report.frontBranchSegments() + "+" +
+                        report.frontBranchSegments() + ", side " + report.verticalWallSegments() +
+                        ", back " + report.backWallSegments() +
+                        " | courtyard path " + report.courtyardPathSize() +
+                        " | entry path " + report.entryApproachLength()
+        ));
+        footprint.setWidth(screen.contentWidth());
+        footprint.setMultiline(true);
+        content.addWidget(footprint);
+        content.addConstraintToWidget(MarginConstraint.LEFT, footprint);
+
+        MKButton terrainButton = new MKButton(
+                Component.literal(formatTopologyLabel(editor.terrainAdjustment().getSerializedName())), 180, 20);
+        terrainButton.setPressedCallback((button, mouseButton) -> {
+            editor.terrainAdjustment(cycleValue(terrainAdjustmentModes(), editor.terrainAdjustment(),
+                    isReverseClick(mouseButton)));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Terrain Adaptation")), terrainButton);
+
+        List<Integer> allowedSocketSizes = report.allowedCourtyardContentSizes();
+        if (allowedSocketSizes.isEmpty()) {
+            MKButton noFitButton = new MKButton(Component.literal("No Fit"), 180, 20);
+            noFitButton.setTooltip(Component.literal("Current sizing leaves no valid courtyard content socket."));
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Courtyard Socket Size")), noFitButton);
+            return;
+        }
+        int snappedSize = report.snappedCourtyardContentSize(editor.courtyardContentTemplateSize());
+        if (snappedSize != editor.courtyardContentTemplateSize()) {
+            editor.courtyardContentTemplateSize(snappedSize);
+        }
+        MKIntegerSlider courtyardSizeSlider = new MKIntegerSlider("Size", 180, 20,
+                allowedSocketSizes, snappedSize, value -> {
+            editor.courtyardContentTemplateSize(value);
+            screen.flagNeedSetup();
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Courtyard Socket Size")),
+                courtyardSizeSlider);
+    }
+
+    private List<TerrainAdjustment> terrainAdjustmentModes() {
+        ArrayList<TerrainAdjustment> modes = new ArrayList<>();
+        modes.add(TerrainAdjustment.BEARD_THIN);
+        modes.add(TerrainAdjustment.NONE);
+        modes.add(TerrainAdjustment.BEARD_BOX);
+        modes.add(TerrainAdjustment.BURY);
+        modes.add(TerrainAdjustment.ENCAPSULATE);
+        return List.copyOf(modes);
     }
 
     private void addPathDefaultsSections(MKWorkspaceScreen screen, MKStackLayoutVertical content) {
@@ -233,6 +239,16 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
 
     private void addTowerStackFloorRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, String stackId) {
         WorkspaceDraftSession editor = screen.draftSession();
+        MKButton minMainFloorsButton = new MKButton(
+                Component.literal(Integer.toString(editor.towerStackMinMainFloors(stackId))), 180, 20);
+        minMainFloorsButton.setPressedCallback((button, mouseButton) -> {
+            editor.towerStackMinMainFloors(stackId, cycleInteger(0, editor.towerStackMainFloors(stackId),
+                    editor.towerStackMinMainFloors(stackId), isReverseClick(mouseButton)));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Min Main Floors")), minMainFloorsButton);
+
         MKButton mainFloorsButton = new MKButton(
                 Component.literal(Integer.toString(editor.towerStackMainFloors(stackId))), 180, 20);
         mainFloorsButton.setPressedCallback((button, mouseButton) -> {
@@ -241,7 +257,18 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
             screen.flagNeedSetup();
             return true;
         });
-        addRow(screen, content, screen.makeWhiteText(Component.literal("Main Floors")), mainFloorsButton);
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Max Main Floors")), mainFloorsButton);
+
+        MKButton minBasementFloorsButton = new MKButton(
+                Component.literal(Integer.toString(editor.towerStackMinBasementFloors(stackId))), 180, 20);
+        minBasementFloorsButton.setPressedCallback((button, mouseButton) -> {
+            editor.towerStackMinBasementFloors(stackId, cycleInteger(0, editor.towerStackBasementFloors(stackId),
+                    editor.towerStackMinBasementFloors(stackId), isReverseClick(mouseButton)));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Min Basement Floors")),
+                minBasementFloorsButton);
 
         MKButton basementFloorsButton = new MKButton(
                 Component.literal(Integer.toString(editor.towerStackBasementFloors(stackId))), 180, 20);
@@ -251,7 +278,16 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
             screen.flagNeedSetup();
             return true;
         });
-        addRow(screen, content, screen.makeWhiteText(Component.literal("Basement Floors")), basementFloorsButton);
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Max Basement Floors")), basementFloorsButton);
+
+        MKButton basementEntryButton = new MKButton(
+                Component.literal(enabledLabel(editor.towerStackBasementEntryEnabled(stackId))), 180, 20);
+        basementEntryButton.setPressedCallback((button, mouseButton) -> {
+            editor.towerStackBasementEntryEnabled(stackId, !editor.towerStackBasementEntryEnabled(stackId));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Basement Entry")), basementEntryButton);
 
         MKIntegerSlider shaftSizeSlider = new MKIntegerSlider("Shaft", 180, 20,
                 editor.allowedTowerStackShaftSizes(stackId), editor.towerStackShaftSize(stackId), value -> {
@@ -300,13 +336,6 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
             return true;
         });
         addRow(screen, content, screen.makeWhiteText(Component.literal("Stair Width")), stairWidthButton);
-
-        addTowerStackBlockRow(screen, content, "Stair Block", editor.towerStackStairBlock(stackId),
-                value -> editor.towerStackStairBlock(stackId, value));
-        addTowerStackBlockRow(screen, content, "Slab Block", editor.towerStackSlabBlock(stackId),
-                value -> editor.towerStackSlabBlock(stackId, value));
-        addTowerStackBlockRow(screen, content, "Ladder Block", editor.towerStackLadderBlock(stackId),
-                value -> editor.towerStackLadderBlock(stackId, value));
 
         MKButton topCapApproachButton = new MKButton(
                 Component.literal(enabledLabel(editor.towerStackTopCapApproachEnabled(stackId))), 180, 20);
@@ -558,6 +587,20 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
         }
         int nextIndex = Math.floorMod(index + (reverse ? -1 : 1), values.size());
         return values.get(nextIndex);
+    }
+
+    private int cycleInteger(int min, int max, int current, boolean reverse) {
+        int low = Math.min(min, max);
+        int high = Math.max(min, max);
+        int normalized = Math.max(low, Math.min(current, high));
+        int next = normalized + (reverse ? -1 : 1);
+        if (next < low) {
+            return high;
+        }
+        if (next > high) {
+            return low;
+        }
+        return next;
     }
 
     private String formatTopologyLabel(String key) {

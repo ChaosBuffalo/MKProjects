@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
@@ -53,10 +54,11 @@ public class WorkspaceFormIdentityPage extends WorkspacePageBase {
                 Integer.toString(editor.previewMargin()));
         previewMarginField.setTextChangeCallback((field, text) ->
                 editor.previewMargin(parseInt(text, editor.previewMargin())));
-        MKButton topologyButton = new MKButton(Component.literal(formatTopologyLabel(editor.topologyProfileType())),
+        MKButton topologyButton = new MKButton(Component.literal(formatTopologyLabel(editor.topologyPlannerId().getPath())),
                 180, screen.buttonHeight());
         topologyButton.setPressedCallback((button, mouseButton) -> {
-            editor.topologyProfileType("tower".equals(editor.topologyProfileType()) ? "walled_keep" : "tower");
+            editor.topologyPlannerId(MKWorkspaceTopologyProfile.TOWER_PLANNER_ID.equals(editor.topologyPlannerId()) ?
+                    MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID : MKWorkspaceTopologyProfile.TOWER_PLANNER_ID);
             screen.flagNeedSetup();
             return true;
         });

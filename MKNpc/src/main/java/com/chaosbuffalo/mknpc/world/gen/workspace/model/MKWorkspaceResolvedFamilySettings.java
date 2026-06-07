@@ -25,7 +25,9 @@ public record MKWorkspaceResolvedFamilySettings(
                 familyDefinition,
                 resolveDimension(stackSettings == null ? 0 : stackSettings.width(), familyDefinition.roomWidth()),
                 resolveDimension(stackSettings == null ? 0 : stackSettings.length(), familyDefinition.roomLength()),
-                resolveDimension(stackSettings == null ? 0 : stackSettings.height(), familyDefinition.roomHeight()),
+                resolveDimension(stackSettings == null ? 0 :
+                        stackSettings.heightForTopologySlot(familyDefinition.topologySlotId()),
+                        familyDefinition.roomHeight()),
                 familyDefinition.topVoidMargin(),
                 familyDefinition.bottomVoidMargin(),
                 foundationPolicy,

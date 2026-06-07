@@ -8,24 +8,30 @@ import java.util.Optional;
 
 public record MKWorkspaceTowerStackSettings(
         String stackId,
+        int minMainFloors,
         int mainFloors,
+        int minBasementFloors,
         int basementFloors,
-        int height,
+        MKTowerStackBudget heights,
         int width,
         int length,
         int shaftSize,
         MKVerticalAccessPlacement verticalAccessPlacement,
         MKWorkspaceStairAuthoringConfig stairConfig,
         boolean topCapApproachEnabled,
+        boolean basementEntryEnabled,
         boolean basementCapApproachEnabled,
         MKWorkspaceFoundationPolicy foundationPolicy,
         @Nullable MKWorkspacePaletteOverride paletteOverride
 ) {
     public static final Codec<MKWorkspaceTowerStackSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("stack_id").forGetter(MKWorkspaceTowerStackSettings::stackId),
+            Codec.INT.optionalFieldOf("min_main_floors", 1).forGetter(MKWorkspaceTowerStackSettings::minMainFloors),
             Codec.INT.optionalFieldOf("main_floors", 1).forGetter(MKWorkspaceTowerStackSettings::mainFloors),
+            Codec.INT.optionalFieldOf("min_basement_floors", 1).forGetter(MKWorkspaceTowerStackSettings::minBasementFloors),
             Codec.INT.optionalFieldOf("basement_floors", 1).forGetter(MKWorkspaceTowerStackSettings::basementFloors),
-            Codec.INT.optionalFieldOf("height", 7).forGetter(MKWorkspaceTowerStackSettings::height),
+            MKTowerStackBudget.CODEC.optionalFieldOf("heights", MKTowerStackBudget.uniform(7))
+                    .forGetter(MKWorkspaceTowerStackSettings::heights),
             Codec.INT.optionalFieldOf("width", 7).forGetter(MKWorkspaceTowerStackSettings::width),
             Codec.INT.optionalFieldOf("length", 7).forGetter(MKWorkspaceTowerStackSettings::length),
             Codec.INT.optionalFieldOf("shaft_size", 3).forGetter(MKWorkspaceTowerStackSettings::shaftSize),
@@ -35,46 +41,86 @@ public record MKWorkspaceTowerStackSettings(
                     MKWorkspaceStairAuthoringConfig.defaultConfig()).forGetter(MKWorkspaceTowerStackSettings::stairConfig),
             Codec.BOOL.optionalFieldOf("top_cap_approach_enabled", true)
                     .forGetter(MKWorkspaceTowerStackSettings::topCapApproachEnabled),
+            Codec.BOOL.optionalFieldOf("basement_entry_enabled", true)
+                    .forGetter(MKWorkspaceTowerStackSettings::basementEntryEnabled),
             Codec.BOOL.optionalFieldOf("basement_cap_approach_enabled", false)
                     .forGetter(MKWorkspaceTowerStackSettings::basementCapApproachEnabled),
             MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundation_policy", MKWorkspaceFoundationPolicy.none())
                     .forGetter(MKWorkspaceTowerStackSettings::foundationPolicy),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
                     .forGetter(MKWorkspaceTowerStackSettings::paletteOverrideOpt)
-    ).apply(instance, (stackId, mainFloors, basementFloors, height, width, length, shaftSize,
-                       verticalAccessPlacement, stairConfig, topCapApproachEnabled, basementCapApproachEnabled,
+    ).apply(instance, (stackId, minMainFloors, mainFloors, minBasementFloors, basementFloors, heights, width, length, shaftSize,
+                       verticalAccessPlacement, stairConfig, topCapApproachEnabled, basementEntryEnabled,
+                       basementCapApproachEnabled,
                        foundationPolicy, paletteOverride) ->
-            new MKWorkspaceTowerStackSettings(stackId, mainFloors, basementFloors, height, width, length, shaftSize,
-                    verticalAccessPlacement, stairConfig, topCapApproachEnabled, basementCapApproachEnabled,
+            new MKWorkspaceTowerStackSettings(stackId, minMainFloors, mainFloors, minBasementFloors, basementFloors,
+                    heights, width, length, shaftSize,
+                    verticalAccessPlacement, stairConfig, topCapApproachEnabled, basementEntryEnabled,
+                    basementCapApproachEnabled,
                     foundationPolicy, paletteOverride.orElse(null))));
 
     public MKWorkspaceTowerStackSettings(String stackId, int mainFloors, int basementFloors, int height) {
-        this(stackId, mainFloors, basementFloors, height, defaultFootprint(stackId), defaultFootprint(stackId),
-                defaultShaftSize(), MKVerticalAccessPlacement.CENTER, defaultStairConfig(), true, false,
+        this(stackId, mainFloors, mainFloors, basementFloors, basementFloors, MKTowerStackBudget.uniform(height),
+                defaultFootprint(stackId), defaultFootprint(stackId),
+                defaultShaftSize(), MKVerticalAccessPlacement.CENTER, defaultStairConfig(), true, true, false,
                 MKWorkspaceFoundationPolicy.none(), null);
     }
 
     public MKWorkspaceTowerStackSettings(String stackId, int mainFloors, int basementFloors, int height,
                                          boolean topCapApproachEnabled, boolean basementCapApproachEnabled) {
-        this(stackId, mainFloors, basementFloors, height, defaultFootprint(stackId), defaultFootprint(stackId),
+        this(stackId, mainFloors, mainFloors, basementFloors, basementFloors, MKTowerStackBudget.uniform(height),
+                defaultFootprint(stackId), defaultFootprint(stackId),
                 defaultShaftSize(), MKVerticalAccessPlacement.CENTER, defaultStairConfig(), topCapApproachEnabled,
-                basementCapApproachEnabled, MKWorkspaceFoundationPolicy.none(), null);
+                MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_ENTRY_ENABLED, basementCapApproachEnabled,
+                MKWorkspaceFoundationPolicy.none(), null);
     }
 
     public MKWorkspaceTowerStackSettings(String stackId, int mainFloors, int basementFloors, int height,
                                          int width, int length, boolean topCapApproachEnabled,
                                          boolean basementCapApproachEnabled) {
-        this(stackId, mainFloors, basementFloors, height, width, length, defaultShaftSize(),
+        this(stackId, mainFloors, mainFloors, basementFloors, basementFloors, height, width, length,
+                topCapApproachEnabled,
+                MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_ENTRY_ENABLED, basementCapApproachEnabled);
+    }
+
+    public MKWorkspaceTowerStackSettings(String stackId, int mainFloors, int basementFloors, int height,
+                                         int width, int length, boolean topCapApproachEnabled,
+                                         boolean basementEntryEnabled, boolean basementCapApproachEnabled) {
+        this(stackId, mainFloors, mainFloors, basementFloors, basementFloors, height, width, length,
+                topCapApproachEnabled, basementEntryEnabled, basementCapApproachEnabled);
+    }
+
+    public MKWorkspaceTowerStackSettings(String stackId, int minMainFloors, int mainFloors,
+                                         int minBasementFloors, int basementFloors, int height,
+                                         int width, int length, boolean topCapApproachEnabled,
+                                         boolean basementEntryEnabled, boolean basementCapApproachEnabled) {
+        this(stackId, minMainFloors, mainFloors, minBasementFloors, basementFloors, MKTowerStackBudget.uniform(height),
+                width, length,
+                defaultShaftSize(),
                 MKVerticalAccessPlacement.CENTER, defaultStairConfig(), topCapApproachEnabled,
-                basementCapApproachEnabled, MKWorkspaceFoundationPolicy.none(), null);
+                basementEntryEnabled, basementCapApproachEnabled, MKWorkspaceFoundationPolicy.none(), null);
     }
 
     public MKWorkspaceTowerStackSettings(String stackId, int mainFloors, int basementFloors, int height,
                                          int width, int length, int shaftSize,
                                          MKVerticalAccessPlacement verticalAccessPlacement,
                                          boolean topCapApproachEnabled, boolean basementCapApproachEnabled) {
-        this(stackId, mainFloors, basementFloors, height, width, length, shaftSize, verticalAccessPlacement,
-                defaultStairConfig(), topCapApproachEnabled, basementCapApproachEnabled,
+        this(stackId, mainFloors, mainFloors, basementFloors, basementFloors, height, width, length, shaftSize,
+                verticalAccessPlacement,
+                topCapApproachEnabled, MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_ENTRY_ENABLED,
+                basementCapApproachEnabled);
+    }
+
+    public MKWorkspaceTowerStackSettings(String stackId, int minMainFloors, int mainFloors,
+                                         int minBasementFloors, int basementFloors, int height,
+                                         int width, int length, int shaftSize,
+                                         MKVerticalAccessPlacement verticalAccessPlacement,
+                                         boolean topCapApproachEnabled, boolean basementEntryEnabled,
+                                         boolean basementCapApproachEnabled) {
+        this(stackId, minMainFloors, mainFloors, minBasementFloors, basementFloors, MKTowerStackBudget.uniform(height),
+                width, length,
+                shaftSize, verticalAccessPlacement,
+                defaultStairConfig(), topCapApproachEnabled, basementEntryEnabled, basementCapApproachEnabled,
                 MKWorkspaceFoundationPolicy.none(), null);
     }
 
@@ -83,16 +129,47 @@ public record MKWorkspaceTowerStackSettings(
                                          MKVerticalAccessPlacement verticalAccessPlacement,
                                          MKWorkspaceStairAuthoringConfig stairConfig,
                                          boolean topCapApproachEnabled, boolean basementCapApproachEnabled) {
-        this(stackId, mainFloors, basementFloors, height, width, length, shaftSize, verticalAccessPlacement,
-                stairConfig, topCapApproachEnabled, basementCapApproachEnabled,
+        this(stackId, mainFloors, mainFloors, basementFloors, basementFloors, height, width, length, shaftSize,
+                verticalAccessPlacement,
+                stairConfig, topCapApproachEnabled, MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_ENTRY_ENABLED,
+                basementCapApproachEnabled);
+    }
+
+    public MKWorkspaceTowerStackSettings(String stackId, int minMainFloors, int mainFloors,
+                                         int minBasementFloors, int basementFloors, int height,
+                                         int width, int length, int shaftSize,
+                                         MKVerticalAccessPlacement verticalAccessPlacement,
+                                         MKWorkspaceStairAuthoringConfig stairConfig,
+                                         boolean topCapApproachEnabled, boolean basementEntryEnabled,
+                                         boolean basementCapApproachEnabled) {
+        this(stackId, minMainFloors, mainFloors, minBasementFloors, basementFloors, MKTowerStackBudget.uniform(height),
+                width, length,
+                shaftSize, verticalAccessPlacement,
+                stairConfig, topCapApproachEnabled, basementEntryEnabled, basementCapApproachEnabled,
                 MKWorkspaceFoundationPolicy.none(), null);
+    }
+
+    public MKWorkspaceTowerStackSettings(String stackId, int mainFloors, int basementFloors, int height,
+                                         int width, int length, int shaftSize,
+                                         MKVerticalAccessPlacement verticalAccessPlacement,
+                                         MKWorkspaceStairAuthoringConfig stairConfig,
+                                         boolean topCapApproachEnabled, boolean basementCapApproachEnabled,
+                                         MKWorkspaceFoundationPolicy foundationPolicy,
+                                         @Nullable MKWorkspacePaletteOverride paletteOverride) {
+        this(stackId, mainFloors, mainFloors, basementFloors, basementFloors, MKTowerStackBudget.uniform(height),
+                width, length, shaftSize,
+                verticalAccessPlacement,
+                stairConfig, topCapApproachEnabled, MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_ENTRY_ENABLED,
+                basementCapApproachEnabled, foundationPolicy, paletteOverride);
     }
 
     public MKWorkspaceTowerStackSettings {
         stackId = stackId == null ? "" : stackId;
         mainFloors = Math.max(0, mainFloors);
+        minMainFloors = Math.max(0, Math.min(minMainFloors, mainFloors));
         basementFloors = Math.max(0, basementFloors);
-        height = Math.max(3, height);
+        minBasementFloors = Math.max(0, Math.min(minBasementFloors, basementFloors));
+        heights = heights == null ? MKTowerStackBudget.uniform(7) : heights;
         width = normalizeFootprint(width);
         length = normalizeFootprint(length);
         verticalAccessPlacement = verticalAccessPlacement == null ? MKVerticalAccessPlacement.CENTER : verticalAccessPlacement;
@@ -104,85 +181,167 @@ public record MKWorkspaceTowerStackSettings(
     }
 
     public static MKWorkspaceTowerStackSettings defaults(String stackId, int height) {
-        return new MKWorkspaceTowerStackSettings(stackId, MKWorkspaceTowerStackFloorCounts.DEFAULT_MAIN_FLOORS,
-                MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_FLOORS, height,
+        return new MKWorkspaceTowerStackSettings(stackId,
+                MKWorkspaceTowerStackFloorCounts.DEFAULT_MAIN_FLOORS,
+                MKWorkspaceTowerStackFloorCounts.DEFAULT_MAIN_FLOORS,
+                MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_FLOORS,
+                MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_FLOORS, MKTowerStackBudget.uniform(height),
                 defaultFootprint(stackId), defaultFootprint(stackId),
                 defaultShaftSize(), MKVerticalAccessPlacement.CENTER, defaultStairConfig(),
                 MKWorkspaceTowerStackFloorCounts.DEFAULT_TOP_CAP_APPROACH_ENABLED,
+                MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_ENTRY_ENABLED,
                 MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_CAP_APPROACH_ENABLED,
                 MKWorkspaceFoundationPolicy.none(), null);
     }
 
     public MKWorkspaceTowerStackSettings withMainFloors(int value) {
-        return new MKWorkspaceTowerStackSettings(stackId, value, basementFloors, height, width, length,
+        return new MKWorkspaceTowerStackSettings(stackId, Math.min(minMainFloors, Math.max(0, value)), value,
+                minBasementFloors, basementFloors, heights, width, length,
                 shaftSize, verticalAccessPlacement, stairConfig,
-                topCapApproachEnabled, basementCapApproachEnabled, foundationPolicy, paletteOverride);
+                topCapApproachEnabled, basementEntryEnabled, basementCapApproachEnabled, foundationPolicy,
+                paletteOverride);
+    }
+
+    public MKWorkspaceTowerStackSettings withMinMainFloors(int value) {
+        return new MKWorkspaceTowerStackSettings(stackId, value, mainFloors, minBasementFloors, basementFloors,
+                heights, width, length,
+                shaftSize, verticalAccessPlacement, stairConfig,
+                topCapApproachEnabled, basementEntryEnabled, basementCapApproachEnabled, foundationPolicy,
+                paletteOverride);
     }
 
     public MKWorkspaceTowerStackSettings withStackId(String value) {
-        return new MKWorkspaceTowerStackSettings(value, mainFloors, basementFloors, height, width, length,
+        return new MKWorkspaceTowerStackSettings(value, minMainFloors, mainFloors, minBasementFloors, basementFloors,
+                heights, width, length,
                 shaftSize, verticalAccessPlacement, stairConfig,
-                topCapApproachEnabled, basementCapApproachEnabled, foundationPolicy, paletteOverride);
+                topCapApproachEnabled, basementEntryEnabled, basementCapApproachEnabled, foundationPolicy,
+                paletteOverride);
     }
 
     public MKWorkspaceTowerStackSettings withBasementFloors(int value) {
-        return new MKWorkspaceTowerStackSettings(stackId, mainFloors, value, height, width, length,
+        return new MKWorkspaceTowerStackSettings(stackId, minMainFloors, mainFloors,
+                Math.min(minBasementFloors, Math.max(0, value)), value, heights, width, length,
                 shaftSize, verticalAccessPlacement, stairConfig,
-                topCapApproachEnabled, basementCapApproachEnabled, foundationPolicy, paletteOverride);
+                topCapApproachEnabled, basementEntryEnabled, basementCapApproachEnabled, foundationPolicy,
+                paletteOverride);
+    }
+
+    public MKWorkspaceTowerStackSettings withMinBasementFloors(int value) {
+        return new MKWorkspaceTowerStackSettings(stackId, minMainFloors, mainFloors, value, basementFloors,
+                heights, width, length,
+                shaftSize, verticalAccessPlacement, stairConfig,
+                topCapApproachEnabled, basementEntryEnabled, basementCapApproachEnabled, foundationPolicy,
+                paletteOverride);
     }
 
     public MKWorkspaceTowerStackSettings withHeight(int value) {
-        return new MKWorkspaceTowerStackSettings(stackId, mainFloors, basementFloors, value, width, length,
+        return withHeights(MKTowerStackBudget.uniform(value));
+    }
+
+    public MKWorkspaceTowerStackSettings withHeights(MKTowerStackBudget value) {
+        return new MKWorkspaceTowerStackSettings(stackId, minMainFloors, mainFloors, minBasementFloors,
+                basementFloors, value, width, length,
                 shaftSize, verticalAccessPlacement, stairConfig,
-                topCapApproachEnabled, basementCapApproachEnabled, foundationPolicy, paletteOverride);
+                topCapApproachEnabled, basementEntryEnabled, basementCapApproachEnabled, foundationPolicy,
+                paletteOverride);
+    }
+
+    public MKWorkspaceTowerStackSettings withEntryHeight(int value) {
+        return withHeights(new MKTowerStackBudget(value, heights.mainFloorHeight(), heights.basementFloorHeight(),
+                heights.basementEntryHeight(), heights.topCapHeight(), heights.basementCapHeight()));
+    }
+
+    public MKWorkspaceTowerStackSettings withBasementHeight(int value) {
+        return withHeights(new MKTowerStackBudget(heights.entryHeight(), heights.mainFloorHeight(), value,
+                heights.basementEntryHeight(), heights.topCapHeight(), heights.basementCapHeight()));
+    }
+
+    public MKWorkspaceTowerStackSettings withBasementEntryHeight(int value) {
+        return withHeights(new MKTowerStackBudget(heights.entryHeight(), heights.mainFloorHeight(),
+                heights.basementFloorHeight(), value, heights.topCapHeight(), heights.basementCapHeight()));
+    }
+
+    public MKWorkspaceTowerStackSettings withBasementCapHeight(int value) {
+        return withHeights(new MKTowerStackBudget(heights.entryHeight(), heights.mainFloorHeight(),
+                heights.basementFloorHeight(), heights.basementEntryHeight(), heights.topCapHeight(), value));
+    }
+
+    public MKWorkspaceTowerStackSettings withMainHeight(int value) {
+        return withHeights(new MKTowerStackBudget(heights.entryHeight(), value, heights.basementFloorHeight(),
+                heights.basementEntryHeight(), heights.topCapHeight(), heights.basementCapHeight()));
+    }
+
+    public MKWorkspaceTowerStackSettings withMainCapHeight(int value) {
+        return withHeights(new MKTowerStackBudget(heights.entryHeight(), heights.mainFloorHeight(),
+                heights.basementFloorHeight(), heights.basementEntryHeight(), value, heights.basementCapHeight()));
     }
 
     public MKWorkspaceTowerStackSettings withWidth(int value) {
-        return new MKWorkspaceTowerStackSettings(stackId, mainFloors, basementFloors, height, value, length,
+        return new MKWorkspaceTowerStackSettings(stackId, minMainFloors, mainFloors, minBasementFloors,
+                basementFloors, heights, value, length,
                 shaftSize, verticalAccessPlacement, stairConfig,
-                topCapApproachEnabled, basementCapApproachEnabled, foundationPolicy, paletteOverride);
+                topCapApproachEnabled, basementEntryEnabled, basementCapApproachEnabled, foundationPolicy,
+                paletteOverride);
     }
 
     public MKWorkspaceTowerStackSettings withLength(int value) {
-        return new MKWorkspaceTowerStackSettings(stackId, mainFloors, basementFloors, height, width, value,
+        return new MKWorkspaceTowerStackSettings(stackId, minMainFloors, mainFloors, minBasementFloors,
+                basementFloors, heights, width, value,
                 shaftSize, verticalAccessPlacement, stairConfig,
-                topCapApproachEnabled, basementCapApproachEnabled, foundationPolicy, paletteOverride);
+                topCapApproachEnabled, basementEntryEnabled, basementCapApproachEnabled, foundationPolicy,
+                paletteOverride);
     }
 
     public MKWorkspaceTowerStackSettings withShaftSize(int value) {
-        return new MKWorkspaceTowerStackSettings(stackId, mainFloors, basementFloors, height, width, length,
+        return new MKWorkspaceTowerStackSettings(stackId, minMainFloors, mainFloors, minBasementFloors,
+                basementFloors, heights, width, length,
                 value, verticalAccessPlacement, stairConfig,
-                topCapApproachEnabled, basementCapApproachEnabled, foundationPolicy, paletteOverride);
+                topCapApproachEnabled, basementEntryEnabled, basementCapApproachEnabled, foundationPolicy,
+                paletteOverride);
     }
 
     public MKWorkspaceTowerStackSettings withVerticalAccessPlacement(MKVerticalAccessPlacement value) {
-        return new MKWorkspaceTowerStackSettings(stackId, mainFloors, basementFloors, height, width, length,
+        return new MKWorkspaceTowerStackSettings(stackId, minMainFloors, mainFloors, minBasementFloors,
+                basementFloors, heights, width, length,
                 shaftSize, value, stairConfig,
-                topCapApproachEnabled, basementCapApproachEnabled, foundationPolicy, paletteOverride);
+                topCapApproachEnabled, basementEntryEnabled, basementCapApproachEnabled, foundationPolicy,
+                paletteOverride);
     }
 
     public MKWorkspaceTowerStackSettings withStairConfig(MKWorkspaceStairAuthoringConfig value) {
-        return new MKWorkspaceTowerStackSettings(stackId, mainFloors, basementFloors, height, width, length,
+        return new MKWorkspaceTowerStackSettings(stackId, minMainFloors, mainFloors, minBasementFloors,
+                basementFloors, heights, width, length,
                 shaftSize, verticalAccessPlacement, value,
-                topCapApproachEnabled, basementCapApproachEnabled, foundationPolicy, paletteOverride);
+                topCapApproachEnabled, basementEntryEnabled, basementCapApproachEnabled, foundationPolicy,
+                paletteOverride);
     }
 
     public MKWorkspaceTowerStackSettings withTopCapApproachEnabled(boolean value) {
-        return new MKWorkspaceTowerStackSettings(stackId, mainFloors, basementFloors, height, width, length,
+        return new MKWorkspaceTowerStackSettings(stackId, minMainFloors, mainFloors, minBasementFloors,
+                basementFloors, heights, width, length,
                 shaftSize, verticalAccessPlacement, stairConfig,
-                value, basementCapApproachEnabled, foundationPolicy, paletteOverride);
+                value, basementEntryEnabled, basementCapApproachEnabled, foundationPolicy, paletteOverride);
+    }
+
+    public MKWorkspaceTowerStackSettings withBasementEntryEnabled(boolean value) {
+        return new MKWorkspaceTowerStackSettings(stackId, minMainFloors, mainFloors, minBasementFloors,
+                basementFloors, heights, width, length,
+                shaftSize, verticalAccessPlacement, stairConfig,
+                topCapApproachEnabled, value, basementCapApproachEnabled, foundationPolicy, paletteOverride);
     }
 
     public MKWorkspaceTowerStackSettings withBasementCapApproachEnabled(boolean value) {
-        return new MKWorkspaceTowerStackSettings(stackId, mainFloors, basementFloors, height, width, length,
+        return new MKWorkspaceTowerStackSettings(stackId, minMainFloors, mainFloors, minBasementFloors,
+                basementFloors, heights, width, length,
                 shaftSize, verticalAccessPlacement, stairConfig,
-                topCapApproachEnabled, value, foundationPolicy, paletteOverride);
+                topCapApproachEnabled, basementEntryEnabled, value, foundationPolicy, paletteOverride);
     }
 
     public MKWorkspaceTowerStackSettings withFoundationPolicy(MKWorkspaceFoundationPolicy value) {
-        return new MKWorkspaceTowerStackSettings(stackId, mainFloors, basementFloors, height, width, length,
+        return new MKWorkspaceTowerStackSettings(stackId, minMainFloors, mainFloors, minBasementFloors,
+                basementFloors, heights, width, length,
                 shaftSize, verticalAccessPlacement, stairConfig,
-                topCapApproachEnabled, basementCapApproachEnabled, value, paletteOverride);
+                topCapApproachEnabled, basementEntryEnabled, basementCapApproachEnabled, value, paletteOverride);
     }
 
     public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {
@@ -190,9 +349,43 @@ public record MKWorkspaceTowerStackSettings(
     }
 
     public MKWorkspaceTowerStackSettings withPaletteOverride(Optional<MKWorkspacePaletteOverride> value) {
-        return new MKWorkspaceTowerStackSettings(stackId, mainFloors, basementFloors, height, width, length,
+        return new MKWorkspaceTowerStackSettings(stackId, minMainFloors, mainFloors, minBasementFloors,
+                basementFloors, heights, width, length,
                 shaftSize, verticalAccessPlacement, stairConfig,
-                topCapApproachEnabled, basementCapApproachEnabled, foundationPolicy, value.orElse(null));
+                topCapApproachEnabled, basementEntryEnabled, basementCapApproachEnabled, foundationPolicy,
+                value.orElse(null));
+    }
+
+    public int height() {
+        return heights.maxHeight();
+    }
+
+    public int entryHeight() {
+        return heights.entryHeight();
+    }
+
+    public int basementHeight() {
+        return heights.basementFloorHeight();
+    }
+
+    public int basementEntryHeight() {
+        return heights.basementEntryHeight();
+    }
+
+    public int basementCapHeight() {
+        return heights.basementCapHeight();
+    }
+
+    public int mainHeight() {
+        return heights.mainFloorHeight();
+    }
+
+    public int mainCapHeight() {
+        return heights.topCapHeight();
+    }
+
+    public int heightForTopologySlot(String topologySlotId) {
+        return heights.heightForTopologySlot(topologySlotId);
     }
 
     private static int defaultFootprint(String stackId) {
@@ -229,10 +422,7 @@ public record MKWorkspaceTowerStackSettings(
         return new MKWorkspaceStairAuthoringConfig(
                 config.mode(),
                 config.riseType(),
-                stairWidth,
-                config.stairBlock(),
-                config.slabBlock(),
-                config.ladderBlock()
+                stairWidth
         );
     }
 }

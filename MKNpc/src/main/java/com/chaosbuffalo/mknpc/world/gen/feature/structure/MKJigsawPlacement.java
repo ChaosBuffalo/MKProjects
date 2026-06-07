@@ -119,9 +119,15 @@ public class MKJigsawPlacement {
         int centerY = startY + offset.getY();
         MKDungeonLayoutController layoutController = new MKDungeonLayoutController(layoutSettings);
         int targetFloors = layoutController.chooseTargetFloors(random);
-        MKDungeonPieceState rootState = new MKDungeonPieceState(0, 0, 1, 0, true, targetFloors);
+        MKDungeonPieceState baseRootState = new MKDungeonPieceState(0, 0, 1, 0, true, targetFloors);
+        Optional<ResourceLocation> startTemplateId = getTemplateId(startElement);
+        MKDungeonPieceState rootState = startTemplateId
+                .flatMap(MKJigsawPieceMetadataManager::get)
+                .map(metadata -> layoutController.initialStateForStart(baseRootState, metadata, random))
+                .orElse(baseRootState);
         if (MKNpc.DEV_LOGGING) {
-            MKNpc.LOGGER.debug("mk_jigsaw targetFloors={} startPiece={}", targetFloors, getTemplateId(startElement).orElse(MKNpcWorldGen.UNKNOWN_PIECE));
+            MKNpc.LOGGER.debug("mk_jigsaw targetFloors={} startPiece={}", targetFloors,
+                    startTemplateId.orElse(MKNpcWorldGen.UNKNOWN_PIECE));
         }
 
         return Optional.of(new Structure.GenerationStub(

@@ -52,9 +52,7 @@ public record MKVerticalAccessProfile(MKWorkspaceStairMode mode, MKWorkspaceStai
                         requestedMode == MKWorkspaceStairMode.SLAB_STAIRS ? MKWorkspaceStairRiseType.SLAB :
                                 requestedMode == MKWorkspaceStairMode.STAIR_STAIRS ? MKWorkspaceStairRiseType.STAIR :
                                         MKWorkspaceStairRiseType.MIXED,
-                        1, net.minecraft.resources.ResourceLocation.parse("minecraft:stone_brick_stairs"),
-                        net.minecraft.resources.ResourceLocation.parse("minecraft:stone_brick_slab"),
-                        net.minecraft.resources.ResourceLocation.parse("minecraft:ladder")),
+                        1),
                 shaftWidth, shaftWidth, minimumHeight);
         if (profile.mode() == MKWorkspaceStairMode.LADDER || profile.mode() == MKWorkspaceStairMode.NONE) {
             List<Integer> values = new ArrayList<>();
@@ -72,9 +70,7 @@ public record MKVerticalAccessProfile(MKWorkspaceStairMode mode, MKWorkspaceStai
                             requestedMode == MKWorkspaceStairMode.SLAB_STAIRS ? MKWorkspaceStairRiseType.SLAB :
                                     requestedMode == MKWorkspaceStairMode.STAIR_STAIRS ? MKWorkspaceStairRiseType.STAIR :
                                             MKWorkspaceStairRiseType.MIXED,
-                            1, net.minecraft.resources.ResourceLocation.parse("minecraft:stone_brick_stairs"),
-                            net.minecraft.resources.ResourceLocation.parse("minecraft:stone_brick_slab"),
-                            net.minecraft.resources.ResourceLocation.parse("minecraft:ladder")),
+                            1),
                     shaftWidth, shaftWidth, candidate).isPresent()) {
                 values.add(candidate);
             }

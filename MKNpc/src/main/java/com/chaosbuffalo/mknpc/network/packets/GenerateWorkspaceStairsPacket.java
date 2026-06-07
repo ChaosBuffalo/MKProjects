@@ -10,7 +10,6 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
@@ -25,22 +24,14 @@ public class GenerateWorkspaceStairsPacket implements CustomPacketPayload {
     private final MKWorkspaceStairMode stairMode;
     private final MKWorkspaceStairRiseType stairRiseType;
     private final int stairWidth;
-    private final ResourceLocation stairBlock;
-    private final ResourceLocation slabBlock;
-    private final ResourceLocation ladderBlock;
 
     public GenerateWorkspaceStairsPacket(BlockPos anchor, String pieceName, MKWorkspaceStairMode stairMode,
-                                         MKWorkspaceStairRiseType stairRiseType, int stairWidth,
-                                         ResourceLocation stairBlock, ResourceLocation slabBlock,
-                                         ResourceLocation ladderBlock) {
+                                         MKWorkspaceStairRiseType stairRiseType, int stairWidth) {
         this.anchor = anchor;
         this.pieceName = pieceName;
         this.stairMode = stairMode;
         this.stairRiseType = stairRiseType;
         this.stairWidth = stairWidth;
-        this.stairBlock = stairBlock;
-        this.slabBlock = slabBlock;
-        this.ladderBlock = ladderBlock;
     }
 
     public GenerateWorkspaceStairsPacket(FriendlyByteBuf buffer) {
@@ -49,9 +40,6 @@ public class GenerateWorkspaceStairsPacket implements CustomPacketPayload {
         this.stairMode = MKWorkspaceStairMode.fromSerializedName(buffer.readUtf());
         this.stairRiseType = MKWorkspaceStairRiseType.fromSerializedName(buffer.readUtf());
         this.stairWidth = buffer.readInt();
-        this.stairBlock = ResourceLocation.parse(buffer.readUtf());
-        this.slabBlock = ResourceLocation.parse(buffer.readUtf());
-        this.ladderBlock = ResourceLocation.parse(buffer.readUtf());
     }
 
     @Override
@@ -65,9 +53,6 @@ public class GenerateWorkspaceStairsPacket implements CustomPacketPayload {
         buffer.writeUtf(stairMode.getSerializedName());
         buffer.writeUtf(stairRiseType.getSerializedName());
         buffer.writeInt(stairWidth);
-        buffer.writeUtf(stairBlock.toString());
-        buffer.writeUtf(slabBlock.toString());
-        buffer.writeUtf(ladderBlock.toString());
     }
 
     public static void handle(GenerateWorkspaceStairsPacket packet, IPayloadContext context) {
@@ -76,8 +61,7 @@ public class GenerateWorkspaceStairsPacket implements CustomPacketPayload {
         }
         MKStructureWorkspaceService service = new MKStructureWorkspaceService();
         service.generateTowerWorkspaceStairs(player.serverLevel(), packet.anchor, packet.pieceName,
-                new MKWorkspaceStairAuthoringConfig(packet.stairMode, packet.stairRiseType, packet.stairWidth,
-                        packet.stairBlock, packet.slabBlock, packet.ladderBlock))
+                new MKWorkspaceStairAuthoringConfig(packet.stairMode, packet.stairRiseType, packet.stairWidth))
                 .ifPresent(updated -> service.openWorkspaceScreen(player, packet.anchor));
     }
 }

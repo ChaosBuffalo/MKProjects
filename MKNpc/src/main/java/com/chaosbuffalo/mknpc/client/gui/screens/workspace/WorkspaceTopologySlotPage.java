@@ -70,7 +70,7 @@ public class WorkspaceTopologySlotPage extends WorkspacePageBase {
         int buttonCount = stairCategory ? 3 : 2;
         int buttonAreaHeight = (buttonCount * screen.buttonHeight()) +
                 screen.buttonGap() + screen.bottomPadding();
-        int paletteAreaHeight = stairCategory ? 112 : 0;
+        int paletteAreaHeight = 0;
         int scrollTop = screen.scrollTopAfterHeader(root, summary);
         int scrollHeight = screen.panelY() + screen.panelHeight() - buttonAreaHeight -
                 paletteAreaHeight - 12 - scrollTop;
@@ -92,14 +92,6 @@ public class WorkspaceTopologySlotPage extends WorkspacePageBase {
 
         String baseName = WorkspacePieceDisplay.getBaseName(templatePiece);
         if (stairCategory) {
-            int paletteTop = scrollTop + scrollHeight + 6;
-            screen.addBlockPickerRow(root, screen.panelX(), paletteTop + 8, "Stair", editor.stairBlock(),
-                    editor::stairBlock, false);
-            screen.addBlockPickerRow(root, screen.panelX(), paletteTop + 42, "Slab", editor.slabBlock(),
-                    editor::slabBlock, false);
-            screen.addBlockPickerRow(root, screen.panelX(), paletteTop + 76, "Ladder", editor.ladderBlock(),
-                    editor::ladderBlock, false);
-
             MKButton reset = addBottomButton(screen, root, Component.literal("Use Workspace Defaults"), 180, 1);
             reset.setPressedCallback((button, mouseButton) -> {
                 editor.resetOverrides();
@@ -201,8 +193,7 @@ public class WorkspaceTopologySlotPage extends WorkspacePageBase {
             content.addConstraintToWidget(new CenterXConstraint(), generateStairs);
             generateStairs.setPressedCallback((button, mouseButton) -> {
                 PacketDistributor.sendToServer(new GenerateWorkspaceStairsPacket(screen.anchor(), pieceName,
-                        editor.stairMode(), editor.stairRiseType(), editor.stairWidth(),
-                        editor.stairBlock(), editor.slabBlock(), editor.ladderBlock()));
+                        editor.stairMode(), editor.stairRiseType(), editor.stairWidth()));
                 return true;
             });
 

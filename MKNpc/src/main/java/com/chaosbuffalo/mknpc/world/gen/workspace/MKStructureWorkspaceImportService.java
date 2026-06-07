@@ -184,10 +184,7 @@ public class MKStructureWorkspaceImportService {
         MKWorkspaceStairAuthoringConfig workspaceStairConfig = new MKWorkspaceStairAuthoringConfig(
                 stairConfig.mode(),
                 stairConfig.riseType(),
-                stairConfig.stairWidth(),
-                stairConfig.stairBlock(),
-                stairConfig.slabBlock(),
-                stairConfig.ladderBlock()
+                stairConfig.stairWidth()
         );
         MKWorkspaceExportManifest.ExportVerticalAccessSpec verticalAccessSpecExport = settings.verticalAccessSpec();
         MKWorkspaceVerticalAccessSpec verticalAccessSpec = new MKWorkspaceVerticalAccessSpec(
@@ -196,10 +193,7 @@ public class MKStructureWorkspaceImportService {
                 new MKWorkspaceStairAuthoringConfig(
                         verticalAccessSpecExport.stairConfig().mode(),
                         verticalAccessSpecExport.stairConfig().riseType(),
-                        verticalAccessSpecExport.stairConfig().stairWidth(),
-                        verticalAccessSpecExport.stairConfig().stairBlock(),
-                        verticalAccessSpecExport.stairConfig().slabBlock(),
-                        verticalAccessSpecExport.stairConfig().ladderBlock()
+                        verticalAccessSpecExport.stairConfig().stairWidth()
                 )
         );
         List<MKTowerWorkspaceFamilyDefinition> familyDefinitions = settings.familyDefinitions().stream()
@@ -422,7 +416,7 @@ public class MKStructureWorkspaceImportService {
     static Map<String, String> migrateImportedRuntimeTags(MKStructureWorkspace workspace,
                                                           Map<String, String> sourceTags) {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>(sourceTags);
-        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PROFILE_TYPE.equals(workspace.topologyProfile().profileType()) &&
+        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(workspace.topologyProfile().plannerId()) &&
                 isKeepCornerStackPiece(tags)) {
             tags.put(MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG, "true");
         }

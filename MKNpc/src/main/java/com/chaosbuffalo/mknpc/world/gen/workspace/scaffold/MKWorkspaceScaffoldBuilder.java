@@ -1633,14 +1633,16 @@ public class MKWorkspaceScaffoldBuilder {
     }
 
     private int getTopVoidMargin(MKPlannedPiece piece) {
-        if (MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags())) {
+        if (MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags()) &&
+                !MKWorkspaceVerticalAccessTags.isTopCap(piece.tags())) {
             return 0;
         }
         return Math.max(0, parseIntTag(piece.tags(), MKWorkspaceVoidMarginTags.TOP_VOID_MARGIN_TAG, 0));
     }
 
     private int getBottomVoidMargin(MKPlannedPiece piece) {
-        if (MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags())) {
+        if (MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags()) &&
+                !MKWorkspaceVerticalAccessTags.isBottomCap(piece.tags())) {
             return 0;
         }
         return Math.max(0, parseIntTag(piece.tags(), MKWorkspaceVoidMarginTags.BOTTOM_VOID_MARGIN_TAG, 0));

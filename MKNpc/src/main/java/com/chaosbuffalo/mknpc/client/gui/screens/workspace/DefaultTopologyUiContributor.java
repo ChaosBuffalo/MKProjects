@@ -1,0 +1,22 @@
+package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
+
+import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
+import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+
+public class DefaultTopologyUiContributor implements WorkspaceTopologyUiContributor {
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("mknpc", "missing");
+
+    @Override
+    public ResourceLocation plannerId() {
+        return ID;
+    }
+
+    @Override
+    public void addDefaultsSections(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                    WorkspaceDraftSession editor) {
+        WorkspaceTopologyUiSupport.addText(screen, content, Component.literal(
+                "No topology UI is registered for planner " + editor.topologyPlannerId() + "."));
+    }
+}

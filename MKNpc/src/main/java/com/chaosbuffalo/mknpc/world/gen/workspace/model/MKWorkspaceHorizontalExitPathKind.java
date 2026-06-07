@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 import net.minecraft.util.StringRepresentable;
 
 public enum MKWorkspaceHorizontalExitPathKind implements StringRepresentable {
+    INGRESS("ingress"),
     MAIN_ENTRY("main_entry"),
     MAIN_EXIT("main_exit"),
     MAIN_ENDING_ENTRY("main_ending_entry"),
@@ -37,6 +38,10 @@ public enum MKWorkspaceHorizontalExitPathKind implements StringRepresentable {
         return this == MAIN_ENTRY || this == MAIN_EXIT || this == MAIN_ENDING_ENTRY;
     }
 
+    public boolean isPlannerIngress() {
+        return this == INGRESS;
+    }
+
     public boolean isHorizontal() {
         return this != VERTICAL_ACCESS;
     }
@@ -47,6 +52,7 @@ public enum MKWorkspaceHorizontalExitPathKind implements StringRepresentable {
 
     public MKWorkspaceHorizontalExitPathKind next() {
         return switch (this) {
+            case INGRESS -> MAIN_ENTRY;
             case MAIN_ENTRY -> MAIN_EXIT;
             case MAIN_EXIT -> MAIN_ENDING_ENTRY;
             case MAIN_ENDING_ENTRY -> BRANCH;

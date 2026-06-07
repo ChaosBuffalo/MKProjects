@@ -209,11 +209,11 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
         return List.of(
                 forTowerStackSlot("entry", MKTowerWorkspaceStackSlot.ENTRY, PRIMARY_TOWER_STACK_ID, true,
                         0, 0, 0,
-                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
-                        List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
-                                MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY, "main_opening",
-                                MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION)),
-                        0, 0, null, null),
+                  MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                  List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
+                          MKWorkspaceHorizontalExitPathKind.INGRESS, "main_opening",
+                          MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION)),
+                  0, 0, null, null),
                 forTowerStackSlot("floor_main", MKTowerWorkspaceStackSlot.MAIN_FLOOR, PRIMARY_TOWER_STACK_ID, true,
                         0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
@@ -382,13 +382,18 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
             errors.add("family " + baseName + " non-shaft room height must be within topology range " +
                     MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT + "-" + maxRoomHeight);
         }
-        if (supportsVerticalAccess() && (topVoidMargin > 0 || bottomVoidMargin > 0)) {
-            errors.add("family " + baseName + " shaft-enabled room cannot define top or bottom void margins");
+        boolean topVoidMarginAllowed = allowsTopVoidMargin();
+        boolean bottomVoidMarginAllowed = allowsBottomVoidMargin();
+        if (!topVoidMarginAllowed && topVoidMargin > 0) {
+            errors.add("family " + baseName + " shaft-enabled room cannot define a top void margin");
         }
-        if (!supportsVerticalAccess()) {
+        if (!bottomVoidMarginAllowed && bottomVoidMargin > 0) {
+            errors.add("family " + baseName + " shaft-enabled room cannot define a bottom void margin");
+        }
+        if (topVoidMarginAllowed || bottomVoidMarginAllowed) {
             int reducedRoomHeight = resolvedRoomHeight - topVoidMargin - bottomVoidMargin;
             if (reducedRoomHeight < MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT) {
-                errors.add("family " + baseName + " non-shaft room height after void margins must be at least " +
+                errors.add("family " + baseName + " room height after void margins must be at least " +
                         MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT);
             }
         }
@@ -400,6 +405,12 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
                 .count();
         if (mainEntryCount > 1) {
             errors.add("family " + baseName + " can only define one main entry horizontal exit");
+        }
+        long ingressCount = horizontalExits.stream()
+                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.INGRESS)
+                .count();
+        if (ingressCount > 1) {
+            errors.add("family " + baseName + " can only define one ingress horizontal exit");
         }
         long mainExitCount = horizontalExits.stream()
                 .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)
@@ -553,6 +564,24 @@ public class MKTowerWorkspaceFamilyDefinition implements MKWorkspacePaletteFamil
 
     public int bottomVoidMargin() {
         return bottomVoidMargin;
+    }
+
+    private boolean allowsTopVoidMargin() {
+        if (!supportsVerticalAccess()) {
+            return true;
+        }
+        return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
+                .filter(slot -> slot == MKTowerWorkspaceStackSlot.TOP_CAP)
+                .isPresent();
+    }
+
+    private boolean allowsBottomVoidMargin() {
+        if (!supportsVerticalAccess()) {
+            return true;
+        }
+        return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
+                .filter(slot -> slot == MKTowerWorkspaceStackSlot.BASEMENT_CAP)
+                .isPresent();
     }
 
     public MKWorkspaceFoundationPolicy foundationPolicy() {

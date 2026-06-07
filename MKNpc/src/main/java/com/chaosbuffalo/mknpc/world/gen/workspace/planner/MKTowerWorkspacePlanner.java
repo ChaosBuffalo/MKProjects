@@ -40,14 +40,14 @@ public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
     }
 
     @Override
-    public String profileType() {
-        return MKWorkspaceTopologyProfile.TOWER_PROFILE_TYPE;
+    public net.minecraft.resources.ResourceLocation plannerId() {
+        return MKWorkspaceTopologyProfile.TOWER_PLANNER_ID;
     }
 
     @Override
     public MKWorkspaceTopologySchema schema() {
         return new MKWorkspaceTopologySchema(
-                profileType(),
+                plannerId(),
                 List.of(
                         new MKWorkspaceRegionSchema("tower.primary.entry", "tower_stack", true),
                         new MKWorkspaceRegionSchema("tower.primary.main", "tower_stack", true),

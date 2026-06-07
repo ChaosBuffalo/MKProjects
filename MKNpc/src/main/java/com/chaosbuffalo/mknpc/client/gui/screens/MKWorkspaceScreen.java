@@ -351,8 +351,7 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public void topologySlotStairMode(MKWorkspaceStairMode value) {
         MKWorkspaceStairAuthoringConfig config = topologySlotStairConfig();
-        detailStairConfig = new MKWorkspaceStairAuthoringConfig(value, config.riseType(), config.stairWidth(),
-                config.stairBlock(), config.slabBlock(), config.ladderBlock());
+        detailStairConfig = new MKWorkspaceStairAuthoringConfig(value, config.riseType(), config.stairWidth());
     }
 
     public MKWorkspaceStairRiseType topologySlotStairRiseType() {
@@ -361,8 +360,7 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public void topologySlotStairRiseType(MKWorkspaceStairRiseType value) {
         MKWorkspaceStairAuthoringConfig config = topologySlotStairConfig();
-        detailStairConfig = new MKWorkspaceStairAuthoringConfig(config.mode(), value, config.stairWidth(),
-                config.stairBlock(), config.slabBlock(), config.ladderBlock());
+        detailStairConfig = new MKWorkspaceStairAuthoringConfig(config.mode(), value, config.stairWidth());
     }
 
     public int topologySlotStairWidth() {
@@ -371,38 +369,7 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public void topologySlotStairWidth(int value) {
         MKWorkspaceStairAuthoringConfig config = topologySlotStairConfig();
-        detailStairConfig = new MKWorkspaceStairAuthoringConfig(config.mode(), config.riseType(), value,
-                config.stairBlock(), config.slabBlock(), config.ladderBlock());
-    }
-
-    public ResourceLocation topologySlotStairBlock() {
-        return topologySlotStairConfig().stairBlock();
-    }
-
-    public void topologySlotStairBlock(ResourceLocation value) {
-        MKWorkspaceStairAuthoringConfig config = topologySlotStairConfig();
-        detailStairConfig = new MKWorkspaceStairAuthoringConfig(config.mode(), config.riseType(), config.stairWidth(),
-                value, config.slabBlock(), config.ladderBlock());
-    }
-
-    public ResourceLocation topologySlotSlabBlock() {
-        return topologySlotStairConfig().slabBlock();
-    }
-
-    public void topologySlotSlabBlock(ResourceLocation value) {
-        MKWorkspaceStairAuthoringConfig config = topologySlotStairConfig();
-        detailStairConfig = new MKWorkspaceStairAuthoringConfig(config.mode(), config.riseType(), config.stairWidth(),
-                config.stairBlock(), value, config.ladderBlock());
-    }
-
-    public ResourceLocation topologySlotLadderBlock() {
-        return topologySlotStairConfig().ladderBlock();
-    }
-
-    public void topologySlotLadderBlock(ResourceLocation value) {
-        MKWorkspaceStairAuthoringConfig config = topologySlotStairConfig();
-        detailStairConfig = new MKWorkspaceStairAuthoringConfig(config.mode(), config.riseType(), config.stairWidth(),
-                config.stairBlock(), config.slabBlock(), value);
+        detailStairConfig = new MKWorkspaceStairAuthoringConfig(config.mode(), config.riseType(), value);
     }
 
     @Override
@@ -962,24 +929,17 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public void resetTopologySlotOverrides() {
         if (workspace == null) {
-            MKWorkspaceMaterialPalette palette = MKWorkspaceMaterialPalette.defaultPalette();
             detailStairConfig = new MKWorkspaceStairAuthoringConfig(
                     MKWorkspaceStairMode.AUTO,
                     MKWorkspaceStairRiseType.MIXED,
-                    1,
-                    palette.stairBlock(),
-                    palette.slabBlock(),
-                    palette.ladderBlock()
+                    1
             );
             return;
         }
         detailStairConfig = new MKWorkspaceStairAuthoringConfig(
                 workspace.stairConfig().mode(),
                 workspace.stairConfig().riseType(),
-                workspace.stairConfig().stairWidth(),
-                workspace.palette().stairBlock(),
-                workspace.palette().slabBlock(),
-                workspace.palette().ladderBlock()
+                workspace.stairConfig().stairWidth()
         );
     }
 

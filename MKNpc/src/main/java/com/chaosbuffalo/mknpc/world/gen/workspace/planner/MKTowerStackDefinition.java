@@ -6,12 +6,15 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSet
 
 public record MKTowerStackDefinition(
         String stackId,
+        int minMainFloors,
         int mainFloors,
+        int minBasementFloors,
         int basementFloors,
         int shaftSize,
         MKVerticalAccessPlacement verticalAccessPlacement,
         MKWorkspaceStairAuthoringConfig stairConfig,
         boolean topCapApproachEnabled,
+        boolean basementEntryEnabled,
         boolean basementCapApproachEnabled,
         boolean startPiece,
         String connectUpPool,
@@ -28,12 +31,15 @@ public record MKTowerStackDefinition(
     public static MKTowerStackDefinition towerPrimary(MKWorkspaceTowerStackSettings stackSettings) {
         return new MKTowerStackDefinition(
                 stackSettings.stackId(),
+                stackSettings.minMainFloors(),
                 stackSettings.mainFloors(),
+                stackSettings.minBasementFloors(),
                 stackSettings.basementFloors(),
                 stackSettings.shaftSize(),
                 stackSettings.verticalAccessPlacement(),
                 stackSettings.stairConfig(),
                 stackSettings.topCapApproachEnabled(),
+                stackSettings.basementEntryEnabled(),
                 stackSettings.basementCapApproachEnabled(),
                 true,
                 "connect_up",
@@ -50,12 +56,15 @@ public record MKTowerStackDefinition(
         String prefix = "tower_stacks/" + stackId.replace('.', '/');
         return new MKTowerStackDefinition(
                 stackId,
+                stackSettings.minMainFloors(),
                 stackSettings.mainFloors(),
+                stackSettings.minBasementFloors(),
                 stackSettings.basementFloors(),
                 stackSettings.shaftSize(),
                 stackSettings.verticalAccessPlacement(),
                 stackSettings.stairConfig(),
                 stackSettings.topCapApproachEnabled(),
+                stackSettings.basementEntryEnabled(),
                 stackSettings.basementCapApproachEnabled(),
                 startPiece,
                 prefix + "/connect_up",

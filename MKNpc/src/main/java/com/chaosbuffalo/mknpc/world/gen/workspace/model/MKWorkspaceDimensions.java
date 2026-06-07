@@ -271,10 +271,7 @@ public class MKWorkspaceDimensions {
         MKWorkspaceStairAuthoringConfig config = new MKWorkspaceStairAuthoringConfig(
                 stairConfig.mode(),
                 stairConfig.riseType(),
-                stairWidth,
-                stairConfig.stairBlock(),
-                stairConfig.slabBlock(),
-                stairConfig.ladderBlock()
+                stairWidth
         );
         return !getAllowedBandHeights(config, shaftSize, minimumHeight, minimumHeight,
                 MAX_BAND_HEIGHT_EXCLUSIVE).isEmpty();

@@ -1,9 +1,11 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 
+import net.minecraft.resources.ResourceLocation;
+
 import java.util.List;
 
 public record MKWorkspaceTopologySchema(
-        String profileType,
+        ResourceLocation plannerId,
         List<MKWorkspaceRegionSchema> regions,
         List<MKWorkspaceSlotSchema> slots,
         List<MKWorkspaceLinkSchema> links,

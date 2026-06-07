@@ -782,15 +782,17 @@ public class MKStructureWorkspaceService {
                         .orElse(settings))
                 .toList();
         return new MKWorkspaceTopologyProfile(
-                source.profileType(),
+                source.plannerId(),
                 source.uniqueCornerTowers(),
                 source.uniqueNorthWestCornerTower(),
                 source.uniqueNorthEastCornerTower(),
                 source.uniqueSouthEastCornerTower(),
                 source.uniqueSouthWestCornerTower(),
                 stackSettings,
+                source.floorTopologySettings(),
                 source.pathSettings(),
-                source.courtyardSettings()
+                source.courtyardSettings(),
+                source.terrainAdjustment()
         );
     }
 
@@ -800,10 +802,7 @@ public class MKStructureWorkspaceService {
         return new com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig(
                 stairConfig.mode(),
                 stairConfig.riseType(),
-                stairConfig.stairWidth(),
-                palette.stairBlock(),
-                palette.slabBlock(),
-                palette.ladderBlock()
+                stairConfig.stairWidth()
         );
     }
 
