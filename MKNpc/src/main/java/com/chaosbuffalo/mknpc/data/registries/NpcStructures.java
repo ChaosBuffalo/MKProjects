@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonTopologyGroup
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKVerticalProgressionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKFloorTopologyPlanner;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
@@ -127,14 +128,21 @@ public class NpcStructures {
             return List.of();
         }
         ArrayList<MKDungeonTopologyGroupRule> rules = new ArrayList<>();
-        for (MKWorkspaceFloorTopologySettings settings : manifestOpt.get().settings().topologyProfile().floorTopologySettings()) {
+        MKWorkspaceExportManifest manifest = manifestOpt.get();
+        for (MKWorkspaceFloorTopologySettings settings : manifest.settings().topologyProfile().floorTopologySettings()) {
+            String topologyGroupId = floorTopologyGroupId(settings.stackId(), settings.floorRole());
+            String endingPool = settings.mainCapApproachEnabled() ?
+                    MKFloorTopologyPlanner.mainCapApproachPoolName(topologyGroupId) :
+                    MKFloorTopologyPlanner.mainCapPoolName(topologyGroupId);
             rules.add(new MKDungeonTopologyGroupRule(
-                    floorTopologyGroupId(settings.stackId(), settings.floorRole()),
+                    topologyGroupId,
                     settings.minMainPathPieces(),
                     settings.maxMainPathPieces(),
                     settings.maxBranchPiecesBeforeCap(),
+                    settings.sprawl(),
+                    settings.lockedLayoutSeed(),
                     true,
-                    null
+                    ResourceLocation.fromNamespaceAndPath(manifest.namespace(), manifest.structureName() + "/" + endingPool)
             ));
         }
         return List.copyOf(rules);

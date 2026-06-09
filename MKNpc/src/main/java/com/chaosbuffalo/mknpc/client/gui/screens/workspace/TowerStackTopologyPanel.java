@@ -332,11 +332,26 @@ public class TowerStackTopologyPanel {
                         if (isRequiredTowerStackExit(sectionKey, exit)) {
                             return;
                         }
-                        editor.removeFamilyExit(familyIndex, exitIndex);
-                        if (editor.selectedFamilyExitIndex() == exitIndex) {
-                            editor.selectedFamilyExitIndex(-1);
-                        } else if (editor.selectedFamilyExitIndex() > exitIndex) {
-                            editor.selectedFamilyExitIndex(editor.selectedFamilyExitIndex() - 1);
+                        if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH) {
+                            editor.removeFamilyExit(familyIndex, exitIndex);
+                            if (editor.selectedFamilyExitIndex() == exitIndex) {
+                                editor.selectedFamilyExitIndex(-1);
+                            } else if (editor.selectedFamilyExitIndex() > exitIndex) {
+                                editor.selectedFamilyExitIndex(editor.selectedFamilyExitIndex() - 1);
+                            }
+                        } else {
+                            String branchOpeningProfileId = editor.ensureCompatibleOpeningProfile(
+                                    MKWorkspaceHorizontalExitPathKind.BRANCH, exit.openingProfileId());
+                            editor.replaceFamilyExit(familyIndex, exitIndex,
+                                    new MKWorkspaceFamilyHorizontalExitDefinition(
+                                            exit.direction(),
+                                            MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                            branchOpeningProfileId,
+                                            exit.connectionMode(),
+                                            exit.sideOffset(),
+                                            exit.verticalOffset()
+                                    ));
+                            editor.selectedFamilyExitIndex(exitIndex);
                         }
                     } else {
                         editor.selectedFamilyExitIndex(editor.addFamilyBranchExitAtDirection(familyIndex, direction));
@@ -394,17 +409,8 @@ public class TowerStackTopologyPanel {
             }
 
             private List<MKWorkspaceHorizontalExitPathKind> allowedPathKinds(String sectionKey) {
-                if ("entry".equals(sectionKey)) {
-                    return List.of(MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
-                                    MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY,
-                                    MKWorkspaceHorizontalExitPathKind.BRANCH,
-                                    MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY);
-                }
-                return List.of(MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY,
-                        MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
-                        MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY,
-                        MKWorkspaceHorizontalExitPathKind.BRANCH,
-                        MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY);
+                return List.of(MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                        MKWorkspaceHorizontalExitPathKind.BRANCH);
             }
 
             @Override
@@ -548,6 +554,39 @@ public class TowerStackTopologyPanel {
             @Override
             public void floorManualHallwayLeadInPieces(String sectionKey, int value) {
                 editor.floorTopologyManualHallwayLeadInPieces(stackId, sectionKey, value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public boolean floorMainHallwaysEnabled(String sectionKey) {
+                return editor.floorTopologyMainHallwaysEnabled(stackId, sectionKey);
+            }
+
+            @Override
+            public void floorMainHallwaysEnabled(String sectionKey, boolean value) {
+                editor.floorTopologyMainHallwaysEnabled(stackId, sectionKey, value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public boolean floorBranchHallwaysEnabled(String sectionKey) {
+                return editor.floorTopologyBranchHallwaysEnabled(stackId, sectionKey);
+            }
+
+            @Override
+            public void floorBranchHallwaysEnabled(String sectionKey, boolean value) {
+                editor.floorTopologyBranchHallwaysEnabled(stackId, sectionKey, value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public boolean floorMainCapApproachEnabled(String sectionKey) {
+                return editor.floorTopologyMainCapApproachEnabled(stackId, sectionKey);
+            }
+
+            @Override
+            public void floorMainCapApproachEnabled(String sectionKey, boolean value) {
+                editor.floorTopologyMainCapApproachEnabled(stackId, sectionKey, value);
                 screen.flagNeedSetup();
             }
 
@@ -706,9 +745,81 @@ public class TowerStackTopologyPanel {
             }
 
             @Override
+            public boolean floorMainHallwaysEnabled(String sectionKey) {
+                return editor.floorTopologyMainHallwaysEnabled(stackId, sectionKey);
+            }
+
+            @Override
+            public void floorMainHallwaysEnabled(String sectionKey, boolean value) {
+                editor.floorTopologyMainHallwaysEnabled(stackId, sectionKey, value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public boolean floorBranchHallwaysEnabled(String sectionKey) {
+                return editor.floorTopologyBranchHallwaysEnabled(stackId, sectionKey);
+            }
+
+            @Override
+            public void floorBranchHallwaysEnabled(String sectionKey, boolean value) {
+                editor.floorTopologyBranchHallwaysEnabled(stackId, sectionKey, value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public boolean floorMainCapApproachEnabled(String sectionKey) {
+                return editor.floorTopologyMainCapApproachEnabled(stackId, sectionKey);
+            }
+
+            @Override
+            public void floorMainCapApproachEnabled(String sectionKey, boolean value) {
+                editor.floorTopologyMainCapApproachEnabled(stackId, sectionKey, value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
             public int recommendedHallwayLeadInPieces(String sectionKey) {
                 return Math.max(1, Math.ceilDiv(Math.max(editor.towerStackWidth(stackId),
                         editor.towerStackLength(stackId)), 8));
+            }
+
+            @Override
+            public float floorSprawl(String sectionKey) {
+                return editor.floorTopologySprawl(stackId, sectionKey);
+            }
+
+            @Override
+            public void floorSprawl(String sectionKey, float value) {
+                editor.floorTopologySprawl(stackId, sectionKey, value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public long previewSeed(String sectionKey) {
+                return editor.floorTopologyPreviewSeed(stackId, sectionKey);
+            }
+
+            @Override
+            public void rerollPreviewSeed(String sectionKey) {
+                editor.rerollFloorTopologyPreviewSeed(stackId, sectionKey);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public Optional<Long> lockedLayoutSeed(String sectionKey) {
+                return editor.floorTopologyLockedLayoutSeed(stackId, sectionKey);
+            }
+
+            @Override
+            public void lockLayoutSeed(String sectionKey) {
+                editor.lockFloorTopologyLayoutSeed(stackId, sectionKey);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public void unlockLayoutSeed(String sectionKey) {
+                editor.unlockFloorTopologyLayoutSeed(stackId, sectionKey);
+                screen.flagNeedSetup();
             }
 
             @Override
@@ -757,8 +868,9 @@ public class TowerStackTopologyPanel {
             }
 
             @Override
-            public void setRoomMainExitDirection(String sectionKey, int index, Direction direction) {
-                editor.floorTopologySetRoomMainExitDirection(stackId, sectionKey, index, direction);
+            public void setRoomMainExitDirection(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
+                                                 Direction direction) {
+                editor.floorTopologySetRoomMainExitDirection(stackId, sectionKey, kind, index, direction);
                 screen.flagNeedSetup();
             }
 

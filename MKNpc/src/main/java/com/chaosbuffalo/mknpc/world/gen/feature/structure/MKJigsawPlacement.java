@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
+import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKFloorMaskVariantExporter;
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
@@ -50,6 +51,7 @@ import java.util.Optional;
 
 public class MKJigsawPlacement {
     static final Logger LOGGER = LogUtils.getLogger();
+    private static final List<String> FLOOR_MASKS = List.of("none", "n", "e", "w", "ne", "nw", "ew", "new");
 
     public static Optional<Structure.GenerationStub> addPieces(
             Structure.GenerationContext context,
@@ -261,6 +263,7 @@ public class MKJigsawPlacement {
                 int parentJigsawY = parentJigsawPos.getY() - pieceMinY;
                 int firstFreeHeight = -1;
                 ResourceKey<StructureTemplatePool> poolKey = readPoolKey(parentJigsaw, aliasLookup);
+                poolKey = selectFloorMaskPool(poolKey, aliasLookup, dungeonState, parentJigsawPos);
                 Optional<? extends Holder<StructureTemplatePool>> optional = this.pools.getHolder(poolKey);
                 if (optional.isEmpty()) {
                     LOGGER.warn("Empty or non-existent pool: {}", poolKey.location());
@@ -442,6 +445,38 @@ public class MKJigsawPlacement {
                     .ifPresent(pool -> candidates.addAll(pool.getShuffledTemplates(this.random)));
         }
 
+        private ResourceKey<StructureTemplatePool> selectFloorMaskPool(ResourceKey<StructureTemplatePool> basePoolKey,
+                                                                       PoolAliasLookup aliasLookup,
+                                                                       MKDungeonPieceState dungeonState,
+                                                                       BlockPos connectorPos) {
+            Optional<String> topologyGroup = floorTopologyGroup(basePoolKey.location());
+            if (topologyGroup.isEmpty()) {
+                return basePoolKey;
+            }
+            Optional<MKDungeonTopologyGroupRule> rule = layoutSettings.topologyGroupRule(topologyGroup.get());
+            float sprawl = rule.map(MKDungeonTopologyGroupRule::sprawl).orElse(0.5f);
+            List<String> availableMasks = FLOOR_MASKS.stream()
+                    .filter(mask -> floorMaskPoolAvailable(basePoolKey.location(), mask, aliasLookup))
+                    .toList();
+            RandomSource maskRandom = rule.flatMap(MKDungeonTopologyGroupRule::lockedLayoutSeed)
+                    .map(seed -> RandomSource.create(floorMaskSelectionSeed(seed, basePoolKey.location(),
+                            dungeonState, connectorPos)))
+                    .orElse(random);
+            return chooseFloorMask(sprawl, availableMasks, maskRandom)
+                    .map(mask -> ResourceKey.create(Registries.TEMPLATE_POOL,
+                            MKFloorMaskVariantExporter.maskPool(basePoolKey.location(), mask)))
+                    .map(aliasLookup::lookup)
+                    .orElse(basePoolKey);
+        }
+
+        private boolean floorMaskPoolAvailable(ResourceLocation basePool, String mask, PoolAliasLookup aliasLookup) {
+            ResourceKey<StructureTemplatePool> key = ResourceKey.create(Registries.TEMPLATE_POOL,
+                    MKFloorMaskVariantExporter.maskPool(basePool, mask));
+            return pools.getOptional(aliasLookup.lookup(key))
+                    .filter(pool -> pool.size() > 0)
+                    .isPresent();
+        }
+
         private boolean addBranchCapCandidates(List<StructurePoolElement> candidates,
                                                MKConnectorInfo connectorInfo,
                                                ResourceKey<StructureTemplatePool> targetPoolKey,
@@ -481,8 +516,81 @@ public class MKJigsawPlacement {
                 return Optional.empty();
             }
             String openingProfile = path.substring(markerIndex + marker.length());
+            int slashIndex = openingProfile.indexOf('/');
+            if (slashIndex >= 0) {
+                openingProfile = openingProfile.substring(0, slashIndex);
+            }
             return openingProfile.isBlank() ? Optional.empty() : Optional.of(openingProfile);
         }
+    }
+
+    static Optional<String> chooseFloorMask(float sprawl, List<String> availableMasks, RandomSource random) {
+        if (availableMasks == null || availableMasks.isEmpty()) {
+            return Optional.empty();
+        }
+        if (sprawl <= 0.0f && availableMasks.contains("none")) {
+            return Optional.of("none");
+        }
+        if (sprawl >= 1.0f) {
+            return availableMasks.stream()
+                    .max(java.util.Comparator.comparingInt(MKJigsawPlacement::activeMaskCount));
+        }
+        int totalWeight = availableMasks.stream()
+                .mapToInt(mask -> floorMaskWeight(mask, sprawl))
+                .sum();
+        if (totalWeight <= 0) {
+            return Optional.of(availableMasks.getFirst());
+        }
+        int roll = random == null ? 0 : random.nextInt(totalWeight);
+        int cursor = 0;
+        for (String mask : availableMasks) {
+            cursor += floorMaskWeight(mask, sprawl);
+            if (roll < cursor) {
+                return Optional.of(mask);
+            }
+        }
+        return Optional.of(availableMasks.getLast());
+    }
+
+    private static int floorMaskWeight(String mask, float sprawl) {
+        int activeCount = activeMaskCount(mask);
+        if (activeCount == 0) {
+            return Math.max(1, Math.round((1.0f - sprawl) * 8.0f) + 1);
+        }
+        return Math.max(1, Math.round(1.0f + sprawl * activeCount * 4.0f));
+    }
+
+    private static int activeMaskCount(String mask) {
+        return "none".equals(mask) ? 0 : mask.length();
+    }
+
+    private static long floorMaskSelectionSeed(long lockedSeed, ResourceLocation pool, MKDungeonPieceState state,
+                                               BlockPos connectorPos) {
+        long seed = lockedSeed;
+        seed = mixSeed(seed, pool.hashCode());
+        seed = mixSeed(seed, state.mainPathPiecesInTopologyGroup());
+        seed = mixSeed(seed, state.branchDepth());
+        seed = mixSeed(seed, state.piecesOnFloor());
+        seed = mixSeed(seed, connectorPos.asLong());
+        return seed;
+    }
+
+    private static long mixSeed(long seed, long value) {
+        long mixed = seed ^ (value + 0x9E3779B97F4A7C15L + (seed << 6) + (seed >> 2));
+        return mixed * 6364136223846793005L + 1442695040888963407L;
+    }
+
+    private static Optional<String> floorTopologyGroup(ResourceLocation pool) {
+        String path = pool.getPath();
+        if (!path.startsWith("floor_plan/") || path.contains("/masks/")) {
+            return Optional.empty();
+        }
+        int roomsMarker = path.indexOf("/rooms/");
+        if (roomsMarker < 0) {
+            return Optional.empty();
+        }
+        String topologyGroup = path.substring("floor_plan/".length(), roomsMarker);
+        return topologyGroup.isBlank() ? Optional.empty() : Optional.of(topologyGroup);
     }
 
     private static Optional<ResourceLocation> getTemplateId(StructurePoolElement element) {

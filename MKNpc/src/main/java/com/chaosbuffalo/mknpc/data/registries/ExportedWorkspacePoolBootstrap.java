@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.data.registries;
 
 import com.chaosbuffalo.mknpc.data.providers.MKWorkspaceExportManifestLoader;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSinglePoolElement;
+import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKFloorMaskVariantExporter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
@@ -80,8 +81,21 @@ public final class ExportedWorkspacePoolBootstrap {
             List<MKWorkspaceExportManifest.ExportPiece> pieces) {
         ImmutableList.Builder<Pair<Function<StructureTemplatePool.Projection, ? extends StructurePoolElement>, Integer>> builder = ImmutableList.builder();
         for (MKWorkspaceExportManifest.ExportPiece piece : pieces) {
-            builder.add(Pair.of(MKSinglePoolElement.forTemplate(ResourceLocation.parse(piece.structureId()), false), 1));
+            builder.add(Pair.of(MKSinglePoolElement.forTemplate(ResourceLocation.parse(piece.structureId()), false),
+                    templateWeight(piece)));
         }
         return builder.build();
+    }
+
+    private static int templateWeight(MKWorkspaceExportManifest.ExportPiece piece) {
+        String weight = piece.tags().get(MKFloorMaskVariantExporter.FLOOR_MASK_WEIGHT_TAG);
+        if (weight == null || weight.isBlank()) {
+            return 1;
+        }
+        try {
+            return Math.max(1, Integer.parseInt(weight));
+        } catch (NumberFormatException ignored) {
+            return 1;
+        }
     }
 }

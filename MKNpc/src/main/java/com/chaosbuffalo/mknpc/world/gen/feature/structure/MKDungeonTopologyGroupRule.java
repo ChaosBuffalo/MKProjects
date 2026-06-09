@@ -12,6 +12,8 @@ public record MKDungeonTopologyGroupRule(
         int minMainPathPieces,
         int maxMainPathPieces,
         int maxBranchPiecesBeforeCap,
+        float sprawl,
+        Optional<Long> lockedLayoutSeed,
         boolean hasMainPathContinuations,
         @Nullable ResourceLocation mainPathEndingPool
 ) {
@@ -21,22 +23,40 @@ public record MKDungeonTopologyGroupRule(
                     .forGetter(MKDungeonTopologyGroupRule::minMainPathPieces),
             Codec.intRange(0, 10).optionalFieldOf("max_main_path_pieces", 2)
                     .forGetter(MKDungeonTopologyGroupRule::maxMainPathPieces),
-            Codec.intRange(0, 10).optionalFieldOf("max_branch_pieces_before_cap", 10)
+            Codec.intRange(0, 10).optionalFieldOf("max_branch_pieces_before_cap", 0)
                     .forGetter(MKDungeonTopologyGroupRule::maxBranchPiecesBeforeCap),
+            Codec.FLOAT.optionalFieldOf("sprawl", 0.5f)
+                    .forGetter(MKDungeonTopologyGroupRule::sprawl),
+            Codec.LONG.optionalFieldOf("locked_layout_seed")
+                    .forGetter(MKDungeonTopologyGroupRule::lockedLayoutSeed),
             Codec.BOOL.optionalFieldOf("has_main_path_continuations", true)
                     .forGetter(MKDungeonTopologyGroupRule::hasMainPathContinuations),
             ResourceLocation.CODEC.optionalFieldOf("main_path_ending_pool")
                     .forGetter(MKDungeonTopologyGroupRule::mainPathEndingPoolOpt)
-    ).apply(instance, (topologyGroup, minMainPathPieces, maxMainPathPieces, maxBranchPiecesBeforeCap,
-                       hasMainPathContinuations, mainPathEndingPool) ->
+    ).apply(instance, (topologyGroup, minMainPathPieces, maxMainPathPieces, maxBranchPiecesBeforeCap, sprawl,
+                       lockedLayoutSeed, hasMainPathContinuations, mainPathEndingPool) ->
             new MKDungeonTopologyGroupRule(topologyGroup, minMainPathPieces, maxMainPathPieces,
-                    maxBranchPiecesBeforeCap,
+                    maxBranchPiecesBeforeCap, sprawl, lockedLayoutSeed,
                     hasMainPathContinuations, mainPathEndingPool.orElse(null))));
+
+    public MKDungeonTopologyGroupRule {
+        sprawl = Math.max(0.0f, Math.min(1.0f, sprawl));
+        lockedLayoutSeed = lockedLayoutSeed == null ? Optional.empty() : lockedLayoutSeed;
+    }
 
     public MKDungeonTopologyGroupRule(String topologyGroup, int minMainPathPieces, int maxMainPathPieces,
                                       boolean hasMainPathContinuations,
                                       @Nullable ResourceLocation mainPathEndingPool) {
-        this(topologyGroup, minMainPathPieces, maxMainPathPieces, 10, hasMainPathContinuations, mainPathEndingPool);
+        this(topologyGroup, minMainPathPieces, maxMainPathPieces, 10, 0.5f, hasMainPathContinuations,
+                mainPathEndingPool);
+    }
+
+    public MKDungeonTopologyGroupRule(String topologyGroup, int minMainPathPieces, int maxMainPathPieces,
+                                      int maxBranchPiecesBeforeCap, float sprawl,
+                                      boolean hasMainPathContinuations,
+                                      @Nullable ResourceLocation mainPathEndingPool) {
+        this(topologyGroup, minMainPathPieces, maxMainPathPieces, maxBranchPiecesBeforeCap, sprawl,
+                Optional.empty(), hasMainPathContinuations, mainPathEndingPool);
     }
 
     public boolean hasMainPathEndings() {

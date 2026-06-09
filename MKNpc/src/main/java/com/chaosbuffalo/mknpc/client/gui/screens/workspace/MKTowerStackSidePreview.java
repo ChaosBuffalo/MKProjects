@@ -36,6 +36,7 @@ public class MKTowerStackSidePreview extends MKWidget {
     private static final int DISABLED = 0x775B6370;
     private static final int HOVER_OUTLINE = 0xFFFFFFFF;
     private static final int SELECTED_OUTLINE = 0xFFFFD166;
+    private static final int GROUND_LINE = 0xFFE8E0C8;
     private static final int EXIT_MARKER = 0xFFFFD166;
     private static final int EXIT_MARKER_SHADOW = 0xAA000000;
     private static final int TEXT = 0xFFE0E0E0;
@@ -44,6 +45,9 @@ public class MKTowerStackSidePreview extends MKWidget {
     private static final int CONTROL_ACTIVE = 0xFF6B7682;
     private static final int TRACK = 0xFF4D5661;
     private static final int STACK_DIAGRAM_HEIGHT = 150;
+    private static final int SMALL_HEIGHT_PREVIEW_BLOCKS = 64;
+    private static final int MEDIUM_HEIGHT_PREVIEW_BLOCKS = 128;
+    private static final int MAX_HEIGHT_PREVIEW_BLOCKS = 257;
     private static final int TOGGLE_START_OFFSET = 36;
     private static final int TOGGLE_ROW_HEIGHT = 16;
     private static final int TOGGLE_ROW_GAP = 2;
@@ -64,11 +68,13 @@ public class MKTowerStackSidePreview extends MKWidget {
     private static final int SHAFT_FILL = 0xCC74C69D;
     private static final int SHAFT_BACKGROUND = 0xFF1B1B1F;
     private static final int FLOOR_PREVIEW_HEIGHT = 132;
+    private static final int STRUCTURE_RADIUS_LIMIT = 128;
     private static final int FLOOR_ROOT = 0xCC6EA46D;
     private static final int FLOOR_MAIN = 0xCC4F8FB8;
     private static final int FLOOR_BRANCH = 0xCCB88A4F;
     private static final int FLOOR_ROOM = 0xCC8A73A8;
     private static final int FLOOR_CAP = 0xCCD18A50;
+    private static final int COLLISION = 0xFFFF4D4D;
 
     private final MKTowerStackSizingReport report;
     private final String selectedKey;
@@ -147,6 +153,16 @@ public class MKTowerStackSidePreview extends MKWidget {
             }
             return;
         }
+        Optional<String> groundTooltip = hoveredGroundLineTooltip(x, y, width, height, mouseX, mouseY);
+        if (groundTooltip.isPresent()) {
+            IMKScreen screen = getScreen();
+            if (screen != null) {
+                Vec2i parentPos = getParentCoords(new Vec2i(mouseX, mouseY));
+                screen.addPostRenderInstruction(new HoveringTextInstruction(Component.literal(groundTooltip.get()),
+                        parentPos));
+            }
+            return;
+        }
         hoveredSection(x, y, width, height, mouseX, mouseY).ifPresent(section -> {
             IMKScreen screen = getScreen();
             if (screen != null) {
@@ -207,6 +223,11 @@ public class MKTowerStackSidePreview extends MKWidget {
     private void drawStack(GuiGraphics graphics, StackBounds stackBounds, int mouseX, int mouseY) {
         int totalBlocks = Math.max(1, report.sections().stream().mapToInt(this::displayHeight).sum());
         int cursor = stackBounds.bottom();
+        drawOutline(graphics, stackBounds.left(), stackBounds.top(), stackBounds.width(), stackBounds.bottom(),
+                CONTROL_ACTIVE);
+        Minecraft mc = Minecraft.getInstance();
+        graphics.drawCenteredString(mc.font, Component.literal("Scale " + heightPreviewBlocks(totalBlocks)),
+                stackBounds.left() + stackBounds.width() / 2, stackBounds.top() + 3, MUTED_TEXT);
         List<MKTowerStackSizingReport.SectionInfo> sections = report.sections();
         for (int index = 0; index < sections.size(); index++) {
             MKTowerStackSizingReport.SectionInfo section = sections.get(index);
@@ -215,6 +236,17 @@ public class MKTowerStackSidePreview extends MKWidget {
             cursor = drawSection(graphics, stackBounds.left(), stackBounds.width(), cursor, sectionHeight,
                     section.active() ? colorForKey(section.key()) : DISABLED, mouseX, mouseY, section);
         }
+        int groundY = groundLineY(stackBounds);
+        if (groundY >= stackBounds.top() && groundY <= stackBounds.bottom()) {
+            drawGroundLine(graphics, stackBounds, groundY);
+        }
+    }
+
+    private void drawGroundLine(GuiGraphics graphics, StackBounds stackBounds, int y) {
+        int left = stackBounds.left() - 5;
+        int right = stackBounds.left() + stackBounds.width() + 5;
+        graphics.fill(left, y - 1, right, y + 1, 0xAA000000);
+        graphics.fill(left, y, right, y + 1, GROUND_LINE);
     }
 
     private void drawShaftPreview(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height,
@@ -354,7 +386,8 @@ public class MKTowerStackSidePreview extends MKWidget {
                                 controls.floorHallwayLeadInMode(section.key()).getSerializedName()),
                 modeBounds.width() - 4), modeBounds.x() + 2, modeBounds.y() + 3, TEXT, false);
         if (controls.floorHallwayLeadInMode(section.key()) == MKWorkspaceHallwayLeadInMode.MANUAL) {
-            drawSlider(graphics, mc, "Lead In", controls.floorManualHallwayLeadInPieces(section.key()), 0, 10,
+            drawSlider(graphics, mc, "Lead In", controls.floorManualHallwayLeadInPieces(section.key()), 0,
+                    MKWorkspaceFloorTopologySettings.MAX_MANUAL_HALLWAY_LEAD_IN_PIECES,
                     x + modeBounds.width() + 6, y + 80,
                     Math.max(40, width - modeBounds.width() - 6), mouseX, mouseY, "floorLeadIn");
         } else {
@@ -390,10 +423,12 @@ public class MKTowerStackSidePreview extends MKWidget {
         graphics.drawString(mc.font, "Floor Plan", panelX + 5, panelY + 5, TEXT, false);
         int centerX = panelX + panelWidth / 2;
         int centerY = panelY + panelHeight / 2;
-        int rootW = Math.max(18, Math.min(36, controls.stackWidth(section.key()) * 3));
-        int rootH = Math.max(18, Math.min(36, controls.stackLength(section.key()) * 3));
+        float scale = floorPlanScale(panel);
+        int rootW = Math.max(2, Math.round(controls.stackWidth(section.key()) * scale));
+        int rootH = Math.max(2, Math.round(controls.stackLength(section.key()) * scale));
 
         List<FloorPlanSegment> segments = floorPlanSegments(panel, section);
+        List<FloorPlanSegment> colliding = collidingFloorPlanSegments(section, segments);
         for (FloorPlanSegment segment : segments) {
             ButtonBounds bounds = segment.bounds();
             boolean hovered = isInRect(mouseX, mouseY, bounds.x(), bounds.y(), bounds.width(), bounds.height());
@@ -402,6 +437,9 @@ public class MKTowerStackSidePreview extends MKWidget {
             if (hovered) {
                 drawOutline(graphics, bounds.x(), bounds.y(), bounds.width(), bounds.y() + bounds.height(),
                         HOVER_OUTLINE);
+            }
+            if (colliding.contains(segment)) {
+                drawDiagonalHatch(graphics, bounds, COLLISION);
             }
         }
         drawOutline(graphics, centerX - rootW / 2, centerY - rootH / 2, rootW, centerY + rootH / 2,
@@ -426,25 +464,28 @@ public class MKTowerStackSidePreview extends MKWidget {
         ArrayList<FloorPlanSegment> segments = new ArrayList<>();
         int centerX = panel.x() + panel.width() / 2;
         int centerY = panel.y() + panel.height() / 2;
-        int rootW = Math.max(18, Math.min(36, controls.stackWidth(section.key()) * 3));
-        int rootH = Math.max(18, Math.min(36, controls.stackLength(section.key()) * 3));
+        float scale = floorPlanScale(panel);
+        int rootW = Math.max(2, Math.round(controls.stackWidth(section.key()) * scale));
+        int rootH = Math.max(2, Math.round(controls.stackLength(section.key()) * scale));
         ButtonBounds root = new ButtonBounds(centerX - rootW / 2, centerY - rootH / 2, rootW, rootH);
         segments.add(new FloorPlanSegment(root, FLOOR_ROOT, null, "Floor Root",
                 "Floor Root\n" + controls.stackWidth(section.key()) + " x " +
                         controls.stackLength(section.key()) + "\n" +
                         WorkspaceTopologyUiSupport.formatTopologyLabel(section.key())));
         for (MKWorkspaceFamilyHorizontalExitDefinition exit : controls.exits(section.key())) {
-            if (!exit.direction().getAxis().isHorizontal()) {
+            if (!exit.direction().getAxis().isHorizontal() ||
+                    (exit.pathKind() != MKWorkspaceHorizontalExitPathKind.MAIN_EXIT &&
+                            exit.pathKind() != MKWorkspaceHorizontalExitPathKind.BRANCH)) {
                 continue;
             }
-            addExitPlanSegments(segments, panel, root, section, exit);
+            addExitPlanSegments(segments, panel, root, section, exit, scale);
         }
         return List.copyOf(segments);
     }
 
     private void addExitPlanSegments(List<FloorPlanSegment> segments, ButtonBounds panel, ButtonBounds root,
                                      MKTowerStackSizingReport.SectionInfo section,
-                                     MKWorkspaceFamilyHorizontalExitDefinition exit) {
+                                     MKWorkspaceFamilyHorizontalExitDefinition exit, float scale) {
         boolean main = exit.pathKind().usesMainPath();
         int roomCount = main ? controls.floorMaxMainPathPieces(section.key()) :
                 controls.floorMaxBranchPiecesBeforeCap(section.key());
@@ -454,49 +495,52 @@ public class MKTowerStackSidePreview extends MKWidget {
                 MKWorkspaceFloorRoomKind.BRANCH_ROOM;
         int configuredWidth = controls.floorRoomWidth(section.key(), roomKind);
         int configuredLength = controls.floorRoomLength(section.key(), roomKind);
-        int roomWidth = vertical ? Math.max(10, Math.min(24, configuredWidth * 2)) :
-                Math.max(12, Math.min(32, configuredWidth * 2));
-        int roomHeight = vertical ? Math.max(8, Math.min(22, configuredLength * 2)) :
-                Math.max(10, Math.min(28, configuredLength * 2));
-        int roomMajor = vertical ? roomHeight : roomWidth;
-        int roomMinor = vertical ? roomWidth : roomHeight;
-        int hallwayMinor = main ? 7 : 5;
-        int capMajor = vertical ? (main ? 10 : 8) : (main ? 14 : 12);
-        int capMinor = vertical ? (main ? 12 : 10) : (main ? 16 : 14);
+        int roomMajor = vertical ? configuredLength : configuredWidth;
+        int roomMinor = vertical ? configuredWidth : configuredLength;
+        int hallwayMinor = main ? Math.max(3, Math.min(7, configuredWidth / 2)) :
+                Math.max(3, Math.min(5, configuredWidth / 2));
+        int capMajor = roomMajor;
+        int capMinor = roomMinor;
+        boolean hallwaysEnabled = main ? controls.floorMainHallwaysEnabled(section.key()) :
+                controls.floorBranchHallwaysEnabled(section.key());
+        boolean mainCapApproachEnabled = main && controls.floorMainCapApproachEnabled(section.key());
         List<FloorPlanStep> steps = floorPlanSteps(main, Math.max(0, roomCount), leadIn, roomMajor, roomMinor,
                 hallwayMinor, capMajor, capMinor, configuredWidth, configuredLength,
-                controls.floorRoomHeight(section.key(), roomKind), exit);
-        int availableSpan = maxSpan(panel, root, exit.direction());
-        if (availableSpan <= 4) {
-            return;
-        }
-        List<Integer> majors = scaleMajors(steps.stream().map(FloorPlanStep::major).toList(), availableSpan);
+                controls.floorRoomHeight(section.key(), roomKind), exit, hallwaysEnabled, mainCapApproachEnabled);
         ButtonBounds previous = root;
-        for (int i = 0; i < steps.size(); i++) {
-            FloorPlanStep step = steps.get(i);
-            previous = orientedRectAfter(previous, exit.direction(), majors.get(i), step.minor());
+        for (FloorPlanStep step : steps) {
+            int major = Math.max(2, Math.round(step.major() * scale));
+            int minor = Math.max(2, Math.round(step.minor() * scale));
+            previous = orientedRectAfter(previous, exit.direction(), major, minor);
             if (previous.width() <= 0 || previous.height() <= 0) {
                 continue;
             }
-            segments.add(new FloorPlanSegment(previous, step.color(), exit.direction(), step.label(),
-                    step.tooltip()));
+            clippedRect(previous, panel).ifPresent(bounds ->
+                    segments.add(new FloorPlanSegment(bounds, step.color(), exit.direction(), step.label(),
+                            step.tooltip())));
         }
     }
 
     private List<FloorPlanStep> floorPlanSteps(boolean main, int roomCount, int leadIn, int roomMajor, int roomMinor,
                                                int hallwayMinor, int capMajor, int capMinor,
                                                int configuredWidth, int configuredLength, int configuredHeight,
-                                               MKWorkspaceFamilyHorizontalExitDefinition exit) {
+                                               MKWorkspaceFamilyHorizontalExitDefinition exit,
+                                               boolean hallwaysEnabled,
+                                               boolean mainCapApproachEnabled) {
         ArrayList<FloorPlanStep> steps = new ArrayList<>();
         String pathLabel = main ? "Main Hall" : "Branch Hall";
         int pathColor = main ? FLOOR_MAIN : FLOOR_BRANCH;
         int firstHallway = Math.max(5, Math.min(18, Math.max(1, leadIn) * 4));
-        int betweenHallway = main ? 10 : 7;
-        steps.add(new FloorPlanStep(pathLabel, pathColor, firstHallway, hallwayMinor,
-                pathLabel + "\n" + formatDirection(exit.direction()) +
-                        "\nlead-in " + leadIn +
-                        "\nconnector " + formatPathKind(exit.pathKind())));
+        int betweenHallway = Math.max(1, leadIn);
+        firstHallway = Math.max(1, leadIn);
         for (int i = 0; i < roomCount; i++) {
+            if (hallwaysEnabled) {
+                steps.add(new FloorPlanStep(pathLabel, pathColor, i == 0 ? firstHallway : betweenHallway,
+                        hallwayMinor,
+                        pathLabel + "\n" + formatDirection(exit.direction()) +
+                                (i == 0 ? "\nlead-in " + leadIn : "\nbefore room " + (i + 1)) +
+                                "\nconnector " + formatPathKind(exit.pathKind())));
+            }
             int roomNumber = i + 1;
             steps.add(new FloorPlanStep(main ? "M" + roomNumber : "B" + roomNumber, FLOOR_ROOM,
                     roomMajor, roomMinor,
@@ -505,9 +549,23 @@ public class MKTowerStackSidePreview extends MKWidget {
                             "\nconfigured " + configuredWidth + " x " + configuredLength +
                             "\nheight " + configuredHeight +
                             "\nroom " + roomNumber + " of max " + roomCount));
-            steps.add(new FloorPlanStep(pathLabel, pathColor, betweenHallway, hallwayMinor,
+        }
+        if (mainCapApproachEnabled) {
+            if (hallwaysEnabled) {
+                steps.add(new FloorPlanStep(pathLabel, pathColor, roomCount == 0 ? firstHallway : betweenHallway,
+                        hallwayMinor,
+                        pathLabel + "\n" + formatDirection(exit.direction()) +
+                                "\nbefore main approach"));
+            }
+            steps.add(new FloorPlanStep("Approach", FLOOR_CAP, capMajor, capMinor,
+                    "Main cap approach\n" + formatDirection(exit.direction())));
+        }
+        if (hallwaysEnabled) {
+            steps.add(new FloorPlanStep(pathLabel, pathColor,
+                    roomCount == 0 && !mainCapApproachEnabled ? firstHallway : betweenHallway,
+                    hallwayMinor,
                     pathLabel + "\n" + formatDirection(exit.direction()) +
-                            "\nafter room " + roomNumber));
+                            (mainCapApproachEnabled ? "\nbefore cap" : "\nbefore terminal cap")));
         }
         steps.add(new FloorPlanStep(main ? "Main Cap" : "Branch Cap", FLOOR_CAP, capMajor, capMinor,
                 (main ? "Main approach/cap" : "Branch cap") +
@@ -526,6 +584,44 @@ public class MKTowerStackSidePreview extends MKWidget {
             case NORTH -> root.y() - (panel.y() + 22);
             default -> 0;
         };
+    }
+
+    private float floorPlanScale(ButtonBounds panel) {
+        int plotW = Math.max(1, panel.width() - 12);
+        int plotH = Math.max(1, panel.height() - 22);
+        return Math.min(plotW, plotH) / (float) (STRUCTURE_RADIUS_LIMIT * 2);
+    }
+
+    private Optional<ButtonBounds> clippedRect(ButtonBounds bounds, ButtonBounds panel) {
+        int left = Math.max(panel.x() + 6, bounds.x());
+        int top = Math.max(panel.y() + 6, bounds.y());
+        int right = Math.min(panel.x() + panel.width() - 6, bounds.x() + bounds.width());
+        int bottom = Math.min(panel.y() + panel.height() - 16, bounds.y() + bounds.height());
+        if (right <= left || bottom <= top) {
+            return Optional.empty();
+        }
+        return Optional.of(new ButtonBounds(left, top, right - left, bottom - top));
+    }
+
+    private List<FloorPlanSegment> collidingFloorPlanSegments(MKTowerStackSizingReport.SectionInfo section,
+                                                              List<FloorPlanSegment> segments) {
+        List<FloorPlanSegment> rooms = segments.stream()
+                .filter(segment -> segment.color() == FLOOR_ROOM || segment.color() == FLOOR_CAP)
+                .toList();
+        ArrayList<FloorPlanSegment> colliding = new ArrayList<>();
+        for (int i = 0; i < rooms.size(); i++) {
+            for (int j = i + 1; j < rooms.size(); j++) {
+                if (intersects(rooms.get(i).bounds(), rooms.get(j).bounds())) {
+                    if (!colliding.contains(rooms.get(i))) {
+                        colliding.add(rooms.get(i));
+                    }
+                    if (!colliding.contains(rooms.get(j))) {
+                        colliding.add(rooms.get(j));
+                    }
+                }
+            }
+        }
+        return List.copyOf(colliding);
     }
 
     private List<Integer> scaleMajors(List<Integer> majors, int maxSpan) {
@@ -994,7 +1090,8 @@ public class MKTowerStackSidePreview extends MKWidget {
             controls.floorMaxBranchPiecesBeforeCap(section.key(), sliderValue(mouseX, bounds, 0,
                     MKWorkspaceFloorTopologySettings.MAX_BRANCH_PIECES_BEFORE_CAP));
         } else if ("floorLeadIn".equals(slider)) {
-            controls.floorManualHallwayLeadInPieces(section.key(), sliderValue(mouseX, bounds, 0, 10));
+            controls.floorManualHallwayLeadInPieces(section.key(), sliderValue(mouseX, bounds, 0,
+                    MKWorkspaceFloorTopologySettings.MAX_MANUAL_HALLWAY_LEAD_IN_PIECES));
         } else if ("mainRoomWidth".equals(slider)) {
             controls.floorRoomWidth(section.key(), MKWorkspaceFloorRoomKind.MAIN_ROOM,
                     makeOdd(sliderValue(mouseX, bounds, 3, MAX_STACK_FOOTPRINT)));
@@ -1113,6 +1210,35 @@ public class MKTowerStackSidePreview extends MKWidget {
         return Optional.empty();
     }
 
+    private Optional<String> hoveredGroundLineTooltip(int x, int y, int width, int height, int mouseX, int mouseY) {
+        StackBounds stackBounds = stackBounds(x, y, width, height);
+        int groundY = groundLineY(stackBounds);
+        if (groundY < stackBounds.top() || groundY > stackBounds.bottom()) {
+            return Optional.empty();
+        }
+        int left = stackBounds.left() - 5;
+        int lineWidth = stackBounds.width() + 10;
+        return isInRect(mouseX, mouseY, left, groundY - 3, lineWidth, 6)
+                ? Optional.of("Ground Line")
+                : Optional.empty();
+    }
+
+    private int groundLineY(StackBounds stackBounds) {
+        int totalBlocks = Math.max(1, report.sections().stream().mapToInt(this::displayHeight).sum());
+        int cursor = stackBounds.bottom();
+        List<MKTowerStackSizingReport.SectionInfo> sections = report.sections();
+        for (int index = 0; index < sections.size(); index++) {
+            MKTowerStackSizingReport.SectionInfo section = sections.get(index);
+            int sectionHeight = scaledSectionHeight(section, index, sections, stackBounds.top(), stackBounds.bottom(),
+                    totalBlocks, cursor);
+            if ("entry".equals(section.key())) {
+                return cursor;
+            }
+            cursor -= sectionHeight;
+        }
+        return -1;
+    }
+
     private Optional<ToggleSpec> hoveredToggle(int x, int y, int width, int height, int mouseX, int mouseY) {
         for (int index = 0; index < toggleSpecs().size(); index++) {
             ToggleSpec spec = toggleSpecs().get(index);
@@ -1202,11 +1328,35 @@ public class MKTowerStackSidePreview extends MKWidget {
         return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
     }
 
+    private boolean intersects(ButtonBounds first, ButtonBounds second) {
+        return first.x() < second.x() + second.width() &&
+                first.x() + first.width() > second.x() &&
+                first.y() < second.y() + second.height() &&
+                first.y() + first.height() > second.y();
+    }
+
     private void drawOutline(GuiGraphics graphics, int left, int top, int width, int bottom, int color) {
         graphics.fill(left, top, left + width, top + 1, color);
         graphics.fill(left, bottom - 1, left + width, bottom, color);
         graphics.fill(left, top, left + 1, bottom, color);
         graphics.fill(left + width - 1, top, left + width, bottom, color);
+    }
+
+    private void drawDiagonalHatch(GuiGraphics graphics, ButtonBounds bounds, int color) {
+        int spacing = 6;
+        int left = bounds.x();
+        int top = bounds.y();
+        int right = bounds.x() + bounds.width();
+        int bottom = bounds.y() + bounds.height();
+        for (int startX = left - bounds.height(); startX < right; startX += spacing) {
+            for (int step = 0; step <= bounds.height(); step++) {
+                int px = startX + step;
+                int py = top + step;
+                if (px >= left && px < right && py >= top && py < bottom) {
+                    graphics.fill(px, py, Math.min(right, px + 2), Math.min(bottom, py + 2), color);
+                }
+            }
+        }
     }
 
     private void drawExitMarkers(GuiGraphics graphics, MKTowerStackSizingReport.SectionInfo section,
@@ -1483,16 +1633,24 @@ public class MKTowerStackSidePreview extends MKWidget {
     private int scaledSectionHeight(MKTowerStackSizingReport.SectionInfo section, int index,
                                     List<MKTowerStackSizingReport.SectionInfo> sections, int stackTop,
                                     int stackBottom, int totalBlocks, int cursor) {
-        if (index == sections.size() - 1) {
-            return Math.max(2, cursor - stackTop);
-        }
         int availableHeight = Math.max(1, stackBottom - stackTop);
-        return Math.max(section.active() ? 2 : 4,
-                Math.round((displayHeight(section) / (float) totalBlocks) * availableHeight));
+        int previewBlocks = heightPreviewBlocks(totalBlocks);
+        int scaled = Math.round((displayHeight(section) / (float) previewBlocks) * availableHeight);
+        return Math.min(Math.max(0, cursor - stackTop), Math.max(section.active() ? 2 : 4, scaled));
     }
 
     private int displayHeight(MKTowerStackSizingReport.SectionInfo section) {
         return section.active() ? section.height() : 1;
+    }
+
+    private int heightPreviewBlocks(int totalBlocks) {
+        if (totalBlocks <= SMALL_HEIGHT_PREVIEW_BLOCKS) {
+            return SMALL_HEIGHT_PREVIEW_BLOCKS;
+        }
+        if (totalBlocks <= MEDIUM_HEIGHT_PREVIEW_BLOCKS) {
+            return MEDIUM_HEIGHT_PREVIEW_BLOCKS;
+        }
+        return MAX_HEIGHT_PREVIEW_BLOCKS;
     }
 
     private Optional<MKTowerStackSizingReport.SectionInfo> selectedSection() {
@@ -1664,6 +1822,27 @@ public class MKTowerStackSidePreview extends MKWidget {
         }
 
         default void floorManualHallwayLeadInPieces(String sectionKey, int value) {
+        }
+
+        default boolean floorMainHallwaysEnabled(String sectionKey) {
+            return true;
+        }
+
+        default void floorMainHallwaysEnabled(String sectionKey, boolean value) {
+        }
+
+        default boolean floorBranchHallwaysEnabled(String sectionKey) {
+            return true;
+        }
+
+        default void floorBranchHallwaysEnabled(String sectionKey, boolean value) {
+        }
+
+        default boolean floorMainCapApproachEnabled(String sectionKey) {
+            return false;
+        }
+
+        default void floorMainCapApproachEnabled(String sectionKey, boolean value) {
         }
 
         default int recommendedHallwayLeadInPieces(String sectionKey) {

@@ -49,6 +49,7 @@ import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,6 +63,7 @@ public class WorkspaceDraftSession {
     private int selectedFamilyExitIndex;
     private int selectedOpeningIndex;
     private int selectedLinearRunIndex;
+    private final Map<String, Long> floorTopologyPreviewSeeds = new HashMap<>();
     private static final List<String> KEEP_CORNER_STACK_IDS = List.of(
             "keep.corner.north_west",
             "keep.corner.north_east",
@@ -1318,6 +1320,70 @@ public class WorkspaceDraftSession {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withManualHallwayLeadInPieces(value));
     }
 
+    public boolean floorTopologyMainHallwaysEnabled(String stackId, String floorRole) {
+        return floorTopologySettings(stackId, floorRole).mainHallwaysEnabled();
+    }
+
+    public void floorTopologyMainHallwaysEnabled(String stackId, String floorRole, boolean value) {
+        replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withMainHallwaysEnabled(value));
+    }
+
+    public boolean floorTopologyBranchHallwaysEnabled(String stackId, String floorRole) {
+        return floorTopologySettings(stackId, floorRole).branchHallwaysEnabled();
+    }
+
+    public void floorTopologyBranchHallwaysEnabled(String stackId, String floorRole, boolean value) {
+        replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withBranchHallwaysEnabled(value));
+    }
+
+    public boolean floorTopologyMainCapApproachEnabled(String stackId, String floorRole) {
+        return floorTopologySettings(stackId, floorRole).mainCapApproachEnabled();
+    }
+
+    public void floorTopologyMainCapApproachEnabled(String stackId, String floorRole, boolean value) {
+        replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withMainCapApproachEnabled(value));
+    }
+
+    public float floorTopologySprawl(String stackId, String floorRole) {
+        return floorTopologySettings(stackId, floorRole).sprawl();
+    }
+
+    public void floorTopologySprawl(String stackId, String floorRole, float value) {
+        replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withSprawl(value));
+    }
+
+    public long floorTopologyPreviewSeed(String stackId, String floorRole) {
+        return floorTopologyLockedLayoutSeed(stackId, floorRole)
+                .orElseGet(() -> floorTopologyPreviewSeeds.computeIfAbsent(
+                        MKWorkspaceFloorTopologySettings.key(stackId, floorRole),
+                        key -> (long) key.hashCode()));
+    }
+
+    public void rerollFloorTopologyPreviewSeed(String stackId, String floorRole) {
+        if (floorTopologyLockedLayoutSeed(stackId, floorRole).isPresent()) {
+            return;
+        }
+        String key = MKWorkspaceFloorTopologySettings.key(stackId, floorRole);
+        long current = floorTopologyPreviewSeed(stackId, floorRole);
+        floorTopologyPreviewSeeds.put(key, current * 6364136223846793005L + 1442695040888963407L);
+    }
+
+    public Optional<Long> floorTopologyLockedLayoutSeed(String stackId, String floorRole) {
+        return floorTopologySettings(stackId, floorRole).lockedLayoutSeed();
+    }
+
+    public void lockFloorTopologyLayoutSeed(String stackId, String floorRole) {
+        long seed = floorTopologyPreviewSeeds.computeIfAbsent(MKWorkspaceFloorTopologySettings.key(stackId, floorRole),
+                key -> (long) key.hashCode());
+        replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole)
+                .withLockedLayoutSeed(Optional.of(seed)));
+    }
+
+    public void unlockFloorTopologyLayoutSeed(String stackId, String floorRole) {
+        replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole)
+                .withLockedLayoutSeed(Optional.empty()));
+    }
+
     public int floorTopologyRoomWidth(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind) {
         return floorTopologyRoomProfile(stackId, floorRole, kind).width();
     }
@@ -1364,8 +1430,7 @@ public class WorkspaceDraftSession {
     public List<MKWorkspaceFloorRoomProfile> floorTopologyRoomProfiles(String stackId, String floorRole,
                                                                        MKWorkspaceFloorRoomKind kind) {
         MKWorkspaceFloorTopologySettings settings = floorTopologySettings(stackId, floorRole);
-        List<MKWorkspaceFloorRoomProfile> profiles = kind == MKWorkspaceFloorRoomKind.MAIN_ROOM ?
-                settings.mainRoomProfiles() : settings.branchRoomProfiles();
+        List<MKWorkspaceFloorRoomProfile> profiles = floorRoomProfilesForKind(settings, kind);
         if (!profiles.isEmpty()) {
             return profiles;
         }
@@ -1377,7 +1442,12 @@ public class WorkspaceDraftSession {
         List<MKWorkspaceFloorRoomProfile> profiles = floorTopologyRoomProfiles(stackId, floorRole, kind);
         int nextIndex = profiles.size();
         MKWorkspaceFloorRoomProfile source = profiles.getLast();
-        MKWorkspaceFloorRoomProfile added = source.withIdentity(
+        MKWorkspaceFloorRoomProfile added = MKWorkspaceFloorRoomProfile.defaults(
+                kind,
+                source.width(),
+                source.length(),
+                source.height()
+        ).withIdentity(
                 kind.getSerializedName() + "_" + nextIndex,
                 WorkspaceTopologyUiSupport.formatTopologyLabel(kind.getSerializedName()) + " " + (nextIndex + 1));
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withAddedRoomProfile(kind, added));
@@ -1388,10 +1458,10 @@ public class WorkspaceDraftSession {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withRemovedRoomProfile(kind, index));
     }
 
-    public void floorTopologySetRoomMainExitDirection(String stackId, String floorRole, int index,
+    public void floorTopologySetRoomMainExitDirection(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind,
+                                                      int index,
                                                       Direction direction) {
-        MKWorkspaceFloorRoomProfile profile = floorTopologyRoomProfile(stackId, floorRole,
-                MKWorkspaceFloorRoomKind.MAIN_ROOM, index);
+        MKWorkspaceFloorRoomProfile profile = floorTopologyRoomProfile(stackId, floorRole, kind, index);
         if (!profile.mainExitDirection(direction)) {
             return;
         }
@@ -1410,7 +1480,7 @@ public class WorkspaceDraftSession {
                 MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
         ));
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole)
-                .withRoomProfile(MKWorkspaceFloorRoomKind.MAIN_ROOM, index, profile.withHorizontalExits(exits)));
+                .withRoomProfile(kind, index, profile.withHorizontalExits(exits)));
     }
 
     public void floorTopologyToggleRoomBranchExit(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind,
@@ -1456,8 +1526,7 @@ public class WorkspaceDraftSession {
     private MKWorkspaceFloorRoomProfile floorTopologyRoomProfile(String stackId, String floorRole,
                                                                  MKWorkspaceFloorRoomKind kind, int index) {
         MKWorkspaceFloorTopologySettings settings = floorTopologySettings(stackId, floorRole);
-        List<MKWorkspaceFloorRoomProfile> profiles = kind == MKWorkspaceFloorRoomKind.MAIN_ROOM ?
-                settings.mainRoomProfiles() : settings.branchRoomProfiles();
+        List<MKWorkspaceFloorRoomProfile> profiles = floorRoomProfilesForKind(settings, kind);
         if (index >= 0 && index < profiles.size()) {
             return profiles.get(index);
         }
@@ -1474,6 +1543,17 @@ public class WorkspaceDraftSession {
                                 settings.minMainPathPieces(),
                                 settings.maxMainPathPieces(),
                                 settings.maxBranchPiecesBeforeCap())));
+    }
+
+    private List<MKWorkspaceFloorRoomProfile> floorRoomProfilesForKind(MKWorkspaceFloorTopologySettings settings,
+                                                                       MKWorkspaceFloorRoomKind kind) {
+        return switch (kind) {
+            case MAIN_ROOM -> settings.mainRoomProfiles();
+            case BRANCH_ROOM -> settings.branchRoomProfiles();
+            case BRANCH_CAP -> settings.branchCapProfiles();
+            case MAIN_CAP_APPROACH -> settings.mainCapApproachProfiles();
+            case MAIN_CAP -> settings.mainCapProfiles();
+        };
     }
 
     private Optional<String> topologyGroupForFloorRole(String floorRole) {

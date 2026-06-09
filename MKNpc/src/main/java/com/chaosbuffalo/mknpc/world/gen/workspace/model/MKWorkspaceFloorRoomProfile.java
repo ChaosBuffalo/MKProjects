@@ -102,25 +102,26 @@ public record MKWorkspaceFloorRoomProfile(
 
     public boolean requiredExitDirection(Direction direction) {
         return switch (kind) {
-            case MAIN_ROOM -> direction == Direction.SOUTH;
-            case BRANCH_ROOM -> direction == Direction.SOUTH;
+            case MAIN_ROOM, MAIN_CAP_APPROACH, MAIN_CAP -> direction == Direction.SOUTH;
+            case BRANCH_ROOM, BRANCH_CAP -> direction == Direction.SOUTH;
         };
     }
 
     public boolean optionalBranchExitDirection(Direction direction) {
         return direction.getAxis().isHorizontal() &&
+                allowsOptionalBranchExits(kind) &&
                 !requiredExitDirection(direction) &&
                 (kind != MKWorkspaceFloorRoomKind.MAIN_ROOM || mainExitDirection().orElse(null) != direction);
     }
 
     public boolean mainExitDirection(Direction direction) {
-        return kind == MKWorkspaceFloorRoomKind.MAIN_ROOM &&
+        return kind.hasMainExit() &&
                 direction.getAxis().isHorizontal() &&
                 direction != Direction.SOUTH;
     }
 
     public Optional<Direction> mainExitDirection() {
-        if (kind != MKWorkspaceFloorRoomKind.MAIN_ROOM) {
+        if (!kind.hasMainExit()) {
             return Optional.empty();
         }
         return horizontalExits.stream()
@@ -130,16 +131,16 @@ public record MKWorkspaceFloorRoomProfile(
     }
 
     public boolean terminalBranchRoom() {
-        return kind == MKWorkspaceFloorRoomKind.BRANCH_ROOM &&
-                horizontalExits.stream()
-                        .filter(exit -> exit.direction() != Direction.SOUTH)
-                        .noneMatch(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH);
+        return kind == MKWorkspaceFloorRoomKind.BRANCH_CAP;
     }
 
     private static String defaultLabel(MKWorkspaceFloorRoomKind kind) {
         return switch (kind) {
             case MAIN_ROOM -> "Main Room";
             case BRANCH_ROOM -> "Branch Room";
+            case BRANCH_CAP -> "Branch Cap";
+            case MAIN_CAP_APPROACH -> "Main Cap Approach";
+            case MAIN_CAP -> "Main Cap";
         };
     }
 
@@ -153,34 +154,42 @@ public record MKWorkspaceFloorRoomProfile(
                 if (exit == null || exit.direction().getAxis().isVertical()) {
                     continue;
                 }
-                if (kind == MKWorkspaceFloorRoomKind.MAIN_ROOM &&
+                if (kind.hasMainExit() &&
                         exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT &&
                         validMainExitDirection(kind, exit.direction())) {
                     mainExitDirection = exit.direction();
                 }
                 if (!requiredDirection(kind, exit.direction()) &&
+                        allowsOptionalBranchExits(kind) &&
                         exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH) {
                     byDirection.put(exit.direction(), optionalBranchExit(exit.direction()));
                 }
             }
         }
-        byDirection.remove(mainExitDirection);
+        if (kind.hasMainExit()) {
+            byDirection.remove(mainExitDirection);
+        }
         ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> resolved = new ArrayList<>();
-        if (kind == MKWorkspaceFloorRoomKind.MAIN_ROOM) {
+        if (kind.usesMainPath()) {
             resolved.add(new MKWorkspaceFamilyHorizontalExitDefinition(
                     Direction.SOUTH,
-                    MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY,
+                    kind.isMainPathEnding() ?
+                            MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY :
+                            MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY,
                     INHERITED_MAIN_OPENING_PROFILE_ID,
                     MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
             ));
-            resolved.add(new MKWorkspaceFamilyHorizontalExitDefinition(
-                    mainExitDirection,
-                    MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
-                    INHERITED_MAIN_OPENING_PROFILE_ID,
-                    MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
-            ));
+            if (kind.hasMainExit()) {
+                resolved.add(new MKWorkspaceFamilyHorizontalExitDefinition(
+                        mainExitDirection,
+                        MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                        INHERITED_MAIN_OPENING_PROFILE_ID,
+                        MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
+                ));
+            }
         } else {
-            resolved.add(optionalBranchExit(Direction.SOUTH));
+            resolved.add(kind == MKWorkspaceFloorRoomKind.BRANCH_CAP ?
+                    branchCapEntry(Direction.SOUTH) : optionalBranchExit(Direction.SOUTH));
         }
         for (Direction direction : List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)) {
             if (!requiredDirection(kind, direction) && byDirection.containsKey(direction)) {
@@ -192,21 +201,35 @@ public record MKWorkspaceFloorRoomProfile(
 
     private static boolean requiredDirection(MKWorkspaceFloorRoomKind kind, Direction direction) {
         return switch (kind) {
-            case MAIN_ROOM -> direction == Direction.SOUTH;
-            case BRANCH_ROOM -> direction == Direction.SOUTH;
+            case MAIN_ROOM, MAIN_CAP_APPROACH, MAIN_CAP -> direction == Direction.SOUTH;
+            case BRANCH_ROOM, BRANCH_CAP -> direction == Direction.SOUTH;
         };
     }
 
     private static boolean validMainExitDirection(MKWorkspaceFloorRoomKind kind, Direction direction) {
-        return kind == MKWorkspaceFloorRoomKind.MAIN_ROOM &&
+        return kind.hasMainExit() &&
                 direction.getAxis().isHorizontal() &&
                 direction != Direction.SOUTH;
+    }
+
+    private static boolean allowsOptionalBranchExits(MKWorkspaceFloorRoomKind kind) {
+        return kind != MKWorkspaceFloorRoomKind.BRANCH_CAP &&
+                kind != MKWorkspaceFloorRoomKind.MAIN_CAP;
     }
 
     private static MKWorkspaceFamilyHorizontalExitDefinition optionalBranchExit(Direction direction) {
         return new MKWorkspaceFamilyHorizontalExitDefinition(
                 direction,
                 MKWorkspaceHorizontalExitPathKind.BRANCH,
+                INHERITED_BRANCH_OPENING_PROFILE_ID,
+                MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
+        );
+    }
+
+    private static MKWorkspaceFamilyHorizontalExitDefinition branchCapEntry(Direction direction) {
+        return new MKWorkspaceFamilyHorizontalExitDefinition(
+                direction,
+                MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY,
                 INHERITED_BRANCH_OPENING_PROFILE_ID,
                 MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
         );

@@ -1,0 +1,109 @@
+package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
+
+import com.google.gson.JsonElement;
+import com.mojang.serialization.JsonOps;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import net.minecraft.core.Direction;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class MKFloorLayoutSolverTest {
+    @Test
+    void acceptedMaskReflectsSprawlRejectedBranches() {
+        MKFloorLayoutSolver.FloorLayoutResult result = new MKFloorLayoutSolver().solve(
+                settings(0.0f),
+                9,
+                9,
+                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.NORTH,
+                        MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                        MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID)),
+                1,
+                1234L
+        );
+
+        MKFloorLayoutSolver.LogicalSegment mainRoom = result.segments().stream()
+                .filter(segment -> segment.kind() == MKFloorLayoutSolver.SegmentKind.MAIN_ROOM)
+                .findFirst()
+                .orElseThrow();
+        assertEquals("none", mainRoom.acceptedMask());
+        assertEquals(2, result.rejectedExits().size());
+    }
+
+    @Test
+    void acceptedMaskReflectsPlacedBranches() {
+        MKFloorLayoutSolver.FloorLayoutResult result = new MKFloorLayoutSolver().solve(
+                settings(1.0f),
+                9,
+                9,
+                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.NORTH,
+                        MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                        MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID)),
+                1,
+                1234L
+        );
+
+        MKFloorLayoutSolver.LogicalSegment mainRoom = result.segments().stream()
+                .filter(segment -> segment.kind() == MKFloorLayoutSolver.SegmentKind.MAIN_ROOM)
+                .findFirst()
+                .orElseThrow();
+        assertEquals("ew", mainRoom.acceptedMask());
+    }
+
+    @Test
+    void floorTopologySettingsCodecCarriesLockedLayoutSeed() {
+        MKWorkspaceFloorTopologySettings settings = settings(0.75f).withLockedLayoutSeed(Optional.of(8675309L));
+
+        JsonElement encoded = MKWorkspaceFloorTopologySettings.CODEC.encodeStart(JsonOps.INSTANCE, settings)
+                .getOrThrow();
+        MKWorkspaceFloorTopologySettings decoded = MKWorkspaceFloorTopologySettings.CODEC.parse(JsonOps.INSTANCE,
+                encoded).getOrThrow();
+
+        assertEquals(Optional.of(8675309L), decoded.lockedLayoutSeed());
+        assertEquals(0.75f, decoded.sprawl());
+        assertEquals(1, decoded.mainRoomProfiles().size());
+    }
+
+    private static MKWorkspaceFloorTopologySettings settings(float sprawl) {
+        MKWorkspaceFloorRoomProfile mainRoom = MKWorkspaceFloorRoomProfile
+                .defaults(MKWorkspaceFloorRoomKind.MAIN_ROOM, 9, 9, 7)
+                .withHorizontalExits(List.of(
+                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.NORTH,
+                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                                MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID),
+                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.EAST,
+                                MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID),
+                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.WEST,
+                                MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID)
+                ));
+        return new MKWorkspaceFloorTopologySettings(
+                "tower.primary",
+                "main_floor",
+                1,
+                1,
+                0,
+                MKWorkspaceHallwayLeadInMode.MANUAL,
+                1,
+                false,
+                false,
+                false,
+                sprawl,
+                java.util.Optional.empty(),
+                List.of(mainRoom),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.BRANCH_ROOM, 9, 9, 7)),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.BRANCH_CAP, 9, 9, 7)),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.MAIN_CAP_APPROACH, 9, 9, 7)),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.MAIN_CAP, 9, 9, 7))
+        );
+    }
+}

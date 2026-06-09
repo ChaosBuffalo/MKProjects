@@ -1,0 +1,207 @@
+package com.chaosbuffalo.mknpc.world.gen.workspace.export;
+
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+public final class MKFloorMaskVariantExporter {
+    public static final String FLOOR_MASK_TAG = "workspace_floor_exit_mask";
+    public static final String FLOOR_MASK_WEIGHT_TAG = "workspace_floor_mask_weight";
+    public static final String CLOSED_CONNECTOR_COUNT_TAG = "workspace_floor_closed_connector_count";
+    public static final String CLOSED_CONNECTOR_PREFIX = "workspace_floor_closed_connector_";
+    public static final String MASK_POOL_SEGMENT = "masks";
+
+    private MKFloorMaskVariantExporter() {
+    }
+
+    public static List<MKWorkspacePieceDefinition> exportPieces(MKStructureWorkspace workspace,
+                                                                boolean includeRuntimeVariants) {
+        ArrayList<MKWorkspacePieceDefinition> pieces = new ArrayList<>(workspace.pieces());
+        if (!includeRuntimeVariants) {
+            return List.copyOf(pieces);
+        }
+        for (MKWorkspacePieceDefinition piece : workspace.pieces()) {
+            if (isFloorAuthoringTemplate(piece)) {
+                pieces.addAll(createMaskVariants(workspace, piece));
+            }
+        }
+        return List.copyOf(pieces);
+    }
+
+    public static boolean isFloorAuthoringTemplate(MKWorkspacePieceDefinition piece) {
+        return "floor_plan_room".equals(piece.tags().get("tower_piece_kind")) &&
+                "template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance"));
+    }
+
+    private static List<MKWorkspacePieceDefinition> createMaskVariants(MKStructureWorkspace workspace,
+                                                                       MKWorkspacePieceDefinition sourcePiece) {
+        List<MKWorkspaceConnectorDefinition> optionalBranches = optionalBranchConnectors(sourcePiece);
+        if (optionalBranches.isEmpty()) {
+            return List.of(createVariant(workspace, sourcePiece, List.of(), "none", sourcePiece.connectors()));
+        }
+        ArrayList<MKWorkspacePieceDefinition> variants = new ArrayList<>();
+        int variantCount = 1 << optionalBranches.size();
+        float sprawl = parseFloat(sourcePiece.tags().get("workspace_floor_sprawl"), 0.5f);
+        for (int mask = 0; mask < variantCount; mask++) {
+            if (sprawl <= 0.0f && mask != 0) {
+                continue;
+            }
+            ArrayList<MKWorkspaceConnectorDefinition> activeOptional = new ArrayList<>();
+            ArrayList<MKWorkspaceConnectorDefinition> closedOptional = new ArrayList<>();
+            for (int bit = 0; bit < optionalBranches.size(); bit++) {
+                MKWorkspaceConnectorDefinition connector = optionalBranches.get(bit);
+                if ((mask & (1 << bit)) != 0) {
+                    activeOptional.add(connector);
+                } else {
+                    closedOptional.add(connector);
+                }
+            }
+            String maskName = maskName(activeOptional);
+            variants.add(createVariant(workspace, sourcePiece, closedOptional, maskName,
+                    activeConnectors(sourcePiece, activeOptional)));
+        }
+        return List.copyOf(variants);
+    }
+
+    private static MKWorkspacePieceDefinition createVariant(MKStructureWorkspace workspace,
+                                                            MKWorkspacePieceDefinition sourcePiece,
+                                                            List<MKWorkspaceConnectorDefinition> closedOptional,
+                                                            String maskName,
+                                                            List<MKWorkspaceConnectorDefinition> activeConnectors) {
+        String pieceName = sourcePiece.pieceName() + "_mask_" + maskName;
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>(sourcePiece.tags());
+        tags.put("workspace_piece_kind", "instance");
+        tags.put("workspace_base_name", pieceName);
+        tags.put(MKWorkspaceTemplateReuseTags.REUSE_MODE_TAG,
+                MKWorkspaceTemplateReuseTags.REUSE_MODE_ROTATE_EXPORT);
+        tags.put(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG, "false");
+        tags.put(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG,
+                sourcePiece.tags().getOrDefault("workspace_base_name", sourcePiece.pieceName()));
+        tags.put(MKWorkspaceTemplateReuseTags.ROTATION_TAG, MKWorkspaceTemplateReuseTags.ROTATION_NONE);
+        tags.put(FLOOR_MASK_TAG, maskName);
+        tags.put(FLOOR_MASK_WEIGHT_TAG, Integer.toString(maskWeight(maskName, tags)));
+        addClosedConnectorTags(tags, closedOptional);
+        return new MKWorkspacePieceDefinition(
+                UUID.nameUUIDFromBytes((workspace.id() + ":" + pieceName).getBytes(StandardCharsets.UTF_8)),
+                sourcePiece.workspaceId(),
+                pieceName,
+                sourcePiece.roleId(),
+                sourcePiece.variantIndex(),
+                sourcePiece.effectiveDimensions(),
+                sourcePiece.shellMargin(),
+                activeConnectors,
+                sourcePiece.worldOrigin(),
+                sourcePiece.exportBounds(),
+                sourcePiece.previewBounds(),
+                sourcePiece.structureBlockPos(),
+                sourcePiece.signPos(),
+                sourcePiece.markerPositions(),
+                sourcePiece.generatedStairPositions(),
+                tags
+        );
+    }
+
+    private static List<MKWorkspaceConnectorDefinition> activeConnectors(
+            MKWorkspacePieceDefinition sourcePiece,
+            List<MKWorkspaceConnectorDefinition> activeOptional) {
+        ArrayList<MKWorkspaceConnectorDefinition> connectors = new ArrayList<>();
+        for (MKWorkspaceConnectorDefinition connector : sourcePiece.connectors()) {
+            if (!isOptionalBranch(sourcePiece, connector) || activeOptional.contains(connector)) {
+                connectors.add(connector);
+            }
+        }
+        return List.copyOf(connectors);
+    }
+
+    private static List<MKWorkspaceConnectorDefinition> optionalBranchConnectors(MKWorkspacePieceDefinition piece) {
+        return piece.connectors().stream()
+                .filter(connector -> isOptionalBranch(piece, connector))
+                .sorted(Comparator.comparing(connector -> connector.facing().getSerializedName()))
+                .toList();
+    }
+
+    private static boolean isOptionalBranch(MKWorkspacePieceDefinition piece,
+                                            MKWorkspaceConnectorDefinition connector) {
+        MKWorkspaceFloorRoomKind kind = floorKind(piece);
+        return allowsOptionalBranchExits(kind) &&
+                connector.role() == MKConnectorRole.BRANCH &&
+                connector.facing().getAxis().isHorizontal() &&
+                connector.facing() != Direction.SOUTH;
+    }
+
+    private static MKWorkspaceFloorRoomKind floorKind(MKWorkspacePieceDefinition piece) {
+        return MKWorkspaceFloorRoomKind.valueOf(piece.tags()
+                .getOrDefault("workspace_floor_room_kind", MKWorkspaceFloorRoomKind.MAIN_ROOM.getSerializedName())
+                .toUpperCase());
+    }
+
+    private static boolean allowsOptionalBranchExits(MKWorkspaceFloorRoomKind kind) {
+        return kind != MKWorkspaceFloorRoomKind.BRANCH_CAP &&
+                kind != MKWorkspaceFloorRoomKind.MAIN_CAP;
+    }
+
+    private static String maskName(List<MKWorkspaceConnectorDefinition> activeOptional) {
+        StringBuilder mask = new StringBuilder();
+        activeOptional.stream()
+                .map(MKWorkspaceConnectorDefinition::facing)
+                .sorted(Comparator.comparing(Direction::getSerializedName))
+                .forEach(direction -> mask.append(direction.getSerializedName().charAt(0)));
+        return mask.isEmpty() ? "none" : mask.toString();
+    }
+
+    private static int maskWeight(String maskName, Map<String, String> tags) {
+        float sprawl = parseFloat(tags.get("workspace_floor_sprawl"), 0.5f);
+        int activeCount = "none".equals(maskName) ? 0 : maskName.length();
+        if (activeCount == 0) {
+            return Math.max(1, Math.round((1.0f - sprawl) * 8.0f) + 1);
+        }
+        return Math.max(1, Math.round(1.0f + sprawl * activeCount * 4.0f));
+    }
+
+    public static ResourceLocation maskPool(ResourceLocation basePool, String maskName) {
+        if (maskName == null || maskName.isBlank()) {
+            return basePool;
+        }
+        return ResourceLocation.fromNamespaceAndPath(basePool.getNamespace(),
+                basePool.getPath() + "/" + MASK_POOL_SEGMENT + "/" + maskName);
+    }
+
+    private static void addClosedConnectorTags(Map<String, String> tags,
+                                               List<MKWorkspaceConnectorDefinition> closedOptional) {
+        tags.put(CLOSED_CONNECTOR_COUNT_TAG, Integer.toString(closedOptional.size()));
+        for (int i = 0; i < closedOptional.size(); i++) {
+            MKWorkspaceConnectorDefinition connector = closedOptional.get(i);
+            String prefix = CLOSED_CONNECTOR_PREFIX + i + "_";
+            tags.put(prefix + "facing", connector.facing().getSerializedName());
+            tags.put(prefix + "x", Integer.toString(connector.relativePos().getX()));
+            tags.put(prefix + "y", Integer.toString(connector.relativePos().getY()));
+            tags.put(prefix + "z", Integer.toString(connector.relativePos().getZ()));
+            tags.put(prefix + "opening_width", Integer.toString(connector.openingWidth()));
+            tags.put(prefix + "opening_height", Integer.toString(connector.openingHeight()));
+        }
+    }
+
+    private static float parseFloat(String value, float fallback) {
+        if (value == null || value.isBlank()) {
+            return fallback;
+        }
+        try {
+            return Math.max(0.0f, Math.min(1.0f, Float.parseFloat(value)));
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
+    }
+}

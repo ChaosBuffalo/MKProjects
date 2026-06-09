@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.export;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
@@ -16,6 +17,8 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
@@ -55,23 +58,23 @@ public class MKWorkspaceExportArchiveWriter {
         Files.createDirectories(path.getParent());
         MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, SCHEMA_VERSION,
                 Instant.now().toString());
+        List<MKWorkspacePieceDefinition> exportPieces = MKFloorMaskVariantExporter.exportPieces(workspace, true);
         try (ZipOutputStream output = new ZipOutputStream(Files.newOutputStream(path))) {
             writeJson(output, manifestEntryName(manifest), MKWorkspaceExportManifest.CODEC
                     .encodeStart(JsonOps.INSTANCE, manifest)
                     .getOrThrow());
-            int structurePieceCount = writeStructurePieces(output, level, manifest, workspace);
+            int structurePieceCount = writeStructurePieces(output, level, manifest, exportPieces);
             int metadataCount = writePieceMetadata(output, manifest);
             return new WrittenArchive(path, manifest, structurePieceCount, metadataCount);
         }
     }
 
     private int writeStructurePieces(ZipOutputStream output, ServerLevel level, MKWorkspaceExportManifest manifest,
-                                     MKStructureWorkspace workspace) throws IOException {
+                                     List<MKWorkspacePieceDefinition> exportPieces) throws IOException {
         int written = 0;
-        Map<String, MKWorkspacePieceDefinition> sourcePieces = sourcePiecesByBaseNameAndVariant(workspace);
-        for (MKWorkspacePieceDefinition piece : workspace.pieces()) {
-            if (MKWorkspaceTemplateReuseTags.isDerived(piece.tags()) &&
-                    "template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance"))) {
+        Map<String, MKWorkspacePieceDefinition> sourcePieces = sourcePiecesByBaseNameAndVariant(exportPieces);
+        for (MKWorkspacePieceDefinition piece : exportPieces) {
+            if ("template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance"))) {
                 continue;
             }
             output.putNextEntry(new ZipEntry(structureEntryName(manifest, piece)));
@@ -117,6 +120,7 @@ public class MKWorkspaceExportArchiveWriter {
                     templateGroup.pieceMetadata().topCapApproachEnabled(),
                     templateGroup.pieceMetadata().basementEntryEnabled(),
                     templateGroup.pieceMetadata().basementCapApproachEnabled(),
+                    templateGroup.pieceMetadata().floorExitMask(),
                     templateGroup.pieceMetadata().foundationPolicy()
             );
             writeJson(output, metadataEntryName(manifest, piece), MKJigsawPieceMetadata.CODEC
@@ -163,9 +167,10 @@ public class MKWorkspaceExportArchiveWriter {
         return pieceBytes.toByteArray();
     }
 
-    private Map<String, MKWorkspacePieceDefinition> sourcePiecesByBaseNameAndVariant(MKStructureWorkspace workspace) {
+    private Map<String, MKWorkspacePieceDefinition> sourcePiecesByBaseNameAndVariant(
+            List<MKWorkspacePieceDefinition> pieces) {
         Map<String, MKWorkspacePieceDefinition> result = new LinkedHashMap<>();
-        for (MKWorkspacePieceDefinition piece : workspace.pieces()) {
+        for (MKWorkspacePieceDefinition piece : pieces) {
             String baseName = piece.tags().getOrDefault("workspace_base_name", piece.pieceName());
             result.put(sourceKey(baseName, piece.variantIndex()), piece);
         }
@@ -239,6 +244,7 @@ public class MKWorkspaceExportArchiveWriter {
             jigsawNbt.putInt("z", pos.getZ());
             blocksByPos.put(pos, new ExportBlock(pos, state, jigsawNbt));
         }
+        patchClosedFloorConnectors(blockGetter, targetPiece, blocksByPos);
         ExportCrop crop = MKWorkspaceTemplateReuseTags.cropsNonStructureVoid(targetPiece.tags()) ?
                 detectNonStructureVoidCrop(blocksByPos.values(), targetWidth, targetLength) :
                 ExportCrop.full(targetWidth, targetLength);
@@ -248,6 +254,48 @@ public class MKWorkspaceExportArchiveWriter {
         result.remove("palettes");
         writePaletteAndBlocks(result, croppedBlocks);
         return result;
+    }
+
+    private void patchClosedFloorConnectors(HolderGetter<Block> blockGetter,
+                                            MKWorkspacePieceDefinition targetPiece,
+                                            Map<BlockPos, ExportBlock> blocksByPos) {
+        int count = parseInt(targetPiece.tags().get(MKFloorMaskVariantExporter.CLOSED_CONNECTOR_COUNT_TAG), 0);
+        if (count <= 0) {
+            return;
+        }
+        BlockState wallState = paletteBlockState(blockGetter, targetPiece.tags(), MKWorkspacePaletteTags.WALL_BLOCK_TAG,
+                Blocks.STONE.defaultBlockState());
+        for (BlockPos patchPos : MKFloorConnectorPatch.closedConnectorPatchPositions(targetPiece)) {
+            blocksByPos.put(patchPos, new ExportBlock(patchPos, wallState, null));
+        }
+    }
+
+    private BlockState paletteBlockState(HolderGetter<Block> blockGetter, Map<String, String> tags,
+                                         String tagName, BlockState fallback) {
+        String id = tags.get(tagName);
+        if (id == null || id.isBlank()) {
+            return fallback;
+        }
+        ResourceLocation location;
+        try {
+            location = ResourceLocation.parse(id);
+        } catch (Exception ignored) {
+            return fallback;
+        }
+        return blockGetter.get(ResourceKey.create(Registries.BLOCK, location))
+                .map(holder -> holder.value().defaultBlockState())
+                .orElse(fallback);
+    }
+
+    private int parseInt(String value, int fallback) {
+        if (value == null || value.isBlank()) {
+            return fallback;
+        }
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
     }
 
     private ExportCrop detectNonStructureVoidCrop(Iterable<ExportBlock> blocks, int width, int length) {

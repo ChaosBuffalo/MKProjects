@@ -90,6 +90,14 @@ public record MKWorkspaceExportManifest(
 
     private static MKWorkspaceExportManifest fromWorkspace(MKStructureWorkspace workspace, int schemaVersion,
                                                            String exportedAt, ExportRuntimeHints runtimeHints) {
+        boolean includeRuntimeVariants = !runtimeHints.startBaseName().isBlank() ||
+                !runtimeHints.templateGroups().isEmpty() ||
+                !runtimeHints.pools().isEmpty();
+        List<MKWorkspacePieceDefinition> exportPieces = MKFloorMaskVariantExporter.exportPieces(workspace,
+                includeRuntimeVariants);
+        ExportRuntimeHints resolvedRuntimeHints = includeRuntimeVariants ?
+                ExportRuntimeHints.forWorkspace(workspace, exportPieces) :
+                runtimeHints;
         return new MKWorkspaceExportManifest(
                 schemaVersion,
                 workspace.id(),
@@ -124,9 +132,9 @@ public record MKWorkspaceExportManifest(
                         workspace.openingProfiles().stream().map(ExportOpeningProfile::from).toList(),
                         workspace.linearRunFamilies().stream().map(ExportLinearRunFamily::from).toList()
                 ),
-                runtimeHints,
-                buildTemplateGroups(workspace),
-                workspace.pieces().stream().map(piece -> ExportPiece.from(workspace, piece)).toList()
+                resolvedRuntimeHints,
+                buildTemplateGroups(exportPieces),
+                exportPieces.stream().map(piece -> ExportPiece.from(workspace, piece)).toList()
         );
     }
 
@@ -167,8 +175,8 @@ public record MKWorkspaceExportManifest(
         return List.copyOf(errors);
     }
 
-    private static List<ExportTemplateGroup> buildTemplateGroups(MKStructureWorkspace workspace) {
-        Map<String, List<MKWorkspacePieceDefinition>> grouped = workspace.pieces().stream()
+    private static List<ExportTemplateGroup> buildTemplateGroups(List<MKWorkspacePieceDefinition> pieces) {
+        Map<String, List<MKWorkspacePieceDefinition>> grouped = pieces.stream()
                 .collect(Collectors.groupingBy(
                         piece -> piece.tags().getOrDefault("workspace_base_name", piece.pieceName()),
                         LinkedHashMap::new,
@@ -599,12 +607,17 @@ public record MKWorkspaceExportManifest(
         ).apply(instance, ExportRuntimeHints::new));
 
         public static ExportRuntimeHints forWorkspace(MKStructureWorkspace workspace) {
-            List<ExportRuntimeTemplateGroup> templateGroups = buildTemplateGroups(workspace).stream()
-                    .map(templateGroup -> ExportRuntimeTemplateGroup.forTemplateGroup(workspace, templateGroup))
+            return forWorkspace(workspace, workspace.pieces());
+        }
+
+        public static ExportRuntimeHints forWorkspace(MKStructureWorkspace workspace,
+                                                      List<MKWorkspacePieceDefinition> pieces) {
+            List<ExportRuntimeTemplateGroup> templateGroups = buildTemplateGroups(pieces).stream()
+                    .map(templateGroup -> ExportRuntimeTemplateGroup.forTemplateGroup(workspace, pieces, templateGroup))
                     .flatMap(java.util.Optional::stream)
                     .toList();
-            String startBaseName = findStartBaseName(workspace);
-            return new ExportRuntimeHints(startBaseName, templateGroups, buildRuntimePools(workspace));
+            String startBaseName = findStartBaseName(pieces);
+            return new ExportRuntimeHints(startBaseName, templateGroups, buildRuntimePools(workspace, pieces));
         }
 
         public static ExportRuntimeHints forWorkspaceIfValid(MKStructureWorkspace workspace) {
@@ -643,9 +656,13 @@ public record MKWorkspaceExportManifest(
                 ExportRuntimePieceMetadata.CODEC.fieldOf("piece_metadata").forGetter(ExportRuntimeTemplateGroup::pieceMetadata)
         ).apply(instance, ExportRuntimeTemplateGroup::new));
 
-        public static java.util.Optional<ExportRuntimeTemplateGroup> forTemplateGroup(MKStructureWorkspace workspace, ExportTemplateGroup templateGroup) {
-            java.util.Optional<MKWorkspacePieceDefinition> runtimePiece = workspace.pieces().stream()
+        public static java.util.Optional<ExportRuntimeTemplateGroup> forTemplateGroup(
+                MKStructureWorkspace workspace,
+                List<MKWorkspacePieceDefinition> pieces,
+                ExportTemplateGroup templateGroup) {
+            java.util.Optional<MKWorkspacePieceDefinition> runtimePiece = pieces.stream()
                     .filter(piece -> templateGroup.baseName().equals(piece.tags().getOrDefault("workspace_base_name", piece.pieceName())))
+                    .filter(piece -> !"template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance")))
                     .findFirst();
             java.util.Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = runtimePiece
                     .map(MKWorkspacePieceDefinition::tags)
@@ -703,6 +720,7 @@ public record MKWorkspaceExportManifest(
             boolean topCapApproachEnabled,
             boolean basementEntryEnabled,
             boolean basementCapApproachEnabled,
+            String floorExitMask,
             MKWorkspaceFoundationPolicy foundationPolicy
     ) {
         public static final Codec<ExportRuntimePieceMetadata> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -717,18 +735,23 @@ public record MKWorkspaceExportManifest(
                 Codec.BOOL.optionalFieldOf("main_path_ending", false).forGetter(ExportRuntimePieceMetadata::mainPathEnding),
                 Codec.BOOL.optionalFieldOf("branch_cap", false).forGetter(ExportRuntimePieceMetadata::branchCap),
                 ExportTowerStackMetadata.CODEC.forGetter(ExportRuntimePieceMetadata::towerStackMetadata),
+                Codec.STRING.optionalFieldOf("floor_exit_mask", "").forGetter(ExportRuntimePieceMetadata::floorExitMask),
                 MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundation_policy", MKWorkspaceFoundationPolicy.none())
                         .forGetter(ExportRuntimePieceMetadata::foundationPolicy)
         ).apply(instance, (role, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath,
                            terminal, topCapOnly, topologyGroup, mainPathEnding, branchCap, towerStackMetadata,
-                           foundationPolicy) ->
+                           floorExitMask, foundationPolicy) ->
                 new ExportRuntimePieceMetadata(role, progressionDelta, verticalLevelDelta, allowOnMainPath,
                         allowOnBranchPath, terminal, topCapOnly, topologyGroup, mainPathEnding, branchCap,
                         towerStackMetadata.towerStackId(), towerStackMetadata.towerStackSlot(),
                         towerStackMetadata.minMainFloors(), towerStackMetadata.maxMainFloors(),
                         towerStackMetadata.minBasementFloors(), towerStackMetadata.maxBasementFloors(),
                         towerStackMetadata.topCapApproachEnabled(), towerStackMetadata.basementEntryEnabled(),
-                        towerStackMetadata.basementCapApproachEnabled(), foundationPolicy)));
+                        towerStackMetadata.basementCapApproachEnabled(), floorExitMask, foundationPolicy)));
+
+        public ExportRuntimePieceMetadata {
+            floorExitMask = floorExitMask == null ? "" : floorExitMask;
+        }
 
         public static ExportRuntimePieceMetadata from(MKWorkspaceRuntimePieceInfo runtimeInfo,
                                                       Map<String, String> tags,
@@ -753,6 +776,7 @@ public record MKWorkspaceExportManifest(
                     Boolean.parseBoolean(tags.getOrDefault("workspace_tower_stack_top_cap_approach_enabled", "true")),
                     Boolean.parseBoolean(tags.getOrDefault("workspace_tower_stack_basement_entry_enabled", "true")),
                     Boolean.parseBoolean(tags.getOrDefault("workspace_tower_stack_basement_cap_approach_enabled", "false")),
+                    tags.getOrDefault(MKFloorMaskVariantExporter.FLOOR_MASK_TAG, ""),
                     foundationPolicy
             );
         }
@@ -983,26 +1007,25 @@ public record MKWorkspaceExportManifest(
         ).apply(instance, ExportPiecePlacement::new));
     }
 
-    private static String findStartBaseName(MKStructureWorkspace workspace) {
-        LinkedHashSet<String> startBaseNames = workspace.pieces().stream()
+    private static String findStartBaseName(List<MKWorkspacePieceDefinition> pieces) {
+        LinkedHashSet<String> startBaseNames = pieces.stream()
                 .filter(piece -> !"template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance")))
                 .filter(piece -> MKWorkspaceRuntimePieceInfo.fromTags(piece.tags()).map(MKWorkspaceRuntimePieceInfo::start).orElse(false))
                 .map(piece -> piece.tags().getOrDefault("workspace_base_name", piece.pieceName()))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         if (startBaseNames.isEmpty()) {
-            throw new IllegalStateException("Workspace " + workspace.namespace() + ":" + workspace.structureName() +
-                    " did not define a runtime start piece");
+            throw new IllegalStateException("Workspace did not define a runtime start piece");
         }
         if (startBaseNames.size() > 1) {
-            throw new IllegalStateException("Workspace " + workspace.namespace() + ":" + workspace.structureName() +
-                    " defined multiple runtime start pieces " + startBaseNames);
+            throw new IllegalStateException("Workspace defined multiple runtime start pieces " + startBaseNames);
         }
         return startBaseNames.getFirst();
     }
 
-    private static List<ExportRuntimePool> buildRuntimePools(MKStructureWorkspace workspace) {
+    private static List<ExportRuntimePool> buildRuntimePools(MKStructureWorkspace workspace,
+                                                             List<MKWorkspacePieceDefinition> pieces) {
         LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool = new LinkedHashMap<>();
-        for (MKWorkspacePieceDefinition piece : workspace.pieces()) {
+        for (MKWorkspacePieceDefinition piece : pieces) {
             if ("template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance"))) {
                 continue;
             }
@@ -1029,6 +1052,7 @@ public record MKWorkspaceExportManifest(
                     continue;
                 }
                 childrenByPool.computeIfAbsent(connector.incomingPool(), key -> new LinkedHashSet<>()).add(baseName);
+                addFloorMaskPoolChild(childrenByPool, connector.incomingPool(), baseName, piece.tags());
             }
         }
         return childrenByPool.entrySet().stream()
@@ -1069,6 +1093,7 @@ public record MKWorkspaceExportManifest(
                 }
                 childrenByPool.computeIfAbsent(connector.incomingPool(), key -> new LinkedHashSet<>())
                         .add(piece.baseName());
+                addFloorMaskPoolChild(childrenByPool, connector.incomingPool(), piece.baseName(), piece.tags());
             }
         }
         return childrenByPool.entrySet().stream()
@@ -1078,6 +1103,19 @@ public record MKWorkspaceExportManifest(
                         List.copyOf(entry.getValue())
                 ))
                 .toList();
+    }
+
+    private static void addFloorMaskPoolChild(LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool,
+                                              ResourceLocation basePool,
+                                              String baseName,
+                                              Map<String, String> tags) {
+        String mask = tags.get(MKFloorMaskVariantExporter.FLOOR_MASK_TAG);
+        if (mask == null || mask.isBlank()) {
+            return;
+        }
+        childrenByPool.computeIfAbsent(MKFloorMaskVariantExporter.maskPool(basePool, mask),
+                        key -> new LinkedHashSet<>())
+                .add(baseName);
     }
 
     private static String derivePoolBaseName(MKStructureWorkspace workspace, ResourceLocation poolId) {
@@ -1100,6 +1138,8 @@ public record MKWorkspaceExportManifest(
         String path = runtimePoolPath(workspace, poolId);
         return path.startsWith("linear_runs/branch/") ||
                 path.startsWith("rooms/branch/") ||
+                path.contains("/linear_runs/branch/") ||
+                path.contains("/rooms/branch/") ||
                 path.startsWith("branch_caps/");
     }
 
@@ -1107,6 +1147,8 @@ public record MKWorkspaceExportManifest(
         String path = runtimePoolPath(manifest, poolId);
         return path.startsWith("linear_runs/branch/") ||
                 path.startsWith("rooms/branch/") ||
+                path.contains("/linear_runs/branch/") ||
+                path.contains("/rooms/branch/") ||
                 path.startsWith("branch_caps/");
     }
 

@@ -172,7 +172,7 @@ public class MKDungeonLayoutController {
         if (nextOnMainPath) {
             nextBranchDepth = 0;
         } else if (connector.role() == MKConnectorRole.BRANCH) {
-            nextBranchDepth = parentState.branchDepth() + 1;
+            nextBranchDepth = parentState.branchDepth() + branchDepthIncrement(parentState, childMetadata);
         } else {
             nextBranchDepth = parentState.branchDepth();
         }
@@ -190,7 +190,8 @@ public class MKDungeonLayoutController {
                 parentState.towerStackBasementPlacedFloors(),
                 parentState.towerStackTopCapApproachEnabled(),
                 parentState.towerStackBasementEntryEnabled(),
-                parentState.towerStackBasementCapApproachEnabled());
+                parentState.towerStackBasementCapApproachEnabled(),
+                childMetadata.floorExitMask());
         return nextTowerStackState(nextState, parentState, childMetadata, random);
     }
 
@@ -288,7 +289,8 @@ public class MKDungeonLayoutController {
                 parentState.towerStackBasementTargetFloors(), basementPlaced,
                 parentState.towerStackTopCapApproachEnabled(),
                 parentState.towerStackBasementEntryEnabled(),
-                parentState.towerStackBasementCapApproachEnabled());
+                parentState.towerStackBasementCapApproachEnabled(),
+                nextState.floorExitMask());
     }
 
     private MKDungeonPieceState withTowerStackLayout(MKDungeonPieceState state,
@@ -304,7 +306,8 @@ public class MKDungeonLayoutController {
                 mainTarget, 0, basementTarget, 0,
                 metadata.topCapApproachEnabled(),
                 metadata.basementEntryEnabled(),
-                metadata.basementCapApproachEnabled());
+                metadata.basementCapApproachEnabled(),
+                metadata.floorExitMask());
     }
 
     private int chooseRange(int min, int max, RandomSource random) {
@@ -410,7 +413,9 @@ public class MKDungeonLayoutController {
         if (rule.minMainPathPieces() == rule.maxMainPathPieces() || random == null) {
             return rule.maxMainPathPieces();
         }
-        return random.nextInt(rule.maxMainPathPieces() - rule.minMainPathPieces() + 1) + rule.minMainPathPieces();
+        int span = rule.maxMainPathPieces() - rule.minMainPathPieces();
+        float sample = (random.nextFloat() + rule.sprawl()) / 2.0f;
+        return rule.minMainPathPieces() + Math.round(sample * span);
     }
 
     private record TopologyGroupProgress(String topologyGroup, int piecesInTopologyGroup,
@@ -425,6 +430,13 @@ public class MKDungeonLayoutController {
             return false;
         }
         return childMetadata.pieceRole() != MKJigsawPieceRole.BRANCH;
+    }
+
+    private int branchDepthIncrement(MKDungeonPieceState parentState, MKJigsawPieceMetadata childMetadata) {
+        if (parentState.topologyGroup().isBlank() && childMetadata.topologyGroup().isBlank()) {
+            return 1;
+        }
+        return !childMetadata.topologyGroup().isBlank() && !childMetadata.branchCap() ? 1 : 0;
     }
 
     private boolean isVerticalDeltaAllowed(int verticalDelta) {

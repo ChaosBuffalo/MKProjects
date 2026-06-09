@@ -16,9 +16,9 @@ public record MKWorkspaceTopologyPathSettings(
         int maxBranchPiecesBeforeCap
 ) {
     public static final int DEFAULT_MIN_MAIN_PATH_PIECES = 1;
-    public static final int DEFAULT_MAX_MAIN_PATH_PIECES = 2;
-    public static final int DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP = 10;
-    public static final int MAX_BRANCH_PIECES_BEFORE_CAP = DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP;
+    public static final int DEFAULT_MAX_MAIN_PATH_PIECES = 1;
+    public static final int DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP = 0;
+    public static final int MAX_BRANCH_PIECES_BEFORE_CAP = 10;
     public static final List<String> DEFAULT_TOPOLOGY_GROUP_IDS = List.of(
             "entry",
             "main",
@@ -41,7 +41,7 @@ public record MKWorkspaceTopologyPathSettings(
         minMainPathPieces = Math.max(0, minMainPathPieces);
         maxMainPathPieces = Math.max(minMainPathPieces, maxMainPathPieces);
         maxBranchPiecesBeforeCap = Math.max(0, Math.min(
-                DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP, maxBranchPiecesBeforeCap));
+                MAX_BRANCH_PIECES_BEFORE_CAP, maxBranchPiecesBeforeCap));
     }
 
     public static List<MKWorkspaceTopologyPathSettings> defaults() {

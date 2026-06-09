@@ -1968,8 +1968,10 @@ class TowerWorkspaceV2Test {
                 settings.maxMainPathPieces());
         assertEquals(1, settings.mainRoomProfiles().size());
         assertEquals(1, settings.branchRoomProfiles().size());
+        assertEquals(1, settings.branchCapProfiles().size());
         assertEquals(MKWorkspaceFloorRoomKind.MAIN_ROOM, settings.mainRoomProfiles().getFirst().kind());
         assertEquals(MKWorkspaceFloorRoomKind.BRANCH_ROOM, settings.branchRoomProfiles().getFirst().kind());
+        assertEquals(MKWorkspaceFloorRoomKind.BRANCH_CAP, settings.branchCapProfiles().getFirst().kind());
         assertEquals(MKWorkspaceDimensions.defaultDimensions().roomWidth(), settings.mainRoomProfiles().getFirst().width());
         assertEquals(MKWorkspaceDimensions.defaultDimensions().roomLength(), settings.mainRoomProfiles().getFirst().length());
         assertEquals(MKWorkspaceDimensions.defaultDimensions().roomHeight(), settings.mainRoomProfiles().getFirst().height());
@@ -1985,7 +1987,12 @@ class TowerWorkspaceV2Test {
                 .anyMatch(exit -> exit.direction() == Direction.SOUTH &&
                         exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH &&
                         MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID.equals(exit.openingProfileId())));
-        assertTrue(settings.branchRoomProfiles().getFirst().terminalBranchRoom());
+        assertFalse(settings.branchRoomProfiles().getFirst().terminalBranchRoom());
+        assertTrue(settings.branchCapProfiles().getFirst().horizontalExits().stream()
+                .anyMatch(exit -> exit.direction() == Direction.SOUTH &&
+                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY &&
+                        MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID.equals(exit.openingProfileId())));
+        assertTrue(settings.branchCapProfiles().getFirst().terminalBranchRoom());
         MKWorkspaceFloorTopologySettings resized = settings.withRoomProfile(
                 MKWorkspaceFloorRoomKind.MAIN_ROOM,
                 0,
@@ -2037,7 +2044,18 @@ class TowerWorkspaceV2Test {
                         new MKHorizontalOpeningProfile("floor_main", 5, 4, true, false),
                         new MKHorizontalOpeningProfile("floor_branch", 3, 3, false, true)
                 ),
-                List.of()
+                List.of(
+                        new MKWorkspaceLinearRunFamilyDefinition("floor_main_run",
+                                MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR, "floor_main", 5, 3, 4, 0,
+                                true, false, MKWorkspaceLinearRunProjection.RIGID,
+                                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT), workspacePalette().floorBlock(),
+                                workspacePalette().wallBlock(), workspacePalette().ceilingBlock()),
+                        new MKWorkspaceLinearRunFamilyDefinition("floor_branch_run",
+                                MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR, "floor_branch", 5, 3, 3, 0,
+                                false, true, MKWorkspaceLinearRunProjection.RIGID,
+                                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT), workspacePalette().floorBlock(),
+                                workspacePalette().wallBlock(), workspacePalette().ceilingBlock())
+                )
         );
         MKTowerWorkspaceFamilyDefinition floorRoot = topologyFamily(
                 "floor_main",
@@ -2072,6 +2090,24 @@ class TowerWorkspaceV2Test {
                 .filter(piece -> piece.pieceName().startsWith("floor_plan_tower_primary_main_floor_branch_room"))
                 .findFirst()
                 .orElseThrow();
+        MKPlannedPiece branchCap = pieces.stream()
+                .filter(piece -> piece.pieceName().startsWith("floor_plan_tower_primary_main_floor_branch_cap"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece mainHallway = pieces.stream()
+                .filter(piece -> piece.pieceName().startsWith("floor_plan_tower_primary_main_floor_linear_run") &&
+                        piece.pieceName().endsWith("_main"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece branchHallway = pieces.stream()
+                .filter(piece -> piece.pieceName().startsWith("floor_plan_tower_primary_main_floor_linear_run") &&
+                        piece.pieceName().endsWith("_branch"))
+                .findFirst()
+                .orElseThrow();
+        String mainLinearPool = "floor_plan/floor/tower_primary/main_floor/linear_runs/main/floor_main";
+        String mainRoomPool = "floor_plan/floor/tower_primary/main_floor/rooms/main/floor_main";
+        String branchLinearPool = "floor_plan/floor/tower_primary/main_floor/linear_runs/branch/floor_branch";
+        String branchRoomPool = "floor_plan/floor/tower_primary/main_floor/rooms/branch/floor_branch";
 
         assertEquals("floor/tower_primary/main_floor",
                 mainRoom.tags().get(MKWorkspaceRuntimePieceInfo.TOPOLOGY_GROUP_TAG));
@@ -2079,18 +2115,30 @@ class TowerWorkspaceV2Test {
                 connector.role() == MKConnectorRole.MAIN_FORWARD &&
                         connector.facing() == Direction.SOUTH &&
                         connector.openingWidth() == 5 &&
-                        "linear_runs/main/floor_main".equals(connector.incomingPoolName())));
+                        mainRoomPool.equals(connector.incomingPoolName())));
         assertTrue(mainRoom.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.MAIN_BACK &&
                         connector.facing() == Direction.NORTH &&
-                        "linear_runs/main/floor_main".equals(connector.targetPoolName())));
+                        mainLinearPool.equals(connector.targetPoolName()) &&
+                        connector.incomingPoolName() == null));
+        assertTrue(mainHallway.connectors().stream().allMatch(connector ->
+                mainLinearPool.equals(connector.incomingPoolName()) &&
+                        mainRoomPool.equals(connector.targetPoolName())));
         assertTrue(branchRoom.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.BRANCH &&
                         connector.facing() == Direction.SOUTH &&
                         connector.openingWidth() == 3 &&
-                        "branch_caps/floor_branch".equals(connector.incomingPoolName())));
-        assertEquals("true", branchRoom.tags().get(MKWorkspaceRuntimePieceInfo.BRANCH_CAP_TAG));
-        assertEquals("true", branchRoom.tags().get(MKWorkspaceRuntimePieceInfo.TERMINAL_TAG));
+                        branchRoomPool.equals(connector.incomingPoolName())));
+        assertTrue(branchCap.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.BRANCH &&
+                        connector.facing() == Direction.SOUTH &&
+                        connector.openingWidth() == 3 &&
+                        branchRoomPool.equals(connector.incomingPoolName())));
+        assertTrue(branchHallway.connectors().stream().allMatch(connector ->
+                branchLinearPool.equals(connector.incomingPoolName()) &&
+                        branchRoomPool.equals(connector.targetPoolName())));
+        assertEquals("true", branchCap.tags().get(MKWorkspaceRuntimePieceInfo.BRANCH_CAP_TAG));
+        assertEquals("true", branchCap.tags().get(MKWorkspaceRuntimePieceInfo.TERMINAL_TAG));
 
         MKStructureWorkspace finalWorkspace = workspace;
         MKStructureWorkspace exportedWorkspace = finalWorkspace.withPieces(pieces.stream()
@@ -2098,8 +2146,134 @@ class TowerWorkspaceV2Test {
                 .toList());
         MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(exportedWorkspace, 4, "test");
 
-        assertRuntimePoolContains(finalWorkspace, manifest, "linear_runs/main/floor_main", mainRoom.pieceName());
-        assertRuntimePoolContains(finalWorkspace, manifest, "branch_caps/floor_branch", branchRoom.pieceName());
+        assertRuntimePoolContains(finalWorkspace, manifest, mainLinearPool, mainHallway.pieceName());
+        assertRuntimePoolContains(finalWorkspace, manifest, mainRoomPool, mainRoom.pieceName() + "_mask_none");
+        assertRuntimePoolContains(finalWorkspace, manifest, branchLinearPool, branchHallway.pieceName());
+        assertRuntimePoolContains(finalWorkspace, manifest, branchRoomPool, branchRoom.pieceName() + "_mask_none");
+        assertRuntimePoolContains(finalWorkspace, manifest, branchRoomPool, branchCap.pieceName() + "_mask_none");
+    }
+
+    @Test
+    void floorTopologyMainRoomEastExitKeepsMainChainAndBranchMask() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("floor_main", 5, 4, true, false),
+                        new MKHorizontalOpeningProfile("floor_branch", 3, 3, false, true)
+                ),
+                List.of(
+                        new MKWorkspaceLinearRunFamilyDefinition("floor_main_run",
+                                MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR, "floor_main", 5, 3, 4, 0,
+                                true, false, MKWorkspaceLinearRunProjection.RIGID,
+                                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT), workspacePalette().floorBlock(),
+                                workspacePalette().wallBlock(), workspacePalette().ceilingBlock()),
+                        new MKWorkspaceLinearRunFamilyDefinition("floor_branch_run",
+                                MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR, "floor_branch", 5, 3, 3, 0,
+                                false, true, MKWorkspaceLinearRunProjection.RIGID,
+                                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT), workspacePalette().floorBlock(),
+                                workspacePalette().wallBlock(), workspacePalette().ceilingBlock())
+                )
+        );
+        MKTowerWorkspaceFamilyDefinition floorRoot = topologyFamily(
+                "floor_main",
+                "tower.primary.main_floor",
+                "tower.primary",
+                true,
+                9,
+                9,
+                workspace.dimensions().roomHeight(),
+                MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                List.of(
+                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.NORTH,
+                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "floor_main"),
+                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.EAST,
+                                MKWorkspaceHorizontalExitPathKind.BRANCH, "floor_branch")
+                ),
+                0,
+                0,
+                null,
+                null
+        );
+        workspace = withFamilies(workspace, workspace.familyDefinitions().stream()
+                .map(family -> family.topologySlotId().equals("tower.primary.main_floor") ? floorRoot : family)
+                .toList());
+        MKWorkspaceFloorTopologySettings settings = workspace.topologyProfile()
+                .floorTopologySettingsOrDefault("tower.primary", "main_floor");
+        MKWorkspaceFloorRoomProfile eastExitProfile = settings.mainRoomProfiles().getFirst()
+                .withHorizontalExits(List.of(
+                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.EAST,
+                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                                MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID),
+                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.NORTH,
+                                MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID),
+                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.WEST,
+                                MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID)
+                ));
+        workspace = new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.topologyProfile().withFloorTopologySettings(
+                        settings.withRoomProfile(MKWorkspaceFloorRoomKind.MAIN_ROOM, 0, eastExitProfile)),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.linearRunFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces()
+        );
+
+        List<MKPlannedPiece> pieces = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace);
+        MKPlannedPiece mainRoom = pieces.stream()
+                .filter(piece -> piece.pieceName().startsWith("floor_plan_tower_primary_main_floor_main_room"))
+                .findFirst()
+                .orElseThrow();
+        String mainLinearPool = "floor_plan/floor/tower_primary/main_floor/linear_runs/main/floor_main";
+        String branchLinearPool = "floor_plan/floor/tower_primary/main_floor/linear_runs/branch/floor_branch";
+        String mainRoomPool = "floor_plan/floor/tower_primary/main_floor/rooms/main/floor_main";
+
+        assertTrue(mainRoom.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.MAIN_BACK &&
+                        connector.facing() == Direction.EAST &&
+                        mainLinearPool.equals(connector.targetPoolName()) &&
+                        connector.incomingPoolName() == null));
+        assertTrue(mainRoom.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.BRANCH &&
+                        connector.facing() == Direction.NORTH &&
+                        branchLinearPool.equals(connector.targetPoolName()) &&
+                        connector.incomingPoolName() == null));
+        assertTrue(mainRoom.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.BRANCH &&
+                        connector.facing() == Direction.WEST &&
+                        branchLinearPool.equals(connector.targetPoolName()) &&
+                        connector.incomingPoolName() == null));
+
+        MKStructureWorkspace finalWorkspace = workspace;
+        MKStructureWorkspace exportedWorkspace = finalWorkspace.withPieces(pieces.stream()
+                .map(piece -> pieceToDefinitionWithConnectors(finalWorkspace, piece))
+                .toList());
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(exportedWorkspace, 4, "test");
+        assertRuntimePoolContains(finalWorkspace, manifest, mainRoomPool, mainRoom.pieceName() + "_mask_nw");
+        assertRuntimePoolContains(finalWorkspace, manifest, mainRoomPool + "/masks/nw",
+                mainRoom.pieceName() + "_mask_nw");
+        assertRuntimePoolDoesNotContain(finalWorkspace, manifest, mainRoomPool + "/masks/nw",
+                mainRoom.pieceName() + "_mask_none");
+        MKWorkspaceExportManifest.ExportRuntimeTemplateGroup maskGroup = manifest.runtimeHints().templateGroups().stream()
+                .filter(group -> group.baseName().equals(mainRoom.pieceName() + "_mask_nw"))
+                .findFirst()
+                .orElseThrow();
+        assertEquals("nw", maskGroup.pieceMetadata().floorExitMask());
     }
 
     @Test
@@ -2734,7 +2908,7 @@ class TowerWorkspaceV2Test {
                 MKVerticalProgressionMode.MIXED,
                 true,
                 false,
-                List.of(new MKDungeonTopologyGroupRule("main", 1, 2, 2, true, null)),
+                List.of(new MKDungeonTopologyGroupRule("main", 1, 2, 2, 0.5f, true, null)),
                 connectorSettings()
         ));
         MKDungeonPieceState atBranchLimit = new MKDungeonPieceState(0, 0, 2, 2, false, 3,

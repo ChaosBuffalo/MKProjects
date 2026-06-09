@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
@@ -333,16 +334,54 @@ public class MKTowerStackPlanner {
                         opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset()));
                 continue;
             }
-            String targetPool = exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM ?
-                    directRoomTargetPoolName(opening.profileId(), role) :
-                    resolveLinearRunPool(workspace, opening.profileId(), linearRunPathKind);
-            String incomingPool = exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM ?
-                    directRoomIncomingPoolName(opening.profileId(), role) : null;
+            Optional<MKWorkspaceFloorTopologySettings> floorSettings =
+                    floorTopologySettingsForFamily(workspace, family, exit.pathKind());
+            boolean floorDirectMain = floorSettings
+                    .map(settings -> exit.pathKind().usesMainPath() && !settings.mainHallwaysEnabled())
+                    .orElse(false);
+            boolean floorDirectBranch = floorSettings
+                    .map(settings -> !exit.pathKind().usesMainPath() && !settings.branchHallwaysEnabled())
+                    .orElse(false);
+            String targetPool;
+            String incomingPool;
+            if (floorDirectMain) {
+                targetPool = floorTopologyTargetPool(family, opening.profileId(), true, false);
+                incomingPool = null;
+            } else if (floorDirectBranch) {
+                targetPool = floorTopologyTargetPool(family, opening.profileId(), false, false);
+                incomingPool = null;
+            } else if (exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM) {
+                targetPool = directRoomTargetPoolName(opening.profileId(), role);
+                incomingPool = directRoomIncomingPoolName(opening.profileId(), role);
+            } else if (floorSettings.isPresent()) {
+                boolean floorHallwayAvailable = hasCompatibleLinearRun(workspace, opening.profileId(),
+                        linearRunPathKind);
+                targetPool = floorTopologyTargetPool(family, opening.profileId(), exit.pathKind().usesMainPath(),
+                        floorHallwayAvailable);
+                incomingPool = null;
+            } else {
+                targetPool = resolveLinearRunPool(workspace, opening.profileId(), linearRunPathKind);
+                incomingPool = null;
+            }
             connectors.add(new MKPlannedConnector(role, exit.direction(),
                     opening.openingWidth(), opening.openingHeight(), lateralOffset,
                     exit.verticalOffset(), targetPool, incomingPool));
         }
         return List.copyOf(connectors);
+    }
+
+    private String floorTopologyTargetPool(MKTowerWorkspaceFamilyDefinition family, String openingProfileId,
+                                           boolean mainPath, boolean useHallwayPool) {
+        Optional<MKTowerWorkspaceStackSlot> slot = MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId());
+        Optional<String> stackId = MKTowerWorkspaceStackSlot.stackIdForTopologySlot(family.topologySlotId());
+        if (slot.isEmpty() || stackId.isEmpty()) {
+            return mainPath ? MKFloorTopologyPlanner.directMainRoomPoolName(openingProfileId) :
+                    MKFloorTopologyPlanner.directBranchRoomPoolName(openingProfileId);
+        }
+        String topologyGroup = MKFloorTopologyPlanner.floorTopologyGroupIdFor(stackId.get(), slot.get().suffix());
+        return useHallwayPool ?
+                MKFloorTopologyPlanner.floorLinearRunPoolName(topologyGroup, openingProfileId, mainPath) :
+                MKFloorTopologyPlanner.floorRoomPoolName(topologyGroup, openingProfileId, mainPath);
     }
 
     private int toLateralOffset(Direction direction, int sideOffset) {
@@ -360,11 +399,32 @@ public class MKTowerStackPlanner {
                 .map(profile -> new ResolvedOpeningProfile(profile.profileId(), profile.openingWidth(), profile.openingHeight()));
     }
 
+    private Optional<MKWorkspaceFloorTopologySettings> floorTopologySettingsForFamily(
+            MKStructureWorkspace workspace,
+            MKTowerWorkspaceFamilyDefinition family,
+            MKWorkspaceHorizontalExitPathKind pathKind) {
+        if (!pathKind.usesMainPath() && pathKind != MKWorkspaceHorizontalExitPathKind.BRANCH) {
+            return Optional.empty();
+        }
+        Optional<MKTowerWorkspaceStackSlot> slot = MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId());
+        if (slot.isEmpty() || !"floor".equals(slot.get().roleKind()) || slot.get() == MKTowerWorkspaceStackSlot.ENTRY) {
+            return Optional.empty();
+        }
+        return MKTowerWorkspaceStackSlot.stackIdForTopologySlot(family.topologySlotId())
+                .map(stackId -> workspace.topologyProfile().floorTopologySettingsOrDefault(stackId, slot.get().suffix()));
+    }
+
     private String resolveLinearRunPool(MKStructureWorkspace workspace, String openingProfileId, LinearRunPathKind pathKind) {
-        boolean hasCompatibleLinearRun = workspace.linearRunFamilies().stream().anyMatch(linearRun ->
+        return hasCompatibleLinearRun(workspace, openingProfileId, pathKind) ?
+                linearRunPoolName(openingProfileId, pathKind) : EMPTY_POOL;
+    }
+
+    private boolean hasCompatibleLinearRun(MKStructureWorkspace workspace, String openingProfileId,
+                                           LinearRunPathKind pathKind) {
+        return workspace.linearRunFamilies().stream().anyMatch(linearRun ->
                 linearRun.openingProfileId().equals(openingProfileId) &&
-                        (pathKind == LinearRunPathKind.MAIN ? linearRun.allowOnMainPath() : linearRun.allowOnBranchPath()));
-        return hasCompatibleLinearRun ? linearRunPoolName(openingProfileId, pathKind) : EMPTY_POOL;
+                        (pathKind == LinearRunPathKind.MAIN ? linearRun.allowOnMainPath() :
+                                linearRun.allowOnBranchPath()));
     }
 
     private String linearRunPoolName(String openingProfileId, LinearRunPathKind pathKind) {

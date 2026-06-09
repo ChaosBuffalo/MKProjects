@@ -15,7 +15,9 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalet
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
+import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKFloorMaskVariantExporter;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -26,6 +28,10 @@ import java.util.Optional;
 public class MKFloorTopologyPlanner {
     private static final String EMPTY_POOL = "minecraft:empty";
     private static final String LINEAR_RUN_POOL_PREFIX = "linear_runs";
+    private static final String ROOM_POOL_PREFIX = "rooms";
+    private static final String FLOOR_PLAN_POOL_PREFIX = "floor_plan";
+    private static final String MAIN_CAP_APPROACH_POOL_PREFIX = "main_cap_approaches";
+    private static final String MAIN_CAP_POOL_PREFIX = "main_caps";
     private static final String FLOOR_ROOM_SLOT_PREFIX = "tower.floor_plan";
 
     private enum PathPoolKind {
@@ -68,6 +74,97 @@ public class MKFloorTopologyPlanner {
             for (int i = 0; i < settings.branchRoomProfiles().size(); i++) {
                 pieces.add(createRoomPiece(workspace, settings, context, settings.branchRoomProfiles().get(i), i));
             }
+            for (int i = 0; i < settings.branchCapProfiles().size(); i++) {
+                pieces.add(createRoomPiece(workspace, settings, context, settings.branchCapProfiles().get(i), i));
+            }
+            if (settings.mainCapApproachEnabled()) {
+                for (int i = 0; i < settings.mainCapApproachProfiles().size(); i++) {
+                    pieces.add(createRoomPiece(workspace, settings, context,
+                            settings.mainCapApproachProfiles().get(i), i));
+                }
+            }
+            for (int i = 0; i < settings.mainCapProfiles().size(); i++) {
+                pieces.add(createRoomPiece(workspace, settings, context, settings.mainCapProfiles().get(i), i));
+            }
+            pieces.addAll(createFloorLinearRunPieces(workspace, settings, context));
+        }
+        return List.copyOf(pieces);
+    }
+
+    private List<MKPlannedPiece> createFloorLinearRunPieces(MKStructureWorkspace workspace,
+                                                            MKWorkspaceFloorTopologySettings settings,
+                                                            FloorOpeningContext context) {
+        ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
+        if (settings.mainHallwaysEnabled()) {
+            pieces.addAll(createFloorLinearRunPieces(workspace, context, context.mainOpening(), PathPoolKind.MAIN));
+        }
+        if (settings.branchHallwaysEnabled()) {
+            pieces.addAll(createFloorLinearRunPieces(workspace, context, context.branchOpening(), PathPoolKind.BRANCH));
+        }
+        return List.copyOf(pieces);
+    }
+
+    private List<MKPlannedPiece> createFloorLinearRunPieces(MKStructureWorkspace workspace,
+                                                            FloorOpeningContext context,
+                                                            ResolvedOpeningProfile opening,
+                                                            PathPoolKind pathKind) {
+        ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
+        for (var linearRun : workspace.linearRunFamilies()) {
+            if (!linearRun.openingProfileId().equals(opening.profileId())) {
+                continue;
+            }
+            if (pathKind == PathPoolKind.MAIN && !linearRun.allowOnMainPath()) {
+                continue;
+            }
+            if (pathKind == PathPoolKind.BRANCH && !linearRun.allowOnBranchPath()) {
+                continue;
+            }
+            int westOffset = Math.max(0, -linearRun.slopeDelta());
+            int eastOffset = Math.max(0, linearRun.slopeDelta());
+            LinkedHashMap<String, String> tags = new LinkedHashMap<>();
+            String pieceName = "floor_plan_" + safeId(context.stackId()) + "_" + safeId(context.floorRole()) +
+                    "_linear_run_" + safeId(linearRun.linearRunId()) + "_" + pathKind.serializedName;
+            String slotId = FLOOR_ROOM_SLOT_PREFIX + ".linear_run." + pathKind.serializedName;
+            tags.put("topology_role", slotId);
+            tags.put("workspace_topology_slot_id", slotId);
+            tags.put("workspace_topology_role_id", slotId);
+            tags.put("tower_piece_kind", "floor_plan_linear_run");
+            tags.put("workspace_floor_topology_stack_id", context.stackId());
+            tags.put("workspace_floor_topology_floor_role", context.floorRole());
+            tags.put("workspace_topology_group", context.topologyGroupId());
+            tags.put("workspace_linear_run_family_id", linearRun.linearRunId());
+            tags.put("workspace_linear_run_kind", linearRun.kind().getSerializedName());
+            tags.put("workspace_linear_run_projection", linearRun.projection().getSerializedName());
+            tags.put("workspace_linear_run_shape", "straight");
+            tags.put("workspace_linear_run_path_kind", pathKind.serializedName);
+            tags.put("workspace_linear_run_slope_delta", Integer.toString(linearRun.slopeDelta()));
+            tags.put("workspace_opening_profile_id", linearRun.openingProfileId());
+            MKWorkspacePaletteTags.apply(tags, workspace.palette());
+            new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
+                    pathKind == PathPoolKind.MAIN, pathKind == PathPoolKind.BRANCH, false, false)
+                    .applyToTags(tags);
+            MKConnectorRole westRole = pathKind == PathPoolKind.MAIN ? MKConnectorRole.MAIN_FORWARD :
+                    MKConnectorRole.BRANCH;
+            MKConnectorRole eastRole = pathKind == PathPoolKind.MAIN ? MKConnectorRole.MAIN_BACK :
+                    MKConnectorRole.BRANCH;
+            String incomingPool = floorLinearRunPoolName(context.topologyGroupId(), opening.profileId(), pathKind);
+            String targetPool = floorRoomPoolName(context.topologyGroupId(), opening.profileId(), pathKind);
+            pieces.add(new MKPlannedPiece(
+                    slotId,
+                    pieceName,
+                    linearRun.length(),
+                    linearRun.interiorWidth(),
+                    linearRun.interiorHeight() + Math.abs(linearRun.slopeDelta()),
+                    List.of(
+                            new MKPlannedConnector(westRole, Direction.WEST,
+                                    opening.openingWidth(), opening.openingHeight(), 0, westOffset,
+                                    targetPool, incomingPool),
+                            new MKPlannedConnector(eastRole, Direction.EAST,
+                                    opening.openingWidth(), opening.openingHeight(), 0, eastOffset,
+                                    targetPool, incomingPool)
+                    ),
+                    tags
+            ));
         }
         return List.copyOf(pieces);
     }
@@ -127,7 +224,7 @@ public class MKFloorTopologyPlanner {
         tags.put("workspace_topology_slot_id", slotId);
         tags.put("workspace_topology_role_id", slotId);
         tags.put("tower_piece_kind", "floor_plan_room");
-        tags.put("workspace_piece_kind", "instance");
+        tags.put("workspace_piece_kind", "template");
         tags.put("workspace_floor_topology_stack_id", context.stackId());
         tags.put("workspace_floor_topology_floor_role", context.floorRole());
         tags.put("workspace_floor_room_profile_id", profile.id());
@@ -136,6 +233,10 @@ public class MKFloorTopologyPlanner {
         tags.put("workspace_floor_min_main_path_pieces", Integer.toString(settings.minMainPathPieces()));
         tags.put("workspace_floor_max_main_path_pieces", Integer.toString(settings.maxMainPathPieces()));
         tags.put("workspace_floor_max_branch_pieces_before_cap", Integer.toString(settings.maxBranchPiecesBeforeCap()));
+        tags.put("workspace_floor_main_hallways_enabled", Boolean.toString(settings.mainHallwaysEnabled()));
+        tags.put("workspace_floor_branch_hallways_enabled", Boolean.toString(settings.branchHallwaysEnabled()));
+        tags.put("workspace_floor_main_cap_approach_enabled", Boolean.toString(settings.mainCapApproachEnabled()));
+        tags.put("workspace_floor_sprawl", Float.toString(settings.sprawl()));
         MKWorkspaceMaterialPalette palette = profile.paletteOverride()
                 .map(override -> override.resolve(workspace.palette()))
                 .orElse(workspace.palette());
@@ -147,37 +248,41 @@ public class MKFloorTopologyPlanner {
                 profile.width(),
                 profile.length(),
                 profile.height(),
-                connectorsForProfile(profile, context),
+                connectorsForProfile(workspace, settings, profile, context),
                 tags
         );
     }
 
     private MKWorkspaceRuntimePieceInfo runtimeInfoFor(FloorOpeningContext context, MKWorkspaceFloorRoomProfile profile) {
-        boolean branchRoom = profile.kind() == MKWorkspaceFloorRoomKind.BRANCH_ROOM;
-        boolean branchCap = profile.terminalBranchRoom();
+        boolean branchPath = profile.kind().isBranchPath();
+        boolean branchCap = profile.kind().isBranchCap();
+        boolean mainPathEnding = profile.kind().isMainPathEnding();
+        boolean terminal = branchCap || profile.kind() == MKWorkspaceFloorRoomKind.MAIN_CAP;
         return new MKWorkspaceRuntimePieceInfo(
                 false,
-                branchRoom ? MKJigsawPieceRole.BRANCH : MKJigsawPieceRole.ROOM,
+                branchPath ? MKJigsawPieceRole.BRANCH : MKJigsawPieceRole.ROOM,
                 0,
                 0,
-                !branchRoom,
-                branchRoom,
-                branchCap,
+                !branchPath,
+                branchPath,
+                terminal,
                 false,
                 context.topologyGroupId(),
-                false,
+                mainPathEnding,
                 branchCap
         );
     }
 
-    private List<MKPlannedConnector> connectorsForProfile(MKWorkspaceFloorRoomProfile profile,
+    private List<MKPlannedConnector> connectorsForProfile(MKStructureWorkspace workspace,
+                                                          MKWorkspaceFloorTopologySettings settings,
+                                                          MKWorkspaceFloorRoomProfile profile,
                                                           FloorOpeningContext context) {
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
         for (MKWorkspaceFamilyHorizontalExitDefinition exit : profile.horizontalExits()) {
             ResolvedOpeningProfile opening = resolveInheritedOpening(exit, context);
             MKConnectorRole role = connectorRole(exit.pathKind());
-            String targetPool = targetPoolFor(exit, opening.profileId(), profile);
-            String incomingPool = incomingPoolFor(exit, opening.profileId(), profile);
+            String targetPool = targetPoolFor(workspace, exit, opening.profileId(), profile, context, settings);
+            String incomingPool = incomingPoolFor(exit, opening.profileId(), profile, context, settings);
             connectors.add(new MKPlannedConnector(
                     role,
                     exit.direction(),
@@ -213,28 +318,46 @@ public class MKFloorTopologyPlanner {
         };
     }
 
-    private String targetPoolFor(MKWorkspaceFamilyHorizontalExitDefinition exit, String openingProfileId,
-                                 MKWorkspaceFloorRoomProfile profile) {
+    private String targetPoolFor(MKStructureWorkspace workspace, MKWorkspaceFamilyHorizontalExitDefinition exit,
+                                 String openingProfileId,
+                                 MKWorkspaceFloorRoomProfile profile, FloorOpeningContext context,
+                                 MKWorkspaceFloorTopologySettings settings) {
         if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT) {
-            return linearRunPoolName(openingProfileId, PathPoolKind.MAIN);
+            return settings.mainHallwaysEnabled() && hasCompatibleLinearRun(workspace, openingProfileId, PathPoolKind.MAIN) ?
+                    floorLinearRunPoolName(context.topologyGroupId(), openingProfileId, PathPoolKind.MAIN) :
+                    floorRoomPoolName(context.topologyGroupId(), openingProfileId, PathPoolKind.MAIN);
         }
         if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH &&
-                !profile.terminalBranchRoom() &&
+                !profile.kind().isBranchCap() &&
                 exit.direction() != Direction.SOUTH) {
-            return linearRunPoolName(openingProfileId, PathPoolKind.BRANCH);
+            return settings.branchHallwaysEnabled() && hasCompatibleLinearRun(workspace, openingProfileId, PathPoolKind.BRANCH) ?
+                    floorLinearRunPoolName(context.topologyGroupId(), openingProfileId, PathPoolKind.BRANCH) :
+                    floorRoomPoolName(context.topologyGroupId(), openingProfileId, PathPoolKind.BRANCH);
         }
         return EMPTY_POOL;
     }
 
+    private boolean hasCompatibleLinearRun(MKStructureWorkspace workspace, String openingProfileId,
+                                           PathPoolKind pathKind) {
+        return workspace.linearRunFamilies().stream().anyMatch(linearRun ->
+                linearRun.openingProfileId().equals(openingProfileId) &&
+                        (pathKind == PathPoolKind.MAIN ? linearRun.allowOnMainPath() :
+                                linearRun.allowOnBranchPath()));
+    }
+
     private String incomingPoolFor(MKWorkspaceFamilyHorizontalExitDefinition exit, String openingProfileId,
-                                   MKWorkspaceFloorRoomProfile profile) {
-        if (profile.terminalBranchRoom()) {
-            return MKTowerStackPlanner.branchCapPoolName(openingProfileId);
+                                   MKWorkspaceFloorRoomProfile profile, FloorOpeningContext context,
+                                   MKWorkspaceFloorTopologySettings settings) {
+        if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY ||
+                exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY) {
+            return floorRoomPoolName(context.topologyGroupId(), openingProfileId, PathPoolKind.MAIN);
         }
-        if (exit.pathKind().usesMainPath()) {
-            return linearRunPoolName(openingProfileId, PathPoolKind.MAIN);
+        if ((exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH ||
+                exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY) &&
+                exit.direction() == Direction.SOUTH) {
+            return floorRoomPoolName(context.topologyGroupId(), openingProfileId, PathPoolKind.BRANCH);
         }
-        return linearRunPoolName(openingProfileId, PathPoolKind.BRANCH);
+        return null;
     }
 
     private Optional<ResolvedOpeningProfile> resolveOpening(MKStructureWorkspace workspace, String profileId) {
@@ -253,6 +376,58 @@ public class MKFloorTopologyPlanner {
 
     private String linearRunPoolName(String openingProfileId, PathPoolKind pathKind) {
         return LINEAR_RUN_POOL_PREFIX + "/" + pathKind.serializedName + "/" + openingProfileId;
+    }
+
+    private String roomPoolName(String openingProfileId, PathPoolKind pathKind) {
+        return ROOM_POOL_PREFIX + "/" + pathKind.serializedName + "/" + openingProfileId;
+    }
+
+    public static String mainCapApproachPoolName(String topologyGroupId) {
+        return MAIN_CAP_APPROACH_POOL_PREFIX + "/" + topologyGroupId;
+    }
+
+    public static String mainCapPoolName(String topologyGroupId) {
+        return MAIN_CAP_POOL_PREFIX + "/" + topologyGroupId;
+    }
+
+    public static String floorLinearRunPoolName(String topologyGroupId, String openingProfileId, boolean mainPath) {
+        return floorLinearRunPoolName(topologyGroupId, openingProfileId,
+                mainPath ? PathPoolKind.MAIN : PathPoolKind.BRANCH);
+    }
+
+    public static String floorRoomPoolName(String topologyGroupId, String openingProfileId, boolean mainPath) {
+        return floorRoomPoolName(topologyGroupId, openingProfileId,
+                mainPath ? PathPoolKind.MAIN : PathPoolKind.BRANCH);
+    }
+
+    public static String floorRoomMaskPoolName(String topologyGroupId, String openingProfileId, boolean mainPath,
+                                               String maskName) {
+        ResourceLocation basePool = ResourceLocation.fromNamespaceAndPath("mknpc",
+                floorRoomPoolName(topologyGroupId, openingProfileId, mainPath));
+        return MKFloorMaskVariantExporter.maskPool(basePool, maskName).getPath();
+    }
+
+    public static String floorTopologyGroupIdFor(String stackId, String floorRole) {
+        return floorTopologyGroupId(stackId, floorRole);
+    }
+
+    public static String directMainRoomPoolName(String openingProfileId) {
+        return ROOM_POOL_PREFIX + "/" + PathPoolKind.MAIN.serializedName + "/" + openingProfileId;
+    }
+
+    public static String directBranchRoomPoolName(String openingProfileId) {
+        return ROOM_POOL_PREFIX + "/" + PathPoolKind.BRANCH.serializedName + "/" + openingProfileId;
+    }
+
+    private static String floorLinearRunPoolName(String topologyGroupId, String openingProfileId,
+                                                PathPoolKind pathKind) {
+        return FLOOR_PLAN_POOL_PREFIX + "/" + topologyGroupId + "/" + LINEAR_RUN_POOL_PREFIX + "/" +
+                pathKind.serializedName + "/" + openingProfileId;
+    }
+
+    private static String floorRoomPoolName(String topologyGroupId, String openingProfileId, PathPoolKind pathKind) {
+        return FLOOR_PLAN_POOL_PREFIX + "/" + topologyGroupId + "/" + ROOM_POOL_PREFIX + "/" +
+                pathKind.serializedName + "/" + openingProfileId;
     }
 
     private String pieceName(FloorOpeningContext context, MKWorkspaceFloorRoomProfile profile, int index) {
