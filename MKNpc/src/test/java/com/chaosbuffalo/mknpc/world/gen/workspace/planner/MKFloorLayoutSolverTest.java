@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MKFloorLayoutSolverTest {
     @Test
@@ -70,6 +71,50 @@ class MKFloorLayoutSolverTest {
         assertEquals(Optional.of(8675309L), decoded.lockedLayoutSeed());
         assertEquals(0.75f, decoded.sprawl());
         assertEquals(1, decoded.mainRoomProfiles().size());
+    }
+
+    @Test
+    void branchPathUsesCapWhenContinuationWouldExceedBounds() {
+        MKWorkspaceFloorRoomProfile oversizedBranchRoom = MKWorkspaceFloorRoomProfile
+                .defaults(MKWorkspaceFloorRoomKind.BRANCH_ROOM, 9, 70, 7);
+        MKWorkspaceFloorTopologySettings settings = new MKWorkspaceFloorTopologySettings(
+                "tower.primary",
+                "main_floor",
+                1,
+                1,
+                MKWorkspaceFloorTopologySettings.MAX_BRANCH_PIECES_BEFORE_CAP,
+                MKWorkspaceHallwayLeadInMode.MANUAL,
+                1,
+                false,
+                false,
+                false,
+                1.0f,
+                Optional.empty(),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.MAIN_ROOM, 9, 9, 7)),
+                List.of(oversizedBranchRoom),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.BRANCH_CAP, 9, 9, 7)),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.MAIN_CAP_APPROACH, 9, 9, 7)),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.MAIN_CAP, 9, 9, 7))
+        );
+
+        MKFloorLayoutSolver.FloorLayoutResult result = new MKFloorLayoutSolver().solve(
+                settings,
+                9,
+                9,
+                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.NORTH,
+                        MKWorkspaceHorizontalExitPathKind.BRANCH,
+                        MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID)),
+                1,
+                99L
+        );
+
+        assertEquals(0, result.segments().stream()
+                .filter(segment -> segment.kind() == MKFloorLayoutSolver.SegmentKind.BRANCH_ROOM)
+                .count());
+        assertEquals(1, result.segments().stream()
+                .filter(segment -> segment.kind() == MKFloorLayoutSolver.SegmentKind.BRANCH_CAP)
+                .count());
+        assertTrue(result.fitsHardLimit());
     }
 
     private static MKWorkspaceFloorTopologySettings settings(float sprawl) {
