@@ -38,7 +38,7 @@ public class MKFloorLayoutSolver {
             }
         }
         return new FloorLayoutResult(List.copyOf(segments), List.copyOf(rejected),
-                extents(segments), fitsHardLimit(segments));
+                extents(segments), fitsHardLimit(segments) && rejected.stream().noneMatch(RejectedExit::required));
     }
 
     private void addPath(ArrayList<LogicalSegment> segments, ArrayList<RejectedExit> rejected,
@@ -52,27 +52,32 @@ public class MKFloorLayoutSolver {
         boolean hallwaysEnabled = main ? settings.mainHallwaysEnabled() : settings.branchHallwaysEnabled();
         int hallwayLength = Math.max(1, leadIn);
         LogicalRect cursor = start;
+        Direction currentDirection = direction;
         List<RoomStep> roomSteps = roomSteps(settings, main, random);
         for (int i = 0; i < roomSteps.size(); i++) {
             RoomStep step = roomSteps.get(i);
             ArrayList<LogicalSegment> candidate = new ArrayList<>();
             LogicalRect candidateCursor = cursor;
             if (hallwaysEnabled) {
-                candidateCursor = appendHallway(candidate, settings, candidateCursor, direction, hallwayLength, main,
+                candidateCursor = appendHallway(candidate, settings, candidateCursor, currentDirection, hallwayLength, main,
                         i == 0);
             }
-            candidateCursor = appendRoom(candidate, candidateCursor, direction, step);
+            candidateCursor = appendRoom(candidate, candidateCursor, currentDirection, step);
             if (!candidateFits(segments, candidate)) {
-                rejected.add(new RejectedExit(direction, step.profile().kind(), rejectionReason(segments, candidate)));
+                rejected.add(new RejectedExit(currentDirection, step.profile().kind(),
+                        rejectionReason(segments, candidate), true));
                 return;
             }
             segments.addAll(candidate);
             cursor = candidateCursor;
             int roomSegmentIndex = segments.size() - 1;
             if (step.allowBranches()) {
-                String acceptedMask = addBranchesFromRoom(segments, rejected, settings, cursor, direction, step.profile(), branchDepth,
+                String acceptedMask = addBranchesFromRoom(segments, rejected, settings, cursor, currentDirection, step.profile(), branchDepth,
                         leadIn, random, false);
                 segments.set(roomSegmentIndex, segments.get(roomSegmentIndex).withAcceptedMask(acceptedMask));
+            }
+            if (step.profile().mainExitDirection().isPresent()) {
+                currentDirection = rotateRoomExit(step.profile().mainExitDirection().orElseThrow(), currentDirection);
             }
         }
     }
@@ -414,6 +419,9 @@ public class MKFloorLayoutSolver {
 
     public record FloorLayoutResult(List<LogicalSegment> segments, List<RejectedExit> rejectedExits,
                                     LayoutExtents extents, boolean fitsHardLimit) {
+        public boolean hasRequiredRejections() {
+            return rejectedExits.stream().anyMatch(RejectedExit::required);
+        }
     }
 
     public record LogicalSegment(LogicalRect rect, SegmentKind kind, Direction direction, String label,
@@ -423,7 +431,11 @@ public class MKFloorLayoutSolver {
         }
     }
 
-    public record RejectedExit(Direction direction, MKWorkspaceFloorRoomKind sourceKind, String reason) {
+    public record RejectedExit(Direction direction, MKWorkspaceFloorRoomKind sourceKind, String reason,
+                               boolean required) {
+        public RejectedExit(Direction direction, MKWorkspaceFloorRoomKind sourceKind, String reason) {
+            this(direction, sourceKind, reason, false);
+        }
     }
 
     public record LayoutExtents(float minX, float maxX, float minY, float maxY) {

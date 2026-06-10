@@ -178,7 +178,9 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         drawButton(graphics, mc, rerollButton(panel), "Reroll", mouseX, mouseY, locked);
         drawButton(graphics, mc, lockButton(panel), locked ? "Unlock" : "Lock", mouseX, mouseY, false);
         if (!result.fitsHardLimit()) {
-            String warning = "Exceeds 128 block horizontal bound";
+            String warning = result.hasRequiredRejections() ?
+                    "Required floor path rejected" :
+                    "Exceeds 128 block horizontal bound";
             graphics.drawString(mc.font, warning,
                     panel.x() + panel.width() - mc.font.width(warning) - 6,
                     rerollButton(panel).y() + rerollButton(panel).height() + 4, COLLISION, false);

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MKFloorLayoutSolverTest {
@@ -115,6 +116,94 @@ class MKFloorLayoutSolverTest {
                 .filter(segment -> segment.kind() == MKFloorLayoutSolver.SegmentKind.BRANCH_CAP)
                 .count());
         assertTrue(result.fitsHardLimit());
+    }
+
+    @Test
+    void requiredMainPathRejectionMarksResultInvalid() {
+        MKWorkspaceFloorRoomProfile oversizedMainRoom = MKWorkspaceFloorRoomProfile
+                .defaults(MKWorkspaceFloorRoomKind.MAIN_ROOM, 9, 65, 7);
+        MKWorkspaceFloorTopologySettings settings = new MKWorkspaceFloorTopologySettings(
+                "tower.primary",
+                "main_floor",
+                3,
+                3,
+                0,
+                MKWorkspaceHallwayLeadInMode.MANUAL,
+                1,
+                false,
+                false,
+                false,
+                1.0f,
+                Optional.empty(),
+                List.of(oversizedMainRoom),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.BRANCH_ROOM, 9, 9, 7)),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.BRANCH_CAP, 9, 9, 7)),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.MAIN_CAP_APPROACH, 9, 9, 7)),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.MAIN_CAP, 9, 9, 7))
+        );
+
+        MKFloorLayoutSolver.FloorLayoutResult result = new MKFloorLayoutSolver().solve(
+                settings,
+                9,
+                9,
+                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.NORTH,
+                        MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                        MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID)),
+                1,
+                99L
+        );
+
+        assertFalse(result.fitsHardLimit());
+        assertTrue(result.hasRequiredRejections());
+        assertTrue(result.rejectedExits().stream().anyMatch(rejection ->
+                rejection.required() && "horizontal bound".equals(rejection.reason())));
+    }
+
+    @Test
+    void mainExitDirectionTurnsNextMainPathSegment() {
+        MKWorkspaceFloorRoomProfile eastTurningMainRoom = MKWorkspaceFloorRoomProfile
+                .defaults(MKWorkspaceFloorRoomKind.MAIN_ROOM, 9, 9, 7)
+                .withHorizontalExits(List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
+                        Direction.EAST,
+                        MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                        MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID)));
+        MKWorkspaceFloorTopologySettings settings = new MKWorkspaceFloorTopologySettings(
+                "tower.primary",
+                "main_floor",
+                2,
+                2,
+                0,
+                MKWorkspaceHallwayLeadInMode.MANUAL,
+                1,
+                false,
+                false,
+                false,
+                1.0f,
+                Optional.empty(),
+                List.of(eastTurningMainRoom),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.BRANCH_ROOM, 9, 9, 7)),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.BRANCH_CAP, 9, 9, 7)),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.MAIN_CAP_APPROACH, 9, 9, 7)),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.MAIN_CAP, 9, 9, 7))
+        );
+
+        List<MKFloorLayoutSolver.LogicalSegment> mainRooms = new MKFloorLayoutSolver().solve(
+                        settings,
+                        9,
+                        9,
+                        List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.NORTH,
+                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                                MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID)),
+                        1,
+                        99L
+                ).segments().stream()
+                .filter(segment -> segment.kind() == MKFloorLayoutSolver.SegmentKind.MAIN_ROOM)
+                .toList();
+
+        assertEquals(2, mainRooms.size());
+        assertEquals(Direction.NORTH, mainRooms.get(0).direction());
+        assertEquals(Direction.EAST, mainRooms.get(1).direction());
+        assertTrue(mainRooms.get(1).rect().centerX() > mainRooms.get(0).rect().centerX());
     }
 
     private static MKWorkspaceFloorTopologySettings settings(float sprawl) {
