@@ -105,6 +105,7 @@ class TowerWorkspaceV2Test {
         List<String> towerRoomPieceNames = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace).stream()
                 .filter(piece -> !"linear_run".equals(piece.tags().get("tower_piece_kind")))
                 .filter(piece -> !"floor_plan_room".equals(piece.tags().get("tower_piece_kind")))
+                .filter(piece -> !"floor_plan_linear_run".equals(piece.tags().get("tower_piece_kind")))
                 .map(MKPlannedPiece::pieceName)
                 .toList();
 
@@ -943,11 +944,11 @@ class TowerWorkspaceV2Test {
         MKWalledKeepSizingReport report = new MKWalledKeepSizingCalculator().calculate(workspace);
         List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
 
-        assertEquals(5, report.verticalWallSegments());
-        assertEquals(5, pieces.stream()
+        assertEquals(6, report.verticalWallSegments());
+        assertEquals(6, pieces.stream()
                 .filter(piece -> "west".equals(piece.tags().get("workspace_perimeter_chain_id")))
                 .count());
-        assertEquals(5, pieces.stream()
+        assertEquals(6, pieces.stream()
                 .filter(piece -> "east".equals(piece.tags().get("workspace_perimeter_chain_id")))
                 .count());
         assertTrue(report.courtyardSocketFits());
@@ -1951,6 +1952,66 @@ class TowerWorkspaceV2Test {
                 .orElseThrow();
 
         assertFalse(centerEntry.tags().containsKey(MKWorkspaceFoundationPolicy.MODE_TAG));
+    }
+
+    @Test
+    void walledKeepFloorTopologyUsesCompactFallbackHallwaysInsteadOfKeepRuns() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        List<MKTowerWorkspaceFamilyDefinition> families = MKTowerWorkspaceFamilyDefinition
+                .createWalledKeepDefaults(dimensions).stream()
+                .map(family -> family.topologySlotId().equals("keep.center.basement_floor") ?
+                        MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                                family.baseName(),
+                                family.slotMetadata(),
+                                family.verticalAccessGroupId(),
+                                family.supportsVerticalAccess(),
+                                family.roomWidth(),
+                                family.roomLength(),
+                                family.roomHeight(),
+                                family.horizontalExtrusionMode(),
+                                List.of(
+                                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
+                                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "main_opening"),
+                                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.NORTH,
+                                                MKWorkspaceHorizontalExitPathKind.BRANCH, "branch_opening")
+                                ),
+                                family.topVoidMargin(),
+                                family.bottomVoidMargin(),
+                                family.foundationPolicyOverride(),
+                                family.paletteOverride()
+                        ) : family)
+                .toList();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                MKWorkspaceTopologyProfile.walledKeep(false),
+                families,
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+
+        MKPlannedPiece mainHallway = pieces.stream()
+                .filter(piece -> piece.pieceName().equals(
+                        "floor_plan_keep_center_basement_floor_linear_run_floor_main_hallway_main"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece branchHallway = pieces.stream()
+                .filter(piece -> piece.pieceName().equals(
+                        "floor_plan_keep_center_basement_floor_linear_run_floor_branch_hallway_branch"))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(3, mainHallway.interiorLength());
+        assertEquals(3, branchHallway.interiorLength());
+        assertFalse(pieces.stream().anyMatch(piece ->
+                piece.pieceName().startsWith("floor_plan_keep_center_basement_floor_linear_run_keep_")));
+        MKPlannedPiece basementFloor = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_center_basement_floor"))
+                .findFirst()
+                .orElseThrow();
+        assertTrue(basementFloor.connectors().stream().anyMatch(connector ->
+                connector.facing() == Direction.SOUTH &&
+                        "floor_plan/floor/keep_center/basement_floor/linear_runs/main/main_opening"
+                                .equals(connector.targetPoolName())));
     }
 
     @Test

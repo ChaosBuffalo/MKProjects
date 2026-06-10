@@ -642,10 +642,19 @@ public class MKJigsawPlacement {
             return Optional.empty();
         }
         int roomsMarker = path.indexOf("/rooms/");
+        int linearRunsMarker = path.indexOf("/linear_runs/");
+        int topologyMarker;
         if (roomsMarker < 0) {
+            topologyMarker = linearRunsMarker;
+        } else if (linearRunsMarker < 0) {
+            topologyMarker = roomsMarker;
+        } else {
+            topologyMarker = Math.min(roomsMarker, linearRunsMarker);
+        }
+        if (topologyMarker < 0) {
             return Optional.empty();
         }
-        String topologyGroup = path.substring("floor_plan/".length(), roomsMarker);
+        String topologyGroup = path.substring("floor_plan/".length(), topologyMarker);
         return topologyGroup.isBlank() ? Optional.empty() : Optional.of(topologyGroup);
     }
 

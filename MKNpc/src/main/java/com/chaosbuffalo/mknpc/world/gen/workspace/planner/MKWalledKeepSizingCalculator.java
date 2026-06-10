@@ -38,7 +38,7 @@ public class MKWalledKeepSizingCalculator {
         int horizontalRequiredSpan = horizontalPerimeterSpan(workspace);
         int verticalRequiredSpan = verticalPerimeterSpan(workspace, pathFamily, entryFamily);
         int horizontalSegments = segmentCountForSpan(wallFamily, horizontalRequiredSpan);
-        int verticalSegments = segmentCountForSpan(wallFamily, verticalRequiredSpan);
+        int verticalSegments = verticalSegmentCountForSpan(workspace, wallFamily, verticalRequiredSpan);
         int frontBranchSegments = Math.max(1, (int) Math.ceil(horizontalSegments / 2.0));
         int backWallSegments = frontBranchSegments * 2 + 1;
         int northWestSegments = Math.max(1, (int) Math.ceil(backWallSegments / 2.0));
@@ -156,7 +156,8 @@ public class MKWalledKeepSizingCalculator {
                                                         int maxDistance) {
         int wallUnitSpan = smallestOddAtLeast(Math.max(MIN_RECOMMENDED_WALL_UNIT_SPAN, candidateWallUnitSpan));
         int horizontalSegments = Math.max(1, (int) Math.ceil(horizontalRequiredSpan / (double) wallUnitSpan));
-        int verticalSegments = Math.max(1, (int) Math.ceil(verticalRequiredSpan / (double) wallUnitSpan));
+        int verticalSegments = Math.max(1, (int) Math.ceil(verticalRequiredSpan / (double) wallUnitSpan)) +
+                courtyardRearWallBufferSegments(workspace);
         int frontBranchSegments = Math.max(1, (int) Math.ceil(horizontalSegments / 2.0));
         int backWallSegments = frontBranchSegments * 2 + 1;
         int horizontalUnits = frontBranchSegments * 2 + 1;
@@ -278,6 +279,16 @@ public class MKWalledKeepSizingCalculator {
 
     private int segmentCountForSpan(MKWorkspaceLinearRunFamilyDefinition family, int span) {
         return Math.max(1, (int) Math.ceil(span / (double) Math.max(1, family.length())));
+    }
+
+    private int verticalSegmentCountForSpan(MKStructureWorkspace workspace, MKWorkspaceLinearRunFamilyDefinition family,
+                                            int span) {
+        return segmentCountForSpan(family, span) + courtyardRearWallBufferSegments(workspace);
+    }
+
+    private int courtyardRearWallBufferSegments(MKStructureWorkspace workspace) {
+        MKWalledKeepCourtyardSettings settings = workspace.topologyProfile().courtyardSettings();
+        return settings.courtyardContentEnabled() && settings.courtyardSocketGenerationEnabled() ? 1 : 0;
     }
 
     private int courtyardPathLaneCenterInset(MKStructureWorkspace workspace, ResolvedOpening opening) {

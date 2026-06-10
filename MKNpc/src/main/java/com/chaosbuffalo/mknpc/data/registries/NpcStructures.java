@@ -92,7 +92,7 @@ public class NpcStructures {
                         emptySpawnsStructure(biomes.getOrThrow(NpcTags.Biomes.HAS_TEST_KEEP),
                                 GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.BEARD_THIN),
                         templates.getOrThrow(NpcStructurePools.TEST_KEEP_START_POOL))
-                        .setMaxDepth(18)
+                        .setMaxDepth(20)
                         .setMaxDistFromCenter(116)
                         .setDungeonLayout(new MKDungeonLayoutSettings(
                                 1,

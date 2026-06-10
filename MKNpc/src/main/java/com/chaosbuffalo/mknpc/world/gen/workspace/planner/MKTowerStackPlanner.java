@@ -354,8 +354,8 @@ public class MKTowerStackPlanner {
                 targetPool = directRoomTargetPoolName(opening.profileId(), role);
                 incomingPool = directRoomIncomingPoolName(opening.profileId(), role);
             } else if (floorSettings.isPresent()) {
-                boolean floorHallwayAvailable = hasCompatibleLinearRun(workspace, opening.profileId(),
-                        linearRunPathKind);
+                boolean floorHallwayAvailable = exit.pathKind().usesMainPath() ?
+                        floorSettings.get().mainHallwaysEnabled() : floorSettings.get().branchHallwaysEnabled();
                 targetPool = floorTopologyTargetPool(family, opening.profileId(), exit.pathKind().usesMainPath(),
                         floorHallwayAvailable);
                 incomingPool = null;

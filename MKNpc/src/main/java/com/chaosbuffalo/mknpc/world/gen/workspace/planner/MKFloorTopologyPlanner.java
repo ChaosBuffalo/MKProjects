@@ -10,7 +10,13 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizon
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunProjection;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
@@ -96,20 +102,24 @@ public class MKFloorTopologyPlanner {
                                                             FloorOpeningContext context) {
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
         if (settings.mainHallwaysEnabled()) {
-            pieces.addAll(createFloorLinearRunPieces(workspace, context, context.mainOpening(), PathPoolKind.MAIN));
+            pieces.addAll(createFloorLinearRunPieces(workspace, settings, context, context.mainOpening(),
+                    PathPoolKind.MAIN));
         }
         if (settings.branchHallwaysEnabled()) {
-            pieces.addAll(createFloorLinearRunPieces(workspace, context, context.branchOpening(), PathPoolKind.BRANCH));
+            pieces.addAll(createFloorLinearRunPieces(workspace, settings, context, context.branchOpening(),
+                    PathPoolKind.BRANCH));
         }
         return List.copyOf(pieces);
     }
 
     private List<MKPlannedPiece> createFloorLinearRunPieces(MKStructureWorkspace workspace,
+                                                            MKWorkspaceFloorTopologySettings settings,
                                                             FloorOpeningContext context,
                                                             ResolvedOpeningProfile opening,
                                                             PathPoolKind pathKind) {
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
-        for (var linearRun : workspace.linearRunFamilies()) {
+        for (MKWorkspaceLinearRunFamilyDefinition linearRun : floorLinearRuns(workspace, settings, context, opening,
+                pathKind)) {
             if (!linearRun.openingProfileId().equals(opening.profileId())) {
                 continue;
             }
@@ -168,6 +178,75 @@ public class MKFloorTopologyPlanner {
             ));
         }
         return List.copyOf(pieces);
+    }
+
+    private List<MKWorkspaceLinearRunFamilyDefinition> floorLinearRuns(MKStructureWorkspace workspace,
+                                                                       MKWorkspaceFloorTopologySettings settings,
+                                                                       FloorOpeningContext context,
+                                                                       ResolvedOpeningProfile opening,
+                                                                       PathPoolKind pathKind) {
+        List<MKWorkspaceLinearRunFamilyDefinition> candidates = workspace.linearRunFamilies().stream()
+                .filter(linearRun -> isFloorTopologyLinearRun(linearRun, pathKind))
+                .filter(linearRun -> linearRun.openingProfileId().equals(opening.profileId()))
+                .toList();
+        if (!candidates.isEmpty()) {
+            return candidates;
+        }
+        return List.of(fallbackFloorLinearRun(workspace, settings, context, opening, pathKind));
+    }
+
+    private boolean isFloorTopologyLinearRun(MKWorkspaceLinearRunFamilyDefinition linearRun, PathPoolKind pathKind) {
+        if (pathKind == PathPoolKind.MAIN && !linearRun.allowOnMainPath()) {
+            return false;
+        }
+        if (pathKind == PathPoolKind.BRANCH && !linearRun.allowOnBranchPath()) {
+            return false;
+        }
+        return !linearRun.topologySlotId().startsWith("keep.");
+    }
+
+    private MKWorkspaceLinearRunFamilyDefinition fallbackFloorLinearRun(MKStructureWorkspace workspace,
+                                                                        MKWorkspaceFloorTopologySettings settings,
+                                                                        FloorOpeningContext context,
+                                                                        ResolvedOpeningProfile opening,
+                                                                        PathPoolKind pathKind) {
+        int length = effectiveHallwayLeadInPieces(workspace, settings, context);
+        int height = floorHallwayHeight(settings, opening);
+        return new MKWorkspaceLinearRunFamilyDefinition(
+                "floor_" + pathKind.serializedName + "_hallway",
+                FLOOR_ROOM_SLOT_PREFIX + ".linear_run." + pathKind.serializedName,
+                MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR,
+                opening.profileId(),
+                length,
+                opening.openingWidth(),
+                height,
+                0,
+                pathKind == PathPoolKind.MAIN,
+                pathKind == PathPoolKind.BRANCH,
+                MKWorkspaceLinearRunProjection.RIGID,
+                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                MKWorkspaceFoundationPolicy.none(),
+                null
+        );
+    }
+
+    private int effectiveHallwayLeadInPieces(MKStructureWorkspace workspace,
+                                             MKWorkspaceFloorTopologySettings settings,
+                                             FloorOpeningContext context) {
+        if (settings.hallwayLeadInMode() == MKWorkspaceHallwayLeadInMode.MANUAL) {
+            return Math.max(1, settings.manualHallwayLeadInPieces());
+        }
+        return Math.max(1, Math.ceilDiv(Math.max(
+                workspace.topologyProfile().towerStackSettingsOrDefault(context.stackId()).width(),
+                workspace.topologyProfile().towerStackSettingsOrDefault(context.stackId()).length()), 8));
+    }
+
+    private int floorHallwayHeight(MKWorkspaceFloorTopologySettings settings, ResolvedOpeningProfile opening) {
+        int profileHeight = settings.mainRoomProfiles().stream()
+                .mapToInt(MKWorkspaceFloorRoomProfile::height)
+                .max()
+                .orElse(opening.openingHeight());
+        return Math.max(opening.openingHeight(), profileHeight);
     }
 
     private Optional<FloorOpeningContext> contextForRootFamily(MKStructureWorkspace workspace,

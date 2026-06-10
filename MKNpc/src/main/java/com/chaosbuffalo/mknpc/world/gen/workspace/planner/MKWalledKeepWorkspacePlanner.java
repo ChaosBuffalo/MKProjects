@@ -811,8 +811,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         int horizontalSegments = south.map(family -> segmentCountForSpan(family, horizontalPerimeterSpan(workspace)))
                 .or(() -> north.map(family -> segmentCountForSpan(family, horizontalPerimeterSpan(workspace))))
                 .orElse(0);
-        int verticalSegments = west.map(family -> segmentCountForSpan(family, verticalPerimeterSpan(workspace)))
-                .or(() -> east.map(family -> segmentCountForSpan(family, verticalPerimeterSpan(workspace))))
+        int verticalSegments = west.map(family -> verticalSegmentCountForSpan(workspace, family,
+                        verticalPerimeterSpan(workspace)))
+                .or(() -> east.map(family -> verticalSegmentCountForSpan(workspace, family,
+                        verticalPerimeterSpan(workspace))))
                 .orElse(0);
         int frontBranchSegments = horizontalSegments > 0 ?
                 Math.max(1, (int) Math.ceil(horizontalSegments / 2.0)) : 0;
@@ -914,6 +916,16 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
 
     private int segmentCountForSpan(MKWorkspaceLinearRunFamilyDefinition family, int span) {
         return Math.max(1, (int) Math.ceil(span / (double) Math.max(1, family.length())));
+    }
+
+    private int verticalSegmentCountForSpan(MKStructureWorkspace workspace, MKWorkspaceLinearRunFamilyDefinition family,
+                                            int span) {
+        return segmentCountForSpan(family, span) + courtyardRearWallBufferSegments(workspace);
+    }
+
+    private int courtyardRearWallBufferSegments(MKStructureWorkspace workspace) {
+        MKWalledKeepCourtyardSettings settings = workspace.topologyProfile().courtyardSettings();
+        return settings.courtyardContentEnabled() && settings.courtyardSocketGenerationEnabled() ? 1 : 0;
     }
 
     private int courtyardBandSize(MKStructureWorkspace workspace, MKWalledKeepCourtyardSettings settings, int laneInset,
