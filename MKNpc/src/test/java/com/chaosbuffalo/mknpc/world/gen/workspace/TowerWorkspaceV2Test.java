@@ -912,6 +912,48 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void walledKeepSizingBudgetsRearCourtyardBandForLargeCenterKeep() {
+        MKWorkspaceDimensions defaultDimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceDimensions largeDimensions = new MKWorkspaceDimensions(
+                17,
+                17,
+                defaultDimensions.entranceHeight(),
+                defaultDimensions.roomHeight(),
+                defaultDimensions.basementHeight(),
+                defaultDimensions.shaftWidth(),
+                defaultDimensions.doorwayWidth(),
+                defaultDimensions.doorwayHeight()
+        );
+        MKStructureWorkspace workspace = withDimensions(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(largeDimensions), List.of()),
+                largeDimensions
+        );
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false);
+        topologyProfile = topologyProfile.withTowerStackSettings(topologyProfile
+                .towerStackSettingsOrDefault("keep.center")
+                .withWidth(17)
+                .withLength(17));
+        workspace = withTopologyAndLinearRuns(
+                workspace,
+                topologyProfile,
+                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(largeDimensions),
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(defaultDimensions, workspacePalette())
+        );
+
+        MKWalledKeepSizingReport report = new MKWalledKeepSizingCalculator().calculate(workspace);
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+
+        assertEquals(5, report.verticalWallSegments());
+        assertEquals(5, pieces.stream()
+                .filter(piece -> "west".equals(piece.tags().get("workspace_perimeter_chain_id")))
+                .count());
+        assertEquals(5, pieces.stream()
+                .filter(piece -> "east".equals(piece.tags().get("workspace_perimeter_chain_id")))
+                .count());
+        assertTrue(report.courtyardSocketFits());
+    }
+
+    @Test
     void walledKeepEntryApproachConnectsGateCenterWalkwaysAndSockets() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
@@ -2111,6 +2153,10 @@ class TowerWorkspaceV2Test {
 
         assertEquals("floor/tower_primary/main_floor",
                 mainRoom.tags().get(MKWorkspaceRuntimePieceInfo.TOPOLOGY_GROUP_TAG));
+        assertEquals("floor/tower_primary/main_floor",
+                mainHallway.tags().get(MKWorkspaceRuntimePieceInfo.TOPOLOGY_GROUP_TAG));
+        assertEquals("floor/tower_primary/main_floor",
+                branchHallway.tags().get(MKWorkspaceRuntimePieceInfo.TOPOLOGY_GROUP_TAG));
         assertTrue(mainRoom.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.MAIN_FORWARD &&
                         connector.facing() == Direction.SOUTH &&
@@ -3913,6 +3959,31 @@ class TowerWorkspaceV2Test {
                 familyDefinitions.isEmpty() ? workspace.familyDefinitions() : familyDefinitions,
                 workspace.openingProfiles(),
                 linearRunFamilies,
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces()
+        );
+    }
+
+    private static MKStructureWorkspace withDimensions(MKStructureWorkspace workspace,
+                                                       MKWorkspaceDimensions dimensions) {
+        return new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.topologyProfile(),
+                dimensions,
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.linearRunFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 workspace.pieces()

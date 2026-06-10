@@ -141,7 +141,8 @@ public class MKFloorTopologyPlanner {
             tags.put("workspace_opening_profile_id", linearRun.openingProfileId());
             MKWorkspacePaletteTags.apply(tags, workspace.palette());
             new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
-                    pathKind == PathPoolKind.MAIN, pathKind == PathPoolKind.BRANCH, false, false)
+                    pathKind == PathPoolKind.MAIN, pathKind == PathPoolKind.BRANCH, false, false,
+                    context.topologyGroupId(), false)
                     .applyToTags(tags);
             MKConnectorRole westRole = pathKind == PathPoolKind.MAIN ? MKConnectorRole.MAIN_FORWARD :
                     MKConnectorRole.BRANCH;

@@ -270,7 +270,7 @@ public class MKWalledKeepSizingCalculator {
         int northBand = DEFAULT_COURTYARD_CLEARANCE + cornerLength(workspace);
         MKWalledKeepCourtyardSettings settings = workspace.topologyProfile().courtyardSettings();
         if (settings.courtyardContentEnabled() && settings.courtyardSocketGenerationEnabled()) {
-            northBand = Math.max(northBand, courtyardBandSize(settings, laneInset));
+            northBand = Math.max(northBand, courtyardBandSize(workspace, settings, laneInset, pathOpening));
         }
         int entryDrivenSpan = entryLength + (centerLength(workspace) / 2) + northBand;
         return Math.max(baseSpan, smallestOddAtLeast(entryDrivenSpan));
@@ -284,8 +284,19 @@ public class MKWalledKeepSizingCalculator {
         return workspace.shellMargin() + workspace.exteriorAirMargin() + opening.openingWidth() / 2;
     }
 
-    private int courtyardBandSize(MKWalledKeepCourtyardSettings settings, int laneInset) {
-        return laneInset + settings.courtyardSocketClearance() + settings.courtyardContentTemplateSize();
+    private int courtyardBandSize(MKStructureWorkspace workspace, MKWalledKeepCourtyardSettings settings,
+                                  int laneInset, ResolvedOpening opening) {
+        return laneInset + walkwayHalfWidth(opening) + settings.courtyardSocketClearance() +
+                courtyardContentCollisionSpan(workspace, settings);
+    }
+
+    private int walkwayHalfWidth(ResolvedOpening opening) {
+        return Math.max(1, opening.openingWidth() / 2);
+    }
+
+    private int courtyardContentCollisionSpan(MKStructureWorkspace workspace, MKWalledKeepCourtyardSettings settings) {
+        return exportedSpan(settings.courtyardContentTemplateSize(),
+                2 * (workspace.shellMargin() + workspace.exteriorAirMargin()));
     }
 
     private int courtyardPathSize(MKStructureWorkspace workspace, MKWorkspaceLinearRunFamilyDefinition family,
