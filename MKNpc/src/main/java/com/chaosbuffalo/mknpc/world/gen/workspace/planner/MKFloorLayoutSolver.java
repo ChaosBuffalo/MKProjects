@@ -10,6 +10,7 @@ import net.minecraft.core.Direction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 public class MKFloorLayoutSolver {
@@ -49,42 +50,93 @@ public class MKFloorLayoutSolver {
                     explicitRootExit);
             return;
         }
-        boolean hallwaysEnabled = main ? settings.mainHallwaysEnabled() : settings.branchHallwaysEnabled();
+        addMainPath(segments, rejected, settings, start, direction, branchDepth, leadIn, random);
+    }
+
+    private void addMainPath(ArrayList<LogicalSegment> segments, ArrayList<RejectedExit> rejected,
+                             MKWorkspaceFloorTopologySettings settings, LogicalRect start, Direction direction,
+                             int branchDepth, int leadIn, Random random) {
+        boolean hallwaysEnabled = settings.mainHallwaysEnabled();
         int hallwayLength = Math.max(1, leadIn);
-        LogicalRect cursor = start;
-        Direction currentDirection = direction;
         ArrayList<PendingBranchSource> pendingBranches = new ArrayList<>();
-        List<RoomStep> roomSteps = roomSteps(settings, main, random);
-        for (int i = 0; i < roomSteps.size(); i++) {
-            RoomStep step = roomSteps.get(i);
-            ArrayList<LogicalSegment> candidate = new ArrayList<>();
-            LogicalRect candidateCursor = cursor;
-            if (hallwaysEnabled) {
-                candidateCursor = appendHallway(candidate, settings, candidateCursor, currentDirection, hallwayLength, main,
-                        i == 0);
-            }
-            candidateCursor = appendRoom(candidate, candidateCursor, currentDirection, step);
-            if (!candidateFits(segments, candidate)) {
-                rejected.add(new RejectedExit(currentDirection, step.profile().kind(),
-                        rejectionReason(segments, candidate), true));
-                return;
-            }
-            segments.addAll(candidate);
-            cursor = candidateCursor;
-            int roomSegmentIndex = segments.size() - 1;
-            if (step.allowBranches()) {
-                pendingBranches.add(new PendingBranchSource(roomSegmentIndex, cursor, currentDirection,
-                        step.profile(), branchDepth, false));
-            }
-            if (step.profile().mainExitDirection().isPresent()) {
-                currentDirection = rotateRoomExit(step.profile().mainExitDirection().orElseThrow(), currentDirection);
-            }
+        List<MainStepSpec> steps = mainStepSpecs(settings, random);
+        Optional<MainFailure> failure = placeMainStep(segments, settings, start, direction, branchDepth, leadIn,
+                hallwayLength, hallwaysEnabled, steps, 0, pendingBranches);
+        if (failure.isPresent()) {
+            MainFailure failed = failure.orElseThrow();
+            rejected.add(new RejectedExit(failed.direction(), failed.kind(), failed.reason(), true));
+            return;
         }
         for (PendingBranchSource source : pendingBranches) {
             String acceptedMask = addBranchesFromRoom(segments, rejected, settings, source.room(),
                     source.pathDirection(), source.profile(), source.branchDepth(), leadIn, random,
                     source.explicitRootExit());
             segments.set(source.segmentIndex(), segments.get(source.segmentIndex()).withAcceptedMask(acceptedMask));
+        }
+    }
+
+    private Optional<MainFailure> placeMainStep(ArrayList<LogicalSegment> segments,
+                                                MKWorkspaceFloorTopologySettings settings,
+                                                LogicalRect cursor,
+                                                Direction currentDirection,
+                                                int branchDepth,
+                                                int leadIn,
+                                                int hallwayLength,
+                                                boolean hallwaysEnabled,
+                                                List<MainStepSpec> steps,
+                                                int stepIndex,
+                                                ArrayList<PendingBranchSource> pendingBranches) {
+        if (stepIndex >= steps.size()) {
+            return Optional.empty();
+        }
+        MainStepSpec spec = steps.get(stepIndex);
+        MainFailure failure = null;
+        for (MKWorkspaceFloorRoomProfile profile : spec.profiles()) {
+            RoomStep step = new RoomStep(profile, spec.label(), spec.kind(), spec.tooltip(), spec.allowBranches());
+            StepCandidate candidate = stepCandidate(settings, cursor, currentDirection, hallwayLength, true,
+                    hallwaysEnabled, stepIndex == 0, step);
+            if (!candidateFits(segments, candidate.segments())) {
+                failure = new MainFailure(currentDirection, step.profile().kind(),
+                        rejectionReason(segments, candidate.segments()));
+                continue;
+            }
+
+            int segmentCount = segments.size();
+            int pendingCount = pendingBranches.size();
+            segments.addAll(candidate.segments());
+            int roomSegmentIndex = segments.size() - 1;
+            if (step.allowBranches()) {
+                pendingBranches.add(new PendingBranchSource(roomSegmentIndex, candidate.cursor(), currentDirection,
+                        step.profile(), branchDepth, false));
+            }
+            Direction nextDirection = currentDirection;
+            if (step.profile().mainExitDirection().isPresent()) {
+                nextDirection = rotateRoomExit(step.profile().mainExitDirection().orElseThrow(), currentDirection);
+            }
+            Optional<MainFailure> downstreamFailure = placeMainStep(segments, settings, candidate.cursor(),
+                    nextDirection, branchDepth, leadIn, hallwayLength, hallwaysEnabled, steps, stepIndex + 1,
+                    pendingBranches);
+            if (downstreamFailure.isEmpty()) {
+                return Optional.empty();
+            }
+            failure = downstreamFailure.orElseThrow();
+            rollbackSegments(segments, segmentCount);
+            rollbackPendingBranches(pendingBranches, pendingCount);
+        }
+        return Optional.ofNullable(failure)
+                .or(() -> Optional.of(new MainFailure(currentDirection, spec.profiles().getFirst().kind(),
+                        "no fitting main profile")));
+    }
+
+    private void rollbackSegments(ArrayList<LogicalSegment> segments, int size) {
+        while (segments.size() > size) {
+            segments.remove(segments.size() - 1);
+        }
+    }
+
+    private void rollbackPendingBranches(ArrayList<PendingBranchSource> pendingBranches, int size) {
+        while (pendingBranches.size() > size) {
+            pendingBranches.remove(pendingBranches.size() - 1);
         }
     }
 
@@ -205,6 +257,35 @@ public class MKFloorLayoutSolver {
                     SegmentKind.BRANCH_CAP, "terminal branch cap", false));
         }
         return List.copyOf(steps);
+    }
+
+    private List<MainStepSpec> mainStepSpecs(MKWorkspaceFloorTopologySettings settings, Random random) {
+        ArrayList<MainStepSpec> steps = new ArrayList<>();
+        int roomCount = sampledCount(settings.minMainPathPieces(), settings.maxMainPathPieces(),
+                settings.sprawl(), random);
+        for (int i = 0; i < roomCount; i++) {
+            steps.add(new MainStepSpec(orderedProfiles(settings.mainRoomProfiles(), random), "M" + (i + 1),
+                    SegmentKind.MAIN_ROOM, "main room " + (i + 1) + " of sampled " + roomCount, true));
+        }
+        if (settings.mainCapApproachEnabled()) {
+            steps.add(new MainStepSpec(orderedProfiles(settings.mainCapApproachProfiles(), random), "Approach",
+                    SegmentKind.MAIN_CAP, "main cap approach", false));
+        }
+        steps.add(new MainStepSpec(orderedProfiles(settings.mainCapProfiles(), random), "Main Cap",
+                SegmentKind.MAIN_CAP, "terminal main cap", false));
+        return List.copyOf(steps);
+    }
+
+    private List<MKWorkspaceFloorRoomProfile> orderedProfiles(List<MKWorkspaceFloorRoomProfile> profiles,
+                                                              Random random) {
+        MKWorkspaceFloorRoomProfile selected = weightedProfile(profiles, random);
+        ArrayList<MKWorkspaceFloorRoomProfile> ordered = new ArrayList<>();
+        ordered.add(selected);
+        ArrayList<MKWorkspaceFloorRoomProfile> remaining = new ArrayList<>(profiles);
+        remaining.remove(selected);
+        Collections.shuffle(remaining, random);
+        ordered.addAll(remaining);
+        return List.copyOf(ordered);
     }
 
     private int sampledCount(int min, int max, float sprawl, Random random) {
@@ -428,6 +509,13 @@ public class MKFloorLayoutSolver {
     }
 
     private record StepCandidate(List<LogicalSegment> segments, LogicalRect cursor) {
+    }
+
+    private record MainStepSpec(List<MKWorkspaceFloorRoomProfile> profiles, String label, SegmentKind kind,
+                                String tooltip, boolean allowBranches) {
+    }
+
+    private record MainFailure(Direction direction, MKWorkspaceFloorRoomKind kind, String reason) {
     }
 
     private record PendingBranchSource(int segmentIndex, LogicalRect room, Direction pathDirection,
