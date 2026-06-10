@@ -90,7 +90,7 @@ public record MKWorkspaceFloorRoomProfile(
                 1,
                 Optional.empty(),
                 false,
-                List.of()
+                defaultHorizontalExits(kind)
         );
     }
 
@@ -222,6 +222,18 @@ public record MKWorkspaceFloorRoomProfile(
             case MAIN_CAP_APPROACH -> "Main Cap Approach";
             case MAIN_CAP -> "Main Cap";
         };
+    }
+
+    private static List<MKWorkspaceFamilyHorizontalExitDefinition> defaultHorizontalExits(
+            MKWorkspaceFloorRoomKind kind) {
+        if (kind != MKWorkspaceFloorRoomKind.BRANCH_CAP) {
+            return List.of();
+        }
+        return List.of(
+                linkCandidateExit(Direction.NORTH),
+                linkCandidateExit(Direction.EAST),
+                linkCandidateExit(Direction.WEST)
+        );
     }
 
     private static List<MKWorkspaceFamilyHorizontalExitDefinition> normalizeExits(

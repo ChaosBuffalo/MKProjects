@@ -249,6 +249,27 @@ class MKFloorLayoutSolverTest {
     }
 
     @Test
+    void branchCapDefaultsEnableAllLinkCandidates() {
+        MKWorkspaceFloorRoomProfile branchCap = MKWorkspaceFloorRoomProfile
+                .defaults(MKWorkspaceFloorRoomKind.BRANCH_CAP, 9, 9, 7);
+
+        assertEquals(List.of(Direction.NORTH, Direction.EAST, Direction.WEST),
+                branchCap.horizontalExits().stream()
+                        .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE)
+                        .map(MKWorkspaceFamilyHorizontalExitDefinition::direction)
+                        .toList());
+    }
+
+    @Test
+    void maxLinksPerRoomClampsToAvailableHorizontalLinkExits() {
+        MKWorkspaceFloorTopologySettings settings = settings(0.5f).withMaxLinksPerRoom(16);
+
+        assertEquals(3, MKWorkspaceFloorTopologySettings.MAX_LINKS_PER_ROOM);
+        assertEquals(3, MKWorkspaceFloorTopologySettings.DEFAULT_MAX_LINKS_PER_ROOM);
+        assertEquals(3, settings.maxLinksPerRoom());
+    }
+
+    @Test
     void rootBranchCannotReserveSpaceBeforeRequiredMainPath() {
         MKWorkspaceFloorTopologySettings settings = new MKWorkspaceFloorTopologySettings(
                 "tower.primary",

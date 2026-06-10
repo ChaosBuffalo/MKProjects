@@ -42,10 +42,10 @@ public record MKWorkspaceFloorTopologySettings(
     public static final boolean DEFAULT_LINKS_ENABLED = false;
     public static final float DEFAULT_LINK_DENSITY = 1.0f;
     public static final int DEFAULT_MAX_LINKS_PER_FLOOR = 10;
-    public static final int DEFAULT_MAX_LINKS_PER_ROOM = 1;
+    public static final int DEFAULT_MAX_LINKS_PER_ROOM = 3;
     public static final int DEFAULT_MAX_LINK_LENGTH = 32;
     public static final int MAX_LINKS_PER_FLOOR = 64;
-    public static final int MAX_LINKS_PER_ROOM = 16;
+    public static final int MAX_LINKS_PER_ROOM = 3;
     public static final int MAX_LINK_LENGTH = 128;
 
     public static final Codec<MKWorkspaceFloorTopologySettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(

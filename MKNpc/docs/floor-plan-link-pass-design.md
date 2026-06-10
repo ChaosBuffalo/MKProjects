@@ -105,7 +105,7 @@ Suggested controls:
 - `Enable Links`: default `false`.
 - `Link Density`: range `0.0..1.0`, default `1.0`.
 - `Max Links Per Floor`: range `0..64`, default `10`.
-- `Max Links Per Room`: integer cap, default `1`.
+- `Max Links Per Room`: range `0..3`, default `3`.
 - `Max Link Length`: integer cap, default `32`.
 
 Selection should prefer useful loops instead of redundant local clutter:
@@ -289,6 +289,7 @@ Implemented in the first pass:
 
 - Floor topology settings now include link enablement, density, per-floor cap, per-room cap, and max link length.
 - Floor room profiles can author `LINK_CANDIDATE` exits.
+- Branch cap profiles default to north, east, and west link candidates.
 - The floor plan UI can toggle link candidates and configure link settings.
 - The preview/layout solver can build accepted loop links after the normal topology solve.
 - Preview links support straight routes and one-dogleg routes, with X-then-Z preference.
