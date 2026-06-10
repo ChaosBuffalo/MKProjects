@@ -26,10 +26,12 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotM
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceMetadata;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
@@ -721,7 +723,8 @@ public record MKWorkspaceExportManifest(
             boolean basementEntryEnabled,
             boolean basementCapApproachEnabled,
             String floorExitMask,
-            MKWorkspaceFoundationPolicy foundationPolicy
+            MKWorkspaceFoundationPolicy foundationPolicy,
+            List<MKJigsawPieceMetadata.FloorLinkCandidate> floorLinkCandidates
     ) {
         public static final Codec<ExportRuntimePieceMetadata> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 jigsawPieceRoleCodec().fieldOf("role").forGetter(ExportRuntimePieceMetadata::role),
@@ -737,20 +740,25 @@ public record MKWorkspaceExportManifest(
                 ExportTowerStackMetadata.CODEC.forGetter(ExportRuntimePieceMetadata::towerStackMetadata),
                 Codec.STRING.optionalFieldOf("floor_exit_mask", "").forGetter(ExportRuntimePieceMetadata::floorExitMask),
                 MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundation_policy", MKWorkspaceFoundationPolicy.none())
-                        .forGetter(ExportRuntimePieceMetadata::foundationPolicy)
+                        .forGetter(ExportRuntimePieceMetadata::foundationPolicy),
+                MKJigsawPieceMetadata.FloorLinkCandidate.CODEC.listOf()
+                        .optionalFieldOf("floor_link_candidates", List.of())
+                        .forGetter(ExportRuntimePieceMetadata::floorLinkCandidates)
         ).apply(instance, (role, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath,
                            terminal, topCapOnly, topologyGroup, mainPathEnding, branchCap, towerStackMetadata,
-                           floorExitMask, foundationPolicy) ->
+                           floorExitMask, foundationPolicy, floorLinkCandidates) ->
                 new ExportRuntimePieceMetadata(role, progressionDelta, verticalLevelDelta, allowOnMainPath,
                         allowOnBranchPath, terminal, topCapOnly, topologyGroup, mainPathEnding, branchCap,
                         towerStackMetadata.towerStackId(), towerStackMetadata.towerStackSlot(),
                         towerStackMetadata.minMainFloors(), towerStackMetadata.maxMainFloors(),
                         towerStackMetadata.minBasementFloors(), towerStackMetadata.maxBasementFloors(),
                         towerStackMetadata.topCapApproachEnabled(), towerStackMetadata.basementEntryEnabled(),
-                        towerStackMetadata.basementCapApproachEnabled(), floorExitMask, foundationPolicy)));
+                        towerStackMetadata.basementCapApproachEnabled(), floorExitMask, foundationPolicy,
+                        floorLinkCandidates)));
 
         public ExportRuntimePieceMetadata {
             floorExitMask = floorExitMask == null ? "" : floorExitMask;
+            floorLinkCandidates = floorLinkCandidates == null ? List.of() : List.copyOf(floorLinkCandidates);
         }
 
         public static ExportRuntimePieceMetadata from(MKWorkspaceRuntimePieceInfo runtimeInfo,
@@ -777,8 +785,39 @@ public record MKWorkspaceExportManifest(
                     Boolean.parseBoolean(tags.getOrDefault("workspace_tower_stack_basement_entry_enabled", "true")),
                     Boolean.parseBoolean(tags.getOrDefault("workspace_tower_stack_basement_cap_approach_enabled", "false")),
                     tags.getOrDefault(MKFloorMaskVariantExporter.FLOOR_MASK_TAG, ""),
-                    foundationPolicy
+                    foundationPolicy,
+                    floorLinkCandidates(tags)
             );
+        }
+
+        private static List<MKJigsawPieceMetadata.FloorLinkCandidate> floorLinkCandidates(Map<String, String> tags) {
+            int count = parseInt(tags, MKFloorMaskVariantExporter.CLOSED_CONNECTOR_COUNT_TAG, 0);
+            if (count <= 0) {
+                return List.of();
+            }
+            ArrayList<MKJigsawPieceMetadata.FloorLinkCandidate> candidates = new ArrayList<>();
+            for (int i = 0; i < count; i++) {
+                String prefix = MKFloorMaskVariantExporter.CLOSED_CONNECTOR_PREFIX + i + "_";
+                if (!MKConnectorRole.LINK_CANDIDATE.getSerializedName()
+                        .equals(tags.getOrDefault(prefix + "role", ""))) {
+                    continue;
+                }
+                Direction facing = Direction.byName(tags.getOrDefault(prefix + "facing", ""));
+                if (facing == null || !facing.getAxis().isHorizontal()) {
+                    continue;
+                }
+                candidates.add(new MKJigsawPieceMetadata.FloorLinkCandidate(
+                        facing,
+                        parseInt(tags, prefix + "x", 0),
+                        parseInt(tags, prefix + "y", 0),
+                        parseInt(tags, prefix + "z", 0),
+                        parseInt(tags, prefix + "opening_width", 1),
+                        parseInt(tags, prefix + "opening_height", 2),
+                        parseInt(tags, prefix + "lateral_offset", 0),
+                        parseInt(tags, prefix + "vertical_offset", 0)
+                ));
+            }
+            return List.copyOf(candidates);
         }
 
         private static int parseInt(Map<String, String> tags, String key, int fallback) {
@@ -786,7 +825,11 @@ public record MKWorkspaceExportManifest(
             if (value == null || value.isBlank()) {
                 return fallback;
             }
-            return Integer.parseInt(value);
+            try {
+                return Integer.parseInt(value);
+            } catch (NumberFormatException ignored) {
+                return fallback;
+            }
         }
 
         private ExportTowerStackMetadata towerStackMetadata() {

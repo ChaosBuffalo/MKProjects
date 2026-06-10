@@ -50,4 +50,34 @@ class MKJigsawPlacementTest {
         assertEquals(Optional.of(42L), decoded.lockedLayoutSeed());
         assertEquals(0.35f, decoded.sprawl());
     }
+
+    @Test
+    void topologyGroupRuleCodecCarriesLinkSettings() {
+        MKDungeonTopologyGroupRule rule = new MKDungeonTopologyGroupRule(
+                "tower.primary.main_floor",
+                1,
+                1,
+                0,
+                0.35f,
+                true,
+                0.75f,
+                12,
+                2,
+                48,
+                Optional.of(42L),
+                true,
+                null
+        );
+
+        JsonElement encoded = MKDungeonTopologyGroupRule.CODEC.encodeStart(JsonOps.INSTANCE, rule)
+                .getOrThrow();
+        MKDungeonTopologyGroupRule decoded = MKDungeonTopologyGroupRule.CODEC.parse(JsonOps.INSTANCE, encoded)
+                .getOrThrow();
+
+        assertTrue(decoded.linksEnabled());
+        assertEquals(0.75f, decoded.linkDensity());
+        assertEquals(12, decoded.maxLinksPerFloor());
+        assertEquals(2, decoded.maxLinksPerRoom());
+        assertEquals(48, decoded.maxLinkLength());
+    }
 }

@@ -121,7 +121,8 @@ public class MKWorkspaceExportArchiveWriter {
                     templateGroup.pieceMetadata().basementEntryEnabled(),
                     templateGroup.pieceMetadata().basementCapApproachEnabled(),
                     templateGroup.pieceMetadata().floorExitMask(),
-                    templateGroup.pieceMetadata().foundationPolicy()
+                    templateGroup.pieceMetadata().foundationPolicy(),
+                    templateGroup.pieceMetadata().floorLinkCandidates()
             );
             writeJson(output, metadataEntryName(manifest, piece), MKJigsawPieceMetadata.CODEC
                     .encodeStart(JsonOps.INSTANCE, metadata)

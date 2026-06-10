@@ -332,12 +332,15 @@ public final class MKFloorMaskVariantExporter {
         for (int i = 0; i < closedOptional.size(); i++) {
             MKWorkspaceConnectorDefinition connector = closedOptional.get(i);
             String prefix = CLOSED_CONNECTOR_PREFIX + i + "_";
+            tags.put(prefix + "role", connector.role().getSerializedName());
             tags.put(prefix + "facing", connector.facing().getSerializedName());
             tags.put(prefix + "x", Integer.toString(connector.relativePos().getX()));
             tags.put(prefix + "y", Integer.toString(connector.relativePos().getY()));
             tags.put(prefix + "z", Integer.toString(connector.relativePos().getZ()));
             tags.put(prefix + "opening_width", Integer.toString(connector.openingWidth()));
             tags.put(prefix + "opening_height", Integer.toString(connector.openingHeight()));
+            tags.put(prefix + "lateral_offset", Integer.toString(connector.lateralOffset()));
+            tags.put(prefix + "vertical_offset", Integer.toString(connector.verticalOffset()));
         }
     }
 

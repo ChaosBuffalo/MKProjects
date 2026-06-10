@@ -140,6 +140,11 @@ public class NpcStructures {
                     settings.maxMainPathPieces(),
                     settings.maxBranchPiecesBeforeCap(),
                     settings.sprawl(),
+                    settings.linksEnabled(),
+                    settings.linkDensity(),
+                    settings.maxLinksPerFloor(),
+                    settings.maxLinksPerRoom(),
+                    settings.maxLinkLength(),
                     settings.lockedLayoutSeed(),
                     true,
                     ResourceLocation.fromNamespaceAndPath(manifest.namespace(), manifest.structureName() + "/" + endingPool)

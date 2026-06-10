@@ -4,6 +4,9 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPol
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Direction;
+
+import java.util.List;
 
 public record MKJigsawPieceMetadata(
         MKJigsawPieceRole pieceRole,
@@ -26,7 +29,8 @@ public record MKJigsawPieceMetadata(
         boolean basementEntryEnabled,
         boolean basementCapApproachEnabled,
         String floorExitMask,
-        MKWorkspaceFoundationPolicy foundationPolicy
+        MKWorkspaceFoundationPolicy foundationPolicy,
+        List<FloorLinkCandidate> floorLinkCandidates
 ) {
     public static final Codec<MKJigsawPieceMetadata> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             MKJigsawPieceRole.CODEC.fieldOf("role").forGetter(MKJigsawPieceMetadata::pieceRole),
@@ -42,20 +46,24 @@ public record MKJigsawPieceMetadata(
             TowerStackMetadata.CODEC.forGetter(MKJigsawPieceMetadata::towerStackMetadata),
             Codec.STRING.optionalFieldOf("floor_exit_mask", "").forGetter(MKJigsawPieceMetadata::floorExitMask),
             MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundation_policy", MKWorkspaceFoundationPolicy.none())
-                    .forGetter(MKJigsawPieceMetadata::foundationPolicy)
+                    .forGetter(MKJigsawPieceMetadata::foundationPolicy),
+            FloorLinkCandidate.CODEC.listOf().optionalFieldOf("floor_link_candidates", List.of())
+                    .forGetter(MKJigsawPieceMetadata::floorLinkCandidates)
     ).apply(instance, (pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath,
                        terminal, topCapOnly, topologyGroup, mainPathEnding, branchCap, towerStackMetadata,
-                       floorExitMask, foundationPolicy) ->
+                       floorExitMask, foundationPolicy, floorLinkCandidates) ->
             new MKJigsawPieceMetadata(pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath,
                     allowOnBranchPath, terminal, topCapOnly, topologyGroup, mainPathEnding, branchCap,
                     towerStackMetadata.towerStackId(), towerStackMetadata.towerStackSlot(),
                     towerStackMetadata.minMainFloors(), towerStackMetadata.maxMainFloors(),
                     towerStackMetadata.minBasementFloors(), towerStackMetadata.maxBasementFloors(),
                     towerStackMetadata.topCapApproachEnabled(), towerStackMetadata.basementEntryEnabled(),
-                    towerStackMetadata.basementCapApproachEnabled(), floorExitMask, foundationPolicy)));
+                    towerStackMetadata.basementCapApproachEnabled(), floorExitMask, foundationPolicy,
+                    floorLinkCandidates)));
 
     public MKJigsawPieceMetadata {
         floorExitMask = floorExitMask == null ? "" : floorExitMask;
+        floorLinkCandidates = floorLinkCandidates == null ? List.of() : List.copyOf(floorLinkCandidates);
     }
 
     public MKJigsawPieceMetadata(MKJigsawPieceRole pieceRole, int progressionDelta, int verticalLevelDelta,
@@ -63,7 +71,7 @@ public record MKJigsawPieceMetadata(
                                  boolean topCapOnly) {
         this(pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
                 topCapOnly, "", false, false, "", "", 0, 0, 0, 0, true, true, false,
-                "", MKWorkspaceFoundationPolicy.none());
+                "", MKWorkspaceFoundationPolicy.none(), List.of());
     }
 
     public MKJigsawPieceMetadata(MKJigsawPieceRole pieceRole, int progressionDelta, int verticalLevelDelta,
@@ -71,7 +79,7 @@ public record MKJigsawPieceMetadata(
                                  boolean topCapOnly, String topologyGroup, boolean mainPathEnding) {
         this(pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
                 topCapOnly, topologyGroup, mainPathEnding, false, "", "", 0, 0, 0, 0, true, true, false,
-                "", MKWorkspaceFoundationPolicy.none());
+                "", MKWorkspaceFoundationPolicy.none(), List.of());
     }
 
     public MKJigsawPieceMetadata(MKJigsawPieceRole pieceRole, int progressionDelta, int verticalLevelDelta,
@@ -79,7 +87,7 @@ public record MKJigsawPieceMetadata(
                                  boolean topCapOnly, String topologyGroup, boolean mainPathEnding, boolean branchCap) {
         this(pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
                 topCapOnly, topologyGroup, mainPathEnding, branchCap, "", "", 0, 0, 0, 0, true, true, false,
-                "", MKWorkspaceFoundationPolicy.none());
+                "", MKWorkspaceFoundationPolicy.none(), List.of());
     }
 
     public MKJigsawPieceMetadata(MKJigsawPieceRole pieceRole, int progressionDelta, int verticalLevelDelta,
@@ -88,7 +96,7 @@ public record MKJigsawPieceMetadata(
                                  boolean branchCap, MKWorkspaceFoundationPolicy foundationPolicy) {
         this(pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
                 topCapOnly, topologyGroup, mainPathEnding, branchCap, "", "", 0, 0, 0, 0, true, true, false,
-                "", foundationPolicy);
+                "", foundationPolicy, List.of());
     }
 
     public MKJigsawPieceMetadata(MKJigsawPieceRole pieceRole, int progressionDelta, int verticalLevelDelta,
@@ -101,7 +109,7 @@ public record MKJigsawPieceMetadata(
         this(pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
                 topCapOnly, topologyGroup, mainPathEnding, branchCap, towerStackId, towerStackSlot, minMainFloors,
                 maxMainFloors, minBasementFloors, maxBasementFloors, topCapApproachEnabled, basementEntryEnabled,
-                basementCapApproachEnabled, "", foundationPolicy);
+                basementCapApproachEnabled, "", foundationPolicy, List.of());
     }
 
     public boolean hasTowerStackLayout() {
@@ -113,6 +121,38 @@ public record MKJigsawPieceMetadata(
         return new TowerStackMetadata(towerStackId, towerStackSlot, minMainFloors, maxMainFloors,
                 minBasementFloors, maxBasementFloors, topCapApproachEnabled, basementEntryEnabled,
                 basementCapApproachEnabled);
+    }
+
+    public record FloorLinkCandidate(
+            Direction facing,
+            int x,
+            int y,
+            int z,
+            int openingWidth,
+            int openingHeight,
+            int lateralOffset,
+            int verticalOffset
+    ) {
+        private static final Codec<Direction> DIRECTION_CODEC = Codec.STRING.xmap(
+                FloorLinkCandidate::directionFromName,
+                Direction::getSerializedName
+        );
+
+        public static final Codec<FloorLinkCandidate> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                DIRECTION_CODEC.fieldOf("facing").forGetter(FloorLinkCandidate::facing),
+                Codec.INT.fieldOf("x").forGetter(FloorLinkCandidate::x),
+                Codec.INT.fieldOf("y").forGetter(FloorLinkCandidate::y),
+                Codec.INT.fieldOf("z").forGetter(FloorLinkCandidate::z),
+                Codec.INT.fieldOf("opening_width").forGetter(FloorLinkCandidate::openingWidth),
+                Codec.INT.fieldOf("opening_height").forGetter(FloorLinkCandidate::openingHeight),
+                Codec.INT.optionalFieldOf("lateral_offset", 0).forGetter(FloorLinkCandidate::lateralOffset),
+                Codec.INT.optionalFieldOf("vertical_offset", 0).forGetter(FloorLinkCandidate::verticalOffset)
+        ).apply(instance, FloorLinkCandidate::new));
+
+        private static Direction directionFromName(String name) {
+            Direction direction = Direction.byName(name);
+            return direction == null ? Direction.NORTH : direction;
+        }
     }
 
     private record TowerStackMetadata(
