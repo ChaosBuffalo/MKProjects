@@ -30,6 +30,20 @@ class MKJigsawPlacementTest {
     }
 
     @Test
+    void floorMaskFallbacksPreferLowerConnectivityForLowSprawl() {
+        assertEquals(List.of("none", "n", "ew", "new"),
+                MKJigsawPlacement.chooseFloorMasks(0.0f,
+                        List.of("none", "n", "ew", "new"), RandomSource.create(1L)));
+    }
+
+    @Test
+    void floorMaskFallbacksPreferHigherConnectivityForHighSprawl() {
+        assertEquals(List.of("new", "ew", "n", "none"),
+                MKJigsawPlacement.chooseFloorMasks(1.0f,
+                        List.of("none", "n", "ew", "new"), RandomSource.create(1L)));
+    }
+
+    @Test
     void topologyGroupRuleCodecCarriesLockedLayoutSeed() {
         MKDungeonTopologyGroupRule rule = new MKDungeonTopologyGroupRule(
                 "tower.primary.main_floor",
