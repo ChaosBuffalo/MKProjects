@@ -41,10 +41,11 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     private static final int FLOOR_BRANCH = 0xCCB88A4F;
     private static final int FLOOR_ROOM = 0xCC8A73A8;
     private static final int FLOOR_CAP = 0xCCD18A50;
+    private static final int FLOOR_LINK = 0xCC5FA8B8;
     private static final int COLLISION = 0xFFFF4D4D;
     private static final int STRUCTURE_RADIUS_LIMIT = 128;
     private static final int PREVIEW_SIZE = 240;
-    private static final int PATH_CONTROLS_HEIGHT = 166;
+    private static final int PATH_CONTROLS_HEIGHT = 276;
     private static final int ROOM_ROW_HEIGHT = 122;
     private static final int ROOM_SECTION_HEADER = 22;
     private static final int MASK_SIZE = 66;
@@ -227,6 +228,21 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                     MKWorkspaceFloorTopologySettings.MAX_MANUAL_HALLWAY_LEAD_IN_PIECES,
                     x, y + 138, width, mouseX, mouseY, "floorLeadIn");
         }
+        int linkY = y + 164;
+        graphics.drawString(mc.font, "Link Settings", x, linkY, TEXT, false);
+        drawCheckbox(graphics, mc, linkToggleBounds(x, linkY), "Enable Links",
+                controls.floorLinksEnabled(sectionKey), mouseX, mouseY);
+        drawSlider(graphics, mc, "Density", Math.round(controls.floorLinkDensity(sectionKey) * 100.0f), 0, 100,
+                x, linkY + 24, width, mouseX, mouseY, "floorLinkDensity");
+        drawSlider(graphics, mc, "Max Links", controls.floorMaxLinksPerFloor(sectionKey), 0,
+                MKWorkspaceFloorTopologySettings.MAX_LINKS_PER_FLOOR,
+                x, linkY + 46, width, mouseX, mouseY, "floorMaxLinks");
+        drawSlider(graphics, mc, "Per Room", controls.floorMaxLinksPerRoom(sectionKey), 0,
+                MKWorkspaceFloorTopologySettings.MAX_LINKS_PER_ROOM,
+                x, linkY + 68, width, mouseX, mouseY, "floorMaxLinksPerRoom");
+        drawSlider(graphics, mc, "Length", controls.floorMaxLinkLength(sectionKey), 0,
+                MKWorkspaceFloorTopologySettings.MAX_LINK_LENGTH,
+                x, linkY + 90, width, mouseX, mouseY, "floorMaxLinkLength");
     }
 
     private int drawRoomSection(GuiGraphics graphics, Minecraft mc, int x, int y, int width,
@@ -300,7 +316,9 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         int color = profile.horizontalExits().stream().anyMatch(exit -> exit.direction() == direction) ?
                 (profile.requiredExitDirection(direction) ? EXIT_REQUIRED : EXIT_ACTIVE) : EXIT_INACTIVE;
         if (hitRoomExitDirection(centerX - MASK_SIZE / 2, centerY - MASK_SIZE / 2, mouseX, mouseY) == direction &&
-                (profile.optionalBranchExitDirection(direction) || profile.mainExitDirection(direction))) {
+                (profile.optionalBranchExitDirection(direction) ||
+                        profile.mainExitDirection(direction) ||
+                        profile.linkCandidateExitDirection(direction))) {
             color = CONTROL_ACTIVE;
         }
         switch (direction) {
@@ -332,6 +350,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 case MAIN_ENDING_ENTRY -> "E";
                 case BRANCH -> "B";
                 case BRANCH_CAP_ENTRY -> "C";
+                case LINK_CANDIDATE -> "L";
                 case VERTICAL_ACCESS -> "";
             };
             color = profile.requiredExitDirection(direction) ? EXIT_REQUIRED : TEXT;
@@ -361,6 +380,11 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 controls.floorBranchHallwaysEnabled(sectionKey),
                 controls.floorMainCapApproachEnabled(sectionKey),
                 controls.floorSprawl(sectionKey),
+                controls.floorLinksEnabled(sectionKey),
+                controls.floorLinkDensity(sectionKey),
+                controls.floorMaxLinksPerFloor(sectionKey),
+                controls.floorMaxLinksPerRoom(sectionKey),
+                controls.floorMaxLinkLength(sectionKey),
                 controls.lockedLayoutSeed(sectionKey),
                 controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.MAIN_ROOM),
                 controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.BRANCH_ROOM),
@@ -553,6 +577,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             case BRANCH_ROOM -> FLOOR_ROOM;
             case MAIN_CAP -> FLOOR_MAIN_CAP;
             case BRANCH_CAP -> FLOOR_CAP;
+            case LINK_HALL -> FLOOR_LINK;
         };
     }
 
@@ -640,6 +665,25 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             applySliderValue(mouseX);
             return true;
         }
+        int linkY = y + 164;
+        if (isInRect(mouseX, mouseY, linkToggleBounds(x, linkY))) {
+            controls.floorLinksEnabled(sectionKey, !controls.floorLinksEnabled(sectionKey));
+            return true;
+        }
+        for (String slider : List.of("floorLinkDensity", "floorMaxLinks", "floorMaxLinksPerRoom",
+                "floorMaxLinkLength")) {
+            int sliderY = switch (slider) {
+                case "floorLinkDensity" -> linkY + 24;
+                case "floorMaxLinks" -> linkY + 46;
+                case "floorMaxLinksPerRoom" -> linkY + 68;
+                default -> linkY + 90;
+            };
+            if (isInSlider(mouseX, mouseY, sliderBounds(x, sliderY, width, slider))) {
+                draggingSlider = slider;
+                applySliderValue(mouseX);
+                return true;
+            }
+        }
         return false;
     }
 
@@ -712,7 +756,10 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         }
         Direction direction = hitRoomExitDirection(x + width - MASK_SIZE - 8, y + 22, (int) mouseX, (int) mouseY);
         if (direction != null) {
-            if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT && kind.hasMainExit() &&
+            if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_MIDDLE &&
+                    profile.linkCandidateExitDirection(direction)) {
+                controls.toggleRoomLinkCandidateExit(sectionKey, kind, index, direction);
+            } else if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT && kind.hasMainExit() &&
                     profile.mainExitDirection(direction)) {
                 controls.setRoomMainExitDirection(sectionKey, kind, index, direction);
             } else if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT &&
@@ -726,6 +773,10 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             } else if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT && !kind.hasMainExit() &&
                     profile.optionalBranchExitDirection(direction)) {
                 controls.toggleRoomBranchExit(sectionKey, kind, index, direction);
+            } else if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT &&
+                    !profile.optionalBranchExitDirection(direction) &&
+                    profile.linkCandidateExitDirection(direction)) {
+                controls.toggleRoomLinkCandidateExit(sectionKey, kind, index, direction);
             }
             return true;
         }
@@ -749,6 +800,17 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         } else if ("floorLeadIn".equals(draggingSlider)) {
             controls.floorManualHallwayLeadInPieces(sectionKey, sliderValue(mouseX, bounds, 0,
                     MKWorkspaceFloorTopologySettings.MAX_MANUAL_HALLWAY_LEAD_IN_PIECES));
+        } else if ("floorLinkDensity".equals(draggingSlider)) {
+            controls.floorLinkDensity(sectionKey, sliderValue(mouseX, bounds, 0, 100) / 100.0f);
+        } else if ("floorMaxLinks".equals(draggingSlider)) {
+            controls.floorMaxLinksPerFloor(sectionKey, sliderValue(mouseX, bounds, 0,
+                    MKWorkspaceFloorTopologySettings.MAX_LINKS_PER_FLOOR));
+        } else if ("floorMaxLinksPerRoom".equals(draggingSlider)) {
+            controls.floorMaxLinksPerRoom(sectionKey, sliderValue(mouseX, bounds, 0,
+                    MKWorkspaceFloorTopologySettings.MAX_LINKS_PER_ROOM));
+        } else if ("floorMaxLinkLength".equals(draggingSlider)) {
+            controls.floorMaxLinkLength(sectionKey, sliderValue(mouseX, bounds, 0,
+                    MKWorkspaceFloorTopologySettings.MAX_LINK_LENGTH));
         } else if (draggingSlider.startsWith("room:")) {
             String[] parts = draggingSlider.split(":");
             MKWorkspaceFloorRoomKind kind = roomKindFromSlider(parts[1]);
@@ -816,7 +878,11 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                     }
                     if (profile.optionalBranchExitDirection(direction)) {
                         return Optional.of(formatDirection(direction) +
-                                "\nOptional branch exit\nClick to toggle");
+                                "\nOptional branch exit\nClick to toggle\nMiddle click: toggle link candidate");
+                    }
+                    if (profile.linkCandidateExitDirection(direction)) {
+                        return Optional.of(formatDirection(direction) +
+                                "\nLink candidate exit\nMiddle click to toggle");
                     }
                     return Optional.of(formatDirection(direction));
                 }
@@ -853,6 +919,18 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         }
         if ("floorLeadIn".equals(id)) {
             return sliderBounds(x, pathY + 138, width, id);
+        }
+        if ("floorLinkDensity".equals(id)) {
+            return sliderBounds(x, pathY + 188, width, id);
+        }
+        if ("floorMaxLinks".equals(id)) {
+            return sliderBounds(x, pathY + 210, width, id);
+        }
+        if ("floorMaxLinksPerRoom".equals(id)) {
+            return sliderBounds(x, pathY + 232, width, id);
+        }
+        if ("floorMaxLinkLength".equals(id)) {
+            return sliderBounds(x, pathY + 254, width, id);
         }
         if (!id.startsWith("room:")) {
             return null;
@@ -918,6 +996,10 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
 
     private ButtonBounds pathToggleBounds(int x, int y, int index) {
         return new ButtonBounds(x + index * 112, y + 4, 106, 16);
+    }
+
+    private ButtonBounds linkToggleBounds(int x, int y) {
+        return new ButtonBounds(x + 96, y - 2, 118, 16);
     }
 
     private ButtonBounds leadModeBounds(int x, int y, int width) {
@@ -1247,6 +1329,26 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
 
         void floorSprawl(String sectionKey, float value);
 
+        boolean floorLinksEnabled(String sectionKey);
+
+        void floorLinksEnabled(String sectionKey, boolean value);
+
+        float floorLinkDensity(String sectionKey);
+
+        void floorLinkDensity(String sectionKey, float value);
+
+        int floorMaxLinksPerFloor(String sectionKey);
+
+        void floorMaxLinksPerFloor(String sectionKey, int value);
+
+        int floorMaxLinksPerRoom(String sectionKey);
+
+        void floorMaxLinksPerRoom(String sectionKey, int value);
+
+        int floorMaxLinkLength(String sectionKey);
+
+        void floorMaxLinkLength(String sectionKey, int value);
+
         long previewSeed(String sectionKey);
 
         void rerollPreviewSeed(String sectionKey);
@@ -1287,6 +1389,9 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         void setRoomRandomizeMainExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index, boolean value);
 
         void toggleRoomBranchExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index, Direction direction);
+
+        void toggleRoomLinkCandidateExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
+                                         Direction direction);
     }
 
     private record ButtonBounds(int x, int y, int width, int height) {

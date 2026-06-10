@@ -54,8 +54,10 @@ public final class MKFloorMaskVariantExporter {
             return createRandomizedMainExitVariants(workspace, sourcePiece);
         }
         List<MKWorkspaceConnectorDefinition> optionalBranches = optionalBranchConnectors(sourcePiece);
+        List<MKWorkspaceConnectorDefinition> linkCandidates = linkCandidateConnectors(sourcePiece);
         if (optionalBranches.isEmpty()) {
-            return List.of(createVariant(workspace, sourcePiece, List.of(), "none", sourcePiece.connectors()));
+            return List.of(createVariant(workspace, sourcePiece, linkCandidates, "none",
+                    activeConnectors(sourcePiece, List.of())));
         }
         ArrayList<MKWorkspacePieceDefinition> variants = new ArrayList<>();
         int variantCount = 1 << optionalBranches.size();
@@ -75,6 +77,7 @@ public final class MKFloorMaskVariantExporter {
                 }
             }
             String maskName = maskName(activeOptional);
+            closedOptional.addAll(linkCandidates);
             variants.add(createVariant(workspace, sourcePiece, closedOptional, maskName,
                     activeConnectors(sourcePiece, activeOptional)));
         }
@@ -114,6 +117,7 @@ public final class MKFloorMaskVariantExporter {
                         closedOptional.add(connector);
                     }
                 }
+                closedOptional.addAll(linkCandidateConnectors(sourcePiece));
                 String maskName = maskName(activeOptional);
                 String suffix = "_main_" + selectedMain.facing().getSerializedName().charAt(0) + "_mask_" + maskName;
                 variants.add(createVariant(workspace, sourcePiece, closedOptional, maskName,
@@ -183,6 +187,9 @@ public final class MKFloorMaskVariantExporter {
             List<MKWorkspaceConnectorDefinition> activeOptional) {
         ArrayList<MKWorkspaceConnectorDefinition> connectors = new ArrayList<>();
         for (MKWorkspaceConnectorDefinition connector : sourcePiece.connectors()) {
+            if (isLinkCandidate(connector)) {
+                continue;
+            }
             if (!isOptionalBranch(sourcePiece, connector) || activeOptional.contains(connector)) {
                 connectors.add(connector);
             }
@@ -198,7 +205,7 @@ public final class MKFloorMaskVariantExporter {
             MKWorkspaceConnectorDefinition branchTemplate) {
         ArrayList<MKWorkspaceConnectorDefinition> connectors = new ArrayList<>();
         for (MKWorkspaceConnectorDefinition connector : sourcePiece.connectors()) {
-            if (!isRandomMainCandidate(sourcePiece, connector)) {
+            if (!isRandomMainCandidate(sourcePiece, connector) && !isLinkCandidate(connector)) {
                 connectors.add(connector);
             }
         }
@@ -231,6 +238,18 @@ public final class MKFloorMaskVariantExporter {
                 .filter(connector -> isOptionalBranch(piece, connector))
                 .sorted(Comparator.comparing(connector -> connector.facing().getSerializedName()))
                 .toList();
+    }
+
+    private static List<MKWorkspaceConnectorDefinition> linkCandidateConnectors(MKWorkspacePieceDefinition piece) {
+        return piece.connectors().stream()
+                .filter(MKFloorMaskVariantExporter::isLinkCandidate)
+                .sorted(Comparator.comparing(connector -> connector.facing().getSerializedName()))
+                .toList();
+    }
+
+    private static boolean isLinkCandidate(MKWorkspaceConnectorDefinition connector) {
+        return connector.role() == MKConnectorRole.LINK_CANDIDATE &&
+                connector.facing().getAxis().isHorizontal();
     }
 
     private static boolean isOptionalBranch(MKWorkspacePieceDefinition piece,

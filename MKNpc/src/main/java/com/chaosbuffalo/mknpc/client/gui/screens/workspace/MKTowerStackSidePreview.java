@@ -1442,6 +1442,7 @@ public class MKTowerStackSidePreview extends MKWidget {
                 case MAIN_ENDING_ENTRY -> "E";
                 case BRANCH -> "B";
                 case BRANCH_CAP_ENTRY -> "C";
+                case LINK_CANDIDATE -> "L";
                 case VERTICAL_ACCESS -> "";
             };
             color = controls.exitRequired(section.key(), direction) ? EXIT_REQUIRED : TEXT;

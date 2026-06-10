@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MKFloorConnectorPatchTest {
@@ -93,6 +94,41 @@ class MKFloorConnectorPatchTest {
                 connector.role() == MKConnectorRole.BRANCH && connector.facing() == Direction.WEST));
     }
 
+    @Test
+    void linkCandidateExportIsPatchedClosedByDefault() {
+        MKWorkspacePieceDefinition source = linkCandidateTemplate(false);
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(source));
+
+        MKWorkspacePieceDefinition variant = MKFloorMaskVariantExporter.exportPieces(workspace, true).stream()
+                .filter(piece -> "instance".equals(piece.tags().get("workspace_piece_kind")))
+                .findFirst()
+                .orElseThrow();
+
+        assertFalse(variant.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.LINK_CANDIDATE));
+        assertEquals("1", variant.tags().get(MKFloorMaskVariantExporter.CLOSED_CONNECTOR_COUNT_TAG));
+        assertEquals("east", variant.tags().get(MKFloorMaskVariantExporter.CLOSED_CONNECTOR_PREFIX + "0_facing"));
+    }
+
+    @Test
+    void randomizedMainExitExportPatchesLinkCandidatesClosed() {
+        MKWorkspacePieceDefinition source = linkCandidateTemplate(true);
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(source));
+
+        List<MKWorkspacePieceDefinition> variants = MKFloorMaskVariantExporter.exportPieces(workspace, true).stream()
+                .filter(piece -> "instance".equals(piece.tags().get("workspace_piece_kind")))
+                .toList();
+
+        assertFalse(variants.isEmpty());
+        assertTrue(variants.stream().allMatch(variant ->
+                variant.connectors().stream().noneMatch(connector ->
+                        connector.role() == MKConnectorRole.LINK_CANDIDATE)));
+        assertTrue(variants.stream().allMatch(variant ->
+                hasClosedConnectorFacing(variant, Direction.EAST)));
+    }
+
     private static MKWorkspacePieceDefinition closedConnectorPiece(Direction facing, BlockPos pos, int openingWidth,
                                                                    int openingHeight) {
         Map<String, String> tags = new LinkedHashMap<>();
@@ -166,6 +202,52 @@ class MKFloorConnectorPatchTest {
                 List.of(),
                 tags
         );
+    }
+
+    private static MKWorkspacePieceDefinition linkCandidateTemplate(boolean randomizeMainExit) {
+        Map<String, String> tags = new LinkedHashMap<>();
+        tags.put("tower_piece_kind", "floor_plan_room");
+        tags.put("workspace_piece_kind", "template");
+        tags.put("workspace_floor_room_kind", "main_room");
+        tags.put(MKFloorMaskVariantExporter.FLOOR_RANDOMIZE_MAIN_EXIT_TAG, Boolean.toString(randomizeMainExit));
+        tags.put("workspace_base_name", "floor_main_room_link");
+        List<MKWorkspaceConnectorDefinition> connectors = new java.util.ArrayList<>();
+        connectors.add(connector(MKConnectorRole.MAIN_FORWARD, Direction.SOUTH));
+        connectors.add(connector(MKConnectorRole.MAIN_BACK, Direction.NORTH));
+        if (randomizeMainExit) {
+            connectors.add(connector(MKConnectorRole.BRANCH, Direction.WEST));
+        }
+        connectors.add(connector(MKConnectorRole.LINK_CANDIDATE, Direction.EAST));
+        return new MKWorkspacePieceDefinition(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "floor_main_room_link",
+                "tower.primary.main_floor",
+                0,
+                MKWorkspaceDimensions.defaultDimensions(),
+                1,
+                List.copyOf(connectors),
+                BlockPos.ZERO,
+                new BoundingBox(0, 0, 0, 8, 8, 8),
+                new BoundingBox(0, 0, 0, 8, 8, 8),
+                BlockPos.ZERO,
+                BlockPos.ZERO,
+                List.of(),
+                List.of(),
+                tags
+        );
+    }
+
+    private static boolean hasClosedConnectorFacing(MKWorkspacePieceDefinition piece, Direction direction) {
+        int count = Integer.parseInt(piece.tags().getOrDefault(
+                MKFloorMaskVariantExporter.CLOSED_CONNECTOR_COUNT_TAG, "0"));
+        for (int i = 0; i < count; i++) {
+            String facing = piece.tags().get(MKFloorMaskVariantExporter.CLOSED_CONNECTOR_PREFIX + i + "_facing");
+            if (direction.getSerializedName().equals(facing)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static MKWorkspaceConnectorDefinition connector(MKConnectorRole role, Direction facing) {

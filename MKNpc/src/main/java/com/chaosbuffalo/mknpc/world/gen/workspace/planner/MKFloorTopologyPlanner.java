@@ -304,6 +304,9 @@ public class MKFloorTopologyPlanner {
         if (MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID.equals(exit.openingProfileId())) {
             return context.branchOpening();
         }
+        if (MKWorkspaceFloorRoomProfile.INHERITED_LINK_OPENING_PROFILE_ID.equals(exit.openingProfileId())) {
+            return context.branchOpening();
+        }
         if (MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID.equals(exit.openingProfileId())) {
             return context.mainOpening();
         }
@@ -315,6 +318,7 @@ public class MKFloorTopologyPlanner {
             case MAIN_ENTRY, MAIN_ENDING_ENTRY -> MKConnectorRole.MAIN_FORWARD;
             case MAIN_EXIT -> MKConnectorRole.MAIN_BACK;
             case BRANCH, BRANCH_CAP_ENTRY -> MKConnectorRole.BRANCH;
+            case LINK_CANDIDATE -> MKConnectorRole.LINK_CANDIDATE;
             case INGRESS, VERTICAL_ACCESS -> throw new IllegalStateException("unsupported floor room connector kind " +
                     pathKind.getSerializedName());
         };
@@ -335,6 +339,9 @@ public class MKFloorTopologyPlanner {
             return settings.branchHallwaysEnabled() && hasCompatibleLinearRun(workspace, openingProfileId, PathPoolKind.BRANCH) ?
                     floorLinearRunPoolName(context.topologyGroupId(), openingProfileId, PathPoolKind.BRANCH) :
                     floorRoomPoolName(context.topologyGroupId(), openingProfileId, PathPoolKind.BRANCH);
+        }
+        if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE) {
+            return EMPTY_POOL;
         }
         return EMPTY_POOL;
     }
@@ -358,6 +365,9 @@ public class MKFloorTopologyPlanner {
                 exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY) &&
                 exit.direction() == Direction.SOUTH) {
             return floorRoomPoolName(context.topologyGroupId(), openingProfileId, PathPoolKind.BRANCH);
+        }
+        if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE) {
+            return null;
         }
         return null;
     }

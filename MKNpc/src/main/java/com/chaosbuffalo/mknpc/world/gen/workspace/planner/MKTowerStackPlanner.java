@@ -314,7 +314,7 @@ public class MKTowerStackPlanner {
                 case MAIN_ENTRY, MAIN_ENDING_ENTRY -> MKConnectorRole.MAIN_FORWARD;
                 case MAIN_EXIT -> MKConnectorRole.MAIN_BACK;
                 case BRANCH, BRANCH_CAP_ENTRY -> MKConnectorRole.BRANCH;
-                case INGRESS, VERTICAL_ACCESS -> throw new IllegalStateException("unsupported horizontal connector kind " +
+                case INGRESS, LINK_CANDIDATE, VERTICAL_ACCESS -> throw new IllegalStateException("unsupported horizontal connector kind " +
                         exit.pathKind().getSerializedName());
             };
             if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY) {

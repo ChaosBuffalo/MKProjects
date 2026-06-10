@@ -1352,6 +1352,46 @@ public class WorkspaceDraftSession {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withSprawl(value));
     }
 
+    public boolean floorTopologyLinksEnabled(String stackId, String floorRole) {
+        return floorTopologySettings(stackId, floorRole).linksEnabled();
+    }
+
+    public void floorTopologyLinksEnabled(String stackId, String floorRole, boolean value) {
+        replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withLinksEnabled(value));
+    }
+
+    public float floorTopologyLinkDensity(String stackId, String floorRole) {
+        return floorTopologySettings(stackId, floorRole).linkDensity();
+    }
+
+    public void floorTopologyLinkDensity(String stackId, String floorRole, float value) {
+        replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withLinkDensity(value));
+    }
+
+    public int floorTopologyMaxLinksPerFloor(String stackId, String floorRole) {
+        return floorTopologySettings(stackId, floorRole).maxLinksPerFloor();
+    }
+
+    public void floorTopologyMaxLinksPerFloor(String stackId, String floorRole, int value) {
+        replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withMaxLinksPerFloor(value));
+    }
+
+    public int floorTopologyMaxLinksPerRoom(String stackId, String floorRole) {
+        return floorTopologySettings(stackId, floorRole).maxLinksPerRoom();
+    }
+
+    public void floorTopologyMaxLinksPerRoom(String stackId, String floorRole, int value) {
+        replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withMaxLinksPerRoom(value));
+    }
+
+    public int floorTopologyMaxLinkLength(String stackId, String floorRole) {
+        return floorTopologySettings(stackId, floorRole).maxLinkLength();
+    }
+
+    public void floorTopologyMaxLinkLength(String stackId, String floorRole, int value) {
+        replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withMaxLinkLength(value));
+    }
+
     public long floorTopologyPreviewSeed(String stackId, String floorRole) {
         return floorTopologyLockedLayoutSeed(stackId, floorRole)
                 .orElseGet(() -> floorTopologyPreviewSeeds.computeIfAbsent(
@@ -1500,6 +1540,33 @@ public class WorkspaceDraftSession {
                     direction,
                     MKWorkspaceHorizontalExitPathKind.BRANCH,
                     MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID,
+                    MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
+            ));
+        }
+        replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole)
+                .withRoomProfile(kind, index, profile.withHorizontalExits(exits)));
+    }
+
+    public void floorTopologyToggleRoomLinkCandidateExit(String stackId, String floorRole,
+                                                         MKWorkspaceFloorRoomKind kind, int index,
+                                                         Direction direction) {
+        MKWorkspaceFloorRoomProfile profile = floorTopologyRoomProfile(stackId, floorRole, kind, index);
+        if (!profile.linkCandidateExitDirection(direction)) {
+            return;
+        }
+        ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new ArrayList<>(profile.horizontalExits());
+        Optional<MKWorkspaceFamilyHorizontalExitDefinition> existing = exits.stream()
+                .filter(exit -> exit.direction() == direction &&
+                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE)
+                .findFirst();
+        if (existing.isPresent()) {
+            exits.remove(existing.get());
+        } else {
+            exits.removeIf(exit -> exit.direction() == direction);
+            exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(
+                    direction,
+                    MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE,
+                    MKWorkspaceFloorRoomProfile.INHERITED_LINK_OPENING_PROFILE_ID,
                     MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
             ));
         }

@@ -6,6 +6,7 @@ public enum MKConnectorRole implements StringRepresentable {
     MAIN_FORWARD("main_forward"),
     MAIN_BACK("main_back"),
     BRANCH("branch"),
+    LINK_CANDIDATE("link_candidate"),
     CONNECT_DOWN("connect_down"),
     CONNECT_UP("connect_up"),
     TOP_CAP_FORWARD("top_cap_forward"),

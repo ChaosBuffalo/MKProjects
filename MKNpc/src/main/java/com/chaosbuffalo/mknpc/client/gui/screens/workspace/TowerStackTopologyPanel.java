@@ -795,6 +795,61 @@ public class TowerStackTopologyPanel {
             }
 
             @Override
+            public boolean floorLinksEnabled(String sectionKey) {
+                return editor.floorTopologyLinksEnabled(stackId, sectionKey);
+            }
+
+            @Override
+            public void floorLinksEnabled(String sectionKey, boolean value) {
+                editor.floorTopologyLinksEnabled(stackId, sectionKey, value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public float floorLinkDensity(String sectionKey) {
+                return editor.floorTopologyLinkDensity(stackId, sectionKey);
+            }
+
+            @Override
+            public void floorLinkDensity(String sectionKey, float value) {
+                editor.floorTopologyLinkDensity(stackId, sectionKey, value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public int floorMaxLinksPerFloor(String sectionKey) {
+                return editor.floorTopologyMaxLinksPerFloor(stackId, sectionKey);
+            }
+
+            @Override
+            public void floorMaxLinksPerFloor(String sectionKey, int value) {
+                editor.floorTopologyMaxLinksPerFloor(stackId, sectionKey, value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public int floorMaxLinksPerRoom(String sectionKey) {
+                return editor.floorTopologyMaxLinksPerRoom(stackId, sectionKey);
+            }
+
+            @Override
+            public void floorMaxLinksPerRoom(String sectionKey, int value) {
+                editor.floorTopologyMaxLinksPerRoom(stackId, sectionKey, value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public int floorMaxLinkLength(String sectionKey) {
+                return editor.floorTopologyMaxLinkLength(stackId, sectionKey);
+            }
+
+            @Override
+            public void floorMaxLinkLength(String sectionKey, int value) {
+                editor.floorTopologyMaxLinkLength(stackId, sectionKey, value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
             public long previewSeed(String sectionKey) {
                 return editor.floorTopologyPreviewSeed(stackId, sectionKey);
             }
@@ -885,6 +940,13 @@ public class TowerStackTopologyPanel {
             public void toggleRoomBranchExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
                                              Direction direction) {
                 editor.floorTopologyToggleRoomBranchExit(stackId, sectionKey, kind, index, direction);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public void toggleRoomLinkCandidateExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
+                                                    Direction direction) {
+                editor.floorTopologyToggleRoomLinkCandidateExit(stackId, sectionKey, kind, index, direction);
                 screen.flagNeedSetup();
             }
         };

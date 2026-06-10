@@ -9,6 +9,7 @@ public enum MKWorkspaceHorizontalExitPathKind implements StringRepresentable {
     MAIN_ENDING_ENTRY("main_ending_entry"),
     BRANCH("branch"),
     BRANCH_CAP_ENTRY("branch_cap_entry"),
+    LINK_CANDIDATE("link_candidate"),
     VERTICAL_ACCESS("vertical_access");
 
     private final String serializedName;
@@ -57,7 +58,8 @@ public enum MKWorkspaceHorizontalExitPathKind implements StringRepresentable {
             case MAIN_EXIT -> MAIN_ENDING_ENTRY;
             case MAIN_ENDING_ENTRY -> BRANCH;
             case BRANCH -> BRANCH_CAP_ENTRY;
-            case BRANCH_CAP_ENTRY, VERTICAL_ACCESS -> MAIN_ENTRY;
+            case BRANCH_CAP_ENTRY -> LINK_CANDIDATE;
+            case LINK_CANDIDATE, VERTICAL_ACCESS -> MAIN_ENTRY;
         };
     }
 }

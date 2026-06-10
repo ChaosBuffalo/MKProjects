@@ -24,6 +24,7 @@ public record MKWorkspaceFloorRoomProfile(
 ) {
     public static final String INHERITED_MAIN_OPENING_PROFILE_ID = "__inherited_main__";
     public static final String INHERITED_BRANCH_OPENING_PROFILE_ID = "__inherited_branch__";
+    public static final String INHERITED_LINK_OPENING_PROFILE_ID = "__inherited_link__";
 
     public static final Codec<MKWorkspaceFloorRoomProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("id").forGetter(MKWorkspaceFloorRoomProfile::id),
@@ -137,6 +138,12 @@ public record MKWorkspaceFloorRoomProfile(
                 (kind != MKWorkspaceFloorRoomKind.MAIN_ROOM || mainExitDirection().orElse(null) != direction);
     }
 
+    public boolean linkCandidateExitDirection(Direction direction) {
+        return direction.getAxis().isHorizontal() &&
+                !requiredExitDirection(direction) &&
+                (kind != MKWorkspaceFloorRoomKind.MAIN_ROOM || mainExitDirection().orElse(null) != direction);
+    }
+
     public boolean mainExitDirection(Direction direction) {
         return kind.hasMainExit() &&
                 direction.getAxis().isHorizontal() &&
@@ -178,7 +185,8 @@ public record MKWorkspaceFloorRoomProfile(
         ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new ArrayList<>();
         for (MKWorkspaceFamilyHorizontalExitDefinition exit : horizontalExits) {
             if (exit.pathKind() != MKWorkspaceHorizontalExitPathKind.MAIN_EXIT &&
-                    exit.pathKind() != MKWorkspaceHorizontalExitPathKind.BRANCH) {
+                    exit.pathKind() != MKWorkspaceHorizontalExitPathKind.BRANCH &&
+                    exit.pathKind() != MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE) {
                 exits.add(exit);
             }
         }
@@ -191,6 +199,11 @@ public record MKWorkspaceFloorRoomProfile(
         for (Direction candidate : randomizedMainExitCandidates()) {
             if (candidate != direction) {
                 exits.add(optionalBranchExit(candidate));
+            }
+        }
+        for (MKWorkspaceFamilyHorizontalExitDefinition exit : horizontalExits) {
+            if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE) {
+                exits.add(linkCandidateExit(exit.direction()));
             }
         }
         return new MKWorkspaceFloorRoomProfile(id, label, kind, width, length, height, weight, paletteOverride,
@@ -215,6 +228,7 @@ public record MKWorkspaceFloorRoomProfile(
             MKWorkspaceFloorRoomKind kind,
             List<MKWorkspaceFamilyHorizontalExitDefinition> exits) {
         Map<Direction, MKWorkspaceFamilyHorizontalExitDefinition> byDirection = new EnumMap<>(Direction.class);
+        Map<Direction, MKWorkspaceFamilyHorizontalExitDefinition> linkByDirection = new EnumMap<>(Direction.class);
         Direction mainExitDirection = Direction.NORTH;
         if (exits != null) {
             for (MKWorkspaceFamilyHorizontalExitDefinition exit : exits) {
@@ -231,11 +245,17 @@ public record MKWorkspaceFloorRoomProfile(
                         exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH) {
                     byDirection.put(exit.direction(), optionalBranchExit(exit.direction()));
                 }
+                if (!requiredDirection(kind, exit.direction()) &&
+                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE) {
+                    linkByDirection.put(exit.direction(), linkCandidateExit(exit.direction()));
+                }
             }
         }
         if (kind.hasMainExit()) {
             byDirection.remove(mainExitDirection);
+            linkByDirection.remove(mainExitDirection);
         }
+        byDirection.keySet().forEach(linkByDirection::remove);
         ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> resolved = new ArrayList<>();
         if (kind.usesMainPath()) {
             resolved.add(new MKWorkspaceFamilyHorizontalExitDefinition(
@@ -261,6 +281,11 @@ public record MKWorkspaceFloorRoomProfile(
         for (Direction direction : List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)) {
             if (!requiredDirection(kind, direction) && byDirection.containsKey(direction)) {
                 resolved.add(byDirection.get(direction));
+            }
+        }
+        for (Direction direction : List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)) {
+            if (!requiredDirection(kind, direction) && linkByDirection.containsKey(direction)) {
+                resolved.add(linkByDirection.get(direction));
             }
         }
         return List.copyOf(resolved);
@@ -298,6 +323,15 @@ public record MKWorkspaceFloorRoomProfile(
                 direction,
                 MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY,
                 INHERITED_BRANCH_OPENING_PROFILE_ID,
+                MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
+        );
+    }
+
+    private static MKWorkspaceFamilyHorizontalExitDefinition linkCandidateExit(Direction direction) {
+        return new MKWorkspaceFamilyHorizontalExitDefinition(
+                direction,
+                MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE,
+                INHERITED_LINK_OPENING_PROFILE_ID,
                 MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
         );
     }

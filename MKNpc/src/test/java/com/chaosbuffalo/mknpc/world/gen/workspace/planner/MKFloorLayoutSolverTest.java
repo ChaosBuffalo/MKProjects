@@ -62,7 +62,13 @@ class MKFloorLayoutSolverTest {
 
     @Test
     void floorTopologySettingsCodecCarriesLockedLayoutSeed() {
-        MKWorkspaceFloorTopologySettings settings = settings(0.75f).withLockedLayoutSeed(Optional.of(8675309L));
+        MKWorkspaceFloorTopologySettings settings = settings(0.75f)
+                .withLinksEnabled(true)
+                .withLinkDensity(0.5f)
+                .withMaxLinksPerFloor(4)
+                .withMaxLinksPerRoom(2)
+                .withMaxLinkLength(48)
+                .withLockedLayoutSeed(Optional.of(8675309L));
 
         JsonElement encoded = MKWorkspaceFloorTopologySettings.CODEC.encodeStart(JsonOps.INSTANCE, settings)
                 .getOrThrow();
@@ -71,6 +77,11 @@ class MKFloorLayoutSolverTest {
 
         assertEquals(Optional.of(8675309L), decoded.lockedLayoutSeed());
         assertEquals(0.75f, decoded.sprawl());
+        assertTrue(decoded.linksEnabled());
+        assertEquals(0.5f, decoded.linkDensity());
+        assertEquals(4, decoded.maxLinksPerFloor());
+        assertEquals(2, decoded.maxLinksPerRoom());
+        assertEquals(48, decoded.maxLinkLength());
         assertEquals(1, decoded.mainRoomProfiles().size());
     }
 
@@ -349,6 +360,60 @@ class MKFloorLayoutSolverTest {
         assertTrue(mainRoom.tooltip().contains("Fitting"));
     }
 
+    @Test
+    void linkCandidatesCanCreateDoglegLoopAfterTopologySolve() {
+        MKWorkspaceFloorTopologySettings settings = linkSettings().withLinksEnabled(true).withMaxLinkLength(128);
+
+        MKFloorLayoutSolver.FloorLayoutResult result = new MKFloorLayoutSolver().solve(
+                settings,
+                9,
+                9,
+                List.of(
+                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.NORTH,
+                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                                MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID),
+                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.EAST,
+                                MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID)
+                ),
+                1,
+                99L
+        );
+
+        assertEquals(1, result.acceptedLinks().size());
+        assertEquals(2, result.acceptedLinks().getFirst().route().size());
+        assertEquals(2, result.segments().stream()
+                .filter(segment -> segment.kind() == MKFloorLayoutSolver.SegmentKind.LINK_HALL)
+                .count());
+        assertTrue(result.fitsHardLimit());
+    }
+
+    @Test
+    void linkCandidatesRespectMaxLinkLength() {
+        MKWorkspaceFloorTopologySettings settings = linkSettings().withLinksEnabled(true).withMaxLinkLength(8);
+
+        MKFloorLayoutSolver.FloorLayoutResult result = new MKFloorLayoutSolver().solve(
+                settings,
+                9,
+                9,
+                List.of(
+                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.NORTH,
+                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                                MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID),
+                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.EAST,
+                                MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID)
+                ),
+                1,
+                99L
+        );
+
+        assertTrue(result.acceptedLinks().isEmpty());
+        assertFalse(result.segments().stream()
+                .anyMatch(segment -> segment.kind() == MKFloorLayoutSolver.SegmentKind.LINK_HALL));
+        assertTrue(result.fitsHardLimit());
+    }
+
     private static MKWorkspaceFloorTopologySettings settings(float sprawl) {
         MKWorkspaceFloorRoomProfile mainRoom = MKWorkspaceFloorRoomProfile
                 .defaults(MKWorkspaceFloorRoomKind.MAIN_ROOM, 9, 9, 7)
@@ -381,6 +446,40 @@ class MKFloorLayoutSolverTest {
                 List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.BRANCH_CAP, 9, 9, 7)),
                 List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.MAIN_CAP_APPROACH, 9, 9, 7)),
                 List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.MAIN_CAP, 9, 9, 7))
+        );
+    }
+
+    private static MKWorkspaceFloorTopologySettings linkSettings() {
+        MKWorkspaceFloorRoomProfile mainCap = MKWorkspaceFloorRoomProfile
+                .defaults(MKWorkspaceFloorRoomKind.MAIN_CAP, 9, 9, 7)
+                .withHorizontalExits(List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
+                        Direction.EAST,
+                        MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE,
+                        MKWorkspaceFloorRoomProfile.INHERITED_LINK_OPENING_PROFILE_ID)));
+        MKWorkspaceFloorRoomProfile branchCap = MKWorkspaceFloorRoomProfile
+                .defaults(MKWorkspaceFloorRoomKind.BRANCH_CAP, 9, 9, 7)
+                .withHorizontalExits(List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
+                        Direction.WEST,
+                        MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE,
+                        MKWorkspaceFloorRoomProfile.INHERITED_LINK_OPENING_PROFILE_ID)));
+        return new MKWorkspaceFloorTopologySettings(
+                "tower.primary",
+                "main_floor",
+                1,
+                1,
+                0,
+                MKWorkspaceHallwayLeadInMode.MANUAL,
+                1,
+                true,
+                true,
+                false,
+                1.0f,
+                Optional.empty(),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.MAIN_ROOM, 9, 9, 7)),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.BRANCH_ROOM, 9, 9, 7)),
+                List.of(branchCap),
+                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.MAIN_CAP_APPROACH, 9, 9, 7)),
+                List.of(mainCap)
         );
     }
 }

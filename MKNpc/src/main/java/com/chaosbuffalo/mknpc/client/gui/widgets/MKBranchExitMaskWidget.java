@@ -164,7 +164,7 @@ public class MKBranchExitMaskWidget extends MKWidget {
                 case MAIN_ENTRY -> SELECTED_MAIN_ENTRY;
                 case MAIN_EXIT -> SELECTED_MAIN_EXIT;
                 case MAIN_ENDING_ENTRY -> SELECTED_MAIN_ENTRY;
-                case BRANCH, BRANCH_CAP_ENTRY -> SELECTED_BRANCH_EXIT;
+                case BRANCH, BRANCH_CAP_ENTRY, LINK_CANDIDATE -> SELECTED_BRANCH_EXIT;
                 case VERTICAL_ACCESS -> SELECTED_VERTICAL;
                 case NONE -> INACTIVE_EXIT;
             };
@@ -182,6 +182,7 @@ public class MKBranchExitMaskWidget extends MKWidget {
             case MAIN_ENDING_ENTRY -> direction.getName().substring(0, 1).toUpperCase() + "E";
             case BRANCH -> direction.getName().substring(0, 1).toUpperCase() + "B";
             case BRANCH_CAP_ENTRY -> direction.getName().substring(0, 1).toUpperCase() + "C";
+            case LINK_CANDIDATE -> direction.getName().substring(0, 1).toUpperCase() + "L";
             case VERTICAL_ACCESS -> direction == Direction.UP ? "T" : "B";
             case NONE -> direction.getName().substring(0, 1).toUpperCase();
         };
@@ -199,6 +200,7 @@ public class MKBranchExitMaskWidget extends MKWidget {
                     case MAIN_ENDING_ENTRY -> ExitKind.MAIN_ENDING_ENTRY;
                     case BRANCH -> ExitKind.BRANCH;
                     case BRANCH_CAP_ENTRY -> ExitKind.BRANCH_CAP_ENTRY;
+                    case LINK_CANDIDATE -> ExitKind.LINK_CANDIDATE;
                     case VERTICAL_ACCESS -> ExitKind.VERTICAL_ACCESS;
                 })
                 .orElse(ExitKind.NONE);
@@ -251,6 +253,7 @@ public class MKBranchExitMaskWidget extends MKWidget {
         MAIN_ENDING_ENTRY,
         BRANCH,
         BRANCH_CAP_ENTRY,
+        LINK_CANDIDATE,
         VERTICAL_ACCESS
     }
 }
