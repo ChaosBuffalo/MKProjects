@@ -20,6 +20,8 @@ import java.util.UUID;
 public final class MKFloorMaskVariantExporter {
     public static final String FLOOR_MASK_TAG = "workspace_floor_exit_mask";
     public static final String FLOOR_MASK_WEIGHT_TAG = "workspace_floor_mask_weight";
+    public static final String FLOOR_RANDOMIZE_MAIN_EXIT_TAG = "workspace_floor_randomize_main_exit";
+    public static final String FLOOR_SELECTED_MAIN_EXIT_TAG = "workspace_floor_selected_main_exit";
     public static final String CLOSED_CONNECTOR_COUNT_TAG = "workspace_floor_closed_connector_count";
     public static final String CLOSED_CONNECTOR_PREFIX = "workspace_floor_closed_connector_";
     public static final String MASK_POOL_SEGMENT = "masks";
@@ -48,6 +50,9 @@ public final class MKFloorMaskVariantExporter {
 
     private static List<MKWorkspacePieceDefinition> createMaskVariants(MKStructureWorkspace workspace,
                                                                        MKWorkspacePieceDefinition sourcePiece) {
+        if (randomizesMainExit(sourcePiece)) {
+            return createRandomizedMainExitVariants(workspace, sourcePiece);
+        }
         List<MKWorkspaceConnectorDefinition> optionalBranches = optionalBranchConnectors(sourcePiece);
         if (optionalBranches.isEmpty()) {
             return List.of(createVariant(workspace, sourcePiece, List.of(), "none", sourcePiece.connectors()));
@@ -76,12 +81,68 @@ public final class MKFloorMaskVariantExporter {
         return List.copyOf(variants);
     }
 
+    private static List<MKWorkspacePieceDefinition> createRandomizedMainExitVariants(
+            MKStructureWorkspace workspace,
+            MKWorkspacePieceDefinition sourcePiece) {
+        List<MKWorkspaceConnectorDefinition> candidates = randomMainExitCandidates(sourcePiece);
+        if (candidates.size() <= 1) {
+            return List.of(createVariant(workspace, sourcePiece, List.of(), "none", sourcePiece.connectors()));
+        }
+        MKWorkspaceConnectorDefinition mainTemplate = mainExitConnector(sourcePiece);
+        MKWorkspaceConnectorDefinition branchTemplate = candidates.stream()
+                .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
+                .findFirst()
+                .orElse(mainTemplate);
+        float sprawl = parseFloat(sourcePiece.tags().get("workspace_floor_sprawl"), 0.5f);
+        ArrayList<MKWorkspacePieceDefinition> variants = new ArrayList<>();
+        for (MKWorkspaceConnectorDefinition selectedMain : candidates) {
+            List<MKWorkspaceConnectorDefinition> optionalBranches = candidates.stream()
+                    .filter(connector -> connector != selectedMain)
+                    .toList();
+            int variantCount = 1 << optionalBranches.size();
+            for (int mask = 0; mask < variantCount; mask++) {
+                if (sprawl <= 0.0f && mask != 0) {
+                    continue;
+                }
+                ArrayList<MKWorkspaceConnectorDefinition> activeOptional = new ArrayList<>();
+                ArrayList<MKWorkspaceConnectorDefinition> closedOptional = new ArrayList<>();
+                for (int bit = 0; bit < optionalBranches.size(); bit++) {
+                    MKWorkspaceConnectorDefinition connector = optionalBranches.get(bit);
+                    if ((mask & (1 << bit)) != 0) {
+                        activeOptional.add(connector);
+                    } else {
+                        closedOptional.add(connector);
+                    }
+                }
+                String maskName = maskName(activeOptional);
+                String suffix = "_main_" + selectedMain.facing().getSerializedName().charAt(0) + "_mask_" + maskName;
+                variants.add(createVariant(workspace, sourcePiece, closedOptional, maskName,
+                        activeRandomizedMainConnectors(sourcePiece, selectedMain, activeOptional, mainTemplate,
+                                branchTemplate),
+                        suffix,
+                        selectedMain.facing()));
+            }
+        }
+        return List.copyOf(variants);
+    }
+
     private static MKWorkspacePieceDefinition createVariant(MKStructureWorkspace workspace,
                                                             MKWorkspacePieceDefinition sourcePiece,
                                                             List<MKWorkspaceConnectorDefinition> closedOptional,
                                                             String maskName,
                                                             List<MKWorkspaceConnectorDefinition> activeConnectors) {
-        String pieceName = sourcePiece.pieceName() + "_mask_" + maskName;
+        return createVariant(workspace, sourcePiece, closedOptional, maskName, activeConnectors,
+                "_mask_" + maskName, null);
+    }
+
+    private static MKWorkspacePieceDefinition createVariant(MKStructureWorkspace workspace,
+                                                            MKWorkspacePieceDefinition sourcePiece,
+                                                            List<MKWorkspaceConnectorDefinition> closedOptional,
+                                                            String maskName,
+                                                            List<MKWorkspaceConnectorDefinition> activeConnectors,
+                                                            String pieceNameSuffix,
+                                                            Direction selectedMainExit) {
+        String pieceName = sourcePiece.pieceName() + pieceNameSuffix;
         LinkedHashMap<String, String> tags = new LinkedHashMap<>(sourcePiece.tags());
         tags.put("workspace_piece_kind", "instance");
         tags.put("workspace_base_name", pieceName);
@@ -93,6 +154,9 @@ public final class MKFloorMaskVariantExporter {
         tags.put(MKWorkspaceTemplateReuseTags.ROTATION_TAG, MKWorkspaceTemplateReuseTags.ROTATION_NONE);
         tags.put(FLOOR_MASK_TAG, maskName);
         tags.put(FLOOR_MASK_WEIGHT_TAG, Integer.toString(maskWeight(maskName, tags)));
+        if (selectedMainExit != null) {
+            tags.put(FLOOR_SELECTED_MAIN_EXIT_TAG, selectedMainExit.getSerializedName());
+        }
         addClosedConnectorTags(tags, closedOptional);
         return new MKWorkspacePieceDefinition(
                 UUID.nameUUIDFromBytes((workspace.id() + ":" + pieceName).getBytes(StandardCharsets.UTF_8)),
@@ -126,6 +190,42 @@ public final class MKFloorMaskVariantExporter {
         return List.copyOf(connectors);
     }
 
+    private static List<MKWorkspaceConnectorDefinition> activeRandomizedMainConnectors(
+            MKWorkspacePieceDefinition sourcePiece,
+            MKWorkspaceConnectorDefinition selectedMain,
+            List<MKWorkspaceConnectorDefinition> activeOptional,
+            MKWorkspaceConnectorDefinition mainTemplate,
+            MKWorkspaceConnectorDefinition branchTemplate) {
+        ArrayList<MKWorkspaceConnectorDefinition> connectors = new ArrayList<>();
+        for (MKWorkspaceConnectorDefinition connector : sourcePiece.connectors()) {
+            if (!isRandomMainCandidate(sourcePiece, connector)) {
+                connectors.add(connector);
+            }
+        }
+        connectors.add(connectorWithTemplate(selectedMain, mainTemplate));
+        for (MKWorkspaceConnectorDefinition connector : activeOptional) {
+            connectors.add(connectorWithTemplate(connector, branchTemplate));
+        }
+        return List.copyOf(connectors);
+    }
+
+    private static MKWorkspaceConnectorDefinition connectorWithTemplate(MKWorkspaceConnectorDefinition source,
+                                                                        MKWorkspaceConnectorDefinition template) {
+        return new MKWorkspaceConnectorDefinition(
+                template.role(),
+                source.facing(),
+                source.relativePos(),
+                source.openingWidth(),
+                source.openingHeight(),
+                source.lateralOffset(),
+                source.verticalOffset(),
+                template.jigsawName(),
+                template.jigsawTarget(),
+                template.targetPool(),
+                template.incomingPool()
+        );
+    }
+
     private static List<MKWorkspaceConnectorDefinition> optionalBranchConnectors(MKWorkspacePieceDefinition piece) {
         return piece.connectors().stream()
                 .filter(connector -> isOptionalBranch(piece, connector))
@@ -140,6 +240,34 @@ public final class MKFloorMaskVariantExporter {
                 connector.role() == MKConnectorRole.BRANCH &&
                 connector.facing().getAxis().isHorizontal() &&
                 connector.facing() != Direction.SOUTH;
+    }
+
+    private static boolean randomizesMainExit(MKWorkspacePieceDefinition piece) {
+        return floorKind(piece) == MKWorkspaceFloorRoomKind.MAIN_ROOM &&
+                Boolean.parseBoolean(piece.tags().getOrDefault(FLOOR_RANDOMIZE_MAIN_EXIT_TAG, "false")) &&
+                randomMainExitCandidates(piece).size() > 1;
+    }
+
+    private static List<MKWorkspaceConnectorDefinition> randomMainExitCandidates(MKWorkspacePieceDefinition piece) {
+        return piece.connectors().stream()
+                .filter(connector -> isRandomMainCandidate(piece, connector))
+                .sorted(Comparator.comparing(connector -> connector.facing().getSerializedName()))
+                .toList();
+    }
+
+    private static boolean isRandomMainCandidate(MKWorkspacePieceDefinition piece,
+                                                 MKWorkspaceConnectorDefinition connector) {
+        return connector.facing().getAxis().isHorizontal() &&
+                connector.facing() != Direction.SOUTH &&
+                (connector.role() == MKConnectorRole.MAIN_BACK || isOptionalBranch(piece, connector));
+    }
+
+    private static MKWorkspaceConnectorDefinition mainExitConnector(MKWorkspacePieceDefinition piece) {
+        return piece.connectors().stream()
+                .filter(connector -> connector.role() == MKConnectorRole.MAIN_BACK &&
+                        connector.facing().getAxis().isHorizontal())
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("randomized main exit room requires a main exit connector"));
     }
 
     private static MKWorkspaceFloorRoomKind floorKind(MKWorkspacePieceDefinition piece) {

@@ -19,6 +19,7 @@ public record MKWorkspaceFloorRoomProfile(
         int height,
         int weight,
         Optional<MKWorkspacePaletteOverride> paletteOverride,
+        boolean randomizeMainExit,
         List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits
 ) {
     public static final String INHERITED_MAIN_OPENING_PROFILE_ID = "__inherited_main__";
@@ -34,6 +35,8 @@ public record MKWorkspaceFloorRoomProfile(
             Codec.INT.optionalFieldOf("weight", 1).forGetter(MKWorkspaceFloorRoomProfile::weight),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
                     .forGetter(MKWorkspaceFloorRoomProfile::paletteOverride),
+            Codec.BOOL.optionalFieldOf("randomize_main_exit", false)
+                    .forGetter(MKWorkspaceFloorRoomProfile::randomizeMainExit),
             MKWorkspaceFamilyHorizontalExitDefinition.CODEC.listOf()
                     .optionalFieldOf("horizontal_exits", List.of())
                     .forGetter(MKWorkspaceFloorRoomProfile::horizontalExits)
@@ -47,6 +50,7 @@ public record MKWorkspaceFloorRoomProfile(
         height = Math.max(MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT, height);
         weight = Math.max(1, weight);
         paletteOverride = paletteOverride == null ? Optional.empty() : paletteOverride;
+        randomizeMainExit = kind == MKWorkspaceFloorRoomKind.MAIN_ROOM && randomizeMainExit;
         horizontalExits = normalizeExits(kind, horizontalExits);
     }
 
@@ -57,8 +61,20 @@ public record MKWorkspaceFloorRoomProfile(
                                        int length,
                                        int height,
                                        int weight,
+                                       Optional<MKWorkspacePaletteOverride> paletteOverride,
+                                       List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits) {
+        this(id, label, kind, width, length, height, weight, paletteOverride, false, horizontalExits);
+    }
+
+    public MKWorkspaceFloorRoomProfile(String id,
+                                       String label,
+                                       MKWorkspaceFloorRoomKind kind,
+                                       int width,
+                                       int length,
+                                       int height,
+                                       int weight,
                                        Optional<MKWorkspacePaletteOverride> paletteOverride) {
-        this(id, label, kind, width, length, height, weight, paletteOverride, List.of());
+        this(id, label, kind, width, length, height, weight, paletteOverride, false, List.of());
     }
 
     public static MKWorkspaceFloorRoomProfile defaults(MKWorkspaceFloorRoomKind kind,
@@ -72,32 +88,39 @@ public record MKWorkspaceFloorRoomProfile(
                 height,
                 1,
                 Optional.empty(),
+                false,
                 List.of()
         );
     }
 
     public MKWorkspaceFloorRoomProfile withWidth(int value) {
         return new MKWorkspaceFloorRoomProfile(id, label, kind, value, length, height, weight, paletteOverride,
-                horizontalExits);
+                randomizeMainExit, horizontalExits);
     }
 
     public MKWorkspaceFloorRoomProfile withLength(int value) {
         return new MKWorkspaceFloorRoomProfile(id, label, kind, width, value, height, weight, paletteOverride,
-                horizontalExits);
+                randomizeMainExit, horizontalExits);
     }
 
     public MKWorkspaceFloorRoomProfile withHeight(int value) {
         return new MKWorkspaceFloorRoomProfile(id, label, kind, width, length, value, weight, paletteOverride,
-                horizontalExits);
+                randomizeMainExit, horizontalExits);
     }
 
     public MKWorkspaceFloorRoomProfile withIdentity(String id, String label) {
         return new MKWorkspaceFloorRoomProfile(id, label, kind, width, length, height, weight, paletteOverride,
-                horizontalExits);
+                randomizeMainExit, horizontalExits);
     }
 
     public MKWorkspaceFloorRoomProfile withHorizontalExits(List<MKWorkspaceFamilyHorizontalExitDefinition> exits) {
-        return new MKWorkspaceFloorRoomProfile(id, label, kind, width, length, height, weight, paletteOverride, exits);
+        return new MKWorkspaceFloorRoomProfile(id, label, kind, width, length, height, weight, paletteOverride,
+                randomizeMainExit, exits);
+    }
+
+    public MKWorkspaceFloorRoomProfile withRandomizeMainExit(boolean value) {
+        return new MKWorkspaceFloorRoomProfile(id, label, kind, width, length, height, weight, paletteOverride,
+                value, horizontalExits);
     }
 
     public boolean requiredExitDirection(Direction direction) {
@@ -128,6 +151,50 @@ public record MKWorkspaceFloorRoomProfile(
                 .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)
                 .map(MKWorkspaceFamilyHorizontalExitDefinition::direction)
                 .findFirst();
+    }
+
+    public List<Direction> randomizedMainExitCandidates() {
+        if (!randomizeMainExit || kind != MKWorkspaceFloorRoomKind.MAIN_ROOM) {
+            return mainExitDirection()
+                    .map(List::of)
+                    .orElse(List.of());
+        }
+        ArrayList<Direction> directions = new ArrayList<>();
+        for (Direction direction : List.of(Direction.NORTH, Direction.EAST, Direction.WEST)) {
+            boolean enabled = horizontalExits.stream().anyMatch(exit -> exit.direction() == direction &&
+                    (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT ||
+                            exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH));
+            if (enabled) {
+                directions.add(direction);
+            }
+        }
+        return List.copyOf(directions);
+    }
+
+    public MKWorkspaceFloorRoomProfile withResolvedRandomMainExit(Direction direction) {
+        if (!randomizeMainExit || kind != MKWorkspaceFloorRoomKind.MAIN_ROOM || !mainExitDirection(direction)) {
+            return this;
+        }
+        ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new ArrayList<>();
+        for (MKWorkspaceFamilyHorizontalExitDefinition exit : horizontalExits) {
+            if (exit.pathKind() != MKWorkspaceHorizontalExitPathKind.MAIN_EXIT &&
+                    exit.pathKind() != MKWorkspaceHorizontalExitPathKind.BRANCH) {
+                exits.add(exit);
+            }
+        }
+        exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(
+                direction,
+                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                INHERITED_MAIN_OPENING_PROFILE_ID,
+                MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
+        ));
+        for (Direction candidate : randomizedMainExitCandidates()) {
+            if (candidate != direction) {
+                exits.add(optionalBranchExit(candidate));
+            }
+        }
+        return new MKWorkspaceFloorRoomProfile(id, label, kind, width, length, height, weight, paletteOverride,
+                false, exits);
     }
 
     public boolean terminalBranchRoom() {

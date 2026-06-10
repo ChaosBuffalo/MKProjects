@@ -1507,6 +1507,13 @@ public class WorkspaceDraftSession {
                 .withRoomProfile(kind, index, profile.withHorizontalExits(exits)));
     }
 
+    public void floorTopologySetRoomRandomizeMainExit(String stackId, String floorRole,
+                                                       MKWorkspaceFloorRoomKind kind, int index, boolean value) {
+        MKWorkspaceFloorRoomProfile profile = floorTopologyRoomProfile(stackId, floorRole, kind, index);
+        replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole)
+                .withRoomProfile(kind, index, profile.withRandomizeMainExit(value)));
+    }
+
     public int floorTopologyRoomHeightMax(String stackId, String floorRole) {
         return switch (floorRole) {
             case "main_floor" -> towerStackMainHeight(stackId);

@@ -229,6 +229,8 @@ public class MKFloorTopologyPlanner {
         tags.put("workspace_floor_topology_floor_role", context.floorRole());
         tags.put("workspace_floor_room_profile_id", profile.id());
         tags.put("workspace_floor_room_kind", profile.kind().getSerializedName());
+        tags.put(MKFloorMaskVariantExporter.FLOOR_RANDOMIZE_MAIN_EXIT_TAG,
+                Boolean.toString(profile.randomizeMainExit()));
         tags.put("workspace_topology_group", context.topologyGroupId());
         tags.put("workspace_floor_min_main_path_pieces", Integer.toString(settings.minMainPathPieces()));
         tags.put("workspace_floor_max_main_path_pieces", Integer.toString(settings.maxMainPathPieces()));

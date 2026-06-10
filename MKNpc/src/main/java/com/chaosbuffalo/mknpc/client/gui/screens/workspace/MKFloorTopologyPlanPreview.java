@@ -45,7 +45,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     private static final int STRUCTURE_RADIUS_LIMIT = 128;
     private static final int PREVIEW_SIZE = 240;
     private static final int PATH_CONTROLS_HEIGHT = 166;
-    private static final int ROOM_ROW_HEIGHT = 104;
+    private static final int ROOM_ROW_HEIGHT = 122;
     private static final int ROOM_SECTION_HEADER = 22;
     private static final int MASK_SIZE = 66;
     private static final int MASK_ROOM_SIZE = 18;
@@ -263,6 +263,10 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         drawSlider(graphics, mc, "H", profile.height(), controls.floorRoomHeightMin(sectionKey),
                 controls.floorRoomHeightMax(sectionKey),
                 x + 5, y + 64, sliderWidth, mouseX, mouseY, roomSliderId(kind, index, "height"));
+        if (kind == MKWorkspaceFloorRoomKind.MAIN_ROOM) {
+            drawCheckbox(graphics, mc, roomRandomizeMainExitButton(x, y), "Randomize Main Exit",
+                    profile.randomizeMainExit(), mouseX, mouseY);
+        }
         drawRoomExitMask(graphics, mc, profile, x + width - MASK_SIZE - 8, y + 22, mouseX, mouseY);
         return y + ROOM_ROW_HEIGHT;
     }
@@ -701,6 +705,11 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 return true;
             }
         }
+        if (kind == MKWorkspaceFloorRoomKind.MAIN_ROOM &&
+                isInRect(mouseX, mouseY, roomRandomizeMainExitButton(x, y))) {
+            controls.setRoomRandomizeMainExit(sectionKey, kind, index, !profile.randomizeMainExit());
+            return true;
+        }
         Direction direction = hitRoomExitDirection(x + width - MASK_SIZE - 8, y + 22, (int) mouseX, (int) mouseY);
         if (direction != null) {
             if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT && kind.hasMainExit() &&
@@ -784,6 +793,11 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             cursorY += ROOM_SECTION_HEADER;
             List<MKWorkspaceFloorRoomProfile> profiles = controls.roomProfiles(sectionKey, kind);
             for (int index = 0; index < profiles.size(); index++) {
+                if (kind == MKWorkspaceFloorRoomKind.MAIN_ROOM &&
+                        isInRect(mouseX, mouseY, roomRandomizeMainExitButton(x, cursorY))) {
+                    return Optional.of("Randomize Main Exit\nRuntime may choose any enabled outgoing main or branch " +
+                            "direction as this room's main path exit");
+                }
                 Direction direction = hitRoomExitDirection(x + width - 16 - MASK_SIZE, cursorY + 22, mouseX, mouseY);
                 if (direction != null) {
                     MKWorkspaceFloorRoomProfile profile = profiles.get(index);
@@ -896,6 +910,10 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
 
     private ButtonBounds roomRemoveButton(int x, int y, int width, MKWorkspaceFloorRoomKind kind, int index) {
         return new ButtonBounds(x + width - 58, y + 4, 54, 16);
+    }
+
+    private ButtonBounds roomRandomizeMainExitButton(int x, int y) {
+        return new ButtonBounds(x + 5, y + 86, 150, 16);
     }
 
     private ButtonBounds pathToggleBounds(int x, int y, int index) {
@@ -1265,6 +1283,8 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
 
         void setRoomMainExitDirection(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
                                       Direction direction);
+
+        void setRoomRandomizeMainExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index, boolean value);
 
         void toggleRoomBranchExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index, Direction direction);
     }

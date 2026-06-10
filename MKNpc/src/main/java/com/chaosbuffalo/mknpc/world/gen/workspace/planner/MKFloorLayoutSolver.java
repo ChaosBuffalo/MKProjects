@@ -280,12 +280,27 @@ public class MKFloorLayoutSolver {
                                                               Random random) {
         MKWorkspaceFloorRoomProfile selected = weightedProfile(profiles, random);
         ArrayList<MKWorkspaceFloorRoomProfile> ordered = new ArrayList<>();
-        ordered.add(selected);
+        ordered.addAll(randomizedProfileVariants(selected, random));
         ArrayList<MKWorkspaceFloorRoomProfile> remaining = new ArrayList<>(profiles);
         remaining.remove(selected);
         Collections.shuffle(remaining, random);
-        ordered.addAll(remaining);
+        for (MKWorkspaceFloorRoomProfile profile : remaining) {
+            ordered.addAll(randomizedProfileVariants(profile, random));
+        }
         return List.copyOf(ordered);
+    }
+
+    private List<MKWorkspaceFloorRoomProfile> randomizedProfileVariants(MKWorkspaceFloorRoomProfile profile,
+                                                                        Random random) {
+        List<Direction> candidates = profile.randomizedMainExitCandidates();
+        if (!profile.randomizeMainExit() || candidates.size() <= 1) {
+            return List.of(profile);
+        }
+        ArrayList<Direction> ordered = new ArrayList<>(candidates);
+        Collections.shuffle(ordered, random);
+        return ordered.stream()
+                .map(profile::withResolvedRandomMainExit)
+                .toList();
     }
 
     private int sampledCount(int min, int max, float sprawl, Random random) {

@@ -4,6 +4,7 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -67,6 +68,31 @@ class MKFloorConnectorPatchTest {
         assertTrue(MKFloorConnectorPatch.closedConnectorPatchPositions(piece).isEmpty());
     }
 
+    @Test
+    void randomizedMainExitExportPromotesSelectedBranchConnectorToMain() {
+        MKWorkspacePieceDefinition source = randomizedMainExitTemplate();
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(source));
+
+        List<MKWorkspacePieceDefinition> exported = MKFloorMaskVariantExporter.exportPieces(workspace, true);
+        List<MKWorkspacePieceDefinition> variants = exported.stream()
+                .filter(piece -> "instance".equals(piece.tags().get("workspace_piece_kind")))
+                .toList();
+        MKWorkspacePieceDefinition eastMainAllBranches = variants.stream()
+                .filter(piece -> "east".equals(piece.tags().get(MKFloorMaskVariantExporter.FLOOR_SELECTED_MAIN_EXIT_TAG)))
+                .filter(piece -> "nw".equals(piece.tags().get(MKFloorMaskVariantExporter.FLOOR_MASK_TAG)))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(12, variants.size());
+        assertTrue(eastMainAllBranches.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.MAIN_BACK && connector.facing() == Direction.EAST));
+        assertTrue(eastMainAllBranches.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.BRANCH && connector.facing() == Direction.NORTH));
+        assertTrue(eastMainAllBranches.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.BRANCH && connector.facing() == Direction.WEST));
+    }
+
     private static MKWorkspacePieceDefinition closedConnectorPiece(Direction facing, BlockPos pos, int openingWidth,
                                                                    int openingHeight) {
         Map<String, String> tags = new LinkedHashMap<>();
@@ -107,6 +133,55 @@ class MKFloorConnectorPatchTest {
                 List.of(),
                 List.of(),
                 tags
+        );
+    }
+
+    private static MKWorkspacePieceDefinition randomizedMainExitTemplate() {
+        Map<String, String> tags = new LinkedHashMap<>();
+        tags.put("tower_piece_kind", "floor_plan_room");
+        tags.put("workspace_piece_kind", "template");
+        tags.put("workspace_floor_room_kind", "main_room");
+        tags.put(MKFloorMaskVariantExporter.FLOOR_RANDOMIZE_MAIN_EXIT_TAG, "true");
+        tags.put("workspace_base_name", "floor_main_room");
+        return new MKWorkspacePieceDefinition(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "floor_main_room",
+                "tower.primary.main_floor",
+                0,
+                MKWorkspaceDimensions.defaultDimensions(),
+                1,
+                List.of(
+                        connector(MKConnectorRole.MAIN_FORWARD, Direction.SOUTH),
+                        connector(MKConnectorRole.MAIN_BACK, Direction.NORTH),
+                        connector(MKConnectorRole.BRANCH, Direction.EAST),
+                        connector(MKConnectorRole.BRANCH, Direction.WEST)
+                ),
+                BlockPos.ZERO,
+                new BoundingBox(0, 0, 0, 8, 8, 8),
+                new BoundingBox(0, 0, 0, 8, 8, 8),
+                BlockPos.ZERO,
+                BlockPos.ZERO,
+                List.of(),
+                List.of(),
+                tags
+        );
+    }
+
+    private static MKWorkspaceConnectorDefinition connector(MKConnectorRole role, Direction facing) {
+        String name = role.getSerializedName();
+        return new MKWorkspaceConnectorDefinition(
+                role,
+                facing,
+                BlockPos.ZERO.relative(facing, 4),
+                3,
+                3,
+                0,
+                0,
+                ResourceLocation.parse("mkdev:" + name),
+                ResourceLocation.parse("mkdev:" + name + "_target"),
+                ResourceLocation.parse("mkdev:" + name + "_pool"),
+                ResourceLocation.parse("mkdev:" + name + "_incoming")
         );
     }
 }

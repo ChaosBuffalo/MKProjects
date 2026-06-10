@@ -207,6 +207,37 @@ class MKFloorLayoutSolverTest {
     }
 
     @Test
+    void randomizedMainExitResolvesEnabledDirectionsIntoEffectiveProfile() {
+        MKWorkspaceFloorRoomProfile profile = MKWorkspaceFloorRoomProfile
+                .defaults(MKWorkspaceFloorRoomKind.MAIN_ROOM, 9, 9, 7)
+                .withHorizontalExits(List.of(
+                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.NORTH,
+                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                                MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID),
+                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.EAST,
+                                MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID),
+                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.WEST,
+                                MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID)
+                ))
+                .withRandomizeMainExit(true);
+
+        MKWorkspaceFloorRoomProfile resolved = profile.withResolvedRandomMainExit(Direction.EAST);
+
+        assertEquals(List.of(Direction.NORTH, Direction.EAST, Direction.WEST),
+                profile.randomizedMainExitCandidates());
+        assertEquals(Optional.of(Direction.EAST), resolved.mainExitDirection());
+        assertFalse(resolved.randomizeMainExit());
+        assertTrue(resolved.horizontalExits().stream().anyMatch(exit ->
+                exit.direction() == Direction.NORTH &&
+                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH));
+        assertTrue(resolved.horizontalExits().stream().anyMatch(exit ->
+                exit.direction() == Direction.WEST &&
+                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH));
+    }
+
+    @Test
     void rootBranchCannotReserveSpaceBeforeRequiredMainPath() {
         MKWorkspaceFloorTopologySettings settings = new MKWorkspaceFloorTopologySettings(
                 "tower.primary",
