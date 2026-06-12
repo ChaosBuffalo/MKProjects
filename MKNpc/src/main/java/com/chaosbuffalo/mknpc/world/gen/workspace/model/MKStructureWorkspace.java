@@ -499,6 +499,23 @@ public class MKStructureWorkspace {
                 createdAt, System.currentTimeMillis(), pieces, newLayerStates);
     }
 
+    public MKStructureWorkspace withLayerState(MKWorkspaceGeneratedLayerState newLayerState) {
+        List<MKWorkspaceGeneratedLayerState> updatedStates = new ArrayList<>();
+        boolean replaced = false;
+        for (MKWorkspaceGeneratedLayerState state : layerStates) {
+            if (state.layer() == newLayerState.layer()) {
+                updatedStates.add(newLayerState);
+                replaced = true;
+            } else {
+                updatedStates.add(state);
+            }
+        }
+        if (!replaced) {
+            updatedStates.add(newLayerState);
+        }
+        return withLayerStates(updatedStates);
+    }
+
     public UUID id() {
         return id;
     }
@@ -581,6 +598,18 @@ public class MKStructureWorkspace {
 
     public List<MKWorkspaceGeneratedLayerState> layerStates() {
         return layerStates;
+    }
+
+    public Optional<MKWorkspaceGeneratedLayerState> layerState(MKWorkspaceGeneratedLayer layer) {
+        return layerStates.stream()
+                .filter(state -> state.layer() == layer)
+                .findFirst();
+    }
+
+    public boolean layerLocked(MKWorkspaceGeneratedLayer layer) {
+        return layerState(layer)
+                .map(MKWorkspaceGeneratedLayerState::locked)
+                .orElse(false);
     }
 }
 
