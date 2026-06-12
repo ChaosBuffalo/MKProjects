@@ -81,6 +81,8 @@ public final class MKWorkspaceCodecs {
             MKWorkspaceLinearRunPieceShape::fromSerializedName, MKWorkspaceLinearRunPieceShape::getSerializedName
     );
     public static final Codec<MKWorkspacePlannerId> PLANNER_ID_CODEC = MKWorkspacePlannerId.CODEC;
+    public static final Codec<MKWorkspaceGeneratedLayer> GENERATED_LAYER_CODEC = MKWorkspaceGeneratedLayer.CODEC;
+    public static final Codec<MKWorkspaceMutationSafety> MUTATION_SAFETY_CODEC = MKWorkspaceMutationSafety.CODEC;
     public static final Codec<MKConnectorRole> CONNECTOR_ROLE_CODEC = Codec.STRING.xmap(
             MKConnectorRole::fromSerializedName, MKConnectorRole::getSerializedName
     );
