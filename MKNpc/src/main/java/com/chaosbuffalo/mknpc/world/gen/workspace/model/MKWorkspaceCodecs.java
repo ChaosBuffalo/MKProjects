@@ -80,6 +80,7 @@ public final class MKWorkspaceCodecs {
     public static final Codec<MKWorkspaceLinearRunPieceShape> LINEAR_RUN_SHAPE_CODEC = Codec.STRING.xmap(
             MKWorkspaceLinearRunPieceShape::fromSerializedName, MKWorkspaceLinearRunPieceShape::getSerializedName
     );
+    public static final Codec<MKWorkspacePlannerId> PLANNER_ID_CODEC = MKWorkspacePlannerId.CODEC;
     public static final Codec<MKConnectorRole> CONNECTOR_ROLE_CODEC = Codec.STRING.xmap(
             MKConnectorRole::fromSerializedName, MKConnectorRole::getSerializedName
     );
