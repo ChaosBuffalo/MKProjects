@@ -41,6 +41,7 @@ public class MKStructureWorkspace {
     private final long createdAt;
     private final long updatedAt;
     private final List<MKWorkspacePieceDefinition> pieces;
+    private final List<MKWorkspaceGeneratedLayerState> layerStates;
 
     public MKStructureWorkspace(UUID id, BlockPos anchor, String namespace, String structureName,
                                 MKWorkspaceDimensions dimensions,
@@ -56,7 +57,7 @@ public class MKStructureWorkspace {
         this(id, anchor, namespace, structureName, MKWorkspaceTopologyProfile.tower(), dimensions, palette,
                 stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
                 familyDefinitions, openingProfiles, linearRunFamilies,
-                createdAt, updatedAt, pieces);
+                createdAt, updatedAt, pieces, List.of());
     }
 
     public MKStructureWorkspace(UUID id, BlockPos anchor, String namespace, String structureName,
@@ -71,6 +72,24 @@ public class MKStructureWorkspace {
                                 List<MKHorizontalOpeningProfile> openingProfiles,
                                 List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
                                 long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces) {
+        this(id, anchor, namespace, structureName, topologyProfile, dimensions, palette, stairConfig,
+                verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
+                familyDefinitions, openingProfiles, linearRunFamilies, createdAt, updatedAt, pieces, List.of());
+    }
+
+    public MKStructureWorkspace(UUID id, BlockPos anchor, String namespace, String structureName,
+                                MKWorkspaceTopologyProfile topologyProfile,
+                                MKWorkspaceDimensions dimensions,
+                                MKWorkspaceMaterialPalette palette, MKWorkspaceStairAuthoringConfig stairConfig,
+                                MKVerticalAccessPlacement verticalAccessPlacement,
+                                int shellMargin, int exteriorAirMargin,
+                                int previewMargin,
+                                MKWorkspaceVerticalAccessSpec verticalAccessSpec,
+                                List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
+                                List<MKHorizontalOpeningProfile> openingProfiles,
+                                List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
+                                long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces,
+                                List<MKWorkspaceGeneratedLayerState> layerStates) {
         this.id = id;
         this.anchor = anchor;
         this.namespace = namespace;
@@ -90,6 +109,7 @@ public class MKStructureWorkspace {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.pieces = List.copyOf(pieces);
+        this.layerStates = List.copyOf(layerStates);
     }
 
     public static MKStructureWorkspace createDraft(BlockPos anchor) {
@@ -151,7 +171,8 @@ public class MKStructureWorkspace {
                 resolvedLinearRunFamilies,
                 content.createdAt(),
                 content.updatedAt(),
-                List.copyOf(content.pieces())
+                List.copyOf(content.pieces()),
+                List.copyOf(content.layerStates())
         );
     }
 
@@ -176,7 +197,8 @@ public class MKStructureWorkspace {
                 linearRunFamilies,
                 createdAt,
                 updatedAt,
-                pieces
+                pieces,
+                layerStates
         );
     }
 
@@ -215,7 +237,8 @@ public class MKStructureWorkspace {
             List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
             long createdAt,
             long updatedAt,
-            List<MKWorkspacePieceDefinition> pieces
+            List<MKWorkspacePieceDefinition> pieces,
+            List<MKWorkspaceGeneratedLayerState> layerStates
     ) {
         private static final MapCodec<SerializedWorkspaceContent> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 MKTowerWorkspaceFamilyDefinition.CODEC.listOf().optionalFieldOf("familyDefinitions", List.of())
@@ -227,7 +250,9 @@ public class MKStructureWorkspace {
                 Codec.LONG.optionalFieldOf("createdAt", 0L).forGetter(SerializedWorkspaceContent::createdAt),
                 Codec.LONG.optionalFieldOf("updatedAt", 0L).forGetter(SerializedWorkspaceContent::updatedAt),
                 MKWorkspacePieceDefinition.CODEC.listOf().optionalFieldOf("pieces", List.of())
-                        .forGetter(SerializedWorkspaceContent::pieces)
+                        .forGetter(SerializedWorkspaceContent::pieces),
+                MKWorkspaceGeneratedLayerState.CODEC.listOf().optionalFieldOf("layerStates", List.of())
+                        .forGetter(SerializedWorkspaceContent::layerStates)
         ).apply(instance, SerializedWorkspaceContent::new));
     }
 
@@ -464,7 +489,14 @@ public class MKStructureWorkspace {
         return new MKStructureWorkspace(id, anchor, namespace, structureName, topologyProfile, dimensions, palette,
                 stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
                 familyDefinitions, openingProfiles, linearRunFamilies,
-                createdAt, System.currentTimeMillis(), newPieces);
+                createdAt, System.currentTimeMillis(), newPieces, layerStates);
+    }
+
+    public MKStructureWorkspace withLayerStates(List<MKWorkspaceGeneratedLayerState> newLayerStates) {
+        return new MKStructureWorkspace(id, anchor, namespace, structureName, topologyProfile, dimensions, palette,
+                stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
+                familyDefinitions, openingProfiles, linearRunFamilies,
+                createdAt, System.currentTimeMillis(), pieces, newLayerStates);
     }
 
     public UUID id() {
@@ -545,6 +577,10 @@ public class MKStructureWorkspace {
 
     public List<MKWorkspacePieceDefinition> pieces() {
         return pieces;
+    }
+
+    public List<MKWorkspaceGeneratedLayerState> layerStates() {
+        return layerStates;
     }
 }
 
