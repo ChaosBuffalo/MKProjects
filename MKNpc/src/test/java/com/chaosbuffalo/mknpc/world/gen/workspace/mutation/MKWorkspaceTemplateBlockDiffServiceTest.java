@@ -85,6 +85,23 @@ class MKWorkspaceTemplateBlockDiffServiceTest {
         assertEquals(1, report.comparedBlockCount());
     }
 
+    @Test
+    void reportRoundTripsForClientDisplay() {
+        MKWorkspaceTemplateBlockDiffReport report = new MKWorkspaceTemplateBlockDiffReport(
+                3,
+                1,
+                java.util.List.of(pos(1, 2, 3))
+        );
+
+        MKWorkspaceTemplateBlockDiffReport decoded = MKWorkspaceTemplateBlockDiffReport.CODEC.parse(
+                com.mojang.serialization.JsonOps.INSTANCE,
+                MKWorkspaceTemplateBlockDiffReport.CODEC.encodeStart(
+                        com.mojang.serialization.JsonOps.INSTANCE, report).getOrThrow()
+        ).getOrThrow();
+
+        assertEquals(report, decoded);
+    }
+
     private static BlockPos pos(int x, int y, int z) {
         return new BlockPos(x, y, z);
     }
