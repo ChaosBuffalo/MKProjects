@@ -7,6 +7,10 @@ import net.minecraft.resources.ResourceLocation;
 public interface WorkspaceTopologyUiContributor {
     ResourceLocation plannerId();
 
+    default void addWorkspaceOverviewSections(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                              WorkspaceDraftSession editor) {
+    }
+
     void addDefaultsSections(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                              WorkspaceDraftSession editor);
 }

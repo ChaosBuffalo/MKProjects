@@ -30,7 +30,7 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
     @Override
     public void addDefaultsSections(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                     WorkspaceDraftSession editor) {
-        addWalledKeepSizingSection(screen, content, editor);
+        addWalledKeepSizingSection(screen, content, editor, false);
         addCornerModeRow(screen, content, editor, "NW Corner", "keep.corner.north_west");
         addCornerModeRow(screen, content, editor, "NE Corner", "keep.corner.north_east");
         addCornerModeRow(screen, content, editor, "SE Corner", "keep.corner.south_east");
@@ -41,13 +41,28 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
         addTowerTabs(screen, content, editor);
     }
 
+    @Override
+    public void addWorkspaceOverviewSections(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                             WorkspaceDraftSession editor) {
+        editor.ensureInitialized();
+        WorkspaceTopologyUiSupport.addText(screen, content, Component.literal("Walled Keep Settings"));
+        addWalledKeepSizingSection(screen, content, editor, true);
+        addCornerModeRow(screen, content, editor, "NW Corner", "keep.corner.north_west");
+        addCornerModeRow(screen, content, editor, "NE Corner", "keep.corner.north_east");
+        addCornerModeRow(screen, content, editor, "SE Corner", "keep.corner.south_east");
+        addCornerModeRow(screen, content, editor, "SW Corner", "keep.corner.south_west");
+        addPerimeterRows(screen, content, editor);
+    }
+
     private void addWalledKeepSizingSection(MKWorkspaceScreen screen, MKStackLayoutVertical content,
-                                            WorkspaceDraftSession editor) {
+                                            WorkspaceDraftSession editor, boolean navigable) {
         MKStructureWorkspace workspaceDraft = editor.buildWorkspaceDraft();
         MKWalledKeepSizingReport report = new MKWalledKeepSizingCalculator().calculate(workspaceDraft);
         WorkspaceTopologyUiSupport.addText(screen, content, Component.literal("Structure Footprint"));
-        MKWalledKeepFootprintPreview preview = new MKWalledKeepFootprintPreview(
-                Math.min(screen.contentWidth(), 260), 190, workspaceDraft, report);
+        MKWalledKeepFootprintPreview preview = navigable
+                ? new MKWalledKeepFootprintPreview(Math.min(screen.contentWidth(), 260), 190, workspaceDraft,
+                report, target -> handlePlannerPreviewNavigation(screen, target))
+                : new MKWalledKeepFootprintPreview(Math.min(screen.contentWidth(), 260), 190, workspaceDraft, report);
         content.addWidget(preview);
         content.addConstraintToWidget(new CenterXConstraint(), preview);
 
@@ -206,6 +221,17 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
             return true;
         });
         WorkspaceTopologyUiSupport.addRow(screen, content, screen.makeWhiteText(Component.literal(label)), modeButton);
+    }
+
+    private void handlePlannerPreviewNavigation(MKWorkspaceScreen screen,
+                                                MKWalledKeepFootprintPreview.NavigationTarget target) {
+        switch (target.type()) {
+            case BACK -> screen.goBackOrSwitchTo(WorkspaceManagePage.ID);
+            case PLANNER_STACK -> screen.openWorkspacePlannerNode(target.id());
+            case TEMPLATE_SLOT -> screen.openWorkspaceTopologySlotForPrefix(target.id());
+            case NONE -> {
+            }
+        }
     }
 
     private String tabLabel(String stackId, boolean active) {
