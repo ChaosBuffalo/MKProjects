@@ -28,6 +28,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportResult
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestDiscovery;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspaceIdentityRenameService;
+import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspaceHallwayRegenerationPlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspaceMarginExpansionService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspacePieceRelayoutService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKStructureWorkspaceMutationService;
@@ -84,6 +85,8 @@ public class MKStructureWorkspaceService {
     private final MKWorkspaceFloorTopologyMutationPreflightService floorTopologyPreflightService =
             new MKWorkspaceFloorTopologyMutationPreflightService();
     private final MKWorkspaceLayerStateService layerStateService = new MKWorkspaceLayerStateService();
+    private final MKWorkspaceHallwayRegenerationPlanner hallwayRegenerationPlanner =
+            new MKWorkspaceHallwayRegenerationPlanner();
 
     public Optional<MKStructureWorkspace> createOrUpdateTowerWorkspace(ServerLevel level, MKStructureWorkspace workspace) {
         List<String> errors = workspace.validate();
@@ -126,6 +129,9 @@ public class MKStructureWorkspaceService {
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to write workspace backup before margin expansion", e);
                 }
+            }
+            if (canRegenerateHallwayRoutingOnly(existing, workspace)) {
+                return regenerateHallwayRouting(level, existing, workspace);
             }
             MKStructureWorkspace updated = new MKStructureWorkspace(
                     existing.id(),
@@ -182,6 +188,13 @@ public class MKStructureWorkspaceService {
         return IMKStructureWorkspaceData.get(level)
                 .getWorkspaceByAnchor(requested.anchor())
                 .filter(existing -> canExpandMarginsOnly(existing, requested))
+                .isPresent();
+    }
+
+    public boolean canApplyHallwayRoutingRegeneration(ServerLevel level, MKStructureWorkspace requested) {
+        return IMKStructureWorkspaceData.get(level)
+                .getWorkspaceByAnchor(requested.anchor())
+                .filter(existing -> canRegenerateHallwayRoutingOnly(existing, requested))
                 .isPresent();
     }
 
@@ -329,6 +342,57 @@ public class MKStructureWorkspaceService {
         MKStructureWorkspace updated = workspace.withPieces(scaffoldBuilder.build(level, workspace, templates));
         data.updateWorkspace(updated);
         syncBlockEntity(level, anchor, updated.id());
+        return Optional.of(updated);
+    }
+
+    public Optional<MKStructureWorkspace> regenerateHallwayRouting(ServerLevel level, MKStructureWorkspace requested) {
+        IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
+        Optional<MKStructureWorkspace> existingOpt = data.getWorkspaceByAnchor(requested.anchor());
+        if (existingOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        MKStructureWorkspace existing = existingOpt.get();
+        if (!canRegenerateHallwayRoutingOnly(existing, requested)) {
+            return Optional.empty();
+        }
+        return regenerateHallwayRouting(level, existing, requested);
+    }
+
+    private Optional<MKStructureWorkspace> regenerateHallwayRouting(ServerLevel level, MKStructureWorkspace existing,
+                                                                   MKStructureWorkspace requested) {
+        long now = System.currentTimeMillis();
+        List<MKPlannedPiece> canonicalPieces = plannerRegistry.plannerFor(requested).createCanonicalPieces(requested);
+        MKWorkspaceHallwayRegenerationPlanner.RegenerationPlan plan =
+                hallwayRegenerationPlanner.plan(existing, canonicalPieces);
+        if (!plan.hasWork()) {
+            return Optional.empty();
+        }
+
+        writeBackupBeforeMutation(level, existing, "regenerate-hallway-routing", "hallway routing regeneration");
+        MKStructureWorkspace workspaceForBuild = workspaceForUpdate(existing, requested, existing.pieces(), now);
+        scaffoldBuilder.clearExistingPieces(level, plan.existingHallwayPieces(), existing.anchor());
+
+        ArrayList<MKWorkspacePieceDefinition> generatedHallways = new ArrayList<>();
+        for (MKPlannedPiece hallwayPiece : plan.hallwayPieces()) {
+            generatedHallways.add(scaffoldBuilder.buildSingle(level, workspaceForBuild, hallwayPiece,
+                    plan.layoutPieces()));
+        }
+
+        List<MKWorkspacePieceDefinition> mergedPieces =
+                hallwayRegenerationPlanner.mergeGeneratedHallways(existing, generatedHallways);
+        MKStructureWorkspace updated = workspaceForUpdate(existing, requested, mergedPieces, now);
+        updated = layerStateService.refreshLayers(layerStateService.ensureLayerStates(updated, now),
+                List.of(
+                        MKWorkspaceGeneratedLayer.HALLWAY_ROUTING,
+                        MKWorkspaceGeneratedLayer.HALLWAY_PIECES,
+                        MKWorkspaceGeneratedLayer.SIDECAR_BLOCKS,
+                        MKWorkspaceGeneratedLayer.RUNTIME_METADATA
+                ),
+                settingsComparisonTag(requested, existing.id(), requested.previewMargin()).hashCode(),
+                now);
+
+        IMKStructureWorkspaceData.get(level).updateWorkspace(updated);
+        syncBlockEntity(level, existing.anchor(), updated.id());
         return Optional.of(updated);
     }
 
@@ -648,7 +712,8 @@ public class MKStructureWorkspaceService {
                 basePiece.interiorLength(),
                 basePiece.interiorHeight(),
                 basePiece.connectors(),
-                withWorkspaceTags(basePiece, "template", 0)
+                withWorkspaceTags(basePiece, "template", 0),
+                basePiece.plannerId()
         );
     }
 
@@ -660,7 +725,8 @@ public class MKStructureWorkspaceService {
                 basePiece.interiorLength(),
                 basePiece.interiorHeight(),
                 basePiece.connectors(),
-                withWorkspaceTags(basePiece, "instance", variantIndex)
+                withWorkspaceTags(basePiece, "instance", variantIndex),
+                basePiece.plannerId().child("variant_" + variantIndex)
         );
     }
 
@@ -677,7 +743,8 @@ public class MKStructureWorkspaceService {
                 basePiece.interiorLength(),
                 basePiece.interiorHeight(),
                 basePiece.connectors(),
-                withWorkspaceTags(basePiece, "instance", piece.variantIndex())
+                withWorkspaceTags(basePiece, "instance", piece.variantIndex()),
+                piece.plannerId()
         );
     }
 
@@ -801,6 +868,16 @@ public class MKStructureWorkspaceService {
                         requested.shellMargin(), requested.exteriorAirMargin()));
     }
 
+    private boolean canRegenerateHallwayRoutingOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
+        if (existing.pieces().isEmpty()) {
+            return false;
+        }
+        MKWorkspaceMutationPreflight preflight = preflightWorkspaceUpdate(existing, requested,
+                System.currentTimeMillis());
+        return "regenerate_hallway_routing".equals(preflight.report().recommendedOperation()) &&
+                lockedInvalidatedLayers(existing, preflight.report()).isEmpty();
+    }
+
     private net.minecraft.nbt.CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, java.util.UUID id,
                                                                 int previewMargin) {
         return settingsComparisonTag(workspace, id, previewMargin, workspace.palette());
@@ -846,6 +923,33 @@ public class MKStructureWorkspaceService {
                 0,
                 List.of()
         ).toTag();
+    }
+
+    private MKStructureWorkspace workspaceForUpdate(MKStructureWorkspace existing, MKStructureWorkspace requested,
+                                                    List<MKWorkspacePieceDefinition> pieces,
+                                                    long nowEpochMillis) {
+        return new MKStructureWorkspace(
+                existing.id(),
+                requested.anchor(),
+                requested.namespace(),
+                requested.structureName(),
+                requested.topologyProfile(),
+                requested.dimensions(),
+                requested.palette(),
+                requested.stairConfig(),
+                requested.verticalAccessPlacement(),
+                requested.shellMargin(),
+                requested.exteriorAirMargin(),
+                requested.previewMargin(),
+                requested.verticalAccessSpec(),
+                requested.familyDefinitions(),
+                requested.openingProfiles(),
+                requested.linearRunFamilies(),
+                existing.createdAt(),
+                nowEpochMillis,
+                pieces,
+                existing.layerStates()
+        );
     }
 
     private MKStructureWorkspace withMaterialSettings(MKStructureWorkspace source, MKStructureWorkspace materialSource) {

@@ -205,6 +205,28 @@ public class MKWorkspaceScaffoldBuilder {
         }
     }
 
+    public void clearExistingPieces(ServerLevel level, List<MKWorkspacePieceDefinition> piecesToClear,
+                                    BlockPos excludedPos) {
+        BoundingBox bounds = null;
+        for (MKWorkspacePieceDefinition piece : piecesToClear) {
+            BoundingBox expanded = expandBounds(piece.previewBounds(), CLEAR_MARGIN);
+            bounds = bounds == null ? expanded : mergeBounds(bounds, expanded);
+        }
+        if (bounds != null) {
+            clearWorkspaceHeightBounds(level, bounds, excludedPos);
+        }
+        for (MKWorkspacePieceDefinition piece : piecesToClear) {
+            clearBlock(level, piece.structureBlockPos(), excludedPos);
+            clearBlock(level, piece.signPos(), excludedPos);
+            for (BlockPos markerPos : piece.markerPositions()) {
+                clearBlock(level, markerPos, excludedPos);
+            }
+            for (BlockPos stairPos : piece.generatedStairPositions()) {
+                clearBlock(level, stairPos, excludedPos);
+            }
+        }
+    }
+
     BoundingBox existingWorkspaceClearBounds(MKStructureWorkspace workspace) {
         BoundingBox workspaceBounds = null;
         for (MKWorkspacePieceDefinition existingPiece : workspace.pieces()) {
