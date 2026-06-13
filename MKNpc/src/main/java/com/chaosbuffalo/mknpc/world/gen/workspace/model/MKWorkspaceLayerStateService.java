@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class MKWorkspaceLayerStateService {
@@ -51,6 +52,22 @@ public class MKWorkspaceLayerStateService {
             updated = updated.withLayerState(state.refreshed(sourceSettingsHash, nowEpochMillis));
         }
         return updated;
+    }
+
+    public List<MKWorkspaceGeneratedLayer> staleLayers(MKStructureWorkspace workspace,
+                                                       Map<MKWorkspaceGeneratedLayer, Long> expectedSourceHashes) {
+        ArrayList<MKWorkspaceGeneratedLayer> staleLayers = new ArrayList<>();
+        for (MKWorkspaceGeneratedLayer layer : MKWorkspaceGeneratedLayer.values()) {
+            Long expectedHash = expectedSourceHashes.get(layer);
+            if (expectedHash == null) {
+                continue;
+            }
+            MKWorkspaceGeneratedLayerState state = workspace.layerState(layer).orElse(null);
+            if (state == null || state.dirty() || state.sourceSettingsHash() != expectedHash) {
+                staleLayers.add(layer);
+            }
+        }
+        return List.copyOf(staleLayers);
     }
 
     private MKStructureWorkspace updateLockState(MKStructureWorkspace workspace,

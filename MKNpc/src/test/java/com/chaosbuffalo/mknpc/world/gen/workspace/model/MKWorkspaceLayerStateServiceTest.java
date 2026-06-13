@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -89,5 +90,30 @@ class MKWorkspaceLayerStateServiceTest {
 
         assertTrue(locked.layerLocked(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS));
         assertFalse(unlocked.layerLocked(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS));
+    }
+
+    @Test
+    void staleLayersReportMissingDirtyAndHashMismatchedLayers() {
+        MKWorkspaceGeneratedLayerState clean = MKWorkspaceGeneratedLayerState.unlocked(
+                MKWorkspaceGeneratedLayer.ROOM_ENVELOPES, 10L, 1L);
+        MKWorkspaceGeneratedLayerState dirty = MKWorkspaceGeneratedLayerState.unlocked(
+                MKWorkspaceGeneratedLayer.HALLWAY_ROUTING, 20L, 1L).markDirty();
+        MKWorkspaceGeneratedLayerState mismatched = MKWorkspaceGeneratedLayerState.unlocked(
+                MKWorkspaceGeneratedLayer.RUNTIME_METADATA, 30L, 1L);
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withLayerStates(List.of(clean, dirty, mismatched));
+
+        List<MKWorkspaceGeneratedLayer> staleLayers = service.staleLayers(workspace, Map.of(
+                MKWorkspaceGeneratedLayer.ROOM_ENVELOPES, 10L,
+                MKWorkspaceGeneratedLayer.HALLWAY_ROUTING, 20L,
+                MKWorkspaceGeneratedLayer.RUNTIME_METADATA, 31L,
+                MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS, 40L
+        ));
+
+        assertEquals(List.of(
+                MKWorkspaceGeneratedLayer.HALLWAY_ROUTING,
+                MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS,
+                MKWorkspaceGeneratedLayer.RUNTIME_METADATA
+        ), staleLayers);
     }
 }
