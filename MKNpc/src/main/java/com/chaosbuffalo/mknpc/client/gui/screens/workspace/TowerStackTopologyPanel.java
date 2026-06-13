@@ -11,6 +11,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProf
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomGeometry;
@@ -57,10 +58,13 @@ public class TowerStackTopologyPanel {
         content.addConstraintToWidget(new CenterXConstraint(), preview);
         MKFloorTopologyPlanPreview.Controls floorControls = floorPlanControls(screen, editor, stackId);
         if (floorControls.hasFloorTopology(selectedSection)) {
-            MKFloorTopologyPlanPreview floorPlan = new MKFloorTopologyPlanPreview(previewWidth, stackId,
-                    selectedSection, floorControls);
-            content.addWidget(floorPlan);
-            content.addConstraintToWidget(new CenterXConstraint(), floorPlan);
+            MKButton floorPlanButton = new MKButton(Component.literal("Floor Plan"), 180, screen.buttonHeight());
+            floorPlanButton.setPressedCallback((button, mouseButton) -> {
+                screen.openWorkspaceFloorPlanNode(stackId, selectedSection);
+                return true;
+            });
+            content.addWidget(floorPlanButton);
+            content.addConstraintToWidget(new CenterXConstraint(), floorPlanButton);
         }
     }
 
@@ -71,6 +75,20 @@ public class TowerStackTopologyPanel {
             editor.resetTowerStackDefaults(stackId);
             screen.flagNeedSetup();
         });
+    }
+
+    public void addFloorPlanEditor(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
+                                   WorkspaceDraftSession editor, String stackId, String sectionKey) {
+        MKFloorTopologyPlanPreview.Controls floorControls = floorPlanControls(screen, editor, stackId);
+        if (!floorControls.hasFloorTopology(sectionKey)) {
+            WorkspaceTopologyUiSupport.addText(screen, layout.settingsContent(), Component.literal(
+                    "The selected tower section does not have floor plan controls."));
+            return;
+        }
+        MKFloorTopologyPlanPreview floorPlan = new MKFloorTopologyPlanPreview(
+                layout.previewWidth(), stackId, sectionKey, floorControls);
+        layout.previewContent().addWidget(floorPlan);
+        layout.previewContent().addConstraintToWidget(new CenterXConstraint(), floorPlan);
     }
 
     private String normalizedSelectedSection(WorkspaceDraftSession editor, String stackId, MKTowerStackSizingReport report) {
@@ -363,10 +381,11 @@ public class TowerStackTopologyPanel {
                                             exit.direction(),
                                             MKWorkspaceHorizontalExitPathKind.BRANCH,
                                             branchOpeningProfileId,
-                                            exit.connectionMode(),
-                                            exit.sideOffset(),
-                                            exit.verticalOffset()
-                                    ));
+                            exit.connectionMode(),
+                            exit.sideOffset(),
+                            exit.verticalOffset(),
+                            exit.horizontalExtrusionModeOverride()
+                    ));
                             editor.selectedFamilyExitIndex(exitIndex);
                         }
                     } else {
@@ -393,7 +412,8 @@ public class TowerStackTopologyPanel {
                             exit.openingProfileId(),
                             exit.connectionMode(),
                             editor.clampSideOffset(family, nextDirection, exit.openingProfileId(), exit.sideOffset()),
-                            editor.clampVerticalOffset(family, exit.openingProfileId(), exit.verticalOffset())
+                            editor.clampVerticalOffset(family, exit.openingProfileId(), exit.verticalOffset()),
+                            exit.horizontalExtrusionModeOverride()
                     );
                 });
             }
@@ -419,7 +439,8 @@ public class TowerStackTopologyPanel {
                             nextOpeningProfileId,
                             exit.connectionMode(),
                             editor.clampSideOffset(family, exit.direction(), nextOpeningProfileId, exit.sideOffset()),
-                            editor.clampVerticalOffset(family, nextOpeningProfileId, exit.verticalOffset())
+                            editor.clampVerticalOffset(family, nextOpeningProfileId, exit.verticalOffset()),
+                            exit.horizontalExtrusionModeOverride()
                     );
                 });
             }
@@ -442,7 +463,8 @@ public class TowerStackTopologyPanel {
                             WorkspaceTopologyUiSupport.cycleValue(List.of(MKWorkspaceHorizontalExitConnectionMode.values()),
                                     exit.connectionMode(), reverse),
                             exit.sideOffset(),
-                            exit.verticalOffset()
+                            exit.verticalOffset(),
+                            exit.horizontalExtrusionModeOverride()
                     );
                 });
             }
@@ -462,7 +484,8 @@ public class TowerStackTopologyPanel {
                             nextOpeningProfileId,
                             exit.connectionMode(),
                             editor.clampSideOffset(family, exit.direction(), nextOpeningProfileId, exit.sideOffset()),
-                            editor.clampVerticalOffset(family, nextOpeningProfileId, exit.verticalOffset())
+                            editor.clampVerticalOffset(family, nextOpeningProfileId, exit.verticalOffset()),
+                            exit.horizontalExtrusionModeOverride()
                     );
                 });
             }
@@ -1066,11 +1089,28 @@ public class TowerStackTopologyPanel {
 
     private void addFloorRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, WorkspaceDraftSession editor,
                               String stackId) {
+        addExtrusionRows(screen, content, editor, stackId);
         addStairRows(screen, content, editor, stackId);
         addFoundationRows(screen, content, editor, stackId);
         screen.addPaletteOverrideRows(content, "Stack Palette Defaults", editor.draftBasePalette(),
                 editor.towerStackPaletteOverrideOpt(stackId),
                 override -> editor.towerStackPaletteOverride(stackId, override));
+    }
+
+    private void addExtrusionRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, WorkspaceDraftSession editor,
+                                  String stackId) {
+        MKButton extrusionButton = new MKButton(Component.literal(WorkspaceTopologyUiSupport.formatTopologyLabel(
+                editor.towerStackHorizontalExtrusionMode(stackId).getSerializedName())), 180, 20);
+        extrusionButton.setPressedCallback((button, mouseButton) -> {
+            editor.towerStackHorizontalExtrusionMode(stackId, WorkspaceTopologyUiSupport.cycleValue(
+                    List.of(MKWorkspaceHorizontalExtrusionMode.values()),
+                    editor.towerStackHorizontalExtrusionMode(stackId),
+                    WorkspaceTopologyUiSupport.isReverseClick(mouseButton)));
+            screen.flagNeedSetup();
+            return true;
+        });
+        WorkspaceTopologyUiSupport.addRow(screen, content,
+                screen.makeWhiteText(Component.literal("Horizontal Extrusion")), extrusionButton);
     }
 
     private void addStairRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, WorkspaceDraftSession editor,

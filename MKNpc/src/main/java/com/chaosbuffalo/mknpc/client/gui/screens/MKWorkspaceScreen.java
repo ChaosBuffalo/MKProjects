@@ -15,6 +15,7 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormFamilyDe
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormLinearRunsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormLinearRunDetailPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormMaterialsPage;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFloorPlanPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormOpeningsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormOpeningDetailPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceManagePage;
@@ -58,6 +59,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -82,6 +84,8 @@ public class MKWorkspaceScreen extends MKScreen {
     private final List<String> initialStates;
     private String selectedTopologyKey;
     private String selectedPlannerStackId;
+    private String selectedFloorPlanStackId;
+    private String selectedFloorPlanSectionKey;
     private MKWorkspaceStairAuthoringConfig detailStairConfig;
     private BlockPickerRequest blockPickerRequest;
     private MKModal blockPickerModal;
@@ -131,8 +135,8 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace,
                              List<String> importManifestIds, List<String> backupManifestFiles) {
-        this(anchor, workspace, importManifestIds, backupManifestFiles, List.of(), null, null, -1, -1, -1, -1,
-                null, null);
+        this(anchor, workspace, importManifestIds, backupManifestFiles, List.of(), null, null, null, null,
+                -1, -1, -1, -1, null, null);
     }
 
     private MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace, List<String> importManifestIds,
@@ -140,6 +144,8 @@ public class MKWorkspaceScreen extends MKScreen {
                               List<String> initialStates,
                               String selectedTopologyKey,
                               String selectedPlannerStackId,
+                              String selectedFloorPlanStackId,
+                              String selectedFloorPlanSectionKey,
                               int selectedFamilyIndex,
                               int selectedFamilyExitIndex,
                               int selectedOpeningIndex,
@@ -155,6 +161,8 @@ public class MKWorkspaceScreen extends MKScreen {
         this.initialStates = List.copyOf(initialStates);
         this.selectedTopologyKey = selectedTopologyKey;
         this.selectedPlannerStackId = selectedPlannerStackId;
+        this.selectedFloorPlanStackId = selectedFloorPlanStackId;
+        this.selectedFloorPlanSectionKey = selectedFloorPlanSectionKey;
         this.detailStairConfig = detailStairConfig;
         this.draftSession = new WorkspaceDraftSession(this, selectedFamilyIndex,
                 selectedFamilyExitIndex, selectedOpeningIndex, selectedLinearRunIndex);
@@ -168,7 +176,8 @@ public class MKWorkspaceScreen extends MKScreen {
                                                List<String> updatedBackupManifestFiles) {
         return new MKWorkspaceScreen(anchor, updatedWorkspace, updatedImportManifestIds, updatedBackupManifestFiles,
                 getInitialStatesForRefresh(updatedWorkspace),
-                selectedTopologyKey, selectedPlannerStackId, draftSession.selectedFamilyIndex(),
+                selectedTopologyKey, selectedPlannerStackId, selectedFloorPlanStackId, selectedFloorPlanSectionKey,
+                draftSession.selectedFamilyIndex(),
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
                 draftSession.selectedLinearRunIndex(),
                 detailStairConfig, preflight);
@@ -177,7 +186,8 @@ public class MKWorkspaceScreen extends MKScreen {
     public MKWorkspaceScreen copyWithPreflight(MKWorkspaceMutationPreflight updatedPreflight) {
         return new MKWorkspaceScreen(anchor, workspace, importManifestIds, backupManifestFiles,
                 getInitialStatesForRefresh(workspace),
-                selectedTopologyKey, selectedPlannerStackId, draftSession.selectedFamilyIndex(),
+                selectedTopologyKey, selectedPlannerStackId, selectedFloorPlanStackId, selectedFloorPlanSectionKey,
+                draftSession.selectedFamilyIndex(),
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
                 draftSession.selectedLinearRunIndex(),
                 detailStairConfig, updatedPreflight);
@@ -210,6 +220,7 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(new WorkspaceBackupPage());
         addWorkspacePage(new WorkspaceTemplateGroupsPage());
         addWorkspacePage(new WorkspacePlannerNodePage());
+        addWorkspacePage(new WorkspaceFloorPlanPage());
         addWorkspacePage(new WorkspaceTopologySlotPage());
         List<String> statesToPush = initialStates.isEmpty() ? getDefaultInitialStates() : initialStates;
         for (String state : statesToPush) {
@@ -369,6 +380,25 @@ public class MKWorkspaceScreen extends MKScreen {
         return selectedPlannerStackId;
     }
 
+    public void openWorkspaceFloorPlanNode(String stackId, String sectionKey) {
+        selectedPlannerStackId = stackId;
+        if (stackId != null) {
+            draftSession.walledKeepTowerStackTab(stackId);
+        }
+        selectedFloorPlanStackId = stackId;
+        selectedFloorPlanSectionKey = sectionKey;
+        pushState(WorkspaceFloorPlanPage.ID);
+        flagNeedSetup();
+    }
+
+    public String selectedFloorPlanStackId() {
+        return selectedFloorPlanStackId;
+    }
+
+    public String selectedFloorPlanSectionKey() {
+        return selectedFloorPlanSectionKey;
+    }
+
     public WorkspaceTopologySlotEditor topologySlotEditor() {
         return topologySlotEditor;
     }
@@ -398,6 +428,11 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public void clearSelectedPlannerStackId() {
         selectedPlannerStackId = null;
+    }
+
+    public void clearSelectedFloorPlanNode() {
+        selectedFloorPlanStackId = null;
+        selectedFloorPlanSectionKey = null;
     }
 
     public int topologySlotShaftWidth() {
@@ -438,12 +473,12 @@ public class MKWorkspaceScreen extends MKScreen {
 
     @Override
     public void addRestoreStateCallbacks() {
-        ScrollViewState scrollState = getActiveScrollViewState();
+        List<ScrollViewState> scrollStates = getActiveScrollViewStates();
         String state = popState();
         boolean resetScrollView = wasResized;
         addPostSetupCallback(() -> {
             pushState(state);
-            restoreActiveScrollViewState(scrollState, resetScrollView);
+            restoreActiveScrollViewStates(scrollStates, resetScrollView);
             wasResized = false;
         });
     }
@@ -876,56 +911,63 @@ public class MKWorkspaceScreen extends MKScreen {
         scrollView.setOffsetY(Math.max(minOffsetY, Math.min(scrollView.getOffsetY(), maxOffsetY)));
     }
 
-    private ScrollViewState getActiveScrollViewState() {
-        MKScrollView scrollView = getActiveScrollView();
-        if (scrollView == null) {
-            return null;
+    private List<ScrollViewState> getActiveScrollViewStates() {
+        List<MKScrollView> scrollViews = getActiveScrollViews();
+        if (scrollViews.isEmpty()) {
+            return List.of();
         }
-        return new ScrollViewState(scrollView.getOffsetX(), scrollView.getOffsetY());
+        return scrollViews.stream()
+                .map(scrollView -> new ScrollViewState(scrollView.getOffsetX(), scrollView.getOffsetY()))
+                .toList();
     }
 
-    private void restoreActiveScrollViewState(ScrollViewState scrollState, boolean resetScrollView) {
-        MKScrollView scrollView = getActiveScrollView();
-        if (scrollView == null) {
+    private void restoreActiveScrollViewStates(List<ScrollViewState> scrollStates, boolean resetScrollView) {
+        List<MKScrollView> scrollViews = getActiveScrollViews();
+        if (scrollViews.isEmpty()) {
             return;
         }
         if (resetScrollView) {
-            scrollView.resetView();
+            for (MKScrollView scrollView : scrollViews) {
+                scrollView.resetView();
+            }
             return;
         }
-        if (scrollState == null) {
+        if (scrollStates.isEmpty()) {
             return;
         }
-        scrollView.setOffsetX(scrollState.offsetX());
-        scrollView.setOffsetY(scrollState.offsetY());
-        clampScrollViewOffsets(scrollView);
+        int count = Math.min(scrollViews.size(), scrollStates.size());
+        for (int index = 0; index < count; index++) {
+            MKScrollView scrollView = scrollViews.get(index);
+            ScrollViewState scrollState = scrollStates.get(index);
+            scrollView.setOffsetX(scrollState.offsetX());
+            scrollView.setOffsetY(scrollState.offsetY());
+            clampScrollViewOffsets(scrollView);
+        }
     }
 
     public void refreshPreservingActiveScroll() {
-        ScrollViewState scrollState = getActiveScrollViewState();
+        List<ScrollViewState> scrollStates = getActiveScrollViewStates();
         boolean resetScrollView = wasResized;
-        addPostSetupCallback(() -> restoreActiveScrollViewState(scrollState, resetScrollView));
+        addPostSetupCallback(() -> restoreActiveScrollViewStates(scrollStates, resetScrollView));
         flagNeedSetup();
     }
 
-    private MKScrollView getActiveScrollView() {
+    private List<MKScrollView> getActiveScrollViews() {
         if (children.isEmpty()) {
-            return null;
+            return List.of();
         }
-        return findFirstScrollView(children.peekLast());
+        ArrayList<MKScrollView> scrollViews = new ArrayList<>();
+        collectScrollViews(children.peekLast(), scrollViews);
+        return scrollViews;
     }
 
-    private MKScrollView findFirstScrollView(IMKWidget widget) {
+    private void collectScrollViews(IMKWidget widget, List<MKScrollView> scrollViews) {
         if (widget instanceof MKScrollView scrollView) {
-            return scrollView;
+            scrollViews.add(scrollView);
         }
         for (IMKWidget child : widget.getChildren()) {
-            MKScrollView nested = findFirstScrollView(child);
-            if (nested != null) {
-                return nested;
-            }
+            collectScrollViews(child, scrollViews);
         }
-        return null;
     }
 
     private Map<String, List<MKWorkspacePieceDefinition>> groupPiecesByTopology() {
@@ -956,6 +998,10 @@ public class MKWorkspaceScreen extends MKScreen {
         if (WorkspacePlannerNodePage.ID.equals(currentState) && selectedPlannerStackId != null &&
                 updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
             return List.of("workspace", WorkspacePlannerNodePage.ID);
+        }
+        if (WorkspaceFloorPlanPage.ID.equals(currentState) && selectedFloorPlanStackId != null &&
+                selectedFloorPlanSectionKey != null && updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
+            return List.of("workspace", WorkspacePlannerNodePage.ID, WorkspaceFloorPlanPage.ID);
         }
         if (WorkspaceTemplateGroupsPage.ID.equals(currentState) &&
                 updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {

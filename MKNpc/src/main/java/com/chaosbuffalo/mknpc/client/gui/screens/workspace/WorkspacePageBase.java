@@ -68,19 +68,22 @@ public abstract class WorkspacePageBase {
         int left = screen.panelX() + (screen.panelWidth() - layoutWidth) / 2;
         int settingsLeft = left + paneWidth + gap;
 
-        MKStackLayoutVertical previewContent = new MKStackLayoutVertical(left, top, paneWidth);
-        previewContent.setMargins(4, 4, 4, 4);
-        previewContent.setPaddingTop(4).setPaddingBot(4);
-        root.addWidget(previewContent);
+        MKScrollView previewScrollView = new MKScrollView(left, top, paneWidth, height);
+        previewScrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
+        root.addWidget(previewScrollView);
 
         MKScrollView settingsScrollView = new MKScrollView(settingsLeft, top, paneWidth, height);
         settingsScrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
         root.addWidget(settingsScrollView);
 
+        MKStackLayoutVertical previewContent = new MKStackLayoutVertical(0, 0, paneWidth);
+        previewContent.setMargins(4, 4, 4, 4);
+        previewContent.setPaddingTop(4).setPaddingBot(4);
+
         MKStackLayoutVertical settingsContent = new MKStackLayoutVertical(0, 0, paneWidth);
         settingsContent.setMargins(4, 4, 4, 4);
         settingsContent.setPaddingTop(4).setPaddingBot(4);
-        return new WorkspacePlannerLayout(previewContent, settingsContent, settingsScrollView);
+        return new WorkspacePlannerLayout(previewContent, settingsContent, previewScrollView, settingsScrollView);
     }
 
     protected void finishPlannerLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout) {

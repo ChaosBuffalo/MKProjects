@@ -37,9 +37,7 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         MKText summary = addHeaderText(screen, root, Component.translatable("mknpc.workspace.screen.manage_summary",
                 workspace.namespace(), workspace.structureName(), workspace.pieces().size()));
 
-        int buttonCount = 4;
-        int buttonAreaHeight = (buttonCount * screen.buttonHeight()) +
-                ((buttonCount - 1) * screen.buttonGap()) + screen.bottomPadding();
+        int buttonAreaHeight = screen.buttonHeight() + screen.bottomPadding();
         int contentTop = screen.scrollTopAfterHeader(root, summary);
         int contentHeight = screen.panelY() + screen.panelHeight() - buttonAreaHeight - 8 - contentTop;
         WorkspacePlannerLayout layout = addPlannerLayout(screen, root, contentTop, contentHeight);
@@ -47,28 +45,37 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         addTemplateAuthoringSummary(screen, layout.settingsContent(), workspace);
         finishPlannerLayout(screen, layout);
 
-        MKButton close = addBottomButton(screen, root, Component.translatable("mknpc.workspace.button.close"), 120, 0);
+        int footerY = screen.panelY() + screen.panelHeight() - screen.bottomPadding() - screen.buttonHeight();
+        int[] footerWidths = {120, 150, 170, 190};
+        int footerGap = 8;
+        int footerWidth = footerWidths[0] + footerWidths[1] + footerWidths[2] + footerWidths[3] + (footerGap * 3);
+        int footerX = screen.panelX() + (screen.panelWidth() - footerWidth) / 2;
+
+        MKButton close = addFooterButton(root, Component.translatable("mknpc.workspace.button.close"),
+                footerWidths[0], footerX, footerY);
         close.setPressedCallback((button, mouseButton) -> {
             screen.closeScreen();
             return true;
         });
 
-        MKButton utilities = addBottomButton(screen, root, Component.literal("Utilities"), 180, 1);
+        MKButton utilities = addFooterButton(root, Component.literal("Utilities"), footerWidths[1],
+                footerX + footerWidths[0] + footerGap, footerY);
         utilities.setPressedCallback((button, mouseButton) -> {
             screen.pushState(WorkspaceUtilitiesPage.ID);
             screen.flagNeedSetup();
             return true;
         });
 
-        MKButton exportAll = addBottomButton(screen, root,
-                Component.translatable("mknpc.workspace.button.export_all"), 180, 2);
+        MKButton exportAll = addFooterButton(root, Component.translatable("mknpc.workspace.button.export_all"),
+                footerWidths[2], footerX + footerWidths[0] + footerWidths[1] + (footerGap * 2), footerY);
         exportAll.setPressedCallback((button, mouseButton) -> {
             PacketDistributor.sendToServer(new ExportWorkspacePiecesPacket(screen.anchor()));
             return true;
         });
 
-        MKButton editTemplates = addBottomButton(screen, root,
-                Component.translatable("mknpc.workspace.button.edit_template_settings"), 180, 3);
+        MKButton editTemplates = addFooterButton(root,
+                Component.translatable("mknpc.workspace.button.edit_template_settings"), footerWidths[3],
+                footerX + footerWidths[0] + footerWidths[1] + footerWidths[2] + (footerGap * 3), footerY);
         editTemplates.setPressedCallback((button, mouseButton) -> {
             screen.pushState(WorkspaceFormPage.ID);
             screen.flagNeedSetup();
@@ -76,6 +83,14 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         });
 
         return root;
+    }
+
+    private MKButton addFooterButton(MKLayout root, Component label, int width, int x, int y) {
+        MKButton button = new MKButton(label, width, 20);
+        button.setX(x);
+        button.setY(y);
+        root.addWidget(button);
+        return button;
     }
 
     private void addPlannerOverview(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
