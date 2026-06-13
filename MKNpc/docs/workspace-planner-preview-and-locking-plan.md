@@ -19,7 +19,10 @@ The first implementation pass has landed the eight initial work slices:
 - locked-layer edit gating for workspace updates,
 - hallway-only regeneration for `regenerate_hallway_routing` preflight operations,
 - real template-bounds block diff snapshots for authored-template detection, with managed sidecar positions ignored,
-- focused workflow tests for planner ids, serialized reports, layer locking, hallway regeneration planning, and template block diffs.
+- concrete preserved/orphaned template binding ids in broad floor-topology preflight reports,
+- stale generated-layer detection from dirty flags and source settings hashes,
+- serialized compatible remap suggestions for orphaned templates,
+- focused workflow tests for planner ids, serialized reports, layer locking, hallway regeneration planning, template block diffs, orphaned bindings, stale layers, and remap suggestions.
 
 The remaining design sections are still useful as the broader direction. The next implementation work should deepen preview/runtime parity, remapping of orphaned templates, and additional scoped regeneration operations beyond floor-plan hallways.
 
