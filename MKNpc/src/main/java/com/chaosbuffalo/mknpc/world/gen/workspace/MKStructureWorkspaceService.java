@@ -203,6 +203,30 @@ public class MKStructureWorkspaceService {
         return new MKWorkspaceMutationPreflight(report, workspaceWithDirtyLayers);
     }
 
+    public Optional<MKStructureWorkspace> setLayerLocked(ServerLevel level, BlockPos anchor,
+                                                         MKWorkspaceGeneratedLayer layer, boolean locked) {
+        IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
+        Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
+        if (workspaceOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        MKStructureWorkspace workspace = layerStateService.ensureLayerStates(workspaceOpt.get(),
+                System.currentTimeMillis());
+        MKStructureWorkspace updated = locked ?
+                layerStateService.lockLayers(workspace, List.of(layer)) :
+                layerStateService.unlockLayers(workspace, List.of(layer));
+        data.updateWorkspace(updated);
+        syncBlockEntity(level, anchor, updated.id());
+        return Optional.of(updated);
+    }
+
+    public List<MKWorkspaceGeneratedLayer> lockedInvalidatedLayers(MKStructureWorkspace existing,
+                                                                   MKWorkspaceInvalidationReport report) {
+        return report.invalidatedLayers().stream()
+                .filter(existing::layerLocked)
+                .toList();
+    }
+
     private List<MKWorkspaceInvalidationReport> floorTopologyReports(MKStructureWorkspace existing,
                                                                      MKStructureWorkspace requested,
                                                                      long nowEpochMillis) {

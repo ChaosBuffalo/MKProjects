@@ -2,7 +2,9 @@ package com.chaosbuffalo.mknpc.network.packets;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.world.gen.workspace.MKStructureWorkspaceService;
+import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -12,6 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.List;
+import java.util.Optional;
 
 public class CreateWorkspacePacket implements CustomPacketPayload {
     public static final Type<CreateWorkspacePacket> TYPE = new Type<>(MKNpc.id("create_workspace"));
@@ -61,6 +64,19 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
             return;
         }
         MKStructureWorkspaceService service = new MKStructureWorkspaceService();
+        Optional<MKStructureWorkspace> existingOpt = IMKStructureWorkspaceData.get(player.serverLevel())
+                .getWorkspaceByAnchor(workspace.anchor());
+        if (existingOpt.isPresent()) {
+            var preflight = service.preflightWorkspaceUpdate(existingOpt.get(), workspace, System.currentTimeMillis());
+            List<MKWorkspaceGeneratedLayer> lockedLayers =
+                    service.lockedInvalidatedLayers(existingOpt.get(), preflight.report());
+            if (!lockedLayers.isEmpty()) {
+                MKWorkspaceValidationMessages.displayFailure(player,
+                        "Workspace update blocked by locked layer: " +
+                                lockedLayers.getFirst().getSerializedName());
+                return;
+            }
+        }
         boolean nonDestructivePreviewRelayout = service.canApplyPreviewMarginRelayout(player.serverLevel(), workspace);
         boolean nonDestructivePaletteSwap = service.canApplyPaletteSwap(player.serverLevel(), workspace);
         boolean nonDestructiveIdentityRename = service.canApplyIdentityRename(player.serverLevel(), workspace);

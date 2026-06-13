@@ -18,6 +18,7 @@ import com.chaosbuffalo.mknpc.network.packets.CreateWorkspacePacket;
 import com.chaosbuffalo.mknpc.network.packets.DeleteWorkspacePacket;
 import com.chaosbuffalo.mknpc.network.packets.RequestWorkspacePreflightPacket;
 import com.chaosbuffalo.mknpc.network.packets.RestoreWorkspaceBackupPacket;
+import com.chaosbuffalo.mknpc.network.packets.SetWorkspaceLayerLockPacket;
 import com.chaosbuffalo.mknpc.network.packets.SetSpawnListPacket;
 import com.chaosbuffalo.mknpc.network.packets.SwapWorkspaceBlockPacket;
 import com.chaosbuffalo.mknpc.network.packets.WorkspacePreflightReportPacket;
@@ -69,6 +70,11 @@ public class PacketHandler {
                 RequestWorkspacePreflightPacket.TYPE,
                 RequestWorkspacePreflightPacket.STREAM_CODEC,
                 RequestWorkspacePreflightPacket::handle
+        );
+        registrar.playToServer(
+                SetWorkspaceLayerLockPacket.TYPE,
+                SetWorkspaceLayerLockPacket.STREAM_CODEC,
+                SetWorkspaceLayerLockPacket::handle
         );
         registrar.playToClient(
                 WorkspacePreflightReportPacket.TYPE,

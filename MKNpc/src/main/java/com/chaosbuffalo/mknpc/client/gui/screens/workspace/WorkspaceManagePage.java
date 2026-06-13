@@ -3,7 +3,9 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.network.packets.ExportWorkspacePiecesPacket;
 import com.chaosbuffalo.mknpc.network.packets.RequestWorkspacePreflightPacket;
+import com.chaosbuffalo.mknpc.network.packets.SetWorkspaceLayerLockPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayerState;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInvalidationReport;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
@@ -161,17 +163,26 @@ public class WorkspaceManagePage extends WorkspacePageBase {
                                       MKStructureWorkspace workspace) {
         if (workspace.layerStates().isEmpty()) {
             addText(screen, content, "Layer state has not been initialized for this workspace yet.");
-            return;
         }
         long locked = workspace.layerStates().stream().filter(MKWorkspaceGeneratedLayerState::locked).count();
-        long dirty = workspace.layerStates().stream().filter(MKWorkspaceGeneratedLayerState::dirty).count();
-        addText(screen, content, "Layer status: " + locked + " locked, " + dirty + " dirty");
-        workspace.layerStates().stream()
-                .filter(state -> state.locked() || state.dirty())
-                .limit(8)
-                .forEach(state -> addText(screen, content, "- " + state.layer().getSerializedName() +
-                        " " + (state.locked() ? "locked" : "unlocked") +
-                        (state.dirty() ? " dirty" : "")));
+        long dirtyCount = workspace.layerStates().stream().filter(MKWorkspaceGeneratedLayerState::dirty).count();
+        addText(screen, content, "Layer status: " + locked + " locked, " + dirtyCount + " dirty");
+        for (MKWorkspaceGeneratedLayer layer : MKWorkspaceGeneratedLayer.values()) {
+            MKWorkspaceGeneratedLayerState state = workspace.layerState(layer).orElse(null);
+            boolean isLocked = state != null && state.locked();
+            boolean dirty = state != null && state.dirty();
+            addText(screen, content, "- " + layer.getSerializedName() +
+                    " " + (isLocked ? "locked" : "unlocked") +
+                    (dirty ? " dirty" : ""));
+            MKButton lockButton = new MKButton(Component.literal(isLocked ? "Unlock Layer" : "Lock Layer"),
+                    150, screen.buttonHeight());
+            content.addWidget(lockButton);
+            content.addConstraintToWidget(new CenterXConstraint(), lockButton);
+            lockButton.setPressedCallback((button, mouseButton) -> {
+                PacketDistributor.sendToServer(new SetWorkspaceLayerLockPacket(screen.anchor(), layer, !isLocked));
+                return true;
+            });
+        }
     }
 
     private void addPreflightReport(MKWorkspaceScreen screen, MKStackLayoutVertical content,

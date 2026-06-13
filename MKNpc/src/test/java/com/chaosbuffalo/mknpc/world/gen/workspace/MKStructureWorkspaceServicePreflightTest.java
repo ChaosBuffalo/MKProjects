@@ -4,6 +4,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLayerStateService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import net.minecraft.core.BlockPos;
@@ -49,6 +50,24 @@ class MKStructureWorkspaceServicePreflightTest {
                 MKWorkspaceMutationPreflight.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, preflight)
                         .getOrThrow()
         ).getOrThrow().report().recommendedOperation());
+    }
+
+    @Test
+    void lockedInvalidatedLayersReportsBlockedHallwayLayer() {
+        MKWorkspaceFloorTopologySettings previous = settings("tower.primary", "main_floor");
+        MKWorkspaceFloorTopologySettings updated = previous.withManualHallwayLeadInPieces(6);
+        MKStructureWorkspace existing = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        existing = withTopologyProfile(existing, existing.topologyProfile().withFloorTopologySettings(previous));
+        existing = new MKWorkspaceLayerStateService()
+                .lockLayers(new MKWorkspaceLayerStateService().ensureLayerStates(existing, 100L),
+                        List.of(MKWorkspaceGeneratedLayer.HALLWAY_ROUTING));
+        MKStructureWorkspace requested = withTopologyProfile(existing,
+                existing.topologyProfile().withFloorTopologySettings(updated));
+
+        MKWorkspaceMutationPreflight preflight = service.preflightWorkspaceUpdate(existing, requested, 123L);
+
+        assertEquals(List.of(MKWorkspaceGeneratedLayer.HALLWAY_ROUTING),
+                service.lockedInvalidatedLayers(existing, preflight.report()));
     }
 
     private static MKWorkspaceFloorTopologySettings settings(String stackId, String floorRole) {
