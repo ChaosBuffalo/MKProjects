@@ -117,7 +117,7 @@ public class WorkspaceTopologySlotPage extends WorkspacePageBase {
         MKButton back = addBottomButton(screen, root, Component.literal("Back"), 120, 0);
         back.setPressedCallback((button, mouseButton) -> {
             editor.clearSelection();
-            screen.switchToExistingState(WorkspaceManagePage.ID);
+            screen.goBackOrSwitchTo(WorkspaceManagePage.ID);
             return true;
         });
 

@@ -97,11 +97,11 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         if (MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(workspace.topologyProfile().plannerId())) {
             MKWalledKeepSizingReport report = new MKWalledKeepSizingCalculator().calculate(workspace);
             MKWalledKeepFootprintPreview preview = new MKWalledKeepFootprintPreview(
-                    Math.min(screen.contentWidth(), 260), 190, workspace, report);
+                    Math.min(screen.contentWidth(), 260), 190, workspace, report,
+                    target -> handlePlannerPreviewNavigation(screen, target));
             content.addWidget(preview);
             content.addConstraintToWidget(new CenterXConstraint(), preview);
         }
-        addPlannerNavigation(screen, content, workspace);
         addLayerStateSummary(screen, content, workspace);
         addPreflightReport(screen, content, screen.preflight());
 
@@ -123,39 +123,21 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         });
     }
 
-    private void addPlannerNavigation(MKWorkspaceScreen screen, MKStackLayoutVertical content,
-                                      MKStructureWorkspace workspace) {
-        addText(screen, content, "Planner Navigation");
-        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(workspace.topologyProfile().plannerId())) {
-            addPlannerButton(screen, content, "Keep Footprint", null);
-            addPlannerButton(screen, content, "Perimeter & Courtyard", null);
-            for (String stackId : screen.draftSession().walledKeepTowerStackTabs()) {
-                addPlannerButton(screen, content,
-                        WorkspacePieceDisplay.formatTopologyLabel(stackId), stackId);
-            }
-            return;
-        }
-        addPlannerButton(screen, content, "Tower Planner", null);
-    }
-
-    private void addPlannerButton(MKWorkspaceScreen screen, MKStackLayoutVertical content,
-                                  String label, String towerStackId) {
-        MKButton button = new MKButton(Component.literal(label), 180, screen.buttonHeight());
-        content.addWidget(button);
-        content.addConstraintToWidget(new CenterXConstraint(), button);
-        button.setPressedCallback((pressedButton, mouseButton) -> {
-            if (towerStackId != null) {
-                screen.draftSession().walledKeepTowerStackTab(towerStackId);
-            }
-            openPlannerSettings(screen);
-            return true;
-        });
-    }
-
     private void openPlannerSettings(MKWorkspaceScreen screen) {
         screen.pushState(WorkspaceFormPage.ID);
         screen.pushState(WorkspaceTopologyDefaultsPage.ID);
         screen.flagNeedSetup();
+    }
+
+    private void handlePlannerPreviewNavigation(MKWorkspaceScreen screen,
+                                                MKWalledKeepFootprintPreview.NavigationTarget target) {
+        switch (target.type()) {
+            case BACK -> screen.goBackOrSwitchTo(ID);
+            case PLANNER_STACK -> screen.openWorkspacePlannerNode(target.id());
+            case TEMPLATE_SLOT -> screen.openWorkspaceTopologySlotForPrefix(target.id());
+            case NONE -> {
+            }
+        }
     }
 
     private void addLayerStateSummary(MKWorkspaceScreen screen, MKStackLayoutVertical content,

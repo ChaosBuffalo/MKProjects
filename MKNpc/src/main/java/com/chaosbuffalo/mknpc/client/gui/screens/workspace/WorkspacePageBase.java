@@ -82,7 +82,7 @@ public abstract class WorkspacePageBase {
     protected MKButton addBackButton(MKWorkspaceScreen screen, MKLayout root, String targetState) {
         MKButton back = addBottomButton(screen, root, Component.literal("Back"), 120, 0);
         back.setPressedCallback((button, mouseButton) -> {
-            screen.switchToExistingState(targetState);
+            screen.goBackOrSwitchTo(targetState);
             return true;
         });
         return back;

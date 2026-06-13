@@ -20,6 +20,7 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormOpeningD
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceManagePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePageBase;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePieceDisplay;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePlannerNodePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTopologySlotEditor;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTopologySlotPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTopologyDefaultsPage;
@@ -81,6 +82,7 @@ public class MKWorkspaceScreen extends MKScreen {
     private final List<String> backupManifestFiles;
     private final List<String> initialStates;
     private String selectedTopologyKey;
+    private String selectedPlannerStackId;
     private MKWorkspaceStairAuthoringConfig detailStairConfig;
     private BlockPickerRequest blockPickerRequest;
     private MKModal blockPickerModal;
@@ -130,7 +132,7 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace,
                              List<String> importManifestIds, List<String> backupManifestFiles) {
-        this(anchor, workspace, importManifestIds, backupManifestFiles, List.of(), null, -1, -1, -1, -1,
+        this(anchor, workspace, importManifestIds, backupManifestFiles, List.of(), null, null, -1, -1, -1, -1,
                 null, null);
     }
 
@@ -138,6 +140,7 @@ public class MKWorkspaceScreen extends MKScreen {
                               List<String> backupManifestFiles,
                               List<String> initialStates,
                               String selectedTopologyKey,
+                              String selectedPlannerStackId,
                               int selectedFamilyIndex,
                               int selectedFamilyExitIndex,
                               int selectedOpeningIndex,
@@ -152,6 +155,7 @@ public class MKWorkspaceScreen extends MKScreen {
         this.backupManifestFiles = List.copyOf(backupManifestFiles);
         this.initialStates = List.copyOf(initialStates);
         this.selectedTopologyKey = selectedTopologyKey;
+        this.selectedPlannerStackId = selectedPlannerStackId;
         this.detailStairConfig = detailStairConfig;
         this.draftSession = new WorkspaceDraftSession(this, selectedFamilyIndex,
                 selectedFamilyExitIndex, selectedOpeningIndex, selectedLinearRunIndex);
@@ -165,7 +169,7 @@ public class MKWorkspaceScreen extends MKScreen {
                                                List<String> updatedBackupManifestFiles) {
         return new MKWorkspaceScreen(anchor, updatedWorkspace, updatedImportManifestIds, updatedBackupManifestFiles,
                 getInitialStatesForRefresh(updatedWorkspace),
-                selectedTopologyKey, draftSession.selectedFamilyIndex(),
+                selectedTopologyKey, selectedPlannerStackId, draftSession.selectedFamilyIndex(),
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
                 draftSession.selectedLinearRunIndex(),
                 detailStairConfig, preflight);
@@ -174,7 +178,7 @@ public class MKWorkspaceScreen extends MKScreen {
     public MKWorkspaceScreen copyWithPreflight(MKWorkspaceMutationPreflight updatedPreflight) {
         return new MKWorkspaceScreen(anchor, workspace, importManifestIds, backupManifestFiles,
                 getInitialStatesForRefresh(workspace),
-                selectedTopologyKey, draftSession.selectedFamilyIndex(),
+                selectedTopologyKey, selectedPlannerStackId, draftSession.selectedFamilyIndex(),
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
                 draftSession.selectedLinearRunIndex(),
                 detailStairConfig, updatedPreflight);
@@ -206,6 +210,7 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(new WorkspaceBlockSwapPage());
         addWorkspacePage(new WorkspaceBackupPage());
         addWorkspacePage(new WorkspaceTemplateGroupsPage());
+        addWorkspacePage(new WorkspacePlannerNodePage());
         addWorkspacePage(new WorkspaceTopologySlotPage());
         List<String> statesToPush = initialStates.isEmpty() ? getDefaultInitialStates() : initialStates;
         for (String state : statesToPush) {
@@ -328,6 +333,43 @@ public class MKWorkspaceScreen extends MKScreen {
         flagNeedSetup();
     }
 
+    public boolean openWorkspaceTopologySlotForPrefix(String topologyPrefix) {
+        for (Map.Entry<String, List<MKWorkspacePieceDefinition>> entry : groupPiecesByTopology().entrySet()) {
+            if (entry.getValue().stream().anyMatch(piece -> pieceMatchesTopologyPrefix(piece, topologyPrefix))) {
+                openWorkspaceTopologySlot(entry.getKey());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean pieceMatchesTopologyPrefix(MKWorkspacePieceDefinition piece, String topologyPrefix) {
+        String topologySlotId = piece.tags().get("workspace_topology_slot_id");
+        String topologyGroup = piece.tags().get("workspace_topology_group");
+        String linearRunFamilyId = piece.tags().get("workspace_linear_run_family_id");
+        return matchesPrefix(topologySlotId, topologyPrefix) ||
+                matchesPrefix(topologyGroup, topologyPrefix) ||
+                matchesPrefix(linearRunFamilyId, topologyPrefix) ||
+                matchesPrefix(piece.roleId(), topologyPrefix);
+    }
+
+    private boolean matchesPrefix(String value, String prefix) {
+        return value != null && (value.equals(prefix) || value.startsWith(prefix + "."));
+    }
+
+    public void openWorkspacePlannerNode(String stackId) {
+        selectedPlannerStackId = stackId;
+        if (stackId != null) {
+            draftSession.walledKeepTowerStackTab(stackId);
+        }
+        pushState(WorkspacePlannerNodePage.ID);
+        flagNeedSetup();
+    }
+
+    public String selectedPlannerStackId() {
+        return selectedPlannerStackId;
+    }
+
     public WorkspaceTopologySlotEditor topologySlotEditor() {
         return topologySlotEditor;
     }
@@ -353,6 +395,10 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public void clearSelectedTopologyKey() {
         selectedTopologyKey = null;
+    }
+
+    public void clearSelectedPlannerStackId() {
+        selectedPlannerStackId = null;
     }
 
     public int topologySlotShaftWidth() {
@@ -908,6 +954,14 @@ public class MKWorkspaceScreen extends MKScreen {
                 updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
             return List.of("workspace", WorkspaceTopologySlotPage.ID);
         }
+        if (WorkspacePlannerNodePage.ID.equals(currentState) && selectedPlannerStackId != null &&
+                updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
+            return List.of("workspace", WorkspacePlannerNodePage.ID);
+        }
+        if (WorkspaceTemplateGroupsPage.ID.equals(currentState) &&
+                updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
+            return List.of("workspace", WorkspaceTemplateGroupsPage.ID);
+        }
         if ("backups".equals(currentState) && updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
             return List.of("workspace", "backups");
         }
@@ -942,6 +996,16 @@ public class MKWorkspaceScreen extends MKScreen {
         }
         if (getState().equals(NO_STATE)) {
             pushState(stateName);
+        }
+        flagNeedSetup();
+    }
+
+    public void goBackOrSwitchTo(String fallbackState) {
+        if (!getState().equals(NO_STATE)) {
+            popState();
+        }
+        if (getState().equals(NO_STATE)) {
+            pushState(fallbackState);
         }
         flagNeedSetup();
     }

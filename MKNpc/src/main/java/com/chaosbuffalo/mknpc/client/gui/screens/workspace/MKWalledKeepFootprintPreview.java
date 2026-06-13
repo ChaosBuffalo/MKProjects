@@ -12,9 +12,11 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class MKWalledKeepFootprintPreview extends MKWidget {
     private static final int BACKGROUND = 0x99101010;
@@ -40,14 +42,45 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
 
     private final MKStructureWorkspace workspace;
     private final MKWalledKeepSizingReport report;
+    private final Consumer<NavigationTarget> navigationCallback;
     private List<PreviewElement> previewElements = List.of();
 
     public MKWalledKeepFootprintPreview(int width, int height, MKStructureWorkspace workspace,
                                         MKWalledKeepSizingReport report) {
+        this(width, height, workspace, report, null);
+    }
+
+    public MKWalledKeepFootprintPreview(int width, int height, MKStructureWorkspace workspace,
+                                        MKWalledKeepSizingReport report,
+                                        Consumer<NavigationTarget> navigationCallback) {
         super(0, 0, width, height);
         this.workspace = workspace;
         this.report = report;
+        this.navigationCallback = navigationCallback;
         setLongHoverTicks(5);
+    }
+
+    @Override
+    public boolean onMousePressed(Minecraft minecraft, double mouseX, double mouseY, int mouseButton) {
+        if (navigationCallback == null) {
+            return false;
+        }
+        java.util.Optional<PreviewElement> hovered = hoveredElement((int) mouseX, (int) mouseY);
+        if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT && hovered.isEmpty()) {
+            navigationCallback.accept(NavigationTarget.back());
+            return true;
+        }
+        if (mouseButton != GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+            return false;
+        }
+        return hovered
+                .map(PreviewElement::target)
+                .filter(target -> target.type() != NavigationTargetType.NONE)
+                .map(target -> {
+                    navigationCallback.accept(target);
+                    return true;
+                })
+                .orElse(false);
     }
 
     @Override
@@ -148,7 +181,7 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
                         "\nrecommended span " + report.recommendedWallUnitSpan() +
                         "\npassage " + wallPassageWidth +
                         "\nbody width " + wallBodyWidth,
-                footprintRect));
+                footprintRect, NavigationTarget.templateSlot(PERIMETER_ROOT_SLOT)));
 
         drawCornerTowers(graphics, elements, footprintRect, scale);
 
@@ -162,7 +195,7 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
                 pathThickness, PATH);
         elements.add(new PreviewElement("Courtyard path loop",
                 "Courtyard path loop\n" + pathSize + " x " + pathSize + " blocks",
-                pathRect));
+                pathRect, NavigationTarget.templateSlot("keep.walkway")));
 
         int entryLength = report.entryApproachLength();
         int entryWidth = entryApproachWidth();
@@ -170,7 +203,8 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
                 -entryWidth / 2.0, centerLength / 2.0, entryWidth, entryLength);
         entryRect = pushBelow(entryRect, centerRect, MIN_PIXEL_GAP);
         drawElement(graphics, elements, entryRect, PATH, "Entry path",
-                "Entry path\n" + entryWidth + " x " + entryLength + " blocks");
+                "Entry path\n" + entryWidth + " x " + entryLength + " blocks",
+                NavigationTarget.templateSlot(ENTRY_APPROACH_SLOT));
 
         int gateWidth = gatehouseWidth();
         int gateLength = gatehouseLength();
@@ -178,33 +212,50 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
                 -gateWidth / 2.0, centerLength / 2.0 + entryLength, gateWidth, gateLength);
         gateRect = pushBelow(gateRect, entryRect, MIN_PIXEL_GAP);
         drawElement(graphics, elements, gateRect, GATE, "Gatehouse",
-                "Gatehouse\n" + gateWidth + " x " + gateLength + " blocks");
+                "Gatehouse\n" + gateWidth + " x " + gateLength + " blocks",
+                NavigationTarget.templateSlot(GATEHOUSE_SLOT));
 
         drawCourtyardSlots(graphics, elements, originX, originY, scale, pathRect, centerRect);
         drawElement(graphics, elements, centerRect, CENTER_KEEP, "Center keep",
-                "Center keep\n" + centerWidth + " x " + centerLength + " blocks");
+                "Center keep\n" + centerWidth + " x " + centerLength + " blocks",
+                NavigationTarget.plannerStack("keep.center"));
     }
 
     private void drawCornerTowers(GuiGraphics graphics, List<PreviewElement> elements, Rect footprintRect,
                                   double scale) {
-        String cornerStackId = workspace.topologyProfile().anySharedCornerTower() ?
-                "keep.corner.shared" : "keep.corner.north_west";
-        MKWorkspaceTowerStackSettings corner = towerStack(cornerStackId);
+        MKWorkspaceTowerStackSettings corner = towerStack(cornerStackId("keep.corner.north_west"));
         int cornerWidth = Math.max(4, px(scale, corner.width()));
         int cornerHeight = Math.max(4, px(scale, corner.length()));
         drawElement(graphics, elements,
                 new Rect(footprintRect.x(), footprintRect.y(), cornerWidth, cornerHeight),
-                CORNER_TOWER, "NW corner tower", cornerTooltip("NW", corner));
+                CORNER_TOWER, "NW corner tower", cornerTooltip("NW", corner),
+                NavigationTarget.plannerStack(cornerStackId("keep.corner.north_west")));
+        corner = towerStack(cornerStackId("keep.corner.north_east"));
+        cornerWidth = Math.max(4, px(scale, corner.width()));
+        cornerHeight = Math.max(4, px(scale, corner.length()));
         drawElement(graphics, elements,
                 new Rect(footprintRect.right() - cornerWidth, footprintRect.y(), cornerWidth, cornerHeight),
-                CORNER_TOWER, "NE corner tower", cornerTooltip("NE", corner));
+                CORNER_TOWER, "NE corner tower", cornerTooltip("NE", corner),
+                NavigationTarget.plannerStack(cornerStackId("keep.corner.north_east")));
+        corner = towerStack(cornerStackId("keep.corner.south_east"));
+        cornerWidth = Math.max(4, px(scale, corner.width()));
+        cornerHeight = Math.max(4, px(scale, corner.length()));
         drawElement(graphics, elements,
                 new Rect(footprintRect.right() - cornerWidth, footprintRect.bottom() - cornerHeight,
                         cornerWidth, cornerHeight),
-                CORNER_TOWER, "SE corner tower", cornerTooltip("SE", corner));
+                CORNER_TOWER, "SE corner tower", cornerTooltip("SE", corner),
+                NavigationTarget.plannerStack(cornerStackId("keep.corner.south_east")));
+        corner = towerStack(cornerStackId("keep.corner.south_west"));
+        cornerWidth = Math.max(4, px(scale, corner.width()));
+        cornerHeight = Math.max(4, px(scale, corner.length()));
         drawElement(graphics, elements,
                 new Rect(footprintRect.x(), footprintRect.bottom() - cornerHeight, cornerWidth, cornerHeight),
-                CORNER_TOWER, "SW corner tower", cornerTooltip("SW", corner));
+                CORNER_TOWER, "SW corner tower", cornerTooltip("SW", corner),
+                NavigationTarget.plannerStack(cornerStackId("keep.corner.south_west")));
+    }
+
+    private String cornerStackId(String topologySlotId) {
+        return workspace.topologyProfile().uniqueCornerTower(topologySlotId) ? topologySlotId : "keep.corner.shared";
     }
 
     private String cornerTooltip(String cornerLabel, MKWorkspaceTowerStackSettings corner) {
@@ -218,20 +269,28 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
         int maxSlotPx = Math.max(3, Math.min(pathRect.width(), pathRect.height()) - (2 * MIN_PIXEL_GAP));
         slotPx = Math.min(slotPx, maxSlotPx);
         int offset = Math.max(slotPx + MIN_PIXEL_GAP, pathRect.width() / 2 + slotPx / 2 + MIN_PIXEL_GAP);
-        drawSlot(graphics, elements, "NW courtyard socket", originX - offset, originY - offset, slotPx, socketSize);
-        drawSlot(graphics, elements, "N courtyard socket", originX, originY - offset, slotPx, socketSize);
-        drawSlot(graphics, elements, "NE courtyard socket", originX + offset, originY - offset, slotPx, socketSize);
-        drawSlot(graphics, elements, "W courtyard socket", originX - offset, originY, slotPx, socketSize);
-        drawSlot(graphics, elements, "E courtyard socket", originX + offset, originY, slotPx, socketSize);
-        drawSlot(graphics, elements, "SW courtyard socket", originX - offset, originY + offset, slotPx, socketSize);
-        drawSlot(graphics, elements, "SE courtyard socket", originX + offset, originY + offset, slotPx, socketSize);
+        drawSlot(graphics, elements, "NW courtyard socket", "keep.courtyard.north_west",
+                originX - offset, originY - offset, slotPx, socketSize);
+        drawSlot(graphics, elements, "N courtyard socket", "keep.courtyard.north",
+                originX, originY - offset, slotPx, socketSize);
+        drawSlot(graphics, elements, "NE courtyard socket", "keep.courtyard.north_east",
+                originX + offset, originY - offset, slotPx, socketSize);
+        drawSlot(graphics, elements, "W courtyard socket", "keep.courtyard.west",
+                originX - offset, originY, slotPx, socketSize);
+        drawSlot(graphics, elements, "E courtyard socket", "keep.courtyard.east",
+                originX + offset, originY, slotPx, socketSize);
+        drawSlot(graphics, elements, "SW courtyard socket", "keep.courtyard.south_west",
+                originX - offset, originY + offset, slotPx, socketSize);
+        drawSlot(graphics, elements, "SE courtyard socket", "keep.courtyard.south_east",
+                originX + offset, originY + offset, slotPx, socketSize);
     }
 
-    private void drawSlot(GuiGraphics graphics, List<PreviewElement> elements, String name,
+    private void drawSlot(GuiGraphics graphics, List<PreviewElement> elements, String name, String topologySlotId,
                           int centerX, int centerY, int slotPx, int socketSize) {
         Rect rect = new Rect(centerX - slotPx / 2, centerY - slotPx / 2, slotPx, slotPx);
         drawElement(graphics, elements, rect, SLOT, name,
-                name + "\n" + socketSize + " x " + socketSize + " blocks");
+                name + "\n" + socketSize + " x " + socketSize + " blocks",
+                NavigationTarget.templateSlot(topologySlotId));
     }
 
     private int wallUnitSpan() {
@@ -320,8 +379,13 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
 
     private void drawElement(GuiGraphics graphics, List<PreviewElement> elements, Rect rect,
                              int color, String name, String tooltip) {
+        drawElement(graphics, elements, rect, color, name, tooltip, NavigationTarget.none());
+    }
+
+    private void drawElement(GuiGraphics graphics, List<PreviewElement> elements, Rect rect,
+                             int color, String name, String tooltip, NavigationTarget target) {
         fillRect(graphics, rect.x(), rect.y(), rect.width(), rect.height(), color);
-        elements.add(new PreviewElement(name, tooltip, rect));
+        elements.add(new PreviewElement(name, tooltip, rect, target));
     }
 
     private Rect expandAroundCenter(Rect rect, Rect centerRect, int minGap) {
@@ -372,7 +436,32 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
         graphics.fill(x, y, x + width, y + height, color);
     }
 
-    private record PreviewElement(String name, String tooltip, Rect rect) {
+    public enum NavigationTargetType {
+        NONE,
+        BACK,
+        PLANNER_STACK,
+        TEMPLATE_SLOT
+    }
+
+    public record NavigationTarget(NavigationTargetType type, String id) {
+        public static NavigationTarget none() {
+            return new NavigationTarget(NavigationTargetType.NONE, "");
+        }
+
+        public static NavigationTarget back() {
+            return new NavigationTarget(NavigationTargetType.BACK, "");
+        }
+
+        public static NavigationTarget plannerStack(String stackId) {
+            return new NavigationTarget(NavigationTargetType.PLANNER_STACK, stackId);
+        }
+
+        public static NavigationTarget templateSlot(String topologySlotId) {
+            return new NavigationTarget(NavigationTargetType.TEMPLATE_SLOT, topologySlotId);
+        }
+    }
+
+    private record PreviewElement(String name, String tooltip, Rect rect, NavigationTarget target) {
     }
 
     private record Rect(int x, int y, int width, int height) {
