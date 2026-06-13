@@ -8,6 +8,21 @@ The workspace UI should show the user the generated structure model first: floor
 
 Changing settings should not imply a full workspace rebuild by default. Each setting should declare which generated layer it invalidates, and the UI should show whether applying the change can preserve designer-authored templates and in-world edits.
 
+## Implementation Status
+
+The first implementation pass has landed the eight initial work slices:
+
+- planner id value type and planner id persistence on planned pieces, workspace pieces, tags, and export manifests,
+- generated layer state, dirty/refresh tracking, and per-layer lock/unlock operations,
+- floor topology invalidation reports and serialized mutation preflight reports,
+- main workspace planner overview, layer status, lock controls, and impact report display,
+- locked-layer edit gating for workspace updates,
+- hallway-only regeneration for `regenerate_hallway_routing` preflight operations,
+- real template-bounds block diff snapshots for authored-template detection, with managed sidecar positions ignored,
+- focused workflow tests for planner ids, serialized reports, layer locking, hallway regeneration planning, and template block diffs.
+
+The remaining design sections are still useful as the broader direction. The next implementation work should deepen preview/runtime parity, remapping of orphaned templates, and additional scoped regeneration operations beyond floor-plan hallways.
+
 ## Current Problem
 
 Planner previews are currently treated as topology settings helpers. That hides the most useful overview of the workspace structure behind configuration pages, and it encourages a destructive mental model:
