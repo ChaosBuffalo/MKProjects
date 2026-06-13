@@ -933,8 +933,10 @@ public record MKWorkspaceExportManifest(
             ResourceLocation targetPool,
             ResourceLocation incomingPool
     ) {
+        private static final ResourceLocation DEFAULT_EMPTY_POOL = ResourceLocation.parse("minecraft:empty");
+
         public static final Codec<ExportConnector> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                connectorRoleCodec().fieldOf("role").forGetter(ExportConnector::role),
+                MKConnectorRole.CODEC.fieldOf("role").forGetter(ExportConnector::role),
                 Codec.STRING.fieldOf("facing").forGetter(ExportConnector::facing),
                 ExportBlockPos.CODEC.fieldOf("relative_pos").forGetter(ExportConnector::relativePos),
                 Codec.INT.fieldOf("opening_width").forGetter(ExportConnector::openingWidth),
@@ -944,7 +946,8 @@ public record MKWorkspaceExportManifest(
                 ResourceLocation.CODEC.fieldOf("jigsaw_name").forGetter(ExportConnector::jigsawName),
                 ResourceLocation.CODEC.fieldOf("jigsaw_target").forGetter(ExportConnector::jigsawTarget),
                 ResourceLocation.CODEC.fieldOf("target_pool").forGetter(ExportConnector::targetPool),
-                ResourceLocation.CODEC.optionalFieldOf("incoming_pool", EMPTY_POOL).forGetter(ExportConnector::incomingPool)
+                ResourceLocation.CODEC.optionalFieldOf("incoming_pool", DEFAULT_EMPTY_POOL)
+                        .forGetter(ExportConnector::incomingPool)
         ).apply(instance, ExportConnector::new));
 
         public static ExportConnector from(MKWorkspaceConnectorDefinition connector) {
@@ -969,6 +972,7 @@ public record MKWorkspaceExportManifest(
             String pieceName,
             String baseName,
             String roleId,
+            String plannerId,
             int variantIndex,
             String workspacePieceKind,
             String structureId,
@@ -980,11 +984,14 @@ public record MKWorkspaceExportManifest(
             Map<String, String> tags,
             List<ExportConnector> connectors
     ) {
+        private static final Codec<UUID> PIECE_UUID_CODEC = Codec.STRING.xmap(UUID::fromString, UUID::toString);
+
         public static final Codec<ExportPiece> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                UUID_CODEC.fieldOf("piece_id").forGetter(ExportPiece::pieceId),
+                PIECE_UUID_CODEC.fieldOf("piece_id").forGetter(ExportPiece::pieceId),
                 Codec.STRING.fieldOf("piece_name").forGetter(ExportPiece::pieceName),
                 Codec.STRING.fieldOf("base_name").forGetter(ExportPiece::baseName),
                 Codec.STRING.fieldOf("role_id").forGetter(ExportPiece::roleId),
+                Codec.STRING.optionalFieldOf("planner_id", "").forGetter(ExportPiece::plannerId),
                 Codec.INT.fieldOf("variant_index").forGetter(ExportPiece::variantIndex),
                 Codec.STRING.fieldOf("workspace_piece_kind").forGetter(ExportPiece::workspacePieceKind),
                 Codec.STRING.fieldOf("structure_id").forGetter(ExportPiece::structureId),
@@ -997,12 +1004,17 @@ public record MKWorkspaceExportManifest(
                 ExportConnector.CODEC.listOf().fieldOf("connectors").forGetter(ExportPiece::connectors)
         ).apply(instance, ExportPiece::new));
 
+        public ExportPiece {
+            plannerId = plannerId == null || plannerId.isBlank() ? roleId + "." + pieceName : plannerId;
+        }
+
         public static ExportPiece from(MKStructureWorkspace workspace, MKWorkspacePieceDefinition piece) {
             return new ExportPiece(
                     piece.pieceId(),
                     piece.pieceName(),
                     piece.tags().getOrDefault("workspace_base_name", piece.pieceName()),
                     piece.roleId(),
+                    piece.plannerId().value(),
                     piece.variantIndex(),
                     piece.tags().getOrDefault("workspace_piece_kind", "instance"),
                     workspace.namespace() + ":" + workspace.structureName() + "/" + piece.pieceName(),

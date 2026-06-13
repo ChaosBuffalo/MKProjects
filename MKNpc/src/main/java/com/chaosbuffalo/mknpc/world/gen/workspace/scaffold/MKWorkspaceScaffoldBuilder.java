@@ -300,6 +300,7 @@ public class MKWorkspaceScaffoldBuilder {
                 workspace.id(),
                 plannedPiece.pieceName(),
                 plannedPiece.roleId(),
+                plannedPiece.plannerId(),
                 getVariantIndex(plannedPiece),
                 effectiveDimensions,
                 getShellMargin(plannedPiece, workspace.shellMargin()),
