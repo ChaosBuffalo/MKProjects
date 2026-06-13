@@ -2,8 +2,15 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.network.packets.ExportWorkspacePiecesPacket;
+import com.chaosbuffalo.mknpc.network.packets.RequestWorkspacePreflightPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayerState;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInvalidationReport;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingCalculator;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingReport;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
@@ -45,6 +52,7 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         root.addWidget(scrollView);
 
         MKStackLayoutVertical content = createContentStack(screen);
+        addPlannerOverview(screen, content, workspace);
         for (Map.Entry<String, List<MKWorkspacePieceDefinition>> entry :
                 WorkspacePieceDisplay.groupPiecesByTopology(workspace).entrySet()) {
             String topologyKey = entry.getKey();
@@ -112,6 +120,96 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         });
 
         return root;
+    }
+
+    private void addPlannerOverview(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                    MKStructureWorkspace workspace) {
+        addText(screen, content, "Planner Overview");
+        addText(screen, content, "Planner " + workspace.topologyProfile().plannerId() +
+                " - pieces " + workspace.pieces().size() +
+                " - layers " + workspace.layerStates().size());
+        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(workspace.topologyProfile().plannerId())) {
+            MKWalledKeepSizingReport report = new MKWalledKeepSizingCalculator().calculate(workspace);
+            MKWalledKeepFootprintPreview preview = new MKWalledKeepFootprintPreview(
+                    Math.min(screen.contentWidth(), 260), 190, workspace, report);
+            content.addWidget(preview);
+            content.addConstraintToWidget(new CenterXConstraint(), preview);
+        }
+        addLayerStateSummary(screen, content, workspace);
+        addPreflightReport(screen, content, screen.preflight());
+
+        MKButton preflight = new MKButton(Component.literal("Preflight Draft"), 180, screen.buttonHeight());
+        content.addWidget(preflight);
+        content.addConstraintToWidget(new CenterXConstraint(), preflight);
+        preflight.setPressedCallback((button, mouseButton) -> {
+            PacketDistributor.sendToServer(new RequestWorkspacePreflightPacket(
+                    screen.draftSession().buildWorkspaceDraft()));
+            return true;
+        });
+
+        MKButton editPlanner = new MKButton(Component.literal("Planner Settings"), 180, screen.buttonHeight());
+        content.addWidget(editPlanner);
+        content.addConstraintToWidget(new CenterXConstraint(), editPlanner);
+        editPlanner.setPressedCallback((button, mouseButton) -> {
+            screen.pushState(WorkspaceTopologyDefaultsPage.ID);
+            screen.flagNeedSetup();
+            return true;
+        });
+    }
+
+    private void addLayerStateSummary(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                      MKStructureWorkspace workspace) {
+        if (workspace.layerStates().isEmpty()) {
+            addText(screen, content, "Layer state has not been initialized for this workspace yet.");
+            return;
+        }
+        long locked = workspace.layerStates().stream().filter(MKWorkspaceGeneratedLayerState::locked).count();
+        long dirty = workspace.layerStates().stream().filter(MKWorkspaceGeneratedLayerState::dirty).count();
+        addText(screen, content, "Layer status: " + locked + " locked, " + dirty + " dirty");
+        workspace.layerStates().stream()
+                .filter(state -> state.locked() || state.dirty())
+                .limit(8)
+                .forEach(state -> addText(screen, content, "- " + state.layer().getSerializedName() +
+                        " " + (state.locked() ? "locked" : "unlocked") +
+                        (state.dirty() ? " dirty" : "")));
+    }
+
+    private void addPreflightReport(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                    MKWorkspaceMutationPreflight preflight) {
+        if (preflight == null) {
+            addText(screen, content, "No impact report loaded.");
+            return;
+        }
+        MKWorkspaceInvalidationReport report = preflight.report();
+        addText(screen, content, "Impact Report");
+        addText(screen, content, report.summary());
+        addText(screen, content, "Safety " + report.safety().getSerializedName() +
+                " - operation " + report.recommendedOperation());
+        if (!report.invalidatedLayers().isEmpty()) {
+            addText(screen, content, "Invalidates: " + report.invalidatedLayers().stream()
+                    .map(layer -> layer.getSerializedName())
+                    .reduce((left, right) -> left + ", " + right)
+                    .orElse(""));
+        }
+        if (!report.affectedPlannerIds().isEmpty()) {
+            addText(screen, content, "Affected ids: " + report.affectedPlannerIds().size());
+        }
+        if (!report.preservedTemplateBindings().isEmpty()) {
+            addText(screen, content, "Preserves bindings: " + report.preservedTemplateBindings().size());
+        }
+        if (!report.orphanedTemplateBindings().isEmpty()) {
+            addText(screen, content, "Orphaned bindings: " + report.orphanedTemplateBindings().size());
+        }
+        for (String warning : report.warnings()) {
+            addText(screen, content, "Warning: " + warning);
+        }
+    }
+
+    private void addText(MKWorkspaceScreen screen, MKStackLayoutVertical content, String text) {
+        MKText widget = screen.makeWhiteText(Component.literal(text));
+        widget.setWidth(screen.contentWidth());
+        content.addWidget(widget);
+        content.addConstraintToWidget(MarginConstraint.LEFT, widget);
     }
 
 }

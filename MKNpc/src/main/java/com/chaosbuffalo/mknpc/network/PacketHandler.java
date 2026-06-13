@@ -16,9 +16,11 @@ import com.chaosbuffalo.mknpc.network.packets.OpenWorkspaceScreenPacket;
 import com.chaosbuffalo.mknpc.network.packets.OpenMKSpawnerPacket;
 import com.chaosbuffalo.mknpc.network.packets.CreateWorkspacePacket;
 import com.chaosbuffalo.mknpc.network.packets.DeleteWorkspacePacket;
+import com.chaosbuffalo.mknpc.network.packets.RequestWorkspacePreflightPacket;
 import com.chaosbuffalo.mknpc.network.packets.RestoreWorkspaceBackupPacket;
 import com.chaosbuffalo.mknpc.network.packets.SetSpawnListPacket;
 import com.chaosbuffalo.mknpc.network.packets.SwapWorkspaceBlockPacket;
+import com.chaosbuffalo.mknpc.network.packets.WorkspacePreflightReportPacket;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -62,6 +64,16 @@ public class PacketHandler {
                 CreateWorkspacePacket.TYPE,
                 CreateWorkspacePacket.STREAM_CODEC,
                 CreateWorkspacePacket::handle
+        );
+        registrar.playToServer(
+                RequestWorkspacePreflightPacket.TYPE,
+                RequestWorkspacePreflightPacket.STREAM_CODEC,
+                RequestWorkspacePreflightPacket::handle
+        );
+        registrar.playToClient(
+                WorkspacePreflightReportPacket.TYPE,
+                WorkspacePreflightReportPacket.STREAM_CODEC,
+                WorkspacePreflightReportPacket::handle
         );
         registrar.playToServer(
                 GenerateWorkspacePacket.TYPE,

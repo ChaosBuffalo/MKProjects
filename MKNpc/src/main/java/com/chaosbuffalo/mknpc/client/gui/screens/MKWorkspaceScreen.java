@@ -28,6 +28,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
@@ -74,6 +75,7 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private final net.minecraft.core.BlockPos anchor;
     private final MKStructureWorkspace workspace;
+    private final MKWorkspaceMutationPreflight preflight;
     private final List<String> importManifestIds;
     private final List<String> backupManifestFiles;
     private final List<String> initialStates;
@@ -128,7 +130,7 @@ public class MKWorkspaceScreen extends MKScreen {
     public MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace,
                              List<String> importManifestIds, List<String> backupManifestFiles) {
         this(anchor, workspace, importManifestIds, backupManifestFiles, List.of(), null, -1, -1, -1, -1,
-                null);
+                null, null);
     }
 
     private MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace, List<String> importManifestIds,
@@ -139,10 +141,12 @@ public class MKWorkspaceScreen extends MKScreen {
                               int selectedFamilyExitIndex,
                               int selectedOpeningIndex,
                               int selectedLinearRunIndex,
-                              MKWorkspaceStairAuthoringConfig detailStairConfig) {
+                              MKWorkspaceStairAuthoringConfig detailStairConfig,
+                              MKWorkspaceMutationPreflight preflight) {
         super(Component.literal("Tower Workspace"));
         this.anchor = anchor;
         this.workspace = workspace;
+        this.preflight = preflight;
         this.importManifestIds = List.copyOf(importManifestIds);
         this.backupManifestFiles = List.copyOf(backupManifestFiles);
         this.initialStates = List.copyOf(initialStates);
@@ -163,7 +167,16 @@ public class MKWorkspaceScreen extends MKScreen {
                 selectedTopologyKey, draftSession.selectedFamilyIndex(),
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
                 draftSession.selectedLinearRunIndex(),
-                detailStairConfig);
+                detailStairConfig, preflight);
+    }
+
+    public MKWorkspaceScreen copyWithPreflight(MKWorkspaceMutationPreflight updatedPreflight) {
+        return new MKWorkspaceScreen(anchor, workspace, importManifestIds, backupManifestFiles,
+                getInitialStatesForRefresh(workspace),
+                selectedTopologyKey, draftSession.selectedFamilyIndex(),
+                draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
+                draftSession.selectedLinearRunIndex(),
+                detailStairConfig, updatedPreflight);
     }
 
     @Override
@@ -216,6 +229,10 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public MKStructureWorkspace workspace() {
         return workspace;
+    }
+
+    public MKWorkspaceMutationPreflight preflight() {
+        return preflight;
     }
 
     public int screenWidth() {
