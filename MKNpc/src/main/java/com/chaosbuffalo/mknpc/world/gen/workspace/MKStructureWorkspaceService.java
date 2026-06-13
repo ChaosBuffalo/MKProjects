@@ -32,6 +32,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspaceHallwayReg
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspaceMarginExpansionService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspacePieceRelayoutService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKStructureWorkspaceMutationService;
+import com.chaosbuffalo.mknpc.world.gen.workspace.mutation.MKWorkspaceTemplateBindingDiffService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceScaffoldBuilder;
 import com.chaosbuffalo.mknpc.world.gen.workspace.stairs.MKWorkspaceStairBuilder;
@@ -87,6 +88,8 @@ public class MKStructureWorkspaceService {
     private final MKWorkspaceLayerStateService layerStateService = new MKWorkspaceLayerStateService();
     private final MKWorkspaceHallwayRegenerationPlanner hallwayRegenerationPlanner =
             new MKWorkspaceHallwayRegenerationPlanner();
+    private final MKWorkspaceTemplateBindingDiffService templateBindingDiffService =
+            new MKWorkspaceTemplateBindingDiffService();
 
     public Optional<MKStructureWorkspace> createOrUpdateTowerWorkspace(ServerLevel level, MKStructureWorkspace workspace) {
         List<String> errors = workspace.validate();
@@ -244,6 +247,8 @@ public class MKStructureWorkspaceService {
                                                                      MKStructureWorkspace requested,
                                                                      long nowEpochMillis) {
         List<MKWorkspaceInvalidationReport> reports = new ArrayList<>();
+        List<MKPlannedPiece> requestedCanonicalPieces = plannerRegistry.plannerFor(requested)
+                .createCanonicalPieces(requested);
         for (MKWorkspaceFloorTopologySettings requestedSettings :
                 requested.topologyProfile().floorTopologySettings()) {
             MKWorkspaceFloorTopologySettings previousSettings = existing.topologyProfile()
@@ -256,11 +261,33 @@ public class MKStructureWorkspaceService {
                     previousSettings,
                     requestedSettings,
                     nowEpochMillis);
-            if (!preflight.report().invalidatedLayers().isEmpty()) {
-                reports.add(preflight.report());
+            MKWorkspaceInvalidationReport report = withConcreteTemplateBindings(existing, requestedCanonicalPieces,
+                    previousSettings, requestedSettings, preflight.report());
+            if (!report.invalidatedLayers().isEmpty()) {
+                reports.add(report);
             }
         }
         return List.copyOf(reports);
+    }
+
+    private MKWorkspaceInvalidationReport withConcreteTemplateBindings(
+            MKStructureWorkspace existing,
+            List<MKPlannedPiece> requestedCanonicalPieces,
+            MKWorkspaceFloorTopologySettings previousSettings,
+            MKWorkspaceFloorTopologySettings requestedSettings,
+            MKWorkspaceInvalidationReport report) {
+        if (!report.hasInvalidatedLayer(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS)) {
+            return report;
+        }
+        MKWorkspaceTemplateBindingDiffService.TemplateBindingDiff bindingDiff =
+                templateBindingDiffService.floorTopologyBindings(
+                        existing,
+                        requestedCanonicalPieces,
+                        previousSettings.stackId(),
+                        previousSettings.floorRole(),
+                        requestedSettings.stackId(),
+                        requestedSettings.floorRole());
+        return report.withTemplateBindings(bindingDiff.preserved(), bindingDiff.orphaned());
     }
 
     private MKWorkspacePlannerId floorPlannerId(MKWorkspaceFloorTopologySettings settings) {

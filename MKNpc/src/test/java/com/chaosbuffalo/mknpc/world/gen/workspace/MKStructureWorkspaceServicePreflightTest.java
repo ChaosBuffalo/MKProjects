@@ -5,13 +5,20 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopology
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLayerStateService;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -70,6 +77,23 @@ class MKStructureWorkspaceServicePreflightTest {
                 service.lockedInvalidatedLayers(existing, preflight.report()));
     }
 
+    @Test
+    void broadTopologyPreflightReportsOrphanedTemplateBindings() {
+        MKWorkspacePlannerId orphanedId = MKWorkspacePlannerId.of("keep.main.floor_plan.room.removed_00");
+        MKWorkspaceFloorTopologySettings previous = settings("tower.primary", "main_floor");
+        MKWorkspaceFloorTopologySettings updated = previous.withMaxMainPathPieces(3);
+        MKStructureWorkspace existing = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(floorPiece("removed_00_template", "removed_00", orphanedId)));
+        existing = withTopologyProfile(existing, existing.topologyProfile().withFloorTopologySettings(previous));
+        MKStructureWorkspace requested = withTopologyProfile(existing,
+                existing.topologyProfile().withFloorTopologySettings(updated));
+
+        MKWorkspaceMutationPreflight preflight = service.preflightWorkspaceUpdate(existing, requested, 123L);
+
+        assertTrue(preflight.report().hasInvalidatedLayer(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS));
+        assertEquals(List.of(orphanedId), preflight.report().orphanedTemplateBindings());
+    }
+
     private static MKWorkspaceFloorTopologySettings settings(String stackId, String floorRole) {
         return new MKWorkspaceFloorTopologySettings(
                 stackId,
@@ -115,6 +139,35 @@ class MKStructureWorkspaceServicePreflightTest {
                 workspace.updatedAt(),
                 workspace.pieces(),
                 workspace.layerStates()
+        );
+    }
+
+    private static MKWorkspacePieceDefinition floorPiece(String pieceName, String baseName,
+                                                        MKWorkspacePlannerId plannerId) {
+        return new MKWorkspacePieceDefinition(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                pieceName,
+                "floor.plan.room",
+                plannerId,
+                0,
+                MKWorkspaceDimensions.defaultDimensions(),
+                1,
+                List.of(),
+                BlockPos.ZERO,
+                new BoundingBox(0, 0, 0, 1, 1, 1),
+                new BoundingBox(0, 0, 0, 1, 1, 1),
+                BlockPos.ZERO,
+                BlockPos.ZERO,
+                List.of(),
+                List.of(),
+                Map.of(
+                        "workspace_floor_topology_stack_id", "tower.primary",
+                        "workspace_floor_topology_floor_role", "main_floor",
+                        MKWorkspaceGridLayout.TAG_BASE_NAME, baseName,
+                        MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "0",
+                        "workspace_piece_kind", "template"
+                )
         );
     }
 }

@@ -62,4 +62,18 @@ public record MKWorkspaceInvalidationReport(
     public boolean hasOrphanedBindings() {
         return !orphanedTemplateBindings.isEmpty();
     }
+
+    public MKWorkspaceInvalidationReport withTemplateBindings(List<MKWorkspacePlannerId> preservedBindings,
+                                                              List<MKWorkspacePlannerId> orphanedBindings) {
+        return new MKWorkspaceInvalidationReport(
+                invalidatedLayers,
+                affectedPlannerIds,
+                preservedBindings,
+                orphanedBindings,
+                safety,
+                summary,
+                recommendedOperation,
+                warnings
+        );
+    }
 }
