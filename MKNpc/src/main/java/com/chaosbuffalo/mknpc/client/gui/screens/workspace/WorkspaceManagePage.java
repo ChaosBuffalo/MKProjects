@@ -3,14 +3,12 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.network.packets.ExportWorkspacePiecesPacket;
 import com.chaosbuffalo.mknpc.network.packets.RequestWorkspacePreflightPacket;
-import com.chaosbuffalo.mknpc.network.packets.SetWorkspaceLayerLockPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayerState;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInvalidationReport;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingCalculator;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingReport;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
@@ -55,41 +53,7 @@ public class WorkspaceManagePage extends WorkspacePageBase {
 
         MKStackLayoutVertical content = createContentStack(screen);
         addPlannerOverview(screen, content, workspace);
-        for (Map.Entry<String, List<MKWorkspacePieceDefinition>> entry :
-                WorkspacePieceDisplay.groupPiecesByTopology(workspace).entrySet()) {
-            String topologyKey = entry.getKey();
-            List<MKWorkspacePieceDefinition> pieces = entry.getValue();
-            MKWorkspacePieceDefinition templatePiece = pieces.stream()
-                    .filter(piece -> piece.variantIndex() == 0)
-                    .findFirst()
-                    .orElse(pieces.get(0));
-
-            MKText header = screen.makeWhiteText(Component.literal(
-                    WorkspacePieceDisplay.buildWorkspaceGroupLabel(templatePiece)));
-            header.setWidth(screen.contentWidth());
-            content.addWidget(header);
-            content.addConstraintToWidget(MarginConstraint.LEFT, header);
-
-            int variantCount = WorkspacePieceDisplay.countVariants(pieces);
-            long generatedCount = pieces.stream().filter(WorkspacePieceDisplay::hasGeneratedStairs).count();
-            MKText details = screen.makeWhiteText(Component.literal(
-                    pieces.size() + " piece" + (pieces.size() == 1 ? "" : "s") + " - " +
-                            variantCount + " variant" + (variantCount == 1 ? "" : "s") +
-                            " - template " + WorkspacePieceDisplay.getBaseName(templatePiece) +
-                            (WorkspacePieceDisplay.supportsStairGeneration(pieces) ?
-                                    " - stairs " + generatedCount + "/" + pieces.size() : "")));
-            details.setWidth(screen.contentWidth());
-            content.addWidget(details);
-            content.addConstraintToWidget(MarginConstraint.LEFT, details);
-
-            MKButton openCategory = new MKButton(Component.literal("Open Templates"), 180, screen.buttonHeight());
-            content.addWidget(openCategory);
-            content.addConstraintToWidget(new CenterXConstraint(), openCategory);
-            openCategory.setPressedCallback((button, mouseButton) -> {
-                screen.openWorkspaceTopologySlot(topologyKey);
-                return true;
-            });
-        }
+        addTemplateAuthoringSummary(screen, content, workspace);
 
         finishScrollContent(screen, scrollView, content);
 
@@ -137,6 +101,7 @@ public class WorkspaceManagePage extends WorkspacePageBase {
             content.addWidget(preview);
             content.addConstraintToWidget(new CenterXConstraint(), preview);
         }
+        addPlannerNavigation(screen, content, workspace);
         addLayerStateSummary(screen, content, workspace);
         addPreflightReport(screen, content, screen.preflight());
 
@@ -153,10 +118,44 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         content.addWidget(editPlanner);
         content.addConstraintToWidget(new CenterXConstraint(), editPlanner);
         editPlanner.setPressedCallback((button, mouseButton) -> {
-            screen.pushState(WorkspaceTopologyDefaultsPage.ID);
-            screen.flagNeedSetup();
+            openPlannerSettings(screen);
             return true;
         });
+    }
+
+    private void addPlannerNavigation(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                      MKStructureWorkspace workspace) {
+        addText(screen, content, "Planner Navigation");
+        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(workspace.topologyProfile().plannerId())) {
+            addPlannerButton(screen, content, "Keep Footprint", null);
+            addPlannerButton(screen, content, "Perimeter & Courtyard", null);
+            for (String stackId : screen.draftSession().walledKeepTowerStackTabs()) {
+                addPlannerButton(screen, content,
+                        WorkspacePieceDisplay.formatTopologyLabel(stackId), stackId);
+            }
+            return;
+        }
+        addPlannerButton(screen, content, "Tower Planner", null);
+    }
+
+    private void addPlannerButton(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                  String label, String towerStackId) {
+        MKButton button = new MKButton(Component.literal(label), 180, screen.buttonHeight());
+        content.addWidget(button);
+        content.addConstraintToWidget(new CenterXConstraint(), button);
+        button.setPressedCallback((pressedButton, mouseButton) -> {
+            if (towerStackId != null) {
+                screen.draftSession().walledKeepTowerStackTab(towerStackId);
+            }
+            openPlannerSettings(screen);
+            return true;
+        });
+    }
+
+    private void openPlannerSettings(MKWorkspaceScreen screen) {
+        screen.pushState(WorkspaceFormPage.ID);
+        screen.pushState(WorkspaceTopologyDefaultsPage.ID);
+        screen.flagNeedSetup();
     }
 
     private void addLayerStateSummary(MKWorkspaceScreen screen, MKStackLayoutVertical content,
@@ -166,23 +165,31 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         }
         long locked = workspace.layerStates().stream().filter(MKWorkspaceGeneratedLayerState::locked).count();
         long dirtyCount = workspace.layerStates().stream().filter(MKWorkspaceGeneratedLayerState::dirty).count();
-        addText(screen, content, "Layer status: " + locked + " locked, " + dirtyCount + " dirty");
-        for (MKWorkspaceGeneratedLayer layer : MKWorkspaceGeneratedLayer.values()) {
-            MKWorkspaceGeneratedLayerState state = workspace.layerState(layer).orElse(null);
-            boolean isLocked = state != null && state.locked();
-            boolean dirty = state != null && state.dirty();
-            addText(screen, content, "- " + layer.getSerializedName() +
-                    " " + (isLocked ? "locked" : "unlocked") +
-                    (dirty ? " dirty" : ""));
-            MKButton lockButton = new MKButton(Component.literal(isLocked ? "Unlock Layer" : "Lock Layer"),
-                    150, screen.buttonHeight());
-            content.addWidget(lockButton);
-            content.addConstraintToWidget(new CenterXConstraint(), lockButton);
-            lockButton.setPressedCallback((button, mouseButton) -> {
-                PacketDistributor.sendToServer(new SetWorkspaceLayerLockPacket(screen.anchor(), layer, !isLocked));
-                return true;
-            });
-        }
+        addText(screen, content, "Generation protection: " + locked + " locked layers, " +
+                dirtyCount + " pending updates.");
+        addText(screen, content, "Protected settings unlock from their planner menus after impact review.");
+    }
+
+    private void addTemplateAuthoringSummary(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                             MKStructureWorkspace workspace) {
+        Map<String, List<MKWorkspacePieceDefinition>> groups = WorkspacePieceDisplay.groupPiecesByTopology(workspace);
+        int variantCount = groups.values().stream().mapToInt(WorkspacePieceDisplay::countVariants).sum();
+        long generatedStairCount = workspace.pieces().stream()
+                .filter(WorkspacePieceDisplay::hasGeneratedStairs)
+                .count();
+        addText(screen, content, "Template Authoring");
+        addText(screen, content, groups.size() + " template groups - " + variantCount +
+                " variants - " + generatedStairCount + " stair-authored pieces");
+        addText(screen, content, "Open template groups for variants and piece-level stair generation.");
+
+        MKButton openGroups = new MKButton(Component.literal("Template Groups"), 180, screen.buttonHeight());
+        content.addWidget(openGroups);
+        content.addConstraintToWidget(new CenterXConstraint(), openGroups);
+        openGroups.setPressedCallback((button, mouseButton) -> {
+            screen.pushState(WorkspaceTemplateGroupsPage.ID);
+            screen.flagNeedSetup();
+            return true;
+        });
     }
 
     private void addPreflightReport(MKWorkspaceScreen screen, MKStackLayoutVertical content,
@@ -210,6 +217,9 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         }
         if (!report.orphanedTemplateBindings().isEmpty()) {
             addText(screen, content, "Orphaned bindings: " + report.orphanedTemplateBindings().size());
+        }
+        if (!report.remapSuggestions().isEmpty()) {
+            addText(screen, content, "Remap suggestions: " + report.remapSuggestions().size());
         }
         for (String warning : report.warnings()) {
             addText(screen, content, "Warning: " + warning);

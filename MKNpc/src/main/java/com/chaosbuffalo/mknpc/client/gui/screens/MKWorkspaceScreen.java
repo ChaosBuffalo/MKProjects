@@ -23,6 +23,7 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePieceDisplay
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTopologySlotEditor;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTopologySlotPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTopologyDefaultsPage;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTemplateGroupsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceUtilitiesPage;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
@@ -204,6 +205,7 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(new WorkspaceDeleteConfirmPage());
         addWorkspacePage(new WorkspaceBlockSwapPage());
         addWorkspacePage(new WorkspaceBackupPage());
+        addWorkspacePage(new WorkspaceTemplateGroupsPage());
         addWorkspacePage(new WorkspaceTopologySlotPage());
         List<String> statesToPush = initialStates.isEmpty() ? getDefaultInitialStates() : initialStates;
         for (String state : statesToPush) {
