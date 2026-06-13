@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
+import com.chaosbuffalo.mknpc.client.gui.widgets.MKIntegerSlider;
 import com.chaosbuffalo.mknpc.network.packets.ExportWorkspacePiecesPacket;
 import com.chaosbuffalo.mknpc.network.packets.RequestWorkspacePreflightPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
@@ -8,6 +9,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLaye
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInvalidationReport;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingCalculator;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingReport;
@@ -19,8 +22,10 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -95,12 +100,15 @@ public class WorkspaceManagePage extends WorkspacePageBase {
                 " - pieces " + workspace.pieces().size() +
                 " - layers " + workspace.layerStates().size());
         if (MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(workspace.topologyProfile().plannerId())) {
-            MKWalledKeepSizingReport report = new MKWalledKeepSizingCalculator().calculate(workspace);
+            screen.draftSession().ensureInitialized();
+            MKStructureWorkspace workspaceDraft = screen.draftSession().buildWorkspaceDraft();
+            MKWalledKeepSizingReport report = new MKWalledKeepSizingCalculator().calculate(workspaceDraft);
             MKWalledKeepFootprintPreview preview = new MKWalledKeepFootprintPreview(
-                    Math.min(screen.contentWidth(), 260), 190, workspace, report,
+                    Math.min(screen.contentWidth(), 260), 190, workspaceDraft, report,
                     target -> handlePlannerPreviewNavigation(screen, target));
             content.addWidget(preview);
             content.addConstraintToWidget(new CenterXConstraint(), preview);
+            addWalledKeepSettings(screen, content, screen.draftSession(), report);
         }
         addLayerStateSummary(screen, content, workspace);
         addPreflightReport(screen, content, screen.preflight());
@@ -138,6 +146,132 @@ public class WorkspaceManagePage extends WorkspacePageBase {
             case NONE -> {
             }
         }
+    }
+
+    private void addWalledKeepSettings(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                       WorkspaceDraftSession editor, MKWalledKeepSizingReport report) {
+        addText(screen, content, "Walled Keep Settings");
+        addText(screen, content, "Footprint " + report.footprintWidth() + " x " + report.footprintLength() +
+                " - required radius " + report.requiredJigsawRadius() +
+                " / cap " + report.maxDistanceFromCenter());
+
+        MKButton terrainButton = new MKButton(
+                Component.literal(formatTopologyLabel(editor.terrainAdjustment().getSerializedName())),
+                180, screen.buttonHeight());
+        terrainButton.setPressedCallback((button, mouseButton) -> {
+            editor.terrainAdjustment(cycleValue(terrainAdjustmentModes(), editor.terrainAdjustment(),
+                    isReverseClick(mouseButton)));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, "Terrain Adaptation", terrainButton);
+
+        addCornerModeRow(screen, content, editor, "NW Corner", "keep.corner.north_west");
+        addCornerModeRow(screen, content, editor, "NE Corner", "keep.corner.north_east");
+        addCornerModeRow(screen, content, editor, "SE Corner", "keep.corner.south_east");
+        addCornerModeRow(screen, content, editor, "SW Corner", "keep.corner.south_west");
+
+        List<Integer> socketSizes = report.allowedCourtyardContentSizes();
+        if (!socketSizes.isEmpty()) {
+            int snapped = report.snappedCourtyardContentSize(editor.courtyardContentTemplateSize());
+            if (snapped != editor.courtyardContentTemplateSize()) {
+                editor.courtyardContentTemplateSize(snapped);
+            }
+            MKIntegerSlider socketSlider = new MKIntegerSlider("Size", 180, screen.buttonHeight(),
+                    socketSizes, snapped, value -> {
+                editor.courtyardContentTemplateSize(value);
+                screen.flagNeedSetup();
+            });
+            addRow(screen, content, "Courtyard Socket", socketSlider);
+        } else {
+            MKButton noFitButton = new MKButton(Component.literal("No Fit"), 180, screen.buttonHeight());
+            noFitButton.setTooltip(Component.literal("Current sizing leaves no valid courtyard content socket."));
+            addRow(screen, content, "Courtyard Socket", noFitButton);
+        }
+
+        MKButton perimeterKindButton = new MKButton(
+                Component.literal(formatTopologyLabel(editor.perimeterRunKind().getSerializedName())),
+                180, screen.buttonHeight());
+        perimeterKindButton.setPressedCallback((button, mouseButton) -> {
+            editor.perimeterRunKind(cycleValue(List.of(
+                            MKWorkspaceLinearRunKind.DEFENSIVE_WALL,
+                            MKWorkspaceLinearRunKind.SOLID_WALL,
+                            MKWorkspaceLinearRunKind.PARAPET),
+                    editor.perimeterRunKind(), isReverseClick(mouseButton)));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, "Perimeter Kind", perimeterKindButton);
+
+        MKIntegerSlider wallUnitSpanSlider = new MKIntegerSlider("Span", 180, screen.buttonHeight(),
+                3, 45, 2, editor.wallUnitSpan(), value -> {
+            editor.wallUnitSpan(value);
+            screen.flagNeedSetup();
+        });
+        addRow(screen, content, "Wall Span (Recommended " + report.recommendedWallUnitSpan() + ")",
+                wallUnitSpanSlider);
+
+        MKIntegerSlider wallPassageWidthSlider = new MKIntegerSlider("Width", 180, screen.buttonHeight(),
+                3, 15, 2, editor.wallPassageWidth(), value -> {
+            editor.wallPassageWidth(value);
+            screen.flagNeedSetup();
+        });
+        addRow(screen, content, "Wall Passage", wallPassageWidthSlider);
+
+        MKIntegerSlider wallHeightSlider = new MKIntegerSlider("Height", 180, screen.buttonHeight(),
+                2, MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE - 1, 1,
+                editor.wallHeight(), value -> {
+            editor.wallHeight(value);
+            screen.flagNeedSetup();
+        });
+        addRow(screen, content, "Wall Height", wallHeightSlider);
+
+        MKIntegerSlider wallTopVoidSlider = new MKIntegerSlider("Margin", 180, screen.buttonHeight(),
+                0, Math.max(0, editor.wallHeight() - 1), 1,
+                editor.wallTopVoidMargin(), value -> {
+            editor.wallTopVoidMargin(value);
+            screen.flagNeedSetup();
+        });
+        addRow(screen, content, "Wall Top Void", wallTopVoidSlider);
+
+        MKButton resetButton = new MKButton(Component.literal("Reset Perimeter"), 180, screen.buttonHeight());
+        resetButton.setPressedCallback((button, mouseButton) -> {
+            editor.resetWalledKeepPerimeterDefaults();
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, "Wall Defaults", resetButton);
+    }
+
+    private void addCornerModeRow(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                  WorkspaceDraftSession editor, String label, String topologySlotId) {
+        MKButton modeButton = new MKButton(
+                Component.literal(editor.uniqueCornerTower(topologySlotId) ? "Unique" : "Shared"),
+                180, screen.buttonHeight());
+        modeButton.setPressedCallback((button, mouseButton) -> {
+            editor.uniqueCornerTower(topologySlotId, !editor.uniqueCornerTower(topologySlotId));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, label, modeButton);
+    }
+
+    private void addRow(MKWorkspaceScreen screen, MKStackLayoutVertical content, String label, MKButton button) {
+        MKText labelText = screen.makeWhiteText(Component.literal(label));
+        labelText.setWidth(screen.contentWidth());
+        content.addWidget(labelText);
+        content.addConstraintToWidget(MarginConstraint.LEFT, labelText);
+        content.addWidget(button);
+        content.addConstraintToWidget(new CenterXConstraint(), button);
+    }
+
+    private void addRow(MKWorkspaceScreen screen, MKStackLayoutVertical content, String label, MKIntegerSlider slider) {
+        MKText labelText = screen.makeWhiteText(Component.literal(label));
+        labelText.setWidth(screen.contentWidth());
+        content.addWidget(labelText);
+        content.addConstraintToWidget(MarginConstraint.LEFT, labelText);
+        content.addWidget(slider);
+        content.addConstraintToWidget(new CenterXConstraint(), slider);
     }
 
     private void addLayerStateSummary(MKWorkspaceScreen screen, MKStackLayoutVertical content,
@@ -213,6 +347,35 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         widget.setWidth(screen.contentWidth());
         content.addWidget(widget);
         content.addConstraintToWidget(MarginConstraint.LEFT, widget);
+    }
+
+    private List<TerrainAdjustment> terrainAdjustmentModes() {
+        ArrayList<TerrainAdjustment> modes = new ArrayList<>();
+        modes.add(TerrainAdjustment.BEARD_THIN);
+        modes.add(TerrainAdjustment.NONE);
+        modes.add(TerrainAdjustment.BEARD_BOX);
+        modes.add(TerrainAdjustment.BURY);
+        modes.add(TerrainAdjustment.ENCAPSULATE);
+        return List.copyOf(modes);
+    }
+
+    private boolean isReverseClick(int mouseButton) {
+        return mouseButton == 1;
+    }
+
+    private <T> T cycleValue(List<T> values, T current, boolean reverse) {
+        if (values.isEmpty()) {
+            return current;
+        }
+        int index = values.indexOf(current);
+        if (index < 0) {
+            return values.getFirst();
+        }
+        return values.get(Math.floorMod(index + (reverse ? -1 : 1), values.size()));
+    }
+
+    private String formatTopologyLabel(String key) {
+        return WorkspacePieceDisplay.formatTopologyLabel(key);
     }
 
 }
