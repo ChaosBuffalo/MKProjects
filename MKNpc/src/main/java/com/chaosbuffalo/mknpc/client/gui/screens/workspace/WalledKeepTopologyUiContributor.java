@@ -30,12 +30,7 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
     @Override
     public void addDefaultsSections(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                     WorkspaceDraftSession editor) {
-        addWalledKeepSizingSection(screen, content, editor, false);
-        addCornerModeRow(screen, content, editor, "NW Corner", "keep.corner.north_west");
-        addCornerModeRow(screen, content, editor, "NE Corner", "keep.corner.north_east");
-        addCornerModeRow(screen, content, editor, "SE Corner", "keep.corner.south_east");
-        addCornerModeRow(screen, content, editor, "SW Corner", "keep.corner.south_west");
-        addPerimeterRows(screen, content, editor);
+        addKeepLayoutSettings(screen, content, editor, false);
         WorkspaceTopologyUiSupport.addText(screen, content, Component.literal(
                 "Perimeter walls use one shared linear-run slot. The keep planner repeats it as whole wall segments."));
         addTowerTabs(screen, content, editor);
@@ -46,7 +41,12 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
                                              WorkspaceDraftSession editor) {
         editor.ensureInitialized();
         WorkspaceTopologyUiSupport.addText(screen, content, Component.literal("Walled Keep Settings"));
-        addWalledKeepSizingSection(screen, content, editor, true);
+        addKeepLayoutSettings(screen, content, editor, true);
+    }
+
+    private void addKeepLayoutSettings(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                       WorkspaceDraftSession editor, boolean navigablePreview) {
+        addWalledKeepSizingSection(screen, content, editor, navigablePreview);
         addCornerModeRow(screen, content, editor, "NW Corner", "keep.corner.north_west");
         addCornerModeRow(screen, content, editor, "NE Corner", "keep.corner.north_east");
         addCornerModeRow(screen, content, editor, "SE Corner", "keep.corner.south_east");
