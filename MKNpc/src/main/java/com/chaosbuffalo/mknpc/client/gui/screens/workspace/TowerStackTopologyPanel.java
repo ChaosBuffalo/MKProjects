@@ -53,19 +53,10 @@ public class TowerStackTopologyPanel {
                 report, selectedSection, sectionKey -> {
             editor.towerStackPreviewSelection(stackId, sectionKey);
             screen.flagNeedSetup();
-        }, controls(screen, editor, stackId));
+        }, sectionKey -> screen.openWorkspaceFloorPlanNode(stackId, sectionKey),
+                controls(screen, editor, stackId));
         content.addWidget(preview);
         content.addConstraintToWidget(new CenterXConstraint(), preview);
-        MKFloorTopologyPlanPreview.Controls floorControls = floorPlanControls(screen, editor, stackId);
-        if (floorControls.hasFloorTopology(selectedSection)) {
-            MKButton floorPlanButton = new MKButton(Component.literal("Floor Plan"), 180, screen.buttonHeight());
-            floorPlanButton.setPressedCallback((button, mouseButton) -> {
-                screen.openWorkspaceFloorPlanNode(stackId, selectedSection);
-                return true;
-            });
-            content.addWidget(floorPlanButton);
-            content.addConstraintToWidget(new CenterXConstraint(), floorPlanButton);
-        }
     }
 
     public void addStackSettings(MKWorkspaceScreen screen, MKStackLayoutVertical content,
@@ -85,10 +76,14 @@ public class TowerStackTopologyPanel {
                     "The selected tower section does not have floor plan controls."));
             return;
         }
-        MKFloorTopologyPlanPreview floorPlan = new MKFloorTopologyPlanPreview(
+        MKFloorTopologyPlanPreview floorPlanPreview = MKFloorTopologyPlanPreview.previewOnly(
                 layout.previewWidth(), stackId, sectionKey, floorControls);
-        layout.previewContent().addWidget(floorPlan);
-        layout.previewContent().addConstraintToWidget(new CenterXConstraint(), floorPlan);
+        layout.previewContent().addWidget(floorPlanPreview);
+        layout.previewContent().addConstraintToWidget(new CenterXConstraint(), floorPlanPreview);
+        MKFloorTopologyPlanPreview floorPlanSettings = MKFloorTopologyPlanPreview.settingsOnly(
+                layout.settingsWidth(), stackId, sectionKey, floorControls);
+        layout.settingsContent().addWidget(floorPlanSettings);
+        layout.settingsContent().addConstraintToWidget(new CenterXConstraint(), floorPlanSettings);
     }
 
     private String normalizedSelectedSection(WorkspaceDraftSession editor, String stackId, MKTowerStackSizingReport report) {

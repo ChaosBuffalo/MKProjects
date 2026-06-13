@@ -54,22 +54,60 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     private static final int MASK_ARM_THICKNESS = 11;
     private static final int SLIDER_LABEL_WIDTH = 78;
 
+    private enum ViewMode {
+        ALL,
+        PREVIEW_ONLY,
+        SETTINGS_ONLY
+    }
+
     private final String stackId;
     private final String sectionKey;
     private final Controls controls;
+    private final ViewMode viewMode;
     private String draggingSlider = "";
 
     public MKFloorTopologyPlanPreview(int width, String stackId, String sectionKey, Controls controls) {
-        super(0, 0, width, heightFor(controls, sectionKey));
+        this(width, stackId, sectionKey, controls, ViewMode.ALL);
+    }
+
+    private MKFloorTopologyPlanPreview(int width, String stackId, String sectionKey, Controls controls,
+                                       ViewMode viewMode) {
+        super(0, 0, width, heightFor(controls, sectionKey, viewMode));
         this.stackId = stackId;
         this.sectionKey = sectionKey;
         this.controls = controls;
+        this.viewMode = viewMode;
+    }
+
+    public static MKFloorTopologyPlanPreview previewOnly(int width, String stackId, String sectionKey,
+                                                         Controls controls) {
+        return new MKFloorTopologyPlanPreview(width, stackId, sectionKey, controls, ViewMode.PREVIEW_ONLY);
+    }
+
+    public static MKFloorTopologyPlanPreview settingsOnly(int width, String stackId, String sectionKey,
+                                                          Controls controls) {
+        return new MKFloorTopologyPlanPreview(width, stackId, sectionKey, controls, ViewMode.SETTINGS_ONLY);
     }
 
     public static int heightFor(Controls controls, String sectionKey) {
+        return heightFor(controls, sectionKey, ViewMode.ALL);
+    }
+
+    private static int heightFor(Controls controls, String sectionKey, ViewMode viewMode) {
         if (!controls.hasFloorTopology(sectionKey)) {
             return 0;
         }
+        if (viewMode == ViewMode.PREVIEW_ONLY) {
+            return 12 + PREVIEW_SIZE + 18;
+        }
+        int settingsHeight = PATH_CONTROLS_HEIGHT + roomSectionsHeight(controls, sectionKey);
+        if (viewMode == ViewMode.SETTINGS_ONLY) {
+            return 12 + settingsHeight + 18;
+        }
+        return 12 + PREVIEW_SIZE + settingsHeight + 18;
+    }
+
+    private static int roomSectionsHeight(Controls controls, String sectionKey) {
         int mainRows = Math.max(1, controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.MAIN_ROOM).size());
         int branchRows = Math.max(1, controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.BRANCH_ROOM).size());
         int branchCapRows = Math.max(1, controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.BRANCH_CAP).size());
@@ -77,8 +115,8 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 Math.max(1, controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.MAIN_CAP_APPROACH).size()) : 0;
         int capRows = Math.max(1, controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.MAIN_CAP).size());
         int sectionHeaders = 4 + (controls.floorMainCapApproachEnabled(sectionKey) ? 1 : 0);
-        return 12 + PREVIEW_SIZE + PATH_CONTROLS_HEIGHT + (ROOM_SECTION_HEADER * sectionHeaders) +
-                ((mainRows + branchRows + branchCapRows + approachRows + capRows) * ROOM_ROW_HEIGHT) + 18;
+        return (ROOM_SECTION_HEADER * sectionHeaders) +
+                ((mainRows + branchRows + branchCapRows + approachRows + capRows) * ROOM_ROW_HEIGHT);
     }
 
     @Override
@@ -88,15 +126,19 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             return;
         }
         graphics.fill(x, y, x + width, y + height, BACKGROUND);
-        graphics.drawString(mc.font, "Floor Plan - " + WorkspaceTopologyUiSupport.formatTopologyLabel(sectionKey),
-                x + 8, y + 8, TEXT, false);
         ButtonBounds preview = previewBounds(x, y, width);
-        drawPlan(graphics, mc, preview, mouseX, mouseY);
-        int cursorY = preview.y() + preview.height() + 8;
-        drawPathControls(graphics, mc, x + 8, cursorY, width - 16, mouseX, mouseY);
-        cursorY += PATH_CONTROLS_HEIGHT;
-        for (MKWorkspaceFloorRoomKind kind : roomKindsForUi()) {
-            cursorY = drawRoomSection(graphics, mc, x + 8, cursorY, width - 16, kind, mouseX, mouseY);
+        if (drawsPreview()) {
+            graphics.drawString(mc.font, "Floor Plan - " + WorkspaceTopologyUiSupport.formatTopologyLabel(sectionKey),
+                    x + 8, y + 8, TEXT, false);
+            drawPlan(graphics, mc, preview, mouseX, mouseY);
+        }
+        if (drawsSettings()) {
+            int cursorY = settingsStartY(x, y, width);
+            drawPathControls(graphics, mc, x + 8, cursorY, width - 16, mouseX, mouseY);
+            cursorY += PATH_CONTROLS_HEIGHT;
+            for (MKWorkspaceFloorRoomKind kind : roomKindsForUi()) {
+                cursorY = drawRoomSection(graphics, mc, x + 8, cursorY, width - 16, kind, mouseX, mouseY);
+            }
         }
     }
 
@@ -105,13 +147,13 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         if (!controls.hasFloorTopology(sectionKey)) {
             return false;
         }
-        if (handlePreviewPress(mouseX, mouseY)) {
+        if (drawsPreview() && handlePreviewPress(mouseX, mouseY)) {
             return true;
         }
-        if (handlePathControlPress(mouseX, mouseY, mouseButton)) {
+        if (drawsSettings() && handlePathControlPress(mouseX, mouseY, mouseButton)) {
             return true;
         }
-        return handleRoomPress(mouseX, mouseY, mouseButton);
+        return drawsSettings() && handleRoomPress(mouseX, mouseY, mouseButton);
     }
 
     @Override
@@ -618,8 +660,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     }
 
     private boolean handlePathControlPress(double mouseX, double mouseY, int mouseButton) {
-        ButtonBounds preview = previewBounds(getX(), getY(), getWidth());
-        int y = preview.y() + preview.height() + 8;
+        int y = settingsStartY(getX(), getY(), getWidth());
         int x = getX() + 8;
         int width = getWidth() - 16;
         if (isInRect(mouseX, mouseY, pathToggleBounds(x, y, 0))) {
@@ -705,8 +746,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     }
 
     private boolean handleRoomPress(double mouseX, double mouseY, int mouseButton) {
-        ButtonBounds preview = previewBounds(getX(), getY(), getWidth());
-        int cursorY = preview.y() + preview.height() + 8 + PATH_CONTROLS_HEIGHT;
+        int cursorY = roomStartY(getX(), getY(), getWidth());
         for (MKWorkspaceFloorRoomKind kind : roomKindsForUi()) {
             int x = getX() + 8;
             int width = getWidth() - 16;
@@ -832,7 +872,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
 
     private Optional<String> hoveredTooltip(int x, int y, int width, int mouseX, int mouseY) {
         ButtonBounds preview = previewBounds(x, y, width);
-        if (isInRect(mouseX, mouseY, preview.x(), preview.y(), preview.width(), preview.height())) {
+        if (drawsPreview() && isInRect(mouseX, mouseY, preview.x(), preview.y(), preview.width(), preview.height())) {
             if (isInRect(mouseX, mouseY, rerollButton(preview))) {
                 return controls.lockedLayoutSeed(sectionKey).isPresent() ?
                         Optional.of("Reroll sample\nUnlock the sample before rerolling") :
@@ -850,7 +890,10 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                     .map(PlanSegment::tooltip)
                     .or(() -> Optional.of("Floor Plan\nTop-down generation preview"));
         }
-        int cursorY = preview.y() + preview.height() + 8 + PATH_CONTROLS_HEIGHT;
+        if (!drawsSettings()) {
+            return Optional.empty();
+        }
+        int cursorY = roomStartY(x, y, width);
         for (MKWorkspaceFloorRoomKind kind : roomKindsForUi()) {
             cursorY += ROOM_SECTION_HEADER;
             List<MKWorkspaceFloorRoomProfile> profiles = controls.roomProfiles(sectionKey, kind);
@@ -901,10 +944,9 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     }
 
     private SliderBounds sliderBoundsFor(String id) {
-        ButtonBounds preview = previewBounds(getX(), getY(), getWidth());
         int x = getX() + 8;
         int width = getWidth() - 16;
-        int pathY = preview.y() + preview.height() + 8;
+        int pathY = settingsStartY(getX(), getY(), getWidth());
         if ("floorMinMain".equals(id)) {
             return sliderBounds(x, pathY + 50, width, id);
         }
@@ -939,7 +981,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         MKWorkspaceFloorRoomKind targetKind = roomKindFromSlider(parts[1]);
         int targetIndex = Integer.parseInt(parts[2]);
         String field = parts[3];
-        int cursorY = preview.y() + preview.height() + 8 + PATH_CONTROLS_HEIGHT;
+        int cursorY = roomStartY(getX(), getY(), getWidth());
         for (MKWorkspaceFloorRoomKind kind : roomKindsForUi()) {
             cursorY += ROOM_SECTION_HEADER;
             int count = controls.roomProfiles(sectionKey, kind).size();
@@ -972,6 +1014,26 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     private ButtonBounds previewBounds(int x, int y, int width) {
         int size = Math.min(PREVIEW_SIZE, Math.max(80, width - 16));
         return new ButtonBounds(x + (width - size) / 2, y + 24, size, size);
+    }
+
+    private boolean drawsPreview() {
+        return viewMode != ViewMode.SETTINGS_ONLY;
+    }
+
+    private boolean drawsSettings() {
+        return viewMode != ViewMode.PREVIEW_ONLY;
+    }
+
+    private int settingsStartY(int x, int y, int width) {
+        if (drawsPreview()) {
+            ButtonBounds preview = previewBounds(x, y, width);
+            return preview.y() + preview.height() + 8;
+        }
+        return y + 8;
+    }
+
+    private int roomStartY(int x, int y, int width) {
+        return settingsStartY(x, y, width) + PATH_CONTROLS_HEIGHT;
     }
 
     private ButtonBounds rerollButton(ButtonBounds preview) {

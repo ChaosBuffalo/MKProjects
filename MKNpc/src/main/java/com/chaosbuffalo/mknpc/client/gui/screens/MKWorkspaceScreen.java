@@ -387,6 +387,9 @@ public class MKWorkspaceScreen extends MKScreen {
         }
         selectedFloorPlanStackId = stackId;
         selectedFloorPlanSectionKey = sectionKey;
+        if (!WorkspacePlannerNodePage.ID.equals(getState())) {
+            pushState(WorkspacePlannerNodePage.ID);
+        }
         pushState(WorkspaceFloorPlanPage.ID);
         flagNeedSetup();
     }

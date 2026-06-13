@@ -79,15 +79,18 @@ public class MKTowerStackSidePreview extends MKWidget {
     private final MKTowerStackSizingReport report;
     private final String selectedKey;
     private final Consumer<String> selectionCallback;
+    private final Consumer<String> floorPlanCallback;
     private final Controls controls;
     private String draggingSlider = "";
 
     public MKTowerStackSidePreview(int width, int height, MKTowerStackSizingReport report,
-                                   String selectedKey, Consumer<String> selectionCallback, Controls controls) {
+                                   String selectedKey, Consumer<String> selectionCallback,
+                                   Consumer<String> floorPlanCallback, Controls controls) {
         super(0, 0, width, height);
         this.report = report;
         this.selectedKey = selectedKey;
         this.selectionCallback = selectionCallback;
+        this.floorPlanCallback = floorPlanCallback;
         this.controls = controls;
     }
 
@@ -113,8 +116,14 @@ public class MKTowerStackSidePreview extends MKWidget {
         if (selected.isPresent() && handleControlPress(selected.get(), mouseX, mouseY, mouseButton)) {
             return true;
         }
-        return hoveredSection(getX(), getY(), getWidth(), getHeight(), (int) mouseX, (int) mouseY)
-                .map(section -> {
+        Optional<MKTowerStackSizingReport.SectionInfo> hovered = hoveredSection(getX(), getY(), getWidth(),
+                getHeight(), (int) mouseX, (int) mouseY);
+        if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT && hovered.isPresent() &&
+                controls.hasFloorTopology(hovered.get().key())) {
+            floorPlanCallback.accept(hovered.get().key());
+            return true;
+        }
+        return hovered.map(section -> {
                     selectionCallback.accept(section.key());
                     return true;
                 })
