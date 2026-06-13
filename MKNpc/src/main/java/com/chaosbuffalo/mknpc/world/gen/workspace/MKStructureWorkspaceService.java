@@ -13,6 +13,14 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthorin
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologyMutationPreflightService;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInvalidationReport;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLayerStateService;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationSafety;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportArchiveWriter;
@@ -37,6 +45,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -72,6 +81,9 @@ public class MKStructureWorkspaceService {
     private final MKStructureWorkspaceMutationService mutationService = new MKStructureWorkspaceMutationService();
     private final MKWorkspaceIdentityRenameService identityRenameService = new MKWorkspaceIdentityRenameService();
     private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
+    private final MKWorkspaceFloorTopologyMutationPreflightService floorTopologyPreflightService =
+            new MKWorkspaceFloorTopologyMutationPreflightService();
+    private final MKWorkspaceLayerStateService layerStateService = new MKWorkspaceLayerStateService();
 
     public Optional<MKStructureWorkspace> createOrUpdateTowerWorkspace(ServerLevel level, MKStructureWorkspace workspace) {
         List<String> errors = workspace.validate();
@@ -171,6 +183,110 @@ public class MKStructureWorkspaceService {
                 .getWorkspaceByAnchor(requested.anchor())
                 .filter(existing -> canExpandMarginsOnly(existing, requested))
                 .isPresent();
+    }
+
+    public Optional<MKWorkspaceMutationPreflight> preflightWorkspaceUpdate(ServerLevel level,
+                                                                           MKStructureWorkspace requested) {
+        IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
+        return data.getWorkspaceByAnchor(requested.anchor())
+                .map(existing -> preflightWorkspaceUpdate(existing, requested, System.currentTimeMillis()));
+    }
+
+    public MKWorkspaceMutationPreflight preflightWorkspaceUpdate(MKStructureWorkspace existing,
+                                                                 MKStructureWorkspace requested,
+                                                                 long nowEpochMillis) {
+        List<MKWorkspaceInvalidationReport> floorReports = floorTopologyReports(existing, requested, nowEpochMillis);
+        MKWorkspaceInvalidationReport report = mergeReports(floorReports);
+        MKStructureWorkspace workspaceWithLayerStates = layerStateService.ensureLayerStates(existing, nowEpochMillis);
+        MKStructureWorkspace workspaceWithDirtyLayers = layerStateService.applyInvalidation(
+                workspaceWithLayerStates, report, nowEpochMillis);
+        return new MKWorkspaceMutationPreflight(report, workspaceWithDirtyLayers);
+    }
+
+    private List<MKWorkspaceInvalidationReport> floorTopologyReports(MKStructureWorkspace existing,
+                                                                     MKStructureWorkspace requested,
+                                                                     long nowEpochMillis) {
+        List<MKWorkspaceInvalidationReport> reports = new ArrayList<>();
+        for (MKWorkspaceFloorTopologySettings requestedSettings :
+                requested.topologyProfile().floorTopologySettings()) {
+            MKWorkspaceFloorTopologySettings previousSettings = existing.topologyProfile()
+                    .floorTopologySettings(requestedSettings.stackId(), requestedSettings.floorRole())
+                    .orElseGet(() -> existing.topologyProfile().floorTopologySettingsOrDefault(
+                            requestedSettings.stackId(), requestedSettings.floorRole()));
+            MKWorkspaceMutationPreflight preflight = floorTopologyPreflightService.preflight(
+                    existing,
+                    floorPlannerId(requestedSettings),
+                    previousSettings,
+                    requestedSettings,
+                    nowEpochMillis);
+            if (!preflight.report().invalidatedLayers().isEmpty()) {
+                reports.add(preflight.report());
+            }
+        }
+        return List.copyOf(reports);
+    }
+
+    private MKWorkspacePlannerId floorPlannerId(MKWorkspaceFloorTopologySettings settings) {
+        return MKWorkspacePlannerId.of(settings.stackId())
+                .child("floor")
+                .child(settings.floorRole())
+                .child("floor_plan");
+    }
+
+    private MKWorkspaceInvalidationReport mergeReports(List<MKWorkspaceInvalidationReport> reports) {
+        if (reports.isEmpty()) {
+            return MKWorkspaceInvalidationReport.noChanges("Requested workspace settings do not invalidate generated layers.");
+        }
+        LinkedHashSet<MKWorkspaceGeneratedLayer> layers = new LinkedHashSet<>();
+        LinkedHashSet<MKWorkspacePlannerId> affected = new LinkedHashSet<>();
+        LinkedHashSet<MKWorkspacePlannerId> preserved = new LinkedHashSet<>();
+        LinkedHashSet<MKWorkspacePlannerId> orphaned = new LinkedHashSet<>();
+        ArrayList<String> warnings = new ArrayList<>();
+        MKWorkspaceMutationSafety safety = MKWorkspaceMutationSafety.SAFE_METADATA_UPDATE;
+        LinkedHashSet<String> operations = new LinkedHashSet<>();
+        for (MKWorkspaceInvalidationReport report : reports) {
+            layers.addAll(report.invalidatedLayers());
+            affected.addAll(report.affectedPlannerIds());
+            preserved.addAll(report.preservedTemplateBindings());
+            orphaned.addAll(report.orphanedTemplateBindings());
+            warnings.addAll(report.warnings());
+            safety = maxSafety(safety, report.safety());
+            operations.add(report.recommendedOperation());
+        }
+        return new MKWorkspaceInvalidationReport(
+                List.copyOf(layers),
+                List.copyOf(affected),
+                List.copyOf(preserved),
+                List.copyOf(orphaned),
+                safety,
+                summaryForReports(reports, safety),
+                operations.size() == 1 ? operations.getFirst() : "mixed_workspace_update",
+                List.copyOf(warnings)
+        );
+    }
+
+    private String summaryForReports(List<MKWorkspaceInvalidationReport> reports, MKWorkspaceMutationSafety safety) {
+        if (reports.size() == 1) {
+            return reports.getFirst().summary();
+        }
+        return "Workspace update affects " + reports.size() + " floor topology sections; highest safety is " +
+                safety.getSerializedName() + ".";
+    }
+
+    private MKWorkspaceMutationSafety maxSafety(MKWorkspaceMutationSafety current,
+                                                MKWorkspaceMutationSafety candidate) {
+        return safetyRank(candidate) > safetyRank(current) ? candidate : current;
+    }
+
+    private int safetyRank(MKWorkspaceMutationSafety safety) {
+        return switch (safety) {
+            case SAFE_METADATA_UPDATE -> 0;
+            case SAFE_BLOCK_SUBSTITUTION -> 1;
+            case SAFE_EXPANSION -> 2;
+            case SAFE_RELAYOUT -> 3;
+            case CONDITIONALLY_SAFE_TOPOLOGY_PATCH -> 4;
+            case DESTRUCTIVE_REGENERATE -> 5;
+        };
     }
 
     public Optional<MKStructureWorkspace> generateTowerWorkspace(ServerLevel level, BlockPos anchor) {
