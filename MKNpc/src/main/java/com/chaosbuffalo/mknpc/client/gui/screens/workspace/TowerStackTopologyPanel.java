@@ -32,6 +32,18 @@ import java.util.OptionalInt;
 public class TowerStackTopologyPanel {
     public void addStackEditor(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                WorkspaceDraftSession editor, String stackId, String labelPrefix) {
+        addStackPreview(screen, content, editor, stackId);
+        addStackSettings(screen, content, editor, stackId, labelPrefix);
+    }
+
+    public void addStackEditor(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
+                               WorkspaceDraftSession editor, String stackId, String labelPrefix) {
+        addStackPreview(screen, layout.previewContent(), editor, stackId);
+        addStackSettings(screen, layout.settingsContent(), editor, stackId, labelPrefix);
+    }
+
+    public void addStackPreview(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                WorkspaceDraftSession editor, String stackId) {
         MKTowerStackSizingReport report = MKTowerStackSizingReport.fromSettings(editor.towerStackSettingsForUi(stackId),
                 editor.towerStackFamiliesForUi(stackId));
         String selectedSection = normalizedSelectedSection(editor, stackId, report);
@@ -50,6 +62,10 @@ public class TowerStackTopologyPanel {
             content.addWidget(floorPlan);
             content.addConstraintToWidget(new CenterXConstraint(), floorPlan);
         }
+    }
+
+    public void addStackSettings(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                 WorkspaceDraftSession editor, String stackId, String labelPrefix) {
         addFloorRows(screen, content, editor, stackId);
         WorkspaceTopologyUiSupport.addResetRow(screen, content, labelPrefix + " Stack", () -> {
             editor.resetTowerStackDefaults(stackId);

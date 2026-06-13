@@ -21,7 +21,6 @@ import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
-import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -50,8 +49,11 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
         MKText helpText = addHeaderText(screen, root, Component.literal(
                 "Set the broad sizing and stack defaults for this planner before editing individual family overrides."));
 
-        MKScrollView scrollView = addScrollBelowHeader(screen, root, helpText);
-        MKStackLayoutVertical content = createContentStack(screen);
+        int contentTop = screen.scrollTopAfterHeader(root, helpText);
+        int contentHeight = screen.panelY() + screen.panelHeight() - screen.bottomPadding() -
+                screen.buttonHeight() - 12 - contentTop;
+        WorkspacePlannerLayout layout = addPlannerLayout(screen, root, contentTop, contentHeight);
+        MKStackLayoutVertical content = layout.settingsContent();
 
         MKText topologyText = screen.makeWhiteText(Component.literal(
                 "Active planner: " + editor.topologyPlannerId()));
@@ -61,9 +63,9 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
         content.addConstraintToWidget(MarginConstraint.LEFT, topologyText);
 
         WorkspacePlannerUiRegistry.getTopologyUi(editor.topologyPlannerId())
-                .addDefaultsSections(screen, content, editor);
+                .addDefaultsLayout(screen, layout, editor);
 
-        finishScrollContent(screen, scrollView, content);
+        finishPlannerLayout(screen, layout);
         addBackButton(screen, root, WorkspaceFormPage.ID);
         return root;
     }

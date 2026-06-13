@@ -37,11 +37,28 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
     }
 
     @Override
+    public void addDefaultsLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
+                                  WorkspaceDraftSession editor) {
+        addKeepLayoutSettings(screen, layout, editor, false);
+        WorkspaceTopologyUiSupport.addText(screen, layout.settingsContent(), Component.literal(
+                "Perimeter walls use one shared linear-run slot. The keep planner repeats it as whole wall segments."));
+        addTowerTabs(screen, layout.settingsContent(), editor);
+    }
+
+    @Override
     public void addWorkspaceOverviewSections(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                              WorkspaceDraftSession editor) {
         editor.ensureInitialized();
         WorkspaceTopologyUiSupport.addText(screen, content, Component.literal("Walled Keep Settings"));
         addKeepLayoutSettings(screen, content, editor, true);
+    }
+
+    @Override
+    public void addWorkspaceOverviewLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
+                                           WorkspaceDraftSession editor) {
+        editor.ensureInitialized();
+        WorkspaceTopologyUiSupport.addText(screen, layout.settingsContent(), Component.literal("Walled Keep Settings"));
+        addKeepLayoutSettings(screen, layout, editor, true);
     }
 
     private void addKeepLayoutSettings(MKWorkspaceScreen screen, MKStackLayoutVertical content,
@@ -54,8 +71,28 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
         addPerimeterRows(screen, content, editor);
     }
 
+    private void addKeepLayoutSettings(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
+                                       WorkspaceDraftSession editor, boolean navigablePreview) {
+        MKWalledKeepSizingReport report = addWalledKeepPreviewSection(screen, layout.previewContent(), editor,
+                navigablePreview);
+        addWalledKeepSizingControlRows(screen, layout.settingsContent(), editor, report);
+        addCornerModeRow(screen, layout.settingsContent(), editor, "NW Corner", "keep.corner.north_west");
+        addCornerModeRow(screen, layout.settingsContent(), editor, "NE Corner", "keep.corner.north_east");
+        addCornerModeRow(screen, layout.settingsContent(), editor, "SE Corner", "keep.corner.south_east");
+        addCornerModeRow(screen, layout.settingsContent(), editor, "SW Corner", "keep.corner.south_west");
+        addPerimeterRows(screen, layout.settingsContent(), editor);
+    }
+
     private void addWalledKeepSizingSection(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                             WorkspaceDraftSession editor, boolean navigable) {
+        MKWalledKeepSizingReport report = addWalledKeepPreviewSection(screen, content, editor, navigable);
+        addWalledKeepSizingControlRows(screen, content, editor, report);
+    }
+
+    private MKWalledKeepSizingReport addWalledKeepPreviewSection(MKWorkspaceScreen screen,
+                                                                 MKStackLayoutVertical content,
+                                                                 WorkspaceDraftSession editor,
+                                                                 boolean navigable) {
         MKStructureWorkspace workspaceDraft = editor.buildWorkspaceDraft();
         MKWalledKeepSizingReport report = new MKWalledKeepSizingCalculator().calculate(workspaceDraft);
         WorkspaceTopologyUiSupport.addText(screen, content, Component.literal("Structure Footprint"));
@@ -83,7 +120,11 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
                         ", back " + report.backWallSegments() +
                         " | courtyard path " + report.courtyardPathSize() +
                         " | entry path " + report.entryApproachLength()));
+        return report;
+    }
 
+    private void addWalledKeepSizingControlRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                                WorkspaceDraftSession editor, MKWalledKeepSizingReport report) {
         MKButton terrainButton = new MKButton(
                 Component.literal(WorkspaceTopologyUiSupport.formatTopologyLabel(
                         editor.terrainAdjustment().getSerializedName())), 180, 20);

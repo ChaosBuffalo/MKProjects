@@ -11,6 +11,16 @@ public interface WorkspaceTopologyUiContributor {
                                               WorkspaceDraftSession editor) {
     }
 
+    default void addWorkspaceOverviewLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
+                                            WorkspaceDraftSession editor) {
+        addWorkspaceOverviewSections(screen, layout.settingsContent(), editor);
+    }
+
+    default void addDefaultsLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
+                                   WorkspaceDraftSession editor) {
+        addDefaultsSections(screen, layout.settingsContent(), editor);
+    }
+
     void addDefaultsSections(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                              WorkspaceDraftSession editor);
 }

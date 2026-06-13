@@ -64,15 +64,14 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public class MKWorkspaceScreen extends MKScreen {
-    private static final int PANEL_WIDTH = 380;
+    private static final int PANEL_WIDTH = 760;
     private static final int PANEL_HEIGHT = 390;
-    private static final int SCROLL_WIDTH = PANEL_WIDTH - 20;
     private static final int TOP_CONTENT_Y = 52;
     private static final int HEADER_SCROLL_GAP = 8;
     private static final int BUTTON_HEIGHT = 20;
     private static final int BUTTON_GAP = 4;
     private static final int BOTTOM_PADDING = 8;
-    private static final int CONTENT_WIDTH = PANEL_WIDTH - 42;
+    private static final int CONTENT_WIDTH = 338;
     private static final int TEXT_COLOR = 0xFFFFFF;
 
     private final net.minecraft.core.BlockPos anchor;
@@ -251,7 +250,7 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     public int panelWidth() {
-        return PANEL_WIDTH;
+        return Math.min(PANEL_WIDTH, Math.max(320, screenWidth() - 24));
     }
 
     public int panelHeight() {
@@ -267,7 +266,7 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     public int scrollWidth() {
-        return SCROLL_WIDTH;
+        return panelWidth() - 20;
     }
 
     public int contentWidth() {
@@ -756,7 +755,7 @@ public class MKWorkspaceScreen extends MKScreen {
         root.addWidget(idText);
 
         MKButton choose = new MKButton(Component.literal("Choose"), 82, BUTTON_HEIGHT);
-        choose.setX(xPos + PANEL_WIDTH - 106);
+        choose.setX(xPos + panelWidth() - 106);
         choose.setY(y - 6);
         root.addWidget(choose);
         choose.setPressedCallback((button, mouseButton) -> {
@@ -1034,9 +1033,9 @@ public class MKWorkspaceScreen extends MKScreen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        int xPos = width / 2 - PANEL_WIDTH / 2;
-        int yPos = height / 2 - PANEL_HEIGHT / 2;
-        graphics.fill(xPos, yPos, xPos + PANEL_WIDTH, yPos + PANEL_HEIGHT, 0xCC202020);
+        int xPos = panelX();
+        int yPos = panelY();
+        graphics.fill(xPos, yPos, xPos + panelWidth(), yPos + panelHeight(), 0xCC202020);
         super.render(graphics, mouseX, mouseY, partialTicks);
     }
 

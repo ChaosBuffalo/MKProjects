@@ -60,6 +60,33 @@ public abstract class WorkspacePageBase {
         return content;
     }
 
+    protected WorkspacePlannerLayout addPlannerLayout(MKWorkspaceScreen screen, MKLayout root,
+                                                      int top, int height) {
+        int gap = 12;
+        int paneWidth = screen.contentWidth();
+        int layoutWidth = (paneWidth * 2) + gap;
+        int left = screen.panelX() + (screen.panelWidth() - layoutWidth) / 2;
+        int settingsLeft = left + paneWidth + gap;
+
+        MKStackLayoutVertical previewContent = new MKStackLayoutVertical(left, top, paneWidth);
+        previewContent.setMargins(4, 4, 4, 4);
+        previewContent.setPaddingTop(4).setPaddingBot(4);
+        root.addWidget(previewContent);
+
+        MKScrollView settingsScrollView = new MKScrollView(settingsLeft, top, paneWidth, height);
+        settingsScrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
+        root.addWidget(settingsScrollView);
+
+        MKStackLayoutVertical settingsContent = new MKStackLayoutVertical(0, 0, paneWidth);
+        settingsContent.setMargins(4, 4, 4, 4);
+        settingsContent.setPaddingTop(4).setPaddingBot(4);
+        return new WorkspacePlannerLayout(previewContent, settingsContent, settingsScrollView);
+    }
+
+    protected void finishPlannerLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout) {
+        layout.finish(screen, id());
+    }
+
     protected void finishScrollContent(MKWorkspaceScreen screen, MKScrollView scrollView,
                                        MKStackLayoutVertical content) {
         content.manualRecompute();

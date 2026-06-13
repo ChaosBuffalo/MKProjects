@@ -13,7 +13,6 @@ import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
-import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -41,18 +40,12 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         int buttonCount = 4;
         int buttonAreaHeight = (buttonCount * screen.buttonHeight()) +
                 ((buttonCount - 1) * screen.buttonGap()) + screen.bottomPadding();
-        int scrollTop = screen.scrollTopAfterHeader(root, summary);
-        int scrollHeight = screen.panelY() + screen.panelHeight() - buttonAreaHeight - 8 - scrollTop;
-        MKScrollView scrollView = new MKScrollView(screen.panelX() + 10, scrollTop,
-                screen.scrollWidth(), scrollHeight);
-        scrollView.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
-        root.addWidget(scrollView);
-
-        MKStackLayoutVertical content = createContentStack(screen);
-        addPlannerOverview(screen, content, workspace);
-        addTemplateAuthoringSummary(screen, content, workspace);
-
-        finishScrollContent(screen, scrollView, content);
+        int contentTop = screen.scrollTopAfterHeader(root, summary);
+        int contentHeight = screen.panelY() + screen.panelHeight() - buttonAreaHeight - 8 - contentTop;
+        WorkspacePlannerLayout layout = addPlannerLayout(screen, root, contentTop, contentHeight);
+        addPlannerOverview(screen, layout, workspace);
+        addTemplateAuthoringSummary(screen, layout.settingsContent(), workspace);
+        finishPlannerLayout(screen, layout);
 
         MKButton close = addBottomButton(screen, root, Component.translatable("mknpc.workspace.button.close"), 120, 0);
         close.setPressedCallback((button, mouseButton) -> {
@@ -85,14 +78,15 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         return root;
     }
 
-    private void addPlannerOverview(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+    private void addPlannerOverview(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
                                     MKStructureWorkspace workspace) {
+        MKStackLayoutVertical content = layout.settingsContent();
         addText(screen, content, "Planner Overview");
         addText(screen, content, "Planner " + workspace.topologyProfile().plannerId() +
                 " - pieces " + workspace.pieces().size() +
                 " - layers " + workspace.layerStates().size());
         WorkspacePlannerUiRegistry.getTopologyUi(workspace.topologyProfile().plannerId())
-                .addWorkspaceOverviewSections(screen, content, screen.draftSession());
+                .addWorkspaceOverviewLayout(screen, layout, screen.draftSession());
         addLayerStateSummary(screen, content, workspace);
         addPreflightReport(screen, content, screen.preflight());
 

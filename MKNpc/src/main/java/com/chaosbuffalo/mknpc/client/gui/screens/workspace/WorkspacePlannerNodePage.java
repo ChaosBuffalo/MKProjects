@@ -2,8 +2,6 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
-import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
-import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.network.chat.Component;
 
@@ -30,10 +28,12 @@ public class WorkspacePlannerNodePage extends WorkspacePageBase {
         addTitle(screen, root, Component.literal(label));
         MKText summary = addHeaderText(screen, root, Component.literal("Tower stack controls for " + label + "."));
 
-        MKScrollView scrollView = addScrollBelowHeader(screen, root, summary);
-        MKStackLayoutVertical content = createContentStack(screen);
-        towerStackPanel.addStackEditor(screen, content, screen.draftSession(), stackId, label);
-        finishScrollContent(screen, scrollView, content);
+        int contentTop = screen.scrollTopAfterHeader(root, summary);
+        int contentHeight = screen.panelY() + screen.panelHeight() - screen.bottomPadding() -
+                screen.buttonHeight() - 12 - contentTop;
+        WorkspacePlannerLayout layout = addPlannerLayout(screen, root, contentTop, contentHeight);
+        towerStackPanel.addStackEditor(screen, layout, screen.draftSession(), stackId, label);
+        finishPlannerLayout(screen, layout);
         addBackButton(screen, root, WorkspaceManagePage.ID);
         return root;
     }

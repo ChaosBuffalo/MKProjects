@@ -18,4 +18,10 @@ public class TowerTopologyUiContributor implements WorkspaceTopologyUiContributo
                                     WorkspaceDraftSession editor) {
         towerStackPanel.addStackEditor(screen, content, editor, "tower.primary", "Primary Tower");
     }
+
+    @Override
+    public void addDefaultsLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
+                                  WorkspaceDraftSession editor) {
+        towerStackPanel.addStackEditor(screen, layout, editor, "tower.primary", "Primary Tower");
+    }
 }
