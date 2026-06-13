@@ -287,7 +287,15 @@ public class MKStructureWorkspaceService {
                         previousSettings.floorRole(),
                         requestedSettings.stackId(),
                         requestedSettings.floorRole());
-        return report.withTemplateBindings(bindingDiff.preserved(), bindingDiff.orphaned());
+        return report.withTemplateBindings(bindingDiff.preserved(), bindingDiff.orphaned())
+                .withRemapSuggestions(templateBindingDiffService.suggestFloorTopologyRemaps(
+                        existing,
+                        requestedCanonicalPieces,
+                        bindingDiff.orphaned(),
+                        previousSettings.stackId(),
+                        previousSettings.floorRole(),
+                        requestedSettings.stackId(),
+                        requestedSettings.floorRole()));
     }
 
     private MKWorkspacePlannerId floorPlannerId(MKWorkspaceFloorTopologySettings settings) {

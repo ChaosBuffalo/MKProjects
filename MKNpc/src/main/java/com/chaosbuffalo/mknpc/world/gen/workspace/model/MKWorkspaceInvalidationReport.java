@@ -13,7 +13,8 @@ public record MKWorkspaceInvalidationReport(
         MKWorkspaceMutationSafety safety,
         String summary,
         String recommendedOperation,
-        List<String> warnings
+        List<String> warnings,
+        List<MKWorkspaceTemplateRemapSuggestion> remapSuggestions
 ) {
     public static final Codec<MKWorkspaceInvalidationReport> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
@@ -30,9 +31,23 @@ public record MKWorkspaceInvalidationReport(
                     Codec.STRING.fieldOf("summary").forGetter(MKWorkspaceInvalidationReport::summary),
                     Codec.STRING.fieldOf("recommendedOperation")
                             .forGetter(MKWorkspaceInvalidationReport::recommendedOperation),
-                    Codec.STRING.listOf().fieldOf("warnings").forGetter(MKWorkspaceInvalidationReport::warnings)
+                    Codec.STRING.listOf().fieldOf("warnings").forGetter(MKWorkspaceInvalidationReport::warnings),
+                    MKWorkspaceTemplateRemapSuggestion.CODEC.listOf().optionalFieldOf("remapSuggestions", List.of())
+                            .forGetter(MKWorkspaceInvalidationReport::remapSuggestions)
             ).apply(instance, MKWorkspaceInvalidationReport::new)
     );
+
+    public MKWorkspaceInvalidationReport(List<MKWorkspaceGeneratedLayer> invalidatedLayers,
+                                         List<MKWorkspacePlannerId> affectedPlannerIds,
+                                         List<MKWorkspacePlannerId> preservedTemplateBindings,
+                                         List<MKWorkspacePlannerId> orphanedTemplateBindings,
+                                         MKWorkspaceMutationSafety safety,
+                                         String summary,
+                                         String recommendedOperation,
+                                         List<String> warnings) {
+        this(invalidatedLayers, affectedPlannerIds, preservedTemplateBindings, orphanedTemplateBindings, safety,
+                summary, recommendedOperation, warnings, List.of());
+    }
 
     public MKWorkspaceInvalidationReport {
         invalidatedLayers = List.copyOf(invalidatedLayers);
@@ -40,6 +55,7 @@ public record MKWorkspaceInvalidationReport(
         preservedTemplateBindings = List.copyOf(preservedTemplateBindings);
         orphanedTemplateBindings = List.copyOf(orphanedTemplateBindings);
         warnings = List.copyOf(warnings);
+        remapSuggestions = List.copyOf(remapSuggestions);
     }
 
     public static MKWorkspaceInvalidationReport noChanges(String summary) {
@@ -51,6 +67,7 @@ public record MKWorkspaceInvalidationReport(
                 MKWorkspaceMutationSafety.SAFE_METADATA_UPDATE,
                 summary,
                 "none",
+                List.of(),
                 List.of()
         );
     }
@@ -73,7 +90,23 @@ public record MKWorkspaceInvalidationReport(
                 safety,
                 summary,
                 recommendedOperation,
-                warnings
+                warnings,
+                remapSuggestions
+        );
+    }
+
+    public MKWorkspaceInvalidationReport withRemapSuggestions(
+            List<MKWorkspaceTemplateRemapSuggestion> newRemapSuggestions) {
+        return new MKWorkspaceInvalidationReport(
+                invalidatedLayers,
+                affectedPlannerIds,
+                preservedTemplateBindings,
+                orphanedTemplateBindings,
+                safety,
+                summary,
+                recommendedOperation,
+                warnings,
+                newRemapSuggestions
         );
     }
 }
