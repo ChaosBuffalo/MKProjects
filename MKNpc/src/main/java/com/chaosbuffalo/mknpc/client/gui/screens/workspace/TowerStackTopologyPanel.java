@@ -126,10 +126,10 @@ public class TowerStackTopologyPanel {
         layout.settingsContent().addWidget(floorPlanSettings);
         layout.settingsContent().addConstraintToWidget(new CenterXConstraint(), floorPlanSettings);
         screen.addPaletteOverrideRows(layout.settingsContent(), "Floor Palette Defaults",
-                editor.floorTopologyInheritedPalette(stackId, sectionKey),
-                editor.floorTopologyPaletteOverrideOpt(stackId, sectionKey),
+                floorEditor(editor, stackId, sectionKey).inheritedPalette(),
+                floorEditor(editor, stackId, sectionKey).paletteOverrideOpt(),
                 override -> {
-                    editor.floorTopologyPaletteOverride(stackId, sectionKey, override);
+                    floorEditor(editor, stackId, sectionKey).paletteOverride(override);
                     screen.flagNeedSetup();
                 });
     }
@@ -142,6 +142,10 @@ public class TowerStackTopologyPanel {
         }
         towerEditor.previewSelection("entry");
         return "entry";
+    }
+
+    private FloorPlanDraftEditor floorEditor(WorkspaceDraftSession editor, String stackId, String sectionKey) {
+        return editor.floorPlanEditor(stackId, sectionKey);
     }
 
     private MKTowerStackSidePreview.Controls controls(MKWorkspaceScreen screen, WorkspaceDraftSession editor,
@@ -581,91 +585,91 @@ public class TowerStackTopologyPanel {
 
             @Override
             public int floorMinMainPathPieces(String sectionKey) {
-                return editor.floorTopologyMinMainPathPieces(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).minMainPathPieces();
             }
 
             @Override
             public void floorMinMainPathPieces(String sectionKey, int value) {
-                editor.floorTopologyMinMainPathPieces(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).minMainPathPieces(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public int floorMaxMainPathPieces(String sectionKey) {
-                return editor.floorTopologyMaxMainPathPieces(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).maxMainPathPieces();
             }
 
             @Override
             public void floorMaxMainPathPieces(String sectionKey, int value) {
-                editor.floorTopologyMaxMainPathPieces(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).maxMainPathPieces(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public int floorMaxBranchPiecesBeforeCap(String sectionKey) {
-                return editor.floorTopologyMaxBranchPiecesBeforeCap(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).maxBranchPiecesBeforeCap();
             }
 
             @Override
             public void floorMaxBranchPiecesBeforeCap(String sectionKey, int value) {
-                editor.floorTopologyMaxBranchPiecesBeforeCap(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).maxBranchPiecesBeforeCap(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public MKWorkspaceHallwayLeadInMode floorHallwayLeadInMode(String sectionKey) {
-                return editor.floorTopologyHallwayLeadInMode(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).hallwayLeadInMode();
             }
 
             @Override
             public void cycleFloorHallwayLeadInMode(String sectionKey, boolean reverse) {
-                editor.floorTopologyHallwayLeadInMode(stackId, sectionKey,
-                        WorkspaceTopologyUiSupport.cycleValue(List.of(MKWorkspaceHallwayLeadInMode.values()),
-                                editor.floorTopologyHallwayLeadInMode(stackId, sectionKey), reverse));
+                FloorPlanDraftEditor floorEditor = floorEditor(editor, stackId, sectionKey);
+                floorEditor.hallwayLeadInMode(WorkspaceTopologyUiSupport.cycleValue(
+                        List.of(MKWorkspaceHallwayLeadInMode.values()), floorEditor.hallwayLeadInMode(), reverse));
                 screen.flagNeedSetup();
             }
 
             @Override
             public int floorManualHallwayLeadInPieces(String sectionKey) {
-                return editor.floorTopologyManualHallwayLeadInPieces(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).manualHallwayLeadInPieces();
             }
 
             @Override
             public void floorManualHallwayLeadInPieces(String sectionKey, int value) {
-                editor.floorTopologyManualHallwayLeadInPieces(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).manualHallwayLeadInPieces(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public boolean floorMainHallwaysEnabled(String sectionKey) {
-                return editor.floorTopologyMainHallwaysEnabled(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).mainHallwaysEnabled();
             }
 
             @Override
             public void floorMainHallwaysEnabled(String sectionKey, boolean value) {
-                editor.floorTopologyMainHallwaysEnabled(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).mainHallwaysEnabled(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public boolean floorBranchHallwaysEnabled(String sectionKey) {
-                return editor.floorTopologyBranchHallwaysEnabled(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).branchHallwaysEnabled();
             }
 
             @Override
             public void floorBranchHallwaysEnabled(String sectionKey, boolean value) {
-                editor.floorTopologyBranchHallwaysEnabled(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).branchHallwaysEnabled(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public boolean floorMainCapApproachEnabled(String sectionKey) {
-                return editor.floorTopologyMainCapApproachEnabled(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).mainCapApproachEnabled();
             }
 
             @Override
             public void floorMainCapApproachEnabled(String sectionKey, boolean value) {
-                editor.floorTopologyMainCapApproachEnabled(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).mainCapApproachEnabled(value);
                 screen.flagNeedSetup();
             }
 
@@ -677,40 +681,40 @@ public class TowerStackTopologyPanel {
 
             @Override
             public int floorRoomWidth(String sectionKey, MKWorkspaceFloorRoomKind kind) {
-                return editor.floorTopologyRoomWidth(stackId, sectionKey, kind);
+                return floorEditor(editor, stackId, sectionKey).roomWidth(kind);
             }
 
             @Override
             public void floorRoomWidth(String sectionKey, MKWorkspaceFloorRoomKind kind, int value) {
-                editor.floorTopologyRoomWidth(stackId, sectionKey, kind, value);
+                floorEditor(editor, stackId, sectionKey).roomWidth(kind, value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public int floorRoomLength(String sectionKey, MKWorkspaceFloorRoomKind kind) {
-                return editor.floorTopologyRoomLength(stackId, sectionKey, kind);
+                return floorEditor(editor, stackId, sectionKey).roomLength(kind);
             }
 
             @Override
             public void floorRoomLength(String sectionKey, MKWorkspaceFloorRoomKind kind, int value) {
-                editor.floorTopologyRoomLength(stackId, sectionKey, kind, value);
+                floorEditor(editor, stackId, sectionKey).roomLength(kind, value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public int floorRoomHeight(String sectionKey, MKWorkspaceFloorRoomKind kind) {
-                return editor.floorTopologyRoomHeight(stackId, sectionKey, kind);
+                return floorEditor(editor, stackId, sectionKey).roomHeight(kind);
             }
 
             @Override
             public void floorRoomHeight(String sectionKey, MKWorkspaceFloorRoomKind kind, int value) {
-                editor.floorTopologyRoomHeight(stackId, sectionKey, kind, value);
+                floorEditor(editor, stackId, sectionKey).roomHeight(kind, value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public int floorRoomHeightMax(String sectionKey) {
-                return editor.floorTopologyRoomHeightMax(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).roomHeightMax();
             }
 
             private Optional<MKWorkspaceFamilyHorizontalExitDefinition> exitForDirection(String sectionKey,
@@ -938,91 +942,91 @@ public class TowerStackTopologyPanel {
 
             @Override
             public int floorMinMainPathPieces(String sectionKey) {
-                return editor.floorTopologyMinMainPathPieces(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).minMainPathPieces();
             }
 
             @Override
             public void floorMinMainPathPieces(String sectionKey, int value) {
-                editor.floorTopologyMinMainPathPieces(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).minMainPathPieces(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public int floorMaxMainPathPieces(String sectionKey) {
-                return editor.floorTopologyMaxMainPathPieces(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).maxMainPathPieces();
             }
 
             @Override
             public void floorMaxMainPathPieces(String sectionKey, int value) {
-                editor.floorTopologyMaxMainPathPieces(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).maxMainPathPieces(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public int floorMaxBranchPiecesBeforeCap(String sectionKey) {
-                return editor.floorTopologyMaxBranchPiecesBeforeCap(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).maxBranchPiecesBeforeCap();
             }
 
             @Override
             public void floorMaxBranchPiecesBeforeCap(String sectionKey, int value) {
-                editor.floorTopologyMaxBranchPiecesBeforeCap(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).maxBranchPiecesBeforeCap(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public MKWorkspaceHallwayLeadInMode floorHallwayLeadInMode(String sectionKey) {
-                return editor.floorTopologyHallwayLeadInMode(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).hallwayLeadInMode();
             }
 
             @Override
             public void cycleFloorHallwayLeadInMode(String sectionKey, boolean reverse) {
-                editor.floorTopologyHallwayLeadInMode(stackId, sectionKey,
-                        WorkspaceTopologyUiSupport.cycleValue(List.of(MKWorkspaceHallwayLeadInMode.values()),
-                                editor.floorTopologyHallwayLeadInMode(stackId, sectionKey), reverse));
+                FloorPlanDraftEditor floorEditor = floorEditor(editor, stackId, sectionKey);
+                floorEditor.hallwayLeadInMode(WorkspaceTopologyUiSupport.cycleValue(
+                        List.of(MKWorkspaceHallwayLeadInMode.values()), floorEditor.hallwayLeadInMode(), reverse));
                 screen.flagNeedSetup();
             }
 
             @Override
             public int floorManualHallwayLeadInPieces(String sectionKey) {
-                return editor.floorTopologyManualHallwayLeadInPieces(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).manualHallwayLeadInPieces();
             }
 
             @Override
             public void floorManualHallwayLeadInPieces(String sectionKey, int value) {
-                editor.floorTopologyManualHallwayLeadInPieces(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).manualHallwayLeadInPieces(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public boolean floorMainHallwaysEnabled(String sectionKey) {
-                return editor.floorTopologyMainHallwaysEnabled(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).mainHallwaysEnabled();
             }
 
             @Override
             public void floorMainHallwaysEnabled(String sectionKey, boolean value) {
-                editor.floorTopologyMainHallwaysEnabled(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).mainHallwaysEnabled(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public boolean floorBranchHallwaysEnabled(String sectionKey) {
-                return editor.floorTopologyBranchHallwaysEnabled(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).branchHallwaysEnabled();
             }
 
             @Override
             public void floorBranchHallwaysEnabled(String sectionKey, boolean value) {
-                editor.floorTopologyBranchHallwaysEnabled(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).branchHallwaysEnabled(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public boolean floorMainCapApproachEnabled(String sectionKey) {
-                return editor.floorTopologyMainCapApproachEnabled(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).mainCapApproachEnabled();
             }
 
             @Override
             public void floorMainCapApproachEnabled(String sectionKey, boolean value) {
-                editor.floorTopologyMainCapApproachEnabled(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).mainCapApproachEnabled(value);
                 screen.flagNeedSetup();
             }
 
@@ -1034,95 +1038,95 @@ public class TowerStackTopologyPanel {
 
             @Override
             public float floorSprawl(String sectionKey) {
-                return editor.floorTopologySprawl(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).sprawl();
             }
 
             @Override
             public void floorSprawl(String sectionKey, float value) {
-                editor.floorTopologySprawl(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).sprawl(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public boolean floorLinksEnabled(String sectionKey) {
-                return editor.floorTopologyLinksEnabled(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).linksEnabled();
             }
 
             @Override
             public void floorLinksEnabled(String sectionKey, boolean value) {
-                editor.floorTopologyLinksEnabled(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).linksEnabled(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public float floorLinkDensity(String sectionKey) {
-                return editor.floorTopologyLinkDensity(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).linkDensity();
             }
 
             @Override
             public void floorLinkDensity(String sectionKey, float value) {
-                editor.floorTopologyLinkDensity(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).linkDensity(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public int floorMaxLinksPerFloor(String sectionKey) {
-                return editor.floorTopologyMaxLinksPerFloor(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).maxLinksPerFloor();
             }
 
             @Override
             public void floorMaxLinksPerFloor(String sectionKey, int value) {
-                editor.floorTopologyMaxLinksPerFloor(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).maxLinksPerFloor(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public int floorMaxLinksPerRoom(String sectionKey) {
-                return editor.floorTopologyMaxLinksPerRoom(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).maxLinksPerRoom();
             }
 
             @Override
             public void floorMaxLinksPerRoom(String sectionKey, int value) {
-                editor.floorTopologyMaxLinksPerRoom(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).maxLinksPerRoom(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public int floorMaxLinkLength(String sectionKey) {
-                return editor.floorTopologyMaxLinkLength(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).maxLinkLength();
             }
 
             @Override
             public void floorMaxLinkLength(String sectionKey, int value) {
-                editor.floorTopologyMaxLinkLength(stackId, sectionKey, value);
+                floorEditor(editor, stackId, sectionKey).maxLinkLength(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public long previewSeed(String sectionKey) {
-                return editor.floorTopologyPreviewSeed(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).previewSeed();
             }
 
             @Override
             public void rerollPreviewSeed(String sectionKey) {
-                editor.rerollFloorTopologyPreviewSeed(stackId, sectionKey);
+                floorEditor(editor, stackId, sectionKey).rerollPreviewSeed();
                 screen.flagNeedSetup();
             }
 
             @Override
             public Optional<Long> lockedLayoutSeed(String sectionKey) {
-                return editor.floorTopologyLockedLayoutSeed(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).lockedLayoutSeed();
             }
 
             @Override
             public void lockLayoutSeed(String sectionKey) {
-                editor.lockFloorTopologyLayoutSeed(stackId, sectionKey);
+                floorEditor(editor, stackId, sectionKey).lockLayoutSeed();
                 screen.flagNeedSetup();
             }
 
             @Override
             public void unlockLayoutSeed(String sectionKey) {
-                editor.unlockFloorTopologyLayoutSeed(stackId, sectionKey);
+                floorEditor(editor, stackId, sectionKey).unlockLayoutSeed();
                 screen.flagNeedSetup();
             }
 
@@ -1133,69 +1137,69 @@ public class TowerStackTopologyPanel {
 
             @Override
             public int floorRoomHeightMax(String sectionKey) {
-                return editor.floorTopologyRoomHeightMax(stackId, sectionKey);
+                return floorEditor(editor, stackId, sectionKey).roomHeightMax();
             }
 
             @Override
             public List<MKWorkspaceFloorRoomProfile> roomProfiles(String sectionKey, MKWorkspaceFloorRoomKind kind) {
-                return editor.floorTopologyRoomProfiles(stackId, sectionKey, kind);
+                return floorEditor(editor, stackId, sectionKey).roomProfiles(kind);
             }
 
             @Override
             public void floorRoomWidth(String sectionKey, MKWorkspaceFloorRoomKind kind, int index, int value) {
-                editor.floorTopologyRoomWidth(stackId, sectionKey, kind, index, value);
+                floorEditor(editor, stackId, sectionKey).roomWidth(kind, index, value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public void floorRoomLength(String sectionKey, MKWorkspaceFloorRoomKind kind, int index, int value) {
-                editor.floorTopologyRoomLength(stackId, sectionKey, kind, index, value);
+                floorEditor(editor, stackId, sectionKey).roomLength(kind, index, value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public void floorRoomHeight(String sectionKey, MKWorkspaceFloorRoomKind kind, int index, int value) {
-                editor.floorTopologyRoomHeight(stackId, sectionKey, kind, index, value);
+                floorEditor(editor, stackId, sectionKey).roomHeight(kind, index, value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public void addRoomProfile(String sectionKey, MKWorkspaceFloorRoomKind kind) {
-                editor.floorTopologyAddRoomProfile(stackId, sectionKey, kind);
+                floorEditor(editor, stackId, sectionKey).addRoomProfile(kind);
                 screen.flagNeedSetup();
             }
 
             @Override
             public void removeRoomProfile(String sectionKey, MKWorkspaceFloorRoomKind kind, int index) {
-                editor.floorTopologyRemoveRoomProfile(stackId, sectionKey, kind, index);
+                floorEditor(editor, stackId, sectionKey).removeRoomProfile(kind, index);
                 screen.flagNeedSetup();
             }
 
             @Override
             public void setRoomMainExitDirection(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
                                                  Direction direction) {
-                editor.floorTopologySetRoomMainExitDirection(stackId, sectionKey, kind, index, direction);
+                floorEditor(editor, stackId, sectionKey).setRoomMainExitDirection(kind, index, direction);
                 screen.flagNeedSetup();
             }
 
             @Override
             public void setRoomRandomizeMainExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
                                                  boolean value) {
-                editor.floorTopologySetRoomRandomizeMainExit(stackId, sectionKey, kind, index, value);
+                floorEditor(editor, stackId, sectionKey).setRoomRandomizeMainExit(kind, index, value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public void toggleRoomBranchExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
                                              Direction direction) {
-                editor.floorTopologyToggleRoomBranchExit(stackId, sectionKey, kind, index, direction);
+                floorEditor(editor, stackId, sectionKey).toggleRoomBranchExit(kind, index, direction);
                 screen.flagNeedSetup();
             }
 
             @Override
             public void toggleRoomLinkCandidateExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
                                                     Direction direction) {
-                editor.floorTopologyToggleRoomLinkCandidateExit(stackId, sectionKey, kind, index, direction);
+                floorEditor(editor, stackId, sectionKey).toggleRoomLinkCandidateExit(kind, index, direction);
                 screen.flagNeedSetup();
             }
 
