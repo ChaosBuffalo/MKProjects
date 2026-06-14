@@ -124,6 +124,11 @@ public record MKWorkspaceFloorRoomProfile(
                 value, horizontalExits);
     }
 
+    public MKWorkspaceFloorRoomProfile withPaletteOverride(Optional<MKWorkspacePaletteOverride> value) {
+        return new MKWorkspaceFloorRoomProfile(id, label, kind, width, length, height, weight,
+                value == null ? Optional.empty() : value, randomizeMainExit, horizontalExits);
+    }
+
     public boolean requiredExitDirection(Direction direction) {
         return switch (kind) {
             case MAIN_ROOM, MAIN_CAP_APPROACH, MAIN_CAP -> direction == Direction.SOUTH;

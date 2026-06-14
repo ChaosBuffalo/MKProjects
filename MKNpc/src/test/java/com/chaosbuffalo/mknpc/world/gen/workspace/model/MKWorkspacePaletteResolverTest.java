@@ -1,8 +1,11 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKFloorTopologyPlanner;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerStackPlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
 
@@ -89,6 +92,89 @@ class MKWorkspacePaletteResolverTest {
         MKWorkspaceMaterialPalette resolved = new MKWorkspacePaletteResolver().resolveFamily(workspace, family);
 
         assertEquals(id("deepslate_bricks"), resolved.wallBlock());
+    }
+
+    @Test
+    void floorTopologyPaletteOverridesStackPaletteForRootRoomsAndFloorPlanPieces() {
+        MKWorkspaceMaterialPalette base = palette("smooth_stone", "stone_bricks", "smooth_stone",
+                "stone_brick_stairs", "stone_brick_slab", "ladder");
+        MKWorkspacePaletteOverride stackOverride = new MKWorkspacePaletteOverride(
+                null,
+                id("deepslate_bricks"),
+                null,
+                null,
+                null,
+                null
+        );
+        MKWorkspacePaletteOverride floorOverride = new MKWorkspacePaletteOverride(
+                id("red_sandstone"),
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+        MKWorkspacePaletteOverride roomOverride = new MKWorkspacePaletteOverride(
+                null,
+                null,
+                id("bamboo_planks"),
+                null,
+                null,
+                null
+        );
+        MKWorkspaceTowerStackSettings stackSettings = MKWorkspaceTopologyProfile.tower()
+                .towerStackSettingsOrDefault("tower.primary")
+                .withPaletteOverride(java.util.Optional.of(stackOverride));
+        MKWorkspaceFloorTopologySettings floorSettings = MKWorkspaceFloorTopologySettings
+                .defaults(stackSettings, MKTowerWorkspaceStackSlot.MAIN_FLOOR.suffix())
+                .withPaletteOverride(java.util.Optional.of(floorOverride));
+        floorSettings = floorSettings.withRoomProfile(MKWorkspaceFloorRoomKind.MAIN_ROOM, 0,
+                floorSettings.mainRoomProfiles().getFirst().withPaletteOverride(java.util.Optional.of(roomOverride)));
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
+                .withTowerStackSettings(stackSettings)
+                .withFloorTopologySettings(floorSettings);
+        MKTowerWorkspaceFamilyDefinition family = MKTowerWorkspaceFamilyDefinition.forTowerStackSlot(
+                "floor_main",
+                MKTowerWorkspaceStackSlot.MAIN_FLOOR,
+                "tower.primary",
+                true,
+                0,
+                0,
+                0,
+                MKWorkspaceHorizontalExtrusionMode.FULL_BODY,
+                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
+                        Direction.NORTH,
+                        MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                        "main_opening",
+                        MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
+                )),
+                0,
+                0,
+                null,
+                null
+        );
+        MKStructureWorkspace workspace = workspace(topologyProfile, base, List.of(family), List.of());
+
+        MKPlannedPiece rootRoom = new MKTowerStackPlanner().createRoomPieces(workspace, List.of(family)).getFirst();
+        List<MKPlannedPiece> floorPieces = new MKFloorTopologyPlanner().createFloorTopologyPieces(workspace,
+                List.of(family));
+        MKPlannedPiece floorRoom = floorPieces.stream()
+                .filter(piece -> "floor_plan_room".equals(piece.tags().get("tower_piece_kind")))
+                .filter(piece -> "main_room".equals(piece.tags().get("workspace_floor_room_kind")))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece hallway = floorPieces.stream()
+                .filter(piece -> "floor_plan_linear_run".equals(piece.tags().get("tower_piece_kind")))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(id("red_sandstone").toString(), rootRoom.tags().get(MKWorkspacePaletteTags.FLOOR_BLOCK_TAG));
+        assertEquals(id("deepslate_bricks").toString(), rootRoom.tags().get(MKWorkspacePaletteTags.WALL_BLOCK_TAG));
+        assertEquals(id("red_sandstone").toString(), floorRoom.tags().get(MKWorkspacePaletteTags.FLOOR_BLOCK_TAG));
+        assertEquals(id("deepslate_bricks").toString(), floorRoom.tags().get(MKWorkspacePaletteTags.WALL_BLOCK_TAG));
+        assertEquals(id("bamboo_planks").toString(), floorRoom.tags().get(MKWorkspacePaletteTags.CEILING_BLOCK_TAG));
+        assertEquals(id("red_sandstone").toString(), hallway.tags().get(MKWorkspacePaletteTags.FLOOR_BLOCK_TAG));
+        assertEquals(id("deepslate_bricks").toString(), hallway.tags().get(MKWorkspacePaletteTags.WALL_BLOCK_TAG));
     }
 
     @Test

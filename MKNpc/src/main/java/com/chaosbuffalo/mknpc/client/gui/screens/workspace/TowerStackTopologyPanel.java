@@ -84,6 +84,13 @@ public class TowerStackTopologyPanel {
                 layout.settingsWidth(), stackId, sectionKey, floorControls);
         layout.settingsContent().addWidget(floorPlanSettings);
         layout.settingsContent().addConstraintToWidget(new CenterXConstraint(), floorPlanSettings);
+        screen.addPaletteOverrideRows(layout.settingsContent(), "Floor Palette Defaults",
+                editor.floorTopologyInheritedPalette(stackId, sectionKey),
+                editor.floorTopologyPaletteOverrideOpt(stackId, sectionKey),
+                override -> {
+                    editor.floorTopologyPaletteOverride(stackId, sectionKey, override);
+                    screen.flagNeedSetup();
+                });
     }
 
     private String normalizedSelectedSection(WorkspaceDraftSession editor, String stackId, MKTowerStackSizingReport report) {

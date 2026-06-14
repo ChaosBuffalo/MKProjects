@@ -536,6 +536,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 controls.floorMaxLinksPerRoom(sectionKey),
                 controls.floorMaxLinkLength(sectionKey),
                 controls.lockedLayoutSeed(sectionKey),
+                Optional.empty(),
                 controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.MAIN_ROOM),
                 controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.BRANCH_ROOM),
                 controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.BRANCH_CAP),

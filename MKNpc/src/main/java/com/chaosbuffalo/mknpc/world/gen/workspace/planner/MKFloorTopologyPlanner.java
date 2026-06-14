@@ -18,6 +18,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunProjection;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
@@ -32,6 +33,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class MKFloorTopologyPlanner {
+    private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
+
     private static final String EMPTY_POOL = "minecraft:empty";
     private static final String LINEAR_RUN_POOL_PREFIX = "linear_runs";
     private static final String ROOM_POOL_PREFIX = "rooms";
@@ -58,6 +61,7 @@ public class MKFloorTopologyPlanner {
             String stackId,
             String floorRole,
             String topologyGroupId,
+            MKWorkspaceMaterialPalette palette,
             ResolvedOpeningProfile mainOpening,
             ResolvedOpeningProfile branchOpening
     ) {
@@ -149,7 +153,9 @@ public class MKFloorTopologyPlanner {
             tags.put("workspace_linear_run_path_kind", pathKind.serializedName);
             tags.put("workspace_linear_run_slope_delta", Integer.toString(linearRun.slopeDelta()));
             tags.put("workspace_opening_profile_id", linearRun.openingProfileId());
-            MKWorkspacePaletteTags.apply(tags, workspace.palette());
+            MKWorkspacePaletteTags.apply(tags, linearRun.paletteOverrideOpt()
+                    .map(override -> override.resolve(context.palette()))
+                    .orElse(context.palette()));
             new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
                     pathKind == PathPoolKind.MAIN, pathKind == PathPoolKind.BRANCH, false, false,
                     context.topologyGroupId(), false)
@@ -287,6 +293,7 @@ public class MKFloorTopologyPlanner {
                 stackId,
                 slot.suffix(),
                 floorTopologyGroupId(stackId, slot.suffix()),
+                paletteResolver.resolveFloorTopologyForFamily(workspace, rootFamily),
                 resolvedMain,
                 resolvedBranch
         ));
@@ -320,8 +327,8 @@ public class MKFloorTopologyPlanner {
         tags.put("workspace_floor_main_cap_approach_enabled", Boolean.toString(settings.mainCapApproachEnabled()));
         tags.put("workspace_floor_sprawl", Float.toString(settings.sprawl()));
         MKWorkspaceMaterialPalette palette = profile.paletteOverride()
-                .map(override -> override.resolve(workspace.palette()))
-                .orElse(workspace.palette());
+                .map(override -> override.resolve(context.palette()))
+                .orElse(context.palette());
         MKWorkspacePaletteTags.apply(tags, palette);
         runtimeInfoFor(context, profile).applyToTags(tags);
         return new MKPlannedPiece(

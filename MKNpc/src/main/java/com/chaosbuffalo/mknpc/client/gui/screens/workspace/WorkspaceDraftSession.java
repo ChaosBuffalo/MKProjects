@@ -732,6 +732,32 @@ public class WorkspaceDraftSession {
         replaceTowerStackSettings(towerStackSettings(stackId).withPaletteOverride(value));
     }
 
+    public MKWorkspaceMaterialPalette resolveTowerStackPalette(String stackId) {
+        return towerStackPaletteOverrideOpt(stackId)
+                .map(override -> override.resolve(draftBasePalette()))
+                .orElse(draftBasePalette());
+    }
+
+    public MKWorkspaceMaterialPalette floorTopologyInheritedPalette(String stackId, String floorRole) {
+        return resolveTowerStackPalette(stackId);
+    }
+
+    public Optional<MKWorkspacePaletteOverride> floorTopologyPaletteOverrideOpt(String stackId, String floorRole) {
+        return floorTopologySettings(stackId, floorRole).paletteOverride();
+    }
+
+    public void floorTopologyPaletteOverride(String stackId, String floorRole,
+                                             Optional<MKWorkspacePaletteOverride> value) {
+        replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withPaletteOverride(value));
+    }
+
+    public MKWorkspaceMaterialPalette resolveFloorTopologyPalette(String stackId, String floorRole) {
+        MKWorkspaceMaterialPalette inherited = floorTopologyInheritedPalette(stackId, floorRole);
+        return floorTopologyPaletteOverrideOpt(stackId, floorRole)
+                .map(override -> override.resolve(inherited))
+                .orElse(inherited);
+    }
+
     public int nextAllowedTowerStackMainFloorCount(String stackId, boolean reverse) {
         MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId);
         List<Integer> allowed = allowedTowerStackMainFloorCounts(settings, settings.basementFloors());

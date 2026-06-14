@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPol
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamilySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
@@ -28,6 +29,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class MKTowerStackPlanner {
+    private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
+
     private static final String EMPTY_POOL = "minecraft:empty";
     private static final String LINEAR_RUN_POOL_PREFIX = "linear_runs";
     private static final String ROOM_POOL_PREFIX = "rooms";
@@ -538,7 +541,7 @@ public class MKTowerStackPlanner {
             tags.put(MKWorkspaceVerticalAccessTags.BOTTOM_CAP_TAG, "true");
         }
         runtimeInfo.applyToTags(tags);
-        MKWorkspacePaletteTags.apply(tags, resolvedFamily.palette());
+        MKWorkspacePaletteTags.apply(tags, paletteResolver.resolveFloorTopologyForFamily(workspace, family));
         return tags;
     }
 
