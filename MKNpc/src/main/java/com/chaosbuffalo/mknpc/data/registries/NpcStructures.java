@@ -134,6 +134,10 @@ public class NpcStructures {
             String endingPool = settings.mainCapApproachEnabled() ?
                     MKFloorTopologyPlanner.mainCapApproachPoolName(topologyGroupId) :
                     MKFloorTopologyPlanner.mainCapPoolName(topologyGroupId);
+            int rootWidth = manifest.settings().topologyProfile()
+                    .towerStackSettingsOrDefault(settings.stackId()).width();
+            int rootLength = manifest.settings().topologyProfile()
+                    .towerStackSettingsOrDefault(settings.stackId()).length();
             rules.add(new MKDungeonTopologyGroupRule(
                     topologyGroupId,
                     settings.minMainPathPieces(),
@@ -146,6 +150,9 @@ public class NpcStructures {
                     settings.maxLinksPerRoom(),
                     settings.maxLinkLength(),
                     settings.lockedLayoutSeed(),
+                    Optional.of(settings),
+                    rootWidth,
+                    rootLength,
                     true,
                     ResourceLocation.fromNamespaceAndPath(manifest.namespace(), manifest.structureName() + "/" + endingPool)
             ));

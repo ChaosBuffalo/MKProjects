@@ -161,7 +161,7 @@ public final class MKFloorMaskVariantExporter {
         if (selectedMainExit != null) {
             tags.put(FLOOR_SELECTED_MAIN_EXIT_TAG, selectedMainExit.getSerializedName());
         }
-        addClosedConnectorTags(tags, closedOptional);
+        addClosedConnectorTags(tags, sourcePiece, closedOptional);
         return new MKWorkspacePieceDefinition(
                 UUID.nameUUIDFromBytes((workspace.id() + ":" + pieceName).getBytes(StandardCharsets.UTF_8)),
                 sourcePiece.workspaceId(),
@@ -327,6 +327,7 @@ public final class MKFloorMaskVariantExporter {
     }
 
     private static void addClosedConnectorTags(Map<String, String> tags,
+                                               MKWorkspacePieceDefinition sourcePiece,
                                                List<MKWorkspaceConnectorDefinition> closedOptional) {
         tags.put(CLOSED_CONNECTOR_COUNT_TAG, Integer.toString(closedOptional.size()));
         for (int i = 0; i < closedOptional.size(); i++) {
@@ -339,6 +340,7 @@ public final class MKFloorMaskVariantExporter {
             tags.put(prefix + "z", Integer.toString(connector.relativePos().getZ()));
             tags.put(prefix + "opening_width", Integer.toString(connector.openingWidth()));
             tags.put(prefix + "opening_height", Integer.toString(connector.openingHeight()));
+            tags.put(prefix + "closure_depth", Integer.toString(MKFloorConnectorPatch.closureDepth(sourcePiece, connector)));
             tags.put(prefix + "lateral_offset", Integer.toString(connector.lateralOffset()));
             tags.put(prefix + "vertical_offset", Integer.toString(connector.verticalOffset()));
         }

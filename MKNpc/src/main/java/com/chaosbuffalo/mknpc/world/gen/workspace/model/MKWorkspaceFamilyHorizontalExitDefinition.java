@@ -5,13 +5,17 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 
+import javax.annotation.Nullable;
+import java.util.Optional;
+
 public record MKWorkspaceFamilyHorizontalExitDefinition(
         Direction direction,
         MKWorkspaceHorizontalExitPathKind pathKind,
         String openingProfileId,
         MKWorkspaceHorizontalExitConnectionMode connectionMode,
         int sideOffset,
-        int verticalOffset
+        int verticalOffset,
+        @Nullable MKWorkspaceHorizontalExtrusionMode horizontalExtrusionModeOverride
 ) {
     public static final Codec<MKWorkspaceFamilyHorizontalExitDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             MKWorkspaceCodecs.DIRECTION_CODEC.fieldOf("direction").forGetter(MKWorkspaceFamilyHorizontalExitDefinition::direction),
@@ -22,8 +26,13 @@ public record MKWorkspaceFamilyHorizontalExitDefinition(
                             MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN)
                     .forGetter(MKWorkspaceFamilyHorizontalExitDefinition::connectionMode),
             Codec.INT.optionalFieldOf("sideOffset", 0).forGetter(MKWorkspaceFamilyHorizontalExitDefinition::sideOffset),
-            Codec.INT.optionalFieldOf("verticalOffset", 0).forGetter(MKWorkspaceFamilyHorizontalExitDefinition::verticalOffset)
-    ).apply(instance, MKWorkspaceFamilyHorizontalExitDefinition::new));
+            Codec.INT.optionalFieldOf("verticalOffset", 0).forGetter(MKWorkspaceFamilyHorizontalExitDefinition::verticalOffset),
+            MKWorkspaceCodecs.HORIZONTAL_EXTRUSION_MODE_CODEC.optionalFieldOf("horizontalExtrusionModeOverride")
+                    .forGetter(exit -> Optional.ofNullable(exit.horizontalExtrusionModeOverride()))
+    ).apply(instance, (direction, pathKind, openingProfileId, connectionMode, sideOffset, verticalOffset,
+                       horizontalExtrusionModeOverride) -> new MKWorkspaceFamilyHorizontalExitDefinition(direction,
+            pathKind, openingProfileId, connectionMode, sideOffset, verticalOffset,
+            horizontalExtrusionModeOverride.orElse(null))));
 
     public MKWorkspaceFamilyHorizontalExitDefinition(Direction direction,
                                                      MKWorkspaceHorizontalExitPathKind pathKind,
@@ -38,6 +47,15 @@ public record MKWorkspaceFamilyHorizontalExitDefinition(
         this(direction, pathKind, openingProfileId, connectionMode, 0, 0);
     }
 
+    public MKWorkspaceFamilyHorizontalExitDefinition(Direction direction,
+                                                     MKWorkspaceHorizontalExitPathKind pathKind,
+                                                     String openingProfileId,
+                                                     MKWorkspaceHorizontalExitConnectionMode connectionMode,
+                                                     int sideOffset,
+                                                     int verticalOffset) {
+        this(direction, pathKind, openingProfileId, connectionMode, sideOffset, verticalOffset, null);
+    }
+
     public static MKWorkspaceFamilyHorizontalExitDefinition verticalAccess(Direction direction) {
         if (direction != Direction.UP && direction != Direction.DOWN) {
             throw new IllegalArgumentException("vertical access exits must face up or down");
@@ -47,7 +65,8 @@ public record MKWorkspaceFamilyHorizontalExitDefinition(
                 "",
                 MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION,
                 0,
-                0);
+                0,
+                null);
     }
 
     public boolean isVerticalAccess() {

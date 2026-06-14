@@ -20,6 +20,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunProj
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamilySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKFloorMaskVariantExporter;
@@ -61,6 +62,7 @@ public class MKFloorTopologyPlanner {
             String stackId,
             String floorRole,
             String topologyGroupId,
+            int roomHeight,
             MKWorkspaceMaterialPalette palette,
             ResolvedOpeningProfile mainOpening,
             ResolvedOpeningProfile branchOpening
@@ -166,12 +168,14 @@ public class MKFloorTopologyPlanner {
                     MKConnectorRole.BRANCH;
             String incomingPool = floorLinearRunPoolName(context.topologyGroupId(), opening.profileId(), pathKind);
             String targetPool = floorRoomPoolName(context.topologyGroupId(), opening.profileId(), pathKind);
+            int hallwayInteriorWidth = Math.max(linearRun.interiorWidth(), opening.openingWidth());
+            int hallwayInteriorHeight = context.roomHeight() + Math.abs(linearRun.slopeDelta());
             pieces.add(new MKPlannedPiece(
                     slotId,
                     pieceName,
                     linearRun.length(),
-                    linearRun.interiorWidth(),
-                    linearRun.interiorHeight() + Math.abs(linearRun.slopeDelta()),
+                    hallwayInteriorWidth,
+                    hallwayInteriorHeight,
                     List.of(
                             new MKPlannedConnector(westRole, Direction.WEST,
                                     opening.openingWidth(), opening.openingHeight(), 0, westOffset,
@@ -217,7 +221,6 @@ public class MKFloorTopologyPlanner {
                                                                         ResolvedOpeningProfile opening,
                                                                         PathPoolKind pathKind) {
         int length = effectiveHallwayLeadInPieces(workspace, settings, context);
-        int height = floorHallwayHeight(settings, opening);
         return new MKWorkspaceLinearRunFamilyDefinition(
                 "floor_" + pathKind.serializedName + "_hallway",
                 FLOOR_ROOM_SLOT_PREFIX + ".linear_run." + pathKind.serializedName,
@@ -225,7 +228,7 @@ public class MKFloorTopologyPlanner {
                 opening.profileId(),
                 length,
                 opening.openingWidth(),
-                height,
+                opening.openingHeight(),
                 0,
                 pathKind == PathPoolKind.MAIN,
                 pathKind == PathPoolKind.BRANCH,
@@ -245,14 +248,6 @@ public class MKFloorTopologyPlanner {
         return Math.max(1, Math.ceilDiv(Math.max(
                 workspace.topologyProfile().towerStackSettingsOrDefault(context.stackId()).width(),
                 workspace.topologyProfile().towerStackSettingsOrDefault(context.stackId()).length()), 8));
-    }
-
-    private int floorHallwayHeight(MKWorkspaceFloorTopologySettings settings, ResolvedOpeningProfile opening) {
-        int profileHeight = settings.mainRoomProfiles().stream()
-                .mapToInt(MKWorkspaceFloorRoomProfile::height)
-                .max()
-                .orElse(opening.openingHeight());
-        return Math.max(opening.openingHeight(), profileHeight);
     }
 
     private Optional<FloorOpeningContext> contextForRootFamily(MKStructureWorkspace workspace,
@@ -289,10 +284,12 @@ public class MKFloorTopologyPlanner {
                 .orElseThrow(() -> new IllegalStateException("floor topology requires a main-compatible opening profile")));
         ResolvedOpeningProfile resolvedBranch = branchOpening.orElseGet(() -> firstOpening(workspace, false)
                 .orElse(resolvedMain));
+        MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(rootFamily);
         return Optional.of(new FloorOpeningContext(
                 stackId,
                 slot.suffix(),
                 floorTopologyGroupId(stackId, slot.suffix()),
+                resolvedFamily.roomHeight(),
                 paletteResolver.resolveFloorTopologyForFamily(workspace, rootFamily),
                 resolvedMain,
                 resolvedBranch

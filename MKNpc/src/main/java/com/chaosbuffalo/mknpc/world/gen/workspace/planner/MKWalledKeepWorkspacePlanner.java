@@ -8,6 +8,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
@@ -97,13 +98,13 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                     "keep.courtyard.path.north_east", Direction.NORTH, "keep.courtyard.north"),
             new CourtyardPathDefinition("north_east", "corner_t", COURTYARD_PATH_CORNER_T_SOURCE,
                     MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_180, Direction.WEST, Direction.SOUTH,
-                    null, Direction.NORTH, "keep.courtyard.north_east"),
-            new CourtyardPathDefinition("south_east", "corner_t", COURTYARD_PATH_CORNER_T_SOURCE,
-                    MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_270, Direction.WEST, Direction.NORTH,
-                    "keep.courtyard.path.east", Direction.EAST, "keep.courtyard.south_east"),
+                    "keep.courtyard.path.east", Direction.NORTH, "keep.courtyard.north_east"),
             new CourtyardPathDefinition("east", "t", COURTYARD_PATH_T_SOURCE,
-                    MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_180, Direction.SOUTH, Direction.NORTH,
-                    null, Direction.EAST, "keep.courtyard.east")
+                    MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_180, Direction.NORTH, Direction.SOUTH,
+                    "keep.courtyard.path.south_east", Direction.EAST, "keep.courtyard.east"),
+            new CourtyardPathDefinition("south_east", "corner_t", COURTYARD_PATH_CORNER_T_SOURCE,
+                    MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_270, Direction.NORTH, Direction.WEST,
+                    null, Direction.EAST, "keep.courtyard.south_east")
     );
     private static final Set<String> KNOWN_KEEP_SLOTS = Set.of(
             "keep.center.entry",
@@ -516,6 +517,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 settings.topCapApproachEnabled(),
                 settings.basementEntryEnabled(),
                 settings.basementCapApproachEnabled(),
+                settings.horizontalExtrusionMode(),
                 settings.foundationPolicy(),
                 settings.paletteOverride()
         );
@@ -557,16 +559,14 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 piece.interiorLength(),
                 piece.interiorHeight(),
                 List.copyOf(connectors),
-                keepRoomRuntimeTags(piece.tags())
+                keepRoomRuntimeTags(workspace, piece.tags())
         );
     }
 
-    private Map<String, String> keepRoomRuntimeTags(Map<String, String> sourceTags) {
+    private Map<String, String> keepRoomRuntimeTags(MKStructureWorkspace workspace, Map<String, String> sourceTags) {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>(sourceTags);
-        String topologySlotId = tags.getOrDefault("workspace_topology_slot_id", "");
-        if (topologySlotId.startsWith("keep.corner.")) {
-            tags.put("workspace_connector_stitch", "full_face");
-        }
+        effectiveRoomExtrusionMode(workspace, tags.getOrDefault("workspace_topology_slot_id", ""))
+                .ifPresent(mode -> tags.put("workspace_horizontal_extrusion_mode", mode.getSerializedName()));
         MKWorkspaceRuntimePieceInfo.fromTags(sourceTags)
                 .map(info -> new MKWorkspaceRuntimePieceInfo(
                         info.start(),
@@ -1235,7 +1235,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                     IngressConnection ingress = centerEntryIngressConnection(workspace, opening);
                     connectors.add(new MKPlannedConnector(MKConnectorRole.MAIN_BACK, Direction.SOUTH,
                             ingress.opening().openingWidth(), ingress.opening().openingHeight(),
-                            ingress.lateralOffset(), ingress.verticalOffset(), slotPool(ENTRY_APPROACH_SLOT)));
+                            ingress.lateralOffset(), ingress.verticalOffset(), slotPool(ENTRY_APPROACH_SLOT), null,
+                            MKWorkspaceHorizontalExtrusionMode.FLOOR_ONLY));
                 }
             }
             case "keep.gate.main" -> {
@@ -1245,10 +1246,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 connectors.add(MKPlannedConnector.openingOnly(MKConnectorRole.MAIN_BACK, Direction.SOUTH,
                         opening.openingWidth(), opening.openingHeight(), 0, 0));
                 slots.perimeterPlan().firstSouthWest()
-                        .ifPresent(segment -> addBranchTargetDirect(connectors, Direction.WEST,
+                        .ifPresent(segment -> addFullFaceWallTarget(connectors, Direction.WEST,
                                 segment.slotId(), opening));
                 slots.perimeterPlan().firstSouthEast()
-                        .ifPresent(segment -> addBranchTargetDirect(connectors, Direction.EAST,
+                        .ifPresent(segment -> addFullFaceWallTarget(connectors, Direction.EAST,
                                 segment.slotId(), opening));
             }
             case "keep.corner.shared" -> addSharedCornerConnectors(connectors, slots.sharedCornerSlots(),
@@ -1394,9 +1395,6 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         firstAvailableSlot(availableSlots, "keep.courtyard.path.south_west")
                 .ifPresent(targetSlot -> addBranchTargetDirect(connectors, Direction.WEST, targetSlot, opening,
                         branchOffset));
-        firstAvailableSlot(availableSlots, "keep.courtyard.path.south_east")
-                .ifPresent(targetSlot -> addBranchTargetDirect(connectors, Direction.EAST, targetSlot, opening,
-                        branchOffset));
         return List.copyOf(connectors);
     }
 
@@ -1453,22 +1451,22 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         switch (cornerSlotId) {
             case "keep.corner.north_west" -> {
                 addIncomingCornerConnector(connectors, cornerSlotId, Direction.SOUTH, opening);
-                perimeterPlan.firstNorthWest().ifPresent(segment -> addBranchTargetDirect(connectors, Direction.EAST,
+                perimeterPlan.firstNorthWest().ifPresent(segment -> addFullFaceWallTarget(connectors, Direction.EAST,
                         segment.slotId(), opening));
             }
             case "keep.corner.north_east" -> {
                 addIncomingCornerConnector(connectors, cornerSlotId, Direction.SOUTH, opening);
-                perimeterPlan.firstNorthEast().ifPresent(segment -> addBranchTargetDirect(connectors, Direction.WEST,
+                perimeterPlan.firstNorthEast().ifPresent(segment -> addFullFaceWallTarget(connectors, Direction.WEST,
                         segment.slotId(), opening));
             }
             case "keep.corner.south_east" -> {
                 addIncomingCornerConnector(connectors, cornerSlotId, Direction.WEST, opening);
-                perimeterPlan.firstEast().ifPresent(segment -> addBranchTargetDirect(connectors, Direction.NORTH,
+                perimeterPlan.firstEast().ifPresent(segment -> addFullFaceWallTarget(connectors, Direction.NORTH,
                         segment.slotId(), opening));
             }
             case "keep.corner.south_west" -> {
                 addIncomingCornerConnector(connectors, cornerSlotId, Direction.EAST, opening);
-                perimeterPlan.firstWest().ifPresent(segment -> addBranchTargetDirect(connectors, Direction.NORTH,
+                perimeterPlan.firstWest().ifPresent(segment -> addFullFaceWallTarget(connectors, Direction.NORTH,
                         segment.slotId(), opening));
             }
             default -> {
@@ -1480,7 +1478,14 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                                             Direction facing, ResolvedOpeningProfile opening) {
         connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, facing,
                 opening.openingWidth(), opening.openingHeight(), 0, 0,
-                EMPTY_POOL, slotPool(cornerSlotId)));
+                EMPTY_POOL, slotPool(cornerSlotId), MKWorkspaceHorizontalExtrusionMode.FULL_FACE));
+    }
+
+    private void addFullFaceWallTarget(List<MKPlannedConnector> connectors, Direction facing, String targetSlotId,
+                                       ResolvedOpeningProfile opening) {
+        connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, facing,
+                opening.openingWidth(), opening.openingHeight(), 0, 0, slotPool(targetSlotId), null,
+                MKWorkspaceHorizontalExtrusionMode.FULL_FACE));
     }
 
     private void addBranchTarget(List<MKPlannedConnector> connectors, Direction facing, String targetSlotId,
@@ -1519,9 +1524,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         tags.put("workspace_piece_kind", "instance");
         tags.put("workspace_family_id", family.baseName());
         tags.put("workspace_horizontal_exits", family.horizontalExitSummary());
-        tags.put("workspace_horizontal_extrusion_mode", family.horizontalExtrusionMode().getSerializedName());
-        tags.put("workspace_connector_stitch", "full_face");
-        workspace.topologyProfile().towerStackSettings(stackIdForFamily(family))
+        tags.put("workspace_horizontal_extrusion_mode", effectiveRoomExtrusionMode(workspace, family).getSerializedName());
+        towerStackSettingsForTopologySlot(workspace, family.topologySlotId())
                 .ifPresent(settings -> {
                     tags.put("workspace_tower_stack_id", settings.stackId());
                     tags.put("workspace_tower_stack_main_floors", Integer.toString(settings.mainFloors()));
@@ -1540,6 +1544,33 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         runtimeInfoForRoom(family).applyToTags(tags);
         MKWorkspacePaletteTags.apply(tags, resolvedFamily.palette());
         return tags;
+    }
+
+    private MKWorkspaceHorizontalExtrusionMode effectiveRoomExtrusionMode(MKStructureWorkspace workspace,
+                                                                          MKTowerWorkspaceFamilyDefinition family) {
+        return towerStackSettingsForTopologySlot(workspace, family.topologySlotId())
+                .map(MKWorkspaceTowerStackSettings::horizontalExtrusionMode)
+                .orElse(family.horizontalExtrusionMode());
+    }
+
+    private Optional<MKWorkspaceHorizontalExtrusionMode> effectiveRoomExtrusionMode(MKStructureWorkspace workspace,
+                                                                                   String topologySlotId) {
+        return towerStackSettingsForTopologySlot(workspace, topologySlotId)
+                .map(MKWorkspaceTowerStackSettings::horizontalExtrusionMode);
+    }
+
+    private Optional<MKWorkspaceTowerStackSettings> towerStackSettingsForTopologySlot(MKStructureWorkspace workspace,
+                                                                                     String topologySlotId) {
+        String stackId = stackIdForTopologySlot(topologySlotId);
+        if (stackId.isBlank()) {
+            return Optional.empty();
+        }
+        if (stackId.startsWith("keep.corner.") &&
+                !"keep.corner.shared".equals(stackId) &&
+                !workspace.topologyProfile().uniqueCornerTower(stackId)) {
+            return workspace.topologyProfile().towerStackSettings("keep.corner.shared");
+        }
+        return workspace.topologyProfile().towerStackSettings(stackId);
     }
 
     private Map<String, String> buildLinearRunTags(MKStructureWorkspace workspace,
@@ -1577,7 +1608,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         tags.put("workspace_linear_run_slope_delta", Integer.toString(linearRun.slopeDelta()));
         tags.put("workspace_opening_profile_id", linearRun.openingProfileId());
         if (linearRun.kind() == MKWorkspaceLinearRunKind.DEFENSIVE_WALL) {
-            tags.put("workspace_connector_stitch", "wall_run");
+            tags.put("workspace_horizontal_extrusion_mode",
+                    MKWorkspaceHorizontalExtrusionMode.FULL_FACE.getSerializedName());
         }
         if (linearRun.topVoidMargin() > 0) {
             tags.put(MKWorkspaceVoidMarginTags.TOP_VOID_MARGIN_TAG, Integer.toString(linearRun.topVoidMargin()));
@@ -1590,16 +1622,20 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     }
 
     private String stackIdForFamily(MKTowerWorkspaceFamilyDefinition family) {
-        if (family.topologySlotId().startsWith("keep.center.")) {
+        return stackIdForTopologySlot(family.topologySlotId());
+    }
+
+    private String stackIdForTopologySlot(String topologySlotId) {
+        if (topologySlotId.startsWith("keep.center.")) {
             return "keep.center";
         }
-        Optional<String> cornerStackId = cornerStackIdForSlot(family.topologySlotId());
+        Optional<String> cornerStackId = cornerStackIdForSlot(topologySlotId);
         if (cornerStackId.isPresent()) {
             return cornerStackId.get();
         }
-        if ("keep.corner.shared".equals(family.topologySlotId()) ||
-                CONCRETE_CORNER_SLOTS.contains(family.topologySlotId())) {
-            return family.topologySlotId();
+        if ("keep.corner.shared".equals(topologySlotId) ||
+                CONCRETE_CORNER_SLOTS.contains(topologySlotId)) {
+            return topologySlotId;
         }
         return "";
     }

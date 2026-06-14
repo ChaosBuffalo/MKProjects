@@ -1,1 +1,1 @@
-{"allow_on_branch_path":true,"role":"room"}
+{"floor_closable_openings":[{"z":30,"opening_width":3,"opening_height":3,"facing":"south","x":15,"y":1},{"z":15,"opening_width":3,"opening_height":3,"facing":"east","x":30,"y":1}],"allow_on_branch_path":true,"role":"room"}

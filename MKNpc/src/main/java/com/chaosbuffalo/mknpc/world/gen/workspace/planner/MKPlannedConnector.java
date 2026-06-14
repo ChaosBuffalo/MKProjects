@@ -1,12 +1,16 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import net.minecraft.core.Direction;
+
+import javax.annotation.Nullable;
 
 public record MKPlannedConnector(MKConnectorRole role, Direction facing, int openingWidth, int openingHeight,
                                  int lateralOffset, int verticalOffset,
                                  String targetPoolName, String incomingPoolName,
-                                 boolean placesJigsaw) {
+                                 boolean placesJigsaw,
+                                 @Nullable MKWorkspaceHorizontalExtrusionMode horizontalExtrusionModeOverride) {
     public MKPlannedConnector(MKConnectorRole role, Direction facing, int openingWidth, int openingHeight) {
         this(role, facing, openingWidth, openingHeight, 0, 0, null, null);
     }
@@ -30,12 +34,27 @@ public record MKPlannedConnector(MKConnectorRole role, Direction facing, int ope
                               int lateralOffset, int verticalOffset,
                               String targetPoolName, String incomingPoolName) {
         this(role, facing, openingWidth, openingHeight, lateralOffset, verticalOffset, targetPoolName, incomingPoolName,
-                true);
+                true, null);
+    }
+
+    public MKPlannedConnector(MKConnectorRole role, Direction facing, int openingWidth, int openingHeight,
+                              int lateralOffset, int verticalOffset,
+                              String targetPoolName, String incomingPoolName,
+                              @Nullable MKWorkspaceHorizontalExtrusionMode horizontalExtrusionModeOverride) {
+        this(role, facing, openingWidth, openingHeight, lateralOffset, verticalOffset, targetPoolName, incomingPoolName,
+                true, horizontalExtrusionModeOverride);
     }
 
     public static MKPlannedConnector openingOnly(MKConnectorRole role, Direction facing, int openingWidth,
                                                  int openingHeight, int lateralOffset, int verticalOffset) {
         return new MKPlannedConnector(role, facing, openingWidth, openingHeight, lateralOffset, verticalOffset,
-                null, null, false);
+                null, null, false, null);
+    }
+
+    public static MKPlannedConnector openingOnly(MKConnectorRole role, Direction facing, int openingWidth,
+                                                 int openingHeight, int lateralOffset, int verticalOffset,
+                                                 @Nullable MKWorkspaceHorizontalExtrusionMode horizontalExtrusionModeOverride) {
+        return new MKPlannedConnector(role, facing, openingWidth, openingHeight, lateralOffset, verticalOffset,
+                null, null, false, horizontalExtrusionModeOverride);
     }
 }

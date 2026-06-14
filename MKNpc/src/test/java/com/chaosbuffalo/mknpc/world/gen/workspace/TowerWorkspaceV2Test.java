@@ -718,7 +718,14 @@ class TowerWorkspaceV2Test {
                 .orElseThrow();
         assertEquals("keep.corner.north_west.entry", sharedCorner.tags().get("workspace_topology_slot_id"));
         assertEquals("true", sharedCorner.tags().get(MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG));
-        assertEquals("full_face", sharedCorner.tags().get("workspace_connector_stitch"));
+        assertEquals("full_body", sharedCorner.tags().get("workspace_horizontal_extrusion_mode"));
+        assertEquals(2, sharedCorner.connectors().stream()
+                .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
+                .count());
+        assertTrue(sharedCorner.connectors().stream()
+                .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
+                .allMatch(connector -> connector.horizontalExtrusionModeOverride() ==
+                        MKWorkspaceHorizontalExtrusionMode.FULL_FACE));
         assertTrue(sharedCorner.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_UP));
         assertFalse(sharedCorner.connectors().stream().anyMatch(connector ->
@@ -751,11 +758,13 @@ class TowerWorkspaceV2Test {
         assertTrue(gatehouse.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.BRANCH &&
                         connector.facing() == Direction.WEST &&
-                        "keep_slots/keep/perimeter/south_west/0".equals(connector.targetPoolName())));
+                        "keep_slots/keep/perimeter/south_west/0".equals(connector.targetPoolName()) &&
+                        connector.horizontalExtrusionModeOverride() == MKWorkspaceHorizontalExtrusionMode.FULL_FACE));
         assertTrue(gatehouse.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.BRANCH &&
                         connector.facing() == Direction.EAST &&
-                        "keep_slots/keep/perimeter/south_east/0".equals(connector.targetPoolName())));
+                        "keep_slots/keep/perimeter/south_east/0".equals(connector.targetPoolName()) &&
+                        connector.horizontalExtrusionModeOverride() == MKWorkspaceHorizontalExtrusionMode.FULL_FACE));
         long southWestCount = pieces.stream()
                 .filter(piece -> "south_west".equals(piece.tags().get("workspace_perimeter_chain_id")))
                 .count();
@@ -987,10 +996,8 @@ class TowerWorkspaceV2Test {
                 connector.facing() == Direction.WEST &&
                         "keep_slots/keep/courtyard/path/south_west".equals(connector.targetPoolName()) &&
                         connector.lateralOffset() == -3));
-        assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
-                connector.facing() == Direction.EAST &&
-                        "keep_slots/keep/courtyard/path/south_east".equals(connector.targetPoolName()) &&
-                        connector.lateralOffset() == -3));
+        assertFalse(entryApproach.connectors().stream().anyMatch(connector ->
+                "keep_slots/keep/courtyard/path/south_east".equals(connector.targetPoolName())));
         assertFalse(entryApproach.connectors().stream().anyMatch(connector ->
                 connector.targetPoolName() != null &&
                         connector.targetPoolName().startsWith("keep_slots/keep/courtyard/") &&
@@ -1009,9 +1016,10 @@ class TowerWorkspaceV2Test {
         assertPieceTargets(pieces, "keep_courtyard_path_t_north", "keep_slots/keep/courtyard/north");
         assertPieceTargets(pieces, "keep_courtyard_path_t_north", "keep_slots/keep/courtyard/path/north_east");
         assertPieceTargets(pieces, "keep_courtyard_path_corner_t_north_east", "keep_slots/keep/courtyard/north_east");
-        assertPieceTargets(pieces, "keep_courtyard_path_corner_t_south_east", "keep_slots/keep/courtyard/south_east");
-        assertPieceTargets(pieces, "keep_courtyard_path_corner_t_south_east", "keep_slots/keep/courtyard/path/east");
+        assertPieceTargets(pieces, "keep_courtyard_path_corner_t_north_east", "keep_slots/keep/courtyard/path/east");
         assertPieceTargets(pieces, "keep_courtyard_path_t_east", "keep_slots/keep/courtyard/east");
+        assertPieceTargets(pieces, "keep_courtyard_path_t_east", "keep_slots/keep/courtyard/path/south_east");
+        assertPieceTargets(pieces, "keep_courtyard_path_corner_t_south_east", "keep_slots/keep/courtyard/south_east");
     }
 
     @Test
@@ -2002,6 +2010,14 @@ class TowerWorkspaceV2Test {
                 .orElseThrow();
         assertEquals(3, mainHallway.interiorLength());
         assertEquals(3, branchHallway.interiorLength());
+        assertEquals(3, mainHallway.interiorWidth());
+        assertEquals(3, branchHallway.interiorWidth());
+        int expectedHallwayHeight = workspace.resolveFamilySettings(families.stream()
+                .filter(family -> family.topologySlotId().equals("keep.center.basement_floor"))
+                .findFirst()
+                .orElseThrow()).roomHeight();
+        assertEquals(expectedHallwayHeight, mainHallway.interiorHeight());
+        assertEquals(expectedHallwayHeight, branchHallway.interiorHeight());
         assertFalse(pieces.stream().anyMatch(piece ->
                 piece.pieceName().startsWith("floor_plan_keep_center_basement_floor_linear_run_keep_")));
         MKPlannedPiece basementFloor = pieces.stream()
@@ -2207,6 +2223,10 @@ class TowerWorkspaceV2Test {
                         piece.pieceName().endsWith("_branch"))
                 .findFirst()
                 .orElseThrow();
+        assertEquals(5, mainHallway.interiorLength());
+        assertEquals(3, branchHallway.interiorLength());
+        assertEquals(workspace.dimensions().roomHeight(), mainHallway.interiorHeight());
+        assertEquals(workspace.dimensions().roomHeight(), branchHallway.interiorHeight());
         String mainLinearPool = "floor_plan/floor/tower_primary/main_floor/linear_runs/main/floor_main";
         String mainRoomPool = "floor_plan/floor/tower_primary/main_floor/rooms/main/floor_main";
         String branchLinearPool = "floor_plan/floor/tower_primary/main_floor/linear_runs/branch/floor_branch";
@@ -2663,6 +2683,45 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void plannerUsesTunnelExtrusionForGeneratedHorizontalExits() {
+        MKStructureWorkspace workspace = baseWorkspace(
+                List.of(
+                        new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
+                        new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
+                ),
+                List.of()
+        );
+        MKTowerWorkspaceFamilyDefinition floorWithBranch = topologyFamily(
+                "floor_main",
+                "tower.primary.main_floor",
+                "tower.primary",
+                false,
+                9,
+                9,
+                workspace.dimensions().roomHeight(),
+                MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                        MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch")),
+                0,
+                0,
+                null,
+                null
+        );
+        workspace = withFamilyDefinitions(workspace, workspace.familyDefinitions().stream()
+                .map(family -> family.baseName().equals("floor_main") ? floorWithBranch : family)
+                .toList());
+
+        MKPlannedPiece floor = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.pieceName().equals("floor_main"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY.getSerializedName(),
+                floor.tags().get("workspace_horizontal_extrusion_mode"));
+        assertEquals(MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, floorWithBranch.horizontalExtrusionMode());
+    }
+
+    @Test
     void defaultTowerIngressIsOpeningOnly() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKTowerWorkspaceFamilyDefinition entryFamily = MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions).stream()
@@ -2708,6 +2767,12 @@ class TowerWorkspaceV2Test {
 
         assertFalse(plannedEntrance.placesJigsaw());
         assertEquals(net.minecraft.core.Direction.SOUTH, plannedEntrance.facing());
+        MKPlannedPiece entry = new MKTowerWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.pieceName().equals("entry"))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION.getSerializedName(),
+                entry.tags().get("workspace_horizontal_extrusion_mode"));
     }
 
     @Test
@@ -3077,6 +3142,44 @@ class TowerWorkspaceV2Test {
         assertTrue(controller.getRejectionReason(afterMain, upConnector, topCapApproach).isEmpty());
         assertEquals(Optional.of("tower_stack_top_cap_required"),
                 controller.getRejectionReason(afterMain, upConnector, mainFloor));
+    }
+
+    @Test
+    void layoutControllerAllowsTowerStackFloorPlanPiecesAtOuterFloorLimit() {
+        MKDungeonLayoutController controller = new MKDungeonLayoutController(new MKDungeonLayoutSettings(
+                1,
+                1,
+                1,
+                64,
+                64,
+                true,
+                MKVerticalProgressionMode.MIXED,
+                connectorSettings()
+        ));
+        MKDungeonPieceState startState = controller.initialStateForStart(
+                new MKDungeonPieceState(0, 0, 1, 0, true, 1),
+                towerStackMetadata("entry", 1, 1, 1, 1, true, false, false,
+                        MKJigsawPieceRole.ROOM, 0, 0, false),
+                null);
+        MKJigsawPieceMetadata basementFloor = towerStackMetadata("basement_floor", 1, 1, 1, 1, true, false, false,
+                MKJigsawPieceRole.ROOM, 1, -1, false);
+        MKDungeonPieceState basementState = controller.nextState(startState, connectorInfo(MKConnectorRole.CONNECT_DOWN),
+                basementFloor, null);
+        MKJigsawPieceMetadata mainHallway = new MKJigsawPieceMetadata(MKJigsawPieceRole.ROOM, 0, 0,
+                true, false, false, false, "floor/keep_center/basement_floor", false);
+        MKJigsawPieceMetadata branchHallway = new MKJigsawPieceMetadata(MKJigsawPieceRole.ROOM, 0, 0,
+                false, true, false, false, "floor/keep_center/basement_floor", false);
+        MKJigsawPieceMetadata ordinarySameFloorPiece = new MKJigsawPieceMetadata(MKJigsawPieceRole.ROOM, 0, 0,
+                true, false, false, false, "basement", false);
+
+        assertEquals(1, basementState.progressionFloorIndex());
+        assertEquals(1, basementState.targetFloors());
+        assertTrue(controller.getRejectionReason(basementState, connectorInfo(MKConnectorRole.MAIN_BACK),
+                mainHallway).isEmpty());
+        assertTrue(controller.getRejectionReason(basementState, connectorInfo(MKConnectorRole.BRANCH),
+                branchHallway).isEmpty());
+        assertEquals(Optional.of("floor_limit"), controller.getRejectionReason(basementState,
+                connectorInfo(MKConnectorRole.MAIN_BACK), ordinarySameFloorPiece));
     }
 
     @Test

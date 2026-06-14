@@ -9,9 +9,10 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizon
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamilySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
@@ -309,7 +310,8 @@ public class MKTowerStackPlanner {
             int lateralOffset = toLateralOffset(exit.direction(), exit.sideOffset());
             if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.INGRESS) {
                 connectors.add(MKPlannedConnector.openingOnly(MKConnectorRole.MAIN_BACK, exit.direction(),
-                        opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset()));
+                        opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset(),
+                        exit.horizontalExtrusionModeOverride()));
                 continue;
             }
             LinearRunPathKind linearRunPathKind = exit.pathKind().usesMainPath() ? LinearRunPathKind.MAIN : LinearRunPathKind.BRANCH;
@@ -323,18 +325,21 @@ public class MKTowerStackPlanner {
             if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY) {
                 connectors.add(new MKPlannedConnector(role, exit.direction(),
                         opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset(),
-                        EMPTY_POOL, mainEndingPoolName(slotMetadata.topologyGroupId())));
+                        EMPTY_POOL, mainEndingPoolName(slotMetadata.topologyGroupId()),
+                        exit.horizontalExtrusionModeOverride()));
                 continue;
             }
             if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY) {
                 connectors.add(new MKPlannedConnector(role, exit.direction(),
                         opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset(),
-                        EMPTY_POOL, branchCapPoolName(opening.profileId())));
+                        EMPTY_POOL, branchCapPoolName(opening.profileId()),
+                        exit.horizontalExtrusionModeOverride()));
                 continue;
             }
             if (exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION) {
                 connectors.add(MKPlannedConnector.openingOnly(role, exit.direction(),
-                        opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset()));
+                        opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset(),
+                        exit.horizontalExtrusionModeOverride()));
                 continue;
             }
             Optional<MKWorkspaceFloorTopologySettings> floorSettings =
@@ -368,7 +373,7 @@ public class MKTowerStackPlanner {
             }
             connectors.add(new MKPlannedConnector(role, exit.direction(),
                     opening.openingWidth(), opening.openingHeight(), lateralOffset,
-                    exit.verticalOffset(), targetPool, incomingPool));
+                    exit.verticalOffset(), targetPool, incomingPool, exit.horizontalExtrusionModeOverride()));
         }
         return List.copyOf(connectors);
     }
@@ -504,7 +509,7 @@ public class MKTowerStackPlanner {
         tags.put("tower_piece_kind", "room");
         tags.put("workspace_family_id", family.baseName());
         tags.put("workspace_horizontal_exits", family.horizontalExitSummary());
-        tags.put("workspace_horizontal_extrusion_mode", family.horizontalExtrusionMode().getSerializedName());
+        tags.put("workspace_horizontal_extrusion_mode", effectiveHorizontalExtrusionMode(family).getSerializedName());
         MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
         tags.put("workspace_topology_group", resolvedFamily.slotMetadata().topologyGroupId());
         if (!stackDefinition.stackId().isBlank()) {
@@ -543,6 +548,16 @@ public class MKTowerStackPlanner {
         runtimeInfo.applyToTags(tags);
         MKWorkspacePaletteTags.apply(tags, paletteResolver.resolveFloorTopologyForFamily(workspace, family));
         return tags;
+    }
+
+    private MKWorkspaceHorizontalExtrusionMode effectiveHorizontalExtrusionMode(MKTowerWorkspaceFamilyDefinition family) {
+        if (family.horizontalExtrusionMode() != MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION) {
+            return family.horizontalExtrusionMode();
+        }
+        boolean hasGeneratedHorizontalConnection = family.horizontalOnlyExits().stream()
+                .anyMatch(exit -> exit.connectionMode() != MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION);
+        return hasGeneratedHorizontalConnection ? MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY :
+                MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION;
     }
 
     private void applyVoidMarginTags(MKTowerWorkspaceFamilyDefinition family,

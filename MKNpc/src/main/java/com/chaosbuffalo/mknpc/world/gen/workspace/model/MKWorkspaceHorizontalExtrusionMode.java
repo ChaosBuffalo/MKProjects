@@ -1,9 +1,11 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
 public enum MKWorkspaceHorizontalExtrusionMode {
+    NO_EXTRUSION("no_extrusion"),
+    FLOOR_ONLY("floor_only"),
     TUNNEL_ONLY("tunnel_only"),
     FULL_BODY("full_body"),
-    NO_EXTRUSION("no_extrusion");
+    FULL_FACE("full_face");
 
     private final String serializedName;
 
@@ -21,14 +23,16 @@ public enum MKWorkspaceHorizontalExtrusionMode {
                 return mode;
             }
         }
-        return TUNNEL_ONLY;
+        return FULL_BODY;
     }
 
     public MKWorkspaceHorizontalExtrusionMode next() {
         return switch (this) {
+            case NO_EXTRUSION -> FLOOR_ONLY;
+            case FLOOR_ONLY -> TUNNEL_ONLY;
             case TUNNEL_ONLY -> FULL_BODY;
-            case FULL_BODY -> NO_EXTRUSION;
-            case NO_EXTRUSION -> TUNNEL_ONLY;
+            case FULL_BODY -> FULL_FACE;
+            case FULL_FACE -> NO_EXTRUSION;
         };
     }
 }

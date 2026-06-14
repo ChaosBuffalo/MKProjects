@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
@@ -19,6 +20,9 @@ public record MKDungeonTopologyGroupRule(
         int maxLinksPerRoom,
         int maxLinkLength,
         Optional<Long> lockedLayoutSeed,
+        Optional<MKWorkspaceFloorTopologySettings> floorTopologySettings,
+        int rootWidth,
+        int rootLength,
         boolean hasMainPathContinuations,
         @Nullable ResourceLocation mainPathEndingPool
 ) {
@@ -44,16 +48,23 @@ public record MKDungeonTopologyGroupRule(
                     .forGetter(MKDungeonTopologyGroupRule::maxLinkLength),
             Codec.LONG.optionalFieldOf("locked_layout_seed")
                     .forGetter(MKDungeonTopologyGroupRule::lockedLayoutSeed),
+            MKWorkspaceFloorTopologySettings.CODEC.optionalFieldOf("floor_topology_settings")
+                    .forGetter(MKDungeonTopologyGroupRule::floorTopologySettings),
+            Codec.INT.optionalFieldOf("root_width", 0)
+                    .forGetter(MKDungeonTopologyGroupRule::rootWidth),
+            Codec.INT.optionalFieldOf("root_length", 0)
+                    .forGetter(MKDungeonTopologyGroupRule::rootLength),
             Codec.BOOL.optionalFieldOf("has_main_path_continuations", true)
                     .forGetter(MKDungeonTopologyGroupRule::hasMainPathContinuations),
             ResourceLocation.CODEC.optionalFieldOf("main_path_ending_pool")
                     .forGetter(MKDungeonTopologyGroupRule::mainPathEndingPoolOpt)
     ).apply(instance, (topologyGroup, minMainPathPieces, maxMainPathPieces, maxBranchPiecesBeforeCap, sprawl,
                        linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
-                       lockedLayoutSeed, hasMainPathContinuations, mainPathEndingPool) ->
+                       lockedLayoutSeed, floorTopologySettings, rootWidth, rootLength,
+                       hasMainPathContinuations, mainPathEndingPool) ->
             new MKDungeonTopologyGroupRule(topologyGroup, minMainPathPieces, maxMainPathPieces,
                     maxBranchPiecesBeforeCap, sprawl, linksEnabled, linkDensity, maxLinksPerFloor,
-                    maxLinksPerRoom, maxLinkLength, lockedLayoutSeed,
+                    maxLinksPerRoom, maxLinkLength, lockedLayoutSeed, floorTopologySettings, rootWidth, rootLength,
                     hasMainPathContinuations, mainPathEndingPool.orElse(null))));
 
     public MKDungeonTopologyGroupRule {
@@ -63,6 +74,9 @@ public record MKDungeonTopologyGroupRule(
         maxLinksPerRoom = Math.max(0, Math.min(3, maxLinksPerRoom));
         maxLinkLength = Math.max(0, Math.min(128, maxLinkLength));
         lockedLayoutSeed = lockedLayoutSeed == null ? Optional.empty() : lockedLayoutSeed;
+        floorTopologySettings = floorTopologySettings == null ? Optional.empty() : floorTopologySettings;
+        rootWidth = Math.max(0, rootWidth);
+        rootLength = Math.max(0, rootLength);
     }
 
     public MKDungeonTopologyGroupRule(String topologyGroup, int minMainPathPieces, int maxMainPathPieces,
@@ -77,7 +91,8 @@ public record MKDungeonTopologyGroupRule(
                                       boolean hasMainPathContinuations,
                                       @Nullable ResourceLocation mainPathEndingPool) {
         this(topologyGroup, minMainPathPieces, maxMainPathPieces, maxBranchPiecesBeforeCap, sprawl,
-                false, 1.0f, 10, 3, 32, Optional.empty(), hasMainPathContinuations, mainPathEndingPool);
+                false, 1.0f, 10, 3, 32, Optional.empty(), Optional.empty(), hasMainPathContinuations,
+                mainPathEndingPool);
     }
 
     public MKDungeonTopologyGroupRule(String topologyGroup, int minMainPathPieces, int maxMainPathPieces,
@@ -86,7 +101,33 @@ public record MKDungeonTopologyGroupRule(
                                       boolean hasMainPathContinuations,
                                       @Nullable ResourceLocation mainPathEndingPool) {
         this(topologyGroup, minMainPathPieces, maxMainPathPieces, maxBranchPiecesBeforeCap, sprawl,
-                false, 1.0f, 10, 3, 32, lockedLayoutSeed, hasMainPathContinuations, mainPathEndingPool);
+                false, 1.0f, 10, 3, 32, lockedLayoutSeed, Optional.empty(), hasMainPathContinuations,
+                mainPathEndingPool);
+    }
+
+    public MKDungeonTopologyGroupRule(String topologyGroup, int minMainPathPieces, int maxMainPathPieces,
+                                      int maxBranchPiecesBeforeCap, float sprawl,
+                                      boolean linksEnabled, float linkDensity, int maxLinksPerFloor,
+                                      int maxLinksPerRoom, int maxLinkLength,
+                                      Optional<Long> lockedLayoutSeed,
+                                      boolean hasMainPathContinuations,
+                                      @Nullable ResourceLocation mainPathEndingPool) {
+        this(topologyGroup, minMainPathPieces, maxMainPathPieces, maxBranchPiecesBeforeCap, sprawl,
+                linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength, lockedLayoutSeed,
+                Optional.empty(), hasMainPathContinuations, mainPathEndingPool);
+    }
+
+    public MKDungeonTopologyGroupRule(String topologyGroup, int minMainPathPieces, int maxMainPathPieces,
+                                      int maxBranchPiecesBeforeCap, float sprawl,
+                                      boolean linksEnabled, float linkDensity, int maxLinksPerFloor,
+                                      int maxLinksPerRoom, int maxLinkLength,
+                                      Optional<Long> lockedLayoutSeed,
+                                      Optional<MKWorkspaceFloorTopologySettings> floorTopologySettings,
+                                      boolean hasMainPathContinuations,
+                                      @Nullable ResourceLocation mainPathEndingPool) {
+        this(topologyGroup, minMainPathPieces, maxMainPathPieces, maxBranchPiecesBeforeCap, sprawl,
+                linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength, lockedLayoutSeed,
+                floorTopologySettings, 0, 0, hasMainPathContinuations, mainPathEndingPool);
     }
 
     public boolean hasMainPathEndings() {

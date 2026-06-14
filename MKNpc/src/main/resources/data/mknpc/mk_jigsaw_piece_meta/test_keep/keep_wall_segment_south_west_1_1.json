@@ -1,1 +1,1 @@
-{"foundation_policy":{"mode":"masked_extend_bottom_blocks","maskBlocks":["minecraft:stone_bricks"]},"allow_on_branch_path":true,"role":"room"}
+{"foundation_policy":{"mode":"masked_extend_bottom_blocks","maskBlocks":["minecraft:stone_bricks"]},"floor_closable_openings":[{"z":4,"opening_width":3,"opening_height":3,"facing":"east","x":20,"y":1},{"z":4,"opening_width":3,"opening_height":3,"facing":"west","x":0,"y":1}],"allow_on_branch_path":true,"role":"room"}

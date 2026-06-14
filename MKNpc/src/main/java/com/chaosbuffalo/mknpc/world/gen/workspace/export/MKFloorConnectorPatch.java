@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.export;
 
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,19 +38,57 @@ final class MKFloorConnectorPatch {
         );
         int openingWidth = Math.max(1, parseInt(tags.get(prefix + "opening_width"), 1));
         int openingHeight = Math.max(1, parseInt(tags.get(prefix + "opening_height"), 1));
+        int closureDepth = Math.max(1, parseInt(tags.get(prefix + "closure_depth"), 1));
         int minMinorOffset = -((openingWidth - 1) / 2);
         int maxMinorOffset = openingWidth / 2;
-        ArrayList<BlockPos> positions = new ArrayList<>(openingWidth * openingHeight);
-        for (int minor = minMinorOffset; minor <= maxMinorOffset; minor++) {
-            for (int dy = 0; dy < openingHeight; dy++) {
-                if (facing == Direction.NORTH || facing == Direction.SOUTH) {
-                    positions.add(pos.offset(minor, dy, 0));
-                } else {
-                    positions.add(pos.offset(0, dy, minor));
+        ArrayList<BlockPos> positions = new ArrayList<>(openingWidth * openingHeight * closureDepth);
+        for (int depth = 0; depth < closureDepth; depth++) {
+            BlockPos basePos = depth == 0 ? pos : pos.relative(facing.getOpposite(), depth);
+            for (int minor = minMinorOffset; minor <= maxMinorOffset; minor++) {
+                for (int dy = 0; dy < openingHeight; dy++) {
+                    if (facing == Direction.NORTH || facing == Direction.SOUTH) {
+                        positions.add(basePos.offset(minor, dy, 0));
+                    } else {
+                        positions.add(basePos.offset(0, dy, minor));
+                    }
                 }
             }
         }
         return List.copyOf(positions);
+    }
+
+    static int closureDepth(MKWorkspacePieceDefinition piece, MKWorkspaceConnectorDefinition connector) {
+        Direction facing = connector.facing();
+        if (facing == null || !facing.getAxis().isHorizontal()) {
+            return 1;
+        }
+        int span = facing.getAxis() == Direction.Axis.X ?
+                piece.exportBounds().getXSpan() :
+                piece.exportBounds().getZSpan();
+        int roomSpan = facing.getAxis() == Direction.Axis.X ?
+                piece.effectiveDimensions().roomWidth() :
+                piece.effectiveDimensions().roomLength();
+        if (span <= 0 || roomSpan <= 0) {
+            return 1;
+        }
+        int shellMargin = Math.max(0, piece.shellMargin());
+        int exteriorMargin = Math.max(0, (span - roomSpan - (2 * shellMargin)) / 2);
+        int innerShellPlane = switch (facing) {
+            case WEST, NORTH -> exteriorMargin + Math.max(0, shellMargin - 1);
+            case EAST, SOUTH -> span - exteriorMargin - shellMargin;
+            default -> 0;
+        };
+        int connectorCoord = facing.getAxis() == Direction.Axis.X ?
+                connector.relativePos().getX() :
+                connector.relativePos().getZ();
+        if (connectorCoord < 0 || connectorCoord >= span) {
+            return 1;
+        }
+        return switch (facing) {
+            case WEST, NORTH -> connectorCoord < innerShellPlane ? innerShellPlane - connectorCoord + 1 : 1;
+            case EAST, SOUTH -> connectorCoord > innerShellPlane ? connectorCoord - innerShellPlane + 1 : 1;
+            default -> 1;
+        };
     }
 
     private static int parseInt(String value, int fallback) {

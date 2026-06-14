@@ -72,6 +72,33 @@ class MKFloorConnectorPatchTest {
     }
 
     @Test
+    void closedConnectorPatchHonorsClosureDepth() {
+        MKWorkspacePieceDefinition piece = closedConnectorPiece(Direction.WEST, new BlockPos(2, 1, 8), 3, 2, 3);
+
+        List<BlockPos> positions = MKFloorConnectorPatch.closedConnectorPatchPositions(piece);
+
+        assertEquals(18, positions.size());
+        assertTrue(positions.contains(new BlockPos(2, 1, 8)));
+        assertTrue(positions.contains(new BlockPos(3, 1, 8)));
+        assertTrue(positions.contains(new BlockPos(4, 1, 8)));
+        assertTrue(positions.contains(new BlockPos(4, 2, 9)));
+    }
+
+    @Test
+    void closureDepthExtendsOuterConnectorToInnerShellWall() {
+        MKWorkspacePieceDefinition piece = closureDepthPiece(new BoundingBox(0, 0, 0, 22, 8, 22));
+
+        assertEquals(3, MKFloorConnectorPatch.closureDepth(piece,
+                connector(MKConnectorRole.BRANCH, Direction.WEST, new BlockPos(0, 1, 11))));
+        assertEquals(3, MKFloorConnectorPatch.closureDepth(piece,
+                connector(MKConnectorRole.BRANCH, Direction.NORTH, new BlockPos(11, 1, 0))));
+        assertEquals(3, MKFloorConnectorPatch.closureDepth(piece,
+                connector(MKConnectorRole.BRANCH, Direction.EAST, new BlockPos(22, 1, 11))));
+        assertEquals(3, MKFloorConnectorPatch.closureDepth(piece,
+                connector(MKConnectorRole.MAIN_BACK, Direction.SOUTH, new BlockPos(11, 1, 22))));
+    }
+
+    @Test
     void randomizedMainExitExportPromotesSelectedBranchConnectorToMain() {
         MKWorkspacePieceDefinition source = randomizedMainExitTemplate();
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
@@ -94,6 +121,22 @@ class MKFloorConnectorPatchTest {
                 connector.role() == MKConnectorRole.BRANCH && connector.facing() == Direction.NORTH));
         assertTrue(eastMainAllBranches.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.BRANCH && connector.facing() == Direction.WEST));
+    }
+
+    @Test
+    void randomizedMainExitRuntimeMetadataClosesFormerMainExit() {
+        MKWorkspacePieceDefinition source = linkCandidateTemplate(true);
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(runtimeStartPiece(), source));
+
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 4, "test");
+        MKWorkspaceExportManifest.ExportRuntimeTemplateGroup group = manifest.runtimeHints().templateGroups().stream()
+                .filter(templateGroup -> "floor_main_room_link_main_w_mask_none".equals(templateGroup.baseName()))
+                .findFirst()
+                .orElseThrow();
+
+        assertTrue(group.pieceMetadata().floorLinkCandidates().stream().anyMatch(candidate ->
+                candidate.facing() == Direction.NORTH));
     }
 
     @Test
@@ -134,6 +177,21 @@ class MKFloorConnectorPatchTest {
     }
 
     @Test
+    void mainPathForwardConnectorDoesNotExportClosableOpening() {
+        MKWorkspacePieceDefinition mainPathRoom = mainPathPiece(false);
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(runtimeStartPiece(), mainPathRoom));
+
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 4, "test");
+        MKWorkspaceExportManifest.ExportRuntimeTemplateGroup group = manifest.runtimeHints().templateGroups().stream()
+                .filter(templateGroup -> "floor_main_cap".equals(templateGroup.baseName()))
+                .findFirst()
+                .orElseThrow();
+
+        assertTrue(group.pieceMetadata().floorClosableOpenings().isEmpty());
+    }
+
+    @Test
     void randomizedMainExitExportPatchesLinkCandidatesClosed() {
         MKWorkspacePieceDefinition source = linkCandidateTemplate(true);
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
@@ -153,6 +211,11 @@ class MKFloorConnectorPatchTest {
 
     private static MKWorkspacePieceDefinition closedConnectorPiece(Direction facing, BlockPos pos, int openingWidth,
                                                                    int openingHeight) {
+        return closedConnectorPiece(facing, pos, openingWidth, openingHeight, 0);
+    }
+
+    private static MKWorkspacePieceDefinition closedConnectorPiece(Direction facing, BlockPos pos, int openingWidth,
+                                                                   int openingHeight, int closureDepth) {
         Map<String, String> tags = new LinkedHashMap<>();
         tags.put(MKFloorMaskVariantExporter.CLOSED_CONNECTOR_COUNT_TAG, "1");
         String prefix = MKFloorMaskVariantExporter.CLOSED_CONNECTOR_PREFIX + "0_";
@@ -162,6 +225,9 @@ class MKFloorConnectorPatchTest {
         tags.put(prefix + "z", Integer.toString(pos.getZ()));
         tags.put(prefix + "opening_width", Integer.toString(openingWidth));
         tags.put(prefix + "opening_height", Integer.toString(openingHeight));
+        if (closureDepth > 0) {
+            tags.put(prefix + "closure_depth", Integer.toString(closureDepth));
+        }
         return new MKWorkspacePieceDefinition(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
@@ -191,6 +257,27 @@ class MKFloorConnectorPatchTest {
                 List.of(),
                 List.of(),
                 tags
+        );
+    }
+
+    private static MKWorkspacePieceDefinition closureDepthPiece(BoundingBox exportBounds) {
+        return new MKWorkspacePieceDefinition(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "floor_room",
+                "tower.primary.main_floor",
+                0,
+                new MKWorkspaceDimensions(17, 17, 9, 9, 9, 3, 3, 3),
+                1,
+                List.of(),
+                BlockPos.ZERO,
+                exportBounds,
+                exportBounds,
+                BlockPos.ZERO,
+                BlockPos.ZERO,
+                List.of(),
+                List.of(),
+                Map.of()
         );
     }
 
@@ -290,6 +377,31 @@ class MKFloorConnectorPatchTest {
         );
     }
 
+    private static MKWorkspacePieceDefinition mainPathPiece(boolean mainPathEnding) {
+        Map<String, String> tags = new LinkedHashMap<>();
+        new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
+                true, false, mainPathEnding, false, "floor/tower/primary/main_floor", mainPathEnding)
+                .applyToTags(tags);
+        return new MKWorkspacePieceDefinition(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "floor_main_cap",
+                "tower.primary.main_floor",
+                0,
+                new MKWorkspaceDimensions(17, 17, 9, 9, 9, 3, 3, 3),
+                1,
+                List.of(connector(MKConnectorRole.MAIN_FORWARD, Direction.SOUTH, new BlockPos(11, 1, 22))),
+                BlockPos.ZERO,
+                new BoundingBox(0, 0, 0, 22, 8, 22),
+                new BoundingBox(0, 0, 0, 22, 8, 22),
+                BlockPos.ZERO,
+                BlockPos.ZERO,
+                List.of(),
+                List.of(),
+                tags
+        );
+    }
+
     private static boolean hasClosedConnectorFacing(MKWorkspacePieceDefinition piece, Direction direction) {
         int count = Integer.parseInt(piece.tags().getOrDefault(
                 MKFloorMaskVariantExporter.CLOSED_CONNECTOR_COUNT_TAG, "0"));
@@ -303,11 +415,15 @@ class MKFloorConnectorPatchTest {
     }
 
     private static MKWorkspaceConnectorDefinition connector(MKConnectorRole role, Direction facing) {
+        return connector(role, facing, BlockPos.ZERO.relative(facing, 4));
+    }
+
+    private static MKWorkspaceConnectorDefinition connector(MKConnectorRole role, Direction facing, BlockPos pos) {
         String name = role.getSerializedName();
         return new MKWorkspaceConnectorDefinition(
                 role,
                 facing,
-                BlockPos.ZERO.relative(facing, 4),
+                pos,
                 3,
                 3,
                 0,

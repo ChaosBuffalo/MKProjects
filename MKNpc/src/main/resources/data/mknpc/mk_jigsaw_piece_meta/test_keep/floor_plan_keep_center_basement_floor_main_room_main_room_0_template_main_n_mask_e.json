@@ -1,0 +1,1 @@
+{"floor_exit_mask":"e","floor_link_candidates":[{"opening_width":3,"opening_height":3,"closure_depth":3,"facing":"west","x":0,"y":1,"z":11}],"floor_closable_openings":[{"z":11,"opening_width":3,"opening_height":3,"closure_depth":3,"facing":"east","x":22,"y":1}],"topology_group":"floor/keep_center/basement_floor","role":"room"}

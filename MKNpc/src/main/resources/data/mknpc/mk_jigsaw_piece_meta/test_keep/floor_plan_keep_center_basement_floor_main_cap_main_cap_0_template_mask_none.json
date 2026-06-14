@@ -1,0 +1,1 @@
+{"floor_exit_mask":"none","floor_closable_openings":[{"z":22,"opening_width":3,"opening_height":3,"closure_depth":3,"facing":"south","x":11,"y":1}],"topology_group":"floor/keep_center/basement_floor","main_path_ending":true,"terminal":true,"role":"room"}

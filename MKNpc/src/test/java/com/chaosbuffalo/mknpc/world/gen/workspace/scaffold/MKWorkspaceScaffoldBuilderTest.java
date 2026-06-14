@@ -1,10 +1,14 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.scaffold;
 
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.junit.jupiter.api.Test;
 
@@ -48,6 +52,48 @@ class MKWorkspaceScaffoldBuilderTest {
                 builder.linearRunScaffoldStyle(linearRun("defensive_wall")));
         assertEquals(MKWorkspaceScaffoldBuilder.LinearRunScaffoldStyle.ENCLOSED_CORRIDOR,
                 builder.linearRunScaffoldStyle(linearRun("enclosed_corridor")));
+    }
+
+    @Test
+    void floorPlanLinearRunKindsUseDistinctScaffoldStyles() {
+        MKWorkspaceScaffoldBuilder builder = new MKWorkspaceScaffoldBuilder();
+
+        assertEquals(MKWorkspaceScaffoldBuilder.LinearRunScaffoldStyle.SOLID_WALL,
+                builder.linearRunScaffoldStyle(floorPlanLinearRun("solid_wall")));
+        assertEquals(MKWorkspaceScaffoldBuilder.LinearRunScaffoldStyle.ENCLOSED_CORRIDOR,
+                builder.linearRunScaffoldStyle(floorPlanLinearRun("enclosed_corridor")));
+    }
+
+    @Test
+    void connectorFaceLayersUseFloorWallAndCeilingPaletteBlocks() {
+        MKWorkspaceScaffoldBuilder builder = new MKWorkspaceScaffoldBuilder();
+
+        assertEquals(MKWorkspaceScaffoldBuilder.ConnectorFaceLayer.FLOOR,
+                builder.connectorFaceLayer(10, 10, 16, 1));
+        assertEquals(MKWorkspaceScaffoldBuilder.ConnectorFaceLayer.WALL,
+                builder.connectorFaceLayer(13, 10, 16, 1));
+        assertEquals(MKWorkspaceScaffoldBuilder.ConnectorFaceLayer.CEILING,
+                builder.connectorFaceLayer(16, 10, 16, 1));
+    }
+
+    @Test
+    void horizontalExtrusionModeUsesConnectorOverrideThenPieceTagsAndLinearRunStyle() {
+        MKWorkspaceScaffoldBuilder builder = new MKWorkspaceScaffoldBuilder();
+        MKPlannedConnector connector = connector(null);
+        MKPlannedConnector floorOnlyConnector = connector(MKWorkspaceHorizontalExtrusionMode.FLOOR_ONLY);
+
+        assertEquals(MKWorkspaceHorizontalExtrusionMode.FLOOR_ONLY,
+                builder.getHorizontalExtrusionMode(pieceKind("room"), floorOnlyConnector,
+                        MKWorkspaceScaffoldBuilder.LinearRunScaffoldStyle.ENCLOSED_CORRIDOR));
+        assertEquals(MKWorkspaceHorizontalExtrusionMode.FULL_FACE,
+                builder.getHorizontalExtrusionMode(linearRun("defensive_wall"), connector,
+                        MKWorkspaceScaffoldBuilder.LinearRunScaffoldStyle.DEFENSIVE_WALL));
+        assertEquals(MKWorkspaceHorizontalExtrusionMode.FULL_FACE,
+                builder.getHorizontalExtrusionMode(pieceWithTag("workspace_horizontal_extrusion_mode", "full_face"),
+                        connector, MKWorkspaceScaffoldBuilder.LinearRunScaffoldStyle.ENCLOSED_CORRIDOR));
+        assertEquals(MKWorkspaceHorizontalExtrusionMode.FULL_BODY,
+                builder.getHorizontalExtrusionMode(pieceKind("room"), connector,
+                        MKWorkspaceScaffoldBuilder.LinearRunScaffoldStyle.ENCLOSED_CORRIDOR));
     }
 
     @Test
@@ -104,6 +150,53 @@ class MKWorkspaceScaffoldBuilderTest {
                         "workspace_linear_run_kind", kind
                 )
         );
+    }
+
+    private static MKPlannedPiece floorPlanLinearRun(String kind) {
+        return new MKPlannedPiece(
+                "test.floor_plan_linear_run." + kind,
+                "test_floor_plan_" + kind,
+                5,
+                5,
+                5,
+                List.of(),
+                Map.of(
+                        "tower_piece_kind", "floor_plan_linear_run",
+                        "workspace_linear_run_kind", kind
+                )
+        );
+    }
+
+    private static MKPlannedPiece pieceKind(String pieceKind) {
+        return new MKPlannedPiece(
+                "test." + pieceKind,
+                "test_" + pieceKind,
+                5,
+                5,
+                5,
+                List.of(),
+                Map.of("tower_piece_kind", pieceKind)
+        );
+    }
+
+    private static MKPlannedPiece pieceWithTag(String key, String value) {
+        return new MKPlannedPiece(
+                "test.room",
+                "test_room",
+                5,
+                5,
+                5,
+                List.of(),
+                Map.of(
+                        "tower_piece_kind", "room",
+                        key, value
+                )
+        );
+    }
+
+    private static MKPlannedConnector connector(MKWorkspaceHorizontalExtrusionMode horizontalExtrusionModeOverride) {
+        return new MKPlannedConnector(MKConnectorRole.MAIN_FORWARD, Direction.NORTH, 3, 3,
+                0, 0, "minecraft:empty", null, horizontalExtrusionModeOverride);
     }
 
     private static MKPlannedPiece plannedPiece(String baseName, int variantIndex) {

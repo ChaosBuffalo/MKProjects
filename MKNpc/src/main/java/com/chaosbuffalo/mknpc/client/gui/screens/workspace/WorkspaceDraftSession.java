@@ -14,6 +14,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProf
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
@@ -722,6 +723,14 @@ public class WorkspaceDraftSession {
 
     public void towerStackFoundationPolicy(String stackId, MKWorkspaceFoundationPolicy value) {
         replaceTowerStackSettings(towerStackSettings(stackId).withFoundationPolicy(value));
+    }
+
+    public MKWorkspaceHorizontalExtrusionMode towerStackHorizontalExtrusionMode(String stackId) {
+        return towerStackSettings(stackId).horizontalExtrusionMode();
+    }
+
+    public void towerStackHorizontalExtrusionMode(String stackId, MKWorkspaceHorizontalExtrusionMode value) {
+        replaceTowerStackSettings(towerStackSettings(stackId).withHorizontalExtrusionMode(value));
     }
 
     public Optional<MKWorkspacePaletteOverride> towerStackPaletteOverrideOpt(String stackId) {
@@ -1738,7 +1747,8 @@ public class WorkspaceDraftSession {
                                     existingExit.openingProfileId()),
                             existingExit.connectionMode(),
                             existingExit.sideOffset(),
-                            existingExit.verticalOffset()
+                            existingExit.verticalOffset(),
+                            existingExit.horizontalExtrusionModeOverride()
                     ));
                 }
             }
@@ -1761,7 +1771,8 @@ public class WorkspaceDraftSession {
                 currentExit.openingProfileId(),
                 currentExit.connectionMode(),
                 clampSideOffset(family, currentExit.direction(), currentExit.openingProfileId(), nextSideOffset),
-                clampVerticalOffset(family, currentExit.openingProfileId(), nextVerticalOffset)
+                clampVerticalOffset(family, currentExit.openingProfileId(), nextVerticalOffset),
+                currentExit.horizontalExtrusionModeOverride()
         ));
     }
 
@@ -2271,7 +2282,8 @@ public class WorkspaceDraftSession {
                                         exit.openingProfileId(),
                                         exit.connectionMode(),
                                         clampSideOffset(normalizedGeometry, exit.direction(), exit.openingProfileId(), exit.sideOffset()),
-                                        clampVerticalOffset(normalizedGeometry, exit.openingProfileId(), exit.verticalOffset())
+                                        clampVerticalOffset(normalizedGeometry, exit.openingProfileId(), exit.verticalOffset()),
+                                        exit.horizontalExtrusionModeOverride()
                                 ))
                         .toList(),
                 topVoidMargin,

@@ -1,0 +1,18 @@
+{
+  "elements": [
+    {
+      "element": {
+        "bWaterLog": false,
+        "element_type": "mknpc:mk_single_jigsaw",
+        "location": "mknpc:test_keep/floor_plan_keep_center_basement_floor_linear_run_floor_main_hallway_main_1",
+        "override_liquid_settings": "ignore_waterlogging",
+        "processors": {
+          "processors": []
+        },
+        "projection": "rigid"
+      },
+      "weight": 1
+    }
+  ],
+  "fallback": "minecraft:empty"
+}

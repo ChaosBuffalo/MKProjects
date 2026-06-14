@@ -68,65 +68,67 @@ public class MKDungeonLayoutController {
         }
 
         int nextFloor = parentState.progressionFloorIndex() + childMetadata.progressionDelta();
-        if (nextFloor < 0 || nextFloor >= parentState.targetFloors()) {
-            return Optional.of("floor_limit");
-        }
-        if (childMetadata.progressionDelta() != 0 && parentState.piecesOnFloor() < settings.minPiecesPerFloor()) {
-            return Optional.of("min_floor_budget");
-        }
-        if (connector.role() == MKConnectorRole.CONNECT_UP) {
-            if (nextFloor == parentState.targetFloors() - 1) {
-                if (settings.topCapApproachEnabled() &&
-                        childMetadata.pieceRole() != MKJigsawPieceRole.TOP_CAP_APPROACH) {
-                    return Optional.of("final_upward_step_requires_top_cap_approach");
-                }
-                if (!settings.topCapApproachEnabled()) {
-                    if (childMetadata.pieceRole() == MKJigsawPieceRole.TOP_CAP_APPROACH) {
-                        return Optional.of("top_cap_approach_disabled");
+        if (!isTowerStackFloorPlanTransition(parentState, childMetadata)) {
+            if (nextFloor < 0 || nextFloor >= parentState.targetFloors()) {
+                return Optional.of("floor_limit");
+            }
+            if (childMetadata.progressionDelta() != 0 && parentState.piecesOnFloor() < settings.minPiecesPerFloor()) {
+                return Optional.of("min_floor_budget");
+            }
+            if (connector.role() == MKConnectorRole.CONNECT_UP) {
+                if (nextFloor == parentState.targetFloors() - 1) {
+                    if (settings.topCapApproachEnabled() &&
+                            childMetadata.pieceRole() != MKJigsawPieceRole.TOP_CAP_APPROACH) {
+                        return Optional.of("final_upward_step_requires_top_cap_approach");
                     }
-                    if (!childMetadata.terminal()) {
-                        return Optional.of("final_upward_step_requires_terminal");
+                    if (!settings.topCapApproachEnabled()) {
+                        if (childMetadata.pieceRole() == MKJigsawPieceRole.TOP_CAP_APPROACH) {
+                            return Optional.of("top_cap_approach_disabled");
+                        }
+                        if (!childMetadata.terminal()) {
+                            return Optional.of("final_upward_step_requires_terminal");
+                        }
                     }
                 }
-            }
-            if (nextFloor < parentState.targetFloors() - 1 && childMetadata.pieceRole() == MKJigsawPieceRole.TOP_CAP_APPROACH) {
-                return Optional.of("top_cap_approach_early");
-            }
-        }
-        if (connector.role() == MKConnectorRole.CONNECT_DOWN) {
-            if (nextFloor == parentState.targetFloors() - 1) {
-                if (settings.basementCapApproachEnabled() &&
-                        childMetadata.pieceRole() != MKJigsawPieceRole.BASEMENT_CAP_APPROACH) {
-                    return Optional.of("final_downward_step_requires_basement_cap_approach");
-                }
-                if (!settings.basementCapApproachEnabled() && !childMetadata.terminal()) {
-                    return Optional.of("final_downward_step_requires_terminal");
+                if (nextFloor < parentState.targetFloors() - 1 && childMetadata.pieceRole() == MKJigsawPieceRole.TOP_CAP_APPROACH) {
+                    return Optional.of("top_cap_approach_early");
                 }
             }
-            if (nextFloor < parentState.targetFloors() - 1 &&
-                    childMetadata.pieceRole() == MKJigsawPieceRole.BASEMENT_CAP_APPROACH) {
-                return Optional.of("basement_cap_approach_early");
+            if (connector.role() == MKConnectorRole.CONNECT_DOWN) {
+                if (nextFloor == parentState.targetFloors() - 1) {
+                    if (settings.basementCapApproachEnabled() &&
+                            childMetadata.pieceRole() != MKJigsawPieceRole.BASEMENT_CAP_APPROACH) {
+                        return Optional.of("final_downward_step_requires_basement_cap_approach");
+                    }
+                    if (!settings.basementCapApproachEnabled() && !childMetadata.terminal()) {
+                        return Optional.of("final_downward_step_requires_terminal");
+                    }
+                }
+                if (nextFloor < parentState.targetFloors() - 1 &&
+                        childMetadata.pieceRole() == MKJigsawPieceRole.BASEMENT_CAP_APPROACH) {
+                    return Optional.of("basement_cap_approach_early");
+                }
+                if (nextFloor < parentState.targetFloors() - 1 && childMetadata.terminal()) {
+                    return Optional.of("downward_terminal_early");
+                }
             }
-            if (nextFloor < parentState.targetFloors() - 1 && childMetadata.terminal()) {
-                return Optional.of("downward_terminal_early");
-            }
-        }
 
-        boolean finalFloor = parentState.progressionFloorIndex() >= parentState.targetFloors() - 1;
-        if (finalFloor && childMetadata.progressionDelta() != 0) {
-            return Optional.of("final_floor_progression_blocked");
-        }
-        if (finalFloor && !settings.allowBranchesOnFinalFloor() && connector.role() == MKConnectorRole.BRANCH) {
-            return Optional.of("final_floor_branch_blocked");
-        }
-        if (childMetadata.topCapOnly() && nextFloor != parentState.targetFloors() - 1) {
-            return Optional.of("top_cap_only_restricted");
-        }
-        if (isTopCapConnector(connector.role()) && nextFloor != parentState.targetFloors() - 1) {
-            return Optional.of("top_cap_connector_restricted");
-        }
-        if (childMetadata.progressionDelta() == 0 && parentState.piecesOnFloor() >= settings.maxPiecesPerFloor()) {
-            return Optional.of("per_floor_budget");
+            boolean finalFloor = parentState.progressionFloorIndex() >= parentState.targetFloors() - 1;
+            if (finalFloor && childMetadata.progressionDelta() != 0) {
+                return Optional.of("final_floor_progression_blocked");
+            }
+            if (finalFloor && !settings.allowBranchesOnFinalFloor() && connector.role() == MKConnectorRole.BRANCH) {
+                return Optional.of("final_floor_branch_blocked");
+            }
+            if (childMetadata.topCapOnly() && nextFloor != parentState.targetFloors() - 1) {
+                return Optional.of("top_cap_only_restricted");
+            }
+            if (isTopCapConnector(connector.role()) && nextFloor != parentState.targetFloors() - 1) {
+                return Optional.of("top_cap_connector_restricted");
+            }
+            if (childMetadata.progressionDelta() == 0 && parentState.piecesOnFloor() >= settings.maxPiecesPerFloor()) {
+                return Optional.of("per_floor_budget");
+            }
         }
         Optional<String> topologyGroupRejection = getTopologyGroupPathRejection(parentState, nextOnMainPath,
                 childMetadata);
@@ -390,11 +392,20 @@ public class MKDungeonLayoutController {
     }
 
     private boolean isTowerStackTransition(MKDungeonPieceState parentState, MKConnectorInfo connector,
-                                           MKJigsawPieceMetadata childMetadata) {
+                                            MKJigsawPieceMetadata childMetadata) {
         return isStackConnector(connector.role()) &&
                 !parentState.towerStackId().isBlank() &&
                 childMetadata.hasTowerStackLayout() &&
                 parentState.towerStackId().equals(childMetadata.towerStackId());
+    }
+
+    private boolean isTowerStackFloorPlanTransition(MKDungeonPieceState parentState,
+                                                    MKJigsawPieceMetadata childMetadata) {
+        return !parentState.towerStackId().isBlank() &&
+                !parentState.towerStackSlot().isBlank() &&
+                childMetadata.progressionDelta() == 0 &&
+                childMetadata.verticalLevelDelta() == 0 &&
+                childMetadata.topologyGroup().startsWith("floor/");
     }
 
     private boolean isStackConnector(MKConnectorRole role) {

@@ -55,6 +55,9 @@ public class MKWorkspaceScaffoldBuilder {
     private static final String CONTENT_WALKWAY_CONTINUATION_LENGTH_TAG =
             "workspace_content_walkway_continuation_length";
     private static final String COURTYARD_PATH_KIND = "courtyard_path";
+    private static final String LINEAR_RUN_PIECE_KIND = "linear_run";
+    private static final String FLOOR_PLAN_LINEAR_RUN_PIECE_KIND = "floor_plan_linear_run";
+    private static final String FLOOR_PLAN_ROOM_PIECE_KIND = "floor_plan_room";
     private static final ResourceLocation EMPTY_POOL = ResourceLocation.parse("minecraft:empty");
 
     private final MKWorkspaceGridLayout gridLayout = new MKWorkspaceGridLayout();
@@ -78,6 +81,12 @@ public class MKWorkspaceScaffoldBuilder {
         DEFENSIVE_WALL,
         SOLID_WALL,
         PARAPET
+    }
+
+    enum ConnectorFaceLayer {
+        FLOOR,
+        WALL,
+        CEILING
     }
 
     public List<MKWorkspacePieceDefinition> build(ServerLevel level, MKStructureWorkspace workspace,
@@ -683,6 +692,11 @@ public class MKWorkspaceScaffoldBuilder {
                     verticalShellThickness, floorState);
             return;
         }
+        if (isFloorPlanLinearRun(piece)) {
+            placeFloorPlanLinearRun(level, geometryBounds, geometryOrigin, piece, shellMargin,
+                    verticalShellThickness, floorState, wallState, ceilingState);
+            return;
+        }
         switch (linearRunScaffoldStyle(piece)) {
             case SOLID_WALL -> placeSolidWall(level, geometryBounds, wallState);
             case OPEN_WALKWAY -> {
@@ -855,7 +869,7 @@ public class MKWorkspaceScaffoldBuilder {
     }
 
     LinearRunScaffoldStyle linearRunScaffoldStyle(MKPlannedPiece piece) {
-        if (!"linear_run".equals(piece.tags().get("tower_piece_kind"))) {
+        if (!isLinearRun(piece)) {
             return LinearRunScaffoldStyle.ENCLOSED_CORRIDOR;
         }
         String kind = piece.tags().getOrDefault(LINEAR_RUN_KIND_TAG, "enclosed_corridor");
@@ -868,11 +882,60 @@ public class MKWorkspaceScaffoldBuilder {
         };
     }
 
+    private boolean isLinearRun(MKPlannedPiece piece) {
+        String pieceKind = piece.tags().get("tower_piece_kind");
+        return LINEAR_RUN_PIECE_KIND.equals(pieceKind) || FLOOR_PLAN_LINEAR_RUN_PIECE_KIND.equals(pieceKind);
+    }
+
+    private boolean isFloorPlanLinearRun(MKPlannedPiece piece) {
+        return FLOOR_PLAN_LINEAR_RUN_PIECE_KIND.equals(piece.tags().get("tower_piece_kind"));
+    }
+
     private void placeSolidWall(ServerLevel level, BoundingBox bounds, BlockState wallState) {
         for (int x = bounds.minX(); x <= bounds.maxX(); x++) {
             for (int y = bounds.minY(); y <= bounds.maxY(); y++) {
                 for (int z = bounds.minZ(); z <= bounds.maxZ(); z++) {
                     level.setBlock(new BlockPos(x, y, z), wallState, Block.UPDATE_ALL);
+                }
+            }
+        }
+    }
+
+    private void placeFloorPlanLinearRun(ServerLevel level, BoundingBox geometryBounds, BlockPos geometryOrigin,
+                                         MKPlannedPiece piece, int shellMargin, int verticalShellThickness,
+                                         BlockState floorState, BlockState wallState, BlockState ceilingState) {
+        fillLayeredBox(level, geometryBounds.minX(), geometryBounds.minY(), geometryBounds.minZ(),
+                geometryBounds.maxX(), geometryBounds.maxY(), geometryBounds.maxZ(), verticalShellThickness,
+                floorState, wallState, ceilingState);
+        carveFloorPlanLinearRunWalkspace(level, geometryOrigin, piece, shellMargin, verticalShellThickness);
+    }
+
+    private void carveFloorPlanLinearRunWalkspace(ServerLevel level, BlockPos geometryOrigin, MKPlannedPiece piece,
+                                                  int shellMargin, int verticalShellThickness) {
+        List<MKPlannedConnector> horizontalConnectors = piece.connectors().stream()
+                .filter(connector -> !connector.facing().getAxis().isVertical())
+                .toList();
+        if (horizontalConnectors.isEmpty()) {
+            return;
+        }
+        MKPlannedConnector connector = horizontalConnectors.getFirst();
+        boolean pathAlongX = connector.facing().getAxis() == Direction.Axis.X;
+        int halfWidth = connector.openingWidth() / 2;
+        int slopeDelta = parseIntTag(piece.tags(), LINEAR_RUN_SLOPE_DELTA_TAG, 0);
+        int interiorMinX = geometryOrigin.getX() + shellMargin;
+        int interiorMinZ = geometryOrigin.getZ() + shellMargin;
+        int centerX = interiorMinX + (piece.interiorWidth() / 2);
+        int centerZ = interiorMinZ + (piece.interiorLength() / 2);
+        int pathLength = pathAlongX ? piece.interiorWidth() : piece.interiorLength();
+        for (int step = 0; step < pathLength; step++) {
+            int rise = getLinearRunRiseForColumn(slopeDelta, step, pathLength);
+            int baseY = geometryOrigin.getY() + verticalShellThickness + rise;
+            for (int height = 0; height < connector.openingHeight(); height++) {
+                for (int width = -halfWidth; width <= halfWidth; width++) {
+                    BlockPos pos = pathAlongX ?
+                            new BlockPos(interiorMinX + step, baseY + height, centerZ + width) :
+                            new BlockPos(centerX + width, baseY + height, interiorMinZ + step);
+                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                 }
             }
         }
@@ -951,8 +1014,7 @@ public class MKWorkspaceScaffoldBuilder {
 
     private void decoratePieceInterior(ServerLevel level, BlockPos geometryOrigin, MKPlannedPiece piece, int shellMargin,
                                        int verticalShellThickness, int geometryInteriorHeight, BlockState floorState) {
-        String pieceKind = piece.tags().get("tower_piece_kind");
-        if (!"linear_run".equals(pieceKind)) {
+        if (!isLinearRun(piece)) {
             return;
         }
         int slopeDelta = parseIntTag(piece.tags(), LINEAR_RUN_SLOPE_DELTA_TAG, 0);
@@ -1084,30 +1146,33 @@ public class MKWorkspaceScaffoldBuilder {
                     verticalShellThickness, floorState);
             return;
         }
-        String stitchMode = piece.tags().getOrDefault(CONNECTOR_STITCH_TAG, "");
-        if (style == LinearRunScaffoldStyle.DEFENSIVE_WALL || "wall_run".equals(stitchMode)) {
-            extendHorizontalConnectorWallRun(level, exportBounds, geometryOrigin, connector, geometryWidth,
-                    geometryLength, geometryHeight, wallState);
-            return;
-        }
-        if ("full_face".equals(stitchMode)) {
-            extendHorizontalConnectorFullFace(level, exportBounds, geometryOrigin, connector, geometryWidth,
-                    geometryLength, geometryHeight, wallState);
-            return;
-        }
         if (style == LinearRunScaffoldStyle.SOLID_WALL || style == LinearRunScaffoldStyle.PARAPET) {
             extendHorizontalConnectorSolid(level, exportBounds, geometryOrigin, piece, connector, shellMargin,
                     geometryHeight, wallState);
             return;
         }
-        MKWorkspaceHorizontalExtrusionMode extrusionMode = getHorizontalExtrusionMode(piece);
-        if (extrusionMode == MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION) {
-            return;
-        }
-        if (extrusionMode == MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY) {
-            extendHorizontalConnectorTunnelShell(level, exportBounds, geometryOrigin, piece, connector, shellMargin,
-                    verticalShellThickness, floorState, wallState, ceilingState);
-            return;
+        MKWorkspaceHorizontalExtrusionMode extrusionMode = getHorizontalExtrusionMode(piece, connector, style);
+        switch (extrusionMode) {
+            case NO_EXTRUSION -> {
+                return;
+            }
+            case FLOOR_ONLY -> {
+                extendHorizontalConnectorDeck(level, exportBounds, geometryOrigin, piece, connector, shellMargin,
+                        verticalShellThickness, floorState);
+                return;
+            }
+            case TUNNEL_ONLY -> {
+                extendHorizontalConnectorTunnelShell(level, exportBounds, geometryOrigin, piece, connector, shellMargin,
+                        verticalShellThickness, floorState, wallState, ceilingState);
+                return;
+            }
+            case FULL_FACE -> {
+                extendHorizontalConnectorFullFace(level, exportBounds, geometryOrigin, connector, geometryWidth,
+                        geometryLength, geometryHeight, verticalShellThickness, floorState, wallState, ceilingState);
+                return;
+            }
+            case FULL_BODY -> {
+            }
         }
         int centerX = getConnectorCenterX(geometryOrigin, piece, shellMargin, connector);
         int centerZ = getConnectorCenterZ(geometryOrigin, piece, shellMargin, connector);
@@ -1141,23 +1206,19 @@ public class MKWorkspaceScaffoldBuilder {
         }
     }
 
-    private void extendHorizontalConnectorWallRun(ServerLevel level, BoundingBox exportBounds, BlockPos geometryOrigin,
-                                                  MKPlannedConnector connector, int geometryWidth,
-                                                  int geometryLength, int geometryHeight, BlockState wallState) {
-        fillConnectorFace(level, exportBounds, geometryOrigin, connector, geometryWidth, geometryLength,
-                geometryHeight, wallState);
-    }
-
     private void extendHorizontalConnectorFullFace(ServerLevel level, BoundingBox exportBounds, BlockPos geometryOrigin,
                                                    MKPlannedConnector connector, int geometryWidth,
-                                                   int geometryLength, int geometryHeight, BlockState wallState) {
+                                                   int geometryLength, int geometryHeight, int verticalShellThickness,
+                                                   BlockState floorState, BlockState wallState,
+                                                   BlockState ceilingState) {
         fillConnectorFace(level, exportBounds, geometryOrigin, connector, geometryWidth, geometryLength,
-                geometryHeight, wallState);
+                geometryHeight, verticalShellThickness, floorState, wallState, ceilingState);
     }
 
     private void fillConnectorFace(ServerLevel level, BoundingBox exportBounds, BlockPos geometryOrigin,
                                    MKPlannedConnector connector, int geometryWidth, int geometryLength,
-                                   int geometryHeight, BlockState wallState) {
+                                   int geometryHeight, int verticalShellThickness, BlockState floorState,
+                                   BlockState wallState, BlockState ceilingState) {
         int minY = geometryOrigin.getY();
         int maxY = geometryOrigin.getY() + geometryHeight - 1;
         int minX = geometryOrigin.getX();
@@ -1167,13 +1228,51 @@ public class MKWorkspaceScaffoldBuilder {
         if (connector.facing() == Direction.NORTH || connector.facing() == Direction.SOUTH) {
             int startZ = connector.facing() == Direction.NORTH ? exportBounds.minZ() : maxZ + 1;
             int endZ = connector.facing() == Direction.NORTH ? minZ - 1 : exportBounds.maxZ();
-            fillBox(level, minX, minY, startZ, maxX, maxY, endZ, wallState);
+            fillLayeredBox(level, minX, minY, startZ, maxX, maxY, endZ, verticalShellThickness,
+                    floorState, wallState, ceilingState);
             return;
         }
 
         int startX = connector.facing() == Direction.WEST ? exportBounds.minX() : maxX + 1;
         int endX = connector.facing() == Direction.WEST ? minX - 1 : exportBounds.maxX();
-        fillBox(level, startX, minY, minZ, endX, maxY, maxZ, wallState);
+        fillLayeredBox(level, startX, minY, minZ, endX, maxY, maxZ, verticalShellThickness,
+                floorState, wallState, ceilingState);
+    }
+
+    private void fillLayeredBox(ServerLevel level, int minX, int minY, int minZ, int maxX, int maxY, int maxZ,
+                                int verticalShellThickness, BlockState floorState, BlockState wallState,
+                                BlockState ceilingState) {
+        if (minX > maxX || minY > maxY || minZ > maxZ) {
+            return;
+        }
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                BlockState state = connectorFaceLayerState(y, minY, maxY, verticalShellThickness, floorState,
+                        wallState, ceilingState);
+                for (int z = minZ; z <= maxZ; z++) {
+                    level.setBlock(new BlockPos(x, y, z), state, Block.UPDATE_ALL);
+                }
+            }
+        }
+    }
+
+    BlockState connectorFaceLayerState(int y, int minY, int maxY, int verticalShellThickness, BlockState floorState,
+                                       BlockState wallState, BlockState ceilingState) {
+        return switch (connectorFaceLayer(y, minY, maxY, verticalShellThickness)) {
+            case FLOOR -> floorState;
+            case CEILING -> ceilingState;
+            case WALL -> wallState;
+        };
+    }
+
+    ConnectorFaceLayer connectorFaceLayer(int y, int minY, int maxY, int verticalShellThickness) {
+        if (y < minY + verticalShellThickness) {
+            return ConnectorFaceLayer.FLOOR;
+        }
+        if (y > maxY - verticalShellThickness) {
+            return ConnectorFaceLayer.CEILING;
+        }
+        return ConnectorFaceLayer.WALL;
     }
 
     private void fillBox(ServerLevel level, int minX, int minY, int minZ, int maxX, int maxY, int maxZ,
@@ -1312,7 +1411,7 @@ public class MKWorkspaceScaffoldBuilder {
                     int x = centerX + offset;
                     for (int thickness = 0; thickness < verticalShellThickness; thickness++) {
                         level.setBlock(new BlockPos(x, floorTopY - thickness, z), floorState, Block.UPDATE_ALL);
-                        level.setBlock(new BlockPos(x, ceilingBottomY + thickness, z), ceilingState, Block.UPDATE_ALL);
+                        level.setBlock(new BlockPos(x, ceilingBottomY + thickness, z), wallState, Block.UPDATE_ALL);
                     }
                 }
                 fillTunnelSideWalls(level, centerX, z, true, baseY, connector.openingHeight(), halfWidth, shellMargin,
@@ -1330,7 +1429,7 @@ public class MKWorkspaceScaffoldBuilder {
                 int z = centerZ + offset;
                 for (int thickness = 0; thickness < verticalShellThickness; thickness++) {
                     level.setBlock(new BlockPos(x, floorTopY - thickness, z), floorState, Block.UPDATE_ALL);
-                    level.setBlock(new BlockPos(x, ceilingBottomY + thickness, z), ceilingState, Block.UPDATE_ALL);
+                    level.setBlock(new BlockPos(x, ceilingBottomY + thickness, z), wallState, Block.UPDATE_ALL);
                 }
             }
             fillTunnelSideWalls(level, centerZ, x, false, baseY, connector.openingHeight(), halfWidth, shellMargin,
@@ -1423,11 +1522,20 @@ public class MKWorkspaceScaffoldBuilder {
         return FrontAndTop.fromFrontAndTop(facing, Direction.UP);
     }
 
-    private MKWorkspaceHorizontalExtrusionMode getHorizontalExtrusionMode(MKPlannedPiece piece) {
-        return MKWorkspaceHorizontalExtrusionMode.fromSerializedName(
-                piece.tags().getOrDefault(HORIZONTAL_EXTRUSION_MODE_TAG,
-                        MKWorkspaceHorizontalExtrusionMode.FULL_BODY.getSerializedName())
-        );
+    MKWorkspaceHorizontalExtrusionMode getHorizontalExtrusionMode(MKPlannedPiece piece, MKPlannedConnector connector,
+                                                                  LinearRunScaffoldStyle style) {
+        if (connector.horizontalExtrusionModeOverride() != null) {
+            return connector.horizontalExtrusionModeOverride();
+        }
+        if (style == LinearRunScaffoldStyle.DEFENSIVE_WALL) {
+            return MKWorkspaceHorizontalExtrusionMode.FULL_FACE;
+        }
+        String legacyStitchMode = piece.tags().getOrDefault(CONNECTOR_STITCH_TAG, "");
+        if ("full_face".equals(legacyStitchMode) || "wall_run".equals(legacyStitchMode)) {
+            return MKWorkspaceHorizontalExtrusionMode.FULL_FACE;
+        }
+        return MKWorkspaceHorizontalExtrusionMode.fromSerializedName(piece.tags().getOrDefault(
+                HORIZONTAL_EXTRUSION_MODE_TAG, MKWorkspaceHorizontalExtrusionMode.FULL_BODY.getSerializedName()));
     }
 
     private int getVerticalCenterX(BlockPos geometryOrigin, MKPlannedPiece piece, int shellMargin) {

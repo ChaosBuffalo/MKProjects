@@ -18,6 +18,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
@@ -675,7 +676,7 @@ public record MKWorkspaceExportManifest(
             return java.util.Optional.of(new ExportRuntimeTemplateGroup(
                     templateGroup.baseName(),
                     templateGroup.roleId(),
-                    ExportRuntimePieceMetadata.from(runtimeInfo.get(), runtimePiece.get().tags(),
+                    ExportRuntimePieceMetadata.from(runtimeInfo.get(), runtimePiece.get(),
                             foundationPolicyForPiece(workspace, runtimePiece.get()))
             ));
         }
@@ -724,7 +725,10 @@ public record MKWorkspaceExportManifest(
             boolean basementCapApproachEnabled,
             String floorExitMask,
             MKWorkspaceFoundationPolicy foundationPolicy,
-            List<MKJigsawPieceMetadata.FloorLinkCandidate> floorLinkCandidates
+            ResourceLocation wallBlock,
+            List<MKJigsawPieceMetadata.FloorLinkCandidate> floorLinkCandidates,
+            List<MKJigsawPieceMetadata.FloorClosableOpening> floorClosableOpenings,
+            List<MKJigsawPieceMetadata.FloorRootExit> floorRootExits
     ) {
         public static final Codec<ExportRuntimePieceMetadata> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 jigsawPieceRoleCodec().fieldOf("role").forGetter(ExportRuntimePieceMetadata::role),
@@ -738,32 +742,33 @@ public record MKWorkspaceExportManifest(
                 Codec.BOOL.optionalFieldOf("main_path_ending", false).forGetter(ExportRuntimePieceMetadata::mainPathEnding),
                 Codec.BOOL.optionalFieldOf("branch_cap", false).forGetter(ExportRuntimePieceMetadata::branchCap),
                 ExportTowerStackMetadata.CODEC.forGetter(ExportRuntimePieceMetadata::towerStackMetadata),
-                Codec.STRING.optionalFieldOf("floor_exit_mask", "").forGetter(ExportRuntimePieceMetadata::floorExitMask),
-                MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundation_policy", MKWorkspaceFoundationPolicy.none())
-                        .forGetter(ExportRuntimePieceMetadata::foundationPolicy),
-                MKJigsawPieceMetadata.FloorLinkCandidate.CODEC.listOf()
-                        .optionalFieldOf("floor_link_candidates", List.of())
-                        .forGetter(ExportRuntimePieceMetadata::floorLinkCandidates)
+                ExportFloorRuntimeMetadata.CODEC.forGetter(ExportRuntimePieceMetadata::floorRuntimeMetadata)
         ).apply(instance, (role, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath,
                            terminal, topCapOnly, topologyGroup, mainPathEnding, branchCap, towerStackMetadata,
-                           floorExitMask, foundationPolicy, floorLinkCandidates) ->
+                           floorRuntimeMetadata) ->
                 new ExportRuntimePieceMetadata(role, progressionDelta, verticalLevelDelta, allowOnMainPath,
                         allowOnBranchPath, terminal, topCapOnly, topologyGroup, mainPathEnding, branchCap,
                         towerStackMetadata.towerStackId(), towerStackMetadata.towerStackSlot(),
                         towerStackMetadata.minMainFloors(), towerStackMetadata.maxMainFloors(),
                         towerStackMetadata.minBasementFloors(), towerStackMetadata.maxBasementFloors(),
                         towerStackMetadata.topCapApproachEnabled(), towerStackMetadata.basementEntryEnabled(),
-                        towerStackMetadata.basementCapApproachEnabled(), floorExitMask, foundationPolicy,
-                        floorLinkCandidates)));
+                        towerStackMetadata.basementCapApproachEnabled(), floorRuntimeMetadata.floorExitMask(),
+                        floorRuntimeMetadata.foundationPolicy(), floorRuntimeMetadata.wallBlock(),
+                        floorRuntimeMetadata.floorLinkCandidates(), floorRuntimeMetadata.floorClosableOpenings(),
+                        floorRuntimeMetadata.floorRootExits())));
 
         public ExportRuntimePieceMetadata {
             floorExitMask = floorExitMask == null ? "" : floorExitMask;
+            wallBlock = wallBlock == null ? MKWorkspaceMaterialPalette.defaultPalette().wallBlock() : wallBlock;
             floorLinkCandidates = floorLinkCandidates == null ? List.of() : List.copyOf(floorLinkCandidates);
+            floorClosableOpenings = floorClosableOpenings == null ? List.of() : List.copyOf(floorClosableOpenings);
+            floorRootExits = floorRootExits == null ? List.of() : List.copyOf(floorRootExits);
         }
 
         public static ExportRuntimePieceMetadata from(MKWorkspaceRuntimePieceInfo runtimeInfo,
-                                                      Map<String, String> tags,
+                                                      MKWorkspacePieceDefinition piece,
                                                       MKWorkspaceFoundationPolicy foundationPolicy) {
+            Map<String, String> tags = piece.tags();
             return new ExportRuntimePieceMetadata(
                     runtimeInfo.role(),
                     runtimeInfo.progressionDelta(),
@@ -786,8 +791,151 @@ public record MKWorkspaceExportManifest(
                     Boolean.parseBoolean(tags.getOrDefault("workspace_tower_stack_basement_cap_approach_enabled", "false")),
                     tags.getOrDefault(MKFloorMaskVariantExporter.FLOOR_MASK_TAG, ""),
                     foundationPolicy,
-                    floorLinkCandidates(tags)
+                    paletteBlock(tags, MKWorkspacePaletteTags.WALL_BLOCK_TAG,
+                            MKWorkspaceMaterialPalette.defaultPalette().wallBlock()),
+                    floorLinkCandidates(tags),
+                    floorClosableOpenings(piece),
+                    floorRootExits(piece)
             );
+        }
+
+        public ExportRuntimePieceMetadata withPieceDerivedFloorMetadata(MKWorkspacePieceDefinition piece) {
+            return new ExportRuntimePieceMetadata(
+                    role,
+                    progressionDelta,
+                    verticalLevelDelta,
+                    allowOnMainPath,
+                    allowOnBranchPath,
+                    terminal,
+                    topCapOnly,
+                    topologyGroup,
+                    mainPathEnding,
+                    branchCap,
+                    towerStackId,
+                    towerStackSlot,
+                    minMainFloors,
+                    maxMainFloors,
+                    minBasementFloors,
+                    maxBasementFloors,
+                    topCapApproachEnabled,
+                    basementEntryEnabled,
+                    basementCapApproachEnabled,
+                    piece.tags().getOrDefault(MKFloorMaskVariantExporter.FLOOR_MASK_TAG, floorExitMask),
+                    foundationPolicy,
+                    paletteBlock(piece.tags(), MKWorkspacePaletteTags.WALL_BLOCK_TAG, wallBlock),
+                    floorLinkCandidates(piece.tags()),
+                    floorClosableOpenings(piece),
+                    floorRootExits(piece)
+            );
+        }
+
+        private static ResourceLocation paletteBlock(Map<String, String> tags, String key, ResourceLocation fallback) {
+            String value = tags.get(key);
+            if (value == null || value.isBlank()) {
+                return fallback;
+            }
+            try {
+                return ResourceLocation.parse(value);
+            } catch (Exception ignored) {
+                return fallback;
+            }
+        }
+
+        private static List<MKJigsawPieceMetadata.FloorRootExit> floorRootExits(MKWorkspacePieceDefinition piece) {
+            if ("floor_plan_room".equals(piece.tags().get("tower_piece_kind"))) {
+                return List.of();
+            }
+            return piece.connectors().stream()
+                    .filter(connector -> connector.role() == MKConnectorRole.MAIN_BACK ||
+                            connector.role() == MKConnectorRole.BRANCH)
+                    .filter(connector -> connector.facing().getAxis().isHorizontal())
+                    .map(connector -> floorRootExit(connector))
+                    .flatMap(Optional::stream)
+                    .toList();
+        }
+
+        private static Optional<MKJigsawPieceMetadata.FloorRootExit> floorRootExit(
+                MKWorkspaceConnectorDefinition connector) {
+            Optional<String> topologyGroup = floorTopologyGroup(connector.targetPool());
+            if (topologyGroup.isEmpty()) {
+                return Optional.empty();
+            }
+            MKWorkspaceHorizontalExitPathKind pathKind = connector.role() == MKConnectorRole.MAIN_BACK ?
+                    MKWorkspaceHorizontalExitPathKind.MAIN_EXIT :
+                    MKWorkspaceHorizontalExitPathKind.BRANCH;
+            return Optional.of(new MKJigsawPieceMetadata.FloorRootExit(
+                    topologyGroup.orElseThrow(),
+                    connector.facing(),
+                    pathKind.getSerializedName(),
+                    openingProfileFromPool(connector.targetPool()).orElse("")
+            ));
+        }
+
+        private static Optional<String> floorTopologyGroup(ResourceLocation pool) {
+            String path = pool.getPath();
+            if (path.contains("/masks/")) {
+                return Optional.empty();
+            }
+            int floorPlanMarker = path.indexOf("floor_plan/");
+            if (floorPlanMarker < 0) {
+                return Optional.empty();
+            }
+            int topologyStart = floorPlanMarker + "floor_plan/".length();
+            int topologyMarker = minPositive(
+                    path.indexOf("/rooms/", topologyStart),
+                    path.indexOf("/linear_runs/", topologyStart),
+                    path.indexOf("/branch_caps/", topologyStart),
+                    path.indexOf("/main_caps/", topologyStart),
+                    path.indexOf("/main_cap_approaches/", topologyStart)
+            );
+            if (topologyMarker < 0) {
+                return Optional.empty();
+            }
+            String topologyGroup = path.substring(topologyStart, topologyMarker);
+            return topologyGroup.isBlank() ? Optional.empty() : Optional.of(topologyGroup);
+        }
+
+        private static Optional<String> openingProfileFromPool(ResourceLocation pool) {
+            String path = pool.getPath();
+            int marker = path.lastIndexOf('/');
+            if (marker < 0 || marker == path.length() - 1) {
+                return Optional.empty();
+            }
+            String opening = path.substring(marker + 1);
+            return opening.isBlank() ? Optional.empty() : Optional.of(opening);
+        }
+
+        private static int minPositive(int... values) {
+            int result = -1;
+            for (int value : values) {
+                if (value >= 0 && (result < 0 || value < result)) {
+                    result = value;
+                }
+            }
+            return result;
+        }
+
+        private static List<MKJigsawPieceMetadata.FloorClosableOpening> floorClosableOpenings(
+                MKWorkspacePieceDefinition piece) {
+            return piece.connectors().stream()
+                    .filter(connector -> isFloorClosableOpening(piece, connector))
+                    .filter(connector -> connector.facing().getAxis().isHorizontal())
+                    .map(connector -> new MKJigsawPieceMetadata.FloorClosableOpening(
+                            connector.facing(),
+                            connector.relativePos().getX(),
+                            connector.relativePos().getY(),
+                            connector.relativePos().getZ(),
+                            connector.openingWidth(),
+                            connector.openingHeight(),
+                            MKFloorConnectorPatch.closureDepth(piece, connector)
+                    ))
+                    .toList();
+        }
+
+        private static boolean isFloorClosableOpening(MKWorkspacePieceDefinition piece,
+                                                      MKWorkspaceConnectorDefinition connector) {
+            return connector.role() == MKConnectorRole.MAIN_BACK ||
+                    connector.role() == MKConnectorRole.BRANCH;
         }
 
         private static List<MKJigsawPieceMetadata.FloorLinkCandidate> floorLinkCandidates(Map<String, String> tags) {
@@ -798,8 +946,10 @@ public record MKWorkspaceExportManifest(
             ArrayList<MKJigsawPieceMetadata.FloorLinkCandidate> candidates = new ArrayList<>();
             for (int i = 0; i < count; i++) {
                 String prefix = MKFloorMaskVariantExporter.CLOSED_CONNECTOR_PREFIX + i + "_";
-                if (!MKConnectorRole.LINK_CANDIDATE.getSerializedName()
-                        .equals(tags.getOrDefault(prefix + "role", ""))) {
+                String role = tags.getOrDefault(prefix + "role", "");
+                if (!MKConnectorRole.LINK_CANDIDATE.getSerializedName().equals(role) &&
+                        !MKConnectorRole.BRANCH.getSerializedName().equals(role) &&
+                        !MKConnectorRole.MAIN_BACK.getSerializedName().equals(role)) {
                     continue;
                 }
                 Direction facing = Direction.byName(tags.getOrDefault(prefix + "facing", ""));
@@ -814,7 +964,8 @@ public record MKWorkspaceExportManifest(
                         parseInt(tags, prefix + "opening_width", 1),
                         parseInt(tags, prefix + "opening_height", 2),
                         parseInt(tags, prefix + "lateral_offset", 0),
-                        parseInt(tags, prefix + "vertical_offset", 0)
+                        parseInt(tags, prefix + "vertical_offset", 0),
+                        parseInt(tags, prefix + "closure_depth", 2)
                 ));
             }
             return List.copyOf(candidates);
@@ -837,6 +988,37 @@ public record MKWorkspaceExportManifest(
                     minBasementFloors, maxBasementFloors, topCapApproachEnabled, basementEntryEnabled,
                     basementCapApproachEnabled);
         }
+
+        private ExportFloorRuntimeMetadata floorRuntimeMetadata() {
+            return new ExportFloorRuntimeMetadata(floorExitMask, foundationPolicy, wallBlock, floorLinkCandidates,
+                    floorClosableOpenings, floorRootExits);
+        }
+    }
+
+    private record ExportFloorRuntimeMetadata(
+            String floorExitMask,
+            MKWorkspaceFoundationPolicy foundationPolicy,
+            ResourceLocation wallBlock,
+            List<MKJigsawPieceMetadata.FloorLinkCandidate> floorLinkCandidates,
+            List<MKJigsawPieceMetadata.FloorClosableOpening> floorClosableOpenings,
+            List<MKJigsawPieceMetadata.FloorRootExit> floorRootExits
+    ) {
+        private static final MapCodec<ExportFloorRuntimeMetadata> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                Codec.STRING.optionalFieldOf("floor_exit_mask", "").forGetter(ExportFloorRuntimeMetadata::floorExitMask),
+                MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundation_policy", MKWorkspaceFoundationPolicy.none())
+                        .forGetter(ExportFloorRuntimeMetadata::foundationPolicy),
+                ResourceLocation.CODEC.optionalFieldOf("wall_block", MKWorkspaceMaterialPalette.defaultPalette().wallBlock())
+                        .forGetter(ExportFloorRuntimeMetadata::wallBlock),
+                MKJigsawPieceMetadata.FloorLinkCandidate.CODEC.listOf()
+                        .optionalFieldOf("floor_link_candidates", List.of())
+                        .forGetter(ExportFloorRuntimeMetadata::floorLinkCandidates),
+                MKJigsawPieceMetadata.FloorClosableOpening.CODEC.listOf()
+                        .optionalFieldOf("floor_closable_openings", List.of())
+                        .forGetter(ExportFloorRuntimeMetadata::floorClosableOpenings),
+                MKJigsawPieceMetadata.FloorRootExit.CODEC.listOf()
+                        .optionalFieldOf("floor_root_exits", List.of())
+                        .forGetter(ExportFloorRuntimeMetadata::floorRootExits)
+        ).apply(instance, ExportFloorRuntimeMetadata::new));
     }
 
     private record ExportTowerStackMetadata(

@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacemen
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
@@ -207,6 +208,7 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
                                       String labelPrefix) {
         addTowerStackSizingRows(screen, content, stackId, labelPrefix);
         addTowerStackFloorRows(screen, content, stackId);
+        addTowerStackExtrusionRows(screen, content, stackId);
         addResetRow(screen, content, labelPrefix + " Stack", () -> {
             screen.draftSession().resetTowerStackDefaults(stackId);
             screen.flagNeedSetup();
@@ -363,6 +365,21 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
         screen.addPaletteOverrideRows(content, "Stack Palette Defaults", editor.draftBasePalette(),
                 editor.towerStackPaletteOverrideOpt(stackId),
                 override -> editor.towerStackPaletteOverride(stackId, override));
+    }
+
+    private void addTowerStackExtrusionRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, String stackId) {
+        WorkspaceDraftSession editor = screen.draftSession();
+        MKButton extrusionButton = new MKButton(Component.literal(formatTopologyLabel(
+                editor.towerStackHorizontalExtrusionMode(stackId).getSerializedName())), 180, 20);
+        extrusionButton.setPressedCallback((button, mouseButton) -> {
+            editor.towerStackHorizontalExtrusionMode(stackId, cycleValue(
+                    List.of(MKWorkspaceHorizontalExtrusionMode.values()),
+                    editor.towerStackHorizontalExtrusionMode(stackId),
+                    isReverseClick(mouseButton)));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Horizontal Extrusion")), extrusionButton);
     }
 
     private void addTowerStackFoundationRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, String stackId) {

@@ -205,7 +205,8 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                     exit.openingProfileId(),
                     exit.connectionMode(),
                     editor.clampSideOffset(family, nextDirection, exit.openingProfileId(), exit.sideOffset()),
-                    editor.clampVerticalOffset(family, exit.openingProfileId(), exit.verticalOffset())
+                    editor.clampVerticalOffset(family, exit.openingProfileId(), exit.verticalOffset()),
+                    exit.horizontalExtrusionModeOverride()
             ));
             screen.refreshPreservingActiveScroll();
             return true;
@@ -225,7 +226,8 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                     nextOpeningProfileId,
                     exit.connectionMode(),
                     editor.clampSideOffset(family, exit.direction(), nextOpeningProfileId, exit.sideOffset()),
-                    editor.clampVerticalOffset(family, nextOpeningProfileId, exit.verticalOffset())
+                    editor.clampVerticalOffset(family, nextOpeningProfileId, exit.verticalOffset()),
+                    exit.horizontalExtrusionModeOverride()
             ));
             screen.refreshPreservingActiveScroll();
             return true;
@@ -239,7 +241,8 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                     cycleValue(List.of(MKWorkspaceHorizontalExitConnectionMode.values()), exit.connectionMode(),
                             isReverseClick(mouseButton)),
                     exit.sideOffset(),
-                    exit.verticalOffset()
+                    exit.verticalOffset(),
+                    exit.horizontalExtrusionModeOverride()
             ));
             screen.refreshPreservingActiveScroll();
             return true;
@@ -255,7 +258,8 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                     nextOpeningProfileId,
                     exit.connectionMode(),
                     editor.clampSideOffset(family, exit.direction(), nextOpeningProfileId, exit.sideOffset()),
-                    editor.clampVerticalOffset(family, nextOpeningProfileId, exit.verticalOffset())
+                    editor.clampVerticalOffset(family, nextOpeningProfileId, exit.verticalOffset()),
+                    exit.horizontalExtrusionModeOverride()
             ));
             screen.refreshPreservingActiveScroll();
             return true;
@@ -418,8 +422,10 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
 
     private String formatFamilyExtrusionMode(MKWorkspaceHorizontalExtrusionMode mode) {
         return switch (mode) {
+            case FLOOR_ONLY -> "Floor Only";
             case TUNNEL_ONLY -> "Tunnel Only";
             case FULL_BODY -> "Full Body";
+            case FULL_FACE -> "Full Face";
             case NO_EXTRUSION -> "No Extrusion";
         };
     }

@@ -64,7 +64,7 @@ public class MKWorkspaceExportArchiveWriter {
                     .encodeStart(JsonOps.INSTANCE, manifest)
                     .getOrThrow());
             int structurePieceCount = writeStructurePieces(output, level, manifest, exportPieces);
-            int metadataCount = writePieceMetadata(output, manifest);
+            int metadataCount = writePieceMetadata(output, manifest, exportPieces);
             return new WrittenArchive(path, manifest, structurePieceCount, metadataCount);
         }
     }
@@ -85,10 +85,15 @@ public class MKWorkspaceExportArchiveWriter {
         return written;
     }
 
-    private int writePieceMetadata(ZipOutputStream output, MKWorkspaceExportManifest manifest) throws IOException {
+    private int writePieceMetadata(ZipOutputStream output, MKWorkspaceExportManifest manifest,
+                                   List<MKWorkspacePieceDefinition> exportPieces) throws IOException {
         Map<String, MKWorkspaceExportManifest.ExportRuntimeTemplateGroup> groupByBaseName = new LinkedHashMap<>();
         for (MKWorkspaceExportManifest.ExportRuntimeTemplateGroup templateGroup : manifest.runtimeHints().templateGroups()) {
             groupByBaseName.put(templateGroup.baseName(), templateGroup);
+        }
+        Map<String, MKWorkspacePieceDefinition> exportPieceByName = new LinkedHashMap<>();
+        for (MKWorkspacePieceDefinition exportPiece : exportPieces) {
+            exportPieceByName.put(exportPiece.pieceName(), exportPiece);
         }
 
         int written = 0;
@@ -100,29 +105,36 @@ public class MKWorkspaceExportArchiveWriter {
             if (templateGroup == null) {
                 continue;
             }
+            MKWorkspacePieceDefinition workspacePiece = exportPieceByName.get(piece.pieceName());
+            MKWorkspaceExportManifest.ExportRuntimePieceMetadata pieceMetadata = workspacePiece == null ?
+                    templateGroup.pieceMetadata() :
+                    templateGroup.pieceMetadata().withPieceDerivedFloorMetadata(workspacePiece);
             MKJigsawPieceMetadata metadata = new MKJigsawPieceMetadata(
-                    templateGroup.pieceMetadata().role(),
-                    templateGroup.pieceMetadata().progressionDelta(),
-                    templateGroup.pieceMetadata().verticalLevelDelta(),
-                    templateGroup.pieceMetadata().allowOnMainPath(),
-                    templateGroup.pieceMetadata().allowOnBranchPath(),
-                    templateGroup.pieceMetadata().terminal(),
-                    templateGroup.pieceMetadata().topCapOnly(),
-                    templateGroup.pieceMetadata().topologyGroup(),
-                    templateGroup.pieceMetadata().mainPathEnding(),
-                    templateGroup.pieceMetadata().branchCap(),
-                    templateGroup.pieceMetadata().towerStackId(),
-                    templateGroup.pieceMetadata().towerStackSlot(),
-                    templateGroup.pieceMetadata().minMainFloors(),
-                    templateGroup.pieceMetadata().maxMainFloors(),
-                    templateGroup.pieceMetadata().minBasementFloors(),
-                    templateGroup.pieceMetadata().maxBasementFloors(),
-                    templateGroup.pieceMetadata().topCapApproachEnabled(),
-                    templateGroup.pieceMetadata().basementEntryEnabled(),
-                    templateGroup.pieceMetadata().basementCapApproachEnabled(),
-                    templateGroup.pieceMetadata().floorExitMask(),
-                    templateGroup.pieceMetadata().foundationPolicy(),
-                    templateGroup.pieceMetadata().floorLinkCandidates()
+                    pieceMetadata.role(),
+                    pieceMetadata.progressionDelta(),
+                    pieceMetadata.verticalLevelDelta(),
+                    pieceMetadata.allowOnMainPath(),
+                    pieceMetadata.allowOnBranchPath(),
+                    pieceMetadata.terminal(),
+                    pieceMetadata.topCapOnly(),
+                    pieceMetadata.topologyGroup(),
+                    pieceMetadata.mainPathEnding(),
+                    pieceMetadata.branchCap(),
+                    pieceMetadata.towerStackId(),
+                    pieceMetadata.towerStackSlot(),
+                    pieceMetadata.minMainFloors(),
+                    pieceMetadata.maxMainFloors(),
+                    pieceMetadata.minBasementFloors(),
+                    pieceMetadata.maxBasementFloors(),
+                    pieceMetadata.topCapApproachEnabled(),
+                    pieceMetadata.basementEntryEnabled(),
+                    pieceMetadata.basementCapApproachEnabled(),
+                    pieceMetadata.floorExitMask(),
+                    pieceMetadata.foundationPolicy(),
+                    pieceMetadata.wallBlock(),
+                    pieceMetadata.floorLinkCandidates(),
+                    pieceMetadata.floorClosableOpenings(),
+                    pieceMetadata.floorRootExits()
             );
             writeJson(output, metadataEntryName(manifest, piece), MKJigsawPieceMetadata.CODEC
                     .encodeStart(JsonOps.INSTANCE, metadata)
