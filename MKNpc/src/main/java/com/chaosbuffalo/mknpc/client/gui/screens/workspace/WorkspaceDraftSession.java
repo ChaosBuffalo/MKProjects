@@ -693,94 +693,6 @@ public class WorkspaceDraftSession {
         return allowedTowerStackBasementFloorCounts(settings, settings.mainFloors());
     }
 
-    int wallHeight() {
-        return draft().linearRunFamilies.stream()
-                .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))
-                .findFirst()
-                .map(MKWorkspaceLinearRunFamilyDefinition::interiorHeight)
-                .orElse(7);
-    }
-
-    int wallUnitSpan() {
-        return draft().linearRunFamilies.stream()
-                .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))
-                .findFirst()
-                .map(MKWorkspaceLinearRunFamilyDefinition::length)
-                .orElse(MKWorkspaceLinearRunFamilyDefinition.DEFAULT_WALLED_KEEP_WALL_SEGMENT_LENGTH);
-    }
-
-    void wallUnitSpan(int value) {
-        int span = makeOdd(Math.max(3, value));
-        draft().linearRunFamilies = draft().linearRunFamilies.stream()
-                .map(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()) ?
-                        copyLinearRunWithLengthAndInteriorWidth(linearRun, span, linearRun.interiorWidth()) :
-                        linearRun)
-                .toList();
-        syncGatehouseWallDimensions(span, wallPassageWidth());
-    }
-
-    int wallPassageWidth() {
-        return draft().linearRunFamilies.stream()
-                .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))
-                .findFirst()
-                .map(MKWorkspaceLinearRunFamilyDefinition::interiorWidth)
-                .orElse(3);
-    }
-
-    void wallPassageWidth(int value) {
-        int passageWidth = makeOdd(Math.max(3, value));
-        draft().linearRunFamilies = draft().linearRunFamilies.stream()
-                .map(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()) ?
-                        copyLinearRunWithLengthAndInteriorWidth(linearRun, linearRun.length(), passageWidth) :
-                        linearRun)
-                .toList();
-        syncGatehouseWallDimensions(wallUnitSpan(), passageWidth);
-    }
-
-    MKWorkspaceLinearRunKind perimeterRunKind() {
-        return draft().linearRunFamilies.stream()
-                .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))
-                .findFirst()
-                .map(MKWorkspaceLinearRunFamilyDefinition::kind)
-                .orElse(MKWorkspaceLinearRunKind.DEFENSIVE_WALL);
-    }
-
-    void perimeterRunKind(MKWorkspaceLinearRunKind value) {
-        draft().linearRunFamilies = draft().linearRunFamilies.stream()
-                .map(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()) ?
-                        copyLinearRunWithKind(linearRun, value) :
-                        linearRun)
-                .toList();
-    }
-
-    void wallHeight(int value) {
-        int height = Math.max(2, value);
-        draft().linearRunFamilies = draft().linearRunFamilies.stream()
-                .map(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()) ?
-                        copyLinearRunWithTopologyHeightAndTopVoid(linearRun, linearRun.topologySlotId(), height,
-                                Math.min(linearRun.topVoidMargin(), Math.max(0, height - 1))) :
-                        linearRun)
-                .toList();
-    }
-
-    int wallTopVoidMargin() {
-        return draft().linearRunFamilies.stream()
-                .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))
-                .findFirst()
-                .map(MKWorkspaceLinearRunFamilyDefinition::topVoidMargin)
-                .orElse(0);
-    }
-
-    void wallTopVoidMargin(int value) {
-        int margin = Math.max(0, value);
-        draft().linearRunFamilies = draft().linearRunFamilies.stream()
-                .map(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()) ?
-                        copyLinearRunWithTopologyHeightAndTopVoid(linearRun, linearRun.topologySlotId(),
-                                linearRun.interiorHeight(), Math.min(margin, Math.max(0, linearRun.interiorHeight() - 1))) :
-                        linearRun)
-                .toList();
-    }
-
     void resetTowerStackDefaults(String stackId) {
         replaceTowerStackSettings(MKWorkspaceTowerStackSettings.defaults(stackId, 7));
         applyTowerStackSettingsToFamilies();
@@ -788,40 +700,6 @@ public class WorkspaceDraftSession {
 
     public void resetTopologyPathDefaults(String topologyGroupId) {
         replaceTopologyPathSettings(MKWorkspaceTopologyPathSettings.defaultForTopologyGroup(topologyGroupId));
-    }
-
-    void resetWalledKeepPerimeterDefaults() {
-        Map<String, MKWorkspaceLinearRunFamilyDefinition> defaultsBySlot =
-                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(MKWorkspaceDimensions.defaultDimensions(),
-                                draft().palette)
-                        .stream()
-                        .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))
-                        .collect(java.util.stream.Collectors.toMap(
-                                MKWorkspaceLinearRunFamilyDefinition::topologySlotId,
-                                linearRun -> linearRun,
-                                (first, second) -> first,
-                                java.util.LinkedHashMap::new));
-        java.util.ArrayList<MKWorkspaceLinearRunFamilyDefinition> updated = new java.util.ArrayList<>();
-        java.util.LinkedHashSet<String> resetSlots = new java.util.LinkedHashSet<>();
-        for (MKWorkspaceLinearRunFamilyDefinition linearRun : draft().linearRunFamilies) {
-            MKWorkspaceLinearRunFamilyDefinition defaultRun = defaultsBySlot.get(linearRun.topologySlotId());
-            if (defaultRun == null) {
-                if (!isPerimeterTopologySlot(linearRun.topologySlotId())) {
-                    updated.add(linearRun);
-                }
-                continue;
-            }
-            if (resetSlots.add(linearRun.topologySlotId())) {
-                updated.add(defaultRun);
-            }
-        }
-        for (MKWorkspaceLinearRunFamilyDefinition defaultRun : defaultsBySlot.values()) {
-            if (resetSlots.add(defaultRun.topologySlotId())) {
-                updated.add(defaultRun);
-            }
-        }
-        draft().linearRunFamilies = List.copyOf(updated);
-        syncGatehouseWallDimensions(wallUnitSpan(), wallPassageWidth());
     }
 
     public void resetCurrentTopologyDefaults() {
@@ -2356,34 +2234,6 @@ public class WorkspaceDraftSession {
         return topologySlotId.equals("keep.perimeter") || topologySlotId.startsWith("keep.perimeter.");
     }
 
-    private MKTowerWorkspaceFamilyDefinition copyFamilyWithGeometry(MKTowerWorkspaceFamilyDefinition family,
-                                                                    int roomWidth, int roomLength, int roomHeight) {
-        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
-                family.baseName(),
-                family.slotMetadata(),
-                family.verticalAccessGroupId(),
-                family.supportsVerticalAccess(),
-                roomWidth,
-                roomLength,
-                roomHeight,
-                family.horizontalExtrusionMode(),
-                family.horizontalExits(),
-                family.topVoidMargin(),
-                family.bottomVoidMargin(),
-                family.foundationPolicyOverride(),
-                family.paletteOverride()
-        );
-    }
-
-    private void syncGatehouseWallDimensions(int wallUnitSpan, int wallPassageWidth) {
-        draft().familyDefinitions = draft().familyDefinitions.stream()
-                .map(family -> family.topologySlotId().equals("keep.gate.main") ?
-                        normalizeFamilyDefinition(copyFamilyWithGeometry(family, wallUnitSpan, wallPassageWidth,
-                                family.roomHeight())) :
-                        family)
-                .toList();
-    }
-
     private MKWorkspaceLinearRunFamilyDefinition copyLinearRunWithTopologyAndHeight(
             MKWorkspaceLinearRunFamilyDefinition linearRun, String topologySlotId, int interiorHeight) {
         return copyLinearRunWithTopologyHeightAndTopVoid(linearRun, topologySlotId, interiorHeight,
@@ -2406,48 +2256,6 @@ public class WorkspaceDraftSession {
                 linearRun.projection(),
                 linearRun.supportedShapes(),
                 Math.min(linearRun.topVoidMargin(), Math.max(0, linearRun.interiorHeight() - 1)),
-                linearRun.foundationPolicy(),
-                linearRun.paletteOverride()
-        );
-    }
-
-    private MKWorkspaceLinearRunFamilyDefinition copyLinearRunWithLengthAndInteriorWidth(
-            MKWorkspaceLinearRunFamilyDefinition linearRun, int length, int interiorWidth) {
-        return new MKWorkspaceLinearRunFamilyDefinition(
-                linearRun.linearRunId(),
-                linearRun.topologySlotId(),
-                linearRun.kind(),
-                linearRun.openingProfileId(),
-                Math.max(1, length),
-                makeOdd(Math.max(1, interiorWidth)),
-                linearRun.interiorHeight(),
-                linearRun.slopeDelta(),
-                linearRun.allowOnMainPath(),
-                linearRun.allowOnBranchPath(),
-                linearRun.projection(),
-                linearRun.supportedShapes(),
-                linearRun.topVoidMargin(),
-                linearRun.foundationPolicy(),
-                linearRun.paletteOverride()
-        );
-    }
-
-    private MKWorkspaceLinearRunFamilyDefinition copyLinearRunWithKind(MKWorkspaceLinearRunFamilyDefinition linearRun,
-                                                                       MKWorkspaceLinearRunKind kind) {
-        return new MKWorkspaceLinearRunFamilyDefinition(
-                linearRun.linearRunId(),
-                linearRun.topologySlotId(),
-                kind,
-                linearRun.openingProfileId(),
-                linearRun.length(),
-                linearRun.interiorWidth(),
-                linearRun.interiorHeight(),
-                linearRun.slopeDelta(),
-                linearRun.allowOnMainPath(),
-                linearRun.allowOnBranchPath(),
-                linearRun.projection(),
-                linearRun.supportedShapes(),
-                linearRun.topVoidMargin(),
                 linearRun.foundationPolicy(),
                 linearRun.paletteOverride()
         );
