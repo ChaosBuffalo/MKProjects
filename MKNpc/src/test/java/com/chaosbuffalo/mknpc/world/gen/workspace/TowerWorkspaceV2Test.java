@@ -873,6 +873,7 @@ class TowerWorkspaceV2Test {
                         MKWalledKeepCourtyardSettings.DEFAULT_CONTENT_TEMPLATE_HEIGHT,
                         MKWalledKeepCourtyardSettings.DEFAULT_SOCKET_CLEARANCE,
                         MKWalledKeepCourtyardSettings.DEFAULT_WALKWAY_CONTINUATION_LENGTH,
+                        MKWalledKeepCourtyardSettings.DEFAULT_PATH_INNER_MARGIN,
                         99
                 ));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
@@ -919,6 +920,62 @@ class TowerWorkspaceV2Test {
                 report.courtyardRequestedSocketSize());
         assertTrue(report.allowedCourtyardContentSizes().contains(
                 MKWalledKeepCourtyardSettings.DEFAULT_CONTENT_TEMPLATE_SIZE));
+    }
+
+    @Test
+    void walledKeepCourtyardPathInnerMarginExpandsPathLoopAndEntryApproach() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceTopologyProfile baseProfile = MKWorkspaceTopologyProfile.walledKeep(false);
+        MKStructureWorkspace baseKeepWorkspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                baseProfile,
+                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+        int innerMargin = 4;
+        MKWorkspaceTopologyProfile marginProfile = baseProfile.withCourtyardSettings(new MKWalledKeepCourtyardSettings(
+                true,
+                true,
+                MKWalledKeepCourtyardSettings.DEFAULT_CONTENT_TEMPLATE_HEIGHT,
+                MKWalledKeepCourtyardSettings.DEFAULT_SOCKET_CLEARANCE,
+                MKWalledKeepCourtyardSettings.DEFAULT_WALKWAY_CONTINUATION_LENGTH,
+                innerMargin,
+                MKWalledKeepCourtyardSettings.DEFAULT_CONTENT_TEMPLATE_SIZE
+        ));
+        MKStructureWorkspace marginWorkspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                marginProfile,
+                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
+        );
+
+        MKWalledKeepSizingCalculator calculator = new MKWalledKeepSizingCalculator();
+        MKWalledKeepSizingReport baseReport = calculator.calculate(baseKeepWorkspace);
+        MKWalledKeepSizingReport marginReport = calculator.calculate(marginWorkspace);
+        List<MKPlannedPiece> basePieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(baseKeepWorkspace);
+        List<MKPlannedPiece> marginPieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(marginWorkspace);
+        MKPlannedPiece basePathSource = basePieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_courtyard_path_t"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece marginPathSource = marginPieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_courtyard_path_t"))
+                .findFirst()
+                .orElseThrow();
+        MKPlannedPiece marginEntryApproach = marginPieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_entry_approach"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(baseReport.courtyardPathSize() + (2 * innerMargin), marginReport.courtyardPathSize());
+        assertEquals(baseReport.entryApproachLength() + (2 * innerMargin), marginReport.entryApproachLength());
+        assertEquals(marginReport.courtyardPathSize(), marginPathSource.interiorWidth());
+        assertEquals(marginReport.courtyardPathSize(), marginPathSource.interiorLength());
+        assertEquals(marginReport.entryApproachLength(), marginEntryApproach.interiorLength());
+        assertEquals(Integer.parseInt(basePathSource.tags().get(
+                        MKWalledKeepWorkspacePlanner.COURTYARD_PATH_LANE_INSET_TAG)) + innerMargin,
+                Integer.parseInt(marginPathSource.tags().get(
+                        MKWalledKeepWorkspacePlanner.COURTYARD_PATH_LANE_INSET_TAG)));
     }
 
     @Test

@@ -292,7 +292,9 @@ public class MKWalledKeepSizingCalculator {
     }
 
     private int courtyardPathLaneCenterInset(MKStructureWorkspace workspace, ResolvedOpening opening) {
-        return workspace.shellMargin() + workspace.exteriorAirMargin() + opening.openingWidth() / 2;
+        return workspace.shellMargin() + workspace.exteriorAirMargin() +
+                workspace.topologyProfile().courtyardSettings().courtyardPathInnerMargin() +
+                opening.openingWidth() / 2;
     }
 
     private int courtyardBandSize(MKStructureWorkspace workspace, MKWalledKeepCourtyardSettings settings,

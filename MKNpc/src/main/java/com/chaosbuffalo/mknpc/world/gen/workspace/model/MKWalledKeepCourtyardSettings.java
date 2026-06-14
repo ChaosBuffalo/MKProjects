@@ -12,11 +12,13 @@ public record MKWalledKeepCourtyardSettings(
         int courtyardContentTemplateHeight,
         int courtyardSocketClearance,
         int courtyardWalkwayContinuationLength,
+        int courtyardPathInnerMargin,
         int courtyardContentTemplateSize
 ) {
     public static final int DEFAULT_CONTENT_TEMPLATE_HEIGHT = 7;
     public static final int DEFAULT_SOCKET_CLEARANCE = 1;
     public static final int DEFAULT_WALKWAY_CONTINUATION_LENGTH = 3;
+    public static final int DEFAULT_PATH_INNER_MARGIN = 0;
     public static final int DEFAULT_CONTENT_TEMPLATE_SIZE = 9;
 
     public static final Codec<MKWalledKeepCourtyardSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -30,6 +32,8 @@ public record MKWalledKeepCourtyardSettings(
                     .forGetter(MKWalledKeepCourtyardSettings::courtyardSocketClearance),
             Codec.INT.optionalFieldOf("courtyard_walkway_continuation_length", DEFAULT_WALKWAY_CONTINUATION_LENGTH)
                     .forGetter(MKWalledKeepCourtyardSettings::courtyardWalkwayContinuationLength),
+            Codec.INT.optionalFieldOf("courtyard_path_inner_margin", DEFAULT_PATH_INNER_MARGIN)
+                    .forGetter(MKWalledKeepCourtyardSettings::courtyardPathInnerMargin),
             Codec.INT.optionalFieldOf("courtyard_content_template_size", DEFAULT_CONTENT_TEMPLATE_SIZE)
                     .forGetter(MKWalledKeepCourtyardSettings::courtyardContentTemplateSize)
     ).apply(instance, MKWalledKeepCourtyardSettings::new));
@@ -41,6 +45,7 @@ public record MKWalledKeepCourtyardSettings(
                 DEFAULT_CONTENT_TEMPLATE_HEIGHT,
                 DEFAULT_SOCKET_CLEARANCE,
                 DEFAULT_WALKWAY_CONTINUATION_LENGTH,
+                DEFAULT_PATH_INNER_MARGIN,
                 DEFAULT_CONTENT_TEMPLATE_SIZE
         );
     }
@@ -55,6 +60,9 @@ public record MKWalledKeepCourtyardSettings(
         }
         if (courtyardWalkwayContinuationLength < 1) {
             errors.add("walled keep courtyard walkway continuation length must be at least 1");
+        }
+        if (courtyardPathInnerMargin < 0) {
+            errors.add("walled keep courtyard path inner margin must be at least 0");
         }
         validateSize(errors, courtyardContentTemplateSize);
         return List.copyOf(errors);

@@ -1287,6 +1287,23 @@ public class WorkspaceDraftSession {
         return courtyardSettings().courtyardContentTemplateSize();
     }
 
+    public int courtyardPathInnerMargin() {
+        return courtyardSettings().courtyardPathInnerMargin();
+    }
+
+    public void courtyardPathInnerMargin(int value) {
+        MKWalledKeepCourtyardSettings current = courtyardSettings();
+        draft().topologyProfile = draft().topologyProfile.withCourtyardSettings(new MKWalledKeepCourtyardSettings(
+                current.courtyardContentEnabled(),
+                current.courtyardSocketGenerationEnabled(),
+                current.courtyardContentTemplateHeight(),
+                current.courtyardSocketClearance(),
+                current.courtyardWalkwayContinuationLength(),
+                value,
+                current.courtyardContentTemplateSize()
+        ));
+    }
+
     public void courtyardContentTemplateSize(int value) {
         MKWalledKeepCourtyardSettings current = courtyardSettings();
         draft().topologyProfile = draft().topologyProfile.withCourtyardSettings(new MKWalledKeepCourtyardSettings(
@@ -1295,6 +1312,7 @@ public class WorkspaceDraftSession {
                 current.courtyardContentTemplateHeight(),
                 current.courtyardSocketClearance(),
                 current.courtyardWalkwayContinuationLength(),
+                current.courtyardPathInnerMargin(),
                 value
         ));
     }

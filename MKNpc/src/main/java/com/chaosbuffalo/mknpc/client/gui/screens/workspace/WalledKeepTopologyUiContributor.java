@@ -139,6 +139,14 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
         WorkspaceTopologyUiSupport.addRow(screen, content,
                 screen.makeWhiteText(Component.literal("Terrain Adaptation")), terrainButton);
 
+        MKIntegerSlider pathInnerMarginSlider = new MKIntegerSlider("Margin", 180, 20, 0, 24, 1,
+                editor.courtyardPathInnerMargin(), value -> {
+            editor.courtyardPathInnerMargin(value);
+            screen.flagNeedSetup();
+        });
+        WorkspaceTopologyUiSupport.addRow(screen, content,
+                screen.makeWhiteText(Component.literal("Courtyard Path Inner Margin")), pathInnerMarginSlider);
+
         List<Integer> allowedSocketSizes = report.allowedCourtyardContentSizes();
         if (allowedSocketSizes.isEmpty()) {
             MKButton noFitButton = new MKButton(Component.literal("No Fit"), 180, 20);

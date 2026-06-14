@@ -768,7 +768,9 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     }
 
     private int courtyardPathLaneCenterInset(MKStructureWorkspace workspace, ResolvedOpeningProfile opening) {
-        return workspace.shellMargin() + workspace.exteriorAirMargin() + opening.openingWidth() / 2;
+        return workspace.shellMargin() + workspace.exteriorAirMargin() +
+                workspace.topologyProfile().courtyardSettings().courtyardPathInnerMargin() +
+                opening.openingWidth() / 2;
     }
 
     private int courtyardPathSize(MKStructureWorkspace workspace, MKWorkspaceLinearRunFamilyDefinition family,
