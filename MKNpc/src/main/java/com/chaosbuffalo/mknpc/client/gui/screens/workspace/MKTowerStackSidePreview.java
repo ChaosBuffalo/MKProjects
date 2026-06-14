@@ -118,16 +118,16 @@ public class MKTowerStackSidePreview extends MKWidget {
         }
         Optional<MKTowerStackSizingReport.SectionInfo> hovered = hoveredSection(getX(), getY(), getWidth(),
                 getHeight(), (int) mouseX, (int) mouseY);
-        if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT && hovered.isPresent() &&
+        if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT && hovered.isPresent() &&
                 controls.hasFloorTopology(hovered.get().key())) {
             floorPlanCallback.accept(hovered.get().key());
             return true;
         }
-        return hovered.map(section -> {
-                    selectionCallback.accept(section.key());
-                    return true;
-                })
-                .orElse(false);
+        if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT && hovered.isPresent()) {
+            selectionCallback.accept(hovered.get().key());
+            return true;
+        }
+        return false;
     }
 
     @Override
