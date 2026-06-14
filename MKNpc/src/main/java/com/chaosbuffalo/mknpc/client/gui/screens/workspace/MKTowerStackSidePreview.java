@@ -795,20 +795,9 @@ public class MKTowerStackSidePreview extends MKWidget {
 
     private void drawExitMask(GuiGraphics graphics, Minecraft mc, MKTowerStackSizingReport.SectionInfo section,
                               int x, int y, int mouseX, int mouseY) {
-        graphics.fill(x, y, x + EXIT_MASK_SIZE, y + EXIT_MASK_SIZE, 0xFF1B1B1F);
-        drawOutline(graphics, x, y, EXIT_MASK_SIZE, y + EXIT_MASK_SIZE, CONTROL_ACTIVE);
-        int centerX = x + (EXIT_MASK_SIZE / 2);
-        int centerY = y + (EXIT_MASK_SIZE / 2);
-        int roomLeft = centerX - (EXIT_ROOM_SIZE / 2);
-        int roomTop = centerY - (EXIT_ROOM_SIZE / 2);
-        int roomRight = roomLeft + EXIT_ROOM_SIZE;
-        int roomBottom = roomTop + EXIT_ROOM_SIZE;
-        drawVerticalExitButton(graphics, mc, section, Direction.UP, x, y, x + 6, y + 6, mouseX, mouseY);
+        drawVerticalExitButton(graphics, mc, section, Direction.UP, x, y, x, y, mouseX, mouseY);
         drawVerticalExitButton(graphics, mc, section, Direction.DOWN, x, y,
-                x + EXIT_MASK_SIZE - 6 - EXIT_VERTICAL_SIZE, y + 6, mouseX, mouseY);
-        graphics.fill(roomLeft, roomTop, roomRight, roomBottom, EXIT_ROOM);
-        drawOutline(graphics, roomLeft, roomTop, EXIT_ROOM_SIZE, roomBottom, CONTROL_ACTIVE);
-        graphics.drawCenteredString(mc.font, Component.literal("R"), centerX, centerY - 4, TEXT);
+                x + EXIT_VERTICAL_SIZE + 6, y, mouseX, mouseY);
     }
 
     private void drawSlider(GuiGraphics graphics, Minecraft mc, String label, int value, int min, int max,
@@ -1472,11 +1461,10 @@ public class MKTowerStackSidePreview extends MKWidget {
     }
 
     private Direction hitExitDirection(int x, int y, int mouseX, int mouseY) {
-        int topButtonY = y + 6;
-        if (isInRect(mouseX, mouseY, x + 6, topButtonY, EXIT_VERTICAL_SIZE, EXIT_VERTICAL_SIZE)) {
+        if (isInRect(mouseX, mouseY, x, y, EXIT_VERTICAL_SIZE, EXIT_VERTICAL_SIZE)) {
             return Direction.UP;
         }
-        if (isInRect(mouseX, mouseY, x + EXIT_MASK_SIZE - 6 - EXIT_VERTICAL_SIZE, topButtonY,
+        if (isInRect(mouseX, mouseY, x + EXIT_VERTICAL_SIZE + 6, y,
                 EXIT_VERTICAL_SIZE, EXIT_VERTICAL_SIZE)) {
             return Direction.DOWN;
         }
@@ -1491,10 +1479,11 @@ public class MKTowerStackSidePreview extends MKWidget {
         if (controls.hasMargin(section.key())) {
             maskY += 20;
         }
-        int editorX = layout.controlX() + EXIT_MASK_SIZE + 7;
-        int editorWidth = Math.max(48, layout.controlWidth() - EXIT_MASK_SIZE - 7);
+        int accessWidth = (EXIT_VERTICAL_SIZE * 2) + 6;
+        int editorX = layout.controlX() + accessWidth + 7;
+        int editorWidth = Math.max(48, layout.controlWidth() - accessWidth - 7);
         return new ExitLayout(layout.controlX(), maskY, editorX, maskY, editorWidth,
-                layout.controlX(), maskY + EXIT_MASK_SIZE + 13, layout.controlWidth());
+                layout.controlX(), maskY + EXIT_VERTICAL_SIZE + 13, layout.controlWidth());
     }
 
     private ButtonBounds editorButtonBounds(int x, int y, String id) {

@@ -34,6 +34,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     private static final int EXIT_REQUIRED = 0xFFB8860B;
     private static final int EXIT_ACTIVE = 0xFF9CA3AF;
     private static final int EXIT_INACTIVE = 0xFF4B5563;
+    private static final int EXIT_SELECTED = 0xFF8EC5FF;
     private static final int FLOOR_ROOT = 0xCC6EA46D;
     private static final int FLOOR_MAIN = 0xCC3FA66B;
     private static final int FLOOR_MAIN_ROOM = 0xCC4CBF7A;
@@ -349,8 +350,12 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     private void drawRootExitArm(GuiGraphics graphics, Direction direction, int roomLeft, int roomTop,
                                  int roomRight, int roomBottom, int centerX, int centerY, int mouseX, int mouseY) {
         Optional<MKWorkspaceFamilyHorizontalExitDefinition> exit = rootExitForDirection(direction);
-        int color = exit.map(value -> controls.rootExitRequired(sectionKey, direction) ? EXIT_REQUIRED :
-                        value.pathKind().usesMainPath() ? EXIT_ACTIVE : FLOOR_BRANCH)
+        boolean selected = controls.selectedRootExit(sectionKey)
+                .map(value -> value.direction() == direction)
+                .orElse(false);
+        int color = exit.map(value -> selected ? EXIT_SELECTED :
+                        controls.rootExitRequired(sectionKey, direction) ? EXIT_REQUIRED :
+                                value.pathKind().usesMainPath() ? EXIT_ACTIVE : FLOOR_BRANCH)
                 .orElse(EXIT_INACTIVE);
         if (hitRootExitDirection(rootExitMaskBounds(getX() + 8, settingsStartY(getX(), getY(), getWidth())),
                 mouseX, mouseY) == direction) {
