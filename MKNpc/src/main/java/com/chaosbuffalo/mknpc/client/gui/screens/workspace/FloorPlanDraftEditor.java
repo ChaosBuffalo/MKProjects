@@ -21,10 +21,6 @@ public final class FloorPlanDraftEditor {
         this.floorRole = floorRole;
     }
 
-    public WorkspaceDraftSession session() {
-        return session;
-    }
-
     public String stackId() {
         return stackId;
     }

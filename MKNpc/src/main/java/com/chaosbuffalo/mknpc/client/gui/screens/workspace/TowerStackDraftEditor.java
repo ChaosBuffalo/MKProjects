@@ -22,10 +22,6 @@ public final class TowerStackDraftEditor {
         this.stackId = stackId;
     }
 
-    public WorkspaceDraftSession session() {
-        return session;
-    }
-
     public String stackId() {
         return stackId;
     }

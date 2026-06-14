@@ -98,7 +98,7 @@ public class WorkspaceDraftSession {
     }
 
     public LinearRunDraftEditor linearRunEditor(String topologySlotId) {
-        return new LinearRunDraftEditor(this, topologySlotId);
+        return new LinearRunDraftEditor(topologySlotId);
     }
 
     public void ensureInitialized() {
@@ -231,18 +231,18 @@ public class WorkspaceDraftSession {
         seedDefaultsForTopology();
     }
 
-    public boolean uniqueCornerTowers() {
+    boolean uniqueCornerTowers() {
         return draft().topologyProfile.uniqueCornerTowers();
     }
 
-    public void uniqueCornerTowers(boolean value) {
+    void uniqueCornerTowers(boolean value) {
         draft().topologyProfile = MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(draft().topologyProfile.plannerId()) ?
                 walledKeepTopologyProfile(value, value, value, value) : MKWorkspaceTopologyProfile.tower();
         ensureFamiliesForActiveCornerSlots();
         walledKeepEditor().normalizeTowerStackTab();
     }
 
-    public boolean uniqueCornerTower(String topologySlotId) {
+    boolean uniqueCornerTower(String topologySlotId) {
         return draft().topologyProfile.uniqueCornerTower(topologySlotId);
     }
 
@@ -302,7 +302,7 @@ public class WorkspaceDraftSession {
                 .orElse("keep.center");
     }
 
-    public void uniqueCornerTower(String topologySlotId, boolean value) {
+    void uniqueCornerTower(String topologySlotId, boolean value) {
         MKWorkspaceTopologyProfile current = draft().topologyProfile;
         if (!MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(current.plannerId())) {
             return;
@@ -316,115 +316,115 @@ public class WorkspaceDraftSession {
         walledKeepEditor().normalizeTowerStackTab();
     }
 
-    public int walledKeepCenterWidth() {
+    int walledKeepCenterWidth() {
         return towerStackWidth("keep.center");
     }
 
-    public void walledKeepCenterWidth(int value) {
+    void walledKeepCenterWidth(int value) {
         towerStackWidth("keep.center", value);
     }
 
-    public int walledKeepCenterLength() {
+    int walledKeepCenterLength() {
         return towerStackLength("keep.center");
     }
 
-    public void walledKeepCenterLength(int value) {
+    void walledKeepCenterLength(int value) {
         towerStackLength("keep.center", value);
     }
 
-    public int walledKeepCenterHeight() {
+    int walledKeepCenterHeight() {
         return towerStackHeight("keep.center");
     }
 
-    public void walledKeepCenterHeight(int value) {
+    void walledKeepCenterHeight(int value) {
         towerStackHeight("keep.center", value);
     }
 
-    public int towerStackWidth(String stackId) {
+    int towerStackWidth(String stackId) {
         return towerStackSettings(stackId).width();
     }
 
-    public void towerStackWidth(String stackId, int value) {
+    void towerStackWidth(String stackId, int value) {
         int width = makeOdd(Math.max(3, value));
         replaceTowerStackSettings(towerStackSettings(stackId).withWidth(width));
         applyTowerStackSettingsToFamilies();
     }
 
-    public int towerStackLength(String stackId) {
+    int towerStackLength(String stackId) {
         return towerStackSettings(stackId).length();
     }
 
-    public void towerStackLength(String stackId, int value) {
+    void towerStackLength(String stackId, int value) {
         int length = makeOdd(Math.max(3, value));
         replaceTowerStackSettings(towerStackSettings(stackId).withLength(length));
         applyTowerStackSettingsToFamilies();
     }
 
-    public int towerStackHeight(String stackId) {
+    int towerStackHeight(String stackId) {
         return towerStackSettings(stackId).height();
     }
 
-    public void towerStackHeight(String stackId, int value) {
+    void towerStackHeight(String stackId, int value) {
         int height = Math.max(3, value);
         replaceTowerStackSettingsWithNormalizedFloorCounts(towerStackSettings(stackId).withHeight(height));
         applyTowerStackSettingsToFamilies();
     }
 
-    public int towerStackEntryHeight(String stackId) {
+    int towerStackEntryHeight(String stackId) {
         return towerStackSettings(stackId).entryHeight();
     }
 
-    public void towerStackEntryHeight(String stackId, int value) {
+    void towerStackEntryHeight(String stackId, int value) {
         replaceTowerStackSettingsWithNormalizedFloorCounts(towerStackSettings(stackId).withEntryHeight(value));
         applyTowerStackSettingsToFamilies();
     }
 
-    public int towerStackBasementHeight(String stackId) {
+    int towerStackBasementHeight(String stackId) {
         return towerStackSettings(stackId).basementHeight();
     }
 
-    public void towerStackBasementHeight(String stackId, int value) {
+    void towerStackBasementHeight(String stackId, int value) {
         replaceTowerStackSettingsWithNormalizedFloorCounts(towerStackSettings(stackId).withBasementHeight(value));
         applyTowerStackSettingsToFamilies();
     }
 
-    public int towerStackBasementEntryHeight(String stackId) {
+    int towerStackBasementEntryHeight(String stackId) {
         return towerStackSettings(stackId).basementEntryHeight();
     }
 
-    public void towerStackBasementEntryHeight(String stackId, int value) {
+    void towerStackBasementEntryHeight(String stackId, int value) {
         replaceTowerStackSettingsWithNormalizedFloorCounts(towerStackSettings(stackId).withBasementEntryHeight(value));
         applyTowerStackSettingsToFamilies();
     }
 
-    public int towerStackBasementCapHeight(String stackId) {
+    int towerStackBasementCapHeight(String stackId) {
         return towerStackSettings(stackId).basementCapHeight();
     }
 
-    public void towerStackBasementCapHeight(String stackId, int value) {
+    void towerStackBasementCapHeight(String stackId, int value) {
         replaceTowerStackSettingsWithNormalizedFloorCounts(towerStackSettings(stackId).withBasementCapHeight(value));
         applyTowerStackSettingsToFamilies();
     }
 
-    public int towerStackMainHeight(String stackId) {
+    int towerStackMainHeight(String stackId) {
         return towerStackSettings(stackId).mainHeight();
     }
 
-    public void towerStackMainHeight(String stackId, int value) {
+    void towerStackMainHeight(String stackId, int value) {
         replaceTowerStackSettingsWithNormalizedFloorCounts(towerStackSettings(stackId).withMainHeight(value));
         applyTowerStackSettingsToFamilies();
     }
 
-    public int towerStackMainCapHeight(String stackId) {
+    int towerStackMainCapHeight(String stackId) {
         return towerStackSettings(stackId).mainCapHeight();
     }
 
-    public void towerStackMainCapHeight(String stackId, int value) {
+    void towerStackMainCapHeight(String stackId, int value) {
         replaceTowerStackSettingsWithNormalizedFloorCounts(towerStackSettings(stackId).withMainCapHeight(value));
         applyTowerStackSettingsToFamilies();
     }
 
-    public List<MKTowerWorkspaceFamilyDefinition> towerStackFamiliesForUi(String stackId) {
+    List<MKTowerWorkspaceFamilyDefinition> towerStackFamiliesForUi(String stackId) {
         return draft().familyDefinitions.stream()
                 .filter(family -> towerStackIdForTopologySlot(family.topologySlotId())
                         .filter(stackId::equals)
@@ -433,25 +433,25 @@ public class WorkspaceDraftSession {
                 .toList();
     }
 
-    public int towerStackTopCapUpperVoidMargin(String stackId) {
+    int towerStackTopCapUpperVoidMargin(String stackId) {
         return towerStackFamily(stackId, MKTowerWorkspaceStackSlot.TOP_CAP)
                 .map(MKTowerWorkspaceFamilyDefinition::topVoidMargin)
                 .orElse(0);
     }
 
-    public void towerStackTopCapUpperVoidMargin(String stackId, int value) {
+    void towerStackTopCapUpperVoidMargin(String stackId, int value) {
         int maxMargin = Math.max(0, towerStackMainCapHeight(stackId) - MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT);
         replaceTowerStackFamilyVoidMargins(stackId, MKTowerWorkspaceStackSlot.TOP_CAP,
                 clamp(value, 0, maxMargin), 0);
     }
 
-    public int towerStackBottomCapLowerVoidMargin(String stackId) {
+    int towerStackBottomCapLowerVoidMargin(String stackId) {
         return towerStackFamily(stackId, MKTowerWorkspaceStackSlot.BASEMENT_CAP)
                 .map(MKTowerWorkspaceFamilyDefinition::bottomVoidMargin)
                 .orElse(0);
     }
 
-    public void towerStackBottomCapLowerVoidMargin(String stackId, int value) {
+    void towerStackBottomCapLowerVoidMargin(String stackId, int value) {
         int maxMargin = Math.max(0, towerStackBasementCapHeight(stackId) - MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT);
         replaceTowerStackFamilyVoidMargins(stackId, MKTowerWorkspaceStackSlot.BASEMENT_CAP,
                 0, clamp(value, 0, maxMargin));
@@ -541,239 +541,239 @@ public class WorkspaceDraftSession {
         );
     }
 
-    public String towerStackPreviewSelection(String stackId) {
+    String towerStackPreviewSelection(String stackId) {
         return draft().towerStackPreviewSelections.getOrDefault(stackId, "entry");
     }
 
-    public void towerStackPreviewSelection(String stackId, String sectionKey) {
+    void towerStackPreviewSelection(String stackId, String sectionKey) {
         draft().towerStackPreviewSelections.put(stackId, valueOrDefault(sectionKey, "entry"));
     }
 
-    public int cornerTowerWidth(String topologySlotId) {
+    int cornerTowerWidth(String topologySlotId) {
         return towerStackWidth(topologySlotId);
     }
 
-    public void cornerTowerWidth(String topologySlotId, int value) {
+    void cornerTowerWidth(String topologySlotId, int value) {
         towerStackWidth(topologySlotId, value);
     }
 
-    public int cornerTowerLength(String topologySlotId) {
+    int cornerTowerLength(String topologySlotId) {
         return towerStackLength(topologySlotId);
     }
 
-    public void cornerTowerLength(String topologySlotId, int value) {
+    void cornerTowerLength(String topologySlotId, int value) {
         towerStackLength(topologySlotId, value);
     }
 
-    public int cornerTowerHeight(String topologySlotId) {
+    int cornerTowerHeight(String topologySlotId) {
         return towerStackHeight(topologySlotId);
     }
 
-    public void cornerTowerHeight(String topologySlotId, int value) {
+    void cornerTowerHeight(String topologySlotId, int value) {
         towerStackHeight(topologySlotId, value);
     }
 
-    public int towerStackMainFloors(String stackId) {
+    int towerStackMainFloors(String stackId) {
         return towerStackSettings(stackId).mainFloors();
     }
 
-    public int towerStackMinMainFloors(String stackId) {
+    int towerStackMinMainFloors(String stackId) {
         return towerStackSettings(stackId).minMainFloors();
     }
 
-    public void towerStackMainFloors(String stackId, int value) {
+    void towerStackMainFloors(String stackId, int value) {
         MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId);
         int normalizedMain = normalizeTowerStackMainFloorCount(settings, value, settings.basementFloors());
         int normalizedBasement = normalizeTowerStackBasementFloorCount(settings, settings.basementFloors(), normalizedMain);
         replaceTowerStackSettings(settings.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
 
-    public void towerStackMinMainFloors(String stackId, int value) {
+    void towerStackMinMainFloors(String stackId, int value) {
         replaceTowerStackSettings(towerStackSettings(stackId).withMinMainFloors(value));
     }
 
-    public int towerStackBasementFloors(String stackId) {
+    int towerStackBasementFloors(String stackId) {
         return towerStackSettings(stackId).basementFloors();
     }
 
-    public int towerStackMinBasementFloors(String stackId) {
+    int towerStackMinBasementFloors(String stackId) {
         return towerStackSettings(stackId).minBasementFloors();
     }
 
-    public void towerStackBasementFloors(String stackId, int value) {
+    void towerStackBasementFloors(String stackId, int value) {
         MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId);
         int normalizedBasement = normalizeTowerStackBasementFloorCount(settings, value, settings.mainFloors());
         int normalizedMain = normalizeTowerStackMainFloorCount(settings, settings.mainFloors(), normalizedBasement);
         replaceTowerStackSettings(settings.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
 
-    public void towerStackMinBasementFloors(String stackId, int value) {
+    void towerStackMinBasementFloors(String stackId, int value) {
         replaceTowerStackSettings(towerStackSettings(stackId).withMinBasementFloors(value));
     }
 
-    public boolean towerStackTopCapApproachEnabled(String stackId) {
+    boolean towerStackTopCapApproachEnabled(String stackId) {
         return towerStackSettings(stackId).topCapApproachEnabled();
     }
 
-    public void towerStackTopCapApproachEnabled(String stackId, boolean value) {
+    void towerStackTopCapApproachEnabled(String stackId, boolean value) {
         MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId).withTopCapApproachEnabled(value);
         int normalizedMain = normalizeTowerStackMainFloorCount(settings, settings.mainFloors(), settings.basementFloors());
         int normalizedBasement = normalizeTowerStackBasementFloorCount(settings, settings.basementFloors(), normalizedMain);
         replaceTowerStackSettings(settings.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
 
-    public boolean towerStackBasementCapApproachEnabled(String stackId) {
+    boolean towerStackBasementCapApproachEnabled(String stackId) {
         return towerStackSettings(stackId).basementCapApproachEnabled();
     }
 
-    public boolean towerStackBasementEntryEnabled(String stackId) {
+    boolean towerStackBasementEntryEnabled(String stackId) {
         return towerStackSettings(stackId).basementEntryEnabled();
     }
 
-    public void towerStackBasementEntryEnabled(String stackId, boolean value) {
+    void towerStackBasementEntryEnabled(String stackId, boolean value) {
         MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId).withBasementEntryEnabled(value);
         int normalizedBasement = normalizeTowerStackBasementFloorCount(settings, settings.basementFloors(), settings.mainFloors());
         int normalizedMain = normalizeTowerStackMainFloorCount(settings, settings.mainFloors(), normalizedBasement);
         replaceTowerStackSettings(settings.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
 
-    public void towerStackBasementCapApproachEnabled(String stackId, boolean value) {
+    void towerStackBasementCapApproachEnabled(String stackId, boolean value) {
         MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId).withBasementCapApproachEnabled(value);
         int normalizedBasement = normalizeTowerStackBasementFloorCount(settings, settings.basementFloors(), settings.mainFloors());
         int normalizedMain = normalizeTowerStackMainFloorCount(settings, settings.mainFloors(), normalizedBasement);
         replaceTowerStackSettings(settings.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
 
-    public int towerStackShaftSize(String stackId) {
+    int towerStackShaftSize(String stackId) {
         return towerStackSettings(stackId).shaftSize();
     }
 
-    public void towerStackShaftSize(String stackId, int value) {
+    void towerStackShaftSize(String stackId, int value) {
         replaceTowerStackSettings(towerStackSettings(stackId).withShaftSize(value));
     }
 
-    public List<Integer> allowedTowerStackShaftSizes(String stackId) {
+    List<Integer> allowedTowerStackShaftSizes(String stackId) {
         MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId);
         return MKWorkspaceDimensions.getAllowedShaftSizes(settings.width(), settings.length());
     }
 
-    public MKVerticalAccessPlacement towerStackVerticalAccessPlacement(String stackId) {
+    MKVerticalAccessPlacement towerStackVerticalAccessPlacement(String stackId) {
         return towerStackSettings(stackId).verticalAccessPlacement();
     }
 
-    public void towerStackVerticalAccessPlacement(String stackId, MKVerticalAccessPlacement value) {
+    void towerStackVerticalAccessPlacement(String stackId, MKVerticalAccessPlacement value) {
         replaceTowerStackSettings(towerStackSettings(stackId).withVerticalAccessPlacement(value));
     }
 
-    public MKWorkspaceStairMode towerStackStairMode(String stackId) {
+    MKWorkspaceStairMode towerStackStairMode(String stackId) {
         return towerStackSettings(stackId).stairConfig().mode();
     }
 
-    public void towerStackStairMode(String stackId, MKWorkspaceStairMode value) {
+    void towerStackStairMode(String stackId, MKWorkspaceStairMode value) {
         MKWorkspaceStairAuthoringConfig config = towerStackSettings(stackId).stairConfig();
         replaceTowerStackStairConfig(stackId, new MKWorkspaceStairAuthoringConfig(
                 value, config.riseType(), config.stairWidth()));
     }
 
-    public MKWorkspaceStairRiseType towerStackStairRiseType(String stackId) {
+    MKWorkspaceStairRiseType towerStackStairRiseType(String stackId) {
         return towerStackSettings(stackId).stairConfig().riseType();
     }
 
-    public void towerStackStairRiseType(String stackId, MKWorkspaceStairRiseType value) {
+    void towerStackStairRiseType(String stackId, MKWorkspaceStairRiseType value) {
         MKWorkspaceStairAuthoringConfig config = towerStackSettings(stackId).stairConfig();
         replaceTowerStackStairConfig(stackId, new MKWorkspaceStairAuthoringConfig(
                 config.mode(), value, config.stairWidth()));
     }
 
-    public int towerStackStairWidth(String stackId) {
+    int towerStackStairWidth(String stackId) {
         return towerStackSettings(stackId).stairConfig().stairWidth();
     }
 
-    public void towerStackStairWidth(String stackId, int value) {
+    void towerStackStairWidth(String stackId, int value) {
         MKWorkspaceStairAuthoringConfig config = towerStackSettings(stackId).stairConfig();
         replaceTowerStackStairConfig(stackId, new MKWorkspaceStairAuthoringConfig(
                 config.mode(), config.riseType(), value));
     }
 
-    public List<Integer> allowedTowerStackStairWidths(String stackId) {
+    List<Integer> allowedTowerStackStairWidths(String stackId) {
         return MKWorkspaceDimensions.getAllowedStairWidths(towerStackShaftSize(stackId));
     }
 
-    public MKWorkspaceFoundationPolicy towerStackFoundationPolicy(String stackId) {
+    MKWorkspaceFoundationPolicy towerStackFoundationPolicy(String stackId) {
         return towerStackSettings(stackId).foundationPolicy();
     }
 
-    public void towerStackFoundationPolicy(String stackId, MKWorkspaceFoundationPolicy value) {
+    void towerStackFoundationPolicy(String stackId, MKWorkspaceFoundationPolicy value) {
         replaceTowerStackSettings(towerStackSettings(stackId).withFoundationPolicy(value));
     }
 
-    public MKWorkspaceHorizontalExtrusionMode towerStackHorizontalExtrusionMode(String stackId) {
+    MKWorkspaceHorizontalExtrusionMode towerStackHorizontalExtrusionMode(String stackId) {
         return towerStackSettings(stackId).horizontalExtrusionMode();
     }
 
-    public void towerStackHorizontalExtrusionMode(String stackId, MKWorkspaceHorizontalExtrusionMode value) {
+    void towerStackHorizontalExtrusionMode(String stackId, MKWorkspaceHorizontalExtrusionMode value) {
         replaceTowerStackSettings(towerStackSettings(stackId).withHorizontalExtrusionMode(value));
     }
 
-    public Optional<MKWorkspacePaletteOverride> towerStackPaletteOverrideOpt(String stackId) {
+    Optional<MKWorkspacePaletteOverride> towerStackPaletteOverrideOpt(String stackId) {
         return towerStackSettings(stackId).paletteOverrideOpt();
     }
 
-    public void towerStackPaletteOverride(String stackId, Optional<MKWorkspacePaletteOverride> value) {
+    void towerStackPaletteOverride(String stackId, Optional<MKWorkspacePaletteOverride> value) {
         replaceTowerStackSettings(towerStackSettings(stackId).withPaletteOverride(value));
     }
 
-    public MKWorkspaceMaterialPalette resolveTowerStackPalette(String stackId) {
+    MKWorkspaceMaterialPalette resolveTowerStackPalette(String stackId) {
         return towerStackPaletteOverrideOpt(stackId)
                 .map(override -> override.resolve(draftBasePalette()))
                 .orElse(draftBasePalette());
     }
 
-    public MKWorkspaceMaterialPalette floorTopologyInheritedPalette(String stackId, String floorRole) {
+    MKWorkspaceMaterialPalette floorTopologyInheritedPalette(String stackId, String floorRole) {
         return resolveTowerStackPalette(stackId);
     }
 
-    public Optional<MKWorkspacePaletteOverride> floorTopologyPaletteOverrideOpt(String stackId, String floorRole) {
+    Optional<MKWorkspacePaletteOverride> floorTopologyPaletteOverrideOpt(String stackId, String floorRole) {
         return floorTopologySettings(stackId, floorRole).paletteOverride();
     }
 
-    public void floorTopologyPaletteOverride(String stackId, String floorRole,
+    void floorTopologyPaletteOverride(String stackId, String floorRole,
                                              Optional<MKWorkspacePaletteOverride> value) {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withPaletteOverride(value));
     }
 
-    public MKWorkspaceMaterialPalette resolveFloorTopologyPalette(String stackId, String floorRole) {
+    MKWorkspaceMaterialPalette resolveFloorTopologyPalette(String stackId, String floorRole) {
         MKWorkspaceMaterialPalette inherited = floorTopologyInheritedPalette(stackId, floorRole);
         return floorTopologyPaletteOverrideOpt(stackId, floorRole)
                 .map(override -> override.resolve(inherited))
                 .orElse(inherited);
     }
 
-    public int nextAllowedTowerStackMainFloorCount(String stackId, boolean reverse) {
+    int nextAllowedTowerStackMainFloorCount(String stackId, boolean reverse) {
         MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId);
         List<Integer> allowed = allowedTowerStackMainFloorCounts(settings, settings.basementFloors());
         int normalized = normalizeTowerStackMainFloorCount(settings, settings.mainFloors(), settings.basementFloors());
         return cycleValue(allowed, normalized, reverse, settings.mainFloors());
     }
 
-    public List<Integer> allowedTowerStackMainFloorCounts(String stackId) {
+    List<Integer> allowedTowerStackMainFloorCounts(String stackId) {
         MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId);
         return allowedTowerStackMainFloorCounts(settings, settings.basementFloors());
     }
 
-    public int nextAllowedTowerStackBasementFloorCount(String stackId, boolean reverse) {
+    int nextAllowedTowerStackBasementFloorCount(String stackId, boolean reverse) {
         MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId);
         List<Integer> allowed = allowedTowerStackBasementFloorCounts(settings, settings.mainFloors());
         int normalized = normalizeTowerStackBasementFloorCount(settings, settings.basementFloors(), settings.mainFloors());
         return cycleValue(allowed, normalized, reverse, settings.basementFloors());
     }
 
-    public List<Integer> allowedTowerStackBasementFloorCounts(String stackId) {
+    List<Integer> allowedTowerStackBasementFloorCounts(String stackId) {
         MKWorkspaceTowerStackSettings settings = towerStackSettings(stackId);
         return allowedTowerStackBasementFloorCounts(settings, settings.mainFloors());
     }
 
-    public int wallHeight() {
+    int wallHeight() {
         return draft().linearRunFamilies.stream()
                 .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))
                 .findFirst()
@@ -781,7 +781,7 @@ public class WorkspaceDraftSession {
                 .orElse(7);
     }
 
-    public int wallUnitSpan() {
+    int wallUnitSpan() {
         return draft().linearRunFamilies.stream()
                 .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))
                 .findFirst()
@@ -789,7 +789,7 @@ public class WorkspaceDraftSession {
                 .orElse(MKWorkspaceLinearRunFamilyDefinition.DEFAULT_WALLED_KEEP_WALL_SEGMENT_LENGTH);
     }
 
-    public void wallUnitSpan(int value) {
+    void wallUnitSpan(int value) {
         int span = makeOdd(Math.max(3, value));
         draft().linearRunFamilies = draft().linearRunFamilies.stream()
                 .map(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()) ?
@@ -799,7 +799,7 @@ public class WorkspaceDraftSession {
         syncGatehouseWallDimensions(span, wallPassageWidth());
     }
 
-    public int wallPassageWidth() {
+    int wallPassageWidth() {
         return draft().linearRunFamilies.stream()
                 .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))
                 .findFirst()
@@ -807,7 +807,7 @@ public class WorkspaceDraftSession {
                 .orElse(3);
     }
 
-    public void wallPassageWidth(int value) {
+    void wallPassageWidth(int value) {
         int passageWidth = makeOdd(Math.max(3, value));
         draft().linearRunFamilies = draft().linearRunFamilies.stream()
                 .map(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()) ?
@@ -817,7 +817,7 @@ public class WorkspaceDraftSession {
         syncGatehouseWallDimensions(wallUnitSpan(), passageWidth);
     }
 
-    public MKWorkspaceLinearRunKind perimeterRunKind() {
+    MKWorkspaceLinearRunKind perimeterRunKind() {
         return draft().linearRunFamilies.stream()
                 .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))
                 .findFirst()
@@ -825,7 +825,7 @@ public class WorkspaceDraftSession {
                 .orElse(MKWorkspaceLinearRunKind.DEFENSIVE_WALL);
     }
 
-    public void perimeterRunKind(MKWorkspaceLinearRunKind value) {
+    void perimeterRunKind(MKWorkspaceLinearRunKind value) {
         draft().linearRunFamilies = draft().linearRunFamilies.stream()
                 .map(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()) ?
                         copyLinearRunWithKind(linearRun, value) :
@@ -833,7 +833,7 @@ public class WorkspaceDraftSession {
                 .toList();
     }
 
-    public void wallHeight(int value) {
+    void wallHeight(int value) {
         int height = Math.max(2, value);
         draft().linearRunFamilies = draft().linearRunFamilies.stream()
                 .map(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()) ?
@@ -843,7 +843,7 @@ public class WorkspaceDraftSession {
                 .toList();
     }
 
-    public int wallTopVoidMargin() {
+    int wallTopVoidMargin() {
         return draft().linearRunFamilies.stream()
                 .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))
                 .findFirst()
@@ -851,7 +851,7 @@ public class WorkspaceDraftSession {
                 .orElse(0);
     }
 
-    public void wallTopVoidMargin(int value) {
+    void wallTopVoidMargin(int value) {
         int margin = Math.max(0, value);
         draft().linearRunFamilies = draft().linearRunFamilies.stream()
                 .map(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()) ?
@@ -861,7 +861,7 @@ public class WorkspaceDraftSession {
                 .toList();
     }
 
-    public void resetTowerStackDefaults(String stackId) {
+    void resetTowerStackDefaults(String stackId) {
         replaceTowerStackSettings(MKWorkspaceTowerStackSettings.defaults(stackId, 7));
         applyTowerStackSettingsToFamilies();
     }
@@ -870,7 +870,7 @@ public class WorkspaceDraftSession {
         replaceTopologyPathSettings(MKWorkspaceTopologyPathSettings.defaultForTopologyGroup(topologyGroupId));
     }
 
-    public void resetWalledKeepPerimeterDefaults() {
+    void resetWalledKeepPerimeterDefaults() {
         Map<String, MKWorkspaceLinearRunFamilyDefinition> defaultsBySlot =
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(MKWorkspaceDimensions.defaultDimensions(),
                                 draft().palette)
@@ -1249,7 +1249,7 @@ public class WorkspaceDraftSession {
         return draft().topologyProfile.pathSettingsOrDefault(topologyGroupId);
     }
 
-    public MKWorkspaceFloorTopologySettings floorTopologySettings(String stackId, String floorRole) {
+    MKWorkspaceFloorTopologySettings floorTopologySettings(String stackId, String floorRole) {
         return draft().topologyProfile.floorTopologySettingsOrDefault(stackId, floorRole);
     }
 
@@ -1269,126 +1269,126 @@ public class WorkspaceDraftSession {
         draft().topologyProfile = draft().topologyProfile.withPathSettings(settings);
     }
 
-    public int floorTopologyMinMainPathPieces(String stackId, String floorRole) {
+    int floorTopologyMinMainPathPieces(String stackId, String floorRole) {
         return floorTopologySettings(stackId, floorRole).minMainPathPieces();
     }
 
-    public void floorTopologyMinMainPathPieces(String stackId, String floorRole, int value) {
+    void floorTopologyMinMainPathPieces(String stackId, String floorRole, int value) {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withMinMainPathPieces(value));
     }
 
-    public int floorTopologyMaxMainPathPieces(String stackId, String floorRole) {
+    int floorTopologyMaxMainPathPieces(String stackId, String floorRole) {
         return floorTopologySettings(stackId, floorRole).maxMainPathPieces();
     }
 
-    public void floorTopologyMaxMainPathPieces(String stackId, String floorRole, int value) {
+    void floorTopologyMaxMainPathPieces(String stackId, String floorRole, int value) {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withMaxMainPathPieces(value));
     }
 
-    public int floorTopologyMaxBranchPiecesBeforeCap(String stackId, String floorRole) {
+    int floorTopologyMaxBranchPiecesBeforeCap(String stackId, String floorRole) {
         return floorTopologySettings(stackId, floorRole).maxBranchPiecesBeforeCap();
     }
 
-    public void floorTopologyMaxBranchPiecesBeforeCap(String stackId, String floorRole, int value) {
+    void floorTopologyMaxBranchPiecesBeforeCap(String stackId, String floorRole, int value) {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withMaxBranchPiecesBeforeCap(value));
     }
 
-    public MKWorkspaceHallwayLeadInMode floorTopologyHallwayLeadInMode(String stackId, String floorRole) {
+    MKWorkspaceHallwayLeadInMode floorTopologyHallwayLeadInMode(String stackId, String floorRole) {
         return floorTopologySettings(stackId, floorRole).hallwayLeadInMode();
     }
 
-    public void floorTopologyHallwayLeadInMode(String stackId, String floorRole, MKWorkspaceHallwayLeadInMode value) {
+    void floorTopologyHallwayLeadInMode(String stackId, String floorRole, MKWorkspaceHallwayLeadInMode value) {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withHallwayLeadInMode(value));
     }
 
-    public int floorTopologyManualHallwayLeadInPieces(String stackId, String floorRole) {
+    int floorTopologyManualHallwayLeadInPieces(String stackId, String floorRole) {
         return floorTopologySettings(stackId, floorRole).manualHallwayLeadInPieces();
     }
 
-    public void floorTopologyManualHallwayLeadInPieces(String stackId, String floorRole, int value) {
+    void floorTopologyManualHallwayLeadInPieces(String stackId, String floorRole, int value) {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withManualHallwayLeadInPieces(value));
     }
 
-    public boolean floorTopologyMainHallwaysEnabled(String stackId, String floorRole) {
+    boolean floorTopologyMainHallwaysEnabled(String stackId, String floorRole) {
         return floorTopologySettings(stackId, floorRole).mainHallwaysEnabled();
     }
 
-    public void floorTopologyMainHallwaysEnabled(String stackId, String floorRole, boolean value) {
+    void floorTopologyMainHallwaysEnabled(String stackId, String floorRole, boolean value) {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withMainHallwaysEnabled(value));
     }
 
-    public boolean floorTopologyBranchHallwaysEnabled(String stackId, String floorRole) {
+    boolean floorTopologyBranchHallwaysEnabled(String stackId, String floorRole) {
         return floorTopologySettings(stackId, floorRole).branchHallwaysEnabled();
     }
 
-    public void floorTopologyBranchHallwaysEnabled(String stackId, String floorRole, boolean value) {
+    void floorTopologyBranchHallwaysEnabled(String stackId, String floorRole, boolean value) {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withBranchHallwaysEnabled(value));
     }
 
-    public boolean floorTopologyMainCapApproachEnabled(String stackId, String floorRole) {
+    boolean floorTopologyMainCapApproachEnabled(String stackId, String floorRole) {
         return floorTopologySettings(stackId, floorRole).mainCapApproachEnabled();
     }
 
-    public void floorTopologyMainCapApproachEnabled(String stackId, String floorRole, boolean value) {
+    void floorTopologyMainCapApproachEnabled(String stackId, String floorRole, boolean value) {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withMainCapApproachEnabled(value));
     }
 
-    public float floorTopologySprawl(String stackId, String floorRole) {
+    float floorTopologySprawl(String stackId, String floorRole) {
         return floorTopologySettings(stackId, floorRole).sprawl();
     }
 
-    public void floorTopologySprawl(String stackId, String floorRole, float value) {
+    void floorTopologySprawl(String stackId, String floorRole, float value) {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withSprawl(value));
     }
 
-    public boolean floorTopologyLinksEnabled(String stackId, String floorRole) {
+    boolean floorTopologyLinksEnabled(String stackId, String floorRole) {
         return floorTopologySettings(stackId, floorRole).linksEnabled();
     }
 
-    public void floorTopologyLinksEnabled(String stackId, String floorRole, boolean value) {
+    void floorTopologyLinksEnabled(String stackId, String floorRole, boolean value) {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withLinksEnabled(value));
     }
 
-    public float floorTopologyLinkDensity(String stackId, String floorRole) {
+    float floorTopologyLinkDensity(String stackId, String floorRole) {
         return floorTopologySettings(stackId, floorRole).linkDensity();
     }
 
-    public void floorTopologyLinkDensity(String stackId, String floorRole, float value) {
+    void floorTopologyLinkDensity(String stackId, String floorRole, float value) {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withLinkDensity(value));
     }
 
-    public int floorTopologyMaxLinksPerFloor(String stackId, String floorRole) {
+    int floorTopologyMaxLinksPerFloor(String stackId, String floorRole) {
         return floorTopologySettings(stackId, floorRole).maxLinksPerFloor();
     }
 
-    public void floorTopologyMaxLinksPerFloor(String stackId, String floorRole, int value) {
+    void floorTopologyMaxLinksPerFloor(String stackId, String floorRole, int value) {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withMaxLinksPerFloor(value));
     }
 
-    public int floorTopologyMaxLinksPerRoom(String stackId, String floorRole) {
+    int floorTopologyMaxLinksPerRoom(String stackId, String floorRole) {
         return floorTopologySettings(stackId, floorRole).maxLinksPerRoom();
     }
 
-    public void floorTopologyMaxLinksPerRoom(String stackId, String floorRole, int value) {
+    void floorTopologyMaxLinksPerRoom(String stackId, String floorRole, int value) {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withMaxLinksPerRoom(value));
     }
 
-    public int floorTopologyMaxLinkLength(String stackId, String floorRole) {
+    int floorTopologyMaxLinkLength(String stackId, String floorRole) {
         return floorTopologySettings(stackId, floorRole).maxLinkLength();
     }
 
-    public void floorTopologyMaxLinkLength(String stackId, String floorRole, int value) {
+    void floorTopologyMaxLinkLength(String stackId, String floorRole, int value) {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withMaxLinkLength(value));
     }
 
-    public long floorTopologyPreviewSeed(String stackId, String floorRole) {
+    long floorTopologyPreviewSeed(String stackId, String floorRole) {
         return floorTopologyLockedLayoutSeed(stackId, floorRole)
                 .orElseGet(() -> floorTopologyPreviewSeeds.computeIfAbsent(
                         MKWorkspaceFloorTopologySettings.key(stackId, floorRole),
                         key -> (long) key.hashCode()));
     }
 
-    public void rerollFloorTopologyPreviewSeed(String stackId, String floorRole) {
+    void rerollFloorTopologyPreviewSeed(String stackId, String floorRole) {
         if (floorTopologyLockedLayoutSeed(stackId, floorRole).isPresent()) {
             return;
         }
@@ -1397,66 +1397,66 @@ public class WorkspaceDraftSession {
         floorTopologyPreviewSeeds.put(key, current * 6364136223846793005L + 1442695040888963407L);
     }
 
-    public Optional<Long> floorTopologyLockedLayoutSeed(String stackId, String floorRole) {
+    Optional<Long> floorTopologyLockedLayoutSeed(String stackId, String floorRole) {
         return floorTopologySettings(stackId, floorRole).lockedLayoutSeed();
     }
 
-    public void lockFloorTopologyLayoutSeed(String stackId, String floorRole) {
+    void lockFloorTopologyLayoutSeed(String stackId, String floorRole) {
         long seed = floorTopologyPreviewSeeds.computeIfAbsent(MKWorkspaceFloorTopologySettings.key(stackId, floorRole),
                 key -> (long) key.hashCode());
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole)
                 .withLockedLayoutSeed(Optional.of(seed)));
     }
 
-    public void unlockFloorTopologyLayoutSeed(String stackId, String floorRole) {
+    void unlockFloorTopologyLayoutSeed(String stackId, String floorRole) {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole)
                 .withLockedLayoutSeed(Optional.empty()));
     }
 
-    public int floorTopologyRoomWidth(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind) {
+    int floorTopologyRoomWidth(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind) {
         return floorTopologyRoomProfile(stackId, floorRole, kind).width();
     }
 
-    public void floorTopologyRoomWidth(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind, int value) {
+    void floorTopologyRoomWidth(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind, int value) {
         floorTopologyRoomWidth(stackId, floorRole, kind, 0, value);
     }
 
-    public void floorTopologyRoomWidth(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind, int index,
+    void floorTopologyRoomWidth(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind, int index,
                                        int value) {
         MKWorkspaceFloorRoomProfile profile = floorTopologyRoomProfile(stackId, floorRole, kind, index).withWidth(value);
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withRoomProfile(kind, index, profile));
     }
 
-    public int floorTopologyRoomLength(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind) {
+    int floorTopologyRoomLength(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind) {
         return floorTopologyRoomProfile(stackId, floorRole, kind).length();
     }
 
-    public void floorTopologyRoomLength(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind, int value) {
+    void floorTopologyRoomLength(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind, int value) {
         floorTopologyRoomLength(stackId, floorRole, kind, 0, value);
     }
 
-    public void floorTopologyRoomLength(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind, int index,
+    void floorTopologyRoomLength(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind, int index,
                                         int value) {
         MKWorkspaceFloorRoomProfile profile = floorTopologyRoomProfile(stackId, floorRole, kind, index).withLength(value);
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withRoomProfile(kind, index, profile));
     }
 
-    public int floorTopologyRoomHeight(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind) {
+    int floorTopologyRoomHeight(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind) {
         return floorTopologyRoomProfile(stackId, floorRole, kind).height();
     }
 
-    public void floorTopologyRoomHeight(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind, int value) {
+    void floorTopologyRoomHeight(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind, int value) {
         floorTopologyRoomHeight(stackId, floorRole, kind, 0, value);
     }
 
-    public void floorTopologyRoomHeight(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind, int index,
+    void floorTopologyRoomHeight(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind, int index,
                                         int value) {
         int clamped = clamp(value, MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT, floorTopologyRoomHeightMax(stackId, floorRole));
         MKWorkspaceFloorRoomProfile profile = floorTopologyRoomProfile(stackId, floorRole, kind, index).withHeight(clamped);
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withRoomProfile(kind, index, profile));
     }
 
-    public List<MKWorkspaceFloorRoomProfile> floorTopologyRoomProfiles(String stackId, String floorRole,
+    List<MKWorkspaceFloorRoomProfile> floorTopologyRoomProfiles(String stackId, String floorRole,
                                                                        MKWorkspaceFloorRoomKind kind) {
         MKWorkspaceFloorTopologySettings settings = floorTopologySettings(stackId, floorRole);
         List<MKWorkspaceFloorRoomProfile> profiles = floorRoomProfilesForKind(settings, kind);
@@ -1467,7 +1467,7 @@ public class WorkspaceDraftSession {
                 floorTopologyRoomHeightMax(stackId, floorRole)));
     }
 
-    public void floorTopologyAddRoomProfile(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind) {
+    void floorTopologyAddRoomProfile(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind) {
         List<MKWorkspaceFloorRoomProfile> profiles = floorTopologyRoomProfiles(stackId, floorRole, kind);
         int nextIndex = profiles.size();
         MKWorkspaceFloorRoomProfile source = profiles.getLast();
@@ -1482,12 +1482,12 @@ public class WorkspaceDraftSession {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withAddedRoomProfile(kind, added));
     }
 
-    public void floorTopologyRemoveRoomProfile(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind,
+    void floorTopologyRemoveRoomProfile(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind,
                                                int index) {
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole).withRemovedRoomProfile(kind, index));
     }
 
-    public void floorTopologySetRoomMainExitDirection(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind,
+    void floorTopologySetRoomMainExitDirection(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind,
                                                       int index,
                                                       Direction direction) {
         MKWorkspaceFloorRoomProfile profile = floorTopologyRoomProfile(stackId, floorRole, kind, index);
@@ -1512,7 +1512,7 @@ public class WorkspaceDraftSession {
                 .withRoomProfile(kind, index, profile.withHorizontalExits(exits)));
     }
 
-    public void floorTopologyToggleRoomBranchExit(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind,
+    void floorTopologyToggleRoomBranchExit(String stackId, String floorRole, MKWorkspaceFloorRoomKind kind,
                                                   int index, Direction direction) {
         MKWorkspaceFloorRoomProfile profile = floorTopologyRoomProfile(stackId, floorRole, kind, index);
         if (!profile.optionalBranchExitDirection(direction)) {
@@ -1536,7 +1536,7 @@ public class WorkspaceDraftSession {
                 .withRoomProfile(kind, index, profile.withHorizontalExits(exits)));
     }
 
-    public void floorTopologyToggleRoomLinkCandidateExit(String stackId, String floorRole,
+    void floorTopologyToggleRoomLinkCandidateExit(String stackId, String floorRole,
                                                          MKWorkspaceFloorRoomKind kind, int index,
                                                          Direction direction) {
         MKWorkspaceFloorRoomProfile profile = floorTopologyRoomProfile(stackId, floorRole, kind, index);
@@ -1563,14 +1563,14 @@ public class WorkspaceDraftSession {
                 .withRoomProfile(kind, index, profile.withHorizontalExits(exits)));
     }
 
-    public void floorTopologySetRoomRandomizeMainExit(String stackId, String floorRole,
+    void floorTopologySetRoomRandomizeMainExit(String stackId, String floorRole,
                                                        MKWorkspaceFloorRoomKind kind, int index, boolean value) {
         MKWorkspaceFloorRoomProfile profile = floorTopologyRoomProfile(stackId, floorRole, kind, index);
         replaceFloorTopologySettings(floorTopologySettings(stackId, floorRole)
                 .withRoomProfile(kind, index, profile.withRandomizeMainExit(value)));
     }
 
-    public int floorTopologyRoomHeightMax(String stackId, String floorRole) {
+    int floorTopologyRoomHeightMax(String stackId, String floorRole) {
         return switch (floorRole) {
             case "main_floor" -> towerStackMainHeight(stackId);
             case "basement_floor" -> towerStackBasementHeight(stackId);
@@ -2097,7 +2097,7 @@ public class WorkspaceDraftSession {
         return settings;
     }
 
-    public MKWorkspaceTowerStackSettings towerStackSettingsForUi(String stackId) {
+    MKWorkspaceTowerStackSettings towerStackSettingsForUi(String stackId) {
         return towerStackSettings(stackId);
     }
 
