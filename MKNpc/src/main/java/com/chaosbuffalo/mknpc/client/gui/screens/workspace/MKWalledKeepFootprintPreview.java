@@ -189,7 +189,7 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
         int pathThickness = Math.max(2, px(scale, courtyardPathWidth()));
         Rect pathRect = worldRect(originX, originY, scale,
                 -pathSize / 2.0, -pathSize / 2.0, pathSize, pathSize);
-        pathRect = expandAroundCenter(pathRect, centerRect,
+        pathRect = expandAroundPoint(pathRect, centerRect, originX, originY,
                 pathThickness + MIN_PIXEL_GAP);
         drawOutlineThick(graphics, pathRect.x(), pathRect.y(), pathRect.width(), pathRect.height(),
                 pathThickness, PATH);
@@ -388,17 +388,15 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
         elements.add(new PreviewElement(name, tooltip, rect, target));
     }
 
-    private Rect expandAroundCenter(Rect rect, Rect centerRect, int minGap) {
+    private Rect expandAroundPoint(Rect rect, Rect centerRect, int anchorX, int anchorY, int minGap) {
         int requiredWidth = centerRect.width() + (2 * minGap);
         int requiredHeight = centerRect.height() + (2 * minGap);
         if (rect.width() >= requiredWidth && rect.height() >= requiredHeight) {
             return rect;
         }
-        int centerX = centerRect.centerX();
-        int centerY = centerRect.centerY();
         int width = Math.max(rect.width(), requiredWidth);
         int height = Math.max(rect.height(), requiredHeight);
-        return new Rect(centerX - width / 2, centerY - height / 2, width, height);
+        return new Rect(anchorX - width / 2, anchorY - height / 2, width, height);
     }
 
     private Rect pushBelow(Rect rect, Rect blockingRect, int minGap) {
