@@ -239,7 +239,7 @@ public class WorkspaceDraftSession {
         draft().topologyProfile = MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(draft().topologyProfile.plannerId()) ?
                 walledKeepTopologyProfile(value, value, value, value) : MKWorkspaceTopologyProfile.tower();
         ensureFamiliesForActiveCornerSlots();
-        normalizeWalledKeepTowerStackTab();
+        walledKeepEditor().normalizeTowerStackTab();
     }
 
     public boolean uniqueCornerTower(String topologySlotId) {
@@ -313,7 +313,7 @@ public class WorkspaceDraftSession {
         boolean southWest = "keep.corner.south_west".equals(topologySlotId) ? value : current.uniqueSouthWestCornerTower();
         draft().topologyProfile = walledKeepTopologyProfile(northWest, northEast, southEast, southWest);
         ensureFamiliesForActiveCornerSlots();
-        normalizeWalledKeepTowerStackTab();
+        walledKeepEditor().normalizeTowerStackTab();
     }
 
     public int walledKeepCenterWidth() {
@@ -541,44 +541,12 @@ public class WorkspaceDraftSession {
         );
     }
 
-    public List<String> walledKeepTowerStackTabs() {
-        if (!MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(topologyPlannerId())) {
-            return List.of();
-        }
-        java.util.ArrayList<String> tabs = new java.util.ArrayList<>();
-        tabs.add("keep.center");
-        tabs.addAll(activeCornerTopologySlots());
-        return List.copyOf(tabs);
-    }
-
-    public String walledKeepTowerStackTab() {
-        normalizeWalledKeepTowerStackTab();
-        return draft().walledKeepTowerStackTab;
-    }
-
-    public void walledKeepTowerStackTab(String stackId) {
-        List<String> tabs = walledKeepTowerStackTabs();
-        draft().walledKeepTowerStackTab = tabs.contains(stackId) ? stackId :
-                (tabs.isEmpty() ? "keep.center" : tabs.getFirst());
-    }
-
     public String towerStackPreviewSelection(String stackId) {
         return draft().towerStackPreviewSelections.getOrDefault(stackId, "entry");
     }
 
     public void towerStackPreviewSelection(String stackId, String sectionKey) {
         draft().towerStackPreviewSelections.put(stackId, valueOrDefault(sectionKey, "entry"));
-    }
-
-    private void normalizeWalledKeepTowerStackTab() {
-        List<String> tabs = walledKeepTowerStackTabs();
-        if (tabs.isEmpty()) {
-            draft().walledKeepTowerStackTab = "keep.center";
-            return;
-        }
-        if (!tabs.contains(draft().walledKeepTowerStackTab)) {
-            draft().walledKeepTowerStackTab = tabs.getFirst();
-        }
     }
 
     public int cornerTowerWidth(String topologySlotId) {

@@ -105,6 +105,7 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
         content.addWidget(preview);
         content.addConstraintToWidget(new CenterXConstraint(), preview);
 
+        WalledKeepDraftEditor keepEditor = editor.walledKeepEditor();
         String status = report.fitsJigsawCap() ? "fits" : "too large";
         WorkspaceTopologyUiSupport.addText(screen, content, Component.literal(
                 "N " + report.northDistance() + " / S " + report.southDistance() +
@@ -113,10 +114,10 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
                         " | required " + report.requiredJigsawRadius() +
                         " / cap " + report.maxDistanceFromCenter() +
                         " (" + status + ", headroom " + report.headroom() + ")" +
-                        "\nwall unit " + editor.wallUnitSpan() +
+                        "\nwall unit " + keepEditor.wallUnitSpan() +
                         " | recommended " + report.recommendedWallUnitSpan() +
-                        " | passage " + editor.wallPassageWidth() +
-                        " | body " + (editor.wallPassageWidth() + (2 * editor.shellMargin())) +
+                        " | passage " + keepEditor.wallPassageWidth() +
+                        " | body " + (keepEditor.wallPassageWidth() + (2 * editor.shellMargin())) +
                         "\nwall segments front " + report.frontBranchSegments() + "+" +
                         report.frontBranchSegments() + ", side " + report.verticalWallSegments() +
                         ", back " + report.backWallSegments() +
@@ -170,15 +171,16 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
     }
 
     private void addPerimeterRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, WorkspaceDraftSession editor) {
+        WalledKeepDraftEditor keepEditor = editor.walledKeepEditor();
         MKButton perimeterKindButton = new MKButton(
                 Component.literal(WorkspaceTopologyUiSupport.formatTopologyLabel(
-                        editor.perimeterRunKind().getSerializedName())), 180, 20);
+                        keepEditor.perimeterRunKind().getSerializedName())), 180, 20);
         perimeterKindButton.setPressedCallback((button, mouseButton) -> {
-            editor.perimeterRunKind(WorkspaceTopologyUiSupport.cycleValue(List.of(
+            keepEditor.perimeterRunKind(WorkspaceTopologyUiSupport.cycleValue(List.of(
                             MKWorkspaceLinearRunKind.DEFENSIVE_WALL,
                             MKWorkspaceLinearRunKind.SOLID_WALL,
                             MKWorkspaceLinearRunKind.PARAPET),
-                    editor.perimeterRunKind(), WorkspaceTopologyUiSupport.isReverseClick(mouseButton)));
+                    keepEditor.perimeterRunKind(), WorkspaceTopologyUiSupport.isReverseClick(mouseButton)));
             screen.flagNeedSetup();
             return true;
         });
@@ -188,8 +190,8 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
         MKStructureWorkspace sizingDraft = editor.buildWorkspaceDraft();
         MKWalledKeepSizingReport sizingReport = new MKWalledKeepSizingCalculator().calculate(sizingDraft);
         MKIntegerSlider wallUnitSpanSlider = new MKIntegerSlider("Span", 180, 20, 3, 45, 2,
-                editor.wallUnitSpan(), value -> {
-            editor.wallUnitSpan(value);
+                keepEditor.wallUnitSpan(), value -> {
+            keepEditor.wallUnitSpan(value);
             screen.flagNeedSetup();
         });
         WorkspaceTopologyUiSupport.addRow(screen, content, screen.makeWhiteText(Component.literal(
@@ -197,8 +199,8 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
                 wallUnitSpanSlider);
 
         MKIntegerSlider wallPassageWidthSlider = new MKIntegerSlider("Width", 180, 20, 3, 15, 2,
-                editor.wallPassageWidth(), value -> {
-            editor.wallPassageWidth(value);
+                keepEditor.wallPassageWidth(), value -> {
+            keepEditor.wallPassageWidth(value);
             screen.flagNeedSetup();
         });
         WorkspaceTopologyUiSupport.addRow(screen, content,
@@ -206,30 +208,30 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
 
         MKIntegerSlider wallHeightSlider = new MKIntegerSlider("Height", 180, 20, 2,
                 MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE - 1, 1,
-                editor.wallHeight(), value -> {
-            editor.wallHeight(value);
+                keepEditor.wallHeight(), value -> {
+            keepEditor.wallHeight(value);
             screen.flagNeedSetup();
         });
         WorkspaceTopologyUiSupport.addRow(screen, content, screen.makeWhiteText(Component.literal("Wall Height")),
                 wallHeightSlider);
 
         MKIntegerSlider wallTopVoidSlider = new MKIntegerSlider("Margin", 180, 20, 0,
-                Math.max(0, editor.wallHeight() - 1), 1,
-                editor.wallTopVoidMargin(), value -> {
-            editor.wallTopVoidMargin(value);
+                Math.max(0, keepEditor.wallHeight() - 1), 1,
+                keepEditor.wallTopVoidMargin(), value -> {
+            keepEditor.wallTopVoidMargin(value);
             screen.flagNeedSetup();
         });
         WorkspaceTopologyUiSupport.addRow(screen, content,
                 screen.makeWhiteText(Component.literal("Wall Top Void Margin")), wallTopVoidSlider);
         WorkspaceTopologyUiSupport.addResetRow(screen, content, "Wall And Gate Sizing", () -> {
-            editor.resetWalledKeepPerimeterDefaults();
+            keepEditor.resetPerimeterDefaults();
             screen.flagNeedSetup();
         });
     }
 
     private void addTowerTabs(MKWorkspaceScreen screen, MKStackLayoutVertical content, WorkspaceDraftSession editor) {
         addTowerTabSelector(screen, content, editor, "Tower Stack Settings");
-        String activeStackId = editor.walledKeepTowerStackTab();
+        String activeStackId = editor.walledKeepEditor().towerStackTab();
         String label = tabLabel(activeStackId, false);
         towerStackPanel.addStackSizingRows(screen, content, editor, activeStackId, label);
         towerStackPanel.addStackEditor(screen, content, editor, activeStackId, label, false);
@@ -238,23 +240,24 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
     private void addTowerSizingTabs(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                     WorkspaceDraftSession editor) {
         addTowerTabSelector(screen, content, editor, "Tower Stack Sizing");
-        String activeStackId = editor.walledKeepTowerStackTab();
+        String activeStackId = editor.walledKeepEditor().towerStackTab();
         towerStackPanel.addStackSizingRows(screen, content, editor, activeStackId, tabLabel(activeStackId, false));
     }
 
     private void addTowerTabSelector(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                      WorkspaceDraftSession editor, String heading) {
         WorkspaceTopologyUiSupport.addText(screen, content, Component.literal(heading));
-        List<String> stackIds = editor.walledKeepTowerStackTabs();
+        WalledKeepDraftEditor keepEditor = editor.walledKeepEditor();
+        List<String> stackIds = keepEditor.towerStackTabs();
         MKStackLayoutHorizontal tabRow = new MKStackLayoutHorizontal(0, 0, 20);
         tabRow.setPaddingLeft(2).setPaddingRight(2);
         int gapWidth = Math.max(0, stackIds.size() - 1) * (tabRow.getPaddingLeft() + tabRow.getPaddingRight());
         int tabWidth = Math.max(44, Math.min(100, (screen.contentWidth() - gapWidth) / Math.max(1, stackIds.size())));
         for (String stackId : stackIds) {
             MKButton tabButton = new MKButton(Component.literal(tabButtonLabel(stackId,
-                    stackId.equals(editor.walledKeepTowerStackTab()))), tabWidth, 20);
+                    stackId.equals(keepEditor.towerStackTab()))), tabWidth, 20);
             tabButton.setPressedCallback((button, mouseButton) -> {
-                editor.walledKeepTowerStackTab(stackId);
+                keepEditor.towerStackTab(stackId);
                 screen.flagNeedSetup();
                 return true;
             });
@@ -279,10 +282,11 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
 
     private void addCornerModeRow(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                   WorkspaceDraftSession editor, String label, String topologySlotId) {
-        MKButton modeButton = new MKButton(Component.literal(editor.uniqueCornerTower(topologySlotId) ? "Unique" : "Shared"),
+        WalledKeepDraftEditor keepEditor = editor.walledKeepEditor();
+        MKButton modeButton = new MKButton(Component.literal(keepEditor.uniqueCornerTower(topologySlotId) ? "Unique" : "Shared"),
                 180, 20);
         modeButton.setPressedCallback((button, mouseButton) -> {
-            editor.uniqueCornerTower(topologySlotId, !editor.uniqueCornerTower(topologySlotId));
+            keepEditor.uniqueCornerTower(topologySlotId, !keepEditor.uniqueCornerTower(topologySlotId));
             screen.flagNeedSetup();
             return true;
         });
