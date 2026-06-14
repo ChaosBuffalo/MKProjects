@@ -45,6 +45,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     private static final int COLLISION = 0xFFFF4D4D;
     private static final int STRUCTURE_RADIUS_LIMIT = 128;
     private static final int PREVIEW_SIZE = 240;
+    private static final int ROOT_EXIT_CONTROLS_HEIGHT = 124;
     private static final int PATH_CONTROLS_HEIGHT = 276;
     private static final int ROOM_ROW_HEIGHT = 122;
     private static final int ROOM_SECTION_HEADER = 22;
@@ -100,7 +101,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         if (viewMode == ViewMode.PREVIEW_ONLY) {
             return 12 + PREVIEW_SIZE + 18;
         }
-        int settingsHeight = PATH_CONTROLS_HEIGHT + roomSectionsHeight(controls, sectionKey);
+        int settingsHeight = ROOT_EXIT_CONTROLS_HEIGHT + PATH_CONTROLS_HEIGHT + roomSectionsHeight(controls, sectionKey);
         if (viewMode == ViewMode.SETTINGS_ONLY) {
             return 12 + settingsHeight + 18;
         }
@@ -134,6 +135,8 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         }
         if (drawsSettings()) {
             int cursorY = settingsStartY(x, y, width);
+            drawRootExitControls(graphics, mc, x + 8, cursorY, width - 16, mouseX, mouseY);
+            cursorY += ROOT_EXIT_CONTROLS_HEIGHT;
             drawPathControls(graphics, mc, x + 8, cursorY, width - 16, mouseX, mouseY);
             cursorY += PATH_CONTROLS_HEIGHT;
             for (MKWorkspaceFloorRoomKind kind : roomKindsForUi()) {
@@ -148,6 +151,9 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             return false;
         }
         if (drawsPreview() && handlePreviewPress(mouseX, mouseY)) {
+            return true;
+        }
+        if (drawsSettings() && handleRootExitPress(mouseX, mouseY, mouseButton)) {
             return true;
         }
         if (drawsSettings() && handlePathControlPress(mouseX, mouseY, mouseButton)) {
@@ -285,6 +291,103 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         drawSlider(graphics, mc, "Length", controls.floorMaxLinkLength(sectionKey), 0,
                 MKWorkspaceFloorTopologySettings.MAX_LINK_LENGTH,
                 x, linkY + 90, width, mouseX, mouseY, "floorMaxLinkLength");
+    }
+
+    private void drawRootExitControls(GuiGraphics graphics, Minecraft mc, int x, int y, int width,
+                                      int mouseX, int mouseY) {
+        graphics.drawString(mc.font, "Root Exits", x, y + 4, TEXT, false);
+        ButtonBounds mask = rootExitMaskBounds(x, y);
+        drawRootExitMask(graphics, mc, mask, mouseX, mouseY);
+        int editorX = mask.x() + mask.width() + 10;
+        Optional<MKWorkspaceFamilyHorizontalExitDefinition> selected = controls.selectedRootExit(sectionKey)
+                .filter(exit -> exit.direction().getAxis().isHorizontal());
+        if (selected.isEmpty()) {
+            graphics.drawString(mc.font, "Left: select", editorX, mask.y() + 6, MUTED_TEXT, false);
+            graphics.drawString(mc.font, "Right: branch", editorX, mask.y() + 18, MUTED_TEXT, false);
+            return;
+        }
+        MKWorkspaceFamilyHorizontalExitDefinition exit = selected.get();
+        boolean required = controls.rootExitRequired(sectionKey, exit.direction());
+        graphics.drawString(mc.font, required ? "Required" : "Editable", editorX, mask.y() + 6,
+                required ? EXIT_REQUIRED : SELECTED_OUTLINE, false);
+        drawButton(graphics, mc, rootExitButton(editorX, mask.y(), "role"),
+                "Role " + WorkspaceTopologyUiSupport.formatTopologyLabel(exit.pathKind().getSerializedName()),
+                mouseX, mouseY, required);
+        drawButton(graphics, mc, rootExitButton(editorX, mask.y(), "profile"),
+                "Open " + exit.openingProfileId(), mouseX, mouseY, false);
+        int sliderWidth = Math.max(80, width - mask.width() - 10);
+        drawSlider(graphics, mc, "Side", exit.sideOffset(), controls.rootExitSideMin(sectionKey),
+                controls.rootExitSideMax(sectionKey), editorX, mask.y() + 66, sliderWidth,
+                required ? -1 : mouseX, required ? -1 : mouseY, "rootExitSide");
+        drawSlider(graphics, mc, "Vertical", exit.verticalOffset(), 0,
+                controls.rootExitVerticalMax(sectionKey), editorX, mask.y() + 88, sliderWidth,
+                required ? -1 : mouseX, required ? -1 : mouseY, "rootExitVertical");
+    }
+
+    private void drawRootExitMask(GuiGraphics graphics, Minecraft mc, ButtonBounds bounds, int mouseX, int mouseY) {
+        graphics.fill(bounds.x(), bounds.y(), bounds.x() + bounds.width(), bounds.y() + bounds.height(), 0xFF1B1B1F);
+        drawOutline(graphics, bounds.x(), bounds.y(), bounds.width(), bounds.y() + bounds.height(), CONTROL_ACTIVE);
+        int centerX = bounds.x() + bounds.width() / 2;
+        int centerY = bounds.y() + bounds.height() / 2;
+        int roomLeft = centerX - MASK_ROOM_SIZE / 2;
+        int roomTop = centerY - MASK_ROOM_SIZE / 2;
+        int roomRight = roomLeft + MASK_ROOM_SIZE;
+        int roomBottom = roomTop + MASK_ROOM_SIZE;
+        for (Direction direction : List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)) {
+            drawRootExitArm(graphics, direction, roomLeft, roomTop, roomRight, roomBottom, centerX, centerY,
+                    mouseX, mouseY);
+        }
+        graphics.fill(roomLeft, roomTop, roomRight, roomBottom, 0xFF2A3440);
+        drawOutline(graphics, roomLeft, roomTop, MASK_ROOM_SIZE, roomBottom, CONTROL_ACTIVE);
+        graphics.drawCenteredString(mc.font, Component.literal("R"), centerX, centerY - 4, TEXT);
+        drawRootExitLabel(graphics, mc, Direction.NORTH, centerX, roomTop - MASK_ARM - 10);
+        drawRootExitLabel(graphics, mc, Direction.EAST, roomRight + MASK_ARM, centerY - 4);
+        drawRootExitLabel(graphics, mc, Direction.SOUTH, centerX, roomBottom + MASK_ARM + 1);
+        drawRootExitLabel(graphics, mc, Direction.WEST, roomLeft - MASK_ARM, centerY - 4);
+    }
+
+    private void drawRootExitArm(GuiGraphics graphics, Direction direction, int roomLeft, int roomTop,
+                                 int roomRight, int roomBottom, int centerX, int centerY, int mouseX, int mouseY) {
+        Optional<MKWorkspaceFamilyHorizontalExitDefinition> exit = rootExitForDirection(direction);
+        int color = exit.map(value -> controls.rootExitRequired(sectionKey, direction) ? EXIT_REQUIRED :
+                        value.pathKind().usesMainPath() ? EXIT_ACTIVE : FLOOR_BRANCH)
+                .orElse(EXIT_INACTIVE);
+        if (hitRootExitDirection(rootExitMaskBounds(getX() + 8, settingsStartY(getX(), getY(), getWidth())),
+                mouseX, mouseY) == direction) {
+            color = CONTROL_ACTIVE;
+        }
+        switch (direction) {
+            case NORTH -> graphics.fill(centerX - MASK_ARM_THICKNESS / 2, roomTop - MASK_ARM,
+                    centerX + MASK_ARM_THICKNESS / 2, roomTop, color);
+            case EAST -> graphics.fill(roomRight, centerY - MASK_ARM_THICKNESS / 2,
+                    roomRight + MASK_ARM, centerY + MASK_ARM_THICKNESS / 2, color);
+            case SOUTH -> graphics.fill(centerX - MASK_ARM_THICKNESS / 2, roomBottom,
+                    centerX + MASK_ARM_THICKNESS / 2, roomBottom + MASK_ARM, color);
+            case WEST -> graphics.fill(roomLeft - MASK_ARM, centerY - MASK_ARM_THICKNESS / 2,
+                    roomLeft, centerY + MASK_ARM_THICKNESS / 2, color);
+            default -> {
+            }
+        }
+    }
+
+    private void drawRootExitLabel(GuiGraphics graphics, Minecraft mc, Direction direction, int x, int y) {
+        String label = direction.getName().substring(0, 1).toUpperCase();
+        int color = MUTED_TEXT;
+        Optional<MKWorkspaceFamilyHorizontalExitDefinition> exit = rootExitForDirection(direction);
+        if (exit.isPresent()) {
+            label += switch (exit.get().pathKind()) {
+                case INGRESS -> "G";
+                case MAIN_ENTRY -> "I";
+                case MAIN_EXIT -> "O";
+                case MAIN_ENDING_ENTRY -> "E";
+                case BRANCH -> "B";
+                case BRANCH_CAP_ENTRY -> "C";
+                case LINK_CANDIDATE -> "L";
+                case VERTICAL_ACCESS -> "";
+            };
+            color = controls.rootExitRequired(sectionKey, direction) ? EXIT_REQUIRED : TEXT;
+        }
+        graphics.drawCenteredString(mc.font, Component.literal(label), x, y, color);
     }
 
     private int drawRoomSection(GuiGraphics graphics, Minecraft mc, int x, int y, int width,
@@ -660,7 +763,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     }
 
     private boolean handlePathControlPress(double mouseX, double mouseY, int mouseButton) {
-        int y = settingsStartY(getX(), getY(), getWidth());
+        int y = pathStartY(getX(), getY(), getWidth());
         int x = getX() + 8;
         int width = getWidth() - 16;
         if (isInRect(mouseX, mouseY, pathToggleBounds(x, y, 0))) {
@@ -724,6 +827,55 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 applySliderValue(mouseX);
                 return true;
             }
+        }
+        return false;
+    }
+
+    private boolean handleRootExitPress(double mouseX, double mouseY, int mouseButton) {
+        int y = settingsStartY(getX(), getY(), getWidth());
+        int x = getX() + 8;
+        ButtonBounds mask = rootExitMaskBounds(x, y);
+        Direction direction = hitRootExitDirection(mask, (int) mouseX, (int) mouseY);
+        if (direction != null) {
+            if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+                controls.selectRootExit(sectionKey, direction);
+                return true;
+            }
+            if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT && !controls.rootExitRequired(sectionKey, direction)) {
+                controls.toggleRootExit(sectionKey, direction);
+                return true;
+            }
+            return true;
+        }
+        Optional<MKWorkspaceFamilyHorizontalExitDefinition> selected = controls.selectedRootExit(sectionKey)
+                .filter(exit -> exit.direction().getAxis().isHorizontal());
+        if (selected.isEmpty()) {
+            return false;
+        }
+        int editorX = mask.x() + mask.width() + 10;
+        boolean required = controls.rootExitRequired(sectionKey, selected.get().direction());
+        if (isInRect(mouseX, mouseY, rootExitButton(editorX, mask.y(), "role"))) {
+            if (!required) {
+                controls.cycleRootExitPathKind(sectionKey, WorkspaceTopologyUiSupport.isReverseClick(mouseButton));
+            }
+            return true;
+        }
+        if (isInRect(mouseX, mouseY, rootExitButton(editorX, mask.y(), "profile"))) {
+            controls.cycleRootExitOpeningProfile(sectionKey, WorkspaceTopologyUiSupport.isReverseClick(mouseButton));
+            return true;
+        }
+        int sliderWidth = Math.max(80, getWidth() - 16 - mask.width() - 10);
+        if (!required && isInSlider(mouseX, mouseY, sliderBounds(editorX, mask.y() + 66, sliderWidth,
+                "rootExitSide"))) {
+            draggingSlider = "rootExitSide";
+            applySliderValue(mouseX);
+            return true;
+        }
+        if (!required && isInSlider(mouseX, mouseY, sliderBounds(editorX, mask.y() + 88, sliderWidth,
+                "rootExitVertical"))) {
+            draggingSlider = "rootExitVertical";
+            applySliderValue(mouseX);
+            return true;
         }
         return false;
     }
@@ -830,6 +982,12 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         }
         if ("floorMinMain".equals(draggingSlider)) {
             controls.floorMinMainPathPieces(sectionKey, sliderValue(mouseX, bounds, 0, 10));
+        } else if ("rootExitSide".equals(draggingSlider)) {
+            controls.rootExitSideOffset(sectionKey, sliderValue(mouseX, bounds,
+                    controls.rootExitSideMin(sectionKey), controls.rootExitSideMax(sectionKey)));
+        } else if ("rootExitVertical".equals(draggingSlider)) {
+            controls.rootExitVerticalOffset(sectionKey, sliderValue(mouseX, bounds, 0,
+                    controls.rootExitVerticalMax(sectionKey)));
         } else if ("floorMaxMain".equals(draggingSlider)) {
             controls.floorMaxMainPathPieces(sectionKey, sliderValue(mouseX, bounds, 0, 10));
         } else if ("floorBranchCap".equals(draggingSlider)) {
@@ -946,7 +1104,13 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     private SliderBounds sliderBoundsFor(String id) {
         int x = getX() + 8;
         int width = getWidth() - 16;
-        int pathY = settingsStartY(getX(), getY(), getWidth());
+        int pathY = pathStartY(getX(), getY(), getWidth());
+        if ("rootExitSide".equals(id) || "rootExitVertical".equals(id)) {
+            ButtonBounds mask = rootExitMaskBounds(getX() + 8, settingsStartY(getX(), getY(), getWidth()));
+            int editorX = mask.x() + mask.width() + 10;
+            int sliderWidth = Math.max(80, getWidth() - 16 - mask.width() - 10);
+            return sliderBounds(editorX, mask.y() + ("rootExitSide".equals(id) ? 66 : 88), sliderWidth, id);
+        }
         if ("floorMinMain".equals(id)) {
             return sliderBounds(x, pathY + 50, width, id);
         }
@@ -1033,7 +1197,11 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     }
 
     private int roomStartY(int x, int y, int width) {
-        return settingsStartY(x, y, width) + PATH_CONTROLS_HEIGHT;
+        return pathStartY(x, y, width) + PATH_CONTROLS_HEIGHT;
+    }
+
+    private int pathStartY(int x, int y, int width) {
+        return settingsStartY(x, y, width) + ROOT_EXIT_CONTROLS_HEIGHT;
     }
 
     private ButtonBounds rerollButton(ButtonBounds preview) {
@@ -1054,6 +1222,18 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
 
     private ButtonBounds roomRandomizeMainExitButton(int x, int y) {
         return new ButtonBounds(x + 5, y + 86, 150, 16);
+    }
+
+    private ButtonBounds rootExitMaskBounds(int x, int y) {
+        return new ButtonBounds(x, y + 20, MASK_SIZE, MASK_SIZE);
+    }
+
+    private ButtonBounds rootExitButton(int x, int y, String id) {
+        return switch (id) {
+            case "role" -> new ButtonBounds(x, y + 20, 132, 18);
+            case "profile" -> new ButtonBounds(x, y + 42, 132, 18);
+            default -> new ButtonBounds(x, y, 132, 18);
+        };
     }
 
     private ButtonBounds pathToggleBounds(int x, int y, int index) {
@@ -1078,6 +1258,38 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         graphics.fill(boxX, boxY, boxX + 10, boxY + 10, checked ? SELECTED_OUTLINE : 0xFF1B1B1F);
         drawOutline(graphics, boxX, boxY, 10, boxY + 10, CONTROL_ACTIVE);
         graphics.drawString(mc.font, fit(label, bounds.width() - 18), bounds.x() + 16, bounds.y() + 4, TEXT, false);
+    }
+
+    private Optional<MKWorkspaceFamilyHorizontalExitDefinition> rootExitForDirection(Direction direction) {
+        return controls.rootExits(sectionKey).stream()
+                .filter(exit -> exit.direction() == direction)
+                .findFirst();
+    }
+
+    private Direction hitRootExitDirection(ButtonBounds bounds, int mouseX, int mouseY) {
+        int centerX = bounds.x() + bounds.width() / 2;
+        int centerY = bounds.y() + bounds.height() / 2;
+        int roomLeft = centerX - MASK_ROOM_SIZE / 2;
+        int roomTop = centerY - MASK_ROOM_SIZE / 2;
+        int roomRight = roomLeft + MASK_ROOM_SIZE;
+        int roomBottom = roomTop + MASK_ROOM_SIZE;
+        if (mouseX >= centerX - MASK_ARM_THICKNESS / 2 && mouseX <= centerX + MASK_ARM_THICKNESS / 2) {
+            if (mouseY >= roomTop - MASK_ARM && mouseY <= roomTop) {
+                return Direction.NORTH;
+            }
+            if (mouseY >= roomBottom && mouseY <= roomBottom + MASK_ARM) {
+                return Direction.SOUTH;
+            }
+        }
+        if (mouseY >= centerY - MASK_ARM_THICKNESS / 2 && mouseY <= centerY + MASK_ARM_THICKNESS / 2) {
+            if (mouseX >= roomLeft - MASK_ARM && mouseX <= roomLeft) {
+                return Direction.WEST;
+            }
+            if (mouseX >= roomRight && mouseX <= roomRight + MASK_ARM) {
+                return Direction.EAST;
+            }
+        }
+        return null;
     }
 
     private List<MKWorkspaceFloorRoomKind> roomKindsForUi() {
@@ -1354,6 +1566,28 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         int stackLength(String sectionKey);
 
         List<MKWorkspaceFamilyHorizontalExitDefinition> rootExits(String sectionKey);
+
+        Optional<MKWorkspaceFamilyHorizontalExitDefinition> selectedRootExit(String sectionKey);
+
+        boolean rootExitRequired(String sectionKey, Direction direction);
+
+        void selectRootExit(String sectionKey, Direction direction);
+
+        void toggleRootExit(String sectionKey, Direction direction);
+
+        void cycleRootExitPathKind(String sectionKey, boolean reverse);
+
+        void cycleRootExitOpeningProfile(String sectionKey, boolean reverse);
+
+        int rootExitSideMin(String sectionKey);
+
+        int rootExitSideMax(String sectionKey);
+
+        int rootExitVerticalMax(String sectionKey);
+
+        void rootExitSideOffset(String sectionKey, int value);
+
+        void rootExitVerticalOffset(String sectionKey, int value);
 
         int floorMinMainPathPieces(String sectionKey);
 

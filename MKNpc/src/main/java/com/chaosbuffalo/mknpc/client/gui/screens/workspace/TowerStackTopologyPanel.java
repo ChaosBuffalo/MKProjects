@@ -531,7 +531,7 @@ public class TowerStackTopologyPanel {
 
             @Override
             public boolean hasFloorTopology(String sectionKey) {
-                return !"top_cap".equals(sectionKey) && !"basement_cap".equals(sectionKey);
+                return true;
             }
 
             @Override
@@ -700,7 +700,7 @@ public class TowerStackTopologyPanel {
         return new MKFloorTopologyPlanPreview.Controls() {
             @Override
             public boolean hasFloorTopology(String sectionKey) {
-                return !"top_cap".equals(sectionKey) && !"basement_cap".equals(sectionKey);
+                return true;
             }
 
             @Override
@@ -719,6 +719,175 @@ public class TowerStackTopologyPanel {
                         .map(MKTowerWorkspaceFamilyDefinition::horizontalExits)
                         .orElse(List.of());
                 return "entry".equals(sectionKey) ? entryExitsWithRequiredSouth(editor, exits) : exits;
+            }
+
+            @Override
+            public Optional<MKWorkspaceFamilyHorizontalExitDefinition> selectedRootExit(String sectionKey) {
+                OptionalInt familyIndex = familyIndexForSection(editor, stackId, sectionKey);
+                if (familyIndex.isEmpty()) {
+                    return Optional.empty();
+                }
+                int exitIndex = editor.selectedFamilyExitIndex();
+                List<MKWorkspaceFamilyHorizontalExitDefinition> exits =
+                        editor.draft().familyDefinitions.get(familyIndex.getAsInt()).horizontalExits();
+                return exitIndex >= 0 && exitIndex < exits.size() &&
+                        exits.get(exitIndex).direction().getAxis().isHorizontal() ?
+                        Optional.of(exits.get(exitIndex)) : Optional.empty();
+            }
+
+            @Override
+            public boolean rootExitRequired(String sectionKey, Direction direction) {
+                if (isRequiredEntryExit(sectionKey, direction)) {
+                    return true;
+                }
+                return rootExits(sectionKey).stream()
+                        .filter(exit -> exit.direction() == direction)
+                        .findFirst()
+                        .map(exit -> isRequiredTowerStackExit(sectionKey, exit))
+                        .orElse(false);
+            }
+
+            @Override
+            public void selectRootExit(String sectionKey, Direction direction) {
+                familyIndexForSection(editor, stackId, sectionKey).ifPresent(familyIndex -> {
+                    int exitIndex = editor.findFamilyExitIndexByDirection(familyIndex, direction);
+                    editor.selectedFamilyExitIndex(exitIndex == editor.selectedFamilyExitIndex() ? -1 : exitIndex);
+                    screen.flagNeedSetup();
+                });
+            }
+
+            @Override
+            public void toggleRootExit(String sectionKey, Direction direction) {
+                if (isRequiredEntryExit(sectionKey, direction)) {
+                    return;
+                }
+                familyIndexForSection(editor, stackId, sectionKey).ifPresent(familyIndex -> {
+                    int exitIndex = editor.findFamilyExitIndexByDirection(familyIndex, direction);
+                    if (exitIndex >= 0) {
+                        MKWorkspaceFamilyHorizontalExitDefinition exit =
+                                editor.draft().familyDefinitions.get(familyIndex).horizontalExits().get(exitIndex);
+                        if (isRequiredTowerStackExit(sectionKey, exit)) {
+                            return;
+                        }
+                        if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH) {
+                            editor.removeFamilyExit(familyIndex, exitIndex);
+                            if (editor.selectedFamilyExitIndex() == exitIndex) {
+                                editor.selectedFamilyExitIndex(-1);
+                            } else if (editor.selectedFamilyExitIndex() > exitIndex) {
+                                editor.selectedFamilyExitIndex(editor.selectedFamilyExitIndex() - 1);
+                            }
+                        } else {
+                            String branchOpeningProfileId = editor.ensureCompatibleOpeningProfile(
+                                    MKWorkspaceHorizontalExitPathKind.BRANCH, exit.openingProfileId());
+                            editor.replaceFamilyExit(familyIndex, exitIndex,
+                                    new MKWorkspaceFamilyHorizontalExitDefinition(
+                                            exit.direction(),
+                                            MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                            branchOpeningProfileId,
+                                            exit.connectionMode(),
+                                            exit.sideOffset(),
+                                            exit.verticalOffset(),
+                                            exit.horizontalExtrusionModeOverride()
+                                    ));
+                            editor.selectedFamilyExitIndex(exitIndex);
+                        }
+                    } else {
+                        editor.selectedFamilyExitIndex(editor.addFamilyBranchExitAtDirection(familyIndex, direction));
+                    }
+                    screen.flagNeedSetup();
+                });
+            }
+
+            @Override
+            public void cycleRootExitPathKind(String sectionKey, boolean reverse) {
+                updateSelectedRootExit(sectionKey, exit -> {
+                    if (isRequiredTowerStackExit(sectionKey, exit)) {
+                        return exit;
+                    }
+                    MKTowerWorkspaceFamilyDefinition family = selectedFamily(sectionKey).orElse(null);
+                    if (family == null) {
+                        return exit;
+                    }
+                    MKWorkspaceHorizontalExitPathKind nextPathKind = WorkspaceTopologyUiSupport.cycleValue(
+                            List.of(MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, MKWorkspaceHorizontalExitPathKind.BRANCH),
+                            exit.pathKind(), reverse);
+                    String nextOpeningProfileId =
+                            editor.ensureCompatibleOpeningProfile(nextPathKind, exit.openingProfileId());
+                    return new MKWorkspaceFamilyHorizontalExitDefinition(
+                            exit.direction(),
+                            nextPathKind,
+                            nextOpeningProfileId,
+                            exit.connectionMode(),
+                            editor.clampSideOffset(family, exit.direction(), nextOpeningProfileId, exit.sideOffset()),
+                            editor.clampVerticalOffset(family, nextOpeningProfileId, exit.verticalOffset()),
+                            exit.horizontalExtrusionModeOverride()
+                    );
+                });
+            }
+
+            @Override
+            public void cycleRootExitOpeningProfile(String sectionKey, boolean reverse) {
+                updateSelectedRootExit(sectionKey, exit -> {
+                    MKTowerWorkspaceFamilyDefinition family = selectedFamily(sectionKey).orElse(null);
+                    if (family == null) {
+                        return exit;
+                    }
+                    String nextOpeningProfileId =
+                            editor.nextOpeningProfileId(exit.pathKind(), exit.openingProfileId(), reverse);
+                    return new MKWorkspaceFamilyHorizontalExitDefinition(
+                            exit.direction(),
+                            exit.pathKind(),
+                            nextOpeningProfileId,
+                            exit.connectionMode(),
+                            editor.clampSideOffset(family, exit.direction(), nextOpeningProfileId, exit.sideOffset()),
+                            editor.clampVerticalOffset(family, nextOpeningProfileId, exit.verticalOffset()),
+                            exit.horizontalExtrusionModeOverride()
+                    );
+                });
+            }
+
+            @Override
+            public int rootExitSideMin(String sectionKey) {
+                return selectedRootExit(sectionKey)
+                        .flatMap(exit -> selectedFamily(sectionKey).map(family ->
+                                editor.minSideOffset(family, exit.direction(), exit.openingProfileId())))
+                        .orElse(0);
+            }
+
+            @Override
+            public int rootExitSideMax(String sectionKey) {
+                return selectedRootExit(sectionKey)
+                        .flatMap(exit -> selectedFamily(sectionKey).map(family ->
+                                editor.maxSideOffset(family, exit.direction(), exit.openingProfileId())))
+                        .orElse(0);
+            }
+
+            @Override
+            public int rootExitVerticalMax(String sectionKey) {
+                return selectedRootExit(sectionKey)
+                        .flatMap(exit -> selectedFamily(sectionKey).map(family ->
+                                editor.maxVerticalOffset(family, exit.openingProfileId())))
+                        .orElse(0);
+            }
+
+            @Override
+            public void rootExitSideOffset(String sectionKey, int value) {
+                OptionalInt familyIndex = familyIndexForSection(editor, stackId, sectionKey);
+                if (familyIndex.isPresent() && selectedRootExit(sectionKey).isPresent()) {
+                    editor.updateFamilyExitOffsets(familyIndex.getAsInt(), editor.selectedFamilyExitIndex(),
+                            value, null);
+                    screen.flagNeedSetup();
+                }
+            }
+
+            @Override
+            public void rootExitVerticalOffset(String sectionKey, int value) {
+                OptionalInt familyIndex = familyIndexForSection(editor, stackId, sectionKey);
+                if (familyIndex.isPresent() && selectedRootExit(sectionKey).isPresent()) {
+                    editor.updateFamilyExitOffsets(familyIndex.getAsInt(), editor.selectedFamilyExitIndex(),
+                            null, value);
+                    screen.flagNeedSetup();
+                }
             }
 
             @Override
@@ -981,6 +1150,23 @@ public class TowerStackTopologyPanel {
             public void toggleRoomLinkCandidateExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
                                                     Direction direction) {
                 editor.floorTopologyToggleRoomLinkCandidateExit(stackId, sectionKey, kind, index, direction);
+                screen.flagNeedSetup();
+            }
+
+            private Optional<MKTowerWorkspaceFamilyDefinition> selectedFamily(String sectionKey) {
+                return familyForSection(editor, stackId, sectionKey);
+            }
+
+            private void updateSelectedRootExit(String sectionKey,
+                                                java.util.function.Function<MKWorkspaceFamilyHorizontalExitDefinition,
+                                                        MKWorkspaceFamilyHorizontalExitDefinition> updater) {
+                OptionalInt familyIndex = familyIndexForSection(editor, stackId, sectionKey);
+                Optional<MKWorkspaceFamilyHorizontalExitDefinition> exit = selectedRootExit(sectionKey);
+                if (familyIndex.isEmpty() || exit.isEmpty()) {
+                    return;
+                }
+                editor.replaceFamilyExit(familyIndex.getAsInt(), editor.selectedFamilyExitIndex(),
+                        updater.apply(exit.get()));
                 screen.flagNeedSetup();
             }
         };

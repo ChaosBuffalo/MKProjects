@@ -741,13 +741,14 @@ public class MKTowerStackSidePreview extends MKWidget {
     private void drawExitEditor(GuiGraphics graphics, Minecraft mc, MKTowerStackSizingReport.SectionInfo section,
                                 ControlLayout layout, int mouseX, int mouseY) {
         ExitLayout exitLayout = exitLayout(section, layout);
-        graphics.drawString(mc.font, "Exits", layout.controlX(), exitLayout.maskY() - 11, TEXT, false);
+        graphics.drawString(mc.font, "Vertical Access", layout.controlX(), exitLayout.maskY() - 11, TEXT, false);
         drawExitMask(graphics, mc, section, exitLayout.maskX(), exitLayout.maskY(), mouseX, mouseY);
-        Optional<MKWorkspaceFamilyHorizontalExitDefinition> selectedExit = controls.selectedExit(section.key());
+        Optional<MKWorkspaceFamilyHorizontalExitDefinition> selectedExit = controls.selectedExit(section.key())
+                .filter(MKWorkspaceFamilyHorizontalExitDefinition::isVerticalAccess);
         if (selectedExit.isEmpty()) {
-            graphics.drawString(mc.font, "Left: select", exitLayout.editorX(), exitLayout.maskY() + 4, MUTED_TEXT,
+            graphics.drawString(mc.font, "Top / Bottom", exitLayout.editorX(), exitLayout.maskY() + 4, MUTED_TEXT,
                     false);
-            graphics.drawString(mc.font, "Right: branch", exitLayout.editorX(), exitLayout.maskY() + 16, MUTED_TEXT,
+            graphics.drawString(mc.font, "Left: select", exitLayout.editorX(), exitLayout.maskY() + 16, MUTED_TEXT,
                     false);
             return;
         }
@@ -802,24 +803,12 @@ public class MKTowerStackSidePreview extends MKWidget {
         int roomTop = centerY - (EXIT_ROOM_SIZE / 2);
         int roomRight = roomLeft + EXIT_ROOM_SIZE;
         int roomBottom = roomTop + EXIT_ROOM_SIZE;
-        drawExitArm(graphics, section, Direction.NORTH, roomLeft, roomTop, roomRight, roomBottom, centerX, centerY,
-                mouseX, mouseY);
-        drawExitArm(graphics, section, Direction.EAST, roomLeft, roomTop, roomRight, roomBottom, centerX, centerY,
-                mouseX, mouseY);
-        drawExitArm(graphics, section, Direction.SOUTH, roomLeft, roomTop, roomRight, roomBottom, centerX, centerY,
-                mouseX, mouseY);
-        drawExitArm(graphics, section, Direction.WEST, roomLeft, roomTop, roomRight, roomBottom, centerX, centerY,
-                mouseX, mouseY);
         drawVerticalExitButton(graphics, mc, section, Direction.UP, x, y, x + 6, y + 6, mouseX, mouseY);
         drawVerticalExitButton(graphics, mc, section, Direction.DOWN, x, y,
                 x + EXIT_MASK_SIZE - 6 - EXIT_VERTICAL_SIZE, y + 6, mouseX, mouseY);
         graphics.fill(roomLeft, roomTop, roomRight, roomBottom, EXIT_ROOM);
         drawOutline(graphics, roomLeft, roomTop, EXIT_ROOM_SIZE, roomBottom, CONTROL_ACTIVE);
         graphics.drawCenteredString(mc.font, Component.literal("R"), centerX, centerY - 4, TEXT);
-        drawExitLabel(graphics, mc, section, Direction.NORTH, centerX, roomTop - EXIT_ARM_LENGTH - 10);
-        drawExitLabel(graphics, mc, section, Direction.EAST, roomRight + EXIT_ARM_LENGTH, centerY - 4);
-        drawExitLabel(graphics, mc, section, Direction.SOUTH, centerX, roomBottom + EXIT_ARM_LENGTH + 1);
-        drawExitLabel(graphics, mc, section, Direction.WEST, roomLeft - EXIT_ARM_LENGTH, centerY - 4);
     }
 
     private void drawSlider(GuiGraphics graphics, Minecraft mc, String label, int value, int min, int max,
@@ -967,6 +956,9 @@ public class MKTowerStackSidePreview extends MKWidget {
         ExitLayout exitLayout = exitLayout(section, layout);
         Direction direction = hitExitDirection(exitLayout.maskX(), exitLayout.maskY(), (int) mouseX, (int) mouseY);
         if (direction != null) {
+            if (!direction.getAxis().isVertical()) {
+                return false;
+            }
             if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
                 controls.selectExit(section.key(), direction);
                 return true;
@@ -977,7 +969,8 @@ public class MKTowerStackSidePreview extends MKWidget {
             }
             return true;
         }
-        Optional<MKWorkspaceFamilyHorizontalExitDefinition> selectedExit = controls.selectedExit(section.key());
+        Optional<MKWorkspaceFamilyHorizontalExitDefinition> selectedExit = controls.selectedExit(section.key())
+                .filter(MKWorkspaceFamilyHorizontalExitDefinition::isVerticalAccess);
         if (selectedExit.isEmpty() || selectedExit.get().isVerticalAccess()) {
             return false;
         }
@@ -1479,12 +1472,6 @@ public class MKTowerStackSidePreview extends MKWidget {
     }
 
     private Direction hitExitDirection(int x, int y, int mouseX, int mouseY) {
-        int centerX = x + (EXIT_MASK_SIZE / 2);
-        int centerY = y + (EXIT_MASK_SIZE / 2);
-        int roomLeft = centerX - (EXIT_ROOM_SIZE / 2);
-        int roomTop = centerY - (EXIT_ROOM_SIZE / 2);
-        int roomRight = roomLeft + EXIT_ROOM_SIZE;
-        int roomBottom = roomTop + EXIT_ROOM_SIZE;
         int topButtonY = y + 6;
         if (isInRect(mouseX, mouseY, x + 6, topButtonY, EXIT_VERTICAL_SIZE, EXIT_VERTICAL_SIZE)) {
             return Direction.UP;
@@ -1492,22 +1479,6 @@ public class MKTowerStackSidePreview extends MKWidget {
         if (isInRect(mouseX, mouseY, x + EXIT_MASK_SIZE - 6 - EXIT_VERTICAL_SIZE, topButtonY,
                 EXIT_VERTICAL_SIZE, EXIT_VERTICAL_SIZE)) {
             return Direction.DOWN;
-        }
-        if (mouseX >= centerX - (EXIT_ARM_THICKNESS / 2) && mouseX <= centerX + (EXIT_ARM_THICKNESS / 2)) {
-            if (mouseY >= roomTop - EXIT_ARM_LENGTH && mouseY <= roomTop) {
-                return Direction.NORTH;
-            }
-            if (mouseY >= roomBottom && mouseY <= roomBottom + EXIT_ARM_LENGTH) {
-                return Direction.SOUTH;
-            }
-        }
-        if (mouseY >= centerY - (EXIT_ARM_THICKNESS / 2) && mouseY <= centerY + (EXIT_ARM_THICKNESS / 2)) {
-            if (mouseX >= roomLeft - EXIT_ARM_LENGTH && mouseX <= roomLeft) {
-                return Direction.WEST;
-            }
-            if (mouseX >= roomRight && mouseX <= roomRight + EXIT_ARM_LENGTH) {
-                return Direction.EAST;
-            }
         }
         return null;
     }
@@ -1550,7 +1521,8 @@ public class MKTowerStackSidePreview extends MKWidget {
         if (direction != null) {
             return Optional.of(exitDirectionTooltip(section, direction));
         }
-        Optional<MKWorkspaceFamilyHorizontalExitDefinition> selectedExit = controls.selectedExit(section.key());
+        Optional<MKWorkspaceFamilyHorizontalExitDefinition> selectedExit = controls.selectedExit(section.key())
+                .filter(MKWorkspaceFamilyHorizontalExitDefinition::isVerticalAccess);
         if (selectedExit.isEmpty()) {
             return Optional.empty();
         }
