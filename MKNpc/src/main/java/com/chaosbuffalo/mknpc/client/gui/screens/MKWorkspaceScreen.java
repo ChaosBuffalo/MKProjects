@@ -222,9 +222,11 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(new WorkspacePlannerNodePage());
         addWorkspacePage(new WorkspaceFloorPlanPage());
         addWorkspacePage(new WorkspaceTopologySlotPage());
-        List<String> statesToPush = initialStates.isEmpty() ? getDefaultInitialStates() : initialStates;
-        for (String state : statesToPush) {
-            pushState(state);
+        if (NO_STATE.equals(getState())) {
+            List<String> statesToPush = initialStates.isEmpty() ? getDefaultInitialStates() : initialStates;
+            for (String state : statesToPush) {
+                pushState(state);
+            }
         }
     }
 
