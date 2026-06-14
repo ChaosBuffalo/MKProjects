@@ -105,14 +105,6 @@ public class TowerStackTopologyPanel {
         WorkspaceTopologyUiSupport.addRow(screen, content,
                 screen.makeWhiteText(Component.literal(labelPrefix + " Length")), lengthSlider);
 
-        MKIntegerSlider heightSlider = new MKIntegerSlider("Height", 180, 20, 3,
-                MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE - 1, 1,
-                editor.towerStackHeight(stackId), value -> {
-            editor.towerStackHeight(stackId, value);
-            screen.flagNeedSetup();
-        });
-        WorkspaceTopologyUiSupport.addRow(screen, content,
-                screen.makeWhiteText(Component.literal(labelPrefix + " Height")), heightSlider);
     }
 
     public void addFloorPlanEditor(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
