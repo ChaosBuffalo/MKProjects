@@ -231,17 +231,6 @@ public class WorkspaceDraftSession {
         seedDefaultsForTopology();
     }
 
-    boolean uniqueCornerTowers() {
-        return draft().topologyProfile.uniqueCornerTowers();
-    }
-
-    void uniqueCornerTowers(boolean value) {
-        draft().topologyProfile = MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(draft().topologyProfile.plannerId()) ?
-                walledKeepTopologyProfile(value, value, value, value) : MKWorkspaceTopologyProfile.tower();
-        ensureFamiliesForActiveCornerSlots();
-        walledKeepEditor().normalizeTowerStackTab();
-    }
-
     boolean uniqueCornerTower(String topologySlotId) {
         return draft().topologyProfile.uniqueCornerTower(topologySlotId);
     }
@@ -314,30 +303,6 @@ public class WorkspaceDraftSession {
         draft().topologyProfile = walledKeepTopologyProfile(northWest, northEast, southEast, southWest);
         ensureFamiliesForActiveCornerSlots();
         walledKeepEditor().normalizeTowerStackTab();
-    }
-
-    int walledKeepCenterWidth() {
-        return towerStackWidth("keep.center");
-    }
-
-    void walledKeepCenterWidth(int value) {
-        towerStackWidth("keep.center", value);
-    }
-
-    int walledKeepCenterLength() {
-        return towerStackLength("keep.center");
-    }
-
-    void walledKeepCenterLength(int value) {
-        towerStackLength("keep.center", value);
-    }
-
-    int walledKeepCenterHeight() {
-        return towerStackHeight("keep.center");
-    }
-
-    void walledKeepCenterHeight(int value) {
-        towerStackHeight("keep.center", value);
     }
 
     int towerStackWidth(String stackId) {
@@ -460,33 +425,12 @@ public class WorkspaceDraftSession {
     public void topologyDefaultHeight(int value) {
         int requestedHeight = Math.max(3, value);
         if (MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(topologyPlannerId())) {
-            walledKeepCenterHeight(requestedHeight);
+            towerStackHeight("keep.center", requestedHeight);
             return;
         }
         replaceTowerStackSettingsWithNormalizedFloorCounts(towerStackSettings("tower.primary").withHeight(requestedHeight));
         applyTowerStackSettingsToFamilies();
         snapDraftVerticalAccess();
-    }
-
-    public List<String> activeCornerTopologySlots() {
-        if (!MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(topologyPlannerId())) {
-            return List.of();
-        }
-        java.util.ArrayList<String> slots = new java.util.ArrayList<>();
-        if (draft().topologyProfile.anySharedCornerTower()) {
-            slots.add("keep.corner.shared");
-        }
-        for (String cornerSlot : List.of(
-                "keep.corner.north_west",
-                "keep.corner.north_east",
-                "keep.corner.south_east",
-                "keep.corner.south_west"
-        )) {
-            if (draft().topologyProfile.uniqueCornerTower(cornerSlot)) {
-                slots.add(cornerSlot);
-            }
-        }
-        return List.copyOf(slots);
     }
 
     private Optional<MKTowerWorkspaceFamilyDefinition> towerStackFamily(String stackId,
@@ -547,30 +491,6 @@ public class WorkspaceDraftSession {
 
     void towerStackPreviewSelection(String stackId, String sectionKey) {
         draft().towerStackPreviewSelections.put(stackId, valueOrDefault(sectionKey, "entry"));
-    }
-
-    int cornerTowerWidth(String topologySlotId) {
-        return towerStackWidth(topologySlotId);
-    }
-
-    void cornerTowerWidth(String topologySlotId, int value) {
-        towerStackWidth(topologySlotId, value);
-    }
-
-    int cornerTowerLength(String topologySlotId) {
-        return towerStackLength(topologySlotId);
-    }
-
-    void cornerTowerLength(String topologySlotId, int value) {
-        towerStackLength(topologySlotId, value);
-    }
-
-    int cornerTowerHeight(String topologySlotId) {
-        return towerStackHeight(topologySlotId);
-    }
-
-    void cornerTowerHeight(String topologySlotId, int value) {
-        towerStackHeight(topologySlotId, value);
     }
 
     int towerStackMainFloors(String stackId) {

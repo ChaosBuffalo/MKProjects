@@ -68,7 +68,19 @@ public final class WalledKeepDraftEditor {
         }
         java.util.ArrayList<String> tabs = new java.util.ArrayList<>();
         tabs.add("keep.center");
-        tabs.addAll(session.activeCornerTopologySlots());
+        if (session.draft().topologyProfile.anySharedCornerTower()) {
+            tabs.add("keep.corner.shared");
+        }
+        for (String cornerSlot : List.of(
+                "keep.corner.north_west",
+                "keep.corner.north_east",
+                "keep.corner.south_east",
+                "keep.corner.south_west"
+        )) {
+            if (session.draft().topologyProfile.uniqueCornerTower(cornerSlot)) {
+                tabs.add(cornerSlot);
+            }
+        }
         return List.copyOf(tabs);
     }
 
