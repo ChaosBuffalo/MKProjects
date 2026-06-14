@@ -698,10 +698,6 @@ public class WorkspaceDraftSession {
         applyTowerStackSettingsToFamilies();
     }
 
-    public void resetTopologyPathDefaults(String topologyGroupId) {
-        replaceTopologyPathSettings(MKWorkspaceTopologyPathSettings.defaultForTopologyGroup(topologyGroupId));
-    }
-
     public void resetCurrentTopologyDefaults() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceStairAuthoringConfig defaultStairConfig = MKWorkspaceStairAuthoringConfig.defaultConfig();
@@ -1043,28 +1039,8 @@ public class WorkspaceDraftSession {
         applyTowerStackSettingsToFamilies();
     }
 
-    public MKWorkspaceTopologyPathSettings topologyPathSettings(String topologyGroupId) {
-        return draft().topologyProfile.pathSettingsOrDefault(topologyGroupId);
-    }
-
     MKWorkspaceFloorTopologySettings floorTopologySettings(String stackId, String floorRole) {
         return draft().topologyProfile.floorTopologySettingsOrDefault(stackId, floorRole);
-    }
-
-    public void topologyPathMinMainPathPieces(String topologyGroupId, int value) {
-        replaceTopologyPathSettings(topologyPathSettings(topologyGroupId).withMinMainPathPieces(value));
-    }
-
-    public void topologyPathMaxMainPathPieces(String topologyGroupId, int value) {
-        replaceTopologyPathSettings(topologyPathSettings(topologyGroupId).withMaxMainPathPieces(value));
-    }
-
-    public void topologyPathMaxBranchPiecesBeforeCap(String topologyGroupId, int value) {
-        replaceTopologyPathSettings(topologyPathSettings(topologyGroupId).withMaxBranchPiecesBeforeCap(value));
-    }
-
-    private void replaceTopologyPathSettings(MKWorkspaceTopologyPathSettings settings) {
-        draft().topologyProfile = draft().topologyProfile.withPathSettings(settings);
     }
 
     int floorTopologyMinMainPathPieces(String stackId, String floorRole) {
