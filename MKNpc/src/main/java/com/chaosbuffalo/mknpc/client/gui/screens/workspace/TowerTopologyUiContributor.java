@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class TowerTopologyUiContributor implements WorkspaceTopologyUiContributor {
@@ -22,6 +23,22 @@ public class TowerTopologyUiContributor implements WorkspaceTopologyUiContributo
     @Override
     public void addDefaultsLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
                                   WorkspaceDraftSession editor) {
+        towerStackPanel.addStackEditor(screen, layout, editor, "tower.primary", "Primary Tower");
+    }
+
+    @Override
+    public void addWorkspaceOverviewSections(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                             WorkspaceDraftSession editor) {
+        editor.ensureInitialized();
+        WorkspaceTopologyUiSupport.addText(screen, content, Component.literal("Tower Planner"));
+        towerStackPanel.addStackEditor(screen, content, editor, "tower.primary", "Primary Tower");
+    }
+
+    @Override
+    public void addWorkspaceOverviewLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
+                                           WorkspaceDraftSession editor) {
+        editor.ensureInitialized();
+        WorkspaceTopologyUiSupport.addText(screen, layout.settingsContent(), Component.literal("Tower Planner"));
         towerStackPanel.addStackEditor(screen, layout, editor, "tower.primary", "Primary Tower");
     }
 }

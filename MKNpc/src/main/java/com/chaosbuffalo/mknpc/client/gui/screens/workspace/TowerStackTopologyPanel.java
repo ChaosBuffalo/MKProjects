@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
+import com.chaosbuffalo.mknpc.client.gui.widgets.MKIntegerSlider;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
@@ -33,18 +34,36 @@ import java.util.OptionalInt;
 public class TowerStackTopologyPanel {
     public void addStackEditor(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                WorkspaceDraftSession editor, String stackId, String labelPrefix) {
-        addStackPreview(screen, content, editor, stackId);
+        addStackEditor(screen, content, editor, stackId, labelPrefix, true);
+    }
+
+    public void addStackEditor(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                               WorkspaceDraftSession editor, String stackId, String labelPrefix,
+                               boolean showStackSizingControls) {
+        addStackPreview(screen, content, editor, stackId, showStackSizingControls);
         addStackSettings(screen, content, editor, stackId, labelPrefix);
     }
 
     public void addStackEditor(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
                                WorkspaceDraftSession editor, String stackId, String labelPrefix) {
-        addStackPreview(screen, layout.previewContent(), editor, stackId);
+        addStackEditor(screen, layout, editor, stackId, labelPrefix, true);
+    }
+
+    public void addStackEditor(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
+                               WorkspaceDraftSession editor, String stackId, String labelPrefix,
+                               boolean showStackSizingControls) {
+        addStackPreview(screen, layout.previewContent(), editor, stackId, showStackSizingControls);
         addStackSettings(screen, layout.settingsContent(), editor, stackId, labelPrefix);
     }
 
     public void addStackPreview(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                 WorkspaceDraftSession editor, String stackId) {
+        addStackPreview(screen, content, editor, stackId, true);
+    }
+
+    public void addStackPreview(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                WorkspaceDraftSession editor, String stackId,
+                                boolean showStackSizingControls) {
         MKTowerStackSizingReport report = MKTowerStackSizingReport.fromSettings(editor.towerStackSettingsForUi(stackId),
                 editor.towerStackFamiliesForUi(stackId));
         String selectedSection = normalizedSelectedSection(editor, stackId, report);
@@ -54,7 +73,7 @@ public class TowerStackTopologyPanel {
             editor.towerStackPreviewSelection(stackId, sectionKey);
             screen.flagNeedSetup();
         }, sectionKey -> screen.openWorkspaceFloorPlanNode(stackId, sectionKey),
-                controls(screen, editor, stackId));
+                controls(screen, editor, stackId), showStackSizingControls);
         content.addWidget(preview);
         content.addConstraintToWidget(new CenterXConstraint(), preview);
     }
@@ -66,6 +85,34 @@ public class TowerStackTopologyPanel {
             editor.resetTowerStackDefaults(stackId);
             screen.flagNeedSetup();
         });
+    }
+
+    public void addStackSizingRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                   WorkspaceDraftSession editor, String stackId, String labelPrefix) {
+        MKIntegerSlider widthSlider = new MKIntegerSlider("Width", 180, 20, 3, 45, 2,
+                editor.towerStackWidth(stackId), value -> {
+            editor.towerStackWidth(stackId, value);
+            screen.flagNeedSetup();
+        });
+        WorkspaceTopologyUiSupport.addRow(screen, content,
+                screen.makeWhiteText(Component.literal(labelPrefix + " Width")), widthSlider);
+
+        MKIntegerSlider lengthSlider = new MKIntegerSlider("Length", 180, 20, 3, 45, 2,
+                editor.towerStackLength(stackId), value -> {
+            editor.towerStackLength(stackId, value);
+            screen.flagNeedSetup();
+        });
+        WorkspaceTopologyUiSupport.addRow(screen, content,
+                screen.makeWhiteText(Component.literal(labelPrefix + " Length")), lengthSlider);
+
+        MKIntegerSlider heightSlider = new MKIntegerSlider("Height", 180, 20, 3,
+                MKWorkspaceDimensions.MAX_BAND_HEIGHT_EXCLUSIVE - 1, 1,
+                editor.towerStackHeight(stackId), value -> {
+            editor.towerStackHeight(stackId, value);
+            screen.flagNeedSetup();
+        });
+        WorkspaceTopologyUiSupport.addRow(screen, content,
+                screen.makeWhiteText(Component.literal(labelPrefix + " Height")), heightSlider);
     }
 
     public void addFloorPlanEditor(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,

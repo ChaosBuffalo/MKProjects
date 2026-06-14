@@ -81,17 +81,26 @@ public class MKTowerStackSidePreview extends MKWidget {
     private final Consumer<String> selectionCallback;
     private final Consumer<String> floorPlanCallback;
     private final Controls controls;
+    private final boolean showStackSizingControls;
     private String draggingSlider = "";
 
     public MKTowerStackSidePreview(int width, int height, MKTowerStackSizingReport report,
                                    String selectedKey, Consumer<String> selectionCallback,
                                    Consumer<String> floorPlanCallback, Controls controls) {
+        this(width, height, report, selectedKey, selectionCallback, floorPlanCallback, controls, true);
+    }
+
+    public MKTowerStackSidePreview(int width, int height, MKTowerStackSizingReport report,
+                                   String selectedKey, Consumer<String> selectionCallback,
+                                   Consumer<String> floorPlanCallback, Controls controls,
+                                   boolean showStackSizingControls) {
         super(0, 0, width, height);
         this.report = report;
         this.selectedKey = selectedKey;
         this.selectionCallback = selectionCallback;
         this.floorPlanCallback = floorPlanCallback;
         this.controls = controls;
+        this.showStackSizingControls = showStackSizingControls;
     }
 
     @Override
@@ -341,15 +350,19 @@ public class MKTowerStackSidePreview extends MKWidget {
         MKTowerStackSizingReport.SectionInfo section = selectedSection().orElseGet(() -> report.sections().getFirst());
         drawToggleControls(graphics, mc, x, y, width, height, mouseX, mouseY);
         int globalY = y + GLOBAL_CONTROL_START_OFFSET;
-        drawSlider(graphics, mc, "Width", controls.stackWidth(), 3, MAX_STACK_FOOTPRINT,
-                controlX, globalY, controlWidth, mouseX, mouseY, "stackWidth");
-        drawSlider(graphics, mc, "Length", controls.stackLength(), 3, MAX_STACK_FOOTPRINT,
-                controlX, globalY + 22, controlWidth, mouseX, mouseY, "stackLength");
+        int shaftY = globalY;
+        if (showStackSizingControls) {
+            drawSlider(graphics, mc, "Width", controls.stackWidth(), 3, MAX_STACK_FOOTPRINT,
+                    controlX, globalY, controlWidth, mouseX, mouseY, "stackWidth");
+            drawSlider(graphics, mc, "Length", controls.stackLength(), 3, MAX_STACK_FOOTPRINT,
+                    controlX, globalY + 22, controlWidth, mouseX, mouseY, "stackLength");
+            shaftY = globalY + 44;
+        }
         drawSlider(graphics, mc, "Shaft", controls.shaftSize(), controls.shaftSizeMin(), controls.shaftSizeMax(),
-                controlX, globalY + 44, controlWidth, mouseX, mouseY, "shaftSize");
-        drawPlacementButton(graphics, mc, controlX, globalY + 66, controlWidth, mouseX, mouseY);
+                controlX, shaftY, controlWidth, mouseX, mouseY, "shaftSize");
+        drawPlacementButton(graphics, mc, controlX, shaftY + 22, controlWidth, mouseX, mouseY);
 
-        ControlLayout regionLayout = new ControlLayout(controlX, y + REGION_CONTROL_TOP_OFFSET, controlWidth);
+        ControlLayout regionLayout = controlLayout(x, y, width, height);
         graphics.drawString(mc.font, WorkspaceTopologyUiSupport.formatTopologyLabel(section.key()),
                 controlX, regionLayout.controlY() + 37, colorForKey(section.key()), false);
         int cursorY = regionLayout.controlY() + REGION_FIRST_CONTROL_OFFSET;
@@ -915,25 +928,29 @@ public class MKTowerStackSidePreview extends MKWidget {
     private boolean handleGlobalControlPress(double mouseX, double mouseY, int mouseButton) {
         ControlLayout layout = controlLayout(getX(), getY(), getWidth(), getHeight());
         int baseY = getY() + GLOBAL_CONTROL_START_OFFSET;
-        if (isInSlider(mouseX, mouseY, sliderBounds(layout.controlX(), baseY, layout.controlWidth(),
-                "stackWidth"))) {
-            draggingSlider = "stackWidth";
-            applyGlobalSliderValue("stackWidth", mouseX);
-            return true;
+        int shaftY = baseY;
+        if (showStackSizingControls) {
+            if (isInSlider(mouseX, mouseY, sliderBounds(layout.controlX(), baseY, layout.controlWidth(),
+                    "stackWidth"))) {
+                draggingSlider = "stackWidth";
+                applyGlobalSliderValue("stackWidth", mouseX);
+                return true;
+            }
+            if (isInSlider(mouseX, mouseY, sliderBounds(layout.controlX(), baseY + 22, layout.controlWidth(),
+                    "stackLength"))) {
+                draggingSlider = "stackLength";
+                applyGlobalSliderValue("stackLength", mouseX);
+                return true;
+            }
+            shaftY = baseY + 44;
         }
-        if (isInSlider(mouseX, mouseY, sliderBounds(layout.controlX(), baseY + 22, layout.controlWidth(),
-                "stackLength"))) {
-            draggingSlider = "stackLength";
-            applyGlobalSliderValue("stackLength", mouseX);
-            return true;
-        }
-        if (isInSlider(mouseX, mouseY, sliderBounds(layout.controlX(), baseY + 44, layout.controlWidth(),
+        if (isInSlider(mouseX, mouseY, sliderBounds(layout.controlX(), shaftY, layout.controlWidth(),
                 "shaftSize"))) {
             draggingSlider = "shaftSize";
             applyGlobalSliderValue("shaftSize", mouseX);
             return true;
         }
-        if (isInRect(mouseX, mouseY, layout.controlX(), baseY + 66, layout.controlWidth(), 16)) {
+        if (isInRect(mouseX, mouseY, layout.controlX(), shaftY + 22, layout.controlWidth(), 16)) {
             controls.cycleShaftPlacement(WorkspaceTopologyUiSupport.isReverseClick(mouseButton));
             return true;
         }
@@ -1109,13 +1126,11 @@ public class MKTowerStackSidePreview extends MKWidget {
     }
 
     private void applyGlobalSliderValue(String slider, double mouseX) {
+        if (!showStackSizingControls && ("stackWidth".equals(slider) || "stackLength".equals(slider))) {
+            return;
+        }
         ControlLayout layout = controlLayout(getX(), getY(), getWidth(), getHeight());
-        int sliderY = switch (slider) {
-            case "stackWidth" -> getY() + GLOBAL_CONTROL_START_OFFSET;
-            case "stackLength" -> getY() + GLOBAL_CONTROL_START_OFFSET + 22;
-            case "shaftSize" -> getY() + GLOBAL_CONTROL_START_OFFSET + 44;
-            default -> getY();
-        };
+        int sliderY = globalSliderY(slider);
         SliderBounds bounds = sliderBounds(layout.controlX(), sliderY, layout.controlWidth(), slider);
         if ("stackWidth".equals(slider)) {
             controls.stackWidth(makeOdd(sliderValue(mouseX, bounds, 3, MAX_STACK_FOOTPRINT)));
@@ -1125,6 +1140,16 @@ public class MKTowerStackSidePreview extends MKWidget {
             controls.shaftSize(nearestAllowedShaftSize(sliderValue(mouseX, bounds,
                     controls.shaftSizeMin(), controls.shaftSizeMax())));
         }
+    }
+
+    private int globalSliderY(String slider) {
+        int baseY = getY() + GLOBAL_CONTROL_START_OFFSET;
+        return switch (slider) {
+            case "stackWidth" -> baseY;
+            case "stackLength" -> baseY + 22;
+            case "shaftSize" -> showStackSizingControls ? baseY + 44 : baseY;
+            default -> getY();
+        };
     }
 
     private int marginSliderY(MKTowerStackSizingReport.SectionInfo section, ControlLayout layout) {
@@ -1289,7 +1314,11 @@ public class MKTowerStackSidePreview extends MKWidget {
     private ControlLayout controlLayout(int x, int y, int width, int height) {
         int maxStackWidth = Math.min(88, Math.max(52, width / 3));
         int controlX = x + 14 + maxStackWidth + 12;
-        return new ControlLayout(controlX, y + REGION_CONTROL_TOP_OFFSET, Math.max(80, x + width - 8 - controlX));
+        return new ControlLayout(controlX, y + regionControlTopOffset(), Math.max(80, x + width - 8 - controlX));
+    }
+
+    private int regionControlTopOffset() {
+        return showStackSizingControls ? REGION_CONTROL_TOP_OFFSET : REGION_CONTROL_TOP_OFFSET - 44;
     }
 
     private SliderBounds sliderBounds(int x, int y, int width, String id) {
