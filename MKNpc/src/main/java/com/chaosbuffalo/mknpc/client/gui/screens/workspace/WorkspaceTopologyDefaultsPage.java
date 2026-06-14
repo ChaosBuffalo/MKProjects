@@ -108,10 +108,11 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
         content.addWidget(footprint);
         content.addConstraintToWidget(MarginConstraint.LEFT, footprint);
 
+        WalledKeepDraftEditor keepEditor = editor.walledKeepEditor();
         MKButton terrainButton = new MKButton(
-                Component.literal(formatTopologyLabel(editor.terrainAdjustment().getSerializedName())), 180, 20);
+                Component.literal(formatTopologyLabel(keepEditor.terrainAdjustment().getSerializedName())), 180, 20);
         terrainButton.setPressedCallback((button, mouseButton) -> {
-            editor.terrainAdjustment(cycleValue(terrainAdjustmentModes(), editor.terrainAdjustment(),
+            keepEditor.terrainAdjustment(cycleValue(terrainAdjustmentModes(), keepEditor.terrainAdjustment(),
                     isReverseClick(mouseButton)));
             screen.flagNeedSetup();
             return true;
@@ -125,13 +126,13 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
             addRow(screen, content, screen.makeWhiteText(Component.literal("Courtyard Socket Size")), noFitButton);
             return;
         }
-        int snappedSize = report.snappedCourtyardContentSize(editor.courtyardContentTemplateSize());
-        if (snappedSize != editor.courtyardContentTemplateSize()) {
-            editor.courtyardContentTemplateSize(snappedSize);
+        int snappedSize = report.snappedCourtyardContentSize(keepEditor.courtyardContentTemplateSize());
+        if (snappedSize != keepEditor.courtyardContentTemplateSize()) {
+            keepEditor.courtyardContentTemplateSize(snappedSize);
         }
         MKIntegerSlider courtyardSizeSlider = new MKIntegerSlider("Size", 180, 20,
                 allowedSocketSizes, snappedSize, value -> {
-            editor.courtyardContentTemplateSize(value);
+            keepEditor.courtyardContentTemplateSize(value);
             screen.flagNeedSetup();
         });
         addRow(screen, content, screen.makeWhiteText(Component.literal("Courtyard Socket Size")),

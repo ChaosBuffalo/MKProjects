@@ -127,12 +127,13 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
 
     private void addWalledKeepSizingControlRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                                 WorkspaceDraftSession editor, MKWalledKeepSizingReport report) {
+        WalledKeepDraftEditor keepEditor = editor.walledKeepEditor();
         MKButton terrainButton = new MKButton(
                 Component.literal(WorkspaceTopologyUiSupport.formatTopologyLabel(
-                        editor.terrainAdjustment().getSerializedName())), 180, 20);
+                        keepEditor.terrainAdjustment().getSerializedName())), 180, 20);
         terrainButton.setPressedCallback((button, mouseButton) -> {
-            editor.terrainAdjustment(WorkspaceTopologyUiSupport.cycleValue(terrainAdjustmentModes(),
-                    editor.terrainAdjustment(), WorkspaceTopologyUiSupport.isReverseClick(mouseButton)));
+            keepEditor.terrainAdjustment(WorkspaceTopologyUiSupport.cycleValue(terrainAdjustmentModes(),
+                    keepEditor.terrainAdjustment(), WorkspaceTopologyUiSupport.isReverseClick(mouseButton)));
             screen.flagNeedSetup();
             return true;
         });
@@ -140,8 +141,8 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
                 screen.makeWhiteText(Component.literal("Terrain Adaptation")), terrainButton);
 
         MKIntegerSlider pathInnerMarginSlider = new MKIntegerSlider("Margin", 180, 20, 0, 24, 1,
-                editor.courtyardPathInnerMargin(), value -> {
-            editor.courtyardPathInnerMargin(value);
+                keepEditor.courtyardPathInnerMargin(), value -> {
+            keepEditor.courtyardPathInnerMargin(value);
             screen.flagNeedSetup();
         });
         WorkspaceTopologyUiSupport.addRow(screen, content,
@@ -155,13 +156,13 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
                     screen.makeWhiteText(Component.literal("Courtyard Socket Size")), noFitButton);
             return;
         }
-        int snappedSize = report.snappedCourtyardContentSize(editor.courtyardContentTemplateSize());
-        if (snappedSize != editor.courtyardContentTemplateSize()) {
-            editor.courtyardContentTemplateSize(snappedSize);
+        int snappedSize = report.snappedCourtyardContentSize(keepEditor.courtyardContentTemplateSize());
+        if (snappedSize != keepEditor.courtyardContentTemplateSize()) {
+            keepEditor.courtyardContentTemplateSize(snappedSize);
         }
         MKIntegerSlider courtyardSizeSlider = new MKIntegerSlider("Size", 180, 20,
                 allowedSocketSizes, snappedSize, value -> {
-            editor.courtyardContentTemplateSize(value);
+            keepEditor.courtyardContentTemplateSize(value);
             screen.flagNeedSetup();
         });
         WorkspaceTopologyUiSupport.addRow(screen, content,

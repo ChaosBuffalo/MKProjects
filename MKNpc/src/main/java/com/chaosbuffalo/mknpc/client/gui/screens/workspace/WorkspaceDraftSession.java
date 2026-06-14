@@ -37,7 +37,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotM
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackFloorCounts;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepCourtyardSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceRegionSchema;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceRoleSchema;
@@ -46,7 +45,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceTopologySch
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
@@ -85,6 +83,22 @@ public class WorkspaceDraftSession {
     public Draft draft() {
         ensureInitialized();
         return draft;
+    }
+
+    public WalledKeepDraftEditor walledKeepEditor() {
+        return new WalledKeepDraftEditor(this);
+    }
+
+    public TowerStackDraftEditor towerStackEditor(String stackId) {
+        return new TowerStackDraftEditor(this, stackId);
+    }
+
+    public FloorPlanDraftEditor floorPlanEditor(String stackId, String floorRole) {
+        return new FloorPlanDraftEditor(this, stackId, floorRole);
+    }
+
+    public LinearRunDraftEditor linearRunEditor(String topologySlotId) {
+        return new LinearRunDraftEditor(this, topologySlotId);
     }
 
     public void ensureInitialized() {
@@ -1269,52 +1283,6 @@ public class WorkspaceDraftSession {
 
     public MKWorkspaceFloorTopologySettings floorTopologySettings(String stackId, String floorRole) {
         return draft().topologyProfile.floorTopologySettingsOrDefault(stackId, floorRole);
-    }
-
-    public TerrainAdjustment terrainAdjustment() {
-        return draft().topologyProfile.terrainAdjustment();
-    }
-
-    public void terrainAdjustment(TerrainAdjustment value) {
-        draft().topologyProfile = draft().topologyProfile.withTerrainAdjustment(value);
-    }
-
-    public MKWalledKeepCourtyardSettings courtyardSettings() {
-        return draft().topologyProfile.courtyardSettings();
-    }
-
-    public int courtyardContentTemplateSize() {
-        return courtyardSettings().courtyardContentTemplateSize();
-    }
-
-    public int courtyardPathInnerMargin() {
-        return courtyardSettings().courtyardPathInnerMargin();
-    }
-
-    public void courtyardPathInnerMargin(int value) {
-        MKWalledKeepCourtyardSettings current = courtyardSettings();
-        draft().topologyProfile = draft().topologyProfile.withCourtyardSettings(new MKWalledKeepCourtyardSettings(
-                current.courtyardContentEnabled(),
-                current.courtyardSocketGenerationEnabled(),
-                current.courtyardContentTemplateHeight(),
-                current.courtyardSocketClearance(),
-                current.courtyardWalkwayContinuationLength(),
-                value,
-                current.courtyardContentTemplateSize()
-        ));
-    }
-
-    public void courtyardContentTemplateSize(int value) {
-        MKWalledKeepCourtyardSettings current = courtyardSettings();
-        draft().topologyProfile = draft().topologyProfile.withCourtyardSettings(new MKWalledKeepCourtyardSettings(
-                current.courtyardContentEnabled(),
-                current.courtyardSocketGenerationEnabled(),
-                current.courtyardContentTemplateHeight(),
-                current.courtyardSocketClearance(),
-                current.courtyardWalkwayContinuationLength(),
-                current.courtyardPathInnerMargin(),
-                value
-        ));
     }
 
     public void topologyPathMinMainPathPieces(String topologyGroupId, int value) {
