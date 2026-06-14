@@ -64,16 +64,17 @@ public class TowerStackTopologyPanel {
     public void addStackPreview(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                 WorkspaceDraftSession editor, String stackId,
                                 boolean showStackSizingControls) {
-        MKTowerStackSizingReport report = MKTowerStackSizingReport.fromSettings(editor.towerStackSettingsForUi(stackId),
-                editor.towerStackFamiliesForUi(stackId));
-        String selectedSection = normalizedSelectedSection(editor, stackId, report);
+        TowerStackDraftEditor towerEditor = editor.towerStackEditor(stackId);
+        MKTowerStackSizingReport report = MKTowerStackSizingReport.fromSettings(towerEditor.settingsForUi(),
+                towerEditor.familiesForUi());
+        String selectedSection = normalizedSelectedSection(towerEditor, report);
         int previewWidth = Math.min(screen.contentWidth(), 320);
         MKTowerStackSidePreview preview = new MKTowerStackSidePreview(previewWidth, 440,
                 report, selectedSection, sectionKey -> {
-            editor.towerStackPreviewSelection(stackId, sectionKey);
+            towerEditor.previewSelection(sectionKey);
             screen.flagNeedSetup();
         }, sectionKey -> screen.openWorkspaceFloorPlanNode(stackId, sectionKey),
-                controls(screen, editor, stackId), showStackSizingControls);
+                controls(screen, editor, stackId, towerEditor), showStackSizingControls);
         content.addWidget(preview);
         content.addConstraintToWidget(new CenterXConstraint(), preview);
     }
@@ -82,24 +83,25 @@ public class TowerStackTopologyPanel {
                                  WorkspaceDraftSession editor, String stackId, String labelPrefix) {
         addFloorRows(screen, content, editor, stackId);
         WorkspaceTopologyUiSupport.addResetRow(screen, content, labelPrefix + " Stack", () -> {
-            editor.resetTowerStackDefaults(stackId);
+            editor.towerStackEditor(stackId).resetDefaults();
             screen.flagNeedSetup();
         });
     }
 
     public void addStackSizingRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                    WorkspaceDraftSession editor, String stackId, String labelPrefix) {
+        TowerStackDraftEditor towerEditor = editor.towerStackEditor(stackId);
         MKIntegerSlider widthSlider = new MKIntegerSlider("Width", 180, 20, 3, 45, 2,
-                editor.towerStackWidth(stackId), value -> {
-            editor.towerStackWidth(stackId, value);
+                towerEditor.width(), value -> {
+            towerEditor.width(value);
             screen.flagNeedSetup();
         });
         WorkspaceTopologyUiSupport.addRow(screen, content,
                 screen.makeWhiteText(Component.literal(labelPrefix + " Width")), widthSlider);
 
         MKIntegerSlider lengthSlider = new MKIntegerSlider("Length", 180, 20, 3, 45, 2,
-                editor.towerStackLength(stackId), value -> {
-            editor.towerStackLength(stackId, value);
+                towerEditor.length(), value -> {
+            towerEditor.length(value);
             screen.flagNeedSetup();
         });
         WorkspaceTopologyUiSupport.addRow(screen, content,
@@ -132,67 +134,66 @@ public class TowerStackTopologyPanel {
                 });
     }
 
-    private String normalizedSelectedSection(WorkspaceDraftSession editor, String stackId, MKTowerStackSizingReport report) {
-        String selected = editor.towerStackPreviewSelection(stackId);
+    private String normalizedSelectedSection(TowerStackDraftEditor towerEditor, MKTowerStackSizingReport report) {
+        String selected = towerEditor.previewSelection();
         boolean valid = report.sections().stream().anyMatch(section -> section.key().equals(selected));
         if (valid) {
             return selected;
         }
-        editor.towerStackPreviewSelection(stackId, "entry");
+        towerEditor.previewSelection("entry");
         return "entry";
     }
 
     private MKTowerStackSidePreview.Controls controls(MKWorkspaceScreen screen, WorkspaceDraftSession editor,
-                                                      String stackId) {
+                                                      String stackId, TowerStackDraftEditor towerEditor) {
         return new MKTowerStackSidePreview.Controls() {
             @Override
             public int stackWidth() {
-                return editor.towerStackWidth(stackId);
+                return towerEditor.width();
             }
 
             @Override
             public void stackWidth(int value) {
-                editor.towerStackWidth(stackId, value);
+                towerEditor.width(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public int stackLength() {
-                return editor.towerStackLength(stackId);
+                return towerEditor.length();
             }
 
             @Override
             public void stackLength(int value) {
-                editor.towerStackLength(stackId, value);
+                towerEditor.length(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public int shaftSize() {
-                return editor.towerStackShaftSize(stackId);
+                return towerEditor.shaftSize();
             }
 
             @Override
             public void shaftSize(int value) {
-                editor.towerStackShaftSize(stackId, value);
+                towerEditor.shaftSize(value);
                 screen.flagNeedSetup();
             }
 
             @Override
             public List<Integer> allowedShaftSizes() {
-                return editor.allowedTowerStackShaftSizes(stackId);
+                return towerEditor.allowedShaftSizes();
             }
 
             @Override
             public MKVerticalAccessPlacement shaftPlacement() {
-                return editor.towerStackVerticalAccessPlacement(stackId);
+                return towerEditor.verticalAccessPlacement();
             }
 
             @Override
             public void cycleShaftPlacement(boolean reverse) {
-                editor.towerStackVerticalAccessPlacement(stackId,
-                        WorkspaceTopologyUiSupport.cycleValue(List.of(MKVerticalAccessPlacement.values()),
-                                editor.towerStackVerticalAccessPlacement(stackId), reverse));
+                towerEditor.verticalAccessPlacement(WorkspaceTopologyUiSupport.cycleValue(
+                        List.of(MKVerticalAccessPlacement.values()), towerEditor.verticalAccessPlacement(), reverse));
                 screen.flagNeedSetup();
             }
 
@@ -209,25 +210,25 @@ public class TowerStackTopologyPanel {
             @Override
             public int height(String sectionKey) {
                 return switch (sectionKey) {
-                    case "entry" -> editor.towerStackEntryHeight(stackId);
-                    case "main_floor" -> editor.towerStackMainHeight(stackId);
-                    case "basement_floor" -> editor.towerStackBasementHeight(stackId);
-                    case "basement_entry" -> editor.towerStackBasementEntryHeight(stackId);
-                    case "basement_cap", "basement_cap_approach" -> editor.towerStackBasementCapHeight(stackId);
-                    case "top_cap", "top_cap_approach" -> editor.towerStackMainCapHeight(stackId);
-                    default -> editor.towerStackEntryHeight(stackId);
+                    case "entry" -> towerEditor.entryHeight();
+                    case "main_floor" -> towerEditor.mainHeight();
+                    case "basement_floor" -> towerEditor.basementHeight();
+                    case "basement_entry" -> towerEditor.basementEntryHeight();
+                    case "basement_cap", "basement_cap_approach" -> towerEditor.basementCapHeight();
+                    case "top_cap", "top_cap_approach" -> towerEditor.mainCapHeight();
+                    default -> towerEditor.entryHeight();
                 };
             }
 
             @Override
             public void height(String sectionKey, int value) {
                 switch (sectionKey) {
-                    case "entry" -> editor.towerStackEntryHeight(stackId, value);
-                    case "main_floor" -> editor.towerStackMainHeight(stackId, value);
-                    case "basement_floor" -> editor.towerStackBasementHeight(stackId, value);
-                    case "basement_entry" -> editor.towerStackBasementEntryHeight(stackId, value);
-                    case "basement_cap", "basement_cap_approach" -> editor.towerStackBasementCapHeight(stackId, value);
-                    case "top_cap", "top_cap_approach" -> editor.towerStackMainCapHeight(stackId, value);
+                    case "entry" -> towerEditor.entryHeight(value);
+                    case "main_floor" -> towerEditor.mainHeight(value);
+                    case "basement_floor" -> towerEditor.basementHeight(value);
+                    case "basement_entry" -> towerEditor.basementEntryHeight(value);
+                    case "basement_cap", "basement_cap_approach" -> towerEditor.basementCapHeight(value);
+                    case "top_cap", "top_cap_approach" -> towerEditor.mainCapHeight(value);
                     default -> {
                     }
                 }
@@ -242,27 +243,27 @@ public class TowerStackTopologyPanel {
             @Override
             public int minFloors(String sectionKey) {
                 return "main_floor".equals(sectionKey) ?
-                        editor.towerStackMinMainFloors(stackId) :
-                        editor.towerStackMinBasementFloors(stackId);
+                        towerEditor.minMainFloors() :
+                        towerEditor.minBasementFloors();
             }
 
             @Override
             public int maxFloors(String sectionKey) {
                 return "main_floor".equals(sectionKey) ?
-                        editor.towerStackMainFloors(stackId) :
-                        editor.towerStackBasementFloors(stackId);
+                        towerEditor.mainFloors() :
+                        towerEditor.basementFloors();
             }
 
             @Override
             public void adjustMinFloors(String sectionKey, int delta) {
                 if ("main_floor".equals(sectionKey)) {
-                    editor.towerStackMinMainFloors(stackId, Math.max(0, Math.min(
-                            editor.towerStackMainFloors(stackId),
-                            editor.towerStackMinMainFloors(stackId) + delta)));
+                    towerEditor.minMainFloors(Math.max(0, Math.min(
+                            towerEditor.mainFloors(),
+                            towerEditor.minMainFloors() + delta)));
                 } else if ("basement_floor".equals(sectionKey)) {
-                    editor.towerStackMinBasementFloors(stackId, Math.max(0, Math.min(
-                            editor.towerStackBasementFloors(stackId),
-                            editor.towerStackMinBasementFloors(stackId) + delta)));
+                    towerEditor.minBasementFloors(Math.max(0, Math.min(
+                            towerEditor.basementFloors(),
+                            towerEditor.minBasementFloors() + delta)));
                 }
                 screen.flagNeedSetup();
             }
@@ -270,13 +271,13 @@ public class TowerStackTopologyPanel {
             @Override
             public void adjustMaxFloors(String sectionKey, int delta) {
                 if ("main_floor".equals(sectionKey)) {
-                    editor.towerStackMainFloors(stackId, adjustedFloorCount(
-                            editor.allowedTowerStackMainFloorCounts(stackId),
-                            editor.towerStackMainFloors(stackId), delta));
+                    towerEditor.mainFloors(adjustedFloorCount(
+                            towerEditor.allowedMainFloorCounts(),
+                            towerEditor.mainFloors(), delta));
                 } else if ("basement_floor".equals(sectionKey)) {
-                    editor.towerStackBasementFloors(stackId, adjustedFloorCount(
-                            editor.allowedTowerStackBasementFloorCounts(stackId),
-                            editor.towerStackBasementFloors(stackId), delta));
+                    towerEditor.basementFloors(adjustedFloorCount(
+                            towerEditor.allowedBasementFloorCounts(),
+                            towerEditor.basementFloors(), delta));
                 }
                 screen.flagNeedSetup();
             }
@@ -294,60 +295,58 @@ public class TowerStackTopologyPanel {
             @Override
             public int margin(String sectionKey) {
                 return "top_cap".equals(sectionKey) ?
-                        editor.towerStackTopCapUpperVoidMargin(stackId) :
-                        editor.towerStackBottomCapLowerVoidMargin(stackId);
+                        towerEditor.topCapUpperVoidMargin() :
+                        towerEditor.bottomCapLowerVoidMargin();
             }
 
             @Override
             public int marginMax(String sectionKey) {
                 int height = "top_cap".equals(sectionKey) ?
-                        editor.towerStackMainCapHeight(stackId) :
-                        editor.towerStackBasementCapHeight(stackId);
+                        towerEditor.mainCapHeight() :
+                        towerEditor.basementCapHeight();
                 return Math.max(0, height - MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT);
             }
 
             @Override
             public void margin(String sectionKey, int value) {
                 if ("top_cap".equals(sectionKey)) {
-                    editor.towerStackTopCapUpperVoidMargin(stackId, value);
+                    towerEditor.topCapUpperVoidMargin(value);
                 } else if ("basement_cap".equals(sectionKey)) {
-                    editor.towerStackBottomCapLowerVoidMargin(stackId, value);
+                    towerEditor.bottomCapLowerVoidMargin(value);
                 }
                 screen.flagNeedSetup();
             }
 
             @Override
             public boolean basementEntryEnabled() {
-                return editor.towerStackBasementEntryEnabled(stackId);
+                return towerEditor.basementEntryEnabled();
             }
 
             @Override
             public void toggleBasementEntry() {
-                editor.towerStackBasementEntryEnabled(stackId, !editor.towerStackBasementEntryEnabled(stackId));
+                towerEditor.basementEntryEnabled(!towerEditor.basementEntryEnabled());
                 screen.flagNeedSetup();
             }
 
             @Override
             public boolean topCapApproachEnabled() {
-                return editor.towerStackTopCapApproachEnabled(stackId);
+                return towerEditor.topCapApproachEnabled();
             }
 
             @Override
             public void toggleTopCapApproach() {
-                editor.towerStackTopCapApproachEnabled(stackId,
-                        !editor.towerStackTopCapApproachEnabled(stackId));
+                towerEditor.topCapApproachEnabled(!towerEditor.topCapApproachEnabled());
                 screen.flagNeedSetup();
             }
 
             @Override
             public boolean basementCapApproachEnabled() {
-                return editor.towerStackBasementCapApproachEnabled(stackId);
+                return towerEditor.basementCapApproachEnabled();
             }
 
             @Override
             public void toggleBasementCapApproach() {
-                editor.towerStackBasementCapApproachEnabled(stackId,
-                        !editor.towerStackBasementCapApproachEnabled(stackId));
+                towerEditor.basementCapApproachEnabled(!towerEditor.basementCapApproachEnabled());
                 screen.flagNeedSetup();
             }
 
@@ -672,8 +671,8 @@ public class TowerStackTopologyPanel {
 
             @Override
             public int recommendedHallwayLeadInPieces(String sectionKey) {
-                return Math.max(1, Math.ceilDiv(Math.max(editor.towerStackWidth(stackId),
-                        editor.towerStackLength(stackId)), 8));
+                return Math.max(1, Math.ceilDiv(Math.max(towerEditor.width(),
+                        towerEditor.length()), 8));
             }
 
             @Override
@@ -743,6 +742,7 @@ public class TowerStackTopologyPanel {
     private MKFloorTopologyPlanPreview.Controls floorPlanControls(MKWorkspaceScreen screen,
                                                                   WorkspaceDraftSession editor,
                                                                   String stackId) {
+        TowerStackDraftEditor towerEditor = editor.towerStackEditor(stackId);
         return new MKFloorTopologyPlanPreview.Controls() {
             @Override
             public boolean hasFloorTopology(String sectionKey) {
@@ -751,12 +751,12 @@ public class TowerStackTopologyPanel {
 
             @Override
             public int stackWidth(String sectionKey) {
-                return editor.towerStackWidth(stackId);
+                return towerEditor.width();
             }
 
             @Override
             public int stackLength(String sectionKey) {
-                return editor.towerStackLength(stackId);
+                return towerEditor.length();
             }
 
             @Override
@@ -1028,8 +1028,8 @@ public class TowerStackTopologyPanel {
 
             @Override
             public int recommendedHallwayLeadInPieces(String sectionKey) {
-                return Math.max(1, Math.ceilDiv(Math.max(editor.towerStackWidth(stackId),
-                        editor.towerStackLength(stackId)), 8));
+                return Math.max(1, Math.ceilDiv(Math.max(towerEditor.width(),
+                        towerEditor.length()), 8));
             }
 
             @Override
@@ -1316,22 +1316,23 @@ public class TowerStackTopologyPanel {
 
     private void addFloorRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, WorkspaceDraftSession editor,
                               String stackId) {
-        addExtrusionRows(screen, content, editor, stackId);
-        addStairRows(screen, content, editor, stackId);
-        addFoundationRows(screen, content, editor, stackId);
+        TowerStackDraftEditor towerEditor = editor.towerStackEditor(stackId);
+        addExtrusionRows(screen, content, towerEditor);
+        addStairRows(screen, content, towerEditor);
+        addFoundationRows(screen, content, towerEditor);
         screen.addPaletteOverrideRows(content, "Stack Palette Defaults", editor.draftBasePalette(),
-                editor.towerStackPaletteOverrideOpt(stackId),
-                override -> editor.towerStackPaletteOverride(stackId, override));
+                towerEditor.paletteOverrideOpt(),
+                override -> towerEditor.paletteOverride(override));
     }
 
-    private void addExtrusionRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, WorkspaceDraftSession editor,
-                                  String stackId) {
+    private void addExtrusionRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                  TowerStackDraftEditor towerEditor) {
         MKButton extrusionButton = new MKButton(Component.literal(WorkspaceTopologyUiSupport.formatTopologyLabel(
-                editor.towerStackHorizontalExtrusionMode(stackId).getSerializedName())), 180, 20);
+                towerEditor.horizontalExtrusionMode().getSerializedName())), 180, 20);
         extrusionButton.setPressedCallback((button, mouseButton) -> {
-            editor.towerStackHorizontalExtrusionMode(stackId, WorkspaceTopologyUiSupport.cycleValue(
+            towerEditor.horizontalExtrusionMode(WorkspaceTopologyUiSupport.cycleValue(
                     List.of(MKWorkspaceHorizontalExtrusionMode.values()),
-                    editor.towerStackHorizontalExtrusionMode(stackId),
+                    towerEditor.horizontalExtrusionMode(),
                     WorkspaceTopologyUiSupport.isReverseClick(mouseButton)));
             screen.flagNeedSetup();
             return true;
@@ -1340,17 +1341,17 @@ public class TowerStackTopologyPanel {
                 screen.makeWhiteText(Component.literal("Horizontal Extrusion")), extrusionButton);
     }
 
-    private void addStairRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, WorkspaceDraftSession editor,
-                              String stackId) {
+    private void addStairRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                              TowerStackDraftEditor towerEditor) {
         MKButton stairModeButton = new MKButton(Component.literal(WorkspaceTopologyUiSupport.formatTopologyLabel(
-                editor.towerStackStairMode(stackId).getSerializedName())), 180, 20);
+                towerEditor.stairMode().getSerializedName())), 180, 20);
         stairModeButton.setPressedCallback((button, mouseButton) -> {
-            editor.towerStackStairMode(stackId, WorkspaceTopologyUiSupport.cycleValue(List.of(
+            towerEditor.stairMode(WorkspaceTopologyUiSupport.cycleValue(List.of(
                     MKWorkspaceStairMode.AUTO,
                     MKWorkspaceStairMode.RUN_PROFILE,
                     MKWorkspaceStairMode.LADDER,
                     MKWorkspaceStairMode.NONE
-            ), editor.towerStackStairMode(stackId), WorkspaceTopologyUiSupport.isReverseClick(mouseButton)));
+            ), towerEditor.stairMode(), WorkspaceTopologyUiSupport.isReverseClick(mouseButton)));
             screen.flagNeedSetup();
             return true;
         });
@@ -1358,12 +1359,11 @@ public class TowerStackTopologyPanel {
                 stairModeButton);
 
         MKButton stairRiseButton = new MKButton(Component.literal(WorkspaceTopologyUiSupport.formatTopologyLabel(
-                editor.towerStackStairRiseType(stackId).getSerializedName())), 180, 20);
+                towerEditor.stairRiseType().getSerializedName())), 180, 20);
         stairRiseButton.setPressedCallback((button, mouseButton) -> {
-            editor.towerStackStairRiseType(stackId,
-                    WorkspaceTopologyUiSupport.cycleValue(List.of(MKWorkspaceStairRiseType.values()),
-                            editor.towerStackStairRiseType(stackId),
-                            WorkspaceTopologyUiSupport.isReverseClick(mouseButton)));
+            towerEditor.stairRiseType(WorkspaceTopologyUiSupport.cycleValue(
+                    List.of(MKWorkspaceStairRiseType.values()), towerEditor.stairRiseType(),
+                    WorkspaceTopologyUiSupport.isReverseClick(mouseButton)));
             screen.flagNeedSetup();
             return true;
         });
@@ -1371,14 +1371,13 @@ public class TowerStackTopologyPanel {
                 stairRiseButton);
 
         MKButton stairWidthButton = new MKButton(
-                Component.literal(Integer.toString(editor.towerStackStairWidth(stackId))), 180, 20);
+                Component.literal(Integer.toString(towerEditor.stairWidth())), 180, 20);
         stairWidthButton.setPressedCallback((button, mouseButton) -> {
-            List<Integer> allowedWidths = MKWorkspaceDimensions.getAllowedStairWidths(editor.towerStackShaftSize(stackId));
-            int snapped = MKWorkspaceDimensions.snapToNearestAllowedStairWidth(editor.towerStackShaftSize(stackId),
-                    editor.towerStackStairWidth(stackId));
-            editor.towerStackStairWidth(stackId,
-                    WorkspaceTopologyUiSupport.cycleValue(allowedWidths, snapped,
-                            WorkspaceTopologyUiSupport.isReverseClick(mouseButton)));
+            List<Integer> allowedWidths = MKWorkspaceDimensions.getAllowedStairWidths(towerEditor.shaftSize());
+            int snapped = MKWorkspaceDimensions.snapToNearestAllowedStairWidth(towerEditor.shaftSize(),
+                    towerEditor.stairWidth());
+            towerEditor.stairWidth(WorkspaceTopologyUiSupport.cycleValue(allowedWidths, snapped,
+                    WorkspaceTopologyUiSupport.isReverseClick(mouseButton)));
             screen.flagNeedSetup();
             return true;
         });
@@ -1386,16 +1385,16 @@ public class TowerStackTopologyPanel {
                 stairWidthButton);
     }
 
-    private void addFoundationRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, WorkspaceDraftSession editor,
-                                   String stackId) {
-        MKWorkspaceFoundationPolicy foundationPolicy = editor.towerStackFoundationPolicy(stackId);
+    private void addFoundationRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                   TowerStackDraftEditor towerEditor) {
+        MKWorkspaceFoundationPolicy foundationPolicy = towerEditor.foundationPolicy();
         MKButton modeButton = new MKButton(Component.literal(WorkspaceTopologyUiSupport.formatTopologyLabel(
                 foundationPolicy.mode().getSerializedName())), 180, 20);
         modeButton.setPressedCallback((button, mouseButton) -> {
             MKWorkspaceFoundationMode mode = WorkspaceTopologyUiSupport.cycleValue(
                     List.of(MKWorkspaceFoundationMode.values()), foundationPolicy.mode(),
                     WorkspaceTopologyUiSupport.isReverseClick(mouseButton));
-            editor.towerStackFoundationPolicy(stackId, foundationPolicyForMode(mode, foundationPolicy));
+            towerEditor.foundationPolicy(foundationPolicyForMode(mode, foundationPolicy));
             screen.flagNeedSetup();
             return true;
         });
@@ -1409,7 +1408,7 @@ public class TowerStackTopologyPanel {
             blockButton.setTooltip(Component.literal(blockId.toString()));
             blockButton.setPressedCallback((button, mouseButton) -> {
                 screen.openBlockPicker("Choose Foundation Block", blockId, value -> {
-                    editor.towerStackFoundationPolicy(stackId, MKWorkspaceFoundationPolicy.uniformBlock(value));
+                    towerEditor.foundationPolicy(MKWorkspaceFoundationPolicy.uniformBlock(value));
                     screen.refreshPreservingActiveScroll();
                 }, false);
                 return true;
