@@ -58,12 +58,12 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
             return;
         }
         MKStructureWorkspace workspace = MKStructureWorkspace.fromTag(packet.workspaceTag);
-        List<String> errors = workspace.validate();
+        MKStructureWorkspaceService service = new MKStructureWorkspaceService();
+        List<String> errors = service.validateWorkspace(workspace);
         if (!errors.isEmpty()) {
             MKWorkspaceValidationMessages.displayValidationErrors(player, errors);
             return;
         }
-        MKStructureWorkspaceService service = new MKStructureWorkspaceService();
         Optional<MKStructureWorkspace> existingOpt = IMKStructureWorkspaceData.get(player.serverLevel())
                 .getWorkspaceByAnchor(workspace.anchor());
         if (existingOpt.isPresent()) {

@@ -307,6 +307,11 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         );
     }
 
+    @Override
+    public List<String> validateTopology(MKStructureWorkspace workspace) {
+        return workspace.topologyProfile().courtyardSettings().validate();
+    }
+
     private static List<MKWorkspaceSlotSchema> walledKeepSlots() {
         ArrayList<MKWorkspaceSlotSchema> slots = new ArrayList<>();
         addTowerStackSlots(slots, "keep.center", "keep.center_tower");

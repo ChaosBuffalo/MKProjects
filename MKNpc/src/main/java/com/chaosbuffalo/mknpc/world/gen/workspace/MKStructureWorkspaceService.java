@@ -91,8 +91,12 @@ public class MKStructureWorkspaceService {
     private final MKWorkspaceTemplateBindingDiffService templateBindingDiffService =
             new MKWorkspaceTemplateBindingDiffService();
 
+    public List<String> validateWorkspace(MKStructureWorkspace workspace) {
+        return plannerRegistry.validate(workspace);
+    }
+
     public Optional<MKStructureWorkspace> createOrUpdateTowerWorkspace(ServerLevel level, MKStructureWorkspace workspace) {
-        List<String> errors = workspace.validate();
+        List<String> errors = validateWorkspace(workspace);
         if (!errors.isEmpty()) {
             return Optional.empty();
         }
@@ -368,7 +372,7 @@ public class MKStructureWorkspaceService {
             return Optional.empty();
         }
         MKStructureWorkspace workspace = workspaceOpt.get();
-        if (!workspace.validate().isEmpty()) {
+        if (!validateWorkspace(workspace).isEmpty()) {
             return Optional.empty();
         }
         List<MKPlannedPiece> templates = plannerRegistry.plannerFor(workspace).createCanonicalPieces(workspace).stream()

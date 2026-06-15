@@ -47,12 +47,12 @@ public class RequestWorkspacePreflightPacket implements CustomPacketPayload {
             return;
         }
         MKStructureWorkspace requested = MKStructureWorkspace.fromTag(packet.workspaceTag);
-        List<String> errors = requested.validate();
+        MKStructureWorkspaceService service = new MKStructureWorkspaceService();
+        List<String> errors = service.validateWorkspace(requested);
         if (!errors.isEmpty()) {
             MKWorkspaceValidationMessages.displayValidationErrors(player, errors);
             return;
         }
-        MKStructureWorkspaceService service = new MKStructureWorkspaceService();
         service.preflightWorkspaceUpdate(player.serverLevel(), requested)
                 .ifPresentOrElse(
                         preflight -> PacketDistributor.sendToPlayer(player,

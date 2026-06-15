@@ -4,6 +4,7 @@ import com.chaosbuffalo.mknpc.block_entities.MKWorkspaceDevBlockEntity;
 import com.chaosbuffalo.mknpc.world.gen.workspace.MKStructureWorkspaceImportService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -18,6 +19,7 @@ public class MKWorkspaceBackupRestoreService {
     private final MKWorkspaceBackupManifestWriter backupWriter = new MKWorkspaceBackupManifestWriter();
     private final MKWorkspaceBackupArchiveStore archiveStore = new MKWorkspaceBackupArchiveStore();
     private final MKStructureWorkspaceImportService importService = new MKStructureWorkspaceImportService();
+    private final MKWorkspacePlannerRegistry plannerRegistry = MKWorkspacePlannerRegistry.withBuiltIns();
 
     public record RestoreResult(@Nullable MKStructureWorkspace workspace, @Nullable Path selectedBackupPath,
                                 @Nullable Path beforeRestoreBackupPath,
@@ -91,7 +93,7 @@ public class MKWorkspaceBackupRestoreService {
                 current.id(), current.anchor(), current.createdAt(), manifest);
         MKStructureWorkspace restored = restoredBase.withPieces(
                 importService.pieceDefinitionsFromManifest(restoredBase, manifest));
-        List<String> validationErrors = restored.validate();
+        List<String> validationErrors = plannerRegistry.validate(restored);
         if (!validationErrors.isEmpty()) {
             return RestoreResult.validationFailed(candidate.path(), beforeRestore.path(), validationErrors);
         }

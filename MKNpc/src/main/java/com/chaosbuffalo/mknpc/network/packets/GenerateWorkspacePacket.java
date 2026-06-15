@@ -51,12 +51,12 @@ public class GenerateWorkspacePacket implements CustomPacketPayload {
                     "Workspace generation failed: no workspace found at this anchor.");
             return;
         }
-        List<String> errors = workspaceOpt.get().validate();
+        MKStructureWorkspaceService service = new MKStructureWorkspaceService();
+        List<String> errors = service.validateWorkspace(workspaceOpt.get());
         if (!errors.isEmpty()) {
             MKWorkspaceValidationMessages.displayValidationErrors(player, errors);
             return;
         }
-        MKStructureWorkspaceService service = new MKStructureWorkspaceService();
         if (service.generateTowerWorkspace(player.serverLevel(), packet.anchor).isEmpty()) {
             MKWorkspaceValidationMessages.displayFailure(player, "Workspace generation failed.");
             return;

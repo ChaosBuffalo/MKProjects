@@ -3,7 +3,9 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MKWorkspacePlannerRegistry {
@@ -43,5 +45,11 @@ public class MKWorkspacePlannerRegistry {
 
     public MKWorkspacePlanner towerPlanner() {
         return plannerFor(MKTowerWorkspacePlanner.PLANNER_ID);
+    }
+
+    public List<String> validate(MKStructureWorkspace workspace) {
+        ArrayList<String> errors = new ArrayList<>(workspace.validate());
+        errors.addAll(plannerFor(workspace).validateTopology(workspace));
+        return List.copyOf(errors);
     }
 }

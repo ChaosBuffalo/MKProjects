@@ -25,6 +25,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspaceP
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceScaffoldBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -71,6 +72,7 @@ public class MKStructureWorkspaceImportService {
     private final MKWorkspaceImportManifestDiscovery discovery = new MKWorkspaceImportManifestDiscovery(
             MKWorkspaceExportManifestLoader.resolveModuleRoot(MKNpc.MODULE_DIRECTORY_NAME), MKNpc.MODID);
     private final MKWorkspaceScaffoldBuilder scaffoldBuilder = new MKWorkspaceScaffoldBuilder();
+    private final MKWorkspacePlannerRegistry plannerRegistry = MKWorkspacePlannerRegistry.withBuiltIns();
 
     public Optional<MKWorkspaceImportResult> importWorkspaceAtAnchor(ServerLevel level, BlockPos anchor,
                                                                      ResourceLocation manifestId) {
@@ -90,7 +92,7 @@ public class MKStructureWorkspaceImportService {
         }
 
         MKStructureWorkspace workspace = workspaceFromManifest(anchor, manifestOpt.get());
-        List<String> validationErrors = workspace.validate();
+        List<String> validationErrors = plannerRegistry.validate(workspace);
         if (!validationErrors.isEmpty()) {
             return MKWorkspaceImportOutcome.validationFailed(validationErrors);
         }
