@@ -2,10 +2,12 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
@@ -27,7 +29,7 @@ public final class TowerStackDraftEditor {
     }
 
     public MKWorkspaceTowerStackSettings settingsForUi() {
-        return session.towerStackSettingsForUi(stackId);
+        return settings();
     }
 
     public List<MKTowerWorkspaceFamilyDefinition> familiesForUi() {
@@ -43,183 +45,221 @@ public final class TowerStackDraftEditor {
     }
 
     public int width() {
-        return session.towerStackWidth(stackId);
+        return settings().width();
     }
 
     public void width(int value) {
-        session.towerStackWidth(stackId, value);
+        replace(settings().withWidth(makeOdd(Math.max(3, value))));
+        session.applyTowerStackSettingsToFamilies();
     }
 
     public int length() {
-        return session.towerStackLength(stackId);
+        return settings().length();
     }
 
     public void length(int value) {
-        session.towerStackLength(stackId, value);
+        replace(settings().withLength(makeOdd(Math.max(3, value))));
+        session.applyTowerStackSettingsToFamilies();
     }
 
     public int height() {
-        return session.towerStackHeight(stackId);
+        return settings().height();
     }
 
     public void height(int value) {
-        session.towerStackHeight(stackId, value);
+        replaceWithNormalizedFloorCounts(settings().withHeight(Math.max(3, value)));
+        session.applyTowerStackSettingsToFamilies();
     }
 
     public int entryHeight() {
-        return session.towerStackEntryHeight(stackId);
+        return settings().entryHeight();
     }
 
     public void entryHeight(int value) {
-        session.towerStackEntryHeight(stackId, value);
+        replaceWithNormalizedFloorCounts(settings().withEntryHeight(value));
+        session.applyTowerStackSettingsToFamilies();
     }
 
     public int basementHeight() {
-        return session.towerStackBasementHeight(stackId);
+        return settings().basementHeight();
     }
 
     public void basementHeight(int value) {
-        session.towerStackBasementHeight(stackId, value);
+        replaceWithNormalizedFloorCounts(settings().withBasementHeight(value));
+        session.applyTowerStackSettingsToFamilies();
     }
 
     public int basementEntryHeight() {
-        return session.towerStackBasementEntryHeight(stackId);
+        return settings().basementEntryHeight();
     }
 
     public void basementEntryHeight(int value) {
-        session.towerStackBasementEntryHeight(stackId, value);
+        replaceWithNormalizedFloorCounts(settings().withBasementEntryHeight(value));
+        session.applyTowerStackSettingsToFamilies();
     }
 
     public int basementCapHeight() {
-        return session.towerStackBasementCapHeight(stackId);
+        return settings().basementCapHeight();
     }
 
     public void basementCapHeight(int value) {
-        session.towerStackBasementCapHeight(stackId, value);
+        replaceWithNormalizedFloorCounts(settings().withBasementCapHeight(value));
+        session.applyTowerStackSettingsToFamilies();
     }
 
     public int mainHeight() {
-        return session.towerStackMainHeight(stackId);
+        return settings().mainHeight();
     }
 
     public void mainHeight(int value) {
-        session.towerStackMainHeight(stackId, value);
+        replaceWithNormalizedFloorCounts(settings().withMainHeight(value));
+        session.applyTowerStackSettingsToFamilies();
     }
 
     public int mainCapHeight() {
-        return session.towerStackMainCapHeight(stackId);
+        return settings().mainCapHeight();
     }
 
     public void mainCapHeight(int value) {
-        session.towerStackMainCapHeight(stackId, value);
+        replaceWithNormalizedFloorCounts(settings().withMainCapHeight(value));
+        session.applyTowerStackSettingsToFamilies();
     }
 
     public int mainFloors() {
-        return session.towerStackMainFloors(stackId);
+        return settings().mainFloors();
     }
 
     public void mainFloors(int value) {
-        session.towerStackMainFloors(stackId, value);
+        MKWorkspaceTowerStackSettings current = settings();
+        int normalizedMain = session.normalizeTowerStackMainFloorCount(current, value, current.basementFloors());
+        int normalizedBasement = session.normalizeTowerStackBasementFloorCount(current, current.basementFloors(),
+                normalizedMain);
+        replace(current.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
 
     public int minMainFloors() {
-        return session.towerStackMinMainFloors(stackId);
+        return settings().minMainFloors();
     }
 
     public void minMainFloors(int value) {
-        session.towerStackMinMainFloors(stackId, value);
+        replace(settings().withMinMainFloors(value));
     }
 
     public int basementFloors() {
-        return session.towerStackBasementFloors(stackId);
+        return settings().basementFloors();
     }
 
     public void basementFloors(int value) {
-        session.towerStackBasementFloors(stackId, value);
+        MKWorkspaceTowerStackSettings current = settings();
+        int normalizedBasement = session.normalizeTowerStackBasementFloorCount(current, value, current.mainFloors());
+        int normalizedMain = session.normalizeTowerStackMainFloorCount(current, current.mainFloors(),
+                normalizedBasement);
+        replace(current.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
 
     public int minBasementFloors() {
-        return session.towerStackMinBasementFloors(stackId);
+        return settings().minBasementFloors();
     }
 
     public void minBasementFloors(int value) {
-        session.towerStackMinBasementFloors(stackId, value);
+        replace(settings().withMinBasementFloors(value));
     }
 
     public List<Integer> allowedMainFloorCounts() {
-        return session.allowedTowerStackMainFloorCounts(stackId);
+        MKWorkspaceTowerStackSettings current = settings();
+        return session.allowedTowerStackMainFloorCounts(current, current.basementFloors());
     }
 
     public List<Integer> allowedBasementFloorCounts() {
-        return session.allowedTowerStackBasementFloorCounts(stackId);
+        MKWorkspaceTowerStackSettings current = settings();
+        return session.allowedTowerStackBasementFloorCounts(current, current.mainFloors());
     }
 
     public boolean topCapApproachEnabled() {
-        return session.towerStackTopCapApproachEnabled(stackId);
+        return settings().topCapApproachEnabled();
     }
 
     public void topCapApproachEnabled(boolean value) {
-        session.towerStackTopCapApproachEnabled(stackId, value);
+        MKWorkspaceTowerStackSettings updated = settings().withTopCapApproachEnabled(value);
+        int normalizedMain = session.normalizeTowerStackMainFloorCount(updated, updated.mainFloors(),
+                updated.basementFloors());
+        int normalizedBasement = session.normalizeTowerStackBasementFloorCount(updated, updated.basementFloors(),
+                normalizedMain);
+        replace(updated.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
 
     public boolean basementEntryEnabled() {
-        return session.towerStackBasementEntryEnabled(stackId);
+        return settings().basementEntryEnabled();
     }
 
     public void basementEntryEnabled(boolean value) {
-        session.towerStackBasementEntryEnabled(stackId, value);
+        MKWorkspaceTowerStackSettings updated = settings().withBasementEntryEnabled(value);
+        int normalizedBasement = session.normalizeTowerStackBasementFloorCount(updated, updated.basementFloors(),
+                updated.mainFloors());
+        int normalizedMain = session.normalizeTowerStackMainFloorCount(updated, updated.mainFloors(),
+                normalizedBasement);
+        replace(updated.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
 
     public boolean basementCapApproachEnabled() {
-        return session.towerStackBasementCapApproachEnabled(stackId);
+        return settings().basementCapApproachEnabled();
     }
 
     public void basementCapApproachEnabled(boolean value) {
-        session.towerStackBasementCapApproachEnabled(stackId, value);
+        MKWorkspaceTowerStackSettings updated = settings().withBasementCapApproachEnabled(value);
+        int normalizedBasement = session.normalizeTowerStackBasementFloorCount(updated, updated.basementFloors(),
+                updated.mainFloors());
+        int normalizedMain = session.normalizeTowerStackMainFloorCount(updated, updated.mainFloors(),
+                normalizedBasement);
+        replace(updated.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
 
     public int shaftSize() {
-        return session.towerStackShaftSize(stackId);
+        return settings().shaftSize();
     }
 
     public void shaftSize(int value) {
-        session.towerStackShaftSize(stackId, value);
+        replace(settings().withShaftSize(value));
     }
 
     public List<Integer> allowedShaftSizes() {
-        return session.allowedTowerStackShaftSizes(stackId);
+        MKWorkspaceTowerStackSettings current = settings();
+        return MKWorkspaceDimensions.getAllowedShaftSizes(current.width(), current.length());
     }
 
     public MKVerticalAccessPlacement verticalAccessPlacement() {
-        return session.towerStackVerticalAccessPlacement(stackId);
+        return settings().verticalAccessPlacement();
     }
 
     public void verticalAccessPlacement(MKVerticalAccessPlacement value) {
-        session.towerStackVerticalAccessPlacement(stackId, value);
+        replace(settings().withVerticalAccessPlacement(value));
     }
 
     public MKWorkspaceStairMode stairMode() {
-        return session.towerStackStairMode(stackId);
+        return settings().stairConfig().mode();
     }
 
     public void stairMode(MKWorkspaceStairMode value) {
-        session.towerStackStairMode(stackId, value);
+        MKWorkspaceStairAuthoringConfig config = settings().stairConfig();
+        replaceStairConfig(new MKWorkspaceStairAuthoringConfig(value, config.riseType(), config.stairWidth()));
     }
 
     public MKWorkspaceStairRiseType stairRiseType() {
-        return session.towerStackStairRiseType(stackId);
+        return settings().stairConfig().riseType();
     }
 
     public void stairRiseType(MKWorkspaceStairRiseType value) {
-        session.towerStackStairRiseType(stackId, value);
+        MKWorkspaceStairAuthoringConfig config = settings().stairConfig();
+        replaceStairConfig(new MKWorkspaceStairAuthoringConfig(config.mode(), value, config.stairWidth()));
     }
 
     public int stairWidth() {
-        return session.towerStackStairWidth(stackId);
+        return settings().stairConfig().stairWidth();
     }
 
     public void stairWidth(int value) {
-        session.towerStackStairWidth(stackId, value);
+        MKWorkspaceStairAuthoringConfig config = settings().stairConfig();
+        replaceStairConfig(new MKWorkspaceStairAuthoringConfig(config.mode(), config.riseType(), value));
     }
 
     public int topCapUpperVoidMargin() {
@@ -239,27 +279,27 @@ public final class TowerStackDraftEditor {
     }
 
     public MKWorkspaceFoundationPolicy foundationPolicy() {
-        return session.towerStackFoundationPolicy(stackId);
+        return settings().foundationPolicy();
     }
 
     public void foundationPolicy(MKWorkspaceFoundationPolicy value) {
-        session.towerStackFoundationPolicy(stackId, value);
+        replace(settings().withFoundationPolicy(value));
     }
 
     public MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode() {
-        return session.towerStackHorizontalExtrusionMode(stackId);
+        return settings().horizontalExtrusionMode();
     }
 
     public void horizontalExtrusionMode(MKWorkspaceHorizontalExtrusionMode value) {
-        session.towerStackHorizontalExtrusionMode(stackId, value);
+        replace(settings().withHorizontalExtrusionMode(value));
     }
 
     public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {
-        return session.towerStackPaletteOverrideOpt(stackId);
+        return settings().paletteOverrideOpt();
     }
 
     public void paletteOverride(Optional<MKWorkspacePaletteOverride> value) {
-        session.towerStackPaletteOverride(stackId, value);
+        replace(settings().withPaletteOverride(value));
     }
 
     public MKWorkspaceMaterialPalette resolvedPalette() {
@@ -267,6 +307,32 @@ public final class TowerStackDraftEditor {
     }
 
     public void resetDefaults() {
-        session.resetTowerStackDefaults(stackId);
+        replace(MKWorkspaceTowerStackSettings.defaults(stackId, 7));
+        session.applyTowerStackSettingsToFamilies();
+    }
+
+    private MKWorkspaceTowerStackSettings settings() {
+        return session.towerStackSettings(stackId);
+    }
+
+    private void replace(MKWorkspaceTowerStackSettings settings) {
+        session.replaceTowerStackSettings(settings);
+    }
+
+    private void replaceWithNormalizedFloorCounts(MKWorkspaceTowerStackSettings settings) {
+        session.replaceTowerStackSettingsWithNormalizedFloorCounts(settings);
+    }
+
+    private void replaceStairConfig(MKWorkspaceStairAuthoringConfig stairConfig) {
+        MKWorkspaceTowerStackSettings updated = settings().withStairConfig(stairConfig);
+        int normalizedMain = session.normalizeTowerStackMainFloorCount(updated, updated.mainFloors(),
+                updated.basementFloors());
+        int normalizedBasement = session.normalizeTowerStackBasementFloorCount(updated, updated.basementFloors(),
+                normalizedMain);
+        replace(updated.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
+    }
+
+    private int makeOdd(int value) {
+        return value % 2 == 0 ? value + 1 : value;
     }
 }
