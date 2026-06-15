@@ -61,7 +61,6 @@ public final class TowerStackDraftEditor {
 
     public void width(int value) {
         replace(settings().withWidth(makeOdd(Math.max(3, value))));
-        session.applyTowerStackSettingsToFamilies();
     }
 
     public int length() {
@@ -70,7 +69,6 @@ public final class TowerStackDraftEditor {
 
     public void length(int value) {
         replace(settings().withLength(makeOdd(Math.max(3, value))));
-        session.applyTowerStackSettingsToFamilies();
     }
 
     public int height() {
@@ -79,7 +77,6 @@ public final class TowerStackDraftEditor {
 
     public void height(int value) {
         replaceWithNormalizedFloorCounts(settings().withHeight(Math.max(3, value)));
-        session.applyTowerStackSettingsToFamilies();
     }
 
     public int entryHeight() {
@@ -88,7 +85,6 @@ public final class TowerStackDraftEditor {
 
     public void entryHeight(int value) {
         replaceWithNormalizedFloorCounts(settings().withEntryHeight(value));
-        session.applyTowerStackSettingsToFamilies();
     }
 
     public int basementHeight() {
@@ -97,7 +93,6 @@ public final class TowerStackDraftEditor {
 
     public void basementHeight(int value) {
         replaceWithNormalizedFloorCounts(settings().withBasementHeight(value));
-        session.applyTowerStackSettingsToFamilies();
     }
 
     public int basementEntryHeight() {
@@ -106,7 +101,6 @@ public final class TowerStackDraftEditor {
 
     public void basementEntryHeight(int value) {
         replaceWithNormalizedFloorCounts(settings().withBasementEntryHeight(value));
-        session.applyTowerStackSettingsToFamilies();
     }
 
     public int basementCapHeight() {
@@ -115,7 +109,6 @@ public final class TowerStackDraftEditor {
 
     public void basementCapHeight(int value) {
         replaceWithNormalizedFloorCounts(settings().withBasementCapHeight(value));
-        session.applyTowerStackSettingsToFamilies();
     }
 
     public int mainHeight() {
@@ -124,7 +117,6 @@ public final class TowerStackDraftEditor {
 
     public void mainHeight(int value) {
         replaceWithNormalizedFloorCounts(settings().withMainHeight(value));
-        session.applyTowerStackSettingsToFamilies();
     }
 
     public int mainCapHeight() {
@@ -133,7 +125,6 @@ public final class TowerStackDraftEditor {
 
     public void mainCapHeight(int value) {
         replaceWithNormalizedFloorCounts(settings().withMainCapHeight(value));
-        session.applyTowerStackSettingsToFamilies();
     }
 
     public int mainFloors() {
@@ -327,7 +318,6 @@ public final class TowerStackDraftEditor {
 
     public void resetDefaults() {
         replace(MKWorkspaceTowerStackSettings.defaults(stackId, 7));
-        session.applyTowerStackSettingsToFamilies();
     }
 
     private MKWorkspaceTowerStackSettings settings() {

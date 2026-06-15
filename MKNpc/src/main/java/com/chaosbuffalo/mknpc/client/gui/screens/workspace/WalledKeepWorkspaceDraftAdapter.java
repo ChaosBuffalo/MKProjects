@@ -36,7 +36,6 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
     public void applyDefaultHeight(WorkspaceDraftSession session, int requestedHeight) {
         session.replaceTowerStackSettingsWithNormalizedFloorCounts(
                 session.towerStackSettings("keep.center").withHeight(requestedHeight));
-        session.applyTowerStackSettingsToFamilies();
     }
 
     @Override
@@ -115,7 +114,6 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
             session.ensureFamiliesForTowerStack(updated, cornerSlot);
         }
         session.draft().familyDefinitions = List.copyOf(updated);
-        session.applyTowerStackSettingsToFamilies();
     }
 
     private void migratePerimeterLinearRuns(WorkspaceDraftSession session) {

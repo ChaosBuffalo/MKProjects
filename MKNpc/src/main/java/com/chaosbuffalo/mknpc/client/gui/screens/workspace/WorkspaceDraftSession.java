@@ -519,7 +519,6 @@ public class WorkspaceDraftSession {
         draft().familyDefinitions = draft().familyDefinitions.stream()
                 .map(this::normalizeFamilyDefinition)
                 .toList();
-        applyTowerStackSettingsToFamilies();
     }
 
     MKWorkspaceFloorTopologySettings floorTopologySettings(String stackId, String floorRole) {
@@ -1166,14 +1165,6 @@ public class WorkspaceDraftSession {
                         .map(existing -> copyFamilyForTopologySlot(existing, slot.slotId()))
                         .orElseGet(() -> defaultFamilyForTopologySlot(slot)))
                 .forEach(updated::add);
-    }
-
-    void applyTowerStackSettingsToFamilies() {
-        // Stack-backed families inherit stack geometry at resolution time. Existing explicit overrides are preserved.
-    }
-
-    private boolean topologyHasTowerStacks() {
-        return !draft().topologyProfile.towerStackSettings().isEmpty();
     }
 
     private String stackIdForFamily(MKWorkspaceRoomFamilyDefinition family) {
