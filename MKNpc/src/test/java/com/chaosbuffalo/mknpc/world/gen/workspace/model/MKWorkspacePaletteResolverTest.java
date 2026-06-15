@@ -111,7 +111,7 @@ class MKWorkspacePaletteResolverTest {
                 null,
                 null
         );
-        MKWorkspaceRoomFamilyDefinition family = MKWorkspaceRoomFamilyDefinition.forTowerStackSlot(
+        MKWorkspaceRoomFamilyDefinition family = MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot(
                 "floor_main",
                 MKWorkspaceVerticalStackSlot.MAIN_FLOOR,
                 "tower.primary",
@@ -176,7 +176,7 @@ class MKWorkspacePaletteResolverTest {
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
                 .withVerticalStackSettings(stackSettings)
                 .withFloorTopologySettings(floorSettings);
-        MKWorkspaceRoomFamilyDefinition family = MKWorkspaceRoomFamilyDefinition.forTowerStackSlot(
+        MKWorkspaceRoomFamilyDefinition family = MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot(
                 "floor_main",
                 MKWorkspaceVerticalStackSlot.MAIN_FLOOR,
                 "tower.primary",

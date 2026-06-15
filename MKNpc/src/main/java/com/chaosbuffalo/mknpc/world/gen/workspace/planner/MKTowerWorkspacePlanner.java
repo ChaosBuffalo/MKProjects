@@ -25,7 +25,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     private static final String LINEAR_RUN_POOL_PREFIX = "linear_runs";
     private static final String PRIMARY_STACK_ID = "tower.primary";
     private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
-    private final MKWorkspaceVerticalStackPlanner towerStackPlanner = new MKWorkspaceVerticalStackPlanner();
+    private final MKWorkspaceVerticalStackPlanner verticalStackPlanner = new MKWorkspaceVerticalStackPlanner();
     private final MKFloorTopologyPlanner floorTopologyPlanner = new MKFloorTopologyPlanner();
 
     private record ResolvedOpeningProfile(String profileId, int openingWidth, int openingHeight) {
@@ -153,16 +153,16 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
 
     @Override
     public List<MKPlannedPiece> createCanonicalPieces(MKStructureWorkspace workspace) {
-        ArrayList<MKPlannedPiece> pieces = new ArrayList<>(towerStackPlanner.createRoomPieces(
+        ArrayList<MKPlannedPiece> pieces = new ArrayList<>(verticalStackPlanner.createRoomPieces(
                 workspace,
-                towerStackDefinition(workspace),
+                verticalStackDefinition(workspace),
                 workspace.familyDefinitions()));
         pieces.addAll(createLinearRunPieces(workspace));
         pieces.addAll(floorTopologyPlanner.createFloorTopologyPieces(workspace, workspace.familyDefinitions()));
         return List.copyOf(pieces);
     }
 
-    private MKWorkspaceVerticalStackDefinition towerStackDefinition(MKStructureWorkspace workspace) {
+    private MKWorkspaceVerticalStackDefinition verticalStackDefinition(MKStructureWorkspace workspace) {
         return workspace.topologyProfile().verticalStackSettings("tower.primary")
                 .map(MKWorkspaceVerticalStackDefinition::towerPrimary)
                 .orElseThrow(() -> new IllegalStateException("tower topology is missing tower.primary stack settings"));

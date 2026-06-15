@@ -381,7 +381,7 @@ public class WorkspaceVerticalStackTopologyPanel {
                     return true;
                 }
                 return exitForDirection(sectionKey, direction)
-                        .map(exit -> isRequiredTowerStackExit(sectionKey, exit))
+                        .map(exit -> isRequiredVerticalStackExit(sectionKey, exit))
                         .orElse(direction.getAxis().isVertical());
             }
 
@@ -407,7 +407,7 @@ public class WorkspaceVerticalStackTopologyPanel {
                     if (exitIndex >= 0) {
                         MKWorkspaceFamilyHorizontalExitDefinition exit =
                                 editor.draft().familyDefinitions.get(familyIndex).horizontalExits().get(exitIndex);
-                        if (isRequiredTowerStackExit(sectionKey, exit)) {
+                        if (isRequiredVerticalStackExit(sectionKey, exit)) {
                             return;
                         }
                         if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH) {
@@ -442,7 +442,7 @@ public class WorkspaceVerticalStackTopologyPanel {
             @Override
             public void cycleSelectedExitDirection(String sectionKey, boolean reverse) {
                 updateSelectedExit(sectionKey, exit -> {
-                    if (isRequiredTowerStackExit(sectionKey, exit)) {
+                    if (isRequiredVerticalStackExit(sectionKey, exit)) {
                         return exit;
                     }
                     MKWorkspaceRoomFamilyDefinition family = selectedFamily(sectionKey).orElse(null);
@@ -465,7 +465,7 @@ public class WorkspaceVerticalStackTopologyPanel {
             @Override
             public void cycleSelectedExitPathKind(String sectionKey, boolean reverse) {
                 updateSelectedExit(sectionKey, exit -> {
-                    if (isRequiredTowerStackExit(sectionKey, exit)) {
+                    if (isRequiredVerticalStackExit(sectionKey, exit)) {
                         return exit;
                     }
                     MKWorkspaceRoomFamilyDefinition family = selectedFamily(sectionKey).orElse(null);
@@ -497,7 +497,7 @@ public class WorkspaceVerticalStackTopologyPanel {
             @Override
             public void cycleSelectedExitConnectionMode(String sectionKey, boolean reverse) {
                 updateSelectedExit(sectionKey, exit -> {
-                    if (isRequiredTowerStackExit(sectionKey, exit)) {
+                    if (isRequiredVerticalStackExit(sectionKey, exit)) {
                         return exit;
                     }
                     return new MKWorkspaceFamilyHorizontalExitDefinition(
@@ -793,7 +793,7 @@ public class WorkspaceVerticalStackTopologyPanel {
                 return rootExits(sectionKey).stream()
                         .filter(exit -> exit.direction() == direction)
                         .findFirst()
-                        .map(exit -> isRequiredTowerStackExit(sectionKey, exit))
+                        .map(exit -> isRequiredVerticalStackExit(sectionKey, exit))
                         .orElse(false);
             }
 
@@ -816,7 +816,7 @@ public class WorkspaceVerticalStackTopologyPanel {
                     if (exitIndex >= 0) {
                         MKWorkspaceFamilyHorizontalExitDefinition exit =
                                 editor.draft().familyDefinitions.get(familyIndex).horizontalExits().get(exitIndex);
-                        if (isRequiredTowerStackExit(sectionKey, exit)) {
+                        if (isRequiredVerticalStackExit(sectionKey, exit)) {
                             return;
                         }
                         if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH) {
@@ -851,7 +851,7 @@ public class WorkspaceVerticalStackTopologyPanel {
             @Override
             public void cycleRootExitPathKind(String sectionKey, boolean reverse) {
                 updateSelectedRootExit(sectionKey, exit -> {
-                    if (isRequiredTowerStackExit(sectionKey, exit)) {
+                    if (isRequiredVerticalStackExit(sectionKey, exit)) {
                         return exit;
                     }
                     MKWorkspaceRoomFamilyDefinition family = selectedFamily(sectionKey).orElse(null);
@@ -1273,7 +1273,7 @@ public class WorkspaceVerticalStackTopologyPanel {
         );
     }
 
-    private boolean isRequiredTowerStackExit(String sectionKey, MKWorkspaceFamilyHorizontalExitDefinition exit) {
+    private boolean isRequiredVerticalStackExit(String sectionKey, MKWorkspaceFamilyHorizontalExitDefinition exit) {
         return exit.isVerticalAccess() ||
                 isRequiredEntryExit(sectionKey, exit.direction()) &&
                         exit.pathKind() == MKWorkspaceHorizontalExitPathKind.INGRESS;
@@ -1347,7 +1347,7 @@ public class WorkspaceVerticalStackTopologyPanel {
     }
 
     private WorkspaceVerticalStackDraftEditor towerEditor(WorkspaceDraftSession editor, String stackId) {
-        return plannerUi(editor).createTowerStackEditor(editor, stackId);
+        return plannerUi(editor).createVerticalStackEditor(editor, stackId);
     }
 
     private WorkspacePlannerUiContributor plannerUi(WorkspaceDraftSession editor) {

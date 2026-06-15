@@ -12,7 +12,7 @@ public interface WorkspacePlannerUiContributor {
         throw new IllegalStateException("No workspace draft adapter is registered for planner " + plannerId());
     }
 
-    default WorkspaceVerticalStackDraftEditor createTowerStackEditor(WorkspaceDraftSession editor, String stackId) {
+    default WorkspaceVerticalStackDraftEditor createVerticalStackEditor(WorkspaceDraftSession editor, String stackId) {
         return new WorkspaceVerticalStackDraftEditor(editor, stackId);
     }
 

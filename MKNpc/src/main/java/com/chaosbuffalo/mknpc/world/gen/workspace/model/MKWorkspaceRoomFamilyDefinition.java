@@ -153,7 +153,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                 foundationPolicy, paletteOverride);
     }
 
-    public static MKWorkspaceRoomFamilyDefinition forTowerStackSlot(String baseName,
+    public static MKWorkspaceRoomFamilyDefinition forVerticalStackSlot(String baseName,
                                                                      MKWorkspaceVerticalStackSlot slot,
                                                                      String stackId,
                                                                      boolean supportsVerticalAccess,
@@ -166,12 +166,12 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                                                                      int bottomVoidMargin,
                                                                      @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
                                                                      @Nullable MKWorkspacePaletteOverride paletteOverride) {
-        return forTowerStackSlot(baseName, slot, stackId, stackId, supportsVerticalAccess, roomWidth, roomLength,
+        return forVerticalStackSlot(baseName, slot, stackId, stackId, supportsVerticalAccess, roomWidth, roomLength,
                 roomHeight, horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin,
                 foundationPolicy, paletteOverride);
     }
 
-    public static MKWorkspaceRoomFamilyDefinition forTowerStackSlot(String baseName,
+    public static MKWorkspaceRoomFamilyDefinition forVerticalStackSlot(String baseName,
                                                                      MKWorkspaceVerticalStackSlot slot,
                                                                      String stackId,
                                                                      String verticalAccessGroupId,
@@ -187,7 +187,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                                                                      @Nullable MKWorkspacePaletteOverride paletteOverride) {
         return forTopologySlot(
                 baseName,
-                MKWorkspaceTopologySlotMetadata.fromTowerStackSlot(slot, stackId),
+                MKWorkspaceTopologySlotMetadata.fromVerticalStackSlot(slot, stackId),
                 verticalAccessGroupId,
                 supportsVerticalAccess,
                 roomWidth,
@@ -207,42 +207,42 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
 
     public static List<MKWorkspaceRoomFamilyDefinition> createDefaults(MKWorkspaceDimensions dimensions) {
         return List.of(
-                forTowerStackSlot("entry", MKWorkspaceVerticalStackSlot.ENTRY, PRIMARY_TOWER_STACK_ID, true,
+                forVerticalStackSlot("entry", MKWorkspaceVerticalStackSlot.ENTRY, PRIMARY_TOWER_STACK_ID, true,
                         0, 0, 0,
                   MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
                   List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
                           MKWorkspaceHorizontalExitPathKind.INGRESS, "main_opening",
                           MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION)),
                   0, 0, null, null),
-                forTowerStackSlot("floor_main", MKWorkspaceVerticalStackSlot.MAIN_FLOOR, PRIMARY_TOWER_STACK_ID, true,
+                forVerticalStackSlot("floor_main", MKWorkspaceVerticalStackSlot.MAIN_FLOOR, PRIMARY_TOWER_STACK_ID, true,
                         0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
-                forTowerStackSlot("top_cap_approach", MKWorkspaceVerticalStackSlot.TOP_CAP_APPROACH,
+                forVerticalStackSlot("top_cap_approach", MKWorkspaceVerticalStackSlot.TOP_CAP_APPROACH,
                         PRIMARY_TOWER_STACK_ID, true,
                         0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
-                forTowerStackSlot("top_cap", MKWorkspaceVerticalStackSlot.TOP_CAP, PRIMARY_TOWER_STACK_ID, true,
+                forVerticalStackSlot("top_cap", MKWorkspaceVerticalStackSlot.TOP_CAP, PRIMARY_TOWER_STACK_ID, true,
                         0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
-                forTowerStackSlot("basement_entry", MKWorkspaceVerticalStackSlot.BASEMENT_ENTRY,
+                forVerticalStackSlot("basement_entry", MKWorkspaceVerticalStackSlot.BASEMENT_ENTRY,
                         PRIMARY_TOWER_STACK_ID, true,
                         0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
-                forTowerStackSlot("basement_main", MKWorkspaceVerticalStackSlot.BASEMENT_FLOOR,
+                forVerticalStackSlot("basement_main", MKWorkspaceVerticalStackSlot.BASEMENT_FLOOR,
                         PRIMARY_TOWER_STACK_ID, true,
                         0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
-                forTowerStackSlot("basement_cap_approach", MKWorkspaceVerticalStackSlot.BASEMENT_CAP_APPROACH,
+                forVerticalStackSlot("basement_cap_approach", MKWorkspaceVerticalStackSlot.BASEMENT_CAP_APPROACH,
                         PRIMARY_TOWER_STACK_ID, true,
                         0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
-                forTowerStackSlot("basement_cap", MKWorkspaceVerticalStackSlot.BASEMENT_CAP,
+                forVerticalStackSlot("basement_cap", MKWorkspaceVerticalStackSlot.BASEMENT_CAP,
                         PRIMARY_TOWER_STACK_ID, true,
                         0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
@@ -256,9 +256,9 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
         int centerLength = doubledOddFootprint(Math.max(9, dimensions.roomLength()));
         int cornerFootprint = 7;
         ArrayList<MKWorkspaceRoomFamilyDefinition> families = new ArrayList<>();
-        families.addAll(createKeepTowerStackDefaults("keep_center", "keep.center",
+        families.addAll(createKeepVerticalStackDefaults("keep_center", "keep.center",
                 centerWidth, centerLength, keepHeight));
-        families.addAll(createKeepTowerStackDefaults("keep_corner_shared", "keep.corner.shared",
+        families.addAll(createKeepVerticalStackDefaults("keep_corner_shared", "keep.corner.shared",
                 cornerFootprint, cornerFootprint, keepHeight));
         families.add(forTopologySlot("keep_gate_main",
                 MKWorkspaceTopologySlotMetadata.explicit("keep.gate.main", "entry", "room", false),
@@ -269,13 +269,13 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
         return List.copyOf(families);
     }
 
-    private static List<MKWorkspaceRoomFamilyDefinition> createKeepTowerStackDefaults(String basePrefix,
+    private static List<MKWorkspaceRoomFamilyDefinition> createKeepVerticalStackDefaults(String basePrefix,
                                                                                        String stackId,
                                                                                        int width,
                                                                                        int length,
                                                                                        int height) {
         return MKWorkspaceVerticalStackSlot.familyDefaultOrder().stream()
-                .map(slot -> forTowerStackSlot(
+                .map(slot -> forVerticalStackSlot(
                         slot.baseName(basePrefix),
                         slot,
                         stackId,

@@ -35,7 +35,7 @@ public record MKWorkspaceTopologySlotMetadata(
                 .orElseGet(() -> fromTopologyRole(topologySlotId, "floor", "room", false));
     }
 
-    public static MKWorkspaceTopologySlotMetadata fromTowerStackSlot(MKWorkspaceVerticalStackSlot slot, String stackId) {
+    public static MKWorkspaceTopologySlotMetadata fromVerticalStackSlot(MKWorkspaceVerticalStackSlot slot, String stackId) {
         return fromTopologySlotId(slot.slotId(stackId));
     }
 

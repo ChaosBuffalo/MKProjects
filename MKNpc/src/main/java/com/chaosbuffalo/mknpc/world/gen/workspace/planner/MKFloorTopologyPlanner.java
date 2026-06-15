@@ -532,7 +532,7 @@ public class MKFloorTopologyPlanner {
     }
 
     private static String floorTopologyGroupId(String stackId, String floorRole) {
-        return "floor/" + safeId(stackId) + "/" + safeId(floorRole);
+        return MKWorkspaceFloorTopologySettings.key(stackId, floorRole);
     }
 
     private static String safeId(String value) {

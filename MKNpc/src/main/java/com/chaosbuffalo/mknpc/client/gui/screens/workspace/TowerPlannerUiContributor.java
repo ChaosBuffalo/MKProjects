@@ -7,7 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class TowerPlannerUiContributor implements WorkspacePlannerUiContributor {
-    private final WorkspaceVerticalStackTopologyPanel towerStackPanel = new WorkspaceVerticalStackTopologyPanel();
+    private final WorkspaceVerticalStackTopologyPanel verticalStackPanel = new WorkspaceVerticalStackTopologyPanel();
 
     @Override
     public ResourceLocation plannerId() {
@@ -23,14 +23,14 @@ public class TowerPlannerUiContributor implements WorkspacePlannerUiContributor 
     public void addDefaultsSections(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                     WorkspaceDraftSession editor) {
         addTowerPaletteRows(screen, content, editor);
-        towerStackPanel.addStackEditor(screen, content, editor, "tower.primary", "Primary Tower");
+        verticalStackPanel.addStackEditor(screen, content, editor, "tower.primary", "Primary Tower");
     }
 
     @Override
     public void addDefaultsLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
                                   WorkspaceDraftSession editor) {
         addTowerPaletteRows(screen, layout.settingsContent(), editor);
-        towerStackPanel.addStackEditor(screen, layout, editor, "tower.primary", "Primary Tower");
+        verticalStackPanel.addStackEditor(screen, layout, editor, "tower.primary", "Primary Tower");
     }
 
     @Override
@@ -39,7 +39,7 @@ public class TowerPlannerUiContributor implements WorkspacePlannerUiContributor 
         editor.ensureInitialized();
         WorkspaceTopologyUiSupport.addText(screen, content, Component.literal("Tower Planner"));
         addTowerPaletteRows(screen, content, editor);
-        towerStackPanel.addStackEditor(screen, content, editor, "tower.primary", "Primary Tower");
+        verticalStackPanel.addStackEditor(screen, content, editor, "tower.primary", "Primary Tower");
     }
 
     @Override
@@ -48,20 +48,20 @@ public class TowerPlannerUiContributor implements WorkspacePlannerUiContributor 
         editor.ensureInitialized();
         WorkspaceTopologyUiSupport.addText(screen, layout.settingsContent(), Component.literal("Tower Planner"));
         addTowerPaletteRows(screen, layout.settingsContent(), editor);
-        towerStackPanel.addStackEditor(screen, layout, editor, "tower.primary", "Primary Tower");
+        verticalStackPanel.addStackEditor(screen, layout, editor, "tower.primary", "Primary Tower");
     }
 
     @Override
     public void addPlannerNodeLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
                                      WorkspaceDraftSession editor, String nodeId, String label,
                                      boolean topLevelPlanner) {
-        towerStackPanel.addStackEditor(screen, layout, editor, nodeId, label, topLevelPlanner);
+        verticalStackPanel.addStackEditor(screen, layout, editor, nodeId, label, topLevelPlanner);
     }
 
     @Override
     public void addFloorPlanLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
                                    WorkspaceDraftSession editor, String stackId, String floorRole) {
-        towerStackPanel.addFloorPlanEditor(screen, layout, editor, stackId, floorRole);
+        verticalStackPanel.addFloorPlanEditor(screen, layout, editor, stackId, floorRole);
     }
 
     private void addTowerPaletteRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,

@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WalledKeepPlannerUiContributor implements WorkspacePlannerUiContributor {
-    private final WorkspaceVerticalStackTopologyPanel towerStackPanel = new WorkspaceVerticalStackTopologyPanel();
+    private final WorkspaceVerticalStackTopologyPanel verticalStackPanel = new WorkspaceVerticalStackTopologyPanel();
 
     @Override
     public ResourceLocation plannerId() {
@@ -78,13 +78,13 @@ public class WalledKeepPlannerUiContributor implements WorkspacePlannerUiContrib
     public void addPlannerNodeLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
                                      WorkspaceDraftSession editor, String nodeId, String label,
                                      boolean topLevelPlanner) {
-        towerStackPanel.addStackEditor(screen, layout, editor, nodeId, label, topLevelPlanner);
+        verticalStackPanel.addStackEditor(screen, layout, editor, nodeId, label, topLevelPlanner);
     }
 
     @Override
     public void addFloorPlanLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
                                    WorkspaceDraftSession editor, String stackId, String floorRole) {
-        towerStackPanel.addFloorPlanEditor(screen, layout, editor, stackId, floorRole);
+        verticalStackPanel.addFloorPlanEditor(screen, layout, editor, stackId, floorRole);
     }
 
     private void addKeepLayoutSettings(MKWorkspaceScreen screen, MKStackLayoutVertical content,
@@ -266,15 +266,15 @@ public class WalledKeepPlannerUiContributor implements WorkspacePlannerUiContrib
         addTowerTabSelector(screen, content, editor, "Vertical Stack Settings");
         String activeStackId = keepEditor(editor).verticalStackTab();
         String label = tabLabel(activeStackId, false);
-        towerStackPanel.addStackSizingRows(screen, content, editor, activeStackId, label);
-        towerStackPanel.addStackEditor(screen, content, editor, activeStackId, label, false);
+        verticalStackPanel.addStackSizingRows(screen, content, editor, activeStackId, label);
+        verticalStackPanel.addStackEditor(screen, content, editor, activeStackId, label, false);
     }
 
     private void addTowerSizingTabs(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                     WorkspaceDraftSession editor) {
-        addTowerTabSelector(screen, content, editor, "Tower Stack Sizing");
+        addTowerTabSelector(screen, content, editor, "Vertical Stack Sizing");
         String activeStackId = keepEditor(editor).verticalStackTab();
-        towerStackPanel.addStackSizingRows(screen, content, editor, activeStackId, tabLabel(activeStackId, false));
+        verticalStackPanel.addStackSizingRows(screen, content, editor, activeStackId, tabLabel(activeStackId, false));
     }
 
     private void addTowerTabSelector(MKWorkspaceScreen screen, MKStackLayoutVertical content,

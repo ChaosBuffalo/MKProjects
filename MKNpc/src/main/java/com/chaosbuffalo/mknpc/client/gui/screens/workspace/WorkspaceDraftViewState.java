@@ -5,6 +5,6 @@ import java.util.Map;
 
 final class WorkspaceDraftViewState {
     final Map<String, Long> floorTopologyPreviewSeeds = new HashMap<>();
-    final Map<String, String> towerStackPreviewSelections = new HashMap<>();
+    final Map<String, String> verticalStackPreviewSelections = new HashMap<>();
     String walledKeepVerticalStackTab = "keep.center";
 }

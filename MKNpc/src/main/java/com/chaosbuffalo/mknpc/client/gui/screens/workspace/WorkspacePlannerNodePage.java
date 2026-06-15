@@ -25,7 +25,7 @@ public class WorkspacePlannerNodePage extends WorkspacePageBase {
         MKLayout root = createPanel(screen);
         String label = WorkspacePieceDisplay.formatTopologyLabel(stackId);
         addTitle(screen, root, Component.literal(label));
-        MKText summary = addHeaderText(screen, root, Component.literal("Tower stack controls for " + label + "."));
+        MKText summary = addHeaderText(screen, root, Component.literal("Vertical stack controls for " + label + "."));
 
         int contentTop = screen.scrollTopAfterHeader(root, summary);
         int contentHeight = screen.panelY() + screen.panelHeight() - screen.bottomPadding() -
