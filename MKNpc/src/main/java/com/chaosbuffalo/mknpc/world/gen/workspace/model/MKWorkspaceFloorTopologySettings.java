@@ -245,7 +245,7 @@ public record MKWorkspaceFloorTopologySettings(
         return stackId + "." + floorRole;
     }
 
-    public static MKWorkspaceFloorTopologySettings defaults(MKWorkspaceTowerStackSettings stackSettings,
+    public static MKWorkspaceFloorTopologySettings defaults(MKWorkspaceVerticalStackSettings stackSettings,
                                                             String floorRole) {
         int height = heightForFloorRole(stackSettings, floorRole);
         return new MKWorkspaceFloorTopologySettings(
@@ -280,9 +280,9 @@ public record MKWorkspaceFloorTopologySettings(
         );
     }
 
-    public static List<MKWorkspaceFloorTopologySettings> defaults(List<MKWorkspaceTowerStackSettings> stackSettings) {
+    public static List<MKWorkspaceFloorTopologySettings> defaults(List<MKWorkspaceVerticalStackSettings> stackSettings) {
         ArrayList<MKWorkspaceFloorTopologySettings> defaults = new ArrayList<>();
-        for (MKWorkspaceTowerStackSettings settings : stackSettings) {
+        for (MKWorkspaceVerticalStackSettings settings : stackSettings) {
             for (MKTowerWorkspaceStackSlot slot : MKTowerWorkspaceStackSlot.familyDefaultOrder()) {
                 defaults.add(defaults(settings, slot.suffix()));
             }
@@ -292,7 +292,7 @@ public record MKWorkspaceFloorTopologySettings(
 
     public static List<MKWorkspaceFloorTopologySettings> normalize(
             List<MKWorkspaceFloorTopologySettings> currentSettings,
-            List<MKWorkspaceTowerStackSettings> stackSettings) {
+            List<MKWorkspaceVerticalStackSettings> stackSettings) {
         Map<String, MKWorkspaceFloorTopologySettings> byKey = new LinkedHashMap<>();
         for (MKWorkspaceFloorTopologySettings defaultSettings : defaults(stackSettings)) {
             byKey.put(defaultSettings.key(), defaultSettings);
@@ -552,7 +552,7 @@ public record MKWorkspaceFloorTopologySettings(
         return List.copyOf(updated);
     }
 
-    private static int heightForFloorRole(MKWorkspaceTowerStackSettings stackSettings, String floorRole) {
+    private static int heightForFloorRole(MKWorkspaceVerticalStackSettings stackSettings, String floorRole) {
         MKTowerStackBudget heights = stackSettings.heights();
         return switch (floorRole) {
             case "main_floor" -> heights.mainFloorHeight();

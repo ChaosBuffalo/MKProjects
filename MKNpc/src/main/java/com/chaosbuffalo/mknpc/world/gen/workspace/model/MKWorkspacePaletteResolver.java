@@ -8,8 +8,8 @@ public final class MKWorkspacePaletteResolver {
     }
 
     public MKWorkspaceMaterialPalette resolveTowerStack(MKStructureWorkspace workspace, String stackId) {
-        return workspace.topologyProfile().towerStackSettings(stackId)
-                .flatMap(MKWorkspaceTowerStackSettings::paletteOverrideOpt)
+        return workspace.topologyProfile().verticalStackSettings(stackId)
+                .flatMap(MKWorkspaceVerticalStackSettings::paletteOverrideOpt)
                 .map(override -> override.resolve(workspace.palette()))
                 .orElse(workspace.palette());
     }
@@ -29,8 +29,8 @@ public final class MKWorkspacePaletteResolver {
         if (slot.isEmpty()) {
             return resolveFamily(workspace, family);
         }
-        String stackId = workspace.towerStackSettingsForFamily(family)
-                .map(MKWorkspaceTowerStackSettings::stackId)
+        String stackId = workspace.verticalStackSettingsForFamily(family)
+                .map(MKWorkspaceVerticalStackSettings::stackId)
                 .orElseGet(() -> MKTowerWorkspaceStackSlot.stackIdForTopologySlot(family.topologySlotId()).orElse(""));
         if (stackId.isBlank()) {
             return resolveFamily(workspace, family);
@@ -43,13 +43,13 @@ public final class MKWorkspacePaletteResolver {
 
     public MKWorkspaceMaterialPalette resolveFamily(MKStructureWorkspace workspace, MKWorkspacePaletteFamily family) {
         if (family instanceof MKWorkspaceRoomFamilyDefinition towerFamily) {
-            Optional<MKWorkspaceTowerStackSettings> stackSettings = workspace.towerStackSettingsForFamily(towerFamily);
+            Optional<MKWorkspaceVerticalStackSettings> stackSettings = workspace.verticalStackSettingsForFamily(towerFamily);
             MKWorkspaceMaterialPalette stackParent = stackSettings.isPresent() ? workspace.palette() :
                     family.paletteTopologyGroupIdOpt()
                             .map(topologyGroupId -> resolveTopologyGroup(workspace, topologyGroupId))
                             .orElse(workspace.palette());
             MKWorkspaceMaterialPalette parent = stackSettings
-                    .flatMap(MKWorkspaceTowerStackSettings::paletteOverrideOpt)
+                    .flatMap(MKWorkspaceVerticalStackSettings::paletteOverrideOpt)
                     .map(override -> override.resolve(stackParent))
                     .orElse(stackParent);
             return family.paletteOverrideOpt()

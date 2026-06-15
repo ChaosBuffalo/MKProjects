@@ -68,7 +68,7 @@ The standalone tower planner should become a thin wrapper around one tower stack
 
 ## Stack Settings
 
-`MKWorkspaceTowerStackSettings` should become the source of truth for stack-level defaults. It currently stores:
+`MKWorkspaceVerticalStackSettings` should become the source of truth for stack-level defaults. It currently stores:
 
 - `stackId`
 - `mainFloors`
@@ -190,7 +190,7 @@ For the standalone tower, this page should expose:
 
 For the walled keep, this page should expose:
 
-- center tower stack settings
+- center vertical stack settings
 - shared/unique corner mode per corner
 - each active corner stack's settings
 - per-stack stair mode/rise/width and stair/slab/ladder block pickers
@@ -276,8 +276,8 @@ Family-level validation should focus on override legality:
 - Phase 3 is implemented: the walled keep center stack uses the reusable stack planner with scoped stack pools.
 - Phase 4 is implemented for the current walled keep model: default shared corner towers generate as full tower stacks, and the walled keep planner can plan active shared or unique corner stacks through the reusable stack planner.
 - A reusable tower stack slot helper now defines the standard stack suffixes, default family order, schema role metadata, and stack-id extraction for tower-stack topology slots.
-- Stack-level width, length, height, floor counts, and cap approach toggles are now represented in `MKWorkspaceTowerStackSettings`. Stack-backed family defaults inherit those values instead of eagerly copying them.
-- Stack-level vertical access shaft size, placement, stair mode, rise type, stair width, and stair/slab/ladder blocks are now represented in `MKWorkspaceTowerStackSettings` and used by walled keep stack planning, validation, and default stair generation.
+- Stack-level width, length, height, floor counts, and cap approach toggles are now represented in `MKWorkspaceVerticalStackSettings`. Stack-backed family defaults inherit those values instead of eagerly copying them.
+- Stack-level vertical access shaft size, placement, stair mode, rise type, stair width, and stair/slab/ladder blocks are now represented in `MKWorkspaceVerticalStackSettings` and used by walled keep stack planning, validation, and default stair generation.
 - Room family planning now goes through `MKWorkspaceResolvedFamilySettings` for dimensions, void margins, foundation policy, palette, topology metadata, and vertical access.
 - The standalone tower planner now consumes `tower.primary` stack settings directly; the legacy workspace floor-settings object has been removed.
 - Stack-scoped stair config lookup is no longer walled-keep-only; any generated piece tagged with a tower stack id can resolve that stack's stair settings.
@@ -287,10 +287,10 @@ Family-level validation should focus on override legality:
 - Draft normalization preserves inherited stack-backed family geometry and no longer copies stack dimensions into each family.
 - The standalone tower topology defaults page no longer exposes old room-geometry profile controls; topology stack/run settings are now the primary defaults surface.
 - Family and linear-run foundation block fields now use block pickers, and masked foundations expose editable/addable/removable block entries instead of a comma-separated text field.
-- Tower stack settings now carry foundation defaults, and resolved room pieces inherit the stack foundation policy when the family does not define one.
+- Vertical stack settings now carry foundation defaults, and resolved room pieces inherit the stack foundation policy when the family does not define one.
 - The topology defaults page now exposes stack-level foundation mode, block, and mask controls for the standalone tower, center keep stack, and active corner stacks.
 - Room family foundation policies now have explicit inherited-vs-overridden semantics. Families inherit stack foundation defaults by default, can override to any foundation mode, and can explicitly override to no foundation.
-- Tower stack settings now carry palette defaults, resolved room pieces layer stack palette overrides before family overrides, and topology defaults exposes stack palette controls.
+- Vertical stack settings now carry palette defaults, resolved room pieces layer stack palette overrides before family overrides, and topology defaults exposes stack palette controls.
 - Topology profiles now carry path-depth settings for topology groups, and the topology defaults page edits those settings directly.
 - Family geometry override UI now shows resolved stack values, exposes inherit/override toggles per editable dimension, and keeps topology group/role classification read-only on the family detail page.
 - Family list pages now summarize resolved geometry instead of raw override storage.
@@ -321,7 +321,7 @@ Family-level validation should focus on override legality:
 
 - Add a stack slot id helper that maps `{stackId}` plus stack role to concrete slot ids. Done for current tower-stack slots.
 - Add a reusable tower stack schema builder.
-- Expand `MKWorkspaceTowerStackSettings` with per-slot or per-stack-role heights, dimensions, cap approach toggles, and vertical access settings.
+- Expand `MKWorkspaceVerticalStackSettings` with per-slot or per-stack-role heights, dimensions, cap approach toggles, and vertical access settings.
 - Keep current tower and walled keep behavior working while remaining compatibility paths are replaced with topology metadata. The stored compatibility layer has been removed.
 - Standalone tower defaults now live on `tower.primary`; legacy non-stack workspace floor settings have been removed.
 
@@ -366,7 +366,7 @@ Family-level validation should focus on override legality:
 - Introduce resolved settings objects. Initial room-family resolver bridge is in place.
 - Update planners, scaffold generation, export, and validation to consume resolved settings. Room planners consume resolved family settings for dimensions, foundations, palette, topology slot metadata, and stack-local vertical access specs. Scaffold metadata now derives connector dimensions from planned connectors where possible; export/import snapshot paths preserve raw override storage.
 - Split topology validation from family override validation.
-- Replace global topology-band/floor validation with per-stack validation for topology-driven workspaces. Done for explicit tower stack settings.
+- Replace global topology-band/floor validation with per-stack validation for topology-driven workspaces. Done for explicit vertical stack settings.
 
 ### Phase 8: Tests
 

@@ -34,8 +34,8 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
 
     @Override
     public void applyDefaultHeight(WorkspaceDraftSession session, int requestedHeight) {
-        session.replaceTowerStackSettingsWithNormalizedFloorCounts(
-                session.towerStackSettings("keep.center").withHeight(requestedHeight));
+        session.replaceVerticalStackSettingsWithNormalizedFloorCounts(
+                session.verticalStackSettings("keep.center").withHeight(requestedHeight));
     }
 
     @Override

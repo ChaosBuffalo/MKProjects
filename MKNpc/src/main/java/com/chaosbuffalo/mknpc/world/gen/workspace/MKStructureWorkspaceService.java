@@ -5,7 +5,7 @@ import com.chaosbuffalo.mknpc.network.packets.OpenWorkspaceScreenPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteSwapSafety;
@@ -1055,8 +1055,8 @@ public class MKStructureWorkspaceService {
 
     private MKWorkspaceTopologyProfile withMaterialStackSettings(MKWorkspaceTopologyProfile source,
                                                                  MKWorkspaceTopologyProfile materialSource) {
-        List<MKWorkspaceTowerStackSettings> stackSettings = source.towerStackSettings().stream()
-                .map(settings -> materialSource.towerStackSettings(settings.stackId())
+        List<MKWorkspaceVerticalStackSettings> stackSettings = source.verticalStackSettings().stream()
+                .map(settings -> materialSource.verticalStackSettings(settings.stackId())
                         .map(requested -> settings.withPaletteOverride(requested.paletteOverrideOpt()))
                         .orElse(settings))
                 .toList();

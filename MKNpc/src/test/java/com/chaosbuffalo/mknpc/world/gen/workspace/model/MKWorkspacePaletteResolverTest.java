@@ -84,8 +84,8 @@ class MKWorkspacePaletteResolverTest {
                 null
         );
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
-                .withTowerStackSettings(MKWorkspaceTopologyProfile.tower()
-                        .towerStackSettingsOrDefault("tower.primary")
+                .withVerticalStackSettings(MKWorkspaceTopologyProfile.tower()
+                        .verticalStackSettingsOrDefault("tower.primary")
                         .withPaletteOverride(java.util.Optional.of(stackOverride)));
         MKStructureWorkspace workspace = workspace(topologyProfile, base, List.of(family), List.of());
 
@@ -122,8 +122,8 @@ class MKWorkspacePaletteResolverTest {
                 null,
                 null
         );
-        MKWorkspaceTowerStackSettings stackSettings = MKWorkspaceTopologyProfile.tower()
-                .towerStackSettingsOrDefault("tower.primary")
+        MKWorkspaceVerticalStackSettings stackSettings = MKWorkspaceTopologyProfile.tower()
+                .verticalStackSettingsOrDefault("tower.primary")
                 .withPaletteOverride(java.util.Optional.of(stackOverride));
         MKWorkspaceFloorTopologySettings floorSettings = MKWorkspaceFloorTopologySettings
                 .defaults(stackSettings, MKTowerWorkspaceStackSlot.MAIN_FLOOR.suffix())
@@ -131,7 +131,7 @@ class MKWorkspacePaletteResolverTest {
         floorSettings = floorSettings.withRoomProfile(MKWorkspaceFloorRoomKind.MAIN_ROOM, 0,
                 floorSettings.mainRoomProfiles().getFirst().withPaletteOverride(java.util.Optional.of(roomOverride)));
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
-                .withTowerStackSettings(stackSettings)
+                .withVerticalStackSettings(stackSettings)
                 .withFloorTopologySettings(floorSettings);
         MKWorkspaceRoomFamilyDefinition family = MKWorkspaceRoomFamilyDefinition.forTowerStackSlot(
                 "floor_main",

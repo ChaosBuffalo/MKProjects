@@ -12,7 +12,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthorin
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,7 @@ public final class TowerStackDraftEditor {
         return stackId;
     }
 
-    public MKWorkspaceTowerStackSettings settingsForUi() {
+    public MKWorkspaceVerticalStackSettings settingsForUi() {
         return settings();
     }
 
@@ -132,7 +132,7 @@ public final class TowerStackDraftEditor {
     }
 
     public void mainFloors(int value) {
-        MKWorkspaceTowerStackSettings current = settings();
+        MKWorkspaceVerticalStackSettings current = settings();
         int normalizedMain = session.normalizeTowerStackMainFloorCount(current, value, current.basementFloors());
         int normalizedBasement = session.normalizeTowerStackBasementFloorCount(current, current.basementFloors(),
                 normalizedMain);
@@ -152,7 +152,7 @@ public final class TowerStackDraftEditor {
     }
 
     public void basementFloors(int value) {
-        MKWorkspaceTowerStackSettings current = settings();
+        MKWorkspaceVerticalStackSettings current = settings();
         int normalizedBasement = session.normalizeTowerStackBasementFloorCount(current, value, current.mainFloors());
         int normalizedMain = session.normalizeTowerStackMainFloorCount(current, current.mainFloors(),
                 normalizedBasement);
@@ -168,12 +168,12 @@ public final class TowerStackDraftEditor {
     }
 
     public List<Integer> allowedMainFloorCounts() {
-        MKWorkspaceTowerStackSettings current = settings();
+        MKWorkspaceVerticalStackSettings current = settings();
         return session.allowedTowerStackMainFloorCounts(current, current.basementFloors());
     }
 
     public List<Integer> allowedBasementFloorCounts() {
-        MKWorkspaceTowerStackSettings current = settings();
+        MKWorkspaceVerticalStackSettings current = settings();
         return session.allowedTowerStackBasementFloorCounts(current, current.mainFloors());
     }
 
@@ -182,7 +182,7 @@ public final class TowerStackDraftEditor {
     }
 
     public void topCapApproachEnabled(boolean value) {
-        MKWorkspaceTowerStackSettings updated = settings().withTopCapApproachEnabled(value);
+        MKWorkspaceVerticalStackSettings updated = settings().withTopCapApproachEnabled(value);
         int normalizedMain = session.normalizeTowerStackMainFloorCount(updated, updated.mainFloors(),
                 updated.basementFloors());
         int normalizedBasement = session.normalizeTowerStackBasementFloorCount(updated, updated.basementFloors(),
@@ -195,7 +195,7 @@ public final class TowerStackDraftEditor {
     }
 
     public void basementEntryEnabled(boolean value) {
-        MKWorkspaceTowerStackSettings updated = settings().withBasementEntryEnabled(value);
+        MKWorkspaceVerticalStackSettings updated = settings().withBasementEntryEnabled(value);
         int normalizedBasement = session.normalizeTowerStackBasementFloorCount(updated, updated.basementFloors(),
                 updated.mainFloors());
         int normalizedMain = session.normalizeTowerStackMainFloorCount(updated, updated.mainFloors(),
@@ -208,7 +208,7 @@ public final class TowerStackDraftEditor {
     }
 
     public void basementCapApproachEnabled(boolean value) {
-        MKWorkspaceTowerStackSettings updated = settings().withBasementCapApproachEnabled(value);
+        MKWorkspaceVerticalStackSettings updated = settings().withBasementCapApproachEnabled(value);
         int normalizedBasement = session.normalizeTowerStackBasementFloorCount(updated, updated.basementFloors(),
                 updated.mainFloors());
         int normalizedMain = session.normalizeTowerStackMainFloorCount(updated, updated.mainFloors(),
@@ -225,7 +225,7 @@ public final class TowerStackDraftEditor {
     }
 
     public List<Integer> allowedShaftSizes() {
-        MKWorkspaceTowerStackSettings current = settings();
+        MKWorkspaceVerticalStackSettings current = settings();
         return MKWorkspaceDimensions.getAllowedShaftSizes(current.width(), current.length());
     }
 
@@ -317,23 +317,23 @@ public final class TowerStackDraftEditor {
     }
 
     public void resetDefaults() {
-        replace(MKWorkspaceTowerStackSettings.defaults(stackId, 7));
+        replace(MKWorkspaceVerticalStackSettings.defaults(stackId, 7));
     }
 
-    private MKWorkspaceTowerStackSettings settings() {
-        return session.towerStackSettings(stackId);
+    private MKWorkspaceVerticalStackSettings settings() {
+        return session.verticalStackSettings(stackId);
     }
 
-    private void replace(MKWorkspaceTowerStackSettings settings) {
-        session.replaceTowerStackSettings(settings);
+    private void replace(MKWorkspaceVerticalStackSettings settings) {
+        session.replaceVerticalStackSettings(settings);
     }
 
-    private void replaceWithNormalizedFloorCounts(MKWorkspaceTowerStackSettings settings) {
-        session.replaceTowerStackSettingsWithNormalizedFloorCounts(settings);
+    private void replaceWithNormalizedFloorCounts(MKWorkspaceVerticalStackSettings settings) {
+        session.replaceVerticalStackSettingsWithNormalizedFloorCounts(settings);
     }
 
     private void replaceStairConfig(MKWorkspaceStairAuthoringConfig stairConfig) {
-        MKWorkspaceTowerStackSettings updated = settings().withStairConfig(stairConfig);
+        MKWorkspaceVerticalStackSettings updated = settings().withStairConfig(stairConfig);
         int normalizedMain = session.normalizeTowerStackMainFloorCount(updated, updated.mainFloors(),
                 updated.basementFloors());
         int normalizedBasement = session.normalizeTowerStackBasementFloorCount(updated, updated.basementFloors(),

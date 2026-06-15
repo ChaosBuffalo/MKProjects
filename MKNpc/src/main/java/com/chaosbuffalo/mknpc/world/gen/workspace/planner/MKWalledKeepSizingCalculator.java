@@ -5,7 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepCourtyardSettings;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 
@@ -329,27 +329,27 @@ public class MKWalledKeepSizingCalculator {
     }
 
     private int centerWidth(MKStructureWorkspace workspace) {
-        return towerStackSettings(workspace, "keep.center").width();
+        return verticalStackSettings(workspace, "keep.center").width();
     }
 
     private int centerLength(MKStructureWorkspace workspace) {
-        return towerStackSettings(workspace, "keep.center").length();
+        return verticalStackSettings(workspace, "keep.center").length();
     }
 
     private int cornerWidth(MKStructureWorkspace workspace) {
-        return towerStackSettings(workspace, cornerStackId(workspace)).width();
+        return verticalStackSettings(workspace, cornerStackId(workspace)).width();
     }
 
     private int cornerLength(MKStructureWorkspace workspace) {
-        return towerStackSettings(workspace, cornerStackId(workspace)).length();
+        return verticalStackSettings(workspace, cornerStackId(workspace)).length();
     }
 
     private String cornerStackId(MKStructureWorkspace workspace) {
         return workspace.topologyProfile().anySharedCornerTower() ? "keep.corner.shared" : "keep.corner.north_west";
     }
 
-    private MKWorkspaceTowerStackSettings towerStackSettings(MKStructureWorkspace workspace, String stackId) {
-        return workspace.topologyProfile().towerStackSettingsOrDefault(stackId);
+    private MKWorkspaceVerticalStackSettings verticalStackSettings(MKStructureWorkspace workspace, String stackId) {
+        return workspace.topologyProfile().verticalStackSettingsOrDefault(stackId);
     }
 
     private int exportedSpan(int authoredSpan, int padding) {

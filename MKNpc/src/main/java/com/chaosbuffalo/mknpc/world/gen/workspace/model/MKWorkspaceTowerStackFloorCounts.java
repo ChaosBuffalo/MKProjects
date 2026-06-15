@@ -20,7 +20,7 @@ public final class MKWorkspaceTowerStackFloorCounts {
     private MKWorkspaceTowerStackFloorCounts() {
     }
 
-    public static List<String> validate(MKWorkspaceTowerStackSettings settings) {
+    public static List<String> validate(MKWorkspaceVerticalStackSettings settings) {
         List<String> errors = new ArrayList<>();
         if (settings.mainFloors() < 0) {
             errors.add("main floor count must be at least 0");

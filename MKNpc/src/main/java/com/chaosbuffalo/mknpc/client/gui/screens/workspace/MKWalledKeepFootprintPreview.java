@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingReport;
 import com.chaosbuffalo.mkwidgets.client.gui.instructions.HoveringTextInstruction;
 import com.chaosbuffalo.mkwidgets.client.gui.math.Vec2i;
@@ -223,7 +223,7 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
 
     private void drawCornerTowers(GuiGraphics graphics, List<PreviewElement> elements, Rect footprintRect,
                                   double scale) {
-        MKWorkspaceTowerStackSettings corner = towerStack(cornerStackId("keep.corner.north_west"));
+        MKWorkspaceVerticalStackSettings corner = towerStack(cornerStackId("keep.corner.north_west"));
         int cornerWidth = Math.max(4, px(scale, corner.width()));
         int cornerHeight = Math.max(4, px(scale, corner.length()));
         drawElement(graphics, elements,
@@ -258,7 +258,7 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
         return workspace.topologyProfile().uniqueCornerTower(topologySlotId) ? topologySlotId : "keep.corner.shared";
     }
 
-    private String cornerTooltip(String cornerLabel, MKWorkspaceTowerStackSettings corner) {
+    private String cornerTooltip(String cornerLabel, MKWorkspaceVerticalStackSettings corner) {
         return cornerLabel + " corner tower\n" + corner.width() + " x " + corner.length() + " blocks";
     }
 
@@ -349,8 +349,8 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
                 .findFirst();
     }
 
-    private MKWorkspaceTowerStackSettings towerStack(String stackId) {
-        return workspace.topologyProfile().towerStackSettingsOrDefault(stackId);
+    private MKWorkspaceVerticalStackSettings towerStack(String stackId) {
+        return workspace.topologyProfile().verticalStackSettingsOrDefault(stackId);
     }
 
     private void drawGrid(GuiGraphics graphics, int x, int y, int size) {

@@ -135,9 +135,9 @@ public class NpcStructures {
                     MKFloorTopologyPlanner.mainCapApproachPoolName(topologyGroupId) :
                     MKFloorTopologyPlanner.mainCapPoolName(topologyGroupId);
             int rootWidth = manifest.settings().topologyProfile()
-                    .towerStackSettingsOrDefault(settings.stackId()).width();
+                    .verticalStackSettingsOrDefault(settings.stackId()).width();
             int rootLength = manifest.settings().topologyProfile()
-                    .towerStackSettingsOrDefault(settings.stackId()).length();
+                    .verticalStackSettingsOrDefault(settings.stackId()).length();
             rules.add(new MKDungeonTopologyGroupRule(
                     topologyGroupId,
                     settings.minMainPathPieces(),

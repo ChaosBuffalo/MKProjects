@@ -362,7 +362,7 @@ Renders a small fallback message for unknown topology profiles. It should avoid 
 ### Phase 4: Add Tower Side Preview
 
 - Add `MKTowerStackSizingReport`.
-- Add calculator/report generation from `MKWorkspaceTowerStackSettings`.
+- Add calculator/report generation from `MKWorkspaceVerticalStackSettings`.
 - Place the report and calculator in the `planner` package.
 - Add `MKTowerStackSidePreview`.
 - Render it in both tower and walled keep contributors.

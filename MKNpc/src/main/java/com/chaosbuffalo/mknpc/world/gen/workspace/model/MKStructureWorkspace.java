@@ -261,12 +261,12 @@ public class MKStructureWorkspace {
         if (MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(topologyProfile.plannerId())) {
             errors.addAll(topologyProfile.courtyardSettings().validate());
         }
-        for (MKWorkspaceTowerStackSettings settings : topologyProfile.towerStackSettings()) {
+        for (MKWorkspaceVerticalStackSettings settings : topologyProfile.verticalStackSettings()) {
             errors.addAll(MKWorkspaceTowerStackFloorCounts.validate(settings).stream()
                     .map(error -> "tower stack " + settings.stackId() + " " + error)
                     .toList());
         }
-        for (MKWorkspaceTowerStackSettings settings : topologyProfile.towerStackSettings()) {
+        for (MKWorkspaceVerticalStackSettings settings : topologyProfile.verticalStackSettings()) {
             MKWorkspaceVerticalAccessSpec stackSpec = new MKWorkspaceVerticalAccessSpec(
                     settings.shaftSize(), settings.verticalAccessPlacement(), settings.stairConfig());
             for (String error : stackSpec.validate()) {
@@ -402,7 +402,7 @@ public class MKStructureWorkspace {
     }
 
     private Optional<Integer> maxRoomHeightForFamily(MKWorkspaceRoomFamilyDefinition familyDefinition) {
-        Optional<MKWorkspaceTowerStackSettings> stackSettings = towerStackSettingsForFamily(familyDefinition);
+        Optional<MKWorkspaceVerticalStackSettings> stackSettings = verticalStackSettingsForFamily(familyDefinition);
         if (stackSettings.isPresent()) {
             return Optional.of(stackSettings.get().heightForTopologySlot(familyDefinition.topologySlotId()));
         }
@@ -424,7 +424,7 @@ public class MKStructureWorkspace {
         if (stackId.isBlank()) {
             return verticalAccessSpec;
         }
-        MKWorkspaceTowerStackSettings settings = topologyProfile.towerStackSettings(stackId)
+        MKWorkspaceVerticalStackSettings settings = topologyProfile.verticalStackSettings(stackId)
                 .orElse(null);
         if (settings == null) {
             return verticalAccessSpec;
@@ -441,8 +441,8 @@ public class MKStructureWorkspace {
         if (stackId.isBlank()) {
             return stairConfig;
         }
-        return topologyProfile.towerStackSettings(stackId)
-                .map(MKWorkspaceTowerStackSettings::stairConfig)
+        return topologyProfile.verticalStackSettings(stackId)
+                .map(MKWorkspaceVerticalStackSettings::stairConfig)
                 .orElse(stairConfig);
     }
 
@@ -450,7 +450,7 @@ public class MKStructureWorkspace {
         return MKWorkspaceResolvedFamilySettings.from(this, familyDefinition);
     }
 
-    public Optional<MKWorkspaceTowerStackSettings> towerStackSettingsForFamily(
+    public Optional<MKWorkspaceVerticalStackSettings> verticalStackSettingsForFamily(
             MKWorkspaceRoomFamilyDefinition familyDefinition) {
         String stackId = towerStackIdForFamily(familyDefinition.topologySlotId());
         if (stackId.isBlank()) {
@@ -460,9 +460,9 @@ public class MKStructureWorkspace {
                 stackId.startsWith("keep.corner.") &&
                 !"keep.corner.shared".equals(stackId) &&
                 !topologyProfile.uniqueCornerTower(stackId)) {
-            return topologyProfile.towerStackSettings("keep.corner.shared");
+            return topologyProfile.verticalStackSettings("keep.corner.shared");
         }
-        return topologyProfile.towerStackSettings(stackId);
+        return topologyProfile.verticalStackSettings(stackId);
     }
 
     private String towerStackIdForFamily(String topologySlotId) {

@@ -21,7 +21,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceI
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
@@ -423,7 +423,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 .filter(family -> isActiveKeepSlot(workspace, family.topologySlotId()))
                 .filter(family -> isCenterStackSlot(family.topologySlotId()))
                 .toList();
-        MKWorkspaceTowerStackSettings settings = workspace.topologyProfile().towerStackSettingsOrDefault("keep.center");
+        MKWorkspaceVerticalStackSettings settings = workspace.topologyProfile().verticalStackSettingsOrDefault("keep.center");
         MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped("keep.center", true, settings);
         ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
         return towerStackPlanner.createRoomPieces(workspace, stackDefinition, centerFamilies).stream()
@@ -436,8 +436,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         List<MKWorkspaceRoomFamilyDefinition> sharedFamilies = workspace.familyDefinitions().stream()
                 .filter(family -> family.topologySlotId().startsWith("keep.corner.shared."))
                 .toList();
-        MKWorkspaceTowerStackSettings sharedCornerSettings = normalizeSharedCornerSettings(
-                workspace.topologyProfile().towerStackSettingsOrDefault("keep.corner.shared"));
+        MKWorkspaceVerticalStackSettings sharedCornerSettings = normalizeSharedCornerSettings(
+                workspace.topologyProfile().verticalStackSettingsOrDefault("keep.corner.shared"));
         for (String stackId : CONCRETE_CORNER_SLOTS) {
             List<MKWorkspaceRoomFamilyDefinition> stackFamilies;
             if (workspace.topologyProfile().uniqueCornerTower(stackId)) {
@@ -461,7 +461,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
             return;
         }
         boolean uniqueCorner = workspace.topologyProfile().uniqueCornerTower(stackId);
-        MKWorkspaceTowerStackSettings settings = workspace.topologyProfile().towerStackSettingsOrDefault(
+        MKWorkspaceVerticalStackSettings settings = workspace.topologyProfile().verticalStackSettingsOrDefault(
                 uniqueCorner ? stackId : "keep.corner.shared");
         if (!uniqueCorner) {
             settings = normalizeSharedCornerSettings(settings);
@@ -476,7 +476,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
 
     private MKWorkspaceRoomFamilyDefinition remapSharedCornerFamily(MKWorkspaceRoomFamilyDefinition family,
                                                                      String targetStackId,
-                                                                     MKWorkspaceTowerStackSettings sharedSettings) {
+                                                                     MKWorkspaceVerticalStackSettings sharedSettings) {
         String targetBasePrefix = targetStackId.replace('.', '_');
         String baseName = family.baseName().replace("keep_corner_shared", targetBasePrefix);
         String topologySlotId = family.topologySlotId().replace("keep.corner.shared", targetStackId);
@@ -500,9 +500,9 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         );
     }
 
-    private MKWorkspaceTowerStackSettings normalizeSharedCornerSettings(MKWorkspaceTowerStackSettings settings) {
+    private MKWorkspaceVerticalStackSettings normalizeSharedCornerSettings(MKWorkspaceVerticalStackSettings settings) {
         int size = Math.max(settings.width(), settings.length());
-        return new MKWorkspaceTowerStackSettings(
+        return new MKWorkspaceVerticalStackSettings(
                 settings.stackId(),
                 settings.minMainFloors(),
                 settings.mainFloors(),
@@ -982,19 +982,19 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     }
 
     private int centerWidth(MKStructureWorkspace workspace) {
-        return workspace.topologyProfile().towerStackSettingsOrDefault("keep.center").width();
+        return workspace.topologyProfile().verticalStackSettingsOrDefault("keep.center").width();
     }
 
     private int centerLength(MKStructureWorkspace workspace) {
-        return workspace.topologyProfile().towerStackSettingsOrDefault("keep.center").length();
+        return workspace.topologyProfile().verticalStackSettingsOrDefault("keep.center").length();
     }
 
     private int cornerWidth(MKStructureWorkspace workspace) {
-        return workspace.topologyProfile().towerStackSettingsOrDefault(cornerSettingsSlot(workspace)).width();
+        return workspace.topologyProfile().verticalStackSettingsOrDefault(cornerSettingsSlot(workspace)).width();
     }
 
     private int cornerLength(MKStructureWorkspace workspace) {
-        return workspace.topologyProfile().towerStackSettingsOrDefault(cornerSettingsSlot(workspace)).length();
+        return workspace.topologyProfile().verticalStackSettingsOrDefault(cornerSettingsSlot(workspace)).length();
     }
 
     private String cornerSettingsSlot(MKStructureWorkspace workspace) {
@@ -1527,7 +1527,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         tags.put("workspace_family_id", family.baseName());
         tags.put("workspace_horizontal_exits", family.horizontalExitSummary());
         tags.put("workspace_horizontal_extrusion_mode", effectiveRoomExtrusionMode(workspace, family).getSerializedName());
-        towerStackSettingsForTopologySlot(workspace, family.topologySlotId())
+        verticalStackSettingsForTopologySlot(workspace, family.topologySlotId())
                 .ifPresent(settings -> {
                     tags.put("workspace_tower_stack_id", settings.stackId());
                     tags.put("workspace_tower_stack_main_floors", Integer.toString(settings.mainFloors()));
@@ -1550,18 +1550,18 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
 
     private MKWorkspaceHorizontalExtrusionMode effectiveRoomExtrusionMode(MKStructureWorkspace workspace,
                                                                           MKWorkspaceRoomFamilyDefinition family) {
-        return towerStackSettingsForTopologySlot(workspace, family.topologySlotId())
-                .map(MKWorkspaceTowerStackSettings::horizontalExtrusionMode)
+        return verticalStackSettingsForTopologySlot(workspace, family.topologySlotId())
+                .map(MKWorkspaceVerticalStackSettings::horizontalExtrusionMode)
                 .orElse(family.horizontalExtrusionMode());
     }
 
     private Optional<MKWorkspaceHorizontalExtrusionMode> effectiveRoomExtrusionMode(MKStructureWorkspace workspace,
                                                                                    String topologySlotId) {
-        return towerStackSettingsForTopologySlot(workspace, topologySlotId)
-                .map(MKWorkspaceTowerStackSettings::horizontalExtrusionMode);
+        return verticalStackSettingsForTopologySlot(workspace, topologySlotId)
+                .map(MKWorkspaceVerticalStackSettings::horizontalExtrusionMode);
     }
 
-    private Optional<MKWorkspaceTowerStackSettings> towerStackSettingsForTopologySlot(MKStructureWorkspace workspace,
+    private Optional<MKWorkspaceVerticalStackSettings> verticalStackSettingsForTopologySlot(MKStructureWorkspace workspace,
                                                                                      String topologySlotId) {
         String stackId = stackIdForTopologySlot(topologySlotId);
         if (stackId.isBlank()) {
@@ -1570,9 +1570,9 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         if (stackId.startsWith("keep.corner.") &&
                 !"keep.corner.shared".equals(stackId) &&
                 !workspace.topologyProfile().uniqueCornerTower(stackId)) {
-            return workspace.topologyProfile().towerStackSettings("keep.corner.shared");
+            return workspace.topologyProfile().verticalStackSettings("keep.corner.shared");
         }
-        return workspace.topologyProfile().towerStackSettings(stackId);
+        return workspace.topologyProfile().verticalStackSettings(stackId);
     }
 
     private Map<String, String> buildLinearRunTags(MKStructureWorkspace workspace,

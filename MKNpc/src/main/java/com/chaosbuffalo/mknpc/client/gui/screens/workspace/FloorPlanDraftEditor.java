@@ -10,7 +10,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomGeometry;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import net.minecraft.core.Direction;
 
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ public final class FloorPlanDraftEditor {
     }
 
     public MKWorkspaceMaterialPalette inheritedPalette() {
-        return session.towerStackSettings(stackId).paletteOverrideOpt()
+        return session.verticalStackSettings(stackId).paletteOverrideOpt()
                 .map(override -> override.resolve(session.draftBasePalette()))
                 .orElse(session.draftBasePalette());
     }
@@ -234,7 +234,7 @@ public final class FloorPlanDraftEditor {
     }
 
     public int roomHeightMax() {
-        MKWorkspaceTowerStackSettings stackSettings = session.towerStackSettings(stackId);
+        MKWorkspaceVerticalStackSettings stackSettings = session.verticalStackSettings(stackId);
         return switch (floorRole) {
             case "main_floor" -> stackSettings.mainHeight();
             case "basement_floor" -> stackSettings.basementHeight();
@@ -366,7 +366,7 @@ public final class FloorPlanDraftEditor {
     }
 
     private MKWorkspaceFloorRoomProfile defaultRoomProfile(MKWorkspaceFloorRoomKind kind) {
-        MKWorkspaceTowerStackSettings stackSettings = session.towerStackSettings(stackId);
+        MKWorkspaceVerticalStackSettings stackSettings = session.verticalStackSettings(stackId);
         return MKWorkspaceFloorRoomProfile.defaults(kind, stackSettings.width(), stackSettings.length(),
                 roomHeightMax());
     }

@@ -230,7 +230,7 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
     }
 
     private void addTowerTabs(MKWorkspaceScreen screen, MKStackLayoutVertical content, WorkspaceDraftSession editor) {
-        addTowerTabSelector(screen, content, editor, "Tower Stack Settings");
+        addTowerTabSelector(screen, content, editor, "Vertical Stack Settings");
         String activeStackId = editor.walledKeepEditor().towerStackTab();
         String label = tabLabel(activeStackId, false);
         towerStackPanel.addStackSizingRows(screen, content, editor, activeStackId, label);

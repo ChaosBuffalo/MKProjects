@@ -33,7 +33,7 @@ public record MKTowerStackBudget(
         return new MKTowerStackBudget(height, height, height, height, height, height);
     }
 
-    public static MKTowerStackBudget fromStackSettings(MKWorkspaceTowerStackSettings settings) {
+    public static MKTowerStackBudget fromStackSettings(MKWorkspaceVerticalStackSettings settings) {
         return settings.heights();
     }
 

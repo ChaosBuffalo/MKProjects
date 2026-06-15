@@ -6,7 +6,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 
 import java.util.ArrayList;
@@ -271,22 +271,22 @@ public final class WalledKeepDraftEditor {
     MKWorkspaceTopologyProfile topologyProfileWithCornerModes(boolean northWest, boolean northEast,
                                                               boolean southEast, boolean southWest) {
         MKWorkspaceTopologyProfile current = session.draft().topologyProfile;
-        ArrayList<MKWorkspaceTowerStackSettings> settings = new ArrayList<>(current.towerStackSettings());
-        copyTowerStackSettingsIfMissing(settings, "keep.center", "keep.corner.shared");
+        ArrayList<MKWorkspaceVerticalStackSettings> settings = new ArrayList<>(current.verticalStackSettings());
+        copyVerticalStackSettingsIfMissing(settings, "keep.center", "keep.corner.shared");
         if (!northWest || !northEast || !southEast || !southWest) {
-            copyTowerStackSettingsIfMissing(settings, "keep.corner.shared", firstCornerStackId(settings));
+            copyVerticalStackSettingsIfMissing(settings, "keep.corner.shared", firstCornerStackId(settings));
         }
         if (northWest) {
-            copyTowerStackSettingsIfMissing(settings, "keep.corner.north_west", "keep.corner.shared");
+            copyVerticalStackSettingsIfMissing(settings, "keep.corner.north_west", "keep.corner.shared");
         }
         if (northEast) {
-            copyTowerStackSettingsIfMissing(settings, "keep.corner.north_east", "keep.corner.shared");
+            copyVerticalStackSettingsIfMissing(settings, "keep.corner.north_east", "keep.corner.shared");
         }
         if (southEast) {
-            copyTowerStackSettingsIfMissing(settings, "keep.corner.south_east", "keep.corner.shared");
+            copyVerticalStackSettingsIfMissing(settings, "keep.corner.south_east", "keep.corner.shared");
         }
         if (southWest) {
-            copyTowerStackSettingsIfMissing(settings, "keep.corner.south_west", "keep.corner.shared");
+            copyVerticalStackSettingsIfMissing(settings, "keep.corner.south_west", "keep.corner.shared");
         }
         return new MKWorkspaceTopologyProfile(
                 MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID,
@@ -303,7 +303,7 @@ public final class WalledKeepDraftEditor {
         );
     }
 
-    private void copyTowerStackSettingsIfMissing(List<MKWorkspaceTowerStackSettings> settings, String targetId,
+    private void copyVerticalStackSettingsIfMissing(List<MKWorkspaceVerticalStackSettings> settings, String targetId,
                                                  String sourceId) {
         if (targetId == null || targetId.isBlank() ||
                 settings.stream().anyMatch(existing -> existing.stackId().equals(targetId))) {
@@ -316,9 +316,9 @@ public final class WalledKeepDraftEditor {
                 .ifPresent(settings::add);
     }
 
-    private String firstCornerStackId(List<MKWorkspaceTowerStackSettings> settings) {
+    private String firstCornerStackId(List<MKWorkspaceVerticalStackSettings> settings) {
         return settings.stream()
-                .map(MKWorkspaceTowerStackSettings::stackId)
+                .map(MKWorkspaceVerticalStackSettings::stackId)
                 .filter(KEEP_CORNER_STACK_IDS::contains)
                 .findFirst()
                 .orElse("keep.center");

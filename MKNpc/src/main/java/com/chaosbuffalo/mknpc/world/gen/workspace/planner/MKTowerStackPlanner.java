@@ -244,7 +244,7 @@ public class MKTowerStackPlanner {
     }
 
     private MKTowerStackDefinition primaryStackDefinition(MKStructureWorkspace workspace) {
-        return workspace.topologyProfile().towerStackSettings("tower.primary")
+        return workspace.topologyProfile().verticalStackSettings("tower.primary")
                 .map(MKTowerStackDefinition::towerPrimary)
                 .orElseThrow(() -> new IllegalStateException("tower topology is missing tower.primary stack settings"));
     }

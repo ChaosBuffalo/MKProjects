@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 
 public record MKTowerStackDefinition(
         String stackId,
@@ -28,7 +28,7 @@ public record MKTowerStackDefinition(
         stackId = stackId == null ? "" : stackId;
     }
 
-    public static MKTowerStackDefinition towerPrimary(MKWorkspaceTowerStackSettings stackSettings) {
+    public static MKTowerStackDefinition towerPrimary(MKWorkspaceVerticalStackSettings stackSettings) {
         return new MKTowerStackDefinition(
                 stackSettings.stackId(),
                 stackSettings.minMainFloors(),
@@ -52,7 +52,7 @@ public record MKTowerStackDefinition(
     }
 
     public static MKTowerStackDefinition scoped(String stackId, boolean startPiece,
-                                                MKWorkspaceTowerStackSettings stackSettings) {
+                                                MKWorkspaceVerticalStackSettings stackSettings) {
         String prefix = "tower_stacks/" + stackId.replace('.', '/');
         return new MKTowerStackDefinition(
                 stackId,

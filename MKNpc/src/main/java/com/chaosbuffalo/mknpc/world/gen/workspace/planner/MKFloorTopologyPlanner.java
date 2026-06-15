@@ -246,8 +246,8 @@ public class MKFloorTopologyPlanner {
             return Math.max(1, settings.manualHallwayLeadInPieces());
         }
         return Math.max(1, Math.ceilDiv(Math.max(
-                workspace.topologyProfile().towerStackSettingsOrDefault(context.stackId()).width(),
-                workspace.topologyProfile().towerStackSettingsOrDefault(context.stackId()).length()), 8));
+                workspace.topologyProfile().verticalStackSettingsOrDefault(context.stackId()).width(),
+                workspace.topologyProfile().verticalStackSettingsOrDefault(context.stackId()).length()), 8));
     }
 
     private Optional<FloorOpeningContext> contextForRootFamily(MKStructureWorkspace workspace,

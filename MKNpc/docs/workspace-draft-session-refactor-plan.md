@@ -283,7 +283,7 @@ This refactor is primarily ownership-preserving, so tests should focus on behavi
   - floor-plan drill-down page
   - topology defaults workspace creation page
 
-For pure method moves, avoid adding brittle tests that only encode current UI layout. Add tests when a moved method has mutation logic that can drop fields, such as record reconstruction for courtyard settings or tower stack settings.
+For pure method moves, avoid adding brittle tests that only encode current UI layout. Add tests when a moved method has mutation logic that can drop fields, such as record reconstruction for courtyard settings or vertical stack settings.
 
 ## Risks
 

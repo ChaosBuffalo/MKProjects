@@ -16,7 +16,7 @@ public record MKWorkspaceResolvedFamilySettings(
                                                          MKWorkspaceRoomFamilyDefinition familyDefinition) {
         MKWorkspaceMaterialPalette palette = new MKWorkspacePaletteResolver()
                 .resolveFamily(workspace, familyDefinition);
-        MKWorkspaceTowerStackSettings stackSettings = workspace.towerStackSettingsForFamily(familyDefinition)
+        MKWorkspaceVerticalStackSettings stackSettings = workspace.verticalStackSettingsForFamily(familyDefinition)
                 .orElse(null);
         MKWorkspaceFoundationPolicy foundationPolicy = familyDefinition.foundationPolicyOverrideOpt()
                 .orElseGet(() -> stackSettings == null ?

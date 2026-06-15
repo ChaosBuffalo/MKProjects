@@ -45,7 +45,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathS
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackFloorCounts;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
@@ -121,10 +121,10 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        MKWorkspaceTowerStackSettings stackSettings = workspace.topologyProfile()
-                .towerStackSettingsOrDefault("tower.primary");
+        MKWorkspaceVerticalStackSettings stackSettings = workspace.topologyProfile()
+                .verticalStackSettingsOrDefault("tower.primary");
         MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped(
-                "keep.center", true, new MKWorkspaceTowerStackSettings(
+                "keep.center", true, new MKWorkspaceVerticalStackSettings(
                         "keep.center",
                         stackSettings.mainFloors(),
                         stackSettings.basementFloors(),
@@ -168,9 +168,9 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void towerPlannerUsesPrimaryTowerStackSettingsWhenPresent() {
+    void towerPlannerUsesPrimaryVerticalStackSettingsWhenPresent() {
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
-                .withTowerStackSettings(new MKWorkspaceTowerStackSettings(
+                .withVerticalStackSettings(new MKWorkspaceVerticalStackSettings(
                         "tower.primary", 2, 0, 9, 11, 13,
                         3, MKVerticalAccessPlacement.CENTER, MKWorkspaceStairAuthoringConfig.defaultConfig(),
                         false, false));
@@ -339,7 +339,7 @@ class TowerWorkspaceV2Test {
                 2
         );
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(true, false, true, false)
-                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 2, 1, 9,
+                .withVerticalStackSettings(new MKWorkspaceVerticalStackSettings("keep.center", 2, 1, 9,
                         19, 21, 5, MKVerticalAccessPlacement.EAST, centerStairs, true, false));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false)), List.of()),
@@ -356,8 +356,8 @@ class TowerWorkspaceV2Test {
         assertTrue(decoded.topologyProfile().uniqueSouthEastCornerTower());
         assertFalse(decoded.topologyProfile().uniqueSouthWestCornerTower());
         assertFalse(decoded.topologyProfile().uniqueCornerTowers());
-        MKWorkspaceTowerStackSettings centerSettings = decoded.topologyProfile()
-                .towerStackSettings("keep.center")
+        MKWorkspaceVerticalStackSettings centerSettings = decoded.topologyProfile()
+                .verticalStackSettings("keep.center")
                 .orElseThrow();
         assertEquals(19, centerSettings.width());
         assertEquals(21, centerSettings.length());
@@ -376,7 +376,7 @@ class TowerWorkspaceV2Test {
                 2
         );
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false, true, false, true)
-                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 3, 2, 11,
+                .withVerticalStackSettings(new MKWorkspaceVerticalStackSettings("keep.center", 3, 2, 11,
                         23, 25, 5, MKVerticalAccessPlacement.WEST, centerStairs, false, true))
                 .withPathSettings(new MKWorkspaceTopologyPathSettings(
                         "main", 2, 4, 3));
@@ -397,8 +397,8 @@ class TowerWorkspaceV2Test {
         assertTrue(imported.topologyProfile().uniqueNorthEastCornerTower());
         assertFalse(imported.topologyProfile().uniqueSouthEastCornerTower());
         assertTrue(imported.topologyProfile().uniqueSouthWestCornerTower());
-        MKWorkspaceTowerStackSettings centerSettings = imported.topologyProfile()
-                .towerStackSettings("keep.center")
+        MKWorkspaceVerticalStackSettings centerSettings = imported.topologyProfile()
+                .verticalStackSettings("keep.center")
                 .orElseThrow();
         assertEquals(23, centerSettings.width());
         assertEquals(25, centerSettings.length());
@@ -412,7 +412,7 @@ class TowerWorkspaceV2Test {
     @Test
     void exportTopologySettingsCarryStackAndPathData() {
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
-                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("tower.primary", 2, 1, 9,
+                .withVerticalStackSettings(new MKWorkspaceVerticalStackSettings("tower.primary", 2, 1, 9,
                         15, 17, 3, MKVerticalAccessPlacement.CENTER,
                         MKWorkspaceStairAuthoringConfig.defaultConfig(), true, false))
                 .withPathSettings(new MKWorkspaceTopologyPathSettings(
@@ -425,7 +425,7 @@ class TowerWorkspaceV2Test {
         );
 
         MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.snapshotFromWorkspace(workspace, 4, "test");
-        MKWorkspaceTowerStackSettings exportedStack = manifest.settings().topologyProfile().towerStackSettings("tower.primary")
+        MKWorkspaceVerticalStackSettings exportedStack = manifest.settings().topologyProfile().verticalStackSettings("tower.primary")
                 .orElseThrow();
         MKWorkspaceTopologyPathSettings exportedPath =
                 manifest.settings().topologyProfile().pathSettingsOrDefault("main");
@@ -996,8 +996,8 @@ class TowerWorkspaceV2Test {
                 largeDimensions
         );
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false);
-        topologyProfile = topologyProfile.withTowerStackSettings(topologyProfile
-                .towerStackSettingsOrDefault("keep.center")
+        topologyProfile = topologyProfile.withVerticalStackSettings(topologyProfile
+                .verticalStackSettingsOrDefault("keep.center")
                 .withWidth(17)
                 .withLength(17));
         workspace = withTopologyAndLinearRuns(
@@ -1397,7 +1397,7 @@ class TowerWorkspaceV2Test {
     void walledKeepSharedCornerPlannerNormalizesHorizontalDimensionsToSquare() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
-                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.corner.shared", 1, 1, 7,
+                .withVerticalStackSettings(new MKWorkspaceVerticalStackSettings("keep.corner.shared", 1, 1, 7,
                         9, 13, true, false));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
@@ -1423,8 +1423,8 @@ class TowerWorkspaceV2Test {
     void walledKeepValidationAllowsIndependentTowerStackHeights() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
-                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 1, 1, 9))
-                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.corner.shared", 1, 1, 7));
+                .withVerticalStackSettings(new MKWorkspaceVerticalStackSettings("keep.center", 1, 1, 9))
+                .withVerticalStackSettings(new MKWorkspaceVerticalStackSettings("keep.corner.shared", 1, 1, 7));
         List<MKWorkspaceRoomFamilyDefinition> families = MKWorkspaceRoomFamilyDefinition
                 .createWalledKeepDefaults(dimensions).stream()
                 .map(family -> family.topologySlotId().startsWith("keep.center.") ?
@@ -1444,7 +1444,7 @@ class TowerWorkspaceV2Test {
     void stackFloorValidationIgnoresGlobalDefaultHeightsWhenStackSettingsExist() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
-                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("tower.primary", 1, 1, 7));
+                .withVerticalStackSettings(new MKWorkspaceVerticalStackSettings("tower.primary", 1, 1, 7));
         List<MKWorkspaceRoomFamilyDefinition> families = MKWorkspaceRoomFamilyDefinition
                 .createDefaults(dimensions).stream()
                 .map(family -> copyFamilyWithHeight(family, 7))
@@ -1463,7 +1463,7 @@ class TowerWorkspaceV2Test {
     void familyExitValidationUsesResolvedStackDimensions() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
-                .withTowerStackSettings(new MKWorkspaceTowerStackSettings(
+                .withVerticalStackSettings(new MKWorkspaceVerticalStackSettings(
                         "tower.primary", 1, 1, 7, 15, 15,
                         3, MKVerticalAccessPlacement.CENTER, MKWorkspaceStairAuthoringConfig.defaultConfig(),
                         true, true));
@@ -1519,7 +1519,7 @@ class TowerWorkspaceV2Test {
     @Test
     void walledKeepPlannerTagsTowerStacksAndLinearRunVoidMargins() {
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
-                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 3, 2, 7));
+                .withVerticalStackSettings(new MKWorkspaceVerticalStackSettings("keep.center", 3, 2, 7));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(List.of(new MKHorizontalOpeningProfile("wall_opening", 3, 3, true, true)), List.of()),
                 topologyProfile,
@@ -1582,7 +1582,7 @@ class TowerWorkspaceV2Test {
                 2
         );
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
-                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 1, 1, 7,
+                .withVerticalStackSettings(new MKWorkspaceVerticalStackSettings("keep.center", 1, 1, 7,
                         17, 17, 5, MKVerticalAccessPlacement.EAST, centerStairs, false, true));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
@@ -1932,7 +1932,7 @@ class TowerWorkspaceV2Test {
         MKWorkspaceFoundationPolicy stackFoundation = MKWorkspaceFoundationPolicy.uniformBlock(
                 ResourceLocation.parse("minecraft:stone_bricks"));
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
-                .withTowerStackSettings(MKWorkspaceTowerStackSettings.defaults("keep.center", 7)
+                .withVerticalStackSettings(MKWorkspaceVerticalStackSettings.defaults("keep.center", 7)
                         .withFoundationPolicy(stackFoundation));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
@@ -1968,7 +1968,7 @@ class TowerWorkspaceV2Test {
         MKWorkspaceFoundationPolicy familyFoundation = MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(List.of(
                 ResourceLocation.parse("minecraft:oak_planks")));
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
-                .withTowerStackSettings(MKWorkspaceTowerStackSettings.defaults("keep.center", 7)
+                .withVerticalStackSettings(MKWorkspaceVerticalStackSettings.defaults("keep.center", 7)
                         .withFoundationPolicy(stackFoundation));
         List<MKWorkspaceRoomFamilyDefinition> families = MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions)
                 .stream()
@@ -1997,7 +1997,7 @@ class TowerWorkspaceV2Test {
         MKWorkspaceFoundationPolicy stackFoundation = MKWorkspaceFoundationPolicy.uniformBlock(
                 ResourceLocation.parse("minecraft:stone_bricks"));
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
-                .withTowerStackSettings(MKWorkspaceTowerStackSettings.defaults("keep.center", 7)
+                .withVerticalStackSettings(MKWorkspaceVerticalStackSettings.defaults("keep.center", 7)
                         .withFoundationPolicy(stackFoundation));
         List<MKWorkspaceRoomFamilyDefinition> families = MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions)
                 .stream()
@@ -2092,7 +2092,7 @@ class TowerWorkspaceV2Test {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         ResourceLocation stackWallBlock = ResourceLocation.parse("minecraft:polished_blackstone_bricks");
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
-                .withTowerStackSettings(MKWorkspaceTowerStackSettings.defaults("keep.center", 7)
+                .withVerticalStackSettings(MKWorkspaceVerticalStackSettings.defaults("keep.center", 7)
                         .withPaletteOverride(Optional.of(MKWorkspacePaletteOverride.EMPTY.withWallBlock(stackWallBlock))));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
@@ -3710,7 +3710,7 @@ class TowerWorkspaceV2Test {
     void stackBackedDefaultFamiliesInheritTopologyGeometry() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
-                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("tower.primary", 2, 1, 9,
+                .withVerticalStackSettings(new MKWorkspaceVerticalStackSettings("tower.primary", 2, 1, 9,
                         15, 17, 3, MKVerticalAccessPlacement.CENTER,
                         MKWorkspaceStairAuthoringConfig.defaultConfig(), true, false));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
@@ -3738,7 +3738,7 @@ class TowerWorkspaceV2Test {
     void stackBackedFamilyGeometryOverridesResolvePerDimension() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
-                .withTowerStackSettings(new MKWorkspaceTowerStackSettings("tower.primary", 2, 1, 9,
+                .withVerticalStackSettings(new MKWorkspaceVerticalStackSettings("tower.primary", 2, 1, 9,
                         15, 17, 3, MKVerticalAccessPlacement.CENTER,
                         MKWorkspaceStairAuthoringConfig.defaultConfig(), true, false));
         List<MKWorkspaceRoomFamilyDefinition> families = MKWorkspaceRoomFamilyDefinition.createDefaults(dimensions)
@@ -3855,8 +3855,8 @@ class TowerWorkspaceV2Test {
         );
 
         MKWorkspaceTopologyProfile topologyProfile = workspace.topologyProfile()
-                .withTowerStackSettings(workspace.topologyProfile()
-                        .towerStackSettings("tower.primary")
+                .withVerticalStackSettings(workspace.topologyProfile()
+                        .verticalStackSettings("tower.primary")
                         .orElseThrow()
                         .withMainFloors(11)
                         .withBasementFloors(11));
@@ -3950,10 +3950,10 @@ class TowerWorkspaceV2Test {
         assertEquals(workspace.id(), decoded.id());
         assertEquals(workspace.anchor(), decoded.anchor());
         assertEquals(workspace.verticalAccessSpec().shaftSize(), decoded.verticalAccessSpec().shaftSize());
-        assertEquals(workspace.topologyProfile().towerStackSettings("tower.primary").orElseThrow().mainFloors(),
-                decoded.topologyProfile().towerStackSettings("tower.primary").orElseThrow().mainFloors());
-        assertEquals(workspace.topologyProfile().towerStackSettings("tower.primary").orElseThrow().basementFloors(),
-                decoded.topologyProfile().towerStackSettings("tower.primary").orElseThrow().basementFloors());
+        assertEquals(workspace.topologyProfile().verticalStackSettings("tower.primary").orElseThrow().mainFloors(),
+                decoded.topologyProfile().verticalStackSettings("tower.primary").orElseThrow().mainFloors());
+        assertEquals(workspace.topologyProfile().verticalStackSettings("tower.primary").orElseThrow().basementFloors(),
+                decoded.topologyProfile().verticalStackSettings("tower.primary").orElseThrow().basementFloors());
         assertEquals(workspace.familyDefinitions().get(0).horizontalExtrusionMode(),
                 decoded.familyDefinitions().get(0).horizontalExtrusionMode());
         assertEquals(workspace.familyDefinitions().get(0).horizontalExits(),
@@ -4275,8 +4275,8 @@ class TowerWorkspaceV2Test {
                                                                   boolean topCapApproachEnabled,
                                                                   boolean basementCapApproachEnabled) {
         MKWorkspaceTopologyProfile topologyProfile = workspace.topologyProfile()
-                .towerStackSettings("tower.primary")
-                .map(settings -> workspace.topologyProfile().withTowerStackSettings(settings
+                .verticalStackSettings("tower.primary")
+                .map(settings -> workspace.topologyProfile().withVerticalStackSettings(settings
                         .withMainFloors(mainFloors)
                         .withBasementFloors(basementFloors)
                         .withTopCapApproachEnabled(topCapApproachEnabled)

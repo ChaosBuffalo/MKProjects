@@ -27,8 +27,8 @@ final class TowerWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapter {
 
     @Override
     public void applyDefaultHeight(WorkspaceDraftSession session, int requestedHeight) {
-        session.replaceTowerStackSettingsWithNormalizedFloorCounts(
-                session.towerStackSettings(TowerStackDraftEditor.PRIMARY_STACK_ID).withHeight(requestedHeight));
+        session.replaceVerticalStackSettingsWithNormalizedFloorCounts(
+                session.verticalStackSettings(TowerStackDraftEditor.PRIMARY_STACK_ID).withHeight(requestedHeight));
         session.snapDraftVerticalAccess();
     }
 
@@ -38,7 +38,7 @@ final class TowerWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapter {
         session.draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.createDefaults(dimensions,
                 session.draft().palette);
         session.draft().topologyProfile = MKWorkspaceTopologyProfile.tower()
-                .withTowerStackSettings(session.towerPrimarySettingsFromDraft());
+                .withVerticalStackSettings(session.towerPrimarySettingsFromDraft());
     }
 
     @Override
@@ -48,7 +48,7 @@ final class TowerWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapter {
         if (!hasTowerFamilies) {
             session.draft().familyDefinitions = MKWorkspaceRoomFamilyDefinition.createDefaults(dimensions);
         }
-        session.towerStackSettings(TowerStackDraftEditor.PRIMARY_STACK_ID);
+        session.verticalStackSettings(TowerStackDraftEditor.PRIMARY_STACK_ID);
         boolean hasTowerLinearRuns = session.draft().linearRunFamilies.stream()
                 .anyMatch(linearRun -> linearRun.topologySlotId().startsWith("tower."));
         if (!hasTowerLinearRuns) {
