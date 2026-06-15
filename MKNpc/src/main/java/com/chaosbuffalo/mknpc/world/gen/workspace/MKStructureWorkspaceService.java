@@ -72,7 +72,7 @@ public class MKStructureWorkspaceService {
         }
     }
 
-    private final MKWorkspacePlannerRegistry plannerRegistry = new MKWorkspacePlannerRegistry();
+    private final MKWorkspacePlannerRegistry plannerRegistry = MKWorkspacePlannerRegistry.withBuiltIns();
     private final MKWorkspaceScaffoldBuilder scaffoldBuilder = new MKWorkspaceScaffoldBuilder();
     private final MKWorkspaceStairBuilder stairBuilder = new MKWorkspaceStairBuilder();
     private final MKStructureWorkspaceImportService importService = new MKStructureWorkspaceImportService();

@@ -1,7 +1,8 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -25,9 +26,9 @@ public final class WorkspacePlannerClientRegistry {
     }
 
     public static void init() {
-        registerInternal(MKWorkspaceTopologyProfile.TOWER_PLANNER_ID,
+        registerInternal(MKTowerWorkspacePlanner.PLANNER_ID,
                 Component.literal("Tower"), TowerPlannerUiContributor::new);
-        registerInternal(MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID,
+        registerInternal(MKWalledKeepWorkspacePlanner.PLANNER_ID,
                 Component.literal("Walled Keep"), WalledKeepPlannerUiContributor::new);
     }
 

@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.Optional;
 final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapter {
     @Override
     public ResourceLocation plannerId() {
-        return MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID;
+        return MKWalledKeepWorkspacePlanner.PLANNER_ID;
     }
 
     @Override
@@ -40,7 +41,7 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
 
     @Override
     public void resetDefaults(WorkspaceDraftSession session, MKWorkspaceDimensions dimensions) {
-        session.draft().topologyProfile = MKWorkspaceTopologyProfile.walledKeep(
+        session.draft().topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(
                 session.draft().topologyProfile.uniqueNorthWestCornerTower(),
                 session.draft().topologyProfile.uniqueNorthEastCornerTower(),
                 session.draft().topologyProfile.uniqueSouthEastCornerTower(),

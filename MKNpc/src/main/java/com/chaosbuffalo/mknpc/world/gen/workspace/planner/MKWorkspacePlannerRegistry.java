@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.LinkedHashMap;
@@ -11,8 +10,19 @@ public class MKWorkspacePlannerRegistry {
     private final Map<ResourceLocation, MKWorkspacePlanner> planners = new LinkedHashMap<>();
 
     public MKWorkspacePlannerRegistry() {
+    }
+
+    public static MKWorkspacePlannerRegistry withBuiltIns() {
+        MKWorkspacePlannerRegistry registry = new MKWorkspacePlannerRegistry();
+        registry.register(new MKTowerWorkspacePlanner());
+        registry.register(new MKWalledKeepWorkspacePlanner());
+        return registry;
+    }
+
+    public MKWorkspacePlannerRegistry registerBuiltIns() {
         register(new MKTowerWorkspacePlanner());
         register(new MKWalledKeepWorkspacePlanner());
+        return this;
     }
 
     public void register(MKWorkspacePlanner planner) {
@@ -32,6 +42,6 @@ public class MKWorkspacePlannerRegistry {
     }
 
     public MKWorkspacePlanner towerPlanner() {
-        return plannerFor(MKWorkspaceTopologyProfile.TOWER_PLANNER_ID);
+        return plannerFor(MKTowerWorkspacePlanner.PLANNER_ID);
     }
 }

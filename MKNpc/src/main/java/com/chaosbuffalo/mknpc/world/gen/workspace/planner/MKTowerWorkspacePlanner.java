@@ -11,6 +11,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceI
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
+    public static final ResourceLocation PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "tower");
     private static final String EMPTY_POOL = "minecraft:empty";
     private static final String LINEAR_RUN_POOL_PREFIX = "linear_runs";
     private static final String PRIMARY_STACK_ID = "tower.primary";
@@ -42,7 +44,11 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
 
     @Override
     public net.minecraft.resources.ResourceLocation plannerId() {
-        return MKWorkspaceTopologyProfile.TOWER_PLANNER_ID;
+        return PLANNER_ID;
+    }
+
+    public static MKWorkspaceTopologyProfile defaultTopologyProfile() {
+        return MKWorkspaceTopologyProfile.tower();
     }
 
     @Override

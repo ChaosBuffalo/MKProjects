@@ -27,6 +27,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlo
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepCourtyardSettings;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -37,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
+    public static final ResourceLocation PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "walled_keep");
     private static final String EMPTY_POOL = "minecraft:empty";
     private static final String PERIMETER_ROOT_SLOT = "keep.perimeter";
     private static final String ENTRY_APPROACH_SLOT = "keep.entry_approach.main";
@@ -264,7 +266,19 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
 
     @Override
     public net.minecraft.resources.ResourceLocation plannerId() {
-        return MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID;
+        return PLANNER_ID;
+    }
+
+    public static MKWorkspaceTopologyProfile defaultTopologyProfile(boolean uniqueCornerTowers) {
+        return MKWorkspaceTopologyProfile.walledKeep(uniqueCornerTowers);
+    }
+
+    public static MKWorkspaceTopologyProfile defaultTopologyProfile(boolean uniqueNorthWestCornerTower,
+                                                                    boolean uniqueNorthEastCornerTower,
+                                                                    boolean uniqueSouthEastCornerTower,
+                                                                    boolean uniqueSouthWestCornerTower) {
+        return MKWorkspaceTopologyProfile.walledKeep(uniqueNorthWestCornerTower, uniqueNorthEastCornerTower,
+                uniqueSouthEastCornerTower, uniqueSouthWestCornerTower);
     }
 
     @Override

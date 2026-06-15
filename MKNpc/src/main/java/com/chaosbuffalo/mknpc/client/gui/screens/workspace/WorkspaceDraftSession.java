@@ -36,6 +36,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotM
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceRegionSchema;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceRoleSchema;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceSlotSchema;
@@ -83,7 +84,8 @@ public class WorkspaceDraftSession {
         draft = new Draft();
         draft.namespace = valueOrDefault(workspace != null ? workspace.namespace() : null, "mkdev");
         draft.structureName = valueOrDefault(workspace != null ? workspace.structureName() : null, "tower_workspace");
-        draft.topologyProfile = workspace != null ? workspace.topologyProfile() : MKWorkspaceTopologyProfile.tower();
+        draft.topologyProfile = workspace != null ? workspace.topologyProfile() :
+                MKTowerWorkspacePlanner.defaultTopologyProfile();
         draft.stairMode = workspace != null ? workspace.stairConfig().mode() : MKWorkspaceStairMode.AUTO;
         draft.stairRiseType = workspace != null ? workspace.stairConfig().riseType() : MKWorkspaceStairRiseType.MIXED;
         draft.stairWidth = workspace != null ? workspace.stairConfig().stairWidth() : 1;
@@ -1212,7 +1214,7 @@ public class WorkspaceDraftSession {
     }
 
     private MKWorkspaceTopologySchema topologySchema() {
-        return new MKWorkspacePlannerRegistry()
+        return MKWorkspacePlannerRegistry.withBuiltIns()
                 .plannerFor(topologyPlannerId())
                 .schema();
     }

@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFami
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 
 import java.util.ArrayList;
@@ -77,7 +78,7 @@ public final class WalledKeepDraftEditor {
     }
 
     public List<String> verticalStackTabs() {
-        if (!MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(session.topologyPlannerId())) {
+        if (!MKWalledKeepWorkspacePlanner.PLANNER_ID.equals(session.topologyPlannerId())) {
             return List.of();
         }
         java.util.ArrayList<String> tabs = new java.util.ArrayList<>();
@@ -121,7 +122,7 @@ public final class WalledKeepDraftEditor {
 
     public void uniqueCornerTower(String topologySlotId, boolean value) {
         MKWorkspaceTopologyProfile current = session.draft().topologyProfile;
-        if (!MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(current.plannerId())) {
+        if (!MKWalledKeepWorkspacePlanner.PLANNER_ID.equals(current.plannerId())) {
             return;
         }
         boolean northWest = "keep.corner.north_west".equals(topologySlotId) ? value : current.uniqueNorthWestCornerTower();
@@ -289,7 +290,7 @@ public final class WalledKeepDraftEditor {
             copyVerticalStackSettingsIfMissing(settings, "keep.corner.south_west", "keep.corner.shared");
         }
         return new MKWorkspaceTopologyProfile(
-                MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID,
+                MKWalledKeepWorkspacePlanner.PLANNER_ID,
                 northWest && northEast && southEast && southWest,
                 northWest,
                 northEast,

@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.network.chat.Component;
@@ -31,7 +31,7 @@ public class WorkspacePlannerNodePage extends WorkspacePageBase {
         int contentHeight = screen.panelY() + screen.panelHeight() - screen.bottomPadding() -
                 screen.buttonHeight() - 12 - contentTop;
         WorkspacePlannerLayout layout = addPlannerLayout(screen, root, contentTop, contentHeight);
-        boolean topLevelTowerPlanner = MKWorkspaceTopologyProfile.TOWER_PLANNER_ID.equals(
+        boolean topLevelTowerPlanner = MKTowerWorkspacePlanner.PLANNER_ID.equals(
                 screen.draftSession().topologyPlannerId());
         WorkspacePlannerClientRegistry.getPlannerUi(screen.draftSession().topologyPlannerId())
                 .addPlannerNodeLayout(screen, layout, screen.draftSession(), stackId, label, topLevelTowerPlanner);

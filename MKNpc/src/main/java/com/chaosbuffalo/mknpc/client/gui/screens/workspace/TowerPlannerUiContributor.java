@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -11,7 +11,7 @@ public class TowerPlannerUiContributor implements WorkspacePlannerUiContributor 
 
     @Override
     public ResourceLocation plannerId() {
-        return MKWorkspaceTopologyProfile.TOWER_PLANNER_ID;
+        return MKTowerWorkspacePlanner.PLANNER_ID;
     }
 
     @Override

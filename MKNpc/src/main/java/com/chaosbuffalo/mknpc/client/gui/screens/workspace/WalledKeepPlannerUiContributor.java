@@ -8,6 +8,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingCalculator;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingReport;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutHorizontal;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
@@ -24,7 +25,7 @@ public class WalledKeepPlannerUiContributor implements WorkspacePlannerUiContrib
 
     @Override
     public ResourceLocation plannerId() {
-        return MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID;
+        return MKWalledKeepWorkspacePlanner.PLANNER_ID;
     }
 
     @Override

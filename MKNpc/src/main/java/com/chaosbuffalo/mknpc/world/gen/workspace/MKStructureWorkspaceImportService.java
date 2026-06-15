@@ -21,6 +21,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
@@ -416,7 +417,7 @@ public class MKStructureWorkspaceImportService {
     static Map<String, String> migrateImportedRuntimeTags(MKStructureWorkspace workspace,
                                                           Map<String, String> sourceTags) {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>(sourceTags);
-        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(workspace.topologyProfile().plannerId()) &&
+        if (MKWalledKeepWorkspacePlanner.PLANNER_ID.equals(workspace.topologyProfile().plannerId()) &&
                 isKeepCornerStackPiece(tags)) {
             tags.put(MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG, "true");
         }

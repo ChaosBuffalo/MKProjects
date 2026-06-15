@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFami
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Optional;
@@ -14,12 +15,12 @@ import java.util.Optional;
 final class TowerWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapter {
     @Override
     public ResourceLocation plannerId() {
-        return MKWorkspaceTopologyProfile.TOWER_PLANNER_ID;
+        return MKTowerWorkspacePlanner.PLANNER_ID;
     }
 
     @Override
     public MKWorkspaceTopologyProfile profileForSwitch(WorkspaceDraftSession session) {
-        return MKWorkspaceTopologyProfile.tower();
+        return MKTowerWorkspacePlanner.defaultTopologyProfile();
     }
 
     @Override
@@ -39,7 +40,7 @@ final class TowerWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapter {
         session.draft().familyDefinitions = MKWorkspaceRoomFamilyDefinition.createDefaults(dimensions);
         session.draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.createDefaults(dimensions,
                 session.draft().palette);
-        session.draft().topologyProfile = MKWorkspaceTopologyProfile.tower()
+        session.draft().topologyProfile = MKTowerWorkspacePlanner.defaultTopologyProfile()
                 .withVerticalStackSettings(primaryVerticalStackSettingsFromDraft(session));
     }
 
