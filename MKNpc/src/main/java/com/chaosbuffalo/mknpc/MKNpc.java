@@ -6,7 +6,7 @@ import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
 import com.chaosbuffalo.mknpc.capabilities.PlayerQuestingDataHandler;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyles;
 import com.chaosbuffalo.mknpc.client.gui.screens.QuestPage;
-import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePlannerUiRegistry;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePlannerClientRegistry;
 import com.chaosbuffalo.mknpc.command.NpcCommands;
 import com.chaosbuffalo.mknpc.components.NpcComponents;
 import com.chaosbuffalo.mknpc.dialogue.NPCDialogueExtension;
@@ -110,7 +110,7 @@ public class MKNpc {
     private void clientSetup(final FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             QuestPage.registerPlayerPage();
-            WorkspacePlannerUiRegistry.init();
+            WorkspacePlannerClientRegistry.init();
         });
     }
 

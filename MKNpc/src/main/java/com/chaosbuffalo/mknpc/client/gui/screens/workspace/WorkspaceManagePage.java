@@ -100,7 +100,7 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         addText(screen, content, "Planner " + workspace.topologyProfile().plannerId() +
                 " - pieces " + workspace.pieces().size() +
                 " - layers " + workspace.layerStates().size());
-        WorkspacePlannerUiRegistry.getPlannerUi(workspace.topologyProfile().plannerId())
+        WorkspacePlannerClientRegistry.getPlannerUi(workspace.topologyProfile().plannerId())
                 .addWorkspaceOverviewLayout(screen, layout, screen.draftSession());
         addLayerStateSummary(screen, content, workspace);
         addPreflightReport(screen, content, screen.preflight());

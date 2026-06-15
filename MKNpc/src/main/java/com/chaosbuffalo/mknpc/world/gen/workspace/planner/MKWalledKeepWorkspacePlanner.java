@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner {
+public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
     private static final String EMPTY_POOL = "minecraft:empty";
     private static final String PERIMETER_ROOT_SLOT = "keep.perimeter";
     private static final String ENTRY_APPROACH_SLOT = "keep.entry_approach.main";

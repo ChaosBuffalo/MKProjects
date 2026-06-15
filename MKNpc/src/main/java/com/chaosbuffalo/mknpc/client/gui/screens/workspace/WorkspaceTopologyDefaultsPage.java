@@ -39,7 +39,7 @@ public class WorkspaceTopologyDefaultsPage extends WorkspacePageBase {
         content.addWidget(topologyText);
         content.addConstraintToWidget(MarginConstraint.LEFT, topologyText);
 
-        WorkspacePlannerUiRegistry.getPlannerUi(editor.topologyPlannerId())
+        WorkspacePlannerClientRegistry.getPlannerUi(editor.topologyPlannerId())
                 .addDefaultsLayout(screen, layout, editor);
 
         finishPlannerLayout(screen, layout);

@@ -33,7 +33,7 @@ public class WorkspacePlannerNodePage extends WorkspacePageBase {
         WorkspacePlannerLayout layout = addPlannerLayout(screen, root, contentTop, contentHeight);
         boolean topLevelTowerPlanner = MKWorkspaceTopologyProfile.TOWER_PLANNER_ID.equals(
                 screen.draftSession().topologyPlannerId());
-        WorkspacePlannerUiRegistry.getPlannerUi(screen.draftSession().topologyPlannerId())
+        WorkspacePlannerClientRegistry.getPlannerUi(screen.draftSession().topologyPlannerId())
                 .addPlannerNodeLayout(screen, layout, screen.draftSession(), stackId, label, topLevelTowerPlanner);
         finishPlannerLayout(screen, layout);
         addBackButton(screen, root, WorkspaceManagePage.ID);

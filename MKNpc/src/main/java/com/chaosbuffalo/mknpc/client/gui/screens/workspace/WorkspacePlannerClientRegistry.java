@@ -9,7 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public final class WorkspacePlannerUiRegistry {
+public final class WorkspacePlannerClientRegistry {
     public interface PlannerUiDefinition {
         ResourceLocation getPlannerId();
 
@@ -21,7 +21,7 @@ public final class WorkspacePlannerUiRegistry {
     private static final Map<ResourceLocation, PlannerUiDefinition> DEFINITIONS = new LinkedHashMap<>();
     private static final WorkspacePlannerUiContributor FALLBACK = new DefaultPlannerUiContributor();
 
-    private WorkspacePlannerUiRegistry() {
+    private WorkspacePlannerClientRegistry() {
     }
 
     public static void init() {

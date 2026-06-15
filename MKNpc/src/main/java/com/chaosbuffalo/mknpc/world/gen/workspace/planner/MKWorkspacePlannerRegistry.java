@@ -8,30 +8,30 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class MKWorkspacePlannerRegistry {
-    private final Map<ResourceLocation, MKWorkspaceTopologyPlanner> planners = new LinkedHashMap<>();
+    private final Map<ResourceLocation, MKWorkspacePlanner> planners = new LinkedHashMap<>();
 
     public MKWorkspacePlannerRegistry() {
         register(new MKTowerWorkspacePlanner());
         register(new MKWalledKeepWorkspacePlanner());
     }
 
-    public void register(MKWorkspaceTopologyPlanner planner) {
+    public void register(MKWorkspacePlanner planner) {
         planners.put(planner.plannerId(), planner);
     }
 
-    public MKWorkspaceTopologyPlanner plannerFor(MKStructureWorkspace workspace) {
+    public MKWorkspacePlanner plannerFor(MKStructureWorkspace workspace) {
         return plannerFor(workspace.topologyProfile().plannerId());
     }
 
-    public MKWorkspaceTopologyPlanner plannerFor(ResourceLocation plannerId) {
-        MKWorkspaceTopologyPlanner planner = planners.get(plannerId);
+    public MKWorkspacePlanner plannerFor(ResourceLocation plannerId) {
+        MKWorkspacePlanner planner = planners.get(plannerId);
         if (planner == null) {
             throw new IllegalArgumentException("No workspace topology planner registered for planner id " + plannerId);
         }
         return planner;
     }
 
-    public MKWorkspaceTopologyPlanner towerPlanner() {
+    public MKWorkspacePlanner towerPlanner() {
         return plannerFor(MKWorkspaceTopologyProfile.TOWER_PLANNER_ID);
     }
 }

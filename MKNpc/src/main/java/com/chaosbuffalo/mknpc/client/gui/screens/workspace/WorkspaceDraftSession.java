@@ -1208,7 +1208,7 @@ public class WorkspaceDraftSession {
     }
 
     private WorkspacePlannerDraftAdapter plannerAdapterFor(ResourceLocation plannerId) {
-        return WorkspacePlannerUiRegistry.getDraftAdapter(plannerId);
+        return WorkspacePlannerClientRegistry.getDraftAdapter(plannerId);
     }
 
     private MKWorkspaceTopologySchema topologySchema() {

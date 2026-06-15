@@ -1351,7 +1351,7 @@ public class TowerStackTopologyPanel {
     }
 
     private WorkspacePlannerUiContributor plannerUi(WorkspaceDraftSession editor) {
-        return WorkspacePlannerUiRegistry.getPlannerUi(editor.topologyPlannerId());
+        return WorkspacePlannerClientRegistry.getPlannerUi(editor.topologyPlannerId());
     }
 
     private void addStairRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,

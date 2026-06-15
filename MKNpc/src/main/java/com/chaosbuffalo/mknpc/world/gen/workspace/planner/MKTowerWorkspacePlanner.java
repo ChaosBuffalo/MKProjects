@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MKTowerWorkspacePlanner implements MKWorkspaceTopologyPlanner {
+public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     private static final String EMPTY_POOL = "minecraft:empty";
     private static final String LINEAR_RUN_POOL_PREFIX = "linear_runs";
     private static final String PRIMARY_STACK_ID = "tower.primary";
