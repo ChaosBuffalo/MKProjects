@@ -96,7 +96,7 @@ public class MKStructureWorkspaceService {
         return plannerRegistry.validate(workspace);
     }
 
-    public Optional<MKStructureWorkspace> createOrUpdateTowerWorkspace(ServerLevel level, MKStructureWorkspace workspace) {
+    public Optional<MKStructureWorkspace> createOrUpdateWorkspace(ServerLevel level, MKStructureWorkspace workspace) {
         List<String> errors = validateWorkspace(workspace);
         if (!errors.isEmpty()) {
             return Optional.empty();
@@ -366,7 +366,7 @@ public class MKStructureWorkspaceService {
         };
     }
 
-    public Optional<MKStructureWorkspace> generateTowerWorkspace(ServerLevel level, BlockPos anchor) {
+    public Optional<MKStructureWorkspace> generateWorkspace(ServerLevel level, BlockPos anchor) {
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
         if (workspaceOpt.isEmpty()) {
@@ -436,11 +436,11 @@ public class MKStructureWorkspaceService {
         return Optional.of(updated);
     }
 
-    public Optional<MKStructureWorkspace> addTowerWorkspaceVariant(ServerLevel level, BlockPos anchor, String basePieceName) {
-        return addTowerWorkspaceVariant(level, anchor, basePieceName, null);
+    public Optional<MKStructureWorkspace> addWorkspaceVariant(ServerLevel level, BlockPos anchor, String basePieceName) {
+        return addWorkspaceVariant(level, anchor, basePieceName, null);
     }
 
-    public Optional<MKStructureWorkspace> addTowerWorkspaceVariant(ServerLevel level, BlockPos anchor,
+    public Optional<MKStructureWorkspace> addWorkspaceVariant(ServerLevel level, BlockPos anchor,
                                                                   String basePieceName, String sourcePieceName) {
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
@@ -500,7 +500,7 @@ public class MKStructureWorkspaceService {
         return Optional.of(updated);
     }
 
-    public Optional<MKStructureWorkspace> addTowerWorkspaceVariantsForAll(ServerLevel level, BlockPos anchor) {
+    public Optional<MKStructureWorkspace> addWorkspaceVariantsForAll(ServerLevel level, BlockPos anchor) {
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
         if (workspaceOpt.isEmpty()) {
@@ -625,7 +625,7 @@ public class MKStructureWorkspaceService {
         return true;
     }
 
-    public Optional<MKStructureWorkspace> generateTowerWorkspaceStairs(ServerLevel level, BlockPos anchor, String pieceName,
+    public Optional<MKStructureWorkspace> generateWorkspaceStairs(ServerLevel level, BlockPos anchor, String pieceName,
                                                                        MKWorkspaceStairAuthoringConfig stairConfigOverride) {
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
@@ -647,7 +647,7 @@ public class MKStructureWorkspaceService {
         return Optional.of(updated);
     }
 
-    public Optional<MKStructureWorkspace> generateAllTowerWorkspaceStairs(ServerLevel level, BlockPos anchor) {
+    public Optional<MKStructureWorkspace> generateAllWorkspaceStairs(ServerLevel level, BlockPos anchor) {
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
         if (workspaceOpt.isEmpty()) {
@@ -668,7 +668,7 @@ public class MKStructureWorkspaceService {
         return Optional.of(updated);
     }
 
-    public Optional<MKStructureWorkspace> clearTowerWorkspaceStairs(ServerLevel level, BlockPos anchor, String pieceName) {
+    public Optional<MKStructureWorkspace> clearWorkspaceStairs(ServerLevel level, BlockPos anchor, String pieceName) {
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
         if (workspaceOpt.isEmpty()) {

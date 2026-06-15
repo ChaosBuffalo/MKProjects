@@ -82,12 +82,12 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
         boolean nonDestructiveIdentityRename = service.canApplyIdentityRename(player.serverLevel(), workspace);
         boolean nonDestructiveMarginExpansion = service.canApplyMarginExpansion(player.serverLevel(), workspace);
         boolean nonDestructiveHallwayRegeneration = service.canApplyHallwayRoutingRegeneration(player.serverLevel(), workspace);
-        service.createOrUpdateTowerWorkspace(player.serverLevel(), workspace)
+        service.createOrUpdateWorkspace(player.serverLevel(), workspace)
                 .ifPresentOrElse(created -> {
                     if (packet.generateAfterCreate && !nonDestructivePreviewRelayout && !nonDestructivePaletteSwap &&
                             !nonDestructiveIdentityRename && !nonDestructiveMarginExpansion &&
                             !nonDestructiveHallwayRegeneration &&
-                            service.generateTowerWorkspace(player.serverLevel(), created.anchor()).isEmpty()) {
+                            service.generateWorkspace(player.serverLevel(), created.anchor()).isEmpty()) {
                         MKWorkspaceValidationMessages.displayFailure(player, "Workspace generation failed.");
                         return;
                     }

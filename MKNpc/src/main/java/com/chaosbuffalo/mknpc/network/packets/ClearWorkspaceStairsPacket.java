@@ -44,7 +44,7 @@ public class ClearWorkspaceStairsPacket implements CustomPacketPayload {
             return;
         }
         MKStructureWorkspaceService service = new MKStructureWorkspaceService();
-        service.clearTowerWorkspaceStairs(player.serverLevel(), packet.anchor, packet.pieceName)
+        service.clearWorkspaceStairs(player.serverLevel(), packet.anchor, packet.pieceName)
                 .ifPresent(updated -> service.openWorkspaceScreen(player, packet.anchor));
     }
 }

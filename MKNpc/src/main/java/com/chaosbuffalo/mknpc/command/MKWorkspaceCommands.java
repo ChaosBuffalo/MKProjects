@@ -67,7 +67,7 @@ public class MKWorkspaceCommands {
             player.sendSystemMessage(Component.literal("No structure workspaces to regenerate."));
             return Command.SINGLE_SUCCESS;
         }
-        boolean regenerated = new MKStructureWorkspaceService().generateTowerWorkspace(player.serverLevel(), nearest.anchor()).isPresent();
+        boolean regenerated = new MKStructureWorkspaceService().generateWorkspace(player.serverLevel(), nearest.anchor()).isPresent();
         player.sendSystemMessage(Component.literal(regenerated ?
                 "Regenerated workspace at " + nearest.anchor() :
                 "Failed to regenerate workspace at " + nearest.anchor()));

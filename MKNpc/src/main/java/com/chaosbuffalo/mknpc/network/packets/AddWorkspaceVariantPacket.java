@@ -55,7 +55,7 @@ public class AddWorkspaceVariantPacket implements CustomPacketPayload {
             return;
         }
         new MKStructureWorkspaceService()
-                .addTowerWorkspaceVariant(player.serverLevel(), packet.anchor, packet.basePieceName,
+                .addWorkspaceVariant(player.serverLevel(), packet.anchor, packet.basePieceName,
                         packet.sourcePieceName)
                 .ifPresent(updated -> player.connection.send(new OpenWorkspaceScreenPacket(packet.anchor, updated)));
     }

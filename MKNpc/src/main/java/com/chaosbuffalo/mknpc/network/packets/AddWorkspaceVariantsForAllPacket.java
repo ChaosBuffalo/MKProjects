@@ -39,7 +39,7 @@ public class AddWorkspaceVariantsForAllPacket implements CustomPacketPayload {
         if (!(context.player() instanceof ServerPlayer player) || !player.isCreative()) {
             return;
         }
-        new MKStructureWorkspaceService().addTowerWorkspaceVariantsForAll(player.serverLevel(), packet.anchor)
+        new MKStructureWorkspaceService().addWorkspaceVariantsForAll(player.serverLevel(), packet.anchor)
                 .ifPresent(updated -> player.connection.send(new OpenWorkspaceScreenPacket(packet.anchor, updated)));
     }
 }

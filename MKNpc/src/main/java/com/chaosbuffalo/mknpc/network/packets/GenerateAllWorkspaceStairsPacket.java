@@ -45,7 +45,7 @@ public class GenerateAllWorkspaceStairsPacket implements CustomPacketPayload {
             return;
         }
         MKStructureWorkspaceService service = new MKStructureWorkspaceService();
-        service.generateAllTowerWorkspaceStairs(player.serverLevel(), packet.anchor)
+        service.generateAllWorkspaceStairs(player.serverLevel(), packet.anchor)
                 .ifPresent(updated -> {
                     List<String> unresolvedPieces = updated.pieces().stream()
                             .filter(piece -> MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags()))

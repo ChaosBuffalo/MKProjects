@@ -57,7 +57,7 @@ public class GenerateWorkspacePacket implements CustomPacketPayload {
             MKWorkspaceValidationMessages.displayValidationErrors(player, errors);
             return;
         }
-        if (service.generateTowerWorkspace(player.serverLevel(), packet.anchor).isEmpty()) {
+        if (service.generateWorkspace(player.serverLevel(), packet.anchor).isEmpty()) {
             MKWorkspaceValidationMessages.displayFailure(player, "Workspace generation failed.");
             return;
         }
