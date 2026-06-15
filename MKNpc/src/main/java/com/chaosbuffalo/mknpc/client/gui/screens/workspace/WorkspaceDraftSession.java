@@ -222,87 +222,13 @@ public class WorkspaceDraftSession {
 
     public void topologyPlannerId(ResourceLocation value) {
         draft().topologyProfile = MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(value) ?
-                walledKeepTopologyProfile(
+                walledKeepEditor().topologyProfileWithCornerModes(
                         draft().topologyProfile.uniqueNorthWestCornerTower(),
                         draft().topologyProfile.uniqueNorthEastCornerTower(),
                         draft().topologyProfile.uniqueSouthEastCornerTower(),
                         draft().topologyProfile.uniqueSouthWestCornerTower()
                 ) : MKWorkspaceTopologyProfile.tower();
         seedDefaultsForTopology();
-    }
-
-    boolean uniqueCornerTower(String topologySlotId) {
-        return draft().topologyProfile.uniqueCornerTower(topologySlotId);
-    }
-
-    private MKWorkspaceTopologyProfile walledKeepTopologyProfile(boolean northWest, boolean northEast,
-                                                                 boolean southEast, boolean southWest) {
-        MKWorkspaceTopologyProfile current = draft().topologyProfile;
-        java.util.ArrayList<MKWorkspaceTowerStackSettings> settings = new java.util.ArrayList<>(current.towerStackSettings());
-        copyTowerStackSettingsIfMissing(settings, "keep.center", "keep.corner.shared");
-        if (!northWest || !northEast || !southEast || !southWest) {
-            copyTowerStackSettingsIfMissing(settings, "keep.corner.shared", firstCornerStackId(settings));
-        }
-        if (northWest) {
-            copyTowerStackSettingsIfMissing(settings, "keep.corner.north_west", "keep.corner.shared");
-        }
-        if (northEast) {
-            copyTowerStackSettingsIfMissing(settings, "keep.corner.north_east", "keep.corner.shared");
-        }
-        if (southEast) {
-            copyTowerStackSettingsIfMissing(settings, "keep.corner.south_east", "keep.corner.shared");
-        }
-        if (southWest) {
-            copyTowerStackSettingsIfMissing(settings, "keep.corner.south_west", "keep.corner.shared");
-        }
-        return new MKWorkspaceTopologyProfile(
-                MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID,
-                northWest && northEast && southEast && southWest,
-                northWest,
-                northEast,
-                southEast,
-                southWest,
-                settings,
-                current.floorTopologySettings(),
-                current.pathSettings(),
-                current.courtyardSettings(),
-                current.terrainAdjustment()
-        );
-    }
-
-    private void copyTowerStackSettingsIfMissing(List<MKWorkspaceTowerStackSettings> settings, String targetId,
-                                                 String sourceId) {
-        if (targetId == null || targetId.isBlank() ||
-                settings.stream().anyMatch(existing -> existing.stackId().equals(targetId))) {
-            return;
-        }
-        settings.stream()
-                .filter(existing -> existing.stackId().equals(sourceId))
-                .findFirst()
-                .map(source -> source.withStackId(targetId))
-                .ifPresent(settings::add);
-    }
-
-    private String firstCornerStackId(List<MKWorkspaceTowerStackSettings> settings) {
-        return settings.stream()
-                .map(MKWorkspaceTowerStackSettings::stackId)
-                .filter(this::isConcreteCornerSlot)
-                .findFirst()
-                .orElse("keep.center");
-    }
-
-    void uniqueCornerTower(String topologySlotId, boolean value) {
-        MKWorkspaceTopologyProfile current = draft().topologyProfile;
-        if (!MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(current.plannerId())) {
-            return;
-        }
-        boolean northWest = "keep.corner.north_west".equals(topologySlotId) ? value : current.uniqueNorthWestCornerTower();
-        boolean northEast = "keep.corner.north_east".equals(topologySlotId) ? value : current.uniqueNorthEastCornerTower();
-        boolean southEast = "keep.corner.south_east".equals(topologySlotId) ? value : current.uniqueSouthEastCornerTower();
-        boolean southWest = "keep.corner.south_west".equals(topologySlotId) ? value : current.uniqueSouthWestCornerTower();
-        draft().topologyProfile = walledKeepTopologyProfile(northWest, northEast, southEast, southWest);
-        ensureFamiliesForActiveCornerSlots();
-        walledKeepEditor().normalizeTowerStackTab();
     }
 
     public void topologyDefaultHeight(int value) {
@@ -1389,7 +1315,7 @@ public class WorkspaceDraftSession {
         }
     }
 
-    private void ensureFamiliesForActiveCornerSlots() {
+    void ensureFamiliesForActiveCornerSlots() {
         if (!MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(draft().topologyProfile.plannerId())) {
             return;
         }
