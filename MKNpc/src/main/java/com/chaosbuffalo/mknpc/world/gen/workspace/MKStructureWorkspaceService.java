@@ -1067,6 +1067,7 @@ public class MKStructureWorkspaceService {
                 source.uniqueNorthEastCornerTower(),
                 source.uniqueSouthEastCornerTower(),
                 source.uniqueSouthWestCornerTower(),
+                materialSource.topologyGroupSettings(),
                 stackSettings,
                 source.floorTopologySettings(),
                 source.pathSettings(),

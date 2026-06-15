@@ -295,6 +295,7 @@ public final class WalledKeepDraftEditor {
                 northEast,
                 southEast,
                 southWest,
+                current.topologyGroupSettings(),
                 settings,
                 current.floorTopologySettings(),
                 current.pathSettings(),

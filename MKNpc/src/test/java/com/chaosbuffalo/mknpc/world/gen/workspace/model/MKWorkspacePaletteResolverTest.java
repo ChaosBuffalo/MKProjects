@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,6 +18,48 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MKWorkspacePaletteResolverTest {
+    @Test
+    void topologyGroupPaletteWalksDotHierarchy() {
+        MKWorkspaceMaterialPalette base = palette("smooth_stone", "stone_bricks", "smooth_stone",
+                "stone_brick_stairs", "stone_brick_slab", "ladder");
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
+                .withTopologyGroupPaletteOverride("keep", Optional.of(new MKWorkspacePaletteOverride(
+                        null, id("deepslate_bricks"), null, null, null, null)))
+                .withTopologyGroupPaletteOverride("keep.center", Optional.of(new MKWorkspacePaletteOverride(
+                        id("red_sandstone"), null, null, null, null, null)))
+                .withTopologyGroupPaletteOverride("keep.center.main_floor", Optional.of(new MKWorkspacePaletteOverride(
+                        null, null, id("bamboo_planks"), null, null, null)));
+        MKStructureWorkspace workspace = workspace(topologyProfile, base, List.of(), List.of());
+
+        MKWorkspaceMaterialPalette resolved = new MKWorkspacePaletteResolver()
+                .resolveTopologyGroup(workspace, "keep.center.main_floor");
+
+        assertEquals(id("red_sandstone"), resolved.floorBlock());
+        assertEquals(id("deepslate_bricks"), resolved.wallBlock());
+        assertEquals(id("bamboo_planks"), resolved.ceilingBlock());
+    }
+
+    @Test
+    void floorTopologyPaletteInheritsStackTopologyGroupPalette() {
+        MKWorkspaceMaterialPalette base = palette("smooth_stone", "stone_bricks", "smooth_stone",
+                "stone_brick_stairs", "stone_brick_slab", "ladder");
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
+                .withTopologyGroupPaletteOverride("tower", Optional.of(new MKWorkspacePaletteOverride(
+                        null, id("deepslate_bricks"), null, null, null, null)))
+                .withTopologyGroupPaletteOverride("tower.primary", Optional.of(new MKWorkspacePaletteOverride(
+                        id("red_sandstone"), null, null, null, null, null)))
+                .withTopologyGroupPaletteOverride("tower.primary.main_floor", Optional.of(new MKWorkspacePaletteOverride(
+                        null, null, id("bamboo_planks"), null, null, null)));
+        MKStructureWorkspace workspace = workspace(topologyProfile, base, List.of(), List.of());
+
+        MKWorkspaceMaterialPalette resolved = new MKWorkspacePaletteResolver()
+                .resolveFloorTopology(workspace, "tower.primary", "main_floor");
+
+        assertEquals(id("red_sandstone"), resolved.floorBlock());
+        assertEquals(id("deepslate_bricks"), resolved.wallBlock());
+        assertEquals(id("bamboo_planks"), resolved.ceilingBlock());
+    }
+
     @Test
     void familyPaletteAppliesFamilyOverrideOnlyForSpecifiedRoles() {
         MKWorkspaceMaterialPalette base = palette("smooth_stone", "stone_bricks", "smooth_stone",
@@ -279,6 +322,24 @@ class MKWorkspacePaletteResolverTest {
                 roundTripped.familyDefinitions().getFirst().paletteOverrideOpt().orElseThrow().stairBlockOpt().orElseThrow());
         assertEquals(id("vine"),
                 roundTripped.linearRunFamilies().getFirst().paletteOverrideOpt().orElseThrow().ladderBlockOpt().orElseThrow());
+    }
+
+    @Test
+    void workspaceCodecPreservesTopologyGroupPaletteOverrides() {
+        MKWorkspaceMaterialPalette base = palette("smooth_stone", "stone_bricks", "smooth_stone",
+                "oak_stairs", "oak_slab", "ladder");
+        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
+                .withTopologyGroupPaletteOverride("tower.primary.main_floor", Optional.of(new MKWorkspacePaletteOverride(
+                        id("red_sandstone"), null, null, null, null, null)));
+
+        MKStructureWorkspace roundTripped = MKStructureWorkspace.fromTag(
+                workspace(topologyProfile, base, List.of(), List.of()).toTag());
+
+        assertEquals(id("red_sandstone"), roundTripped.topologyProfile()
+                .topologyGroupPaletteOverride("tower.primary.main_floor")
+                .orElseThrow()
+                .floorBlockOpt()
+                .orElseThrow());
     }
 
     @Test

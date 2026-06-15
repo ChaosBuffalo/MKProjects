@@ -37,17 +37,19 @@ public final class FloorPlanDraftEditor {
     }
 
     public MKWorkspaceMaterialPalette inheritedPalette() {
-        return session.verticalStackSettings(stackId).paletteOverrideOpt()
-                .map(override -> override.resolve(session.draftBasePalette()))
-                .orElse(session.draftBasePalette());
+        return session.resolveTopologyGroupPalette(stackId);
     }
 
     public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {
-        return settings().paletteOverride();
+        return session.topologyGroupPaletteOverride(topologyGroupId());
     }
 
     public void paletteOverride(Optional<MKWorkspacePaletteOverride> value) {
-        replace(settings().withPaletteOverride(value));
+        session.topologyGroupPaletteOverride(topologyGroupId(), value);
+    }
+
+    public String topologyGroupId() {
+        return MKWorkspaceFloorTopologySettings.key(stackId, floorRole);
     }
 
     public int minMainPathPieces() {

@@ -303,17 +303,15 @@ public final class TowerStackDraftEditor {
     }
 
     public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {
-        return settings().paletteOverrideOpt();
+        return session.topologyGroupPaletteOverride(stackId);
     }
 
     public void paletteOverride(Optional<MKWorkspacePaletteOverride> value) {
-        replace(settings().withPaletteOverride(value));
+        session.topologyGroupPaletteOverride(stackId, value);
     }
 
     public MKWorkspaceMaterialPalette resolvedPalette() {
-        return settings().paletteOverrideOpt()
-                .map(override -> override.resolve(session.draftBasePalette()))
-                .orElse(session.draftBasePalette());
+        return session.resolveTopologyGroupPalette(stackId);
     }
 
     public void resetDefaults() {

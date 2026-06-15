@@ -1324,7 +1324,8 @@ public class TowerStackTopologyPanel {
         addExtrusionRows(screen, content, towerEditor);
         addStairRows(screen, content, towerEditor);
         addFoundationRows(screen, content, towerEditor);
-        screen.addPaletteOverrideRows(content, "Stack Palette Defaults", editor.draftBasePalette(),
+        screen.addPaletteOverrideRows(content, "Stack Palette Defaults",
+                editor.resolveParentTopologyGroupPalette(stackId),
                 towerEditor.paletteOverrideOpt(),
                 override -> towerEditor.paletteOverride(override));
     }

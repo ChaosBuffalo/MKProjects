@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStackBudget;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackFloorCounts;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
@@ -21,6 +22,15 @@ final class WorkspaceVerticalStackSlotDraftSupport {
             }
         }
         return Optional.empty();
+    }
+
+    static Optional<String> topologyGroupIdForTopologySlot(String topologySlotId) {
+        Optional<MKTowerWorkspaceStackSlot> slot = MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId);
+        Optional<String> stackId = MKTowerWorkspaceStackSlot.stackIdForTopologySlot(topologySlotId);
+        if (slot.isEmpty() || stackId.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(MKWorkspaceFloorTopologySettings.key(stackId.get(), slot.get().suffix()));
     }
 
     static boolean isTopCapSlot(String topologySlotId) {

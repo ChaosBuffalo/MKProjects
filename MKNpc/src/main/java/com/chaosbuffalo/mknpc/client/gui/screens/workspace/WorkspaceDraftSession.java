@@ -31,6 +31,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyGroupSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
@@ -442,27 +443,39 @@ public class WorkspaceDraftSession {
         return draft().linearRunFamilies.size() - 1;
     }
 
-    public MKWorkspaceMaterialPalette basePalette() {
-        return palette();
-    }
-
-    public MKWorkspaceMaterialPalette draftBasePalette() {
-        return basePalette();
-    }
-
     public MKWorkspaceMaterialPalette resolveTopologyGroupPalette(String topologyGroupId) {
-        return draftBasePalette();
+        MKWorkspaceMaterialPalette resolved = palette();
+        for (String ancestorId : MKWorkspaceTopologyGroupSettings.hierarchy(topologyGroupId)) {
+            Optional<MKWorkspacePaletteOverride> override = draft().topologyProfile.topologyGroupPaletteOverride(ancestorId);
+            if (override.isPresent()) {
+                resolved = override.get().resolve(resolved);
+            }
+        }
+        return resolved;
+    }
+
+    public MKWorkspaceMaterialPalette resolveParentTopologyGroupPalette(String topologyGroupId) {
+        List<String> hierarchy = MKWorkspaceTopologyGroupSettings.hierarchy(topologyGroupId);
+        if (hierarchy.size() <= 1) {
+            return palette();
+        }
+        return resolveTopologyGroupPalette(hierarchy.get(hierarchy.size() - 2));
     }
 
     public MKWorkspaceMaterialPalette resolveFamilyInheritedPalette(MKWorkspaceRoomFamilyDefinition family) {
-        MKWorkspaceMaterialPalette topologyGroupPalette = resolveTopologyGroupPalette(family.slotMetadata().topologyGroupId());
-        String stackId = stackIdForFamily(family);
-        if (stackId.isBlank()) {
-            return topologyGroupPalette;
-        }
-        return verticalStackSettings(stackId).paletteOverrideOpt()
-                .map(override -> override.resolve(topologyGroupPalette))
-                .orElse(topologyGroupPalette);
+        String topologyGroupId = plannerAdapter().topologyGroupIdForTopologySlot(this, family.topologySlotId())
+                .orElse(family.slotMetadata().topologyGroupId());
+        return resolveTopologyGroupPalette(topologyGroupId);
+    }
+
+    public Optional<MKWorkspacePaletteOverride> topologyGroupPaletteOverride(String topologyGroupId) {
+        return draft().topologyProfile.topologyGroupPaletteOverride(topologyGroupId);
+    }
+
+    public void topologyGroupPaletteOverride(String topologyGroupId,
+                                             Optional<MKWorkspacePaletteOverride> paletteOverride) {
+        draft().topologyProfile = draft().topologyProfile.withTopologyGroupPaletteOverride(topologyGroupId,
+                paletteOverride == null ? Optional.empty() : paletteOverride);
     }
 
     public MKWorkspaceFoundationPolicy resolveFamilyInheritedFoundation(MKWorkspaceRoomFamilyDefinition family) {
@@ -480,7 +493,7 @@ public class WorkspaceDraftSession {
     public MKStructureWorkspace buildWorkspaceDraft() {
         snapDraftVerticalAccess();
         MKWorkspaceDimensions dimensions = legacyDimensionsFromTopologySettings();
-        MKWorkspaceMaterialPalette palette = basePalette();
+        MKWorkspaceMaterialPalette palette = palette();
         MKWorkspaceStairAuthoringConfig stairConfig = makeStairConfig();
         MKWorkspaceVerticalAccessSpec verticalAccessSpec = new MKWorkspaceVerticalAccessSpec(draft().shaftSize,
                 draft().verticalAccessPlacement, stairConfig);
@@ -1405,6 +1418,7 @@ public class WorkspaceDraftSession {
                 source.uniqueNorthEastCornerTower(),
                 source.uniqueSouthEastCornerTower(),
                 source.uniqueSouthWestCornerTower(),
+                materialSource.topologyGroupSettings(),
                 stackSettings,
                 source.floorTopologySettings(),
                 source.pathSettings(),

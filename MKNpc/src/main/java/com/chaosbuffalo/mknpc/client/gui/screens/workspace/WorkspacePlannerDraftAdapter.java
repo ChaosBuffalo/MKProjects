@@ -32,6 +32,10 @@ interface WorkspacePlannerDraftAdapter {
         return WorkspaceVerticalStackSlotDraftSupport.topologyGroupIdForFloorRole(floorRole);
     }
 
+    default Optional<String> topologyGroupIdForTopologySlot(WorkspaceDraftSession session, String topologySlotId) {
+        return WorkspaceVerticalStackSlotDraftSupport.topologyGroupIdForTopologySlot(topologySlotId);
+    }
+
     default MKWorkspaceVerticalStackSettings defaultVerticalStackSettings(WorkspaceDraftSession session,
                                                                           String stackId) {
         return session.draft().topologyProfile.verticalStackSettingsOrDefault(stackId);

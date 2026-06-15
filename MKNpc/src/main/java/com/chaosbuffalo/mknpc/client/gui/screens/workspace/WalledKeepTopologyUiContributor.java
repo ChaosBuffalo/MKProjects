@@ -66,6 +66,7 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
     private void addKeepLayoutSettings(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                        WorkspaceDraftSession editor, boolean navigablePreview) {
         addWalledKeepSizingSection(screen, content, editor, navigablePreview);
+        addKeepPaletteRows(screen, content, editor);
         addCornerModeRow(screen, content, editor, "NW Corner", "keep.corner.north_west");
         addCornerModeRow(screen, content, editor, "NE Corner", "keep.corner.north_east");
         addCornerModeRow(screen, content, editor, "SE Corner", "keep.corner.south_east");
@@ -78,11 +79,19 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
         MKWalledKeepSizingReport report = addWalledKeepPreviewSection(screen, layout.previewContent(), editor,
                 navigablePreview);
         addWalledKeepSizingControlRows(screen, layout.settingsContent(), editor, report);
+        addKeepPaletteRows(screen, layout.settingsContent(), editor);
         addCornerModeRow(screen, layout.settingsContent(), editor, "NW Corner", "keep.corner.north_west");
         addCornerModeRow(screen, layout.settingsContent(), editor, "NE Corner", "keep.corner.north_east");
         addCornerModeRow(screen, layout.settingsContent(), editor, "SE Corner", "keep.corner.south_east");
         addCornerModeRow(screen, layout.settingsContent(), editor, "SW Corner", "keep.corner.south_west");
         addPerimeterRows(screen, layout.settingsContent(), editor);
+    }
+
+    private void addKeepPaletteRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                    WorkspaceDraftSession editor) {
+        screen.addPaletteOverrideRows(content, "Keep Palette Defaults", editor.palette(),
+                editor.topologyGroupPaletteOverride("keep"),
+                override -> editor.topologyGroupPaletteOverride("keep", override));
     }
 
     private void addWalledKeepSizingSection(MKWorkspaceScreen screen, MKStackLayoutVertical content,

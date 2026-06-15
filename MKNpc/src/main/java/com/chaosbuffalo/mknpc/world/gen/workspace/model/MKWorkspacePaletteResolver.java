@@ -4,23 +4,36 @@ import java.util.Optional;
 
 public final class MKWorkspacePaletteResolver {
     public MKWorkspaceMaterialPalette resolveTopologyGroup(MKStructureWorkspace workspace, String topologyGroupId) {
-        return workspace.palette();
+        MKWorkspaceMaterialPalette resolved = workspace.palette();
+        for (String ancestorId : MKWorkspaceTopologyGroupSettings.hierarchy(topologyGroupId)) {
+            Optional<MKWorkspacePaletteOverride> override = workspace.topologyProfile()
+                    .topologyGroupPaletteOverride(ancestorId);
+            if (override.isPresent()) {
+                resolved = override.get().resolve(resolved);
+            }
+        }
+        return resolved;
     }
 
     public MKWorkspaceMaterialPalette resolveTowerStack(MKStructureWorkspace workspace, String stackId) {
+        MKWorkspaceMaterialPalette groupPalette = resolveTopologyGroup(workspace, stackId);
         return workspace.topologyProfile().verticalStackSettings(stackId)
                 .flatMap(MKWorkspaceVerticalStackSettings::paletteOverrideOpt)
-                .map(override -> override.resolve(workspace.palette()))
-                .orElse(workspace.palette());
+                .map(override -> override.resolve(groupPalette))
+                .orElse(groupPalette);
     }
 
     public MKWorkspaceMaterialPalette resolveFloorTopology(MKStructureWorkspace workspace, String stackId,
                                                            String floorRole) {
         MKWorkspaceMaterialPalette stackPalette = resolveTowerStack(workspace, stackId);
-        return workspace.topologyProfile().floorTopologySettings(stackId, floorRole)
-                .flatMap(MKWorkspaceFloorTopologySettings::paletteOverride)
+        MKWorkspaceMaterialPalette floorGroupPalette = workspace.topologyProfile()
+                .topologyGroupPaletteOverride(MKWorkspaceFloorTopologySettings.key(stackId, floorRole))
                 .map(override -> override.resolve(stackPalette))
                 .orElse(stackPalette);
+        return workspace.topologyProfile().floorTopologySettings(stackId, floorRole)
+                .flatMap(MKWorkspaceFloorTopologySettings::paletteOverride)
+                .map(override -> override.resolve(floorGroupPalette))
+                .orElse(floorGroupPalette);
     }
 
     public MKWorkspaceMaterialPalette resolveFloorTopologyForFamily(MKStructureWorkspace workspace,
@@ -44,14 +57,11 @@ public final class MKWorkspacePaletteResolver {
     public MKWorkspaceMaterialPalette resolveFamily(MKStructureWorkspace workspace, MKWorkspacePaletteFamily family) {
         if (family instanceof MKWorkspaceRoomFamilyDefinition towerFamily) {
             Optional<MKWorkspaceVerticalStackSettings> stackSettings = workspace.verticalStackSettingsForFamily(towerFamily);
-            MKWorkspaceMaterialPalette stackParent = stackSettings.isPresent() ? workspace.palette() :
-                    family.paletteTopologyGroupIdOpt()
-                            .map(topologyGroupId -> resolveTopologyGroup(workspace, topologyGroupId))
-                            .orElse(workspace.palette());
             MKWorkspaceMaterialPalette parent = stackSettings
-                    .flatMap(MKWorkspaceVerticalStackSettings::paletteOverrideOpt)
-                    .map(override -> override.resolve(stackParent))
-                    .orElse(stackParent);
+                    .map(settings -> resolveTowerStack(workspace, settings.stackId()))
+                    .orElseGet(() -> family.paletteTopologyGroupIdOpt()
+                            .map(topologyGroupId -> resolveTopologyGroup(workspace, topologyGroupId))
+                            .orElse(workspace.palette()));
             return family.paletteOverrideOpt()
                     .map(override -> override.resolve(parent))
                     .orElse(parent);

@@ -17,12 +17,14 @@ public class TowerTopologyUiContributor implements WorkspaceTopologyUiContributo
     @Override
     public void addDefaultsSections(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                     WorkspaceDraftSession editor) {
+        addTowerPaletteRows(screen, content, editor);
         towerStackPanel.addStackEditor(screen, content, editor, "tower.primary", "Primary Tower");
     }
 
     @Override
     public void addDefaultsLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
                                   WorkspaceDraftSession editor) {
+        addTowerPaletteRows(screen, layout.settingsContent(), editor);
         towerStackPanel.addStackEditor(screen, layout, editor, "tower.primary", "Primary Tower");
     }
 
@@ -31,6 +33,7 @@ public class TowerTopologyUiContributor implements WorkspaceTopologyUiContributo
                                              WorkspaceDraftSession editor) {
         editor.ensureInitialized();
         WorkspaceTopologyUiSupport.addText(screen, content, Component.literal("Tower Planner"));
+        addTowerPaletteRows(screen, content, editor);
         towerStackPanel.addStackEditor(screen, content, editor, "tower.primary", "Primary Tower");
     }
 
@@ -39,6 +42,14 @@ public class TowerTopologyUiContributor implements WorkspaceTopologyUiContributo
                                            WorkspaceDraftSession editor) {
         editor.ensureInitialized();
         WorkspaceTopologyUiSupport.addText(screen, layout.settingsContent(), Component.literal("Tower Planner"));
+        addTowerPaletteRows(screen, layout.settingsContent(), editor);
         towerStackPanel.addStackEditor(screen, layout, editor, "tower.primary", "Primary Tower");
+    }
+
+    private void addTowerPaletteRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                     WorkspaceDraftSession editor) {
+        screen.addPaletteOverrideRows(content, "Tower Palette Defaults", editor.palette(),
+                editor.topologyGroupPaletteOverride("tower"),
+                override -> editor.topologyGroupPaletteOverride("tower", override));
     }
 }
