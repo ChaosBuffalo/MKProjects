@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public final class WalledKeepDraftEditor {
+    private static final String VERTICAL_STACK_TAB_SELECTION = "mknpc:walled_keep.vertical_stack_tab";
     static final List<String> KEEP_CORNER_STACK_IDS = List.of(
             "keep.corner.north_west",
             "keep.corner.north_east",
@@ -96,23 +97,23 @@ public final class WalledKeepDraftEditor {
 
     public String verticalStackTab() {
         normalizeVerticalStackTab();
-        return session.viewState.walledKeepVerticalStackTab;
+        return session.viewState.plannerSelection(VERTICAL_STACK_TAB_SELECTION, "keep.center");
     }
 
     public void verticalStackTab(String stackId) {
         List<String> tabs = verticalStackTabs();
-        session.viewState.walledKeepVerticalStackTab = tabs.contains(stackId) ? stackId :
-                (tabs.isEmpty() ? "keep.center" : tabs.getFirst());
+        session.viewState.setPlannerSelection(VERTICAL_STACK_TAB_SELECTION, tabs.contains(stackId) ? stackId :
+                (tabs.isEmpty() ? "keep.center" : tabs.getFirst()));
     }
 
     void normalizeVerticalStackTab() {
         List<String> tabs = verticalStackTabs();
         if (tabs.isEmpty()) {
-            session.viewState.walledKeepVerticalStackTab = "keep.center";
+            session.viewState.setPlannerSelection(VERTICAL_STACK_TAB_SELECTION, "keep.center");
             return;
         }
-        if (!tabs.contains(session.viewState.walledKeepVerticalStackTab)) {
-            session.viewState.walledKeepVerticalStackTab = tabs.getFirst();
+        if (!tabs.contains(session.viewState.plannerSelection(VERTICAL_STACK_TAB_SELECTION, "keep.center"))) {
+            session.viewState.setPlannerSelection(VERTICAL_STACK_TAB_SELECTION, tabs.getFirst());
         }
     }
 
