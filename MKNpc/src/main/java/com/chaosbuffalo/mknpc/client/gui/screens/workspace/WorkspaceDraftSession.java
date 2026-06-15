@@ -48,7 +48,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,15 +61,7 @@ public class WorkspaceDraftSession {
     private int selectedFamilyExitIndex;
     private int selectedOpeningIndex;
     private int selectedLinearRunIndex;
-    final Map<String, Long> floorTopologyPreviewSeeds = new HashMap<>();
-    private static final List<String> KEEP_CORNER_STACK_IDS = List.of(
-            "keep.corner.north_west",
-            "keep.corner.north_east",
-            "keep.corner.south_east",
-            "keep.corner.south_west"
-    );
-    private static final String TOWER_PRIMARY_STACK_ID = "tower.primary";
-
+    final WorkspaceDraftViewState viewState = new WorkspaceDraftViewState();
     public WorkspaceDraftSession(MKWorkspaceScreen screen, int selectedFamilyIndex, int selectedFamilyExitIndex, int selectedOpeningIndex,
                                  int selectedLinearRunIndex) {
         this.screen = screen;
@@ -118,15 +109,6 @@ public class WorkspaceDraftSession {
         draft.shellMargin = workspace != null ? workspace.shellMargin() : 1;
         draft.exteriorAirMargin = workspace != null ? workspace.exteriorAirMargin() : 2;
         draft.previewMargin = workspace != null ? workspace.previewMargin() : 4;
-        MKWorkspaceTowerStackSettings primaryStackSettings = primaryStackSettings(draft.topologyProfile);
-        draft.minMainFloors = primaryStackSettings.minMainFloors();
-        draft.mainFloors = primaryStackSettings.mainFloors();
-        draft.minBasementFloors = primaryStackSettings.minBasementFloors();
-        draft.basementFloors = primaryStackSettings.basementFloors();
-        draft.topCapApproachEnabled = primaryStackSettings.topCapApproachEnabled();
-        draft.basementEntryEnabled = primaryStackSettings.basementEntryEnabled();
-        draft.basementCapApproachEnabled = primaryStackSettings.basementCapApproachEnabled();
-        draft.towerStackPreviewSelections = new java.util.HashMap<>();
         draft.familyDefinitions = List.copyOf(workspace != null ? workspace.familyDefinitions() :
                 MKTowerWorkspaceFamilyDefinition.createDefaults());
         draft.openingProfiles = List.copyOf(workspace != null ? workspace.openingProfiles() :
@@ -238,7 +220,8 @@ public class WorkspaceDraftSession {
             applyTowerStackSettingsToFamilies();
             return;
         }
-        replaceTowerStackSettingsWithNormalizedFloorCounts(towerStackSettings("tower.primary").withHeight(requestedHeight));
+        replaceTowerStackSettingsWithNormalizedFloorCounts(
+                towerStackSettings(TowerStackDraftEditor.PRIMARY_STACK_ID).withHeight(requestedHeight));
         applyTowerStackSettingsToFamilies();
         snapDraftVerticalAccess();
     }
@@ -251,13 +234,6 @@ public class WorkspaceDraftSession {
         draft().stairWidth = defaultStairConfig.stairWidth();
         draft().verticalAccessPlacement = MKWorkspaceVerticalAccessSpec.defaultSpec().placement();
         draft().shaftSize = MKWorkspaceVerticalAccessSpec.defaultSpec().shaftSize();
-        draft().minMainFloors = MKWorkspaceTowerStackFloorCounts.DEFAULT_MAIN_FLOORS;
-        draft().mainFloors = MKWorkspaceTowerStackFloorCounts.DEFAULT_MAIN_FLOORS;
-        draft().minBasementFloors = MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_FLOORS;
-        draft().basementFloors = MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_FLOORS;
-        draft().topCapApproachEnabled = MKWorkspaceTowerStackFloorCounts.DEFAULT_TOP_CAP_APPROACH_ENABLED;
-        draft().basementEntryEnabled = MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_ENTRY_ENABLED;
-        draft().basementCapApproachEnabled = MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_CAP_APPROACH_ENABLED;
         draft().openingProfiles = MKHorizontalOpeningProfile.createDefaults(dimensions);
         if (MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(draft().topologyProfile.plannerId())) {
             draft().topologyProfile = MKWorkspaceTopologyProfile.walledKeep(
@@ -575,9 +551,6 @@ public class WorkspaceDraftSession {
         draft().shaftSize = MKWorkspaceDimensions.snapToNearestUsableShaftSize(makeStairConfig(),
                 footprint[0], footprint[1], draft().shaftSize, 3);
         draft().stairWidth = MKWorkspaceDimensions.snapToNearestAllowedStairWidth(draft().shaftSize, draft().stairWidth);
-        draft().mainFloors = normalizeMainFloorCount(draft().mainFloors, draft().basementFloors);
-        draft().basementFloors = normalizeBasementFloorCount(draft().basementFloors, draft().mainFloors);
-        draft().mainFloors = normalizeMainFloorCount(draft().mainFloors, draft().basementFloors);
         draft().familyDefinitions = draft().familyDefinitions.stream()
                 .map(this::normalizeFamilyDefinition)
                 .toList();
@@ -1000,7 +973,7 @@ public class WorkspaceDraftSession {
         if (MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(topologyPlannerId())) {
             return towerStackSettings("keep.center");
         }
-        return towerStackSettings(TOWER_PRIMARY_STACK_ID);
+        return towerStackSettings(TowerStackDraftEditor.PRIMARY_STACK_ID);
     }
 
     public Optional<MKHorizontalOpeningProfile> getOpeningProfile(String profileId) {
@@ -1013,13 +986,6 @@ public class WorkspaceDraftSession {
         return new MKWorkspaceVerticalAccessSpec(draft().shaftSize, draft().verticalAccessPlacement, makeStairConfig());
     }
 
-    private static MKWorkspaceTowerStackSettings primaryStackSettings(MKWorkspaceTopologyProfile profile) {
-        if (MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(profile.plannerId())) {
-            return profile.towerStackSettingsOrDefault("keep.center");
-        }
-        return profile.towerStackSettingsOrDefault(TOWER_PRIMARY_STACK_ID);
-    }
-
     public int[] verticalAccessFootprint() {
         MKWorkspaceTowerStackSettings settings = primaryDimensionStackSettings();
         return new int[]{settings.width(), settings.length()};
@@ -1029,46 +995,8 @@ public class WorkspaceDraftSession {
         return verticalAccessFootprint();
     }
 
-    public List<Integer> allowedMainFloorCounts(int basementFloors) {
-        MKWorkspaceTowerStackSettings settings = primaryDimensionStackSettings()
-                .withBasementFloors(basementFloors);
-        return allowedTowerStackMainFloorCounts(settings, basementFloors);
-    }
-
-    public List<Integer> allowedBasementFloorCounts(int mainFloors) {
-        MKWorkspaceTowerStackSettings settings = primaryDimensionStackSettings()
-                .withMainFloors(mainFloors);
-        return allowedTowerStackBasementFloorCounts(settings, mainFloors);
-    }
-
-    public int nextAllowedMainFloorCount(int currentCount, int basementFloors, boolean reverse) {
-        List<Integer> allowedCounts = allowedMainFloorCounts(basementFloors);
-        int normalized = normalizeMainFloorCount(currentCount, basementFloors);
-        return cycleValue(allowedCounts, normalized, reverse, currentCount);
-    }
-
-    public int nextAllowedBasementFloorCount(int currentCount, int mainFloors, boolean reverse) {
-        List<Integer> allowedCounts = allowedBasementFloorCounts(mainFloors);
-        int normalized = normalizeBasementFloorCount(currentCount, mainFloors);
-        return cycleValue(allowedCounts, normalized, reverse, currentCount);
-    }
-
-    public int normalizeMainFloorCount(int requestedCount, int basementFloors) {
-        List<Integer> allowedCounts = allowedMainFloorCounts(basementFloors);
-        return allowedCounts.stream()
-                .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedCount)))
-                .orElse(0);
-    }
-
-    public int normalizeBasementFloorCount(int requestedCount, int mainFloors) {
-        List<Integer> allowedCounts = allowedBasementFloorCounts(mainFloors);
-        return allowedCounts.stream()
-                .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedCount)))
-                .orElse(0);
-    }
-
     MKWorkspaceTowerStackSettings towerStackSettings(String stackId) {
-        MKWorkspaceTowerStackSettings settings = TOWER_PRIMARY_STACK_ID.equals(stackId) ?
+        MKWorkspaceTowerStackSettings settings = TowerStackDraftEditor.PRIMARY_STACK_ID.equals(stackId) ?
                 draft().topologyProfile.towerStackSettings(stackId).orElseGet(this::towerPrimarySettingsFromDraft) :
                 draft().topologyProfile.towerStackSettingsOrDefault(stackId);
         if (draft().topologyProfile.towerStackSettings(stackId).isEmpty()) {
@@ -1079,14 +1007,7 @@ public class WorkspaceDraftSession {
 
     void replaceTowerStackSettings(MKWorkspaceTowerStackSettings settings) {
         draft().topologyProfile = draft().topologyProfile.withTowerStackSettings(settings);
-        if (TOWER_PRIMARY_STACK_ID.equals(settings.stackId())) {
-            draft().minMainFloors = settings.minMainFloors();
-            draft().mainFloors = settings.mainFloors();
-            draft().minBasementFloors = settings.minBasementFloors();
-            draft().basementFloors = settings.basementFloors();
-            draft().topCapApproachEnabled = settings.topCapApproachEnabled();
-            draft().basementEntryEnabled = settings.basementEntryEnabled();
-            draft().basementCapApproachEnabled = settings.basementCapApproachEnabled();
+        if (TowerStackDraftEditor.PRIMARY_STACK_ID.equals(settings.stackId())) {
             draft().shaftSize = settings.shaftSize();
             draft().verticalAccessPlacement = settings.verticalAccessPlacement();
             draft().stairMode = settings.stairConfig().mode();
@@ -1105,22 +1026,10 @@ public class WorkspaceDraftSession {
 
     private MKWorkspaceTowerStackSettings towerPrimarySettingsFromDraft() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
-        return new MKWorkspaceTowerStackSettings(
-                TOWER_PRIMARY_STACK_ID,
-                draft().minMainFloors,
-                draft().mainFloors,
-                draft().minBasementFloors,
-                draft().basementFloors,
-                dimensions.roomHeight(),
-                dimensions.roomWidth(),
-                dimensions.roomLength(),
-                draft().shaftSize,
-                draft().verticalAccessPlacement,
-                makeStairConfig(),
-                draft().topCapApproachEnabled,
-                draft().basementEntryEnabled,
-                draft().basementCapApproachEnabled
-        );
+        return MKWorkspaceTowerStackSettings.defaults(TowerStackDraftEditor.PRIMARY_STACK_ID, dimensions.roomHeight())
+                .withShaftSize(draft().shaftSize)
+                .withVerticalAccessPlacement(draft().verticalAccessPlacement)
+                .withStairConfig(makeStairConfig());
     }
 
     List<Integer> allowedTowerStackMainFloorCounts(MKWorkspaceTowerStackSettings settings, int basementFloors) {
@@ -1300,7 +1209,7 @@ public class WorkspaceDraftSession {
         if (!hasTowerFamilies) {
             draft().familyDefinitions = MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions);
         }
-        towerStackSettings(TOWER_PRIMARY_STACK_ID);
+        towerStackSettings(TowerStackDraftEditor.PRIMARY_STACK_ID);
         applyTowerStackSettingsToFamilies();
         boolean hasTowerLinearRuns = draft().linearRunFamilies.stream()
                 .anyMatch(linearRun -> linearRun.topologySlotId().startsWith("tower."));
@@ -1318,7 +1227,7 @@ public class WorkspaceDraftSession {
         if (draft().topologyProfile.anySharedCornerTower()) {
             ensureFamiliesForTowerStack(updated, "keep.corner.shared");
         }
-        for (String cornerSlot : KEEP_CORNER_STACK_IDS) {
+        for (String cornerSlot : WalledKeepDraftEditor.KEEP_CORNER_STACK_IDS) {
             if (!draft().topologyProfile.uniqueCornerTower(cornerSlot)) {
                 continue;
             }
@@ -1555,14 +1464,14 @@ public class WorkspaceDraftSession {
     }
 
     private boolean isConcreteCornerSlot(String topologySlotId) {
-        return KEEP_CORNER_STACK_IDS.contains(topologySlotId);
+        return WalledKeepDraftEditor.KEEP_CORNER_STACK_IDS.contains(topologySlotId);
     }
 
     Optional<String> towerStackIdForTopologySlot(String topologySlotId) {
         if (MKWorkspaceTopologyProfile.TOWER_PLANNER_ID.equals(topologyPlannerId())) {
             return MKTowerWorkspaceStackSlot.stackIdForTopologySlot(topologySlotId)
-                    .filter(stackId -> TOWER_PRIMARY_STACK_ID.equals(stackId) || "tower".equals(stackId))
-                    .map(stackId -> TOWER_PRIMARY_STACK_ID);
+                    .filter(stackId -> TowerStackDraftEditor.PRIMARY_STACK_ID.equals(stackId) || "tower".equals(stackId))
+                    .map(stackId -> TowerStackDraftEditor.PRIMARY_STACK_ID);
         }
         if (topologySlotId.startsWith("keep.center.")) {
             return Optional.of("keep.center");
@@ -1574,7 +1483,7 @@ public class WorkspaceDraftSession {
         if ("keep.corner.shared".equals(topologySlotId) || topologySlotId.startsWith("keep.corner.shared.")) {
             return Optional.of("keep.corner.shared");
         }
-        return KEEP_CORNER_STACK_IDS.stream()
+        return WalledKeepDraftEditor.KEEP_CORNER_STACK_IDS.stream()
                 .filter(stackId -> topologySlotId.equals(stackId) || topologySlotId.startsWith(stackId + "."))
                 .findFirst();
     }
@@ -1853,7 +1762,6 @@ public class WorkspaceDraftSession {
         public String namespace;
         public String structureName;
         public MKWorkspaceTopologyProfile topologyProfile;
-        public String walledKeepTowerStackTab = "keep.center";
         public int shaftSize;
         public MKVerticalAccessPlacement verticalAccessPlacement;
         public int shellMargin;
@@ -1863,14 +1771,6 @@ public class WorkspaceDraftSession {
         public MKWorkspaceStairRiseType stairRiseType;
         public int stairWidth;
         public MKWorkspaceMaterialPalette palette;
-        public int minMainFloors;
-        public int mainFloors;
-        public int minBasementFloors;
-        public int basementFloors;
-        public boolean topCapApproachEnabled;
-        public boolean basementEntryEnabled;
-        public boolean basementCapApproachEnabled;
-        public Map<String, String> towerStackPreviewSelections;
         public List<MKTowerWorkspaceFamilyDefinition> familyDefinitions;
         public List<MKHorizontalOpeningProfile> openingProfiles;
         public List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies;

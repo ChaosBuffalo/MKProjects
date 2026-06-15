@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Optional;
 
 public final class TowerStackDraftEditor {
+    static final String PRIMARY_STACK_ID = "tower.primary";
+
     private final WorkspaceDraftSession session;
     private final String stackId;
 
@@ -45,11 +47,11 @@ public final class TowerStackDraftEditor {
     }
 
     public String previewSelection() {
-        return session.draft().towerStackPreviewSelections.getOrDefault(stackId, "entry");
+        return session.viewState.towerStackPreviewSelections.getOrDefault(stackId, "entry");
     }
 
     public void previewSelection(String sectionKey) {
-        session.draft().towerStackPreviewSelections.put(stackId,
+        session.viewState.towerStackPreviewSelections.put(stackId,
                 sectionKey == null || sectionKey.isBlank() ? "entry" : sectionKey);
     }
 

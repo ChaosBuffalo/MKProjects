@@ -164,7 +164,7 @@ public final class FloorPlanDraftEditor {
 
     public long previewSeed() {
         return lockedLayoutSeed()
-                .orElseGet(() -> session.floorTopologyPreviewSeeds.computeIfAbsent(
+                .orElseGet(() -> session.viewState.floorTopologyPreviewSeeds.computeIfAbsent(
                         MKWorkspaceFloorTopologySettings.key(stackId, floorRole),
                         key -> (long) key.hashCode()));
     }
@@ -175,7 +175,8 @@ public final class FloorPlanDraftEditor {
         }
         String key = MKWorkspaceFloorTopologySettings.key(stackId, floorRole);
         long current = previewSeed();
-        session.floorTopologyPreviewSeeds.put(key, current * 6364136223846793005L + 1442695040888963407L);
+        session.viewState.floorTopologyPreviewSeeds.put(key,
+                current * 6364136223846793005L + 1442695040888963407L);
     }
 
     public Optional<Long> lockedLayoutSeed() {
@@ -183,7 +184,7 @@ public final class FloorPlanDraftEditor {
     }
 
     public void lockLayoutSeed() {
-        long seed = session.floorTopologyPreviewSeeds.computeIfAbsent(
+        long seed = session.viewState.floorTopologyPreviewSeeds.computeIfAbsent(
                 MKWorkspaceFloorTopologySettings.key(stackId, floorRole), key -> (long) key.hashCode());
         replace(settings().withLockedLayoutSeed(Optional.of(seed)));
     }

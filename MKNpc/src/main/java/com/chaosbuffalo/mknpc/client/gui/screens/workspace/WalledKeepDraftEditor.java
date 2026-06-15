@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public final class WalledKeepDraftEditor {
-    private static final List<String> KEEP_CORNER_STACK_IDS = List.of(
+    static final List<String> KEEP_CORNER_STACK_IDS = List.of(
             "keep.corner.north_west",
             "keep.corner.north_east",
             "keep.corner.south_east",
@@ -95,23 +95,23 @@ public final class WalledKeepDraftEditor {
 
     public String towerStackTab() {
         normalizeTowerStackTab();
-        return session.draft().walledKeepTowerStackTab;
+        return session.viewState.walledKeepTowerStackTab;
     }
 
     public void towerStackTab(String stackId) {
         List<String> tabs = towerStackTabs();
-        session.draft().walledKeepTowerStackTab = tabs.contains(stackId) ? stackId :
+        session.viewState.walledKeepTowerStackTab = tabs.contains(stackId) ? stackId :
                 (tabs.isEmpty() ? "keep.center" : tabs.getFirst());
     }
 
     void normalizeTowerStackTab() {
         List<String> tabs = towerStackTabs();
         if (tabs.isEmpty()) {
-            session.draft().walledKeepTowerStackTab = "keep.center";
+            session.viewState.walledKeepTowerStackTab = "keep.center";
             return;
         }
-        if (!tabs.contains(session.draft().walledKeepTowerStackTab)) {
-            session.draft().walledKeepTowerStackTab = tabs.getFirst();
+        if (!tabs.contains(session.viewState.walledKeepTowerStackTab)) {
+            session.viewState.walledKeepTowerStackTab = tabs.getFirst();
         }
     }
 
