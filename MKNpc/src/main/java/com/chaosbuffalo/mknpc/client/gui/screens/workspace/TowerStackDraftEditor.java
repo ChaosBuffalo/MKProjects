@@ -7,11 +7,14 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPol
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomGeometry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,15 +36,21 @@ public final class TowerStackDraftEditor {
     }
 
     public List<MKTowerWorkspaceFamilyDefinition> familiesForUi() {
-        return session.towerStackFamiliesForUi(stackId);
+        return session.draft().familyDefinitions.stream()
+                .filter(family -> session.towerStackIdForTopologySlot(family.topologySlotId())
+                        .filter(stackId::equals)
+                        .isPresent())
+                .map(session::normalizeFamilyDefinition)
+                .toList();
     }
 
     public String previewSelection() {
-        return session.towerStackPreviewSelection(stackId);
+        return session.draft().towerStackPreviewSelections.getOrDefault(stackId, "entry");
     }
 
     public void previewSelection(String sectionKey) {
-        session.towerStackPreviewSelection(stackId, sectionKey);
+        session.draft().towerStackPreviewSelections.put(stackId,
+                sectionKey == null || sectionKey.isBlank() ? "entry" : sectionKey);
     }
 
     public int width() {
@@ -263,19 +272,25 @@ public final class TowerStackDraftEditor {
     }
 
     public int topCapUpperVoidMargin() {
-        return session.towerStackTopCapUpperVoidMargin(stackId);
+        return towerStackFamily(MKTowerWorkspaceStackSlot.TOP_CAP)
+                .map(MKTowerWorkspaceFamilyDefinition::topVoidMargin)
+                .orElse(0);
     }
 
     public void topCapUpperVoidMargin(int value) {
-        session.towerStackTopCapUpperVoidMargin(stackId, value);
+        int maxMargin = Math.max(0, settings().mainCapHeight() - MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT);
+        replaceTowerStackFamilyVoidMargins(MKTowerWorkspaceStackSlot.TOP_CAP, clamp(value, 0, maxMargin), 0);
     }
 
     public int bottomCapLowerVoidMargin() {
-        return session.towerStackBottomCapLowerVoidMargin(stackId);
+        return towerStackFamily(MKTowerWorkspaceStackSlot.BASEMENT_CAP)
+                .map(MKTowerWorkspaceFamilyDefinition::bottomVoidMargin)
+                .orElse(0);
     }
 
     public void bottomCapLowerVoidMargin(int value) {
-        session.towerStackBottomCapLowerVoidMargin(stackId, value);
+        int maxMargin = Math.max(0, settings().basementCapHeight() - MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT);
+        replaceTowerStackFamilyVoidMargins(MKTowerWorkspaceStackSlot.BASEMENT_CAP, 0, clamp(value, 0, maxMargin));
     }
 
     public MKWorkspaceFoundationPolicy foundationPolicy() {
@@ -330,6 +345,61 @@ public final class TowerStackDraftEditor {
         int normalizedBasement = session.normalizeTowerStackBasementFloorCount(updated, updated.basementFloors(),
                 normalizedMain);
         replace(updated.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
+    }
+
+    private Optional<MKTowerWorkspaceFamilyDefinition> towerStackFamily(MKTowerWorkspaceStackSlot slot) {
+        String slotId = slot.slotId(stackId);
+        return session.draft().familyDefinitions.stream()
+                .filter(family -> family.topologySlotId().equals(slotId))
+                .findFirst();
+    }
+
+    private void replaceTowerStackFamilyVoidMargins(MKTowerWorkspaceStackSlot slot,
+                                                    int topVoidMargin, int bottomVoidMargin) {
+        String slotId = slot.slotId(stackId);
+        Optional<MKTowerWorkspaceFamilyDefinition> source = towerStackFamily(slot)
+                .or(() -> session.topologySlot(slotId).map(session::defaultFamilyForTopologySlot));
+        if (source.isEmpty()) {
+            return;
+        }
+        MKTowerWorkspaceFamilyDefinition updated = session.normalizeFamilyDefinition(copyFamilyWithVoidMargins(
+                source.get(), topVoidMargin, bottomVoidMargin));
+        ArrayList<MKTowerWorkspaceFamilyDefinition> families = new ArrayList<>(session.draft().familyDefinitions);
+        boolean replaced = false;
+        for (int index = 0; index < families.size(); index++) {
+            if (families.get(index).topologySlotId().equals(slotId)) {
+                families.set(index, updated);
+                replaced = true;
+                break;
+            }
+        }
+        if (!replaced) {
+            families.add(updated);
+        }
+        session.draft().familyDefinitions = List.copyOf(families);
+    }
+
+    private MKTowerWorkspaceFamilyDefinition copyFamilyWithVoidMargins(MKTowerWorkspaceFamilyDefinition family,
+                                                                       int topVoidMargin, int bottomVoidMargin) {
+        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                family.baseName(),
+                family.slotMetadata(),
+                family.verticalAccessGroupId(),
+                family.supportsVerticalAccess(),
+                family.roomWidth(),
+                family.roomLength(),
+                family.roomHeight(),
+                family.horizontalExtrusionMode(),
+                family.horizontalExits(),
+                topVoidMargin,
+                bottomVoidMargin,
+                family.foundationPolicyOverride(),
+                family.paletteOverride()
+        );
+    }
+
+    private int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
     }
 
     private int makeOdd(int value) {

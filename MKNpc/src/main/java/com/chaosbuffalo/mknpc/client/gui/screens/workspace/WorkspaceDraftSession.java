@@ -305,39 +305,6 @@ public class WorkspaceDraftSession {
         walledKeepEditor().normalizeTowerStackTab();
     }
 
-    List<MKTowerWorkspaceFamilyDefinition> towerStackFamiliesForUi(String stackId) {
-        return draft().familyDefinitions.stream()
-                .filter(family -> towerStackIdForTopologySlot(family.topologySlotId())
-                        .filter(stackId::equals)
-                        .isPresent())
-                .map(this::normalizeFamilyDefinition)
-                .toList();
-    }
-
-    int towerStackTopCapUpperVoidMargin(String stackId) {
-        return towerStackFamily(stackId, MKTowerWorkspaceStackSlot.TOP_CAP)
-                .map(MKTowerWorkspaceFamilyDefinition::topVoidMargin)
-                .orElse(0);
-    }
-
-    void towerStackTopCapUpperVoidMargin(String stackId, int value) {
-        int maxMargin = Math.max(0, towerStackSettings(stackId).mainCapHeight() - MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT);
-        replaceTowerStackFamilyVoidMargins(stackId, MKTowerWorkspaceStackSlot.TOP_CAP,
-                clamp(value, 0, maxMargin), 0);
-    }
-
-    int towerStackBottomCapLowerVoidMargin(String stackId) {
-        return towerStackFamily(stackId, MKTowerWorkspaceStackSlot.BASEMENT_CAP)
-                .map(MKTowerWorkspaceFamilyDefinition::bottomVoidMargin)
-                .orElse(0);
-    }
-
-    void towerStackBottomCapLowerVoidMargin(String stackId, int value) {
-        int maxMargin = Math.max(0, towerStackSettings(stackId).basementCapHeight() - MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT);
-        replaceTowerStackFamilyVoidMargins(stackId, MKTowerWorkspaceStackSlot.BASEMENT_CAP,
-                0, clamp(value, 0, maxMargin));
-    }
-
     public void topologyDefaultHeight(int value) {
         int requestedHeight = Math.max(3, value);
         if (MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(topologyPlannerId())) {
@@ -348,66 +315,6 @@ public class WorkspaceDraftSession {
         replaceTowerStackSettingsWithNormalizedFloorCounts(towerStackSettings("tower.primary").withHeight(requestedHeight));
         applyTowerStackSettingsToFamilies();
         snapDraftVerticalAccess();
-    }
-
-    private Optional<MKTowerWorkspaceFamilyDefinition> towerStackFamily(String stackId,
-                                                                        MKTowerWorkspaceStackSlot slot) {
-        String slotId = slot.slotId(stackId);
-        return draft().familyDefinitions.stream()
-                .filter(family -> family.topologySlotId().equals(slotId))
-                .findFirst();
-    }
-
-    private void replaceTowerStackFamilyVoidMargins(String stackId, MKTowerWorkspaceStackSlot slot,
-                                                    int topVoidMargin, int bottomVoidMargin) {
-        String slotId = slot.slotId(stackId);
-        Optional<MKTowerWorkspaceFamilyDefinition> source = towerStackFamily(stackId, slot)
-                .or(() -> topologySlot(slotId).map(this::defaultFamilyForTopologySlot));
-        if (source.isEmpty()) {
-            return;
-        }
-        MKTowerWorkspaceFamilyDefinition updated = normalizeFamilyDefinition(copyFamilyWithVoidMargins(
-                source.get(), topVoidMargin, bottomVoidMargin));
-        ArrayList<MKTowerWorkspaceFamilyDefinition> families = new ArrayList<>(draft().familyDefinitions);
-        boolean replaced = false;
-        for (int index = 0; index < families.size(); index++) {
-            if (families.get(index).topologySlotId().equals(slotId)) {
-                families.set(index, updated);
-                replaced = true;
-                break;
-            }
-        }
-        if (!replaced) {
-            families.add(updated);
-        }
-        draft().familyDefinitions = List.copyOf(families);
-    }
-
-    private MKTowerWorkspaceFamilyDefinition copyFamilyWithVoidMargins(MKTowerWorkspaceFamilyDefinition family,
-                                                                       int topVoidMargin, int bottomVoidMargin) {
-        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
-                family.baseName(),
-                family.slotMetadata(),
-                family.verticalAccessGroupId(),
-                family.supportsVerticalAccess(),
-                family.roomWidth(),
-                family.roomLength(),
-                family.roomHeight(),
-                family.horizontalExtrusionMode(),
-                family.horizontalExits(),
-                topVoidMargin,
-                bottomVoidMargin,
-                family.foundationPolicyOverride(),
-                family.paletteOverride()
-        );
-    }
-
-    String towerStackPreviewSelection(String stackId) {
-        return draft().towerStackPreviewSelections.getOrDefault(stackId, "entry");
-    }
-
-    void towerStackPreviewSelection(String stackId, String sectionKey) {
-        draft().towerStackPreviewSelections.put(stackId, valueOrDefault(sectionKey, "entry"));
     }
 
     MKWorkspaceMaterialPalette resolveTowerStackPalette(String stackId) {
@@ -1709,7 +1616,7 @@ public class WorkspaceDraftSession {
                 .schema();
     }
 
-    private Optional<MKWorkspaceSlotSchema> topologySlot(String topologySlotId) {
+    Optional<MKWorkspaceSlotSchema> topologySlot(String topologySlotId) {
         return topologySchema().slots().stream()
                 .filter(slot -> slot.slotId().equals(topologySlotId))
                 .findFirst();
@@ -1731,7 +1638,7 @@ public class WorkspaceDraftSession {
         return KEEP_CORNER_STACK_IDS.contains(topologySlotId);
     }
 
-    private Optional<String> towerStackIdForTopologySlot(String topologySlotId) {
+    Optional<String> towerStackIdForTopologySlot(String topologySlotId) {
         if (MKWorkspaceTopologyProfile.TOWER_PLANNER_ID.equals(topologyPlannerId())) {
             return MKTowerWorkspaceStackSlot.stackIdForTopologySlot(topologySlotId)
                     .filter(stackId -> TOWER_PRIMARY_STACK_ID.equals(stackId) || "tower".equals(stackId))
@@ -1773,7 +1680,7 @@ public class WorkspaceDraftSession {
         );
     }
 
-    private MKTowerWorkspaceFamilyDefinition defaultFamilyForTopologySlot(MKWorkspaceSlotSchema slot) {
+    MKTowerWorkspaceFamilyDefinition defaultFamilyForTopologySlot(MKWorkspaceSlotSchema slot) {
         MKWorkspaceTowerStackSettings settings = towerStackIdForTopologySlot(slot.slotId())
                 .map(this::towerStackSettings)
                 .orElseGet(this::primaryDimensionStackSettings);
