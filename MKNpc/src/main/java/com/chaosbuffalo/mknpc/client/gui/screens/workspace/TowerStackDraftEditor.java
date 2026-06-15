@@ -39,7 +39,7 @@ public final class TowerStackDraftEditor {
 
     public List<MKWorkspaceRoomFamilyDefinition> familiesForUi() {
         return session.draft().familyDefinitions.stream()
-                .filter(family -> session.towerStackIdForTopologySlot(family.topologySlotId())
+                .filter(family -> session.verticalStackIdForTopologySlot(family.topologySlotId())
                         .filter(stackId::equals)
                         .isPresent())
                 .map(session::normalizeFamilyDefinition)
@@ -133,8 +133,8 @@ public final class TowerStackDraftEditor {
 
     public void mainFloors(int value) {
         MKWorkspaceVerticalStackSettings current = settings();
-        int normalizedMain = session.normalizeTowerStackMainFloorCount(current, value, current.basementFloors());
-        int normalizedBasement = session.normalizeTowerStackBasementFloorCount(current, current.basementFloors(),
+        int normalizedMain = session.normalizeVerticalStackMainFloorCount(current, value, current.basementFloors());
+        int normalizedBasement = session.normalizeVerticalStackBasementFloorCount(current, current.basementFloors(),
                 normalizedMain);
         replace(current.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
@@ -153,8 +153,8 @@ public final class TowerStackDraftEditor {
 
     public void basementFloors(int value) {
         MKWorkspaceVerticalStackSettings current = settings();
-        int normalizedBasement = session.normalizeTowerStackBasementFloorCount(current, value, current.mainFloors());
-        int normalizedMain = session.normalizeTowerStackMainFloorCount(current, current.mainFloors(),
+        int normalizedBasement = session.normalizeVerticalStackBasementFloorCount(current, value, current.mainFloors());
+        int normalizedMain = session.normalizeVerticalStackMainFloorCount(current, current.mainFloors(),
                 normalizedBasement);
         replace(current.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
@@ -169,12 +169,12 @@ public final class TowerStackDraftEditor {
 
     public List<Integer> allowedMainFloorCounts() {
         MKWorkspaceVerticalStackSettings current = settings();
-        return session.allowedTowerStackMainFloorCounts(current, current.basementFloors());
+        return session.allowedVerticalStackMainFloorCounts(current, current.basementFloors());
     }
 
     public List<Integer> allowedBasementFloorCounts() {
         MKWorkspaceVerticalStackSettings current = settings();
-        return session.allowedTowerStackBasementFloorCounts(current, current.mainFloors());
+        return session.allowedVerticalStackBasementFloorCounts(current, current.mainFloors());
     }
 
     public boolean topCapApproachEnabled() {
@@ -183,9 +183,9 @@ public final class TowerStackDraftEditor {
 
     public void topCapApproachEnabled(boolean value) {
         MKWorkspaceVerticalStackSettings updated = settings().withTopCapApproachEnabled(value);
-        int normalizedMain = session.normalizeTowerStackMainFloorCount(updated, updated.mainFloors(),
+        int normalizedMain = session.normalizeVerticalStackMainFloorCount(updated, updated.mainFloors(),
                 updated.basementFloors());
-        int normalizedBasement = session.normalizeTowerStackBasementFloorCount(updated, updated.basementFloors(),
+        int normalizedBasement = session.normalizeVerticalStackBasementFloorCount(updated, updated.basementFloors(),
                 normalizedMain);
         replace(updated.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
@@ -196,9 +196,9 @@ public final class TowerStackDraftEditor {
 
     public void basementEntryEnabled(boolean value) {
         MKWorkspaceVerticalStackSettings updated = settings().withBasementEntryEnabled(value);
-        int normalizedBasement = session.normalizeTowerStackBasementFloorCount(updated, updated.basementFloors(),
+        int normalizedBasement = session.normalizeVerticalStackBasementFloorCount(updated, updated.basementFloors(),
                 updated.mainFloors());
-        int normalizedMain = session.normalizeTowerStackMainFloorCount(updated, updated.mainFloors(),
+        int normalizedMain = session.normalizeVerticalStackMainFloorCount(updated, updated.mainFloors(),
                 normalizedBasement);
         replace(updated.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
@@ -209,9 +209,9 @@ public final class TowerStackDraftEditor {
 
     public void basementCapApproachEnabled(boolean value) {
         MKWorkspaceVerticalStackSettings updated = settings().withBasementCapApproachEnabled(value);
-        int normalizedBasement = session.normalizeTowerStackBasementFloorCount(updated, updated.basementFloors(),
+        int normalizedBasement = session.normalizeVerticalStackBasementFloorCount(updated, updated.basementFloors(),
                 updated.mainFloors());
-        int normalizedMain = session.normalizeTowerStackMainFloorCount(updated, updated.mainFloors(),
+        int normalizedMain = session.normalizeVerticalStackMainFloorCount(updated, updated.mainFloors(),
                 normalizedBasement);
         replace(updated.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
@@ -334,9 +334,9 @@ public final class TowerStackDraftEditor {
 
     private void replaceStairConfig(MKWorkspaceStairAuthoringConfig stairConfig) {
         MKWorkspaceVerticalStackSettings updated = settings().withStairConfig(stairConfig);
-        int normalizedMain = session.normalizeTowerStackMainFloorCount(updated, updated.mainFloors(),
+        int normalizedMain = session.normalizeVerticalStackMainFloorCount(updated, updated.mainFloors(),
                 updated.basementFloors());
-        int normalizedBasement = session.normalizeTowerStackBasementFloorCount(updated, updated.basementFloors(),
+        int normalizedBasement = session.normalizeVerticalStackBasementFloorCount(updated, updated.basementFloors(),
                 normalizedMain);
         replace(updated.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }

@@ -231,7 +231,7 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
 
     private void addTowerTabs(MKWorkspaceScreen screen, MKStackLayoutVertical content, WorkspaceDraftSession editor) {
         addTowerTabSelector(screen, content, editor, "Vertical Stack Settings");
-        String activeStackId = editor.walledKeepEditor().towerStackTab();
+        String activeStackId = editor.walledKeepEditor().verticalStackTab();
         String label = tabLabel(activeStackId, false);
         towerStackPanel.addStackSizingRows(screen, content, editor, activeStackId, label);
         towerStackPanel.addStackEditor(screen, content, editor, activeStackId, label, false);
@@ -240,7 +240,7 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
     private void addTowerSizingTabs(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                     WorkspaceDraftSession editor) {
         addTowerTabSelector(screen, content, editor, "Tower Stack Sizing");
-        String activeStackId = editor.walledKeepEditor().towerStackTab();
+        String activeStackId = editor.walledKeepEditor().verticalStackTab();
         towerStackPanel.addStackSizingRows(screen, content, editor, activeStackId, tabLabel(activeStackId, false));
     }
 
@@ -248,16 +248,16 @@ public class WalledKeepTopologyUiContributor implements WorkspaceTopologyUiContr
                                      WorkspaceDraftSession editor, String heading) {
         WorkspaceTopologyUiSupport.addText(screen, content, Component.literal(heading));
         WalledKeepDraftEditor keepEditor = editor.walledKeepEditor();
-        List<String> stackIds = keepEditor.towerStackTabs();
+        List<String> stackIds = keepEditor.verticalStackTabs();
         MKStackLayoutHorizontal tabRow = new MKStackLayoutHorizontal(0, 0, 20);
         tabRow.setPaddingLeft(2).setPaddingRight(2);
         int gapWidth = Math.max(0, stackIds.size() - 1) * (tabRow.getPaddingLeft() + tabRow.getPaddingRight());
         int tabWidth = Math.max(44, Math.min(100, (screen.contentWidth() - gapWidth) / Math.max(1, stackIds.size())));
         for (String stackId : stackIds) {
             MKButton tabButton = new MKButton(Component.literal(tabButtonLabel(stackId,
-                    stackId.equals(keepEditor.towerStackTab()))), tabWidth, 20);
+                    stackId.equals(keepEditor.verticalStackTab()))), tabWidth, 20);
             tabButton.setPressedCallback((button, mouseButton) -> {
-                keepEditor.towerStackTab(stackId);
+                keepEditor.verticalStackTab(stackId);
                 screen.flagNeedSetup();
                 return true;
             });

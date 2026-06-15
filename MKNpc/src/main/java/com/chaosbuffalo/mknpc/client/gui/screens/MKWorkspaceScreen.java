@@ -372,7 +372,7 @@ public class MKWorkspaceScreen extends MKScreen {
     public void openWorkspacePlannerNode(String stackId) {
         selectedPlannerStackId = stackId;
         if (stackId != null) {
-            draftSession.walledKeepEditor().towerStackTab(stackId);
+            draftSession.walledKeepEditor().verticalStackTab(stackId);
         }
         pushState(WorkspacePlannerNodePage.ID);
         flagNeedSetup();
@@ -385,7 +385,7 @@ public class MKWorkspaceScreen extends MKScreen {
     public void openWorkspaceFloorPlanNode(String stackId, String sectionKey) {
         selectedPlannerStackId = stackId;
         if (stackId != null) {
-            draftSession.walledKeepEditor().towerStackTab(stackId);
+            draftSession.walledKeepEditor().verticalStackTab(stackId);
         }
         selectedFloorPlanStackId = stackId;
         selectedFloorPlanSectionKey = sectionKey;

@@ -58,7 +58,7 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
         if (!hasKeepFamilies) {
             session.draft().familyDefinitions = MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions);
         }
-        ensureFamiliesForActiveCornerSlots(session);
+        session.walledKeepEditor().ensureFamiliesForActiveCornerSlots();
         boolean hasKeepLinearRuns = session.draft().linearRunFamilies.stream()
                 .anyMatch(linearRun -> linearRun.topologySlotId().startsWith("keep."));
         if (!hasKeepLinearRuns) {
@@ -80,7 +80,7 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
     }
 
     @Override
-    public Optional<String> towerStackIdForTopologySlot(WorkspaceDraftSession session, String topologySlotId) {
+    public Optional<String> verticalStackIdForTopologySlot(WorkspaceDraftSession session, String topologySlotId) {
         if (topologySlotId.startsWith("keep.center.")) {
             return Optional.of("keep.center");
         }
@@ -99,21 +99,6 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
         return session.draft().familyDefinitions.stream()
                 .filter(family -> family.topologySlotId().equals(sharedSlotId))
                 .findFirst();
-    }
-
-    void ensureFamiliesForActiveCornerSlots(WorkspaceDraftSession session) {
-        java.util.ArrayList<MKWorkspaceRoomFamilyDefinition> updated =
-                new java.util.ArrayList<>(session.draft().familyDefinitions);
-        if (session.draft().topologyProfile.anySharedCornerTower()) {
-            session.ensureFamiliesForTowerStack(updated, "keep.corner.shared");
-        }
-        for (String cornerSlot : WalledKeepDraftEditor.KEEP_CORNER_STACK_IDS) {
-            if (!session.draft().topologyProfile.uniqueCornerTower(cornerSlot)) {
-                continue;
-            }
-            session.ensureFamiliesForTowerStack(updated, cornerSlot);
-        }
-        session.draft().familyDefinitions = List.copyOf(updated);
     }
 
     private void migratePerimeterLinearRuns(WorkspaceDraftSession session) {

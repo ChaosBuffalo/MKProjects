@@ -76,7 +76,7 @@ public final class WalledKeepDraftEditor {
                 ));
     }
 
-    public List<String> towerStackTabs() {
+    public List<String> verticalStackTabs() {
         if (!MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(session.topologyPlannerId())) {
             return List.of();
         }
@@ -93,25 +93,25 @@ public final class WalledKeepDraftEditor {
         return List.copyOf(tabs);
     }
 
-    public String towerStackTab() {
-        normalizeTowerStackTab();
-        return session.viewState.walledKeepTowerStackTab;
+    public String verticalStackTab() {
+        normalizeVerticalStackTab();
+        return session.viewState.walledKeepVerticalStackTab;
     }
 
-    public void towerStackTab(String stackId) {
-        List<String> tabs = towerStackTabs();
-        session.viewState.walledKeepTowerStackTab = tabs.contains(stackId) ? stackId :
+    public void verticalStackTab(String stackId) {
+        List<String> tabs = verticalStackTabs();
+        session.viewState.walledKeepVerticalStackTab = tabs.contains(stackId) ? stackId :
                 (tabs.isEmpty() ? "keep.center" : tabs.getFirst());
     }
 
-    void normalizeTowerStackTab() {
-        List<String> tabs = towerStackTabs();
+    void normalizeVerticalStackTab() {
+        List<String> tabs = verticalStackTabs();
         if (tabs.isEmpty()) {
-            session.viewState.walledKeepTowerStackTab = "keep.center";
+            session.viewState.walledKeepVerticalStackTab = "keep.center";
             return;
         }
-        if (!tabs.contains(session.viewState.walledKeepTowerStackTab)) {
-            session.viewState.walledKeepTowerStackTab = tabs.getFirst();
+        if (!tabs.contains(session.viewState.walledKeepVerticalStackTab)) {
+            session.viewState.walledKeepVerticalStackTab = tabs.getFirst();
         }
     }
 
@@ -129,8 +129,8 @@ public final class WalledKeepDraftEditor {
         boolean southEast = "keep.corner.south_east".equals(topologySlotId) ? value : current.uniqueSouthEastCornerTower();
         boolean southWest = "keep.corner.south_west".equals(topologySlotId) ? value : current.uniqueSouthWestCornerTower();
         session.draft().topologyProfile = topologyProfileWithCornerModes(northWest, northEast, southEast, southWest);
-        session.ensureFamiliesForActiveCornerSlots();
-        normalizeTowerStackTab();
+        ensureFamiliesForActiveCornerSlots();
+        normalizeVerticalStackTab();
     }
 
     public int wallHeight() {
@@ -301,6 +301,21 @@ public final class WalledKeepDraftEditor {
                 current.courtyardSettings(),
                 current.terrainAdjustment()
         );
+    }
+
+    void ensureFamiliesForActiveCornerSlots() {
+        ArrayList<MKWorkspaceRoomFamilyDefinition> updated =
+                new ArrayList<>(session.draft().familyDefinitions);
+        if (session.draft().topologyProfile.anySharedCornerTower()) {
+            session.ensureRoomFamiliesForVerticalStack(updated, "keep.corner.shared");
+        }
+        for (String cornerSlot : KEEP_CORNER_STACK_IDS) {
+            if (!session.draft().topologyProfile.uniqueCornerTower(cornerSlot)) {
+                continue;
+            }
+            session.ensureRoomFamiliesForVerticalStack(updated, cornerSlot);
+        }
+        session.draft().familyDefinitions = List.copyOf(updated);
     }
 
     private void copyVerticalStackSettingsIfMissing(List<MKWorkspaceVerticalStackSettings> settings, String targetId,
