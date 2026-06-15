@@ -37,7 +37,9 @@ public final class FloorPlanDraftEditor {
     }
 
     public MKWorkspaceMaterialPalette inheritedPalette() {
-        return session.resolveTowerStackPalette(stackId);
+        return session.towerStackSettings(stackId).paletteOverrideOpt()
+                .map(override -> override.resolve(session.draftBasePalette()))
+                .orElse(session.draftBasePalette());
     }
 
     public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {

@@ -318,7 +318,9 @@ public final class TowerStackDraftEditor {
     }
 
     public MKWorkspaceMaterialPalette resolvedPalette() {
-        return session.resolveTowerStackPalette(stackId);
+        return settings().paletteOverrideOpt()
+                .map(override -> override.resolve(session.draftBasePalette()))
+                .orElse(session.draftBasePalette());
     }
 
     public void resetDefaults() {

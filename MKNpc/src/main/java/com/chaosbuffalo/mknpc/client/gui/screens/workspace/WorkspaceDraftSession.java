@@ -243,12 +243,6 @@ public class WorkspaceDraftSession {
         snapDraftVerticalAccess();
     }
 
-    MKWorkspaceMaterialPalette resolveTowerStackPalette(String stackId) {
-        return towerStackSettings(stackId).paletteOverrideOpt()
-                .map(override -> override.resolve(draftBasePalette()))
-                .orElse(draftBasePalette());
-    }
-
     public void resetCurrentTopologyDefaults() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceStairAuthoringConfig defaultStairConfig = MKWorkspaceStairAuthoringConfig.defaultConfig();
