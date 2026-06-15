@@ -19,7 +19,7 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
 
     @Override
     public MKWorkspaceTopologyProfile profileForSwitch(WorkspaceDraftSession session) {
-        return session.walledKeepEditor().topologyProfileWithCornerModes(
+        return keepEditor(session).topologyProfileWithCornerModes(
                 session.draft().topologyProfile.uniqueNorthWestCornerTower(),
                 session.draft().topologyProfile.uniqueNorthEastCornerTower(),
                 session.draft().topologyProfile.uniqueSouthEastCornerTower(),
@@ -58,7 +58,7 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
         if (!hasKeepFamilies) {
             session.draft().familyDefinitions = MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions);
         }
-        session.walledKeepEditor().ensureFamiliesForActiveCornerSlots();
+        keepEditor(session).ensureFamiliesForActiveCornerSlots();
         boolean hasKeepLinearRuns = session.draft().linearRunFamilies.stream()
                 .anyMatch(linearRun -> linearRun.topologySlotId().startsWith("keep."));
         if (!hasKeepLinearRuns) {
@@ -183,5 +183,9 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
         return WalledKeepDraftEditor.KEEP_CORNER_STACK_IDS.stream()
                 .filter(stackId -> topologySlotId.equals(stackId) || topologySlotId.startsWith(stackId + "."))
                 .findFirst();
+    }
+
+    private WalledKeepDraftEditor keepEditor(WorkspaceDraftSession session) {
+        return new WalledKeepDraftEditor(session);
     }
 }

@@ -9,8 +9,6 @@ import net.minecraft.network.chat.Component;
 public class WorkspacePlannerNodePage extends WorkspacePageBase {
     public static final String ID = "planner_node";
 
-    private final TowerStackTopologyPanel towerStackPanel = new TowerStackTopologyPanel();
-
     @Override
     public String id() {
         return ID;
@@ -35,7 +33,8 @@ public class WorkspacePlannerNodePage extends WorkspacePageBase {
         WorkspacePlannerLayout layout = addPlannerLayout(screen, root, contentTop, contentHeight);
         boolean topLevelTowerPlanner = MKWorkspaceTopologyProfile.TOWER_PLANNER_ID.equals(
                 screen.draftSession().topologyPlannerId());
-        towerStackPanel.addStackEditor(screen, layout, screen.draftSession(), stackId, label, topLevelTowerPlanner);
+        WorkspacePlannerUiRegistry.getPlannerUi(screen.draftSession().topologyPlannerId())
+                .addPlannerNodeLayout(screen, layout, screen.draftSession(), stackId, label, topLevelTowerPlanner);
         finishPlannerLayout(screen, layout);
         addBackButton(screen, root, WorkspaceManagePage.ID);
         return root;

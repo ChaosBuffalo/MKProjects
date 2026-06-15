@@ -63,6 +63,24 @@ public class WalledKeepPlannerUiContributor implements WorkspacePlannerUiContrib
         addTowerSizingTabs(screen, layout.settingsContent(), editor);
     }
 
+    @Override
+    public void selectPlannerNode(WorkspaceDraftSession editor, String nodeId) {
+        keepEditor(editor).verticalStackTab(nodeId);
+    }
+
+    @Override
+    public void addPlannerNodeLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
+                                     WorkspaceDraftSession editor, String nodeId, String label,
+                                     boolean topLevelPlanner) {
+        towerStackPanel.addStackEditor(screen, layout, editor, nodeId, label, topLevelPlanner);
+    }
+
+    @Override
+    public void addFloorPlanLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
+                                   WorkspaceDraftSession editor, String stackId, String floorRole) {
+        towerStackPanel.addFloorPlanEditor(screen, layout, editor, stackId, floorRole);
+    }
+
     private void addKeepLayoutSettings(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                        WorkspaceDraftSession editor, boolean navigablePreview) {
         addWalledKeepSizingSection(screen, content, editor, navigablePreview);
@@ -114,7 +132,7 @@ public class WalledKeepPlannerUiContributor implements WorkspacePlannerUiContrib
         content.addWidget(preview);
         content.addConstraintToWidget(new CenterXConstraint(), preview);
 
-        WalledKeepDraftEditor keepEditor = editor.walledKeepEditor();
+        WalledKeepDraftEditor keepEditor = keepEditor(editor);
         String status = report.fitsJigsawCap() ? "fits" : "too large";
         WorkspaceTopologyUiSupport.addText(screen, content, Component.literal(
                 "N " + report.northDistance() + " / S " + report.southDistance() +
@@ -137,7 +155,7 @@ public class WalledKeepPlannerUiContributor implements WorkspacePlannerUiContrib
 
     private void addWalledKeepSizingControlRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                                 WorkspaceDraftSession editor, MKWalledKeepSizingReport report) {
-        WalledKeepDraftEditor keepEditor = editor.walledKeepEditor();
+        WalledKeepDraftEditor keepEditor = keepEditor(editor);
         MKButton terrainButton = new MKButton(
                 Component.literal(WorkspaceTopologyUiSupport.formatTopologyLabel(
                         keepEditor.terrainAdjustment().getSerializedName())), 180, 20);
@@ -180,7 +198,7 @@ public class WalledKeepPlannerUiContributor implements WorkspacePlannerUiContrib
     }
 
     private void addPerimeterRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, WorkspaceDraftSession editor) {
-        WalledKeepDraftEditor keepEditor = editor.walledKeepEditor();
+        WalledKeepDraftEditor keepEditor = keepEditor(editor);
         MKButton perimeterKindButton = new MKButton(
                 Component.literal(WorkspaceTopologyUiSupport.formatTopologyLabel(
                         keepEditor.perimeterRunKind().getSerializedName())), 180, 20);
@@ -240,7 +258,7 @@ public class WalledKeepPlannerUiContributor implements WorkspacePlannerUiContrib
 
     private void addTowerTabs(MKWorkspaceScreen screen, MKStackLayoutVertical content, WorkspaceDraftSession editor) {
         addTowerTabSelector(screen, content, editor, "Vertical Stack Settings");
-        String activeStackId = editor.walledKeepEditor().verticalStackTab();
+        String activeStackId = keepEditor(editor).verticalStackTab();
         String label = tabLabel(activeStackId, false);
         towerStackPanel.addStackSizingRows(screen, content, editor, activeStackId, label);
         towerStackPanel.addStackEditor(screen, content, editor, activeStackId, label, false);
@@ -249,14 +267,14 @@ public class WalledKeepPlannerUiContributor implements WorkspacePlannerUiContrib
     private void addTowerSizingTabs(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                     WorkspaceDraftSession editor) {
         addTowerTabSelector(screen, content, editor, "Tower Stack Sizing");
-        String activeStackId = editor.walledKeepEditor().verticalStackTab();
+        String activeStackId = keepEditor(editor).verticalStackTab();
         towerStackPanel.addStackSizingRows(screen, content, editor, activeStackId, tabLabel(activeStackId, false));
     }
 
     private void addTowerTabSelector(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                      WorkspaceDraftSession editor, String heading) {
         WorkspaceTopologyUiSupport.addText(screen, content, Component.literal(heading));
-        WalledKeepDraftEditor keepEditor = editor.walledKeepEditor();
+        WalledKeepDraftEditor keepEditor = keepEditor(editor);
         List<String> stackIds = keepEditor.verticalStackTabs();
         MKStackLayoutHorizontal tabRow = new MKStackLayoutHorizontal(0, 0, 20);
         tabRow.setPaddingLeft(2).setPaddingRight(2);
@@ -291,7 +309,7 @@ public class WalledKeepPlannerUiContributor implements WorkspacePlannerUiContrib
 
     private void addCornerModeRow(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                   WorkspaceDraftSession editor, String label, String topologySlotId) {
-        WalledKeepDraftEditor keepEditor = editor.walledKeepEditor();
+        WalledKeepDraftEditor keepEditor = keepEditor(editor);
         MKButton modeButton = new MKButton(Component.literal(keepEditor.uniqueCornerTower(topologySlotId) ? "Unique" : "Shared"),
                 180, 20);
         modeButton.setPressedCallback((button, mouseButton) -> {
@@ -334,5 +352,9 @@ public class WalledKeepPlannerUiContributor implements WorkspacePlannerUiContrib
         modes.add(TerrainAdjustment.BURY);
         modes.add(TerrainAdjustment.ENCAPSULATE);
         return List.copyOf(modes);
+    }
+
+    private WalledKeepDraftEditor keepEditor(WorkspaceDraftSession editor) {
+        return new WalledKeepDraftEditor(editor);
     }
 }

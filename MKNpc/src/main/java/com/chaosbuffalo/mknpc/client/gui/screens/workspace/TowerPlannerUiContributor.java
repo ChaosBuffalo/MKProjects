@@ -46,6 +46,19 @@ public class TowerPlannerUiContributor implements WorkspacePlannerUiContributor 
         towerStackPanel.addStackEditor(screen, layout, editor, "tower.primary", "Primary Tower");
     }
 
+    @Override
+    public void addPlannerNodeLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
+                                     WorkspaceDraftSession editor, String nodeId, String label,
+                                     boolean topLevelPlanner) {
+        towerStackPanel.addStackEditor(screen, layout, editor, nodeId, label, topLevelPlanner);
+    }
+
+    @Override
+    public void addFloorPlanLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
+                                   WorkspaceDraftSession editor, String stackId, String floorRole) {
+        towerStackPanel.addFloorPlanEditor(screen, layout, editor, stackId, floorRole);
+    }
+
     private void addTowerPaletteRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                      WorkspaceDraftSession editor) {
         screen.addPaletteOverrideRows(content, "Tower Palette Defaults", editor.palette(),

@@ -79,18 +79,6 @@ public class WorkspaceDraftSession {
         return draft;
     }
 
-    public WalledKeepDraftEditor walledKeepEditor() {
-        return new WalledKeepDraftEditor(this);
-    }
-
-    public TowerStackDraftEditor towerStackEditor(String stackId) {
-        return new TowerStackDraftEditor(this, stackId);
-    }
-
-    public FloorPlanDraftEditor floorPlanEditor(String stackId, String floorRole) {
-        return new FloorPlanDraftEditor(this, stackId, floorRole);
-    }
-
     public LinearRunDraftEditor linearRunEditor(String topologySlotId) {
         return new LinearRunDraftEditor(topologySlotId);
     }

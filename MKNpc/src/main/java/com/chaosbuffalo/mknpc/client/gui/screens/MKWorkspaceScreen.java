@@ -22,6 +22,7 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceManagePage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePageBase;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePieceDisplay;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePlannerNodePage;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePlannerUiRegistry;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTopologySlotEditor;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTopologySlotPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTopologyDefaultsPage;
@@ -372,7 +373,8 @@ public class MKWorkspaceScreen extends MKScreen {
     public void openWorkspacePlannerNode(String stackId) {
         selectedPlannerStackId = stackId;
         if (stackId != null) {
-            draftSession.walledKeepEditor().verticalStackTab(stackId);
+            WorkspacePlannerUiRegistry.getPlannerUi(draftSession.topologyPlannerId())
+                    .selectPlannerNode(draftSession, stackId);
         }
         pushState(WorkspacePlannerNodePage.ID);
         flagNeedSetup();
@@ -385,7 +387,8 @@ public class MKWorkspaceScreen extends MKScreen {
     public void openWorkspaceFloorPlanNode(String stackId, String sectionKey) {
         selectedPlannerStackId = stackId;
         if (stackId != null) {
-            draftSession.walledKeepEditor().verticalStackTab(stackId);
+            WorkspacePlannerUiRegistry.getPlannerUi(draftSession.topologyPlannerId())
+                    .selectPlannerNode(draftSession, stackId);
         }
         selectedFloorPlanStackId = stackId;
         selectedFloorPlanSectionKey = sectionKey;
