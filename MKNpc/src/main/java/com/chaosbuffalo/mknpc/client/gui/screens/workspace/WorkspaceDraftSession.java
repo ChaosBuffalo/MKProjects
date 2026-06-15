@@ -29,6 +29,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomGeometry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPaletteMerge;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyGroupSettings;
@@ -836,7 +837,8 @@ public class WorkspaceDraftSession {
                 source.anchor(),
                 source.namespace(),
                 source.structureName(),
-                withMaterialStackSettings(source.topologyProfile(), materialSource.topologyProfile()),
+                MKWorkspaceTopologyPaletteMerge.preserveMaterialSettings(source.topologyProfile(),
+                        materialSource.topologyProfile()),
                 source.dimensions(),
                 materialSource.palette(),
                 alignStairMaterials(source.stairConfig(), materialSource.palette()),
@@ -1381,29 +1383,6 @@ public class WorkspaceDraftSession {
             }
             index++;
         }
-    }
-
-    private MKWorkspaceTopologyProfile withMaterialStackSettings(MKWorkspaceTopologyProfile source,
-                                                                 MKWorkspaceTopologyProfile materialSource) {
-        List<MKWorkspaceVerticalStackSettings> stackSettings = source.verticalStackSettings().stream()
-                .map(settings -> materialSource.verticalStackSettings(settings.stackId())
-                        .map(requested -> settings.withPaletteOverride(requested.paletteOverrideOpt()))
-                        .orElse(settings))
-                .toList();
-        return new MKWorkspaceTopologyProfile(
-                source.plannerId(),
-                source.uniqueCornerTowers(),
-                source.uniqueNorthWestCornerTower(),
-                source.uniqueNorthEastCornerTower(),
-                source.uniqueSouthEastCornerTower(),
-                source.uniqueSouthWestCornerTower(),
-                materialSource.topologyGroupSettings(),
-                stackSettings,
-                source.floorTopologySettings(),
-                source.pathSettings(),
-                source.courtyardSettings(),
-                source.terrainAdjustment()
-        );
     }
 
     public MKWorkspaceRoomFamilyDefinition copyFamilyDefinition(MKWorkspaceRoomFamilyDefinition family,

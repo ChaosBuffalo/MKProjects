@@ -11,6 +11,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolv
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteSwapSafety;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPaletteMerge;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologyMutationPreflightService;
@@ -997,7 +998,8 @@ public class MKStructureWorkspaceService {
                 source.anchor(),
                 source.namespace(),
                 source.structureName(),
-                withMaterialStackSettings(source.topologyProfile(), materialSource.topologyProfile()),
+                MKWorkspaceTopologyPaletteMerge.preserveMaterialSettings(source.topologyProfile(),
+                        materialSource.topologyProfile()),
                 source.dimensions(),
                 materialSource.palette(),
                 alignStairMaterials(source.stairConfig(), materialSource.palette()),
@@ -1054,29 +1056,6 @@ public class MKStructureWorkspaceService {
                 source.createdAt(),
                 source.updatedAt(),
                 source.pieces()
-        );
-    }
-
-    private MKWorkspaceTopologyProfile withMaterialStackSettings(MKWorkspaceTopologyProfile source,
-                                                                 MKWorkspaceTopologyProfile materialSource) {
-        List<MKWorkspaceVerticalStackSettings> stackSettings = source.verticalStackSettings().stream()
-                .map(settings -> materialSource.verticalStackSettings(settings.stackId())
-                        .map(requested -> settings.withPaletteOverride(requested.paletteOverrideOpt()))
-                        .orElse(settings))
-                .toList();
-        return new MKWorkspaceTopologyProfile(
-                source.plannerId(),
-                source.uniqueCornerTowers(),
-                source.uniqueNorthWestCornerTower(),
-                source.uniqueNorthEastCornerTower(),
-                source.uniqueSouthEastCornerTower(),
-                source.uniqueSouthWestCornerTower(),
-                materialSource.topologyGroupSettings(),
-                stackSettings,
-                source.floorTopologySettings(),
-                source.pathSettings(),
-                source.courtyardSettings(),
-                source.terrainAdjustment()
         );
     }
 
