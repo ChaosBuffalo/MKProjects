@@ -145,7 +145,7 @@ public class WorkspaceVerticalStackTopologyPanel {
     }
 
     private FloorPlanDraftEditor floorEditor(WorkspaceDraftSession editor, String stackId, String sectionKey) {
-        return plannerUi(editor).createFloorPlanEditor(editor, stackId, sectionKey);
+        return new FloorPlanDraftEditor(editor, stackId, sectionKey);
     }
 
     private MKWorkspaceVerticalStackSidePreview.Controls controls(MKWorkspaceScreen screen, WorkspaceDraftSession editor,
@@ -1347,11 +1347,7 @@ public class WorkspaceVerticalStackTopologyPanel {
     }
 
     private WorkspaceVerticalStackDraftEditor towerEditor(WorkspaceDraftSession editor, String stackId) {
-        return plannerUi(editor).createVerticalStackEditor(editor, stackId);
-    }
-
-    private WorkspacePlannerUiContributor plannerUi(WorkspaceDraftSession editor) {
-        return WorkspacePlannerClientRegistry.getPlannerUi(editor.topologyPlannerId());
+        return new WorkspaceVerticalStackDraftEditor(editor, stackId);
     }
 
     private void addStairRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
