@@ -32,7 +32,7 @@ public class MKStructureWorkspace {
     private final MKWorkspaceStairAuthoringConfig stairConfig;
     private final MKVerticalAccessPlacement verticalAccessPlacement;
     private final MKWorkspaceVerticalAccessSpec verticalAccessSpec;
-    private final List<MKTowerWorkspaceFamilyDefinition> familyDefinitions;
+    private final List<MKWorkspaceRoomFamilyDefinition> familyDefinitions;
     private final List<MKHorizontalOpeningProfile> openingProfiles;
     private final List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies;
     private final int shellMargin;
@@ -50,7 +50,7 @@ public class MKStructureWorkspace {
                                 int shellMargin, int exteriorAirMargin,
                                 int previewMargin,
                                 MKWorkspaceVerticalAccessSpec verticalAccessSpec,
-                                List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
+                                List<MKWorkspaceRoomFamilyDefinition> familyDefinitions,
                                 List<MKHorizontalOpeningProfile> openingProfiles,
                                 List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
                                 long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces) {
@@ -68,7 +68,7 @@ public class MKStructureWorkspace {
                                 int shellMargin, int exteriorAirMargin,
                                 int previewMargin,
                                 MKWorkspaceVerticalAccessSpec verticalAccessSpec,
-                                List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
+                                List<MKWorkspaceRoomFamilyDefinition> familyDefinitions,
                                 List<MKHorizontalOpeningProfile> openingProfiles,
                                 List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
                                 long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces) {
@@ -85,7 +85,7 @@ public class MKStructureWorkspace {
                                 int shellMargin, int exteriorAirMargin,
                                 int previewMargin,
                                 MKWorkspaceVerticalAccessSpec verticalAccessSpec,
-                                List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
+                                List<MKWorkspaceRoomFamilyDefinition> familyDefinitions,
                                 List<MKHorizontalOpeningProfile> openingProfiles,
                                 List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
                                 long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces,
@@ -127,7 +127,7 @@ public class MKStructureWorkspace {
                 2,
                 4,
                 MKWorkspaceVerticalAccessSpec.defaultSpec(),
-                MKTowerWorkspaceFamilyDefinition.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
+                MKWorkspaceRoomFamilyDefinition.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
                 MKHorizontalOpeningProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
                 List.of(),
                 now,
@@ -148,7 +148,7 @@ public class MKStructureWorkspace {
                                                            SerializedWorkspaceCore core,
                                                            SerializedWorkspaceContent content) {
         MKWorkspaceVerticalAccessSpec resolvedVerticalAccessSpec = core.verticalAccessSpec();
-        List<MKTowerWorkspaceFamilyDefinition> resolvedFamilyDefinitions = List.copyOf(content.familyDefinitions());
+        List<MKWorkspaceRoomFamilyDefinition> resolvedFamilyDefinitions = List.copyOf(content.familyDefinitions());
         List<MKHorizontalOpeningProfile> resolvedOpeningProfiles = content.openingProfiles().isEmpty() ?
                 MKHorizontalOpeningProfile.createDefaults(core.dimensions()) : List.copyOf(content.openingProfiles());
         List<MKWorkspaceLinearRunFamilyDefinition> resolvedLinearRunFamilies = List.copyOf(content.linearRunFamilies());
@@ -232,7 +232,7 @@ public class MKStructureWorkspace {
     }
 
     private record SerializedWorkspaceContent(
-            List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
+            List<MKWorkspaceRoomFamilyDefinition> familyDefinitions,
             List<MKHorizontalOpeningProfile> openingProfiles,
             List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
             long createdAt,
@@ -241,7 +241,7 @@ public class MKStructureWorkspace {
             List<MKWorkspaceGeneratedLayerState> layerStates
     ) {
         private static final MapCodec<SerializedWorkspaceContent> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                MKTowerWorkspaceFamilyDefinition.CODEC.listOf().optionalFieldOf("familyDefinitions", List.of())
+                MKWorkspaceRoomFamilyDefinition.CODEC.listOf().optionalFieldOf("familyDefinitions", List.of())
                         .forGetter(SerializedWorkspaceContent::familyDefinitions),
                 MKHorizontalOpeningProfile.CODEC.listOf().optionalFieldOf("openingProfiles", List.of())
                         .forGetter(SerializedWorkspaceContent::openingProfiles),
@@ -276,7 +276,7 @@ public class MKStructureWorkspace {
                 errors.add(error);
             }
         }
-        for (MKTowerWorkspaceFamilyDefinition familyDefinition : familyDefinitions) {
+        for (MKWorkspaceRoomFamilyDefinition familyDefinition : familyDefinitions) {
             Optional<Integer> familyMaxHeight = maxRoomHeightForFamily(familyDefinition);
             if (familyMaxHeight.isEmpty()) {
                 errors.add("family " + familyDefinition.baseName() + " references missing topology height for slot " +
@@ -295,7 +295,7 @@ public class MKStructureWorkspace {
             }
             openingProfileById.put(openingProfile.profileId(), openingProfile);
         }
-        for (MKTowerWorkspaceFamilyDefinition familyDefinition : familyDefinitions) {
+        for (MKWorkspaceRoomFamilyDefinition familyDefinition : familyDefinitions) {
             MKWorkspaceResolvedFamilySettings resolvedFamily = resolveFamilySettings(familyDefinition);
             for (MKWorkspaceFamilyHorizontalExitDefinition exit : familyDefinition.horizontalExits()) {
                 if (exit.isVerticalAccess()) {
@@ -401,7 +401,7 @@ public class MKStructureWorkspace {
         return errors;
     }
 
-    private Optional<Integer> maxRoomHeightForFamily(MKTowerWorkspaceFamilyDefinition familyDefinition) {
+    private Optional<Integer> maxRoomHeightForFamily(MKWorkspaceRoomFamilyDefinition familyDefinition) {
         Optional<MKWorkspaceTowerStackSettings> stackSettings = towerStackSettingsForFamily(familyDefinition);
         if (stackSettings.isPresent()) {
             return Optional.of(stackSettings.get().heightForTopologySlot(familyDefinition.topologySlotId()));
@@ -419,7 +419,7 @@ public class MKStructureWorkspace {
         };
     }
 
-    private MKWorkspaceVerticalAccessSpec verticalAccessSpecForFamily(MKTowerWorkspaceFamilyDefinition familyDefinition) {
+    private MKWorkspaceVerticalAccessSpec verticalAccessSpecForFamily(MKWorkspaceRoomFamilyDefinition familyDefinition) {
         String stackId = towerStackIdForFamily(familyDefinition.topologySlotId());
         if (stackId.isBlank()) {
             return verticalAccessSpec;
@@ -446,12 +446,12 @@ public class MKStructureWorkspace {
                 .orElse(stairConfig);
     }
 
-    public MKWorkspaceResolvedFamilySettings resolveFamilySettings(MKTowerWorkspaceFamilyDefinition familyDefinition) {
+    public MKWorkspaceResolvedFamilySettings resolveFamilySettings(MKWorkspaceRoomFamilyDefinition familyDefinition) {
         return MKWorkspaceResolvedFamilySettings.from(this, familyDefinition);
     }
 
     public Optional<MKWorkspaceTowerStackSettings> towerStackSettingsForFamily(
-            MKTowerWorkspaceFamilyDefinition familyDefinition) {
+            MKWorkspaceRoomFamilyDefinition familyDefinition) {
         String stackId = towerStackIdForFamily(familyDefinition.topologySlotId());
         if (stackId.isBlank()) {
             return Optional.empty();
@@ -560,7 +560,7 @@ public class MKStructureWorkspace {
         return verticalAccessSpec;
     }
 
-    public List<MKTowerWorkspaceFamilyDefinition> familyDefinitions() {
+    public List<MKWorkspaceRoomFamilyDefinition> familyDefinitions() {
         return familyDefinitions;
     }
 

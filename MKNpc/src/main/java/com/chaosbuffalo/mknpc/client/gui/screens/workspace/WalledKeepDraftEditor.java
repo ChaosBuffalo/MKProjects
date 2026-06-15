@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepCourtyardSettings;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
@@ -324,9 +324,9 @@ public final class WalledKeepDraftEditor {
                 .orElse("keep.center");
     }
 
-    private MKTowerWorkspaceFamilyDefinition copyFamilyWithGeometry(MKTowerWorkspaceFamilyDefinition family,
+    private MKWorkspaceRoomFamilyDefinition copyFamilyWithGeometry(MKWorkspaceRoomFamilyDefinition family,
                                                                     int roomWidth, int roomLength, int roomHeight) {
-        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+        return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                 family.baseName(),
                 family.slotMetadata(),
                 family.verticalAccessGroupId(),

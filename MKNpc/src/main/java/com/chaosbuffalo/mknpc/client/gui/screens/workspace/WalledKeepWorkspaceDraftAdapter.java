@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
@@ -46,7 +46,7 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
                 session.draft().topologyProfile.uniqueNorthEastCornerTower(),
                 session.draft().topologyProfile.uniqueSouthEastCornerTower(),
                 session.draft().topologyProfile.uniqueSouthWestCornerTower());
-        session.draft().familyDefinitions = MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions);
+        session.draft().familyDefinitions = MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions);
         session.draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions,
                 session.draft().palette);
     }
@@ -57,7 +57,7 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
         boolean hasKeepFamilies = session.draft().familyDefinitions.stream()
                 .anyMatch(family -> family.topologySlotId().startsWith("keep."));
         if (!hasKeepFamilies) {
-            session.draft().familyDefinitions = MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions);
+            session.draft().familyDefinitions = MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions);
         }
         ensureFamiliesForActiveCornerSlots(session);
         boolean hasKeepLinearRuns = session.draft().linearRunFamilies.stream()
@@ -89,7 +89,7 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
     }
 
     @Override
-    public Optional<MKTowerWorkspaceFamilyDefinition> sharedFamilySource(WorkspaceDraftSession session,
+    public Optional<MKWorkspaceRoomFamilyDefinition> sharedFamilySource(WorkspaceDraftSession session,
                                                                          String topologySlotId) {
         Optional<String> cornerStackId = cornerStackIdForSlot(topologySlotId);
         if (cornerStackId.isEmpty() || "keep.corner.shared".equals(cornerStackId.get())) {
@@ -103,7 +103,7 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
     }
 
     void ensureFamiliesForActiveCornerSlots(WorkspaceDraftSession session) {
-        java.util.ArrayList<MKTowerWorkspaceFamilyDefinition> updated =
+        java.util.ArrayList<MKWorkspaceRoomFamilyDefinition> updated =
                 new java.util.ArrayList<>(session.draft().familyDefinitions);
         if (session.draft().topologyProfile.anySharedCornerTower()) {
             session.ensureFamiliesForTowerStack(updated, "keep.corner.shared");

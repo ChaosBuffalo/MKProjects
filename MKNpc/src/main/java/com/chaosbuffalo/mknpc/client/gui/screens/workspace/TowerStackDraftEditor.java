@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
@@ -37,7 +37,7 @@ public final class TowerStackDraftEditor {
         return settings();
     }
 
-    public List<MKTowerWorkspaceFamilyDefinition> familiesForUi() {
+    public List<MKWorkspaceRoomFamilyDefinition> familiesForUi() {
         return session.draft().familyDefinitions.stream()
                 .filter(family -> session.towerStackIdForTopologySlot(family.topologySlotId())
                         .filter(stackId::equals)
@@ -275,7 +275,7 @@ public final class TowerStackDraftEditor {
 
     public int topCapUpperVoidMargin() {
         return towerStackFamily(MKTowerWorkspaceStackSlot.TOP_CAP)
-                .map(MKTowerWorkspaceFamilyDefinition::topVoidMargin)
+                .map(MKWorkspaceRoomFamilyDefinition::topVoidMargin)
                 .orElse(0);
     }
 
@@ -286,7 +286,7 @@ public final class TowerStackDraftEditor {
 
     public int bottomCapLowerVoidMargin() {
         return towerStackFamily(MKTowerWorkspaceStackSlot.BASEMENT_CAP)
-                .map(MKTowerWorkspaceFamilyDefinition::bottomVoidMargin)
+                .map(MKWorkspaceRoomFamilyDefinition::bottomVoidMargin)
                 .orElse(0);
     }
 
@@ -351,7 +351,7 @@ public final class TowerStackDraftEditor {
         replace(updated.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
 
-    private Optional<MKTowerWorkspaceFamilyDefinition> towerStackFamily(MKTowerWorkspaceStackSlot slot) {
+    private Optional<MKWorkspaceRoomFamilyDefinition> towerStackFamily(MKTowerWorkspaceStackSlot slot) {
         String slotId = slot.slotId(stackId);
         return session.draft().familyDefinitions.stream()
                 .filter(family -> family.topologySlotId().equals(slotId))
@@ -361,14 +361,14 @@ public final class TowerStackDraftEditor {
     private void replaceTowerStackFamilyVoidMargins(MKTowerWorkspaceStackSlot slot,
                                                     int topVoidMargin, int bottomVoidMargin) {
         String slotId = slot.slotId(stackId);
-        Optional<MKTowerWorkspaceFamilyDefinition> source = towerStackFamily(slot)
+        Optional<MKWorkspaceRoomFamilyDefinition> source = towerStackFamily(slot)
                 .or(() -> session.topologySlot(slotId).map(session::defaultFamilyForTopologySlot));
         if (source.isEmpty()) {
             return;
         }
-        MKTowerWorkspaceFamilyDefinition updated = session.normalizeFamilyDefinition(copyFamilyWithVoidMargins(
+        MKWorkspaceRoomFamilyDefinition updated = session.normalizeFamilyDefinition(copyFamilyWithVoidMargins(
                 source.get(), topVoidMargin, bottomVoidMargin));
-        ArrayList<MKTowerWorkspaceFamilyDefinition> families = new ArrayList<>(session.draft().familyDefinitions);
+        ArrayList<MKWorkspaceRoomFamilyDefinition> families = new ArrayList<>(session.draft().familyDefinitions);
         boolean replaced = false;
         for (int index = 0; index < families.size(); index++) {
             if (families.get(index).topologySlotId().equals(slotId)) {
@@ -383,9 +383,9 @@ public final class TowerStackDraftEditor {
         session.draft().familyDefinitions = List.copyOf(families);
     }
 
-    private MKTowerWorkspaceFamilyDefinition copyFamilyWithVoidMargins(MKTowerWorkspaceFamilyDefinition family,
+    private MKWorkspaceRoomFamilyDefinition copyFamilyWithVoidMargins(MKWorkspaceRoomFamilyDefinition family,
                                                                        int topVoidMargin, int bottomVoidMargin) {
-        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+        return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                 family.baseName(),
                 family.slotMetadata(),
                 family.verticalAccessGroupId(),

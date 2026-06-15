@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
@@ -33,7 +33,7 @@ public class MKWalledKeepSizingCalculator {
                 .orElseGet(() -> fallbackWallFamily(workspace));
         MKWorkspaceLinearRunFamilyDefinition pathFamily = courtyardPathFamily(workspace);
         MKWorkspaceLinearRunFamilyDefinition entryFamily = entryApproachFamily(workspace).orElse(pathFamily);
-        MKTowerWorkspaceFamilyDefinition gateFamily = gateFamily(workspace).orElse(null);
+        MKWorkspaceRoomFamilyDefinition gateFamily = gateFamily(workspace).orElse(null);
 
         int horizontalRequiredSpan = horizontalPerimeterSpan(workspace);
         int verticalRequiredSpan = verticalPerimeterSpan(workspace, pathFamily, entryFamily);
@@ -115,7 +115,7 @@ public class MKWalledKeepSizingCalculator {
 
     private WallUnitRecommendation recommendWallUnitSpan(MKStructureWorkspace workspace,
                                                          MKWorkspaceLinearRunFamilyDefinition wallFamily,
-                                                         MKTowerWorkspaceFamilyDefinition gateFamily,
+                                                         MKWorkspaceRoomFamilyDefinition gateFamily,
                                                          int horizontalRequiredSpan,
                                                          int verticalRequiredSpan,
                                                          int centerExportWidth,
@@ -144,7 +144,7 @@ public class MKWalledKeepSizingCalculator {
 
     private WallUnitRecommendation evaluateWallUnitSpan(MKStructureWorkspace workspace,
                                                         MKWorkspaceLinearRunFamilyDefinition wallFamily,
-                                                        MKTowerWorkspaceFamilyDefinition gateFamily,
+                                                        MKWorkspaceRoomFamilyDefinition gateFamily,
                                                         int candidateWallUnitSpan,
                                                         int horizontalRequiredSpan,
                                                         int verticalRequiredSpan,
@@ -232,7 +232,7 @@ public class MKWalledKeepSizingCalculator {
         return linearRun.topologySlotId().equals(first) || linearRun.topologySlotId().equals(second);
     }
 
-    private Optional<MKTowerWorkspaceFamilyDefinition> gateFamily(MKStructureWorkspace workspace) {
+    private Optional<MKWorkspaceRoomFamilyDefinition> gateFamily(MKStructureWorkspace workspace) {
         return workspace.familyDefinitions().stream()
                 .filter(family -> family.topologySlotId().equals("keep.gate.main"))
                 .findFirst();

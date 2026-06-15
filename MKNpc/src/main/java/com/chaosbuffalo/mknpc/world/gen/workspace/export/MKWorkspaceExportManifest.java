@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.export;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
@@ -439,7 +439,7 @@ public record MKWorkspaceExportManifest(
                         roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
                         topVoidMargin, bottomVoidMargin, foundationPolicy.orElse(null), paletteOverride.orElse(null))));
 
-        public static ExportFamilyDefinition from(MKTowerWorkspaceFamilyDefinition familyDefinition) {
+        public static ExportFamilyDefinition from(MKWorkspaceRoomFamilyDefinition familyDefinition) {
             MKWorkspaceTopologySlotMetadata metadata = MKWorkspaceTopologySlotMetadata.fromFamily(familyDefinition);
             return new ExportFamilyDefinition(
                     familyDefinition.baseName(),

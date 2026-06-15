@@ -19,7 +19,7 @@ public record MKWorkspaceTopologySlotMetadata(
             Codec.BOOL.fieldOf("terminal").forGetter(MKWorkspaceTopologySlotMetadata::terminal)
     ).apply(instance, MKWorkspaceTopologySlotMetadata::fromTopologyRole));
 
-    public static MKWorkspaceTopologySlotMetadata fromFamily(MKTowerWorkspaceFamilyDefinition family) {
+    public static MKWorkspaceTopologySlotMetadata fromFamily(MKWorkspaceRoomFamilyDefinition family) {
         return family.slotMetadata();
     }
 

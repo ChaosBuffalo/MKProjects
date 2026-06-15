@@ -4,7 +4,7 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
@@ -51,20 +51,20 @@ public class MKTowerStackPlanner {
     }
 
     public List<MKPlannedPiece> createRoomPieces(MKStructureWorkspace workspace,
-                                                 List<MKTowerWorkspaceFamilyDefinition> families) {
+                                                 List<MKWorkspaceRoomFamilyDefinition> families) {
         return createRoomPieces(workspace, primaryStackDefinition(workspace), families);
     }
 
     public List<MKPlannedPiece> createRoomPieces(MKStructureWorkspace workspace,
                                                  MKTowerStackDefinition stackDefinition,
-                                                 List<MKTowerWorkspaceFamilyDefinition> families) {
+                                                 List<MKWorkspaceRoomFamilyDefinition> families) {
         return families.stream()
                 .filter(family -> shouldCreateFamily(stackDefinition, family))
                 .map(family -> createPieceForFamily(workspace, stackDefinition, family))
                 .toList();
     }
 
-    public boolean shouldCreateFamily(MKTowerStackDefinition stackDefinition, MKTowerWorkspaceFamilyDefinition family) {
+    public boolean shouldCreateFamily(MKTowerStackDefinition stackDefinition, MKWorkspaceRoomFamilyDefinition family) {
         Optional<MKTowerWorkspaceStackSlot> stackSlot = MKTowerWorkspaceStackSlot.fromTopologySlotId(
                 MKWorkspaceTopologySlotMetadata.fromFamily(family).topologySlotId());
         return stackSlot.map(slot -> switch (slot) {
@@ -78,13 +78,13 @@ public class MKTowerStackPlanner {
         }).orElse(true);
     }
 
-    public MKPlannedPiece createPieceForFamily(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family) {
+    public MKPlannedPiece createPieceForFamily(MKStructureWorkspace workspace, MKWorkspaceRoomFamilyDefinition family) {
         return createPieceForFamily(workspace, primaryStackDefinition(workspace), family);
     }
 
     public MKPlannedPiece createPieceForFamily(MKStructureWorkspace workspace,
                                                MKTowerStackDefinition stackDefinition,
-                                               MKTowerWorkspaceFamilyDefinition family) {
+                                               MKWorkspaceRoomFamilyDefinition family) {
         MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
         MKWorkspaceVerticalAccessSpec verticalAccessSpec = resolvedFamily.verticalAccessSpec();
         String stairPlacement = verticalAccessSpec.placement().getSerializedName();
@@ -271,7 +271,7 @@ public class MKTowerStackPlanner {
     }
 
     private MKWorkspaceRuntimePieceInfo topCapRuntimeInfo(MKTowerStackDefinition stackDefinition,
-                                                          MKTowerWorkspaceFamilyDefinition family) {
+                                                          MKWorkspaceRoomFamilyDefinition family) {
         if (stackDefinition.topCapApproachEnabled()) {
             return roomRuntimeInfo(false, MKJigsawPieceRole.TOP_CAP, 0, 0, true, true, family);
         }
@@ -288,7 +288,7 @@ public class MKTowerStackPlanner {
     }
 
     private MKWorkspaceRuntimePieceInfo basementCapRuntimeInfo(MKTowerStackDefinition stackDefinition,
-                                                               MKTowerWorkspaceFamilyDefinition family) {
+                                                               MKWorkspaceRoomFamilyDefinition family) {
         if (stackDefinition.basementCapApproachEnabled()) {
             return roomRuntimeInfo(false, MKJigsawPieceRole.TERMINAL, 0, 0, true, true, family);
         }
@@ -296,7 +296,7 @@ public class MKTowerStackPlanner {
     }
 
     private List<MKPlannedConnector> connectorsWithHorizontalExits(List<MKPlannedConnector> baseConnectors,
-                                                                   MKTowerWorkspaceFamilyDefinition family,
+                                                                   MKWorkspaceRoomFamilyDefinition family,
                                                                    MKStructureWorkspace workspace) {
         MKWorkspaceTopologySlotMetadata slotMetadata = workspace.resolveFamilySettings(family).slotMetadata();
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>(baseConnectors.stream()
@@ -378,7 +378,7 @@ public class MKTowerStackPlanner {
         return List.copyOf(connectors);
     }
 
-    private String floorTopologyTargetPool(MKTowerWorkspaceFamilyDefinition family, String openingProfileId,
+    private String floorTopologyTargetPool(MKWorkspaceRoomFamilyDefinition family, String openingProfileId,
                                            boolean mainPath, boolean useHallwayPool) {
         Optional<MKTowerWorkspaceStackSlot> slot = MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId());
         Optional<String> stackId = MKTowerWorkspaceStackSlot.stackIdForTopologySlot(family.topologySlotId());
@@ -409,7 +409,7 @@ public class MKTowerStackPlanner {
 
     private Optional<MKWorkspaceFloorTopologySettings> floorTopologySettingsForFamily(
             MKStructureWorkspace workspace,
-            MKTowerWorkspaceFamilyDefinition family,
+            MKWorkspaceRoomFamilyDefinition family,
             MKWorkspaceHorizontalExitPathKind pathKind) {
         if (!pathKind.usesMainPath() && pathKind != MKWorkspaceHorizontalExitPathKind.BRANCH) {
             return Optional.empty();
@@ -467,7 +467,7 @@ public class MKTowerStackPlanner {
     private MKWorkspaceRuntimePieceInfo roomRuntimeInfo(boolean start, MKJigsawPieceRole role,
                                                         int progressionDelta, int verticalLevelDelta,
                                                         boolean terminal, boolean topCapOnly,
-                                                        MKTowerWorkspaceFamilyDefinition family) {
+                                                        MKWorkspaceRoomFamilyDefinition family) {
         boolean branchOnlyHorizontalFamily = family.mainEntry().isEmpty() && family.mainExit().isEmpty() &&
                 family.mainEndingEntry().isEmpty() &&
                 (!family.branchExits().isEmpty() || family.branchCap());
@@ -489,7 +489,7 @@ public class MKTowerStackPlanner {
 
     private Map<String, String> buildRoomTags(MKStructureWorkspace workspace, String topologyRole,
                                               MKTowerStackDefinition stackDefinition,
-                                              MKTowerWorkspaceFamilyDefinition family, String stairPlacement,
+                                              MKWorkspaceRoomFamilyDefinition family, String stairPlacement,
                                               MKWorkspaceStairAuthoringConfig stairConfig,
                                               String stairDirection, MKWorkspaceRuntimePieceInfo runtimeInfo) {
         return buildRoomTags(workspace, topologyRole, stackDefinition, family, stairPlacement, stairConfig, stairDirection,
@@ -498,7 +498,7 @@ public class MKTowerStackPlanner {
 
     private Map<String, String> buildRoomTags(MKStructureWorkspace workspace, String topologyRole,
                                               MKTowerStackDefinition stackDefinition,
-                                              MKTowerWorkspaceFamilyDefinition family, String stairPlacement,
+                                              MKWorkspaceRoomFamilyDefinition family, String stairPlacement,
                                               MKWorkspaceStairAuthoringConfig stairConfig,
                                               String stairDirection, boolean topCap, boolean bottomCap,
                                               MKWorkspaceRuntimePieceInfo runtimeInfo) {
@@ -550,7 +550,7 @@ public class MKTowerStackPlanner {
         return tags;
     }
 
-    private MKWorkspaceHorizontalExtrusionMode effectiveHorizontalExtrusionMode(MKTowerWorkspaceFamilyDefinition family) {
+    private MKWorkspaceHorizontalExtrusionMode effectiveHorizontalExtrusionMode(MKWorkspaceRoomFamilyDefinition family) {
         if (family.horizontalExtrusionMode() != MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION) {
             return family.horizontalExtrusionMode();
         }
@@ -560,7 +560,7 @@ public class MKTowerStackPlanner {
                 MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION;
     }
 
-    private void applyVoidMarginTags(MKTowerWorkspaceFamilyDefinition family,
+    private void applyVoidMarginTags(MKWorkspaceRoomFamilyDefinition family,
                                      MKWorkspaceResolvedFamilySettings resolvedFamily,
                                      Map<String, String> tags) {
         if (resolvedFamily.topVoidMargin() > 0) {
@@ -579,7 +579,7 @@ public class MKTowerStackPlanner {
         }
     }
 
-    private String verticalAccessDirectionTag(MKTowerWorkspaceFamilyDefinition family,
+    private String verticalAccessDirectionTag(MKWorkspaceRoomFamilyDefinition family,
                                               MKTowerStackDefinition stackDefinition, String fallback) {
         boolean up = family.hasVerticalAccess(Direction.UP);
         boolean down = family.hasVerticalAccess(Direction.DOWN);

@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingReport;
@@ -307,13 +307,13 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
 
     private int gatehouseWidth() {
         return gatehouseFamily()
-                .map(MKTowerWorkspaceFamilyDefinition::roomWidth)
+                .map(MKWorkspaceRoomFamilyDefinition::roomWidth)
                 .orElse(wallUnitSpan());
     }
 
     private int gatehouseLength() {
         return gatehouseFamily()
-                .map(MKTowerWorkspaceFamilyDefinition::roomLength)
+                .map(MKWorkspaceRoomFamilyDefinition::roomLength)
                 .orElse(wallPassageWidth());
     }
 
@@ -343,7 +343,7 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
                 .findFirst();
     }
 
-    private java.util.Optional<MKTowerWorkspaceFamilyDefinition> gatehouseFamily() {
+    private java.util.Optional<MKWorkspaceRoomFamilyDefinition> gatehouseFamily() {
         return workspace.familyDefinitions().stream()
                 .filter(family -> family.topologySlotId().equals(GATEHOUSE_SLOT))
                 .findFirst();

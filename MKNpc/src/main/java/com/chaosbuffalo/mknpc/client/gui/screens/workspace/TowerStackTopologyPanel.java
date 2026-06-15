@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.client.gui.widgets.MKIntegerSlider;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
@@ -357,7 +357,7 @@ public class TowerStackTopologyPanel {
             @Override
             public List<MKWorkspaceFamilyHorizontalExitDefinition> exits(String sectionKey) {
                 List<MKWorkspaceFamilyHorizontalExitDefinition> exits = familyForSection(editor, stackId, sectionKey)
-                        .map(MKTowerWorkspaceFamilyDefinition::horizontalExits)
+                        .map(MKWorkspaceRoomFamilyDefinition::horizontalExits)
                         .orElse(List.of());
                 return "entry".equals(sectionKey) ? entryExitsWithRequiredSouth(editor, exits) : exits;
             }
@@ -445,7 +445,7 @@ public class TowerStackTopologyPanel {
                     if (isRequiredTowerStackExit(sectionKey, exit)) {
                         return exit;
                     }
-                    MKTowerWorkspaceFamilyDefinition family = selectedFamily(sectionKey).orElse(null);
+                    MKWorkspaceRoomFamilyDefinition family = selectedFamily(sectionKey).orElse(null);
                     if (family == null) {
                         return exit;
                     }
@@ -468,7 +468,7 @@ public class TowerStackTopologyPanel {
                     if (isRequiredTowerStackExit(sectionKey, exit)) {
                         return exit;
                     }
-                    MKTowerWorkspaceFamilyDefinition family = selectedFamily(sectionKey).orElse(null);
+                    MKWorkspaceRoomFamilyDefinition family = selectedFamily(sectionKey).orElse(null);
                     if (family == null) {
                         return exit;
                     }
@@ -516,7 +516,7 @@ public class TowerStackTopologyPanel {
             @Override
             public void cycleSelectedExitOpeningProfile(String sectionKey, boolean reverse) {
                 updateSelectedExit(sectionKey, exit -> {
-                    MKTowerWorkspaceFamilyDefinition family = selectedFamily(sectionKey).orElse(null);
+                    MKWorkspaceRoomFamilyDefinition family = selectedFamily(sectionKey).orElse(null);
                     if (family == null) {
                         return exit;
                     }
@@ -724,7 +724,7 @@ public class TowerStackTopologyPanel {
                         .findFirst();
             }
 
-            private Optional<MKTowerWorkspaceFamilyDefinition> selectedFamily(String sectionKey) {
+            private Optional<MKWorkspaceRoomFamilyDefinition> selectedFamily(String sectionKey) {
                 return familyForSection(editor, stackId, sectionKey);
             }
 
@@ -766,7 +766,7 @@ public class TowerStackTopologyPanel {
             @Override
             public List<MKWorkspaceFamilyHorizontalExitDefinition> rootExits(String sectionKey) {
                 List<MKWorkspaceFamilyHorizontalExitDefinition> exits = familyForSection(editor, stackId, sectionKey)
-                        .map(MKTowerWorkspaceFamilyDefinition::horizontalExits)
+                        .map(MKWorkspaceRoomFamilyDefinition::horizontalExits)
                         .orElse(List.of());
                 return "entry".equals(sectionKey) ? entryExitsWithRequiredSouth(editor, exits) : exits;
             }
@@ -854,7 +854,7 @@ public class TowerStackTopologyPanel {
                     if (isRequiredTowerStackExit(sectionKey, exit)) {
                         return exit;
                     }
-                    MKTowerWorkspaceFamilyDefinition family = selectedFamily(sectionKey).orElse(null);
+                    MKWorkspaceRoomFamilyDefinition family = selectedFamily(sectionKey).orElse(null);
                     if (family == null) {
                         return exit;
                     }
@@ -878,7 +878,7 @@ public class TowerStackTopologyPanel {
             @Override
             public void cycleRootExitOpeningProfile(String sectionKey, boolean reverse) {
                 updateSelectedRootExit(sectionKey, exit -> {
-                    MKTowerWorkspaceFamilyDefinition family = selectedFamily(sectionKey).orElse(null);
+                    MKWorkspaceRoomFamilyDefinition family = selectedFamily(sectionKey).orElse(null);
                     if (family == null) {
                         return exit;
                     }
@@ -1203,7 +1203,7 @@ public class TowerStackTopologyPanel {
                 screen.flagNeedSetup();
             }
 
-            private Optional<MKTowerWorkspaceFamilyDefinition> selectedFamily(String sectionKey) {
+            private Optional<MKWorkspaceRoomFamilyDefinition> selectedFamily(String sectionKey) {
                 return familyForSection(editor, stackId, sectionKey);
             }
 
@@ -1242,7 +1242,7 @@ public class TowerStackTopologyPanel {
         return List.copyOf(resolved);
     }
 
-    private Optional<MKTowerWorkspaceFamilyDefinition> familyForSection(WorkspaceDraftSession editor, String stackId,
+    private Optional<MKWorkspaceRoomFamilyDefinition> familyForSection(WorkspaceDraftSession editor, String stackId,
                                                                        String sectionKey) {
         OptionalInt index = familyIndexForSection(editor, stackId, sectionKey);
         return index.isPresent() ? Optional.of(editor.draft().familyDefinitions.get(index.getAsInt())) :

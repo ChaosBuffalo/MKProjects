@@ -415,7 +415,7 @@ Important model concepts:
 - `MKStructureWorkspace`: root workspace metadata and validation.
 - `MKWorkspaceTopologyProfile`: topology type and path settings. Current code
   supports tower and walled-keep style topology profiles.
-- `MKTowerWorkspaceFamilyDefinition`: room/family definitions tied to topology
+- `MKWorkspaceRoomFamilyDefinition`: room/family definitions tied to topology
   slots and connector/opening rules.
 - `MKHorizontalOpeningProfile`: reusable horizontal opening dimensions and path
   compatibility rules.

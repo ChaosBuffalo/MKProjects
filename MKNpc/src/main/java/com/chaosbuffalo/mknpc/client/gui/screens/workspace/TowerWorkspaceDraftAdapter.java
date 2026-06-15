@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
@@ -35,7 +35,7 @@ final class TowerWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapter {
 
     @Override
     public void resetDefaults(WorkspaceDraftSession session, MKWorkspaceDimensions dimensions) {
-        session.draft().familyDefinitions = MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions);
+        session.draft().familyDefinitions = MKWorkspaceRoomFamilyDefinition.createDefaults(dimensions);
         session.draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.createDefaults(dimensions,
                 session.draft().palette);
         session.draft().topologyProfile = MKWorkspaceTopologyProfile.tower()
@@ -47,7 +47,7 @@ final class TowerWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapter {
         boolean hasTowerFamilies = session.draft().familyDefinitions.stream()
                 .anyMatch(family -> family.topologySlotId().startsWith("tower."));
         if (!hasTowerFamilies) {
-            session.draft().familyDefinitions = MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions);
+            session.draft().familyDefinitions = MKWorkspaceRoomFamilyDefinition.createDefaults(dimensions);
         }
         session.towerStackSettings(TowerStackDraftEditor.PRIMARY_STACK_ID);
         session.applyTowerStackSettingsToFamilies();

@@ -24,7 +24,7 @@ public final class MKWorkspacePaletteResolver {
     }
 
     public MKWorkspaceMaterialPalette resolveFloorTopologyForFamily(MKStructureWorkspace workspace,
-                                                                    MKTowerWorkspaceFamilyDefinition family) {
+                                                                    MKWorkspaceRoomFamilyDefinition family) {
         Optional<MKTowerWorkspaceStackSlot> slot = MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId());
         if (slot.isEmpty()) {
             return resolveFamily(workspace, family);
@@ -42,7 +42,7 @@ public final class MKWorkspacePaletteResolver {
     }
 
     public MKWorkspaceMaterialPalette resolveFamily(MKStructureWorkspace workspace, MKWorkspacePaletteFamily family) {
-        if (family instanceof MKTowerWorkspaceFamilyDefinition towerFamily) {
+        if (family instanceof MKWorkspaceRoomFamilyDefinition towerFamily) {
             Optional<MKWorkspaceTowerStackSettings> stackSettings = workspace.towerStackSettingsForFamily(towerFamily);
             MKWorkspaceMaterialPalette stackParent = stackSettings.isPresent() ? workspace.palette() :
                     family.paletteTopologyGroupIdOpt()

@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.client.gui.widgets.MKBranchExitMaskWidget;
 import com.chaosbuffalo.mknpc.client.gui.widgets.MKIntegerSlider;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
@@ -50,7 +50,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         }
 
         int index = editor.selectedFamilyIndex();
-        MKTowerWorkspaceFamilyDefinition family = editor.draft().familyDefinitions.get(index);
+        MKWorkspaceRoomFamilyDefinition family = editor.draft().familyDefinitions.get(index);
         MKWorkspaceTopologySlotMetadata slotMetadata = MKWorkspaceTopologySlotMetadata.fromFamily(family);
 
         MKLayout root = createPanel(screen);
@@ -70,7 +70,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
 
         MKTextFieldWidget baseNameField = makeField(screen, "Base Name", family.baseName());
         baseNameField.setTextChangeCallback((field, text) -> editor.replaceFamilyDefinition(index,
-                MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                 text.trim().isBlank() ? family.baseName() : text.trim(),
                 family.slotMetadata(), family.verticalAccessGroupId(), family.supportsVerticalAccess(),
                 family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
@@ -95,7 +95,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         });
         MKButton extrusionModeButton = new MKButton(Component.literal(formatFamilyExtrusionMode(family.horizontalExtrusionMode())), 180, 20);
         extrusionModeButton.setPressedCallback((button, mouseButton) -> {
-            editor.replaceFamilyDefinition(index, MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+            editor.replaceFamilyDefinition(index, MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                     family.baseName(), family.slotMetadata(), family.verticalAccessGroupId(), family.supportsVerticalAccess(),
                     family.roomWidth(), family.roomLength(), family.roomHeight(),
                     cycleValue(List.of(MKWorkspaceHorizontalExtrusionMode.values()), family.horizontalExtrusionMode(),
@@ -197,7 +197,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
 
         MKButton directionButton = new MKButton(Component.literal(formatDirection(exit.direction())), 180, 20);
         directionButton.setPressedCallback((button, mouseButton) -> {
-            MKTowerWorkspaceFamilyDefinition family = editor.draft().familyDefinitions.get(familyIndex);
+            MKWorkspaceRoomFamilyDefinition family = editor.draft().familyDefinitions.get(familyIndex);
             Direction nextDirection = cycleCardinalDirection(exit.direction(), isReverseClick(mouseButton));
             editor.replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
                     nextDirection,
@@ -213,7 +213,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         });
         MKButton pathKindButton = new MKButton(Component.literal(formatTopologyLabel(exit.pathKind().getSerializedName())), 180, 20);
         pathKindButton.setPressedCallback((button, mouseButton) -> {
-            MKTowerWorkspaceFamilyDefinition family = editor.draft().familyDefinitions.get(familyIndex);
+            MKWorkspaceRoomFamilyDefinition family = editor.draft().familyDefinitions.get(familyIndex);
             MKWorkspaceHorizontalExitPathKind nextPathKind = cycleValue(
                     List.of(MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY, MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
                             MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY, MKWorkspaceHorizontalExitPathKind.BRANCH,
@@ -249,7 +249,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         });
         MKButton openingProfileButton = new MKButton(Component.literal(exit.openingProfileId()), 180, 20);
         openingProfileButton.setPressedCallback((button, mouseButton) -> {
-            MKTowerWorkspaceFamilyDefinition family = editor.draft().familyDefinitions.get(familyIndex);
+            MKWorkspaceRoomFamilyDefinition family = editor.draft().familyDefinitions.get(familyIndex);
             String nextOpeningProfileId = editor.nextOpeningProfileId(exit.pathKind(), exit.openingProfileId(),
                     isReverseClick(mouseButton));
             editor.replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
@@ -264,7 +264,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
             screen.refreshPreservingActiveScroll();
             return true;
         });
-        MKTowerWorkspaceFamilyDefinition family = editor.draft().familyDefinitions.get(familyIndex);
+        MKWorkspaceRoomFamilyDefinition family = editor.draft().familyDefinitions.get(familyIndex);
         int sideMin = editor.minSideOffset(family, exit.direction(), exit.openingProfileId());
         int sideMax = editor.maxSideOffset(family, exit.direction(), exit.openingProfileId());
         int verticalMin = 0;
@@ -284,7 +284,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
     }
 
     private void addFoundationBlockPickerRow(MKWorkspaceScreen screen, MKStackLayoutVertical content, int familyIndex,
-                                             MKTowerWorkspaceFamilyDefinition family) {
+                                             MKWorkspaceRoomFamilyDefinition family) {
         Optional<MKWorkspaceFoundationPolicy> overrideOpt = family.foundationPolicyOverrideOpt();
         if (overrideOpt.isEmpty() || overrideOpt.get().mode() != MKWorkspaceFoundationMode.UNIFORM_STATE) {
             return;
@@ -306,7 +306,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
     }
 
     private void addFoundationMaskRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, int familyIndex,
-                                       MKTowerWorkspaceFamilyDefinition family) {
+                                       MKWorkspaceRoomFamilyDefinition family) {
         Optional<MKWorkspaceFoundationPolicy> overrideOpt = family.foundationPolicyOverrideOpt();
         if (overrideOpt.isEmpty() || overrideOpt.get().mode() != MKWorkspaceFoundationMode.MASKED_EXTEND_BOTTOM_BLOCKS) {
             return;
@@ -348,7 +348,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
     }
 
     private void updateFoundationMaskBlock(MKWorkspaceScreen screen, int familyIndex,
-                                           MKTowerWorkspaceFamilyDefinition family, int maskIndex,
+                                           MKWorkspaceRoomFamilyDefinition family, int maskIndex,
                                            @Nullable ResourceLocation blockId) {
         List<ResourceLocation> updated = new java.util.ArrayList<>(family.foundationPolicy().maskBlocks());
         if (maskIndex < 0 || maskIndex >= updated.size()) {
@@ -394,7 +394,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         return widget;
     }
 
-    private String summarizeFamilyExits(MKTowerWorkspaceFamilyDefinition family) {
+    private String summarizeFamilyExits(MKWorkspaceRoomFamilyDefinition family) {
         if (family.horizontalExits().isEmpty()) {
             return "none";
         }
@@ -434,7 +434,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         return formatTopologyLabel(mode.getSerializedName());
     }
 
-    private String formatFamilyFoundationLabel(MKTowerWorkspaceFamilyDefinition family,
+    private String formatFamilyFoundationLabel(MKWorkspaceRoomFamilyDefinition family,
                                                MKWorkspaceFoundationPolicy inheritedFoundation) {
         return family.foundationPolicyOverrideOpt()
                 .map(policy -> formatFoundationMode(policy.mode()))
@@ -486,7 +486,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
     }
 
     private void addGeometryRows(MKWorkspaceScreen screen, MKStackLayoutVertical root, WorkspaceDraftSession editor,
-                                 int familyIndex, MKTowerWorkspaceFamilyDefinition family) {
+                                 int familyIndex, MKWorkspaceRoomFamilyDefinition family) {
         int resolvedWidth = editor.resolvedFamilyRoomWidth(family);
         int resolvedLength = editor.resolvedFamilyRoomLength(family);
         int resolvedHeight = editor.resolvedFamilyRoomHeight(family);
@@ -519,7 +519,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
     }
 
     private void addDimensionRows(MKWorkspaceScreen screen, MKStackLayoutVertical root, WorkspaceDraftSession editor,
-                                  int familyIndex, MKTowerWorkspaceFamilyDefinition family, String rowLabel,
+                                  int familyIndex, MKWorkspaceRoomFamilyDefinition family, String rowLabel,
                                   String sliderLabel, OptionalInt overrideValue, int resolvedValue,
                                   DimensionAxis axis, boolean stackBacked) {
         if (stackBacked) {
@@ -535,7 +535,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
     }
 
     private void addDimensionModeRow(MKWorkspaceScreen screen, MKStackLayoutVertical root, WorkspaceDraftSession editor,
-                                     int familyIndex, MKTowerWorkspaceFamilyDefinition family, String rowLabel,
+                                     int familyIndex, MKWorkspaceRoomFamilyDefinition family, String rowLabel,
                                      OptionalInt overrideValue, int resolvedValue, DimensionAxis axis) {
         MKButton modeButton = new MKButton(Component.literal(formatDimensionMode(overrideValue, resolvedValue)),
                 180, 20);
@@ -550,13 +550,13 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
     }
 
     private void addVoidMarginRows(MKWorkspaceScreen screen, MKStackLayoutVertical root, WorkspaceDraftSession editor,
-                                   int familyIndex, MKTowerWorkspaceFamilyDefinition family, int resolvedHeight) {
+                                   int familyIndex, MKWorkspaceRoomFamilyDefinition family, int resolvedHeight) {
         int minInteriorHeight = MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT;
         int topMarginMax = Math.max(0, resolvedHeight - family.bottomVoidMargin() - minInteriorHeight);
         MKIntegerSlider topVoidMarginSlider = new MKIntegerSlider("Margin", 180, 20, 0, topMarginMax, 1,
                 clamp(family.topVoidMargin(), 0, topMarginMax), value ->
                 editor.replaceFamilyDefinition(familyIndex, editor.normalizeFamilyDefinition(
-                        MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                        MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                                 family.baseName(), family.slotMetadata(), family.verticalAccessGroupId(), false,
                                 family.roomWidth(), family.roomLength(), family.roomHeight(),
                                 family.horizontalExtrusionMode(), family.horizontalExits(),
@@ -565,7 +565,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         MKIntegerSlider bottomVoidMarginSlider = new MKIntegerSlider("Margin", 180, 20, 0, bottomMarginMax, 1,
                 clamp(family.bottomVoidMargin(), 0, bottomMarginMax), value ->
                 editor.replaceFamilyDefinition(familyIndex, editor.normalizeFamilyDefinition(
-                        MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                        MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                                 family.baseName(), family.slotMetadata(), family.verticalAccessGroupId(), false,
                                 family.roomWidth(), family.roomLength(), family.roomHeight(),
                                 family.horizontalExtrusionMode(), family.horizontalExits(),
@@ -576,7 +576,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
             MKButton clearMarginsButton = new MKButton(Component.literal("Clear Margins"), 180, 20);
             clearMarginsButton.setPressedCallback((button, mouseButton) -> {
                 editor.replaceFamilyDefinition(familyIndex, editor.normalizeFamilyDefinition(
-                        MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                        MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                                 family.baseName(), family.slotMetadata(), family.verticalAccessGroupId(), false,
                                 family.roomWidth(), family.roomLength(), family.roomHeight(),
                                 family.horizontalExtrusionMode(), family.horizontalExits(),
@@ -589,7 +589,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
     }
 
     private void addFoundationOverrideResetRow(MKWorkspaceScreen screen, MKStackLayoutVertical content,
-                                               int familyIndex, MKTowerWorkspaceFamilyDefinition family) {
+                                               int familyIndex, MKWorkspaceRoomFamilyDefinition family) {
         if (family.foundationPolicyOverrideOpt().isEmpty()) {
             return;
         }
@@ -602,7 +602,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Override")), inheritButton);
     }
 
-    private MKTowerWorkspaceFamilyDefinition copyFamilyWithDimension(MKTowerWorkspaceFamilyDefinition family,
+    private MKWorkspaceRoomFamilyDefinition copyFamilyWithDimension(MKWorkspaceRoomFamilyDefinition family,
                                                                      DimensionAxis axis, int value) {
         return switch (axis) {
             case WIDTH -> copyFamilyWithGeometry(family, value, family.roomLength(), family.roomHeight());
@@ -611,9 +611,9 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         };
     }
 
-    private MKTowerWorkspaceFamilyDefinition copyFamilyWithGeometry(MKTowerWorkspaceFamilyDefinition family,
+    private MKWorkspaceRoomFamilyDefinition copyFamilyWithGeometry(MKWorkspaceRoomFamilyDefinition family,
                                                                     int roomWidth, int roomLength, int roomHeight) {
-        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+        return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                 family.baseName(), family.slotMetadata(), family.verticalAccessGroupId(), family.supportsVerticalAccess(),
                 roomWidth, roomLength, roomHeight, family.horizontalExtrusionMode(), family.horizontalExits(),
                 family.topVoidMargin(), family.bottomVoidMargin(), family.paletteOverride());

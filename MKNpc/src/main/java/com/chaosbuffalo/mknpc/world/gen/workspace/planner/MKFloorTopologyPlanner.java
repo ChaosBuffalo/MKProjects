@@ -4,7 +4,7 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
@@ -70,9 +70,9 @@ public class MKFloorTopologyPlanner {
     }
 
     public List<MKPlannedPiece> createFloorTopologyPieces(MKStructureWorkspace workspace,
-                                                          List<MKTowerWorkspaceFamilyDefinition> rootFamilies) {
+                                                          List<MKWorkspaceRoomFamilyDefinition> rootFamilies) {
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
-        for (MKTowerWorkspaceFamilyDefinition rootFamily : rootFamilies) {
+        for (MKWorkspaceRoomFamilyDefinition rootFamily : rootFamilies) {
             Optional<FloorOpeningContext> contextOpt = contextForRootFamily(workspace, rootFamily);
             if (contextOpt.isEmpty()) {
                 continue;
@@ -251,7 +251,7 @@ public class MKFloorTopologyPlanner {
     }
 
     private Optional<FloorOpeningContext> contextForRootFamily(MKStructureWorkspace workspace,
-                                                               MKTowerWorkspaceFamilyDefinition rootFamily) {
+                                                               MKWorkspaceRoomFamilyDefinition rootFamily) {
         Optional<MKTowerWorkspaceStackSlot> slotOpt = MKTowerWorkspaceStackSlot.fromTopologySlotId(rootFamily.topologySlotId());
         if (slotOpt.isEmpty()) {
             return Optional.empty();

@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackSettings;
@@ -54,7 +54,7 @@ public record MKTowerStackSizingReport(
     }
 
     public static MKTowerStackSizingReport fromSettings(MKWorkspaceTowerStackSettings settings,
-                                                        List<MKTowerWorkspaceFamilyDefinition> families) {
+                                                        List<MKWorkspaceRoomFamilyDefinition> families) {
         int upwardPieces = 1 + settings.mainFloors() + 1 +
                 (settings.topCapApproachEnabled() ? 1 : 0);
         int downwardPieces = settings.basementFloors() <= 0 ? 0 :
@@ -96,8 +96,8 @@ public record MKTowerStackSizingReport(
     }
 
     private static List<SectionInfo> buildSections(MKWorkspaceTowerStackSettings settings,
-                                                   List<MKTowerWorkspaceFamilyDefinition> families) {
-        Map<MKTowerWorkspaceStackSlot, MKTowerWorkspaceFamilyDefinition> familyBySlot = families.stream()
+                                                   List<MKWorkspaceRoomFamilyDefinition> families) {
+        Map<MKTowerWorkspaceStackSlot, MKWorkspaceRoomFamilyDefinition> familyBySlot = families.stream()
                 .filter(family -> MKTowerWorkspaceStackSlot.stackIdForTopologySlot(family.topologySlotId())
                         .filter(settings.stackId()::equals)
                         .isPresent())
@@ -148,7 +148,7 @@ public record MKTowerStackSizingReport(
 
     private static SectionInfo section(String key, String label, int height,
                                        boolean active, MKWorkspaceTowerStackSettings settings,
-                                       MKTowerWorkspaceFamilyDefinition family) {
+                                       MKWorkspaceRoomFamilyDefinition family) {
         List<HorizontalExitInfo> exits = family == null ? List.of() : family.horizontalOnlyExits().stream()
                 .map(MKTowerStackSizingReport::horizontalExitInfo)
                 .toList();

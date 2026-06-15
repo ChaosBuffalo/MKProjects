@@ -5,7 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
@@ -411,7 +411,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         return List.copyOf(pieces);
     }
 
-    private List<MKTowerWorkspaceFamilyDefinition> activeTowerStackFamiliesForFloorTopology(MKStructureWorkspace workspace) {
+    private List<MKWorkspaceRoomFamilyDefinition> activeTowerStackFamiliesForFloorTopology(MKStructureWorkspace workspace) {
         return workspace.familyDefinitions().stream()
                 .filter(family -> isActiveKeepSlot(workspace, family.topologySlotId()))
                 .filter(family -> isCenterStackSlot(family.topologySlotId()) || isCornerStackSlot(family.topologySlotId()))
@@ -419,7 +419,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     }
 
     private List<MKPlannedPiece> createCenterStackPieces(MKStructureWorkspace workspace, SlotAvailability slots) {
-        List<MKTowerWorkspaceFamilyDefinition> centerFamilies = workspace.familyDefinitions().stream()
+        List<MKWorkspaceRoomFamilyDefinition> centerFamilies = workspace.familyDefinitions().stream()
                 .filter(family -> isActiveKeepSlot(workspace, family.topologySlotId()))
                 .filter(family -> isCenterStackSlot(family.topologySlotId()))
                 .toList();
@@ -433,13 +433,13 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
 
     private List<MKPlannedPiece> createCornerStackPieces(MKStructureWorkspace workspace, SlotAvailability slots) {
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
-        List<MKTowerWorkspaceFamilyDefinition> sharedFamilies = workspace.familyDefinitions().stream()
+        List<MKWorkspaceRoomFamilyDefinition> sharedFamilies = workspace.familyDefinitions().stream()
                 .filter(family -> family.topologySlotId().startsWith("keep.corner.shared."))
                 .toList();
         MKWorkspaceTowerStackSettings sharedCornerSettings = normalizeSharedCornerSettings(
                 workspace.topologyProfile().towerStackSettingsOrDefault("keep.corner.shared"));
         for (String stackId : CONCRETE_CORNER_SLOTS) {
-            List<MKTowerWorkspaceFamilyDefinition> stackFamilies;
+            List<MKWorkspaceRoomFamilyDefinition> stackFamilies;
             if (workspace.topologyProfile().uniqueCornerTower(stackId)) {
                 stackFamilies = workspace.familyDefinitions().stream()
                         .filter(family -> family.topologySlotId().startsWith(stackId + "."))
@@ -456,7 +456,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
 
     private void addCornerStackPieces(List<MKPlannedPiece> pieces, MKStructureWorkspace workspace,
                                       SlotAvailability slots, String stackId,
-                                      List<MKTowerWorkspaceFamilyDefinition> stackFamilies) {
+                                      List<MKWorkspaceRoomFamilyDefinition> stackFamilies) {
         if (stackFamilies.isEmpty()) {
             return;
         }
@@ -474,7 +474,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 .forEach(pieces::add);
     }
 
-    private MKTowerWorkspaceFamilyDefinition remapSharedCornerFamily(MKTowerWorkspaceFamilyDefinition family,
+    private MKWorkspaceRoomFamilyDefinition remapSharedCornerFamily(MKWorkspaceRoomFamilyDefinition family,
                                                                      String targetStackId,
                                                                      MKWorkspaceTowerStackSettings sharedSettings) {
         String targetBasePrefix = targetStackId.replace('.', '_');
@@ -483,7 +483,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         int normalizedRoomWidth = normalizeSharedCornerFamilyDimension(family.roomWidth(), family.roomLength(),
                 sharedSettings.width());
         int normalizedRoomLength = normalizedRoomWidth;
-        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+        return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                 baseName,
                 topologySlotId,
                 targetStackId,
@@ -589,7 +589,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                                                    CourtyardPlan courtyardPlan) {
         LinkedHashSet<String> slots = new LinkedHashSet<>();
         workspace.familyDefinitions().stream()
-                .map(MKTowerWorkspaceFamilyDefinition::topologySlotId)
+                .map(MKWorkspaceRoomFamilyDefinition::topologySlotId)
                 .filter(MKWalledKeepWorkspacePlanner::isKnownKeepSlot)
                 .filter(slot -> isActiveKeepSlot(workspace, slot))
                 .forEach(slot -> addAvailableSlot(slots, slot));
@@ -622,7 +622,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         slots.add(topologySlotId);
     }
 
-    private MKPlannedPiece createRoomPiece(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family,
+    private MKPlannedPiece createRoomPiece(MKStructureWorkspace workspace, MKWorkspaceRoomFamilyDefinition family,
                                            SlotAvailability slots) {
         MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
         int shaftSize = resolvedFamily.verticalAccessSpec().shaftSize();
@@ -1517,7 +1517,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
                 opening.openingWidth(), opening.openingHeight(), lateralOffset, 0, slotPool(targetSlotId)));
     }
 
-    private Map<String, String> buildRoomTags(MKStructureWorkspace workspace, MKTowerWorkspaceFamilyDefinition family) {
+    private Map<String, String> buildRoomTags(MKStructureWorkspace workspace, MKWorkspaceRoomFamilyDefinition family) {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>();
         tags.put("topology_role", family.topologySlotId());
         tags.put("workspace_topology_slot_id", family.topologySlotId());
@@ -1549,7 +1549,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
     }
 
     private MKWorkspaceHorizontalExtrusionMode effectiveRoomExtrusionMode(MKStructureWorkspace workspace,
-                                                                          MKTowerWorkspaceFamilyDefinition family) {
+                                                                          MKWorkspaceRoomFamilyDefinition family) {
         return towerStackSettingsForTopologySlot(workspace, family.topologySlotId())
                 .map(MKWorkspaceTowerStackSettings::horizontalExtrusionMode)
                 .orElse(family.horizontalExtrusionMode());
@@ -1623,7 +1623,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         return tags;
     }
 
-    private String stackIdForFamily(MKTowerWorkspaceFamilyDefinition family) {
+    private String stackIdForFamily(MKWorkspaceRoomFamilyDefinition family) {
         return stackIdForTopologySlot(family.topologySlotId());
     }
 
@@ -1642,7 +1642,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         return "";
     }
 
-    private MKWorkspaceRuntimePieceInfo runtimeInfoForRoom(MKTowerWorkspaceFamilyDefinition family) {
+    private MKWorkspaceRuntimePieceInfo runtimeInfoForRoom(MKWorkspaceRoomFamilyDefinition family) {
         MKWorkspaceTopologySlotMetadata slotMetadata = MKWorkspaceTopologySlotMetadata.fromFamily(family);
         boolean start = family.topologySlotId().equals("keep.center.entry");
         return new MKWorkspaceRuntimePieceInfo(start, slotMetadata.jigsawPieceRole(), 0, 0, true, true,
@@ -1697,7 +1697,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspaceTopologyPlanner 
         }
     }
 
-    private String verticalAccessDirectionTag(MKTowerWorkspaceFamilyDefinition family) {
+    private String verticalAccessDirectionTag(MKWorkspaceRoomFamilyDefinition family) {
         boolean up = family.hasVerticalAccess(Direction.UP);
         boolean down = family.hasVerticalAccess(Direction.DOWN);
         if (up && down) {

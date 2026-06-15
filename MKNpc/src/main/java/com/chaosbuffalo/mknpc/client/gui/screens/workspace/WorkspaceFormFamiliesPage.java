@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
@@ -53,9 +53,9 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
             content.addWidget(summary);
             content.addConstraintToWidget(MarginConstraint.LEFT, summary);
 
-            List<MKTowerWorkspaceFamilyDefinition> families = editor.familyDefinitions();
+            List<MKWorkspaceRoomFamilyDefinition> families = editor.familyDefinitions();
             for (int index : editor.familyIndexesForTopologySlot(slot.slotId())) {
-                MKTowerWorkspaceFamilyDefinition family = families.get(index);
+                MKWorkspaceRoomFamilyDefinition family = families.get(index);
                 MKWorkspaceTopologySlotMetadata slotMetadata = MKWorkspaceTopologySlotMetadata.fromFamily(family);
                 MKText familyHeader = screen.makeWhiteText(Component.literal(" - " + family.baseName()));
                 content.addWidget(familyHeader);
@@ -104,7 +104,7 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
         return root;
     }
 
-    private String summarizeFamilyExits(MKTowerWorkspaceFamilyDefinition family) {
+    private String summarizeFamilyExits(MKWorkspaceRoomFamilyDefinition family) {
         if (family.horizontalExits().isEmpty()) {
             return "none";
         }

@@ -12,7 +12,7 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKVerticalProgressionM
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStackBudget;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
@@ -501,7 +501,7 @@ class TowerWorkspaceV2Test {
 
     @Test
     void resolvedFamilyMetadataComesFromTopologySlot() {
-        MKTowerWorkspaceFamilyDefinition mismatchedFamily = topologyFamily(
+        MKWorkspaceRoomFamilyDefinition mismatchedFamily = topologyFamily(
                 "custom_top",
                 "tower.primary.top_cap",
                 "tower.primary",
@@ -538,7 +538,7 @@ class TowerWorkspaceV2Test {
         CompoundTag tag = mismatchedFamily.toTag();
         assertFalse(tag.contains("category"));
         assertFalse(tag.contains("pieceRole"));
-        MKTowerWorkspaceFamilyDefinition decoded = MKTowerWorkspaceFamilyDefinition.fromTag(tag);
+        MKWorkspaceRoomFamilyDefinition decoded = MKWorkspaceRoomFamilyDefinition.fromTag(tag);
         assertEquals("top_cap", decoded.slotMetadata().topologyGroupId());
         assertEquals(MKJigsawPieceRole.TOP_CAP, decoded.slotMetadata().jigsawPieceRole());
     }
@@ -598,7 +598,7 @@ class TowerWorkspaceV2Test {
 
         MKStructureWorkspace imported = new MKStructureWorkspaceImportService().workspaceFromManifest(
                 UUID.randomUUID(), new BlockPos(7, 80, 7), 123L, staleManifest);
-        MKTowerWorkspaceFamilyDefinition importedFamily = imported.familyDefinitions().stream()
+        MKWorkspaceRoomFamilyDefinition importedFamily = imported.familyDefinitions().stream()
                 .filter(family -> family.baseName().equals("imported_stale_top"))
                 .findFirst()
                 .orElseThrow();
@@ -691,7 +691,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 MKWorkspaceTopologyProfile.walledKeep(false),
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
 
@@ -822,7 +822,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 MKWorkspaceTopologyProfile.walledKeep(false),
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
 
@@ -879,7 +879,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 topologyProfile,
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
 
@@ -906,7 +906,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 MKWorkspaceTopologyProfile.walledKeep(false),
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
 
@@ -929,7 +929,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace baseKeepWorkspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 baseProfile,
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
         int innerMargin = 4;
@@ -945,7 +945,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace marginWorkspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 marginProfile,
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
 
@@ -1003,7 +1003,7 @@ class TowerWorkspaceV2Test {
         workspace = withTopologyAndLinearRuns(
                 workspace,
                 topologyProfile,
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(largeDimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(largeDimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(defaultDimensions, workspacePalette())
         );
 
@@ -1026,7 +1026,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 MKWorkspaceTopologyProfile.walledKeep(false),
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
         List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
@@ -1085,11 +1085,11 @@ class TowerWorkspaceV2Test {
         List<MKHorizontalOpeningProfile> openings = new java.util.ArrayList<>(
                 MKHorizontalOpeningProfile.createDefaults(dimensions));
         openings.add(new MKHorizontalOpeningProfile("wide_ingress", 5, 4, true, false));
-        List<MKTowerWorkspaceFamilyDefinition> families = MKTowerWorkspaceFamilyDefinition
+        List<MKWorkspaceRoomFamilyDefinition> families = MKWorkspaceRoomFamilyDefinition
                 .createWalledKeepDefaults(dimensions)
                 .stream()
                 .map(family -> family.baseName().equals("keep_center_entry") ?
-                        MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                        MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                                 family.baseName(),
                                 family.slotMetadata(),
                                 family.verticalAccessGroupId(),
@@ -1158,7 +1158,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 MKWorkspaceTopologyProfile.walledKeep(false),
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions),
                 staleLinearRuns
         );
 
@@ -1183,7 +1183,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 MKWorkspaceTopologyProfile.walledKeep(false),
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
         List<MKPlannedPiece> plannedPieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
@@ -1213,7 +1213,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 MKWorkspaceTopologyProfile.walledKeep(false),
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
         List<MKPlannedPiece> plannedPieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
@@ -1255,7 +1255,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 MKWorkspaceTopologyProfile.walledKeep(false),
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
 
@@ -1368,7 +1368,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 MKWorkspaceTopologyProfile.walledKeep(false),
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
         List<MKPlannedPiece> canonicalPieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
@@ -1402,7 +1402,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 topologyProfile,
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
 
@@ -1425,7 +1425,7 @@ class TowerWorkspaceV2Test {
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
                 .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.center", 1, 1, 9))
                 .withTowerStackSettings(new MKWorkspaceTowerStackSettings("keep.corner.shared", 1, 1, 7));
-        List<MKTowerWorkspaceFamilyDefinition> families = MKTowerWorkspaceFamilyDefinition
+        List<MKWorkspaceRoomFamilyDefinition> families = MKWorkspaceRoomFamilyDefinition
                 .createWalledKeepDefaults(dimensions).stream()
                 .map(family -> family.topologySlotId().startsWith("keep.center.") ?
                         copyFamilyWithHeight(family, 9) : family)
@@ -1445,7 +1445,7 @@ class TowerWorkspaceV2Test {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
                 .withTowerStackSettings(new MKWorkspaceTowerStackSettings("tower.primary", 1, 1, 7));
-        List<MKTowerWorkspaceFamilyDefinition> families = MKTowerWorkspaceFamilyDefinition
+        List<MKWorkspaceRoomFamilyDefinition> families = MKWorkspaceRoomFamilyDefinition
                 .createDefaults(dimensions).stream()
                 .map(family -> copyFamilyWithHeight(family, 7))
                 .toList();
@@ -1467,10 +1467,10 @@ class TowerWorkspaceV2Test {
                         "tower.primary", 1, 1, 7, 15, 15,
                         3, MKVerticalAccessPlacement.CENTER, MKWorkspaceStairAuthoringConfig.defaultConfig(),
                         true, true));
-        List<MKTowerWorkspaceFamilyDefinition> families = MKTowerWorkspaceFamilyDefinition
+        List<MKWorkspaceRoomFamilyDefinition> families = MKWorkspaceRoomFamilyDefinition
                 .createDefaults(dimensions).stream()
                 .map(family -> family.baseName().equals("floor_main") ?
-                        MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                        MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                                 family.baseName(),
                                 family.slotMetadata(),
                                 family.verticalAccessGroupId(),
@@ -1587,7 +1587,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 topologyProfile,
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
 
@@ -1731,7 +1731,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace keepWorkspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 MKWorkspaceTopologyProfile.walledKeep(false),
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
         Map<String, String> staleCornerTags = Map.of(
@@ -1937,7 +1937,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 topologyProfile,
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
 
@@ -1970,7 +1970,7 @@ class TowerWorkspaceV2Test {
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
                 .withTowerStackSettings(MKWorkspaceTowerStackSettings.defaults("keep.center", 7)
                         .withFoundationPolicy(stackFoundation));
-        List<MKTowerWorkspaceFamilyDefinition> families = MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions)
+        List<MKWorkspaceRoomFamilyDefinition> families = MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions)
                 .stream()
                 .map(family -> family.baseName().equals("keep_center_entry") ?
                         copyFamilyWithFoundation(family, familyFoundation) : family)
@@ -1999,7 +1999,7 @@ class TowerWorkspaceV2Test {
         MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
                 .withTowerStackSettings(MKWorkspaceTowerStackSettings.defaults("keep.center", 7)
                         .withFoundationPolicy(stackFoundation));
-        List<MKTowerWorkspaceFamilyDefinition> families = MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions)
+        List<MKWorkspaceRoomFamilyDefinition> families = MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions)
                 .stream()
                 .map(family -> family.baseName().equals("keep_center_entry") ?
                         copyFamilyWithFoundation(family, MKWorkspaceFoundationPolicy.none()) : family)
@@ -2022,10 +2022,10 @@ class TowerWorkspaceV2Test {
     @Test
     void walledKeepFloorTopologyUsesCompactFallbackHallwaysInsteadOfKeepRuns() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
-        List<MKTowerWorkspaceFamilyDefinition> families = MKTowerWorkspaceFamilyDefinition
+        List<MKWorkspaceRoomFamilyDefinition> families = MKWorkspaceRoomFamilyDefinition
                 .createWalledKeepDefaults(dimensions).stream()
                 .map(family -> family.topologySlotId().equals("keep.center.basement_floor") ?
-                        MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                        MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                                 family.baseName(),
                                 family.slotMetadata(),
                                 family.verticalAccessGroupId(),
@@ -2097,7 +2097,7 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 topologyProfile,
-                MKTowerWorkspaceFamilyDefinition.createWalledKeepDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
 
@@ -2233,7 +2233,7 @@ class TowerWorkspaceV2Test {
                                 workspacePalette().wallBlock(), workspacePalette().ceilingBlock())
                 )
         );
-        MKTowerWorkspaceFamilyDefinition floorRoot = topologyFamily(
+        MKWorkspaceRoomFamilyDefinition floorRoot = topologyFamily(
                 "floor_main",
                 "tower.primary.main_floor",
                 "tower.primary",
@@ -2358,7 +2358,7 @@ class TowerWorkspaceV2Test {
                                 workspacePalette().wallBlock(), workspacePalette().ceilingBlock())
                 )
         );
-        MKTowerWorkspaceFamilyDefinition floorRoot = topologyFamily(
+        MKWorkspaceRoomFamilyDefinition floorRoot = topologyFamily(
                 "floor_main",
                 "tower.primary.main_floor",
                 "tower.primary",
@@ -2531,11 +2531,11 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        MKTowerWorkspaceFamilyDefinition entryFamily = workspace.familyDefinitions().stream()
+        MKWorkspaceRoomFamilyDefinition entryFamily = workspace.familyDefinitions().stream()
                 .filter(family -> family.baseName().equals("entry"))
                 .findFirst()
                 .orElseThrow();
-        MKTowerWorkspaceFamilyDefinition updatedEntry = MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+        MKWorkspaceRoomFamilyDefinition updatedEntry = MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                 entryFamily.baseName(),
                 entryFamily.slotMetadata(),
                 entryFamily.verticalAccessGroupId(),
@@ -2593,7 +2593,7 @@ class TowerWorkspaceV2Test {
 
     @Test
     void familyDefinitionCodecRoundTripPreservesVoidMargins() {
-        MKTowerWorkspaceFamilyDefinition family = topologyFamily(
+        MKWorkspaceRoomFamilyDefinition family = topologyFamily(
                 "side_room",
                 "tower.primary.top_cap",
                 "tower.primary",
@@ -2609,7 +2609,7 @@ class TowerWorkspaceV2Test {
                 null
         );
 
-        MKTowerWorkspaceFamilyDefinition decoded = MKTowerWorkspaceFamilyDefinition.fromTag(family.toTag());
+        MKWorkspaceRoomFamilyDefinition decoded = MKWorkspaceRoomFamilyDefinition.fromTag(family.toTag());
 
         assertEquals(4, decoded.topVoidMargin());
         assertEquals(0, decoded.bottomVoidMargin());
@@ -2625,7 +2625,7 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        List<MKTowerWorkspaceFamilyDefinition> families = new java.util.ArrayList<>(workspace.familyDefinitions());
+        List<MKWorkspaceRoomFamilyDefinition> families = new java.util.ArrayList<>(workspace.familyDefinitions());
         families.add(topologyFamily("main_side_room", "tower.primary.main_floor", "tower.primary",
                 false, 9, 9, workspace.dimensions().roomHeight(),
                 MKWorkspaceHorizontalExtrusionMode.FULL_BODY, List.of(), 2, 1, null, null));
@@ -2671,7 +2671,7 @@ class TowerWorkspaceV2Test {
 
     @Test
     void familyDefinitionCodecRoundTripPreservesSingleVerticalExit() {
-        MKTowerWorkspaceFamilyDefinition family = topologyFamily(
+        MKWorkspaceRoomFamilyDefinition family = topologyFamily(
                 "top_only",
                 "tower.primary.main_floor",
                 "tower.primary",
@@ -2687,7 +2687,7 @@ class TowerWorkspaceV2Test {
                 null
         );
 
-        MKTowerWorkspaceFamilyDefinition decoded = MKTowerWorkspaceFamilyDefinition.fromTag(family.toTag());
+        MKWorkspaceRoomFamilyDefinition decoded = MKWorkspaceRoomFamilyDefinition.fromTag(family.toTag());
 
         assertTrue(decoded.supportsVerticalAccess());
         assertTrue(decoded.hasVerticalAccess(net.minecraft.core.Direction.UP));
@@ -2703,7 +2703,7 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        MKTowerWorkspaceFamilyDefinition topOnlyMain = topologyFamily(
+        MKWorkspaceRoomFamilyDefinition topOnlyMain = topologyFamily(
                 "floor_main",
                 "tower.primary.main_floor",
                 "tower.primary",
@@ -2748,7 +2748,7 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        MKTowerWorkspaceFamilyDefinition floorWithBranch = topologyFamily(
+        MKWorkspaceRoomFamilyDefinition floorWithBranch = topologyFamily(
                 "floor_main",
                 "tower.primary.main_floor",
                 "tower.primary",
@@ -2781,7 +2781,7 @@ class TowerWorkspaceV2Test {
     @Test
     void defaultTowerIngressIsOpeningOnly() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
-        MKTowerWorkspaceFamilyDefinition entryFamily = MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions).stream()
+        MKWorkspaceRoomFamilyDefinition entryFamily = MKWorkspaceRoomFamilyDefinition.createDefaults(dimensions).stream()
                 .filter(family -> family.topologySlotId().endsWith(".entry"))
                 .findFirst()
                 .orElseThrow();
@@ -2804,7 +2804,7 @@ class TowerWorkspaceV2Test {
                 2,
                 4,
                 MKWorkspaceVerticalAccessSpec.defaultSpec(),
-                MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createDefaults(dimensions),
                 MKHorizontalOpeningProfile.createDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createDefaults(dimensions, workspacePalette()),
                 System.currentTimeMillis(),
@@ -2841,7 +2841,7 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        MKTowerWorkspaceFamilyDefinition endingFamily = topologyFamily(
+        MKWorkspaceRoomFamilyDefinition endingFamily = topologyFamily(
                 "main_end",
                 "tower.primary.main_floor",
                 "tower.primary",
@@ -2902,7 +2902,7 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        MKTowerWorkspaceFamilyDefinition branchCapFamily = topologyFamily(
+        MKWorkspaceRoomFamilyDefinition branchCapFamily = topologyFamily(
                 "branch_cap",
                 "tower.primary.main_floor",
                 "tower.primary",
@@ -2984,7 +2984,7 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        MKTowerWorkspaceFamilyDefinition invalidEnding = topologyFamily(
+        MKWorkspaceRoomFamilyDefinition invalidEnding = topologyFamily(
                 "invalid_end",
                 "tower.primary.main_floor",
                 "tower.primary",
@@ -3038,7 +3038,7 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        MKTowerWorkspaceFamilyDefinition invalidCap = topologyFamily(
+        MKWorkspaceRoomFamilyDefinition invalidCap = topologyFamily(
                 "invalid_cap",
                 "tower.primary.main_floor",
                 "tower.primary",
@@ -3278,7 +3278,7 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        MKTowerWorkspaceFamilyDefinition updatedMain = topologyFamily(
+        MKWorkspaceRoomFamilyDefinition updatedMain = topologyFamily(
                 "floor_main",
                 "tower.primary.main_floor",
                 "tower.primary",
@@ -3383,7 +3383,7 @@ class TowerWorkspaceV2Test {
                 2,
                 4,
                 MKWorkspaceVerticalAccessSpec.defaultSpec(),
-                MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createDefaults(dimensions),
                 MKHorizontalOpeningProfile.createDefaults(dimensions),
                 MKWorkspaceLinearRunFamilyDefinition.createDefaults(dimensions, palette),
                 System.currentTimeMillis(),
@@ -3464,10 +3464,10 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        List<MKTowerWorkspaceFamilyDefinition> updatedFamilies = workspace.familyDefinitions().stream()
+        List<MKWorkspaceRoomFamilyDefinition> updatedFamilies = workspace.familyDefinitions().stream()
                 .map(family -> {
                     if (family.baseName().equals("entry")) {
-                        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                        return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                                 family.baseName(),
                                 family.slotMetadata(),
                                 family.verticalAccessGroupId(),
@@ -3488,7 +3488,7 @@ class TowerWorkspaceV2Test {
                         );
                     }
                     if (family.baseName().equals("floor_main")) {
-                        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                        return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                                 family.baseName(),
                                 family.slotMetadata(),
                                 family.verticalAccessGroupId(),
@@ -3566,7 +3566,7 @@ class TowerWorkspaceV2Test {
                 ),
                 List.of()
         );
-        MKTowerWorkspaceFamilyDefinition updatedMain = topologyFamily(
+        MKWorkspaceRoomFamilyDefinition updatedMain = topologyFamily(
                 "floor_main",
                 "tower.primary.main_floor",
                 "tower.primary",
@@ -3631,7 +3631,7 @@ class TowerWorkspaceV2Test {
                 2,
                 4,
                 MKWorkspaceVerticalAccessSpec.defaultSpec(),
-                MKTowerWorkspaceFamilyDefinition.createDefaults(),
+                MKWorkspaceRoomFamilyDefinition.createDefaults(),
                 MKHorizontalOpeningProfile.createDefaults(dimensions),
                 List.of(),
                 1L,
@@ -3678,7 +3678,7 @@ class TowerWorkspaceV2Test {
                 2,
                 4,
                 verticalAccessSpec,
-                MKTowerWorkspaceFamilyDefinition.createDefaults(),
+                MKWorkspaceRoomFamilyDefinition.createDefaults(),
                 List.of(new MKHorizontalOpeningProfile("branch_only", 3, 3, false, true)),
                 List.of(new MKWorkspaceLinearRunFamilyDefinition("bad_linear_run",
                         MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR, "branch_only", 5, 3, bandCap, 1,
@@ -3716,11 +3716,11 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 topologyProfile,
-                MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions),
+                MKWorkspaceRoomFamilyDefinition.createDefaults(dimensions),
                 List.of()
         );
 
-        MKTowerWorkspaceFamilyDefinition mainFloor = workspace.familyDefinitions().stream()
+        MKWorkspaceRoomFamilyDefinition mainFloor = workspace.familyDefinitions().stream()
                 .filter(family -> family.baseName().equals("floor_main"))
                 .findFirst()
                 .orElseThrow();
@@ -3741,7 +3741,7 @@ class TowerWorkspaceV2Test {
                 .withTowerStackSettings(new MKWorkspaceTowerStackSettings("tower.primary", 2, 1, 9,
                         15, 17, 3, MKVerticalAccessPlacement.CENTER,
                         MKWorkspaceStairAuthoringConfig.defaultConfig(), true, false));
-        List<MKTowerWorkspaceFamilyDefinition> families = MKTowerWorkspaceFamilyDefinition.createDefaults(dimensions)
+        List<MKWorkspaceRoomFamilyDefinition> families = MKWorkspaceRoomFamilyDefinition.createDefaults(dimensions)
                 .stream()
                 .map(family -> family.baseName().equals("floor_main") ?
                         copyFamilyWithGeometry(family, 11, 0, 0) : family)
@@ -3753,7 +3753,7 @@ class TowerWorkspaceV2Test {
                 List.of()
         );
 
-        MKTowerWorkspaceFamilyDefinition mainFloor = workspace.familyDefinitions().stream()
+        MKWorkspaceRoomFamilyDefinition mainFloor = workspace.familyDefinitions().stream()
                 .filter(family -> family.baseName().equals("floor_main"))
                 .findFirst()
                 .orElseThrow();
@@ -3903,7 +3903,7 @@ class TowerWorkspaceV2Test {
                 2,
                 4,
                 MKWorkspaceVerticalAccessSpec.defaultSpec(),
-                MKTowerWorkspaceFamilyDefinition.createDefaults(),
+                MKWorkspaceRoomFamilyDefinition.createDefaults(),
                 MKHorizontalOpeningProfile.createDefaults(dimensions),
                 List.of(new MKWorkspaceLinearRunFamilyDefinition("surface", MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR,
                         "entry_main", 5, 3, 3, 0, true, false, MKWorkspaceLinearRunProjection.RIGID,
@@ -3980,7 +3980,7 @@ class TowerWorkspaceV2Test {
                 2,
                 4,
                 MKWorkspaceVerticalAccessSpec.defaultSpec(),
-                MKTowerWorkspaceFamilyDefinition.createDefaults(),
+                MKWorkspaceRoomFamilyDefinition.createDefaults(),
                 MKHorizontalOpeningProfile.createDefaults(dimensions),
                 List.of(),
                 100L,
@@ -4028,7 +4028,7 @@ class TowerWorkspaceV2Test {
                 2,
                 4,
                 MKWorkspaceVerticalAccessSpec.defaultSpec(),
-                MKTowerWorkspaceFamilyDefinition.createDefaults(),
+                MKWorkspaceRoomFamilyDefinition.createDefaults(),
                 MKHorizontalOpeningProfile.createDefaults(dimensions),
                 List.of(),
                 100L,
@@ -4079,32 +4079,32 @@ class TowerWorkspaceV2Test {
                 4,
                 verticalAccessSpec,
                 List.of(
-                        MKTowerWorkspaceFamilyDefinition.forTowerStackSlot("entry", MKTowerWorkspaceStackSlot.ENTRY,
+                        MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("entry", MKTowerWorkspaceStackSlot.ENTRY,
                                 "tower.primary", true, 0, 0, 0, MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                                 List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
                                         MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "entry_main")),
                                 0, 0, null, null),
-                        MKTowerWorkspaceFamilyDefinition.forTowerStackSlot("floor_main", MKTowerWorkspaceStackSlot.MAIN_FLOOR,
+                        MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("floor_main", MKTowerWorkspaceStackSlot.MAIN_FLOOR,
                                 "tower.primary", true, 0, 0, 0, MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                                 List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
                                         MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch")),
                                 0, 0, null, null),
-                        MKTowerWorkspaceFamilyDefinition.forTowerStackSlot("top_cap_approach",
+                        MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("top_cap_approach",
                                 MKTowerWorkspaceStackSlot.TOP_CAP_APPROACH, "tower.primary", true, 0, 0, 0,
                                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, List.of(), 0, 0, null, null),
-                        MKTowerWorkspaceFamilyDefinition.forTowerStackSlot("top_cap", MKTowerWorkspaceStackSlot.TOP_CAP,
+                        MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("top_cap", MKTowerWorkspaceStackSlot.TOP_CAP,
                                 "tower.primary", true, 0, 0, 0, MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                                 List.of(), 0, 0, null, null),
-                        MKTowerWorkspaceFamilyDefinition.forTowerStackSlot("basement_entry",
+                        MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("basement_entry",
                                 MKTowerWorkspaceStackSlot.BASEMENT_ENTRY, "tower.primary", true, 0, 0, 0,
                                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, List.of(), 0, 0, null, null),
-                        MKTowerWorkspaceFamilyDefinition.forTowerStackSlot("basement_main",
+                        MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("basement_main",
                                 MKTowerWorkspaceStackSlot.BASEMENT_FLOOR, "tower.primary", true, 0, 0, 0,
                                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, List.of(), 0, 0, null, null),
-                        MKTowerWorkspaceFamilyDefinition.forTowerStackSlot("basement_cap_approach",
+                        MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("basement_cap_approach",
                                 MKTowerWorkspaceStackSlot.BASEMENT_CAP_APPROACH, "tower.primary", true, 0, 0, 0,
                                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, List.of(), 0, 0, null, null),
-                        MKTowerWorkspaceFamilyDefinition.forTowerStackSlot("basement_cap",
+                        MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("basement_cap",
                                 MKTowerWorkspaceStackSlot.BASEMENT_CAP, "tower.primary", true, 0, 0, 0,
                                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, List.of(), 0, 0, null, null)
                 ),
@@ -4161,7 +4161,7 @@ class TowerWorkspaceV2Test {
 
     private static MKStructureWorkspace withTopologyAndLinearRuns(MKStructureWorkspace workspace,
                                                                   MKWorkspaceTopologyProfile topologyProfile,
-                                                                  List<MKTowerWorkspaceFamilyDefinition> familyDefinitions,
+                                                                  List<MKWorkspaceRoomFamilyDefinition> familyDefinitions,
                                                                   List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies) {
         return new MKStructureWorkspace(
                 workspace.id(),
@@ -4232,7 +4232,7 @@ class TowerWorkspaceV2Test {
         );
     }
 
-    private static MKTowerWorkspaceFamilyDefinition topologyFamily(String baseName,
+    private static MKWorkspaceRoomFamilyDefinition topologyFamily(String baseName,
                                                                    String topologySlotId,
                                                                    String verticalAccessGroupId,
                                                                    boolean supportsVerticalAccess,
@@ -4251,7 +4251,7 @@ class TowerWorkspaceV2Test {
                 paletteOverride);
     }
 
-    private static MKTowerWorkspaceFamilyDefinition topologyFamily(String baseName,
+    private static MKWorkspaceRoomFamilyDefinition topologyFamily(String baseName,
                                                                    MKWorkspaceTopologySlotMetadata slotMetadata,
                                                                    String verticalAccessGroupId,
                                                                    boolean supportsVerticalAccess,
@@ -4264,7 +4264,7 @@ class TowerWorkspaceV2Test {
                                                                    int bottomVoidMargin,
                                                                    MKWorkspaceFoundationPolicy foundationPolicy,
                                                                    MKWorkspacePaletteOverride paletteOverride) {
-        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(baseName, slotMetadata, verticalAccessGroupId,
+        return MKWorkspaceRoomFamilyDefinition.forTopologySlot(baseName, slotMetadata, verticalAccessGroupId,
                 supportsVerticalAccess, roomWidth, roomLength, roomHeight, horizontalExtrusionMode, horizontalExits,
                 topVoidMargin, bottomVoidMargin, foundationPolicy, paletteOverride);
     }
@@ -4306,7 +4306,7 @@ class TowerWorkspaceV2Test {
     }
 
     private static MKStructureWorkspace withFamilyDefinitions(MKStructureWorkspace workspace,
-                                                              List<MKTowerWorkspaceFamilyDefinition> familyDefinitions) {
+                                                              List<MKWorkspaceRoomFamilyDefinition> familyDefinitions) {
         return new MKStructureWorkspace(
                 workspace.id(),
                 workspace.anchor(),
@@ -4460,7 +4460,7 @@ class TowerWorkspaceV2Test {
     }
 
     private static MKStructureWorkspace withFamilies(MKStructureWorkspace workspace,
-                                                     List<MKTowerWorkspaceFamilyDefinition> families) {
+                                                     List<MKWorkspaceRoomFamilyDefinition> families) {
         return new MKStructureWorkspace(
                 workspace.id(),
                 workspace.anchor(),
@@ -4493,9 +4493,9 @@ class TowerWorkspaceV2Test {
         return ResourceLocation.parse(workspace.namespace() + ":" + workspace.structureName() + "/" + poolName);
     }
 
-    private static MKTowerWorkspaceFamilyDefinition copyFamilyWithHeight(MKTowerWorkspaceFamilyDefinition family,
+    private static MKWorkspaceRoomFamilyDefinition copyFamilyWithHeight(MKWorkspaceRoomFamilyDefinition family,
                                                                          int height) {
-        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+        return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                 family.baseName(),
                 family.slotMetadata(),
                 family.verticalAccessGroupId(),
@@ -4512,9 +4512,9 @@ class TowerWorkspaceV2Test {
         );
     }
 
-    private static MKTowerWorkspaceFamilyDefinition copyFamilyWithGeometry(MKTowerWorkspaceFamilyDefinition family,
+    private static MKWorkspaceRoomFamilyDefinition copyFamilyWithGeometry(MKWorkspaceRoomFamilyDefinition family,
                                                                            int width, int length, int height) {
-        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+        return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                 family.baseName(),
                 family.slotMetadata(),
                 family.verticalAccessGroupId(),
@@ -4531,9 +4531,9 @@ class TowerWorkspaceV2Test {
         );
     }
 
-    private static MKTowerWorkspaceFamilyDefinition copyFamilyWithFoundation(MKTowerWorkspaceFamilyDefinition family,
+    private static MKWorkspaceRoomFamilyDefinition copyFamilyWithFoundation(MKWorkspaceRoomFamilyDefinition family,
                                                                              MKWorkspaceFoundationPolicy foundationPolicy) {
-        return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+        return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                 family.baseName(),
                 family.slotMetadata(),
                 family.verticalAccessGroupId(),

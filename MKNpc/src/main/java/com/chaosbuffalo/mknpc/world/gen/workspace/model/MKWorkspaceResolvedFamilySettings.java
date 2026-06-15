@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
 public record MKWorkspaceResolvedFamilySettings(
-        MKTowerWorkspaceFamilyDefinition familyDefinition,
+        MKWorkspaceRoomFamilyDefinition familyDefinition,
         int roomWidth,
         int roomLength,
         int roomHeight,
@@ -13,7 +13,7 @@ public record MKWorkspaceResolvedFamilySettings(
         MKWorkspaceVerticalAccessSpec verticalAccessSpec
 ) {
     public static MKWorkspaceResolvedFamilySettings from(MKStructureWorkspace workspace,
-                                                         MKTowerWorkspaceFamilyDefinition familyDefinition) {
+                                                         MKWorkspaceRoomFamilyDefinition familyDefinition) {
         MKWorkspaceMaterialPalette palette = new MKWorkspacePaletteResolver()
                 .resolveFamily(workspace, familyDefinition);
         MKWorkspaceTowerStackSettings stackSettings = workspace.towerStackSettingsForFamily(familyDefinition)

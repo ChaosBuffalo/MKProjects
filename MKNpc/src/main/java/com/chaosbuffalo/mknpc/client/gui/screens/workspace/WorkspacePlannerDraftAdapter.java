@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import net.minecraft.resources.ResourceLocation;
@@ -24,7 +24,7 @@ interface WorkspacePlannerDraftAdapter {
 
     Optional<String> towerStackIdForTopologySlot(WorkspaceDraftSession session, String topologySlotId);
 
-    default Optional<MKTowerWorkspaceFamilyDefinition> sharedFamilySource(WorkspaceDraftSession session,
+    default Optional<MKWorkspaceRoomFamilyDefinition> sharedFamilySource(WorkspaceDraftSession session,
                                                                           String topologySlotId) {
         return Optional.empty();
     }

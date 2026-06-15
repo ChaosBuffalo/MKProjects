@@ -5,7 +5,7 @@ import com.chaosbuffalo.mknpc.data.providers.MKWorkspaceExportManifestLoader;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
@@ -196,7 +196,7 @@ public class MKStructureWorkspaceImportService {
                         verticalAccessSpecExport.stairConfig().stairWidth()
                 )
         );
-        List<MKTowerWorkspaceFamilyDefinition> familyDefinitions = settings.familyDefinitions().stream()
+        List<MKWorkspaceRoomFamilyDefinition> familyDefinitions = settings.familyDefinitions().stream()
                 .map(family -> {
                     List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits = family.horizontalExits().stream()
                             .map(exit -> new MKWorkspaceFamilyHorizontalExitDefinition(
@@ -208,7 +208,7 @@ public class MKStructureWorkspaceImportService {
                                     exit.verticalOffset()
                             ))
                             .toList();
-                    return MKTowerWorkspaceFamilyDefinition.forTopologySlot(
+                    return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                             family.baseName(),
                             family.slotMetadata(),
                             family.verticalAccessGroupId(),
