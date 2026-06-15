@@ -15,6 +15,11 @@ public class TowerPlannerUiContributor implements WorkspacePlannerUiContributor 
     }
 
     @Override
+    public WorkspacePlannerDraftAdapter createDraftAdapter() {
+        return new TowerWorkspaceDraftAdapter();
+    }
+
+    @Override
     public void addDefaultsSections(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                     WorkspaceDraftSession editor) {
         addTowerPaletteRows(screen, content, editor);

@@ -28,6 +28,11 @@ public class WalledKeepPlannerUiContributor implements WorkspacePlannerUiContrib
     }
 
     @Override
+    public WorkspacePlannerDraftAdapter createDraftAdapter() {
+        return new WalledKeepWorkspaceDraftAdapter();
+    }
+
+    @Override
     public void addDefaultsSections(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                     WorkspaceDraftSession editor) {
         addKeepLayoutSettings(screen, content, editor, false);

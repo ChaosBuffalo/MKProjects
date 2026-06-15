@@ -60,10 +60,6 @@ public class WorkspaceDraftSession {
     private int selectedOpeningIndex;
     private int selectedLinearRunIndex;
     final WorkspaceDraftViewState viewState = new WorkspaceDraftViewState();
-    private static final List<WorkspacePlannerDraftAdapter> PLANNER_ADAPTERS = List.of(
-            new TowerWorkspaceDraftAdapter(),
-            new WalledKeepWorkspaceDraftAdapter()
-    );
 
     public WorkspaceDraftSession(MKWorkspaceScreen screen, int selectedFamilyIndex, int selectedFamilyExitIndex, int selectedOpeningIndex,
                                  int selectedLinearRunIndex) {
@@ -1216,10 +1212,7 @@ public class WorkspaceDraftSession {
     }
 
     private WorkspacePlannerDraftAdapter plannerAdapterFor(ResourceLocation plannerId) {
-        return PLANNER_ADAPTERS.stream()
-                .filter(adapter -> adapter.plannerId().equals(plannerId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Unsupported workspace planner: " + plannerId));
+        return WorkspacePlannerUiRegistry.getDraftAdapter(plannerId);
     }
 
     private MKWorkspaceTopologySchema topologySchema() {

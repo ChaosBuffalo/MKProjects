@@ -8,6 +8,10 @@ import net.minecraft.resources.ResourceLocation;
 public interface WorkspacePlannerUiContributor {
     ResourceLocation plannerId();
 
+    default WorkspacePlannerDraftAdapter createDraftAdapter() {
+        throw new IllegalStateException("No workspace draft adapter is registered for planner " + plannerId());
+    }
+
     default TowerStackDraftEditor createTowerStackEditor(WorkspaceDraftSession editor, String stackId) {
         return new TowerStackDraftEditor(editor, stackId);
     }

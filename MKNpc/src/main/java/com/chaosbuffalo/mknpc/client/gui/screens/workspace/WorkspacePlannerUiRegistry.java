@@ -45,6 +45,10 @@ public final class WorkspacePlannerUiRegistry {
         return definition == null ? FALLBACK : definition.createPlannerUi();
     }
 
+    public static WorkspacePlannerDraftAdapter getDraftAdapter(ResourceLocation plannerId) {
+        return getPlannerUi(plannerId).createDraftAdapter();
+    }
+
     private static void registerInternal(ResourceLocation plannerId, Component displayName,
                                          Supplier<WorkspacePlannerUiContributor> factory) {
         register(new PlannerUiDefinition() {
