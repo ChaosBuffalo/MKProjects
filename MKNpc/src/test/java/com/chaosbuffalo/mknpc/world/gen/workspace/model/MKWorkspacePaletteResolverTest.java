@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKFloorTopologyPlanner;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerStackPlanner;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceVerticalStackPlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -113,7 +113,7 @@ class MKWorkspacePaletteResolverTest {
         );
         MKWorkspaceRoomFamilyDefinition family = MKWorkspaceRoomFamilyDefinition.forTowerStackSlot(
                 "floor_main",
-                MKTowerWorkspaceStackSlot.MAIN_FLOOR,
+                MKWorkspaceVerticalStackSlot.MAIN_FLOOR,
                 "tower.primary",
                 true,
                 0,
@@ -169,7 +169,7 @@ class MKWorkspacePaletteResolverTest {
                 .verticalStackSettingsOrDefault("tower.primary")
                 .withPaletteOverride(java.util.Optional.of(stackOverride));
         MKWorkspaceFloorTopologySettings floorSettings = MKWorkspaceFloorTopologySettings
-                .defaults(stackSettings, MKTowerWorkspaceStackSlot.MAIN_FLOOR.suffix())
+                .defaults(stackSettings, MKWorkspaceVerticalStackSlot.MAIN_FLOOR.suffix())
                 .withPaletteOverride(java.util.Optional.of(floorOverride));
         floorSettings = floorSettings.withRoomProfile(MKWorkspaceFloorRoomKind.MAIN_ROOM, 0,
                 floorSettings.mainRoomProfiles().getFirst().withPaletteOverride(java.util.Optional.of(roomOverride)));
@@ -178,7 +178,7 @@ class MKWorkspacePaletteResolverTest {
                 .withFloorTopologySettings(floorSettings);
         MKWorkspaceRoomFamilyDefinition family = MKWorkspaceRoomFamilyDefinition.forTowerStackSlot(
                 "floor_main",
-                MKTowerWorkspaceStackSlot.MAIN_FLOOR,
+                MKWorkspaceVerticalStackSlot.MAIN_FLOOR,
                 "tower.primary",
                 true,
                 0,
@@ -198,7 +198,7 @@ class MKWorkspacePaletteResolverTest {
         );
         MKStructureWorkspace workspace = workspace(topologyProfile, base, List.of(family), List.of());
 
-        MKPlannedPiece rootRoom = new MKTowerStackPlanner().createRoomPieces(workspace, List.of(family)).getFirst();
+        MKPlannedPiece rootRoom = new MKWorkspaceVerticalStackPlanner().createRoomPieces(workspace, List.of(family)).getFirst();
         List<MKPlannedPiece> floorPieces = new MKFloorTopologyPlanner().createFloorTopologyPieces(workspace,
                 List.of(family));
         MKPlannedPiece floorRoom = floorPieces.stream()

@@ -24,7 +24,7 @@ public record MKWorkspaceTopologySlotMetadata(
     }
 
     public static MKWorkspaceTopologySlotMetadata fromTopologySlotId(String topologySlotId) {
-        return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
+        return MKWorkspaceVerticalStackSlot.fromTopologySlotId(topologySlotId)
                 .map(slot -> new MKWorkspaceTopologySlotMetadata(
                         topologySlotId,
                         slot.topologyGroupId(),
@@ -35,7 +35,7 @@ public record MKWorkspaceTopologySlotMetadata(
                 .orElseGet(() -> fromTopologyRole(topologySlotId, "floor", "room", false));
     }
 
-    public static MKWorkspaceTopologySlotMetadata fromTowerStackSlot(MKTowerWorkspaceStackSlot slot, String stackId) {
+    public static MKWorkspaceTopologySlotMetadata fromTowerStackSlot(MKWorkspaceVerticalStackSlot slot, String stackId) {
         return fromTopologySlotId(slot.slotId(stackId));
     }
 
@@ -46,7 +46,7 @@ public record MKWorkspaceTopologySlotMetadata(
 
     public static MKWorkspaceTopologySlotMetadata fromTopologyRole(String topologySlotId, String roleKind,
                                                                    String pieceKind, boolean terminal) {
-        return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
+        return MKWorkspaceVerticalStackSlot.fromTopologySlotId(topologySlotId)
                 .map(slot -> new MKWorkspaceTopologySlotMetadata(
                         topologySlotId,
                         slot.topologyGroupId(),

@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class MKWorkspaceTowerStackFloorCounts {
+public final class MKWorkspaceVerticalStackFloorCounts {
     // These mirror the current tower runtime envelope in NpcStructures.
     public static final int DEFAULT_VERTICAL_RADIUS = 96;
     public static final int DEFAULT_MAX_CHAIN_DEPTH = 12;
@@ -17,7 +17,7 @@ public final class MKWorkspaceTowerStackFloorCounts {
     private static final int UPWARD_FIXED_PIECES = 3;
     private static final int DOWNWARD_FIXED_PIECES = 3;
 
-    private MKWorkspaceTowerStackFloorCounts() {
+    private MKWorkspaceVerticalStackFloorCounts() {
     }
 
     public static List<String> validate(MKWorkspaceVerticalStackSettings settings) {
@@ -40,7 +40,7 @@ public final class MKWorkspaceTowerStackFloorCounts {
         if (settings.minBasementFloors() > settings.basementFloors()) {
             errors.add("minimum basement floor count must be less than or equal to maximum basement floor count");
         }
-        MKTowerStackBudget budget = MKTowerStackBudget.fromStackSettings(settings);
+        MKWorkspaceVerticalStackBudget budget = MKWorkspaceVerticalStackBudget.fromStackSettings(settings);
         List<Integer> allowedMainFloors = allowedMainFloorCounts(budget, settings.basementFloors(),
                 settings.topCapApproachEnabled(), settings.basementEntryEnabled(),
                 settings.basementCapApproachEnabled());
@@ -56,7 +56,7 @@ public final class MKWorkspaceTowerStackFloorCounts {
         return errors;
     }
 
-    public static List<Integer> allowedMainFloorCounts(MKTowerStackBudget budget,
+    public static List<Integer> allowedMainFloorCounts(MKWorkspaceVerticalStackBudget budget,
                                                        int basementFloors,
                                                        boolean topCapApproachEnabled,
                                                        boolean basementEntryEnabled,
@@ -75,7 +75,7 @@ public final class MKWorkspaceTowerStackFloorCounts {
         return allowed;
     }
 
-    public static List<Integer> allowedBasementFloorCounts(MKTowerStackBudget budget,
+    public static List<Integer> allowedBasementFloorCounts(MKWorkspaceVerticalStackBudget budget,
                                                            int mainFloors,
                                                            boolean topCapApproachEnabled,
                                                            boolean basementEntryEnabled,
@@ -95,7 +95,7 @@ public final class MKWorkspaceTowerStackFloorCounts {
         return allowed;
     }
 
-    private static boolean fitsBudget(MKTowerStackBudget budget, int mainFloors, int basementFloors,
+    private static boolean fitsBudget(MKWorkspaceVerticalStackBudget budget, int mainFloors, int basementFloors,
                                       boolean topCapApproachEnabled,
                                       boolean basementEntryEnabled,
                                       boolean basementCapApproachEnabled) {

@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 import java.util.List;
 import java.util.Optional;
 
-public enum MKTowerWorkspaceStackSlot {
+public enum MKWorkspaceVerticalStackSlot {
     BASEMENT_CAP("basement_cap", "basement_cap",
             "cap", "terminal_bottom", true),
     BASEMENT_CAP_APPROACH("basement_cap_approach", "basement_cap",
@@ -21,7 +21,7 @@ public enum MKTowerWorkspaceStackSlot {
     TOP_CAP("top_cap", "top_cap",
             "cap", "top_cap", true);
 
-    private static final List<MKTowerWorkspaceStackSlot> SCHEMA_ORDER = List.of(
+    private static final List<MKWorkspaceVerticalStackSlot> SCHEMA_ORDER = List.of(
             BASEMENT_CAP,
             BASEMENT_CAP_APPROACH,
             BASEMENT_ENTRY,
@@ -31,7 +31,7 @@ public enum MKTowerWorkspaceStackSlot {
             TOP_CAP_APPROACH,
             TOP_CAP
     );
-    private static final List<MKTowerWorkspaceStackSlot> FAMILY_DEFAULT_ORDER = List.of(
+    private static final List<MKWorkspaceVerticalStackSlot> FAMILY_DEFAULT_ORDER = List.of(
             ENTRY,
             MAIN_FLOOR,
             TOP_CAP_APPROACH,
@@ -48,7 +48,7 @@ public enum MKTowerWorkspaceStackSlot {
     private final String pieceKind;
     private final boolean terminal;
 
-    MKTowerWorkspaceStackSlot(String suffix, String topologyGroupId,
+    MKWorkspaceVerticalStackSlot(String suffix, String topologyGroupId,
                               String roleKind,
                               String pieceKind, boolean terminal) {
         this.suffix = suffix;
@@ -86,19 +86,19 @@ public enum MKTowerWorkspaceStackSlot {
         return basePrefix + "_" + suffix;
     }
 
-    public static List<MKTowerWorkspaceStackSlot> schemaOrder() {
+    public static List<MKWorkspaceVerticalStackSlot> schemaOrder() {
         return SCHEMA_ORDER;
     }
 
-    public static List<MKTowerWorkspaceStackSlot> familyDefaultOrder() {
+    public static List<MKWorkspaceVerticalStackSlot> familyDefaultOrder() {
         return FAMILY_DEFAULT_ORDER;
     }
 
-    public static Optional<MKTowerWorkspaceStackSlot> fromTopologySlotId(String topologySlotId) {
+    public static Optional<MKWorkspaceVerticalStackSlot> fromTopologySlotId(String topologySlotId) {
         if (topologySlotId == null || topologySlotId.isBlank()) {
             return Optional.empty();
         }
-        for (MKTowerWorkspaceStackSlot slot : values()) {
+        for (MKWorkspaceVerticalStackSlot slot : values()) {
             if (topologySlotId.endsWith("." + slot.suffix)) {
                 String stackId = topologySlotId.substring(0, topologySlotId.length() - slot.suffix.length() - 1);
                 if (!stackId.isBlank()) {

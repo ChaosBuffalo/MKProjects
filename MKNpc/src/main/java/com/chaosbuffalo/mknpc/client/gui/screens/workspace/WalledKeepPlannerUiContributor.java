@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WalledKeepPlannerUiContributor implements WorkspacePlannerUiContributor {
-    private final TowerStackTopologyPanel towerStackPanel = new TowerStackTopologyPanel();
+    private final WorkspaceVerticalStackTopologyPanel towerStackPanel = new WorkspaceVerticalStackTopologyPanel();
 
     @Override
     public ResourceLocation plannerId() {

@@ -9,7 +9,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolv
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 
@@ -25,7 +25,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     private static final String LINEAR_RUN_POOL_PREFIX = "linear_runs";
     private static final String PRIMARY_STACK_ID = "tower.primary";
     private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
-    private final MKTowerStackPlanner towerStackPlanner = new MKTowerStackPlanner();
+    private final MKWorkspaceVerticalStackPlanner towerStackPlanner = new MKWorkspaceVerticalStackPlanner();
     private final MKFloorTopologyPlanner floorTopologyPlanner = new MKFloorTopologyPlanner();
 
     private record ResolvedOpeningProfile(String profileId, int openingWidth, int openingHeight) {
@@ -66,11 +66,11 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                 schemaSlots(),
                 List.of(
                         new MKWorkspaceLinkSchema("tower.vertical.basement_cap_to_entry",
-                                slotId(MKTowerWorkspaceStackSlot.BASEMENT_CAP),
-                                slotId(MKTowerWorkspaceStackSlot.ENTRY), "vertical_stack"),
+                                slotId(MKWorkspaceVerticalStackSlot.BASEMENT_CAP),
+                                slotId(MKWorkspaceVerticalStackSlot.ENTRY), "vertical_stack"),
                         new MKWorkspaceLinkSchema("tower.vertical.entry_to_top_cap",
-                                slotId(MKTowerWorkspaceStackSlot.ENTRY),
-                                slotId(MKTowerWorkspaceStackSlot.TOP_CAP), "vertical_stack")
+                                slotId(MKWorkspaceVerticalStackSlot.ENTRY),
+                                slotId(MKWorkspaceVerticalStackSlot.TOP_CAP), "vertical_stack")
                 ),
                 schemaRoles()
         );
@@ -78,7 +78,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
 
     private static List<MKWorkspaceSlotSchema> schemaSlots() {
         ArrayList<MKWorkspaceSlotSchema> slots = new ArrayList<>();
-        for (MKTowerWorkspaceStackSlot stackSlot : MKTowerWorkspaceStackSlot.schemaOrder()) {
+        for (MKWorkspaceVerticalStackSlot stackSlot : MKWorkspaceVerticalStackSlot.schemaOrder()) {
             slots.add(new MKWorkspaceSlotSchema(
                     slotId(stackSlot),
                     regionId(stackSlot),
@@ -100,13 +100,13 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
 
     private static List<MKWorkspaceRoleSchema> schemaRoles() {
         ArrayList<MKWorkspaceRoleSchema> roles = new ArrayList<>();
-        for (MKTowerWorkspaceStackSlot stackSlot : MKTowerWorkspaceStackSlot.schemaOrder()) {
+        for (MKWorkspaceVerticalStackSlot stackSlot : MKWorkspaceVerticalStackSlot.schemaOrder()) {
             roles.add(new MKWorkspaceRoleSchema(
                     slotId(stackSlot),
                     stackSlot.roleKind(),
                     stackSlot.pieceKind(),
                     stackSlot.terminal(),
-                    stackSlot == MKTowerWorkspaceStackSlot.ENTRY,
+                    stackSlot == MKWorkspaceVerticalStackSlot.ENTRY,
                     traitsFor(stackSlot)
             ));
         }
@@ -121,11 +121,11 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         return List.copyOf(roles);
     }
 
-    private static String slotId(MKTowerWorkspaceStackSlot stackSlot) {
+    private static String slotId(MKWorkspaceVerticalStackSlot stackSlot) {
         return stackSlot.slotId(PRIMARY_STACK_ID);
     }
 
-    private static String regionId(MKTowerWorkspaceStackSlot stackSlot) {
+    private static String regionId(MKWorkspaceVerticalStackSlot stackSlot) {
         return switch (stackSlot) {
             case BASEMENT_CAP, BASEMENT_CAP_APPROACH -> "tower.primary.basement_cap";
             case BASEMENT_ENTRY, BASEMENT_FLOOR -> "tower.primary.basement";
@@ -135,7 +135,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         };
     }
 
-    private static MKWorkspaceSlotSchema.Repeat repeatFor(MKTowerWorkspaceStackSlot stackSlot) {
+    private static MKWorkspaceSlotSchema.Repeat repeatFor(MKWorkspaceVerticalStackSlot stackSlot) {
         return switch (stackSlot) {
             case BASEMENT_CAP_APPROACH, TOP_CAP_APPROACH -> MKWorkspaceSlotSchema.Repeat.OPTIONAL;
             case BASEMENT_FLOOR, MAIN_FLOOR -> MKWorkspaceSlotSchema.Repeat.RANGE;
@@ -143,7 +143,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         };
     }
 
-    private static Set<String> traitsFor(MKTowerWorkspaceStackSlot stackSlot) {
+    private static Set<String> traitsFor(MKWorkspaceVerticalStackSlot stackSlot) {
         return switch (stackSlot) {
             case TOP_CAP -> Set.of("terminal_top");
             case BASEMENT_CAP -> Set.of("terminal_bottom");
@@ -162,9 +162,9 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         return List.copyOf(pieces);
     }
 
-    private MKTowerStackDefinition towerStackDefinition(MKStructureWorkspace workspace) {
+    private MKWorkspaceVerticalStackDefinition towerStackDefinition(MKStructureWorkspace workspace) {
         return workspace.topologyProfile().verticalStackSettings("tower.primary")
-                .map(MKTowerStackDefinition::towerPrimary)
+                .map(MKWorkspaceVerticalStackDefinition::towerPrimary)
                 .orElseThrow(() -> new IllegalStateException("tower topology is missing tower.primary stack settings"));
     }
 

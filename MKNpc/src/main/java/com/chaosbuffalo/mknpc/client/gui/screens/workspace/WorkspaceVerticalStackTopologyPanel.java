@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.client.gui.widgets.MKIntegerSlider;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
@@ -18,7 +18,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomGeometry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerStackSizingReport;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceVerticalStackSizingReport;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 
-public class TowerStackTopologyPanel {
+public class WorkspaceVerticalStackTopologyPanel {
     public void addStackEditor(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                WorkspaceDraftSession editor, String stackId, String labelPrefix) {
         addStackEditor(screen, content, editor, stackId, labelPrefix, true);
@@ -64,12 +64,12 @@ public class TowerStackTopologyPanel {
     public void addStackPreview(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                 WorkspaceDraftSession editor, String stackId,
                                 boolean showStackSizingControls) {
-        TowerStackDraftEditor towerEditor = towerEditor(editor, stackId);
-        MKTowerStackSizingReport report = MKTowerStackSizingReport.fromSettings(towerEditor.settingsForUi(),
+        WorkspaceVerticalStackDraftEditor towerEditor = towerEditor(editor, stackId);
+        MKWorkspaceVerticalStackSizingReport report = MKWorkspaceVerticalStackSizingReport.fromSettings(towerEditor.settingsForUi(),
                 towerEditor.familiesForUi());
         String selectedSection = normalizedSelectedSection(towerEditor, report);
         int previewWidth = Math.min(screen.contentWidth(), 320);
-        MKTowerStackSidePreview preview = new MKTowerStackSidePreview(previewWidth, 440,
+        MKWorkspaceVerticalStackSidePreview preview = new MKWorkspaceVerticalStackSidePreview(previewWidth, 440,
                 report, selectedSection, sectionKey -> {
             towerEditor.previewSelection(sectionKey);
             screen.flagNeedSetup();
@@ -90,7 +90,7 @@ public class TowerStackTopologyPanel {
 
     public void addStackSizingRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                    WorkspaceDraftSession editor, String stackId, String labelPrefix) {
-        TowerStackDraftEditor towerEditor = towerEditor(editor, stackId);
+        WorkspaceVerticalStackDraftEditor towerEditor = towerEditor(editor, stackId);
         MKIntegerSlider widthSlider = new MKIntegerSlider("Width", 180, 20, 3, 45, 2,
                 towerEditor.width(), value -> {
             towerEditor.width(value);
@@ -134,7 +134,7 @@ public class TowerStackTopologyPanel {
                 });
     }
 
-    private String normalizedSelectedSection(TowerStackDraftEditor towerEditor, MKTowerStackSizingReport report) {
+    private String normalizedSelectedSection(WorkspaceVerticalStackDraftEditor towerEditor, MKWorkspaceVerticalStackSizingReport report) {
         String selected = towerEditor.previewSelection();
         boolean valid = report.sections().stream().anyMatch(section -> section.key().equals(selected));
         if (valid) {
@@ -148,9 +148,9 @@ public class TowerStackTopologyPanel {
         return plannerUi(editor).createFloorPlanEditor(editor, stackId, sectionKey);
     }
 
-    private MKTowerStackSidePreview.Controls controls(MKWorkspaceScreen screen, WorkspaceDraftSession editor,
-                                                      String stackId, TowerStackDraftEditor towerEditor) {
-        return new MKTowerStackSidePreview.Controls() {
+    private MKWorkspaceVerticalStackSidePreview.Controls controls(MKWorkspaceScreen screen, WorkspaceDraftSession editor,
+                                                      String stackId, WorkspaceVerticalStackDraftEditor towerEditor) {
+        return new MKWorkspaceVerticalStackSidePreview.Controls() {
             @Override
             public int stackWidth() {
                 return towerEditor.width();
@@ -746,7 +746,7 @@ public class TowerStackTopologyPanel {
     private MKFloorTopologyPlanPreview.Controls floorPlanControls(MKWorkspaceScreen screen,
                                                                   WorkspaceDraftSession editor,
                                                                   String stackId) {
-        TowerStackDraftEditor towerEditor = towerEditor(editor, stackId);
+        WorkspaceVerticalStackDraftEditor towerEditor = towerEditor(editor, stackId);
         return new MKFloorTopologyPlanPreview.Controls() {
             @Override
             public boolean hasFloorTopology(String sectionKey) {
@@ -1251,7 +1251,7 @@ public class TowerStackTopologyPanel {
 
     private OptionalInt familyIndexForSection(WorkspaceDraftSession editor, String stackId, String sectionKey) {
         String topologySlotId = stackId + "." + sectionKey;
-        Optional<MKTowerWorkspaceStackSlot> slot = MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId);
+        Optional<MKWorkspaceVerticalStackSlot> slot = MKWorkspaceVerticalStackSlot.fromTopologySlotId(topologySlotId);
         if (slot.isEmpty()) {
             return OptionalInt.empty();
         }
@@ -1320,7 +1320,7 @@ public class TowerStackTopologyPanel {
 
     private void addFloorRows(MKWorkspaceScreen screen, MKStackLayoutVertical content, WorkspaceDraftSession editor,
                               String stackId) {
-        TowerStackDraftEditor towerEditor = towerEditor(editor, stackId);
+        WorkspaceVerticalStackDraftEditor towerEditor = towerEditor(editor, stackId);
         addExtrusionRows(screen, content, towerEditor);
         addStairRows(screen, content, towerEditor);
         addFoundationRows(screen, content, towerEditor);
@@ -1331,7 +1331,7 @@ public class TowerStackTopologyPanel {
     }
 
     private void addExtrusionRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
-                                  TowerStackDraftEditor towerEditor) {
+                                  WorkspaceVerticalStackDraftEditor towerEditor) {
         MKButton extrusionButton = new MKButton(Component.literal(WorkspaceTopologyUiSupport.formatTopologyLabel(
                 towerEditor.horizontalExtrusionMode().getSerializedName())), 180, 20);
         extrusionButton.setPressedCallback((button, mouseButton) -> {
@@ -1346,7 +1346,7 @@ public class TowerStackTopologyPanel {
                 screen.makeWhiteText(Component.literal("Horizontal Extrusion")), extrusionButton);
     }
 
-    private TowerStackDraftEditor towerEditor(WorkspaceDraftSession editor, String stackId) {
+    private WorkspaceVerticalStackDraftEditor towerEditor(WorkspaceDraftSession editor, String stackId) {
         return plannerUi(editor).createTowerStackEditor(editor, stackId);
     }
 
@@ -1355,7 +1355,7 @@ public class TowerStackTopologyPanel {
     }
 
     private void addStairRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
-                              TowerStackDraftEditor towerEditor) {
+                              WorkspaceVerticalStackDraftEditor towerEditor) {
         MKButton stairModeButton = new MKButton(Component.literal(WorkspaceTopologyUiSupport.formatTopologyLabel(
                 towerEditor.stairMode().getSerializedName())), 180, 20);
         stairModeButton.setPressedCallback((button, mouseButton) -> {
@@ -1399,7 +1399,7 @@ public class TowerStackTopologyPanel {
     }
 
     private void addFoundationRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
-                                   TowerStackDraftEditor towerEditor) {
+                                   WorkspaceVerticalStackDraftEditor towerEditor) {
         MKWorkspaceFoundationPolicy foundationPolicy = towerEditor.foundationPolicy();
         MKButton modeButton = new MKButton(Component.literal(WorkspaceTopologyUiSupport.formatTopologyLabel(
                 foundationPolicy.mode().getSerializedName())), 180, 20);

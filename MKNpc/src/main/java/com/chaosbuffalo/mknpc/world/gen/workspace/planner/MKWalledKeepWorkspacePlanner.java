@@ -23,7 +23,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotM
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepCourtyardSettings;
 import net.minecraft.core.Direction;
@@ -132,7 +132,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
             "keep.gate.main"
     );
     private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
-    private final MKTowerStackPlanner towerStackPlanner = new MKTowerStackPlanner();
+    private final MKWorkspaceVerticalStackPlanner towerStackPlanner = new MKWorkspaceVerticalStackPlanner();
     private final MKFloorTopologyPlanner floorTopologyPlanner = new MKFloorTopologyPlanner();
 
     private record ResolvedOpeningProfile(String profileId, int openingWidth, int openingHeight) {
@@ -340,13 +340,13 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
     }
 
     private static void addTowerStackSlots(List<MKWorkspaceSlotSchema> slots, String stackId, String regionId) {
-        for (MKTowerWorkspaceStackSlot slot : MKTowerWorkspaceStackSlot.schemaOrder()) {
+        for (MKWorkspaceVerticalStackSlot slot : MKWorkspaceVerticalStackSlot.schemaOrder()) {
             slots.add(new MKWorkspaceSlotSchema(slot.slotId(stackId), regionId, slot.roleKind(),
                     slot.slotId(stackId), repeatForStackSlot(slot)));
         }
     }
 
-    private static MKWorkspaceSlotSchema.Repeat repeatForStackSlot(MKTowerWorkspaceStackSlot slot) {
+    private static MKWorkspaceSlotSchema.Repeat repeatForStackSlot(MKWorkspaceVerticalStackSlot slot) {
         return switch (slot) {
             case MAIN_FLOOR, BASEMENT_FLOOR -> MKWorkspaceSlotSchema.Repeat.RANGE;
             case TOP_CAP_APPROACH, BASEMENT_CAP_APPROACH -> MKWorkspaceSlotSchema.Repeat.OPTIONAL;
@@ -383,9 +383,9 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
     }
 
     private static void addTowerStackRoles(List<MKWorkspaceRoleSchema> roles, String stackId, Set<String> extraTags) {
-        for (MKTowerWorkspaceStackSlot slot : MKTowerWorkspaceStackSlot.schemaOrder()) {
+        for (MKWorkspaceVerticalStackSlot slot : MKWorkspaceVerticalStackSlot.schemaOrder()) {
             roles.add(towerStackRole(slot.slotId(stackId), slot.roleKind(), slot.pieceKind(), slot.terminal(),
-                    slot == MKTowerWorkspaceStackSlot.ENTRY && stackId.equals("keep.center"), extraTags));
+                    slot == MKWorkspaceVerticalStackSlot.ENTRY && stackId.equals("keep.center"), extraTags));
         }
     }
 
@@ -438,7 +438,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                 .filter(family -> isCenterStackSlot(family.topologySlotId()))
                 .toList();
         MKWorkspaceVerticalStackSettings settings = workspace.topologyProfile().verticalStackSettingsOrDefault("keep.center");
-        MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped("keep.center", true, settings);
+        MKWorkspaceVerticalStackDefinition stackDefinition = MKWorkspaceVerticalStackDefinition.scoped("keep.center", true, settings);
         ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
         return towerStackPlanner.createRoomPieces(workspace, stackDefinition, centerFamilies).stream()
                 .map(piece -> withRoomLayoutConnectors(workspace, piece, slots, opening))
@@ -480,7 +480,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         if (!uniqueCorner) {
             settings = normalizeSharedCornerSettings(settings);
         }
-        MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped(stackId, false, settings);
+        MKWorkspaceVerticalStackDefinition stackDefinition = MKWorkspaceVerticalStackDefinition.scoped(stackId, false, settings);
         ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
         towerStackPlanner.createRoomPieces(workspace, stackDefinition, stackFamilies).stream()
                 .map(piece -> withRoomLayoutConnectors(workspace, piece, slots, opening))
@@ -1767,7 +1767,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
     }
 
     private static boolean isCornerStackSlot(String topologySlotId) {
-        return MKTowerWorkspaceStackSlot.stackIdForTopologySlot(topologySlotId)
+        return MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(topologySlotId)
                 .filter(stackId -> stackId.equals("keep.corner.shared") || CONCRETE_CORNER_SLOTS.contains(stackId))
                 .isPresent();
     }
@@ -1776,7 +1776,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         if ("keep.corner.shared".equals(topologySlotId) || topologySlotId.startsWith("keep.corner.shared.")) {
             return Optional.of("keep.corner.shared");
         }
-        Optional<String> stackSlotId = MKTowerWorkspaceStackSlot.stackIdForTopologySlot(topologySlotId)
+        Optional<String> stackSlotId = MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(topologySlotId)
                 .filter(CONCRETE_CORNER_SLOTS::contains);
         if (stackSlotId.isPresent()) {
             return stackSlotId;

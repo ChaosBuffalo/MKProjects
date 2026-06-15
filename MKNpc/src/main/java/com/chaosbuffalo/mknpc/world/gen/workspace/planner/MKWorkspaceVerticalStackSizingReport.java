@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public record MKTowerStackSizingReport(
+public record MKWorkspaceVerticalStackSizingReport(
         String stackId,
         int width,
         int length,
@@ -49,11 +49,11 @@ public record MKTowerStackSizingReport(
     ) {
     }
 
-    public static MKTowerStackSizingReport fromSettings(MKWorkspaceVerticalStackSettings settings) {
+    public static MKWorkspaceVerticalStackSizingReport fromSettings(MKWorkspaceVerticalStackSettings settings) {
         return fromSettings(settings, List.of());
     }
 
-    public static MKTowerStackSizingReport fromSettings(MKWorkspaceVerticalStackSettings settings,
+    public static MKWorkspaceVerticalStackSizingReport fromSettings(MKWorkspaceVerticalStackSettings settings,
                                                         List<MKWorkspaceRoomFamilyDefinition> families) {
         int upwardPieces = 1 + settings.mainFloors() + 1 +
                 (settings.topCapApproachEnabled() ? 1 : 0);
@@ -71,7 +71,7 @@ public record MKTowerStackSizingReport(
                         settings.basementCapHeight() +
                         (settings.basementCapApproachEnabled() ? settings.basementCapHeight() : 0);
         List<SectionInfo> sections = buildSections(settings, families);
-        return new MKTowerStackSizingReport(
+        return new MKWorkspaceVerticalStackSizingReport(
                 settings.stackId(),
                 settings.width(),
                 settings.length(),
@@ -97,52 +97,52 @@ public record MKTowerStackSizingReport(
 
     private static List<SectionInfo> buildSections(MKWorkspaceVerticalStackSettings settings,
                                                    List<MKWorkspaceRoomFamilyDefinition> families) {
-        Map<MKTowerWorkspaceStackSlot, MKWorkspaceRoomFamilyDefinition> familyBySlot = families.stream()
-                .filter(family -> MKTowerWorkspaceStackSlot.stackIdForTopologySlot(family.topologySlotId())
+        Map<MKWorkspaceVerticalStackSlot, MKWorkspaceRoomFamilyDefinition> familyBySlot = families.stream()
+                .filter(family -> MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(family.topologySlotId())
                         .filter(settings.stackId()::equals)
                         .isPresent())
                 .collect(Collectors.toMap(
-                        family -> MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId()).orElseThrow(),
+                        family -> MKWorkspaceVerticalStackSlot.fromTopologySlotId(family.topologySlotId()).orElseThrow(),
                         family -> family,
                         (first, ignored) -> first
                 ));
         ArrayList<SectionInfo> sections = new ArrayList<>();
         if (settings.basementFloors() > 0) {
             sections.add(section("basement_cap", "Basement Cap", settings.basementCapHeight(),
-                    true, settings, familyBySlot.get(MKTowerWorkspaceStackSlot.BASEMENT_CAP)));
+                    true, settings, familyBySlot.get(MKWorkspaceVerticalStackSlot.BASEMENT_CAP)));
             if (settings.basementCapApproachEnabled()) {
                 sections.add(section("basement_cap_approach", "Basement Cap Approach", settings.basementCapHeight(),
-                        true, settings, familyBySlot.get(MKTowerWorkspaceStackSlot.BASEMENT_CAP_APPROACH)));
+                        true, settings, familyBySlot.get(MKWorkspaceVerticalStackSlot.BASEMENT_CAP_APPROACH)));
             }
             for (int floor = settings.basementFloors(); floor >= 1; floor--) {
                 sections.add(section("basement_floor", "Basement Floor " + floor, settings.basementHeight(),
-                        true, settings, familyBySlot.get(MKTowerWorkspaceStackSlot.BASEMENT_FLOOR)));
+                        true, settings, familyBySlot.get(MKWorkspaceVerticalStackSlot.BASEMENT_FLOOR)));
             }
             if (settings.basementEntryEnabled()) {
                 sections.add(section("basement_entry", "Basement Entry", settings.basementEntryHeight(),
-                        true, settings, familyBySlot.get(MKTowerWorkspaceStackSlot.BASEMENT_ENTRY)));
+                        true, settings, familyBySlot.get(MKWorkspaceVerticalStackSlot.BASEMENT_ENTRY)));
             }
         } else {
             sections.add(section("basement_floor", "Basement Floors", settings.basementHeight(),
-                    false, settings, familyBySlot.get(MKTowerWorkspaceStackSlot.BASEMENT_FLOOR)));
+                    false, settings, familyBySlot.get(MKWorkspaceVerticalStackSlot.BASEMENT_FLOOR)));
         }
         sections.add(section("entry", "Entry", settings.entryHeight(),
-                true, settings, familyBySlot.get(MKTowerWorkspaceStackSlot.ENTRY)));
+                true, settings, familyBySlot.get(MKWorkspaceVerticalStackSlot.ENTRY)));
         if (settings.mainFloors() > 0) {
             for (int floor = 1; floor <= settings.mainFloors(); floor++) {
                 sections.add(section("main_floor", "Main Floor " + floor, settings.mainHeight(),
-                        true, settings, familyBySlot.get(MKTowerWorkspaceStackSlot.MAIN_FLOOR)));
+                        true, settings, familyBySlot.get(MKWorkspaceVerticalStackSlot.MAIN_FLOOR)));
             }
         } else {
             sections.add(section("main_floor", "Main Floors", settings.mainHeight(),
-                    false, settings, familyBySlot.get(MKTowerWorkspaceStackSlot.MAIN_FLOOR)));
+                    false, settings, familyBySlot.get(MKWorkspaceVerticalStackSlot.MAIN_FLOOR)));
         }
         if (settings.topCapApproachEnabled()) {
             sections.add(section("top_cap_approach", "Main Cap Approach", settings.mainCapHeight(),
-                    true, settings, familyBySlot.get(MKTowerWorkspaceStackSlot.TOP_CAP_APPROACH)));
+                    true, settings, familyBySlot.get(MKWorkspaceVerticalStackSlot.TOP_CAP_APPROACH)));
         }
         sections.add(section("top_cap", "Main Cap", settings.mainCapHeight(),
-                true, settings, familyBySlot.get(MKTowerWorkspaceStackSlot.TOP_CAP)));
+                true, settings, familyBySlot.get(MKWorkspaceVerticalStackSlot.TOP_CAP)));
         return List.copyOf(sections);
     }
 
@@ -150,7 +150,7 @@ public record MKTowerStackSizingReport(
                                        boolean active, MKWorkspaceVerticalStackSettings settings,
                                        MKWorkspaceRoomFamilyDefinition family) {
         List<HorizontalExitInfo> exits = family == null ? List.of() : family.horizontalOnlyExits().stream()
-                .map(MKTowerStackSizingReport::horizontalExitInfo)
+                .map(MKWorkspaceVerticalStackSizingReport::horizontalExitInfo)
                 .toList();
         if (exits.isEmpty() && active && "entry".equals(key) && "keep.center".equals(settings.stackId())) {
             exits = List.of(new HorizontalExitInfo("south", "ingress", 0, 0));

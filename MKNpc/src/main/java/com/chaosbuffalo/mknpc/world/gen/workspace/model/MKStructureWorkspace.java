@@ -262,7 +262,7 @@ public class MKStructureWorkspace {
             errors.addAll(topologyProfile.courtyardSettings().validate());
         }
         for (MKWorkspaceVerticalStackSettings settings : topologyProfile.verticalStackSettings()) {
-            errors.addAll(MKWorkspaceTowerStackFloorCounts.validate(settings).stream()
+            errors.addAll(MKWorkspaceVerticalStackFloorCounts.validate(settings).stream()
                     .map(error -> "tower stack " + settings.stackId() + " " + error)
                     .toList());
         }
@@ -467,13 +467,13 @@ public class MKStructureWorkspace {
 
     private String towerStackIdForFamily(String topologySlotId) {
         if (MKWorkspaceTopologyProfile.TOWER_PLANNER_ID.equals(topologyProfile.plannerId())) {
-            return MKTowerWorkspaceStackSlot.stackIdForTopologySlot(topologySlotId)
+            return MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(topologySlotId)
                     .filter(stackId -> stackId.equals("tower.primary") || stackId.equals("tower"))
                     .map(stackId -> "tower.primary")
                     .orElse("");
         }
         if (MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID.equals(topologyProfile.plannerId())) {
-            return MKTowerWorkspaceStackSlot.stackIdForTopologySlot(topologySlotId)
+            return MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(topologySlotId)
                     .filter(stackId -> stackId.equals("keep.center") ||
                             stackId.equals("keep.corner.shared") ||
                             stackId.equals("keep.corner.north_west") ||

@@ -7,7 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class TowerPlannerUiContributor implements WorkspacePlannerUiContributor {
-    private final TowerStackTopologyPanel towerStackPanel = new TowerStackTopologyPanel();
+    private final WorkspaceVerticalStackTopologyPanel towerStackPanel = new WorkspaceVerticalStackTopologyPanel();
 
     @Override
     public ResourceLocation plannerId() {

@@ -5,7 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
@@ -252,15 +252,15 @@ public class MKFloorTopologyPlanner {
 
     private Optional<FloorOpeningContext> contextForRootFamily(MKStructureWorkspace workspace,
                                                                MKWorkspaceRoomFamilyDefinition rootFamily) {
-        Optional<MKTowerWorkspaceStackSlot> slotOpt = MKTowerWorkspaceStackSlot.fromTopologySlotId(rootFamily.topologySlotId());
+        Optional<MKWorkspaceVerticalStackSlot> slotOpt = MKWorkspaceVerticalStackSlot.fromTopologySlotId(rootFamily.topologySlotId());
         if (slotOpt.isEmpty()) {
             return Optional.empty();
         }
-        MKTowerWorkspaceStackSlot slot = slotOpt.get();
+        MKWorkspaceVerticalStackSlot slot = slotOpt.get();
         if (!"floor".equals(slot.roleKind())) {
             return Optional.empty();
         }
-        if (slot == MKTowerWorkspaceStackSlot.ENTRY) {
+        if (slot == MKWorkspaceVerticalStackSlot.ENTRY) {
             return Optional.empty();
         }
         Optional<ResolvedOpeningProfile> mainOpening = rootFamily.horizontalOnlyExits().stream()
@@ -276,7 +276,7 @@ public class MKFloorTopologyPlanner {
         if (mainOpening.isEmpty() && branchOpening.isEmpty()) {
             return Optional.empty();
         }
-        String stackId = MKTowerWorkspaceStackSlot.stackIdForTopologySlot(rootFamily.topologySlotId()).orElse("");
+        String stackId = MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(rootFamily.topologySlotId()).orElse("");
         if (stackId.isBlank()) {
             return Optional.empty();
         }

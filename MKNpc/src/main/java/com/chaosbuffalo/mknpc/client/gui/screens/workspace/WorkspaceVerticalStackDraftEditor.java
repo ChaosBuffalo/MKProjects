@@ -11,20 +11,20 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomGeometry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public final class TowerStackDraftEditor {
+public final class WorkspaceVerticalStackDraftEditor {
     static final String PRIMARY_STACK_ID = "tower.primary";
 
     private final WorkspaceDraftSession session;
     private final String stackId;
 
-    TowerStackDraftEditor(WorkspaceDraftSession session, String stackId) {
+    WorkspaceVerticalStackDraftEditor(WorkspaceDraftSession session, String stackId) {
         this.session = session;
         this.stackId = stackId;
     }
@@ -265,25 +265,25 @@ public final class TowerStackDraftEditor {
     }
 
     public int topCapUpperVoidMargin() {
-        return towerStackFamily(MKTowerWorkspaceStackSlot.TOP_CAP)
+        return towerStackFamily(MKWorkspaceVerticalStackSlot.TOP_CAP)
                 .map(MKWorkspaceRoomFamilyDefinition::topVoidMargin)
                 .orElse(0);
     }
 
     public void topCapUpperVoidMargin(int value) {
         int maxMargin = Math.max(0, settings().mainCapHeight() - MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT);
-        replaceTowerStackFamilyVoidMargins(MKTowerWorkspaceStackSlot.TOP_CAP, clamp(value, 0, maxMargin), 0);
+        replaceTowerStackFamilyVoidMargins(MKWorkspaceVerticalStackSlot.TOP_CAP, clamp(value, 0, maxMargin), 0);
     }
 
     public int bottomCapLowerVoidMargin() {
-        return towerStackFamily(MKTowerWorkspaceStackSlot.BASEMENT_CAP)
+        return towerStackFamily(MKWorkspaceVerticalStackSlot.BASEMENT_CAP)
                 .map(MKWorkspaceRoomFamilyDefinition::bottomVoidMargin)
                 .orElse(0);
     }
 
     public void bottomCapLowerVoidMargin(int value) {
         int maxMargin = Math.max(0, settings().basementCapHeight() - MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT);
-        replaceTowerStackFamilyVoidMargins(MKTowerWorkspaceStackSlot.BASEMENT_CAP, 0, clamp(value, 0, maxMargin));
+        replaceTowerStackFamilyVoidMargins(MKWorkspaceVerticalStackSlot.BASEMENT_CAP, 0, clamp(value, 0, maxMargin));
     }
 
     public MKWorkspaceFoundationPolicy foundationPolicy() {
@@ -339,14 +339,14 @@ public final class TowerStackDraftEditor {
         replace(updated.withMainFloors(normalizedMain).withBasementFloors(normalizedBasement));
     }
 
-    private Optional<MKWorkspaceRoomFamilyDefinition> towerStackFamily(MKTowerWorkspaceStackSlot slot) {
+    private Optional<MKWorkspaceRoomFamilyDefinition> towerStackFamily(MKWorkspaceVerticalStackSlot slot) {
         String slotId = slot.slotId(stackId);
         return session.draft().familyDefinitions.stream()
                 .filter(family -> family.topologySlotId().equals(slotId))
                 .findFirst();
     }
 
-    private void replaceTowerStackFamilyVoidMargins(MKTowerWorkspaceStackSlot slot,
+    private void replaceTowerStackFamilyVoidMargins(MKWorkspaceVerticalStackSlot slot,
                                                     int topVoidMargin, int bottomVoidMargin) {
         String slotId = slot.slotId(stackId);
         Optional<MKWorkspaceRoomFamilyDefinition> source = towerStackFamily(slot)

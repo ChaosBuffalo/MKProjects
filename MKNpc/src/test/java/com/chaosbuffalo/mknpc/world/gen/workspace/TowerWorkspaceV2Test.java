@@ -13,8 +13,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManife
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStackBudget;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackBudget;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
@@ -44,7 +44,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuse
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackFloorCounts;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackFloorCounts;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
@@ -52,8 +52,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVoidMarginTag
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepCourtyardSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerStackDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerStackPlanner;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceVerticalStackDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceVerticalStackPlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingCalculator;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingReport;
@@ -98,7 +98,7 @@ class TowerWorkspaceV2Test {
                 List.of()
         );
 
-        List<String> stackPieceNames = new MKTowerStackPlanner()
+        List<String> stackPieceNames = new MKWorkspaceVerticalStackPlanner()
                 .createRoomPieces(workspace, workspace.familyDefinitions()).stream()
                 .map(MKPlannedPiece::pieceName)
                 .toList();
@@ -123,7 +123,7 @@ class TowerWorkspaceV2Test {
         );
         MKWorkspaceVerticalStackSettings stackSettings = workspace.topologyProfile()
                 .verticalStackSettingsOrDefault("tower.primary");
-        MKTowerStackDefinition stackDefinition = MKTowerStackDefinition.scoped(
+        MKWorkspaceVerticalStackDefinition stackDefinition = MKWorkspaceVerticalStackDefinition.scoped(
                 "keep.center", true, new MKWorkspaceVerticalStackSettings(
                         "keep.center",
                         stackSettings.mainFloors(),
@@ -139,7 +139,7 @@ class TowerWorkspaceV2Test {
                         stackSettings.foundationPolicy(),
                         stackSettings.paletteOverride()));
 
-        List<MKPlannedPiece> pieces = new MKTowerStackPlanner().createRoomPieces(
+        List<MKPlannedPiece> pieces = new MKWorkspaceVerticalStackPlanner().createRoomPieces(
                 workspace, stackDefinition, workspace.familyDefinitions());
 
         MKPlannedPiece entry = pieces.stream()
@@ -528,7 +528,7 @@ class TowerWorkspaceV2Test {
         assertEquals(MKJigsawPieceRole.TOP_CAP,
                 workspace.resolveFamilySettings(mismatchedFamily).slotMetadata().jigsawPieceRole());
         assertEquals("tower.primary.top_cap",
-                new MKTowerStackPlanner().createPieceForFamily(workspace, mismatchedFamily).roleId());
+                new MKWorkspaceVerticalStackPlanner().createPieceForFamily(workspace, mismatchedFamily).roleId());
 
         MKWorkspaceExportManifest.ExportFamilyDefinition exported =
                 MKWorkspaceExportManifest.ExportFamilyDefinition.from(mismatchedFamily);
@@ -606,7 +606,7 @@ class TowerWorkspaceV2Test {
         assertEquals("top_cap", importedFamily.slotMetadata().topologyGroupId());
         assertEquals(MKJigsawPieceRole.TOP_CAP, importedFamily.slotMetadata().jigsawPieceRole());
         assertEquals("tower.primary.top_cap",
-                new MKTowerStackPlanner().createPieceForFamily(imported, importedFamily).roleId());
+                new MKWorkspaceVerticalStackPlanner().createPieceForFamily(imported, importedFamily).roleId());
     }
 
     @Test
@@ -3345,21 +3345,21 @@ class TowerWorkspaceV2Test {
 
     @Test
     void towerStackFloorCountsDefaultCapApproachFlags() {
-        assertTrue(MKWorkspaceTowerStackFloorCounts.DEFAULT_TOP_CAP_APPROACH_ENABLED);
-        assertFalse(MKWorkspaceTowerStackFloorCounts.DEFAULT_BASEMENT_CAP_APPROACH_ENABLED);
+        assertTrue(MKWorkspaceVerticalStackFloorCounts.DEFAULT_TOP_CAP_APPROACH_ENABLED);
+        assertFalse(MKWorkspaceVerticalStackFloorCounts.DEFAULT_BASEMENT_CAP_APPROACH_ENABLED);
     }
 
     @Test
     void floorCountsReflectOptionalCapApproachPieces() {
-        MKTowerStackBudget budget = MKTowerStackBudget.fromDimensions(MKWorkspaceDimensions.defaultDimensions());
+        MKWorkspaceVerticalStackBudget budget = MKWorkspaceVerticalStackBudget.fromDimensions(MKWorkspaceDimensions.defaultDimensions());
 
-        List<Integer> mainWithApproach = MKWorkspaceTowerStackFloorCounts.allowedMainFloorCounts(budget,
+        List<Integer> mainWithApproach = MKWorkspaceVerticalStackFloorCounts.allowedMainFloorCounts(budget,
                 1, true, true, false);
-        List<Integer> mainWithoutApproach = MKWorkspaceTowerStackFloorCounts.allowedMainFloorCounts(budget,
+        List<Integer> mainWithoutApproach = MKWorkspaceVerticalStackFloorCounts.allowedMainFloorCounts(budget,
                 1, false, true, false);
-        List<Integer> basementWithoutApproach = MKWorkspaceTowerStackFloorCounts.allowedBasementFloorCounts(budget,
+        List<Integer> basementWithoutApproach = MKWorkspaceVerticalStackFloorCounts.allowedBasementFloorCounts(budget,
                 1, true, true, false);
-        List<Integer> basementWithApproach = MKWorkspaceTowerStackFloorCounts.allowedBasementFloorCounts(budget,
+        List<Integer> basementWithApproach = MKWorkspaceVerticalStackFloorCounts.allowedBasementFloorCounts(budget,
                 1, true, true, true);
 
         assertTrue(mainWithoutApproach.getLast() >= mainWithApproach.getLast());
@@ -4079,33 +4079,33 @@ class TowerWorkspaceV2Test {
                 4,
                 verticalAccessSpec,
                 List.of(
-                        MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("entry", MKTowerWorkspaceStackSlot.ENTRY,
+                        MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("entry", MKWorkspaceVerticalStackSlot.ENTRY,
                                 "tower.primary", true, 0, 0, 0, MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                                 List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
                                         MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "entry_main")),
                                 0, 0, null, null),
-                        MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("floor_main", MKTowerWorkspaceStackSlot.MAIN_FLOOR,
+                        MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("floor_main", MKWorkspaceVerticalStackSlot.MAIN_FLOOR,
                                 "tower.primary", true, 0, 0, 0, MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                                 List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
                                         MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch")),
                                 0, 0, null, null),
                         MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("top_cap_approach",
-                                MKTowerWorkspaceStackSlot.TOP_CAP_APPROACH, "tower.primary", true, 0, 0, 0,
+                                MKWorkspaceVerticalStackSlot.TOP_CAP_APPROACH, "tower.primary", true, 0, 0, 0,
                                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, List.of(), 0, 0, null, null),
-                        MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("top_cap", MKTowerWorkspaceStackSlot.TOP_CAP,
+                        MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("top_cap", MKWorkspaceVerticalStackSlot.TOP_CAP,
                                 "tower.primary", true, 0, 0, 0, MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                                 List.of(), 0, 0, null, null),
                         MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("basement_entry",
-                                MKTowerWorkspaceStackSlot.BASEMENT_ENTRY, "tower.primary", true, 0, 0, 0,
+                                MKWorkspaceVerticalStackSlot.BASEMENT_ENTRY, "tower.primary", true, 0, 0, 0,
                                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, List.of(), 0, 0, null, null),
                         MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("basement_main",
-                                MKTowerWorkspaceStackSlot.BASEMENT_FLOOR, "tower.primary", true, 0, 0, 0,
+                                MKWorkspaceVerticalStackSlot.BASEMENT_FLOOR, "tower.primary", true, 0, 0, 0,
                                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, List.of(), 0, 0, null, null),
                         MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("basement_cap_approach",
-                                MKTowerWorkspaceStackSlot.BASEMENT_CAP_APPROACH, "tower.primary", true, 0, 0, 0,
+                                MKWorkspaceVerticalStackSlot.BASEMENT_CAP_APPROACH, "tower.primary", true, 0, 0, 0,
                                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, List.of(), 0, 0, null, null),
                         MKWorkspaceRoomFamilyDefinition.forTowerStackSlot("basement_cap",
-                                MKTowerWorkspaceStackSlot.BASEMENT_CAP, "tower.primary", true, 0, 0, 0,
+                                MKWorkspaceVerticalStackSlot.BASEMENT_CAP, "tower.primary", true, 0, 0, 0,
                                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY, List.of(), 0, 0, null, null)
                 ),
                 openingProfiles,

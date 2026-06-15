@@ -1,10 +1,10 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStackBudget;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackBudget;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackFloorCounts;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackFloorCounts;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceSlotSchema;
 
@@ -16,7 +16,7 @@ final class WorkspaceVerticalStackSlotDraftSupport {
     }
 
     static Optional<String> topologyGroupIdForFloorRole(String floorRole) {
-        for (MKTowerWorkspaceStackSlot slot : MKTowerWorkspaceStackSlot.values()) {
+        for (MKWorkspaceVerticalStackSlot slot : MKWorkspaceVerticalStackSlot.values()) {
             if (slot.suffix().equals(floorRole)) {
                 return Optional.of(slot.topologyGroupId());
             }
@@ -25,8 +25,8 @@ final class WorkspaceVerticalStackSlotDraftSupport {
     }
 
     static Optional<String> topologyGroupIdForTopologySlot(String topologySlotId) {
-        Optional<MKTowerWorkspaceStackSlot> slot = MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId);
-        Optional<String> stackId = MKTowerWorkspaceStackSlot.stackIdForTopologySlot(topologySlotId);
+        Optional<MKWorkspaceVerticalStackSlot> slot = MKWorkspaceVerticalStackSlot.fromTopologySlotId(topologySlotId);
+        Optional<String> stackId = MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(topologySlotId);
         if (slot.isEmpty() || stackId.isEmpty()) {
             return Optional.empty();
         }
@@ -34,30 +34,30 @@ final class WorkspaceVerticalStackSlotDraftSupport {
     }
 
     static boolean isTopCapSlot(String topologySlotId) {
-        return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
-                .filter(slot -> slot == MKTowerWorkspaceStackSlot.TOP_CAP)
+        return MKWorkspaceVerticalStackSlot.fromTopologySlotId(topologySlotId)
+                .filter(slot -> slot == MKWorkspaceVerticalStackSlot.TOP_CAP)
                 .isPresent();
     }
 
     static boolean isBasementCapSlot(String topologySlotId) {
-        return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
-                .filter(slot -> slot == MKTowerWorkspaceStackSlot.BASEMENT_CAP)
+        return MKWorkspaceVerticalStackSlot.fromTopologySlotId(topologySlotId)
+                .filter(slot -> slot == MKWorkspaceVerticalStackSlot.BASEMENT_CAP)
                 .isPresent();
     }
 
     static Optional<MKWorkspaceTopologySlotMetadata> topologySlotMetadata(MKWorkspaceSlotSchema slot) {
-        return MKTowerWorkspaceStackSlot.fromTopologySlotId(slot.slotId())
+        return MKWorkspaceVerticalStackSlot.fromTopologySlotId(slot.slotId())
                 .map(ignored -> MKWorkspaceTopologySlotMetadata.fromTopologySlotId(slot.slotId()));
     }
 
     static List<Integer> allowedMainFloorCounts(MKWorkspaceVerticalStackSettings settings, int basementFloors) {
-        return MKWorkspaceTowerStackFloorCounts.allowedMainFloorCounts(MKTowerStackBudget.fromStackSettings(settings),
+        return MKWorkspaceVerticalStackFloorCounts.allowedMainFloorCounts(MKWorkspaceVerticalStackBudget.fromStackSettings(settings),
                 basementFloors, settings.topCapApproachEnabled(), settings.basementEntryEnabled(),
                 settings.basementCapApproachEnabled());
     }
 
     static List<Integer> allowedBasementFloorCounts(MKWorkspaceVerticalStackSettings settings, int mainFloors) {
-        return MKWorkspaceTowerStackFloorCounts.allowedBasementFloorCounts(MKTowerStackBudget.fromStackSettings(settings),
+        return MKWorkspaceVerticalStackFloorCounts.allowedBasementFloorCounts(MKWorkspaceVerticalStackBudget.fromStackSettings(settings),
                 mainFloors, settings.topCapApproachEnabled(), settings.basementEntryEnabled(),
                 settings.basementCapApproachEnabled());
     }

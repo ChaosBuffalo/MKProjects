@@ -191,7 +191,7 @@ public record MKWorkspaceFloorTopologySettings(
 
     public MKWorkspaceFloorTopologySettings {
         stackId = stackId == null || stackId.isBlank() ? "tower.primary" : stackId;
-        floorRole = floorRole == null || floorRole.isBlank() ? MKTowerWorkspaceStackSlot.MAIN_FLOOR.suffix() : floorRole;
+        floorRole = floorRole == null || floorRole.isBlank() ? MKWorkspaceVerticalStackSlot.MAIN_FLOOR.suffix() : floorRole;
         minMainPathPieces = Math.max(0, minMainPathPieces);
         maxMainPathPieces = Math.max(minMainPathPieces, maxMainPathPieces);
         maxBranchPiecesBeforeCap = Math.max(0, Math.min(MAX_BRANCH_PIECES_BEFORE_CAP, maxBranchPiecesBeforeCap));
@@ -283,7 +283,7 @@ public record MKWorkspaceFloorTopologySettings(
     public static List<MKWorkspaceFloorTopologySettings> defaults(List<MKWorkspaceVerticalStackSettings> stackSettings) {
         ArrayList<MKWorkspaceFloorTopologySettings> defaults = new ArrayList<>();
         for (MKWorkspaceVerticalStackSettings settings : stackSettings) {
-            for (MKTowerWorkspaceStackSlot slot : MKTowerWorkspaceStackSlot.familyDefaultOrder()) {
+            for (MKWorkspaceVerticalStackSlot slot : MKWorkspaceVerticalStackSlot.familyDefaultOrder()) {
                 defaults.add(defaults(settings, slot.suffix()));
             }
         }
@@ -553,7 +553,7 @@ public record MKWorkspaceFloorTopologySettings(
     }
 
     private static int heightForFloorRole(MKWorkspaceVerticalStackSettings stackSettings, String floorRole) {
-        MKTowerStackBudget heights = stackSettings.heights();
+        MKWorkspaceVerticalStackBudget heights = stackSettings.heights();
         return switch (floorRole) {
             case "main_floor" -> heights.mainFloorHeight();
             case "basement_floor" -> heights.basementFloorHeight();

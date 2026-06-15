@@ -6,7 +6,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopology
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerStackSizingReport;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceVerticalStackSizingReport;
 import com.chaosbuffalo.mkwidgets.client.gui.instructions.HoveringTextInstruction;
 import com.chaosbuffalo.mkwidgets.client.gui.math.Vec2i;
 import com.chaosbuffalo.mkwidgets.client.gui.screens.IMKScreen;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class MKTowerStackSidePreview extends MKWidget {
+public class MKWorkspaceVerticalStackSidePreview extends MKWidget {
     private static final int MAX_STACK_FOOTPRINT = 45;
     private static final int BACKGROUND = 0x99101010;
     private static final int PANEL = 0x55000000;
@@ -76,7 +76,7 @@ public class MKTowerStackSidePreview extends MKWidget {
     private static final int FLOOR_CAP = 0xCCD18A50;
     private static final int COLLISION = 0xFFFF4D4D;
 
-    private final MKTowerStackSizingReport report;
+    private final MKWorkspaceVerticalStackSizingReport report;
     private final String selectedKey;
     private final Consumer<String> selectionCallback;
     private final Consumer<String> floorPlanCallback;
@@ -84,13 +84,13 @@ public class MKTowerStackSidePreview extends MKWidget {
     private final boolean showStackSizingControls;
     private String draggingSlider = "";
 
-    public MKTowerStackSidePreview(int width, int height, MKTowerStackSizingReport report,
+    public MKWorkspaceVerticalStackSidePreview(int width, int height, MKWorkspaceVerticalStackSizingReport report,
                                    String selectedKey, Consumer<String> selectionCallback,
                                    Consumer<String> floorPlanCallback, Controls controls) {
         this(width, height, report, selectedKey, selectionCallback, floorPlanCallback, controls, true);
     }
 
-    public MKTowerStackSidePreview(int width, int height, MKTowerStackSizingReport report,
+    public MKWorkspaceVerticalStackSidePreview(int width, int height, MKWorkspaceVerticalStackSizingReport report,
                                    String selectedKey, Consumer<String> selectionCallback,
                                    Consumer<String> floorPlanCallback, Controls controls,
                                    boolean showStackSizingControls) {
@@ -121,11 +121,11 @@ public class MKTowerStackSidePreview extends MKWidget {
         if (handleGlobalControlPress(mouseX, mouseY, mouseButton)) {
             return true;
         }
-        Optional<MKTowerStackSizingReport.SectionInfo> selected = selectedSection();
+        Optional<MKWorkspaceVerticalStackSizingReport.SectionInfo> selected = selectedSection();
         if (selected.isPresent() && handleControlPress(selected.get(), mouseX, mouseY, mouseButton)) {
             return true;
         }
-        Optional<MKTowerStackSizingReport.SectionInfo> hovered = hoveredSection(getX(), getY(), getWidth(),
+        Optional<MKWorkspaceVerticalStackSizingReport.SectionInfo> hovered = hoveredSection(getX(), getY(), getWidth(),
                 getHeight(), (int) mouseX, (int) mouseY);
         if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT && hovered.isPresent() &&
                 controls.hasFloorTopology(hovered.get().key())) {
@@ -201,7 +201,7 @@ public class MKTowerStackSidePreview extends MKWidget {
     }
 
     private Optional<String> hoveredFloorPlanTooltip(int x, int y, int width, int height, int mouseX, int mouseY) {
-        Optional<MKTowerStackSizingReport.SectionInfo> sectionOpt = selectedSection()
+        Optional<MKWorkspaceVerticalStackSizingReport.SectionInfo> sectionOpt = selectedSection()
                 .filter(section -> controls.hasFloorTopology(section.key()));
         if (sectionOpt.isEmpty()) {
             return Optional.empty();
@@ -220,7 +220,7 @@ public class MKTowerStackSidePreview extends MKWidget {
     }
 
     private boolean handleFloorPlanPress(double mouseX, double mouseY) {
-        Optional<MKTowerStackSizingReport.SectionInfo> sectionOpt = selectedSection()
+        Optional<MKWorkspaceVerticalStackSizingReport.SectionInfo> sectionOpt = selectedSection()
                 .filter(section -> controls.hasFloorTopology(section.key()));
         if (sectionOpt.isEmpty()) {
             return false;
@@ -246,9 +246,9 @@ public class MKTowerStackSidePreview extends MKWidget {
         Minecraft mc = Minecraft.getInstance();
         graphics.drawCenteredString(mc.font, Component.literal("Scale " + heightPreviewBlocks(totalBlocks)),
                 stackBounds.left() + stackBounds.width() / 2, stackBounds.top() + 3, MUTED_TEXT);
-        List<MKTowerStackSizingReport.SectionInfo> sections = report.sections();
+        List<MKWorkspaceVerticalStackSizingReport.SectionInfo> sections = report.sections();
         for (int index = 0; index < sections.size(); index++) {
-            MKTowerStackSizingReport.SectionInfo section = sections.get(index);
+            MKWorkspaceVerticalStackSizingReport.SectionInfo section = sections.get(index);
             int sectionHeight = scaledSectionHeight(section, index, sections, stackBounds.top(),
                     stackBounds.bottom(), totalBlocks, cursor);
             cursor = drawSection(graphics, stackBounds.left(), stackBounds.width(), cursor, sectionHeight,
@@ -347,7 +347,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         graphics.drawString(mc.font, report.width() + "x" + report.length() + "  span " +
                 report.maxVerticalSpan(), controlX, y + 22, MUTED_TEXT, false);
 
-        MKTowerStackSizingReport.SectionInfo section = selectedSection().orElseGet(() -> report.sections().getFirst());
+        MKWorkspaceVerticalStackSizingReport.SectionInfo section = selectedSection().orElseGet(() -> report.sections().getFirst());
         drawToggleControls(graphics, mc, x, y, width, height, mouseX, mouseY);
         int globalY = y + GLOBAL_CONTROL_START_OFFSET;
         int shaftY = globalY;
@@ -388,7 +388,7 @@ public class MKTowerStackSidePreview extends MKWidget {
     }
 
     private void drawFloorTopologyControls(GuiGraphics graphics, Minecraft mc,
-                                           MKTowerStackSizingReport.SectionInfo section,
+                                           MKWorkspaceVerticalStackSizingReport.SectionInfo section,
                                            int x, int y, int width, int mouseX, int mouseY) {
         graphics.drawString(mc.font, "Floor Paths", x, y + 3, TEXT, false);
         drawSlider(graphics, mc, "Min Main", controls.floorMinMainPathPieces(section.key()), 0, 10,
@@ -435,7 +435,7 @@ public class MKTowerStackSidePreview extends MKWidget {
     }
 
     private void drawFloorTopologyPreview(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height,
-                                          MKTowerStackSizingReport.SectionInfo section, int mouseX, int mouseY) {
+                                          MKWorkspaceVerticalStackSizingReport.SectionInfo section, int mouseX, int mouseY) {
         ButtonBounds panel = floorPlanBounds(x, y, width, height);
         int panelX = panel.x();
         int panelY = panel.y();
@@ -482,7 +482,7 @@ public class MKTowerStackSidePreview extends MKWidget {
                 panelX + 5, panelY + panelHeight - 13, MUTED_TEXT, false);
     }
 
-    private List<FloorPlanSegment> floorPlanSegments(ButtonBounds panel, MKTowerStackSizingReport.SectionInfo section) {
+    private List<FloorPlanSegment> floorPlanSegments(ButtonBounds panel, MKWorkspaceVerticalStackSizingReport.SectionInfo section) {
         ArrayList<FloorPlanSegment> segments = new ArrayList<>();
         int centerX = panel.x() + panel.width() / 2;
         int centerY = panel.y() + panel.height() / 2;
@@ -506,7 +506,7 @@ public class MKTowerStackSidePreview extends MKWidget {
     }
 
     private void addExitPlanSegments(List<FloorPlanSegment> segments, ButtonBounds panel, ButtonBounds root,
-                                     MKTowerStackSizingReport.SectionInfo section,
+                                     MKWorkspaceVerticalStackSizingReport.SectionInfo section,
                                      MKWorkspaceFamilyHorizontalExitDefinition exit, float scale) {
         boolean main = exit.pathKind().usesMainPath();
         int roomCount = main ? controls.floorMaxMainPathPieces(section.key()) :
@@ -625,7 +625,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         return Optional.of(new ButtonBounds(left, top, right - left, bottom - top));
     }
 
-    private List<FloorPlanSegment> collidingFloorPlanSegments(MKTowerStackSizingReport.SectionInfo section,
+    private List<FloorPlanSegment> collidingFloorPlanSegments(MKWorkspaceVerticalStackSizingReport.SectionInfo section,
                                                               List<FloorPlanSegment> segments) {
         List<FloorPlanSegment> rooms = segments.stream()
                 .filter(segment -> segment.color() == FLOOR_ROOM || segment.color() == FLOOR_CAP)
@@ -751,7 +751,7 @@ public class MKTowerStackSidePreview extends MKWidget {
                 bounds.width() - 4), bounds.x() + 2, bounds.y() + 3, TEXT, false);
     }
 
-    private void drawExitEditor(GuiGraphics graphics, Minecraft mc, MKTowerStackSizingReport.SectionInfo section,
+    private void drawExitEditor(GuiGraphics graphics, Minecraft mc, MKWorkspaceVerticalStackSizingReport.SectionInfo section,
                                 ControlLayout layout, int mouseX, int mouseY) {
         ExitLayout exitLayout = exitLayout(section, layout);
         graphics.drawString(mc.font, "Vertical Access", layout.controlX(), exitLayout.maskY() - 11, TEXT, false);
@@ -806,7 +806,7 @@ public class MKTowerStackSidePreview extends MKWidget {
                 disabled ? MUTED_TEXT : TEXT, false);
     }
 
-    private void drawExitMask(GuiGraphics graphics, Minecraft mc, MKTowerStackSizingReport.SectionInfo section,
+    private void drawExitMask(GuiGraphics graphics, Minecraft mc, MKWorkspaceVerticalStackSizingReport.SectionInfo section,
                               int x, int y, int mouseX, int mouseY) {
         drawVerticalExitButton(graphics, mc, section, Direction.UP, x, y, x, y, mouseX, mouseY);
         drawVerticalExitButton(graphics, mc, section, Direction.DOWN, x, y,
@@ -842,7 +842,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         graphics.drawString(mc.font, label, x + 4, y + 2, TEXT, false);
     }
 
-    private boolean handleControlPress(MKTowerStackSizingReport.SectionInfo section, double mouseX, double mouseY,
+    private boolean handleControlPress(MKWorkspaceVerticalStackSizingReport.SectionInfo section, double mouseX, double mouseY,
                                        int mouseButton) {
         ControlLayout layout = controlLayout(getX(), getY(), getWidth(), getHeight());
         int cursorY = layout.controlY() + REGION_FIRST_CONTROL_OFFSET;
@@ -881,7 +881,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         return false;
     }
 
-    private boolean handleFloorTopologyControlPress(MKTowerStackSizingReport.SectionInfo section,
+    private boolean handleFloorTopologyControlPress(MKWorkspaceVerticalStackSizingReport.SectionInfo section,
                                                     int x, int y, int width,
                                                     double mouseX, double mouseY, int mouseButton) {
         if (isInSlider(mouseX, mouseY, sliderBounds(x, y + 14, width, "floorMinMain"))) {
@@ -957,7 +957,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         return false;
     }
 
-    private boolean handleExitEditorPress(MKTowerStackSizingReport.SectionInfo section, ControlLayout layout,
+    private boolean handleExitEditorPress(MKWorkspaceVerticalStackSizingReport.SectionInfo section, ControlLayout layout,
                                           double mouseX, double mouseY, int mouseButton) {
         ExitLayout exitLayout = exitLayout(section, layout);
         Direction direction = hitExitDirection(exitLayout.maskX(), exitLayout.maskY(), (int) mouseX, (int) mouseY);
@@ -1033,7 +1033,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         return false;
     }
 
-    private boolean handleCounterPress(MKTowerStackSizingReport.SectionInfo section, CounterBounds bounds,
+    private boolean handleCounterPress(MKWorkspaceVerticalStackSizingReport.SectionInfo section, CounterBounds bounds,
                                        double mouseX, double mouseY, String id) {
         if (isInButton(mouseX, mouseY, bounds.minusX(), bounds.buttonY())) {
             if ("max".equals(id)) {
@@ -1054,7 +1054,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         return false;
     }
 
-    private void applySliderValue(MKTowerStackSizingReport.SectionInfo section, String slider, double mouseX) {
+    private void applySliderValue(MKWorkspaceVerticalStackSizingReport.SectionInfo section, String slider, double mouseX) {
         if ("stackWidth".equals(slider) || "stackLength".equals(slider) || "shaftSize".equals(slider)) {
             applyGlobalSliderValue(slider, mouseX);
             return;
@@ -1152,7 +1152,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         };
     }
 
-    private int marginSliderY(MKTowerStackSizingReport.SectionInfo section, ControlLayout layout) {
+    private int marginSliderY(MKWorkspaceVerticalStackSizingReport.SectionInfo section, ControlLayout layout) {
         int y = layout.controlY() + REGION_FIRST_CONTROL_OFFSET + 22;
         if (controls.hasFloorCounts(section.key())) {
             y += 18;
@@ -1175,7 +1175,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         };
     }
 
-    private int floorTopologyControlY(MKTowerStackSizingReport.SectionInfo section, ControlLayout layout) {
+    private int floorTopologyControlY(MKWorkspaceVerticalStackSizingReport.SectionInfo section, ControlLayout layout) {
         int y = layout.controlY() + REGION_FIRST_CONTROL_OFFSET + 22;
         if (controls.hasFloorCounts(section.key())) {
             y += 18;
@@ -1205,15 +1205,15 @@ public class MKTowerStackSidePreview extends MKWidget {
                 .orElse(controls.shaftSize());
     }
 
-    private Optional<MKTowerStackSizingReport.SectionInfo> hoveredSection(int x, int y, int width,
+    private Optional<MKWorkspaceVerticalStackSizingReport.SectionInfo> hoveredSection(int x, int y, int width,
                                                                          int height, int mouseX,
                                                                          int mouseY) {
         StackBounds stackBounds = stackBounds(x, y, width, height);
         int totalBlocks = Math.max(1, report.sections().stream().mapToInt(this::displayHeight).sum());
         int cursor = stackBounds.bottom();
-        List<MKTowerStackSizingReport.SectionInfo> sections = report.sections();
+        List<MKWorkspaceVerticalStackSizingReport.SectionInfo> sections = report.sections();
         for (int index = 0; index < sections.size(); index++) {
-            MKTowerStackSizingReport.SectionInfo section = sections.get(index);
+            MKWorkspaceVerticalStackSizingReport.SectionInfo section = sections.get(index);
             int sectionHeight = scaledSectionHeight(section, index, sections, stackBounds.top(), stackBounds.bottom(),
                     totalBlocks, cursor);
             int top = cursor - sectionHeight;
@@ -1242,9 +1242,9 @@ public class MKTowerStackSidePreview extends MKWidget {
     private int groundLineY(StackBounds stackBounds) {
         int totalBlocks = Math.max(1, report.sections().stream().mapToInt(this::displayHeight).sum());
         int cursor = stackBounds.bottom();
-        List<MKTowerStackSizingReport.SectionInfo> sections = report.sections();
+        List<MKWorkspaceVerticalStackSizingReport.SectionInfo> sections = report.sections();
         for (int index = 0; index < sections.size(); index++) {
-            MKTowerStackSizingReport.SectionInfo section = sections.get(index);
+            MKWorkspaceVerticalStackSizingReport.SectionInfo section = sections.get(index);
             int sectionHeight = scaledSectionHeight(section, index, sections, stackBounds.top(), stackBounds.bottom(),
                     totalBlocks, cursor);
             if ("entry".equals(section.key())) {
@@ -1266,7 +1266,7 @@ public class MKTowerStackSidePreview extends MKWidget {
     }
 
     private int drawSection(GuiGraphics graphics, int left, int width, int cursor, int height, int color,
-                            int mouseX, int mouseY, MKTowerStackSizingReport.SectionInfo section) {
+                            int mouseX, int mouseY, MKWorkspaceVerticalStackSizingReport.SectionInfo section) {
         int top = cursor - height;
         graphics.fill(left, top, left + width, cursor - 1, color);
         graphics.fill(left, top, left + width, top + 1, 0xAA000000);
@@ -1379,7 +1379,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         }
     }
 
-    private void drawExitMarkers(GuiGraphics graphics, MKTowerStackSizingReport.SectionInfo section,
+    private void drawExitMarkers(GuiGraphics graphics, MKWorkspaceVerticalStackSizingReport.SectionInfo section,
                                  int sectionLeft, int top, int sectionWidth, int sectionHeight) {
         for (MKWorkspaceFamilyHorizontalExitDefinition exit : controls.exits(section.key())) {
             if (exit.direction().getAxis().isVertical()) {
@@ -1413,7 +1413,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         graphics.fill(x, y - 1, x + 1, y + 2, EXIT_MARKER);
     }
 
-    private void drawExitArm(GuiGraphics graphics, MKTowerStackSizingReport.SectionInfo section, Direction direction,
+    private void drawExitArm(GuiGraphics graphics, MKWorkspaceVerticalStackSizingReport.SectionInfo section, Direction direction,
                              int roomLeft, int roomTop, int roomRight, int roomBottom, int centerX, int centerY,
                              int mouseX, int mouseY) {
         int color = exitColor(section, direction);
@@ -1435,7 +1435,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         }
     }
 
-    private void drawVerticalExitButton(GuiGraphics graphics, Minecraft mc, MKTowerStackSizingReport.SectionInfo section,
+    private void drawVerticalExitButton(GuiGraphics graphics, Minecraft mc, MKWorkspaceVerticalStackSizingReport.SectionInfo section,
                                         Direction direction, int maskX, int maskY, int x, int y, int mouseX,
                                         int mouseY) {
         int color = exitColor(section, direction);
@@ -1449,7 +1449,7 @@ public class MKTowerStackSidePreview extends MKWidget {
                         TEXT : MUTED_TEXT);
     }
 
-    private void drawExitLabel(GuiGraphics graphics, Minecraft mc, MKTowerStackSizingReport.SectionInfo section,
+    private void drawExitLabel(GuiGraphics graphics, Minecraft mc, MKWorkspaceVerticalStackSizingReport.SectionInfo section,
                                Direction direction, int x, int y) {
         Optional<MKWorkspaceFamilyHorizontalExitDefinition> exit = exitForDirection(section.key(), direction);
         String label = direction.getName().substring(0, 1).toUpperCase();
@@ -1470,7 +1470,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         graphics.drawCenteredString(mc.font, Component.literal(label), x, y, color);
     }
 
-    private int exitColor(MKTowerStackSizingReport.SectionInfo section, Direction direction) {
+    private int exitColor(MKWorkspaceVerticalStackSizingReport.SectionInfo section, Direction direction) {
         Optional<MKWorkspaceFamilyHorizontalExitDefinition> exit = exitForDirection(section.key(), direction);
         if (exit.isEmpty()) {
             return EXIT_INACTIVE;
@@ -1500,7 +1500,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         return null;
     }
 
-    private ExitLayout exitLayout(MKTowerStackSizingReport.SectionInfo section, ControlLayout layout) {
+    private ExitLayout exitLayout(MKWorkspaceVerticalStackSizingReport.SectionInfo section, ControlLayout layout) {
         int maskY = layout.controlY() + 118;
         if (controls.hasFloorCounts(section.key()) && controls.maxFloors(section.key()) > 0) {
             maskY += 18;
@@ -1528,11 +1528,11 @@ public class MKTowerStackSidePreview extends MKWidget {
     }
 
     private Optional<String> hoveredExitTooltip(int x, int y, int width, int height, int mouseX, int mouseY) {
-        Optional<MKTowerStackSizingReport.SectionInfo> sectionOpt = selectedSection();
+        Optional<MKWorkspaceVerticalStackSizingReport.SectionInfo> sectionOpt = selectedSection();
         if (sectionOpt.isEmpty()) {
             return Optional.empty();
         }
-        MKTowerStackSizingReport.SectionInfo section = sectionOpt.get();
+        MKWorkspaceVerticalStackSizingReport.SectionInfo section = sectionOpt.get();
         ControlLayout layout = controlLayout(x, y, width, height);
         ExitLayout exitLayout = exitLayout(section, layout);
         Direction direction = hitExitDirection(exitLayout.maskX(), exitLayout.maskY(), mouseX, mouseY);
@@ -1567,7 +1567,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         return Optional.empty();
     }
 
-    private String exitDirectionTooltip(MKTowerStackSizingReport.SectionInfo section, Direction direction) {
+    private String exitDirectionTooltip(MKWorkspaceVerticalStackSizingReport.SectionInfo section, Direction direction) {
         Optional<MKWorkspaceFamilyHorizontalExitDefinition> exit = exitForDirection(section.key(), direction);
         String label = direction.getAxis().isVertical() ?
                 (direction == Direction.UP ? "Top" : "Bottom") : formatDirection(direction);
@@ -1577,7 +1577,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         return label + "\n" + fullExitValue(section, exit.get());
     }
 
-    private String exitButtonTooltip(MKTowerStackSizingReport.SectionInfo section,
+    private String exitButtonTooltip(MKWorkspaceVerticalStackSizingReport.SectionInfo section,
                                      MKWorkspaceFamilyHorizontalExitDefinition exit, String id) {
         String locked = controls.exitRequired(section.key(), exit.direction()) ? "\nRequired topological exit" : "";
         return switch (id) {
@@ -1590,7 +1590,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         };
     }
 
-    private String fullExitValue(MKTowerStackSizingReport.SectionInfo section,
+    private String fullExitValue(MKWorkspaceVerticalStackSizingReport.SectionInfo section,
                                  MKWorkspaceFamilyHorizontalExitDefinition exit) {
         if (exit.isVerticalAccess()) {
             return "Vertical access" +
@@ -1630,8 +1630,8 @@ public class MKTowerStackSidePreview extends MKWidget {
         return trimmed + ellipsis;
     }
 
-    private int scaledSectionHeight(MKTowerStackSizingReport.SectionInfo section, int index,
-                                    List<MKTowerStackSizingReport.SectionInfo> sections, int stackTop,
+    private int scaledSectionHeight(MKWorkspaceVerticalStackSizingReport.SectionInfo section, int index,
+                                    List<MKWorkspaceVerticalStackSizingReport.SectionInfo> sections, int stackTop,
                                     int stackBottom, int totalBlocks, int cursor) {
         int availableHeight = Math.max(1, stackBottom - stackTop);
         int previewBlocks = heightPreviewBlocks(totalBlocks);
@@ -1639,7 +1639,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         return Math.min(Math.max(0, cursor - stackTop), Math.max(section.active() ? 2 : 4, scaled));
     }
 
-    private int displayHeight(MKTowerStackSizingReport.SectionInfo section) {
+    private int displayHeight(MKWorkspaceVerticalStackSizingReport.SectionInfo section) {
         return section.active() ? section.height() : 1;
     }
 
@@ -1653,7 +1653,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         return MAX_HEIGHT_PREVIEW_BLOCKS;
     }
 
-    private Optional<MKTowerStackSizingReport.SectionInfo> selectedSection() {
+    private Optional<MKWorkspaceVerticalStackSizingReport.SectionInfo> selectedSection() {
         return report.sections().stream()
                 .filter(section -> section.key().equals(selectedKey))
                 .findFirst();
@@ -1672,7 +1672,7 @@ public class MKTowerStackSidePreview extends MKWidget {
         };
     }
 
-    private String tooltip(MKTowerStackSizingReport.SectionInfo section) {
+    private String tooltip(MKWorkspaceVerticalStackSizingReport.SectionInfo section) {
         String tooltip = section.label() + "\nheight " + section.height();
         if (!section.active()) {
             tooltip += "\nmax floors 0";

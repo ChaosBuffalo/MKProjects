@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-public record MKTowerStackBudget(
+public record MKWorkspaceVerticalStackBudget(
         int entryHeight,
         int mainFloorHeight,
         int basementFloorHeight,
@@ -11,16 +11,16 @@ public record MKTowerStackBudget(
         int topCapHeight,
         int basementCapHeight
 ) {
-    public static final Codec<MKTowerStackBudget> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.INT.optionalFieldOf("entry_height", 7).forGetter(MKTowerStackBudget::entryHeight),
-            Codec.INT.optionalFieldOf("main_height", 7).forGetter(MKTowerStackBudget::mainFloorHeight),
-            Codec.INT.optionalFieldOf("basement_height", 7).forGetter(MKTowerStackBudget::basementFloorHeight),
-            Codec.INT.optionalFieldOf("basement_entry_height", 7).forGetter(MKTowerStackBudget::basementEntryHeight),
-            Codec.INT.optionalFieldOf("main_cap_height", 7).forGetter(MKTowerStackBudget::topCapHeight),
-            Codec.INT.optionalFieldOf("basement_cap_height", 7).forGetter(MKTowerStackBudget::basementCapHeight)
-    ).apply(instance, MKTowerStackBudget::new));
+    public static final Codec<MKWorkspaceVerticalStackBudget> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.INT.optionalFieldOf("entry_height", 7).forGetter(MKWorkspaceVerticalStackBudget::entryHeight),
+            Codec.INT.optionalFieldOf("main_height", 7).forGetter(MKWorkspaceVerticalStackBudget::mainFloorHeight),
+            Codec.INT.optionalFieldOf("basement_height", 7).forGetter(MKWorkspaceVerticalStackBudget::basementFloorHeight),
+            Codec.INT.optionalFieldOf("basement_entry_height", 7).forGetter(MKWorkspaceVerticalStackBudget::basementEntryHeight),
+            Codec.INT.optionalFieldOf("main_cap_height", 7).forGetter(MKWorkspaceVerticalStackBudget::topCapHeight),
+            Codec.INT.optionalFieldOf("basement_cap_height", 7).forGetter(MKWorkspaceVerticalStackBudget::basementCapHeight)
+    ).apply(instance, MKWorkspaceVerticalStackBudget::new));
 
-    public MKTowerStackBudget {
+    public MKWorkspaceVerticalStackBudget {
         entryHeight = Math.max(MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT, entryHeight);
         mainFloorHeight = Math.max(MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT, mainFloorHeight);
         basementFloorHeight = Math.max(MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT, basementFloorHeight);
@@ -29,16 +29,16 @@ public record MKTowerStackBudget(
         basementCapHeight = Math.max(MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT, basementCapHeight);
     }
 
-    public static MKTowerStackBudget uniform(int height) {
-        return new MKTowerStackBudget(height, height, height, height, height, height);
+    public static MKWorkspaceVerticalStackBudget uniform(int height) {
+        return new MKWorkspaceVerticalStackBudget(height, height, height, height, height, height);
     }
 
-    public static MKTowerStackBudget fromStackSettings(MKWorkspaceVerticalStackSettings settings) {
+    public static MKWorkspaceVerticalStackBudget fromStackSettings(MKWorkspaceVerticalStackSettings settings) {
         return settings.heights();
     }
 
-    public static MKTowerStackBudget fromDimensions(MKWorkspaceDimensions dimensions) {
-        return new MKTowerStackBudget(
+    public static MKWorkspaceVerticalStackBudget fromDimensions(MKWorkspaceDimensions dimensions) {
+        return new MKWorkspaceVerticalStackBudget(
                 dimensions.entranceHeight(),
                 dimensions.roomHeight(),
                 dimensions.basementHeight(),
@@ -55,7 +55,7 @@ public record MKTowerStackBudget(
     }
 
     public int heightForTopologySlot(String topologySlotId) {
-        return MKTowerWorkspaceStackSlot.fromTopologySlotId(topologySlotId)
+        return MKWorkspaceVerticalStackSlot.fromTopologySlotId(topologySlotId)
                 .map(this::heightForStackSlot)
                 .orElseGet(() -> heightForTopologyGroup(
                         MKWorkspaceTopologySlotMetadata.fromTopologySlotId(topologySlotId).topologyGroupId()));
@@ -72,7 +72,7 @@ public record MKTowerStackBudget(
         };
     }
 
-    private int heightForStackSlot(MKTowerWorkspaceStackSlot slot) {
+    private int heightForStackSlot(MKWorkspaceVerticalStackSlot slot) {
         return switch (slot) {
             case ENTRY -> entryHeight;
             case MAIN_FLOOR -> mainFloorHeight;

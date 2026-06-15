@@ -38,13 +38,13 @@ public final class MKWorkspacePaletteResolver {
 
     public MKWorkspaceMaterialPalette resolveFloorTopologyForFamily(MKStructureWorkspace workspace,
                                                                     MKWorkspaceRoomFamilyDefinition family) {
-        Optional<MKTowerWorkspaceStackSlot> slot = MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId());
+        Optional<MKWorkspaceVerticalStackSlot> slot = MKWorkspaceVerticalStackSlot.fromTopologySlotId(family.topologySlotId());
         if (slot.isEmpty()) {
             return resolveFamily(workspace, family);
         }
         String stackId = workspace.verticalStackSettingsForFamily(family)
                 .map(MKWorkspaceVerticalStackSettings::stackId)
-                .orElseGet(() -> MKTowerWorkspaceStackSlot.stackIdForTopologySlot(family.topologySlotId()).orElse(""));
+                .orElseGet(() -> MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(family.topologySlotId()).orElse(""));
         if (stackId.isBlank()) {
             return resolveFamily(workspace, family);
         }

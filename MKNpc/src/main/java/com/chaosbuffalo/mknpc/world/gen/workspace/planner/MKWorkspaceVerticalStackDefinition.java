@@ -4,7 +4,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacemen
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 
-public record MKTowerStackDefinition(
+public record MKWorkspaceVerticalStackDefinition(
         String stackId,
         int minMainFloors,
         int mainFloors,
@@ -24,12 +24,12 @@ public record MKTowerStackDefinition(
         String bottomCapPool,
         boolean useFamilyTopologyRole
 ) {
-    public MKTowerStackDefinition {
+    public MKWorkspaceVerticalStackDefinition {
         stackId = stackId == null ? "" : stackId;
     }
 
-    public static MKTowerStackDefinition towerPrimary(MKWorkspaceVerticalStackSettings stackSettings) {
-        return new MKTowerStackDefinition(
+    public static MKWorkspaceVerticalStackDefinition towerPrimary(MKWorkspaceVerticalStackSettings stackSettings) {
+        return new MKWorkspaceVerticalStackDefinition(
                 stackSettings.stackId(),
                 stackSettings.minMainFloors(),
                 stackSettings.mainFloors(),
@@ -51,10 +51,10 @@ public record MKTowerStackDefinition(
         );
     }
 
-    public static MKTowerStackDefinition scoped(String stackId, boolean startPiece,
+    public static MKWorkspaceVerticalStackDefinition scoped(String stackId, boolean startPiece,
                                                 MKWorkspaceVerticalStackSettings stackSettings) {
         String prefix = "tower_stacks/" + stackId.replace('.', '/');
-        return new MKTowerStackDefinition(
+        return new MKWorkspaceVerticalStackDefinition(
                 stackId,
                 stackSettings.minMainFloors(),
                 stackSettings.mainFloors(),
