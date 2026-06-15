@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
@@ -30,147 +31,157 @@ public final class FloorPlanDraftEditor {
     }
 
     public MKWorkspaceMaterialPalette inheritedPalette() {
-        return session.floorTopologyInheritedPalette(stackId, floorRole);
+        return session.resolveTowerStackPalette(stackId);
     }
 
     public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {
-        return session.floorTopologyPaletteOverrideOpt(stackId, floorRole);
+        return settings().paletteOverride();
     }
 
     public void paletteOverride(Optional<MKWorkspacePaletteOverride> value) {
-        session.floorTopologyPaletteOverride(stackId, floorRole, value);
+        replace(settings().withPaletteOverride(value));
     }
 
     public int minMainPathPieces() {
-        return session.floorTopologyMinMainPathPieces(stackId, floorRole);
+        return settings().minMainPathPieces();
     }
 
     public void minMainPathPieces(int value) {
-        session.floorTopologyMinMainPathPieces(stackId, floorRole, value);
+        replace(settings().withMinMainPathPieces(value));
     }
 
     public int maxMainPathPieces() {
-        return session.floorTopologyMaxMainPathPieces(stackId, floorRole);
+        return settings().maxMainPathPieces();
     }
 
     public void maxMainPathPieces(int value) {
-        session.floorTopologyMaxMainPathPieces(stackId, floorRole, value);
+        replace(settings().withMaxMainPathPieces(value));
     }
 
     public int maxBranchPiecesBeforeCap() {
-        return session.floorTopologyMaxBranchPiecesBeforeCap(stackId, floorRole);
+        return settings().maxBranchPiecesBeforeCap();
     }
 
     public void maxBranchPiecesBeforeCap(int value) {
-        session.floorTopologyMaxBranchPiecesBeforeCap(stackId, floorRole, value);
+        replace(settings().withMaxBranchPiecesBeforeCap(value));
     }
 
     public MKWorkspaceHallwayLeadInMode hallwayLeadInMode() {
-        return session.floorTopologyHallwayLeadInMode(stackId, floorRole);
+        return settings().hallwayLeadInMode();
     }
 
     public void hallwayLeadInMode(MKWorkspaceHallwayLeadInMode value) {
-        session.floorTopologyHallwayLeadInMode(stackId, floorRole, value);
+        replace(settings().withHallwayLeadInMode(value));
     }
 
     public int manualHallwayLeadInPieces() {
-        return session.floorTopologyManualHallwayLeadInPieces(stackId, floorRole);
+        return settings().manualHallwayLeadInPieces();
     }
 
     public void manualHallwayLeadInPieces(int value) {
-        session.floorTopologyManualHallwayLeadInPieces(stackId, floorRole, value);
+        replace(settings().withManualHallwayLeadInPieces(value));
     }
 
     public boolean mainHallwaysEnabled() {
-        return session.floorTopologyMainHallwaysEnabled(stackId, floorRole);
+        return settings().mainHallwaysEnabled();
     }
 
     public void mainHallwaysEnabled(boolean value) {
-        session.floorTopologyMainHallwaysEnabled(stackId, floorRole, value);
+        replace(settings().withMainHallwaysEnabled(value));
     }
 
     public boolean branchHallwaysEnabled() {
-        return session.floorTopologyBranchHallwaysEnabled(stackId, floorRole);
+        return settings().branchHallwaysEnabled();
     }
 
     public void branchHallwaysEnabled(boolean value) {
-        session.floorTopologyBranchHallwaysEnabled(stackId, floorRole, value);
+        replace(settings().withBranchHallwaysEnabled(value));
     }
 
     public boolean mainCapApproachEnabled() {
-        return session.floorTopologyMainCapApproachEnabled(stackId, floorRole);
+        return settings().mainCapApproachEnabled();
     }
 
     public void mainCapApproachEnabled(boolean value) {
-        session.floorTopologyMainCapApproachEnabled(stackId, floorRole, value);
+        replace(settings().withMainCapApproachEnabled(value));
     }
 
     public float sprawl() {
-        return session.floorTopologySprawl(stackId, floorRole);
+        return settings().sprawl();
     }
 
     public void sprawl(float value) {
-        session.floorTopologySprawl(stackId, floorRole, value);
+        replace(settings().withSprawl(value));
     }
 
     public boolean linksEnabled() {
-        return session.floorTopologyLinksEnabled(stackId, floorRole);
+        return settings().linksEnabled();
     }
 
     public void linksEnabled(boolean value) {
-        session.floorTopologyLinksEnabled(stackId, floorRole, value);
+        replace(settings().withLinksEnabled(value));
     }
 
     public float linkDensity() {
-        return session.floorTopologyLinkDensity(stackId, floorRole);
+        return settings().linkDensity();
     }
 
     public void linkDensity(float value) {
-        session.floorTopologyLinkDensity(stackId, floorRole, value);
+        replace(settings().withLinkDensity(value));
     }
 
     public int maxLinksPerFloor() {
-        return session.floorTopologyMaxLinksPerFloor(stackId, floorRole);
+        return settings().maxLinksPerFloor();
     }
 
     public void maxLinksPerFloor(int value) {
-        session.floorTopologyMaxLinksPerFloor(stackId, floorRole, value);
+        replace(settings().withMaxLinksPerFloor(value));
     }
 
     public int maxLinksPerRoom() {
-        return session.floorTopologyMaxLinksPerRoom(stackId, floorRole);
+        return settings().maxLinksPerRoom();
     }
 
     public void maxLinksPerRoom(int value) {
-        session.floorTopologyMaxLinksPerRoom(stackId, floorRole, value);
+        replace(settings().withMaxLinksPerRoom(value));
     }
 
     public int maxLinkLength() {
-        return session.floorTopologyMaxLinkLength(stackId, floorRole);
+        return settings().maxLinkLength();
     }
 
     public void maxLinkLength(int value) {
-        session.floorTopologyMaxLinkLength(stackId, floorRole, value);
+        replace(settings().withMaxLinkLength(value));
     }
 
     public long previewSeed() {
-        return session.floorTopologyPreviewSeed(stackId, floorRole);
+        return lockedLayoutSeed()
+                .orElseGet(() -> session.floorTopologyPreviewSeeds.computeIfAbsent(
+                        MKWorkspaceFloorTopologySettings.key(stackId, floorRole),
+                        key -> (long) key.hashCode()));
     }
 
     public void rerollPreviewSeed() {
-        session.rerollFloorTopologyPreviewSeed(stackId, floorRole);
+        if (lockedLayoutSeed().isPresent()) {
+            return;
+        }
+        String key = MKWorkspaceFloorTopologySettings.key(stackId, floorRole);
+        long current = previewSeed();
+        session.floorTopologyPreviewSeeds.put(key, current * 6364136223846793005L + 1442695040888963407L);
     }
 
     public Optional<Long> lockedLayoutSeed() {
-        return session.floorTopologyLockedLayoutSeed(stackId, floorRole);
+        return settings().lockedLayoutSeed();
     }
 
     public void lockLayoutSeed() {
-        session.lockFloorTopologyLayoutSeed(stackId, floorRole);
+        long seed = session.floorTopologyPreviewSeeds.computeIfAbsent(
+                MKWorkspaceFloorTopologySettings.key(stackId, floorRole), key -> (long) key.hashCode());
+        replace(settings().withLockedLayoutSeed(Optional.of(seed)));
     }
 
     public void unlockLayoutSeed() {
-        session.unlockFloorTopologyLayoutSeed(stackId, floorRole);
+        replace(settings().withLockedLayoutSeed(Optional.empty()));
     }
 
     public int roomWidth(MKWorkspaceFloorRoomKind kind) {
@@ -239,5 +250,13 @@ public final class FloorPlanDraftEditor {
 
     public void setRoomRandomizeMainExit(MKWorkspaceFloorRoomKind kind, int index, boolean value) {
         session.floorTopologySetRoomRandomizeMainExit(stackId, floorRole, kind, index, value);
+    }
+
+    private MKWorkspaceFloorTopologySettings settings() {
+        return session.floorTopologySettings(stackId, floorRole);
+    }
+
+    private void replace(MKWorkspaceFloorTopologySettings settings) {
+        session.replaceFloorTopologySettings(settings);
     }
 }
