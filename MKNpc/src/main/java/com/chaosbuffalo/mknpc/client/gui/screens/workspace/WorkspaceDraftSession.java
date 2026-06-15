@@ -75,10 +75,6 @@ public class WorkspaceDraftSession {
         return draft;
     }
 
-    public LinearRunDraftEditor linearRunEditor(String topologySlotId) {
-        return new LinearRunDraftEditor(topologySlotId);
-    }
-
     public void ensureInitialized() {
         if (draft != null) {
             return;
