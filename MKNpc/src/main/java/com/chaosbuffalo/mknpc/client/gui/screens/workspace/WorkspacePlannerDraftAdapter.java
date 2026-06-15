@@ -3,9 +3,12 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceSlotSchema;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.List;
 import java.util.Optional;
 
 interface WorkspacePlannerDraftAdapter {
@@ -25,6 +28,10 @@ interface WorkspacePlannerDraftAdapter {
 
     Optional<String> verticalStackIdForTopologySlot(WorkspaceDraftSession session, String topologySlotId);
 
+    default Optional<String> topologyGroupIdForFloorRole(WorkspaceDraftSession session, String floorRole) {
+        return WorkspaceVerticalStackSlotDraftSupport.topologyGroupIdForFloorRole(floorRole);
+    }
+
     default MKWorkspaceVerticalStackSettings defaultVerticalStackSettings(WorkspaceDraftSession session,
                                                                           String stackId) {
         return session.draft().topologyProfile.verticalStackSettingsOrDefault(stackId);
@@ -32,6 +39,33 @@ interface WorkspacePlannerDraftAdapter {
 
     default void syncDraftVerticalAccessFromStack(WorkspaceDraftSession session,
                                                   MKWorkspaceVerticalStackSettings settings) {
+    }
+
+    default List<Integer> allowedVerticalStackMainFloorCounts(WorkspaceDraftSession session,
+                                                              MKWorkspaceVerticalStackSettings settings,
+                                                              int basementFloors) {
+        return WorkspaceVerticalStackSlotDraftSupport.allowedMainFloorCounts(settings, basementFloors);
+    }
+
+    default List<Integer> allowedVerticalStackBasementFloorCounts(WorkspaceDraftSession session,
+                                                                  MKWorkspaceVerticalStackSettings settings,
+                                                                  int mainFloors) {
+        return WorkspaceVerticalStackSlotDraftSupport.allowedBasementFloorCounts(settings, mainFloors);
+    }
+
+    default boolean verticalAccessFamilyAllowsTopVoidMargin(WorkspaceDraftSession session,
+                                                            MKWorkspaceRoomFamilyDefinition family) {
+        return WorkspaceVerticalStackSlotDraftSupport.isTopCapSlot(family.topologySlotId());
+    }
+
+    default boolean verticalAccessFamilyAllowsBottomVoidMargin(WorkspaceDraftSession session,
+                                                               MKWorkspaceRoomFamilyDefinition family) {
+        return WorkspaceVerticalStackSlotDraftSupport.isBasementCapSlot(family.topologySlotId());
+    }
+
+    default Optional<MKWorkspaceTopologySlotMetadata> topologySlotMetadata(WorkspaceDraftSession session,
+                                                                           MKWorkspaceSlotSchema slot) {
+        return WorkspaceVerticalStackSlotDraftSupport.topologySlotMetadata(slot);
     }
 
     default Optional<MKWorkspaceRoomFamilyDefinition> sharedFamilySource(WorkspaceDraftSession session,

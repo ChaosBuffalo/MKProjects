@@ -5,8 +5,6 @@ import com.chaosbuffalo.mknpc.network.packets.CreateWorkspacePacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerStackBudget;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
@@ -34,7 +32,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTowerStackFloorCounts;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
@@ -537,12 +534,7 @@ public class WorkspaceDraftSession {
     }
 
     private Optional<String> topologyGroupForFloorRole(String floorRole) {
-        for (MKTowerWorkspaceStackSlot slot : MKTowerWorkspaceStackSlot.values()) {
-            if (slot.suffix().equals(floorRole)) {
-                return Optional.of(slot.topologyGroupId());
-            }
-        }
-        return Optional.empty();
+        return plannerAdapter().topologyGroupIdForFloorRole(this, floorRole);
     }
 
     public void replaceFamilyDefinition(int index, MKWorkspaceRoomFamilyDefinition updatedFamily) {
@@ -979,15 +971,11 @@ public class WorkspaceDraftSession {
     }
 
     List<Integer> allowedVerticalStackMainFloorCounts(MKWorkspaceVerticalStackSettings settings, int basementFloors) {
-        return MKWorkspaceTowerStackFloorCounts.allowedMainFloorCounts(MKTowerStackBudget.fromStackSettings(settings),
-                basementFloors, settings.topCapApproachEnabled(), settings.basementEntryEnabled(),
-                settings.basementCapApproachEnabled());
+        return plannerAdapter().allowedVerticalStackMainFloorCounts(this, settings, basementFloors);
     }
 
     List<Integer> allowedVerticalStackBasementFloorCounts(MKWorkspaceVerticalStackSettings settings, int mainFloors) {
-        return MKWorkspaceTowerStackFloorCounts.allowedBasementFloorCounts(MKTowerStackBudget.fromStackSettings(settings),
-                mainFloors, settings.topCapApproachEnabled(), settings.basementEntryEnabled(),
-                settings.basementCapApproachEnabled());
+        return plannerAdapter().allowedVerticalStackBasementFloorCounts(this, settings, mainFloors);
     }
 
     int normalizeVerticalStackMainFloorCount(MKWorkspaceVerticalStackSettings settings, int requestedCount,
@@ -1075,18 +1063,14 @@ public class WorkspaceDraftSession {
         if (!family.supportsVerticalAccess()) {
             return true;
         }
-        return MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId())
-                .filter(slot -> slot == MKTowerWorkspaceStackSlot.TOP_CAP)
-                .isPresent();
+        return plannerAdapter().verticalAccessFamilyAllowsTopVoidMargin(this, family);
     }
 
     private boolean familyAllowsBottomVoidMargin(MKWorkspaceRoomFamilyDefinition family) {
         if (!family.supportsVerticalAccess()) {
             return true;
         }
-        return MKTowerWorkspaceStackSlot.fromTopologySlotId(family.topologySlotId())
-                .filter(slot -> slot == MKTowerWorkspaceStackSlot.BASEMENT_CAP)
-                .isPresent();
+        return plannerAdapter().verticalAccessFamilyAllowsBottomVoidMargin(this, family);
     }
 
     private int maxRoomHeightForFamilyNormalization(Optional<String> verticalStackId) {
@@ -1315,9 +1299,9 @@ public class WorkspaceDraftSession {
     }
 
     private MKWorkspaceTopologySlotMetadata topologySlotMetadata(MKWorkspaceSlotSchema slot) {
-        Optional<MKTowerWorkspaceStackSlot> stackSlot = MKTowerWorkspaceStackSlot.fromTopologySlotId(slot.slotId());
-        if (stackSlot.isPresent()) {
-            return MKWorkspaceTopologySlotMetadata.fromTopologySlotId(slot.slotId());
+        Optional<MKWorkspaceTopologySlotMetadata> adapterMetadata = plannerAdapter().topologySlotMetadata(this, slot);
+        if (adapterMetadata.isPresent()) {
+            return adapterMetadata.get();
         }
         MKWorkspaceRoleSchema role = topologySchema().roles().stream()
                 .filter(candidate -> candidate.roleId().equals(slot.roleId()))
