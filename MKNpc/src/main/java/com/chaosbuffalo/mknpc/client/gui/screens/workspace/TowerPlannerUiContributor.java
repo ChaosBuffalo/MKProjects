@@ -6,7 +6,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
-public class TowerTopologyUiContributor implements WorkspaceTopologyUiContributor {
+public class TowerPlannerUiContributor implements WorkspacePlannerUiContributor {
     private final TowerStackTopologyPanel towerStackPanel = new TowerStackTopologyPanel();
 
     @Override

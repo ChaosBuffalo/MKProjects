@@ -4,7 +4,7 @@ import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import net.minecraft.resources.ResourceLocation;
 
-public interface WorkspaceTopologyUiContributor {
+public interface WorkspacePlannerUiContributor {
     ResourceLocation plannerId();
 
     default void addWorkspaceOverviewSections(MKWorkspaceScreen screen, MKStackLayoutVertical content,

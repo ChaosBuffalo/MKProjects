@@ -15,20 +15,20 @@ public final class WorkspacePlannerUiRegistry {
 
         Component getDisplayName();
 
-        WorkspaceTopologyUiContributor createTopologyUi();
+        WorkspacePlannerUiContributor createPlannerUi();
     }
 
     private static final Map<ResourceLocation, PlannerUiDefinition> DEFINITIONS = new LinkedHashMap<>();
-    private static final WorkspaceTopologyUiContributor FALLBACK = new DefaultTopologyUiContributor();
+    private static final WorkspacePlannerUiContributor FALLBACK = new DefaultPlannerUiContributor();
 
     private WorkspacePlannerUiRegistry() {
     }
 
     public static void init() {
         registerInternal(MKWorkspaceTopologyProfile.TOWER_PLANNER_ID,
-                Component.literal("Tower"), TowerTopologyUiContributor::new);
+                Component.literal("Tower"), TowerPlannerUiContributor::new);
         registerInternal(MKWorkspaceTopologyProfile.WALLED_KEEP_PLANNER_ID,
-                Component.literal("Walled Keep"), WalledKeepTopologyUiContributor::new);
+                Component.literal("Walled Keep"), WalledKeepPlannerUiContributor::new);
     }
 
     public static void register(PlannerUiDefinition definition) {
@@ -40,13 +40,13 @@ public final class WorkspacePlannerUiRegistry {
         DEFINITIONS.put(plannerId, definition);
     }
 
-    public static WorkspaceTopologyUiContributor getTopologyUi(ResourceLocation plannerId) {
+    public static WorkspacePlannerUiContributor getPlannerUi(ResourceLocation plannerId) {
         PlannerUiDefinition definition = DEFINITIONS.get(plannerId);
-        return definition == null ? FALLBACK : definition.createTopologyUi();
+        return definition == null ? FALLBACK : definition.createPlannerUi();
     }
 
     private static void registerInternal(ResourceLocation plannerId, Component displayName,
-                                         Supplier<WorkspaceTopologyUiContributor> factory) {
+                                         Supplier<WorkspacePlannerUiContributor> factory) {
         register(new PlannerUiDefinition() {
             @Override
             public ResourceLocation getPlannerId() {
@@ -59,7 +59,7 @@ public final class WorkspacePlannerUiRegistry {
             }
 
             @Override
-            public WorkspaceTopologyUiContributor createTopologyUi() {
+            public WorkspacePlannerUiContributor createPlannerUi() {
                 return factory.get();
             }
         });
