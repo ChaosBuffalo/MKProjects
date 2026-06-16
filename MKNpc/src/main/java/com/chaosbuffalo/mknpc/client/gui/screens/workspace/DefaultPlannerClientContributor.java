@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
-public class DefaultPlannerUiContributor implements WorkspacePlannerUiContributor {
+public class DefaultPlannerClientContributor implements WorkspacePlannerClientContributor {
     private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("mknpc", "missing");
 
     @Override

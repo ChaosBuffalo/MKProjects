@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
-public interface WorkspacePlannerUiContributor {
+public interface WorkspacePlannerClientContributor {
     ResourceLocation plannerId();
 
     default WorkspacePlannerDraftAdapter createDraftAdapter() {

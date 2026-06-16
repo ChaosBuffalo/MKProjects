@@ -20,7 +20,7 @@ import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WalledKeepPlannerUiContributor implements WorkspacePlannerUiContributor {
+public class WalledKeepPlannerClientContributor implements WorkspacePlannerClientContributor {
     private final WorkspaceVerticalStackTopologyPanel verticalStackPanel = new WorkspaceVerticalStackTopologyPanel();
 
     @Override

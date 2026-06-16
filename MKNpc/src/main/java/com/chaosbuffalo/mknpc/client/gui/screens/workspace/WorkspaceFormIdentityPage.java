@@ -58,7 +58,7 @@ public class WorkspaceFormIdentityPage extends WorkspacePageBase {
         MKButton topologyButton = new MKButton(topologyPlannerLabel(editor.topologyPlannerId()),
                 180, screen.buttonHeight());
         topologyButton.setPressedCallback((button, mouseButton) -> {
-            WorkspacePlannerClientRegistry.PlannerUiDefinition nextPlanner = nextTopologyPlanner(
+            WorkspacePlannerClientRegistry.PlannerClientDefinition nextPlanner = nextTopologyPlanner(
                     editor.topologyPlannerId());
             editor.topologyPlannerId(nextPlanner.getPlannerId());
             screen.flagNeedSetup();
@@ -105,18 +105,18 @@ public class WorkspaceFormIdentityPage extends WorkspacePageBase {
     }
 
     private Component topologyPlannerLabel(ResourceLocation plannerId) {
-        return WorkspacePlannerClientRegistry.plannerDefinitions().stream()
+        return WorkspacePlannerClientRegistry.plannerClientDefinitions().stream()
                 .filter(definition -> definition.getPlannerId().equals(plannerId))
                 .findFirst()
-                .map(WorkspacePlannerClientRegistry.PlannerUiDefinition::getDisplayName)
+                .map(WorkspacePlannerClientRegistry.PlannerClientDefinition::getDisplayName)
                 .orElseGet(() -> Component.literal(WorkspacePieceDisplay.formatTopologyLabel(plannerId.getPath())));
     }
 
-    private WorkspacePlannerClientRegistry.PlannerUiDefinition nextTopologyPlanner(ResourceLocation currentPlannerId) {
-        List<WorkspacePlannerClientRegistry.PlannerUiDefinition> definitions =
-                WorkspacePlannerClientRegistry.plannerDefinitions();
+    private WorkspacePlannerClientRegistry.PlannerClientDefinition nextTopologyPlanner(ResourceLocation currentPlannerId) {
+        List<WorkspacePlannerClientRegistry.PlannerClientDefinition> definitions =
+                WorkspacePlannerClientRegistry.plannerClientDefinitions();
         if (definitions.isEmpty()) {
-            throw new IllegalStateException("No workspace planner UI definitions are registered");
+            throw new IllegalStateException("No workspace planner client definitions are registered");
         }
         for (int i = 0; i < definitions.size(); i++) {
             if (definitions.get(i).getPlannerId().equals(currentPlannerId)) {

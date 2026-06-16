@@ -12,52 +12,52 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public final class WorkspacePlannerClientRegistry {
-    public interface PlannerUiDefinition {
+    public interface PlannerClientDefinition {
         ResourceLocation getPlannerId();
 
         Component getDisplayName();
 
-        WorkspacePlannerUiContributor createPlannerUi();
+        WorkspacePlannerClientContributor createClientContributor();
     }
 
-    private static final Map<ResourceLocation, PlannerUiDefinition> DEFINITIONS = new LinkedHashMap<>();
-    private static final WorkspacePlannerUiContributor FALLBACK = new DefaultPlannerUiContributor();
+    private static final Map<ResourceLocation, PlannerClientDefinition> DEFINITIONS = new LinkedHashMap<>();
+    private static final WorkspacePlannerClientContributor FALLBACK = new DefaultPlannerClientContributor();
 
     private WorkspacePlannerClientRegistry() {
     }
 
     public static void init() {
         registerInternal(MKTowerWorkspacePlanner.PLANNER_ID,
-                Component.literal("Tower"), TowerPlannerUiContributor::new);
+                Component.literal("Tower"), TowerPlannerClientContributor::new);
         registerInternal(MKWalledKeepWorkspacePlanner.PLANNER_ID,
-                Component.literal("Walled Keep"), WalledKeepPlannerUiContributor::new);
+                Component.literal("Walled Keep"), WalledKeepPlannerClientContributor::new);
     }
 
-    public static void register(PlannerUiDefinition definition) {
+    public static void register(PlannerClientDefinition definition) {
         ResourceLocation plannerId = definition.getPlannerId();
         if (DEFINITIONS.containsKey(plannerId)) {
-            MKNpc.LOGGER.warn("Ignoring duplicate workspace planner UI registration for {}", plannerId);
+            MKNpc.LOGGER.warn("Ignoring duplicate workspace planner client registration for {}", plannerId);
             return;
         }
         DEFINITIONS.put(plannerId, definition);
     }
 
-    public static WorkspacePlannerUiContributor getPlannerUi(ResourceLocation plannerId) {
-        PlannerUiDefinition definition = DEFINITIONS.get(plannerId);
-        return definition == null ? FALLBACK : definition.createPlannerUi();
+    public static WorkspacePlannerClientContributor getClientContributor(ResourceLocation plannerId) {
+        PlannerClientDefinition definition = DEFINITIONS.get(plannerId);
+        return definition == null ? FALLBACK : definition.createClientContributor();
     }
 
     public static WorkspacePlannerDraftAdapter getDraftAdapter(ResourceLocation plannerId) {
-        return getPlannerUi(plannerId).createDraftAdapter();
+        return getClientContributor(plannerId).createDraftAdapter();
     }
 
-    public static List<PlannerUiDefinition> plannerDefinitions() {
+    public static List<PlannerClientDefinition> plannerClientDefinitions() {
         return List.copyOf(DEFINITIONS.values());
     }
 
     private static void registerInternal(ResourceLocation plannerId, Component displayName,
-                                         Supplier<WorkspacePlannerUiContributor> factory) {
-        register(new PlannerUiDefinition() {
+                                         Supplier<WorkspacePlannerClientContributor> factory) {
+        register(new PlannerClientDefinition() {
             @Override
             public ResourceLocation getPlannerId() {
                 return plannerId;
@@ -69,7 +69,7 @@ public final class WorkspacePlannerClientRegistry {
             }
 
             @Override
-            public WorkspacePlannerUiContributor createPlannerUi() {
+            public WorkspacePlannerClientContributor createClientContributor() {
                 return factory.get();
             }
         });
