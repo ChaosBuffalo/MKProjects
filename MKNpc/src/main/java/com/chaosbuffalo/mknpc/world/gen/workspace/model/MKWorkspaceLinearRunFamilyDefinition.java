@@ -242,7 +242,7 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
     }
 
     @Override
-    public Optional<String> paletteTopologyGroupIdOpt() {
+    public Optional<String> paletteScopeIdOpt() {
         return topologySlotId == null || topologySlotId.isBlank() ? Optional.empty() : Optional.of(topologySlotId);
     }
 

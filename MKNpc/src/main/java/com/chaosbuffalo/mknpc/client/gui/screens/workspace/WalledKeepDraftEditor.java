@@ -286,7 +286,7 @@ public final class WalledKeepDraftEditor {
         }
         MKWorkspaceTopologyProfile updatedProfile = new MKWorkspaceTopologyProfile(
                 MKWalledKeepWorkspacePlanner.PLANNER_ID,
-                current.topologyGroupSettings(),
+                current.plannerScopeSettings(),
                 settings,
                 current.floorTopologySettings(),
                 current.pathSettings(),

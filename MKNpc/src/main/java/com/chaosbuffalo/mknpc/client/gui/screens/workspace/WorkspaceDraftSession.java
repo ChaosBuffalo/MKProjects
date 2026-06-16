@@ -32,7 +32,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPaletteMerge;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyGroupSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerScopeSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
@@ -425,10 +425,10 @@ public class WorkspaceDraftSession {
         return draft().linearRunFamilies.size() - 1;
     }
 
-    public MKWorkspaceMaterialPalette resolveTopologyGroupPalette(String topologyGroupId) {
+    public MKWorkspaceMaterialPalette resolvePlannerScopePalette(String scopeId) {
         MKWorkspaceMaterialPalette resolved = palette();
-        for (String ancestorId : MKWorkspaceTopologyGroupSettings.hierarchy(topologyGroupId)) {
-            Optional<MKWorkspacePaletteOverride> override = draft().topologyProfile.topologyGroupPaletteOverride(ancestorId);
+        for (String ancestorId : MKWorkspacePlannerScopeSettings.hierarchy(scopeId)) {
+            Optional<MKWorkspacePaletteOverride> override = draft().topologyProfile.plannerScopePaletteOverride(ancestorId);
             if (override.isPresent()) {
                 resolved = override.get().resolve(resolved);
             }
@@ -436,27 +436,27 @@ public class WorkspaceDraftSession {
         return resolved;
     }
 
-    public MKWorkspaceMaterialPalette resolveParentTopologyGroupPalette(String topologyGroupId) {
-        List<String> hierarchy = MKWorkspaceTopologyGroupSettings.hierarchy(topologyGroupId);
+    public MKWorkspaceMaterialPalette resolveParentPlannerScopePalette(String scopeId) {
+        List<String> hierarchy = MKWorkspacePlannerScopeSettings.hierarchy(scopeId);
         if (hierarchy.size() <= 1) {
             return palette();
         }
-        return resolveTopologyGroupPalette(hierarchy.get(hierarchy.size() - 2));
+        return resolvePlannerScopePalette(hierarchy.get(hierarchy.size() - 2));
     }
 
     public MKWorkspaceMaterialPalette resolveFamilyInheritedPalette(MKWorkspaceRoomFamilyDefinition family) {
         String topologyGroupId = plannerAdapter().topologyGroupIdForTopologySlot(this, family.topologySlotId())
                 .orElse(family.slotMetadata().topologyGroupId());
-        return resolveTopologyGroupPalette(topologyGroupId);
+        return resolvePlannerScopePalette(topologyGroupId);
     }
 
-    public Optional<MKWorkspacePaletteOverride> topologyGroupPaletteOverride(String topologyGroupId) {
-        return draft().topologyProfile.topologyGroupPaletteOverride(topologyGroupId);
+    public Optional<MKWorkspacePaletteOverride> plannerScopePaletteOverride(String scopeId) {
+        return draft().topologyProfile.plannerScopePaletteOverride(scopeId);
     }
 
-    public void topologyGroupPaletteOverride(String topologyGroupId,
+    public void plannerScopePaletteOverride(String scopeId,
                                              Optional<MKWorkspacePaletteOverride> paletteOverride) {
-        draft().topologyProfile = draft().topologyProfile.withTopologyGroupPaletteOverride(topologyGroupId,
+        draft().topologyProfile = draft().topologyProfile.withPlannerScopePaletteOverride(scopeId,
                 paletteOverride == null ? Optional.empty() : paletteOverride);
     }
 

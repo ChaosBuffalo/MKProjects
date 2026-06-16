@@ -509,7 +509,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
     }
 
     @Override
-    public Optional<String> paletteTopologyGroupIdOpt() {
+    public Optional<String> paletteScopeIdOpt() {
         return Optional.of(slotMetadata.topologyGroupId());
     }
 

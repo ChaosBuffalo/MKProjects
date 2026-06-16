@@ -66,7 +66,7 @@ public class TowerPlannerClientContributor implements WorkspacePlannerClientCont
     private void addTowerPaletteRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                      WorkspaceDraftSession editor) {
         screen.addPaletteOverrideRows(content, "Tower Palette Defaults", editor.palette(),
-                editor.topologyGroupPaletteOverride("tower"),
-                override -> editor.topologyGroupPaletteOverride("tower", override));
+                editor.plannerScopePaletteOverride("tower"),
+                override -> editor.plannerScopePaletteOverride("tower", override));
     }
 }

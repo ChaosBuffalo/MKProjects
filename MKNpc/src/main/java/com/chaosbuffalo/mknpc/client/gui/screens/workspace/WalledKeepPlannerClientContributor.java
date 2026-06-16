@@ -113,8 +113,8 @@ public class WalledKeepPlannerClientContributor implements WorkspacePlannerClien
     private void addKeepPaletteRows(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                     WorkspaceDraftSession editor) {
         screen.addPaletteOverrideRows(content, "Keep Palette Defaults", editor.palette(),
-                editor.topologyGroupPaletteOverride("keep"),
-                override -> editor.topologyGroupPaletteOverride("keep", override));
+                editor.plannerScopePaletteOverride("keep"),
+                override -> editor.plannerScopePaletteOverride("keep", override));
     }
 
     private void addWalledKeepSizingSection(MKWorkspaceScreen screen, MKStackLayoutVertical content,

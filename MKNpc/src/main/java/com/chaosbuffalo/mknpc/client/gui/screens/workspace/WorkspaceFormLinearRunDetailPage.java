@@ -136,7 +136,7 @@ public class WorkspaceFormLinearRunDetailPage extends WorkspacePageBase {
                         linearRun.allowOnMainPath(), linearRun.allowOnBranchPath(), linearRun.projection(),
                         linearRun.foundationPolicy(), linearRun.paletteOverrideOpt())));
         screen.addPaletteOverrideRows(content, "Palette Overrides",
-                editor.resolveTopologyGroupPalette(linearRun.topologySlotId()),
+                editor.resolvePlannerScopePalette(linearRun.topologySlotId()),
                 linearRun.paletteOverrideOpt(),
                 override -> editor.replaceLinearRunFamily(index, copyLinearRunFamily(linearRun,
                         linearRun.linearRunId(), linearRun.topologySlotId(), linearRun.kind(), linearRun.openingProfileId(),

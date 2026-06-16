@@ -1325,7 +1325,7 @@ public class WorkspaceVerticalStackTopologyPanel {
         addStairRows(screen, content, towerEditor);
         addFoundationRows(screen, content, towerEditor);
         screen.addPaletteOverrideRows(content, "Stack Palette Defaults",
-                editor.resolveParentTopologyGroupPalette(stackId),
+                editor.resolveParentPlannerScopePalette(stackId),
                 towerEditor.paletteOverrideOpt(),
                 override -> towerEditor.paletteOverride(override));
     }

@@ -39,13 +39,13 @@ public record MKWorkspaceTopologyProfile(
     }
 
     public MKWorkspaceTopologyProfile(ResourceLocation plannerId,
-                                      List<MKWorkspaceTopologyGroupSettings> topologyGroupSettings,
+                                      List<MKWorkspacePlannerScopeSettings> plannerScopeSettings,
                                       List<MKWorkspaceVerticalStackSettings> verticalStackSettings,
                                       List<MKWorkspaceFloorTopologySettings> floorTopologySettings,
                                       List<MKWorkspaceTopologyPathSettings> pathSettings,
                                       List<MKWorkspacePlannerSettingsEntry> plannerSettings,
                                       TerrainAdjustment terrainAdjustment) {
-        this(plannerId, entriesFrom(plannerId, topologyGroupSettings, verticalStackSettings, floorTopologySettings,
+        this(plannerId, entriesFrom(plannerId, plannerScopeSettings, verticalStackSettings, floorTopologySettings,
                 pathSettings, plannerSettings), terrainAdjustment);
     }
 
@@ -59,15 +59,15 @@ public record MKWorkspaceTopologyProfile(
 
     private static List<MKWorkspacePlannerSettingsEntry> entriesFrom(
             ResourceLocation ownerPlannerId,
-            List<MKWorkspaceTopologyGroupSettings> topologyGroupSettings,
+            List<MKWorkspacePlannerScopeSettings> plannerScopeSettings,
             List<MKWorkspaceVerticalStackSettings> verticalStackSettings,
             List<MKWorkspaceFloorTopologySettings> floorTopologySettings,
             List<MKWorkspaceTopologyPathSettings> pathSettings,
             List<MKWorkspacePlannerSettingsEntry> plannerSettings) {
         LinkedHashMap<String, MKWorkspacePlannerSettingsEntry> byScope = new LinkedHashMap<>();
         addEntries(byScope, plannerSettings);
-        addTopologyGroupPaletteEntries(byScope, ownerPlannerId == null ? DEFAULT_PLANNER_ID : ownerPlannerId,
-                topologyGroupSettings);
+        addPlannerScopePaletteEntries(byScope, ownerPlannerId == null ? DEFAULT_PLANNER_ID : ownerPlannerId,
+                plannerScopeSettings);
 
         List<MKWorkspaceVerticalStackSettings> normalizedStackSettings =
                 List.copyOf(verticalStackSettings == null ? List.of() : verticalStackSettings);
@@ -99,14 +99,14 @@ public record MKWorkspaceTopologyProfile(
         }
     }
 
-    private static void addTopologyGroupPaletteEntries(
+    private static void addPlannerScopePaletteEntries(
             LinkedHashMap<String, MKWorkspacePlannerSettingsEntry> byScope,
             ResourceLocation ownerPlannerId,
-            List<MKWorkspaceTopologyGroupSettings> topologyGroupSettings) {
-        for (MKWorkspaceTopologyGroupSettings settings : MKWorkspaceTopologyGroupSettings.normalize(topologyGroupSettings)) {
-            MKWorkspacePlannerSettingsEntry current = byScope.get(settings.topologyGroupId());
+            List<MKWorkspacePlannerScopeSettings> plannerScopeSettings) {
+        for (MKWorkspacePlannerScopeSettings settings : MKWorkspacePlannerScopeSettings.normalize(plannerScopeSettings)) {
+            MKWorkspacePlannerSettingsEntry current = byScope.get(settings.scopeId());
             if (current == null) {
-                putEntry(byScope, new MKWorkspacePlannerSettingsEntry(ownerPlannerId, settings.topologyGroupId(),
+                putEntry(byScope, new MKWorkspacePlannerSettingsEntry(ownerPlannerId, settings.scopeId(),
                         settings.paletteOverride(), new net.minecraft.nbt.CompoundTag()));
             } else {
                 putEntry(byScope, current.withPaletteOverride(settings.paletteOverride()));
@@ -157,35 +157,35 @@ public record MKWorkspaceTopologyProfile(
         return new MKWorkspaceTopologyProfile(plannerId, List.copyOf(byScope.values()), terrainAdjustment);
     }
 
-    public List<MKWorkspaceTopologyGroupSettings> topologyGroupSettings() {
+    public List<MKWorkspacePlannerScopeSettings> plannerScopeSettings() {
         return plannerSettings.stream()
                 .filter(entry -> entry.paletteOverride().isPresent())
-                .map(entry -> MKWorkspaceTopologyGroupSettings.palette(entry.scopeId(), entry.paletteOverride()))
+                .map(entry -> MKWorkspacePlannerScopeSettings.palette(entry.scopeId(), entry.paletteOverride()))
                 .toList();
     }
 
-    public Optional<MKWorkspaceTopologyGroupSettings> topologyGroupSettings(String topologyGroupId) {
-        return MKWorkspaceTopologyGroupSettings.find(topologyGroupSettings(), topologyGroupId);
+    public Optional<MKWorkspacePlannerScopeSettings> plannerScopeSettings(String scopeId) {
+        return MKWorkspacePlannerScopeSettings.find(plannerScopeSettings(), scopeId);
     }
 
-    public Optional<MKWorkspacePaletteOverride> topologyGroupPaletteOverride(String topologyGroupId) {
-        return plannerSettingsEntry(topologyGroupId)
+    public Optional<MKWorkspacePaletteOverride> plannerScopePaletteOverride(String scopeId) {
+        return plannerSettingsEntry(scopeId)
                 .flatMap(MKWorkspacePlannerSettingsEntry::paletteOverride);
     }
 
-    public MKWorkspaceTopologyProfile withTopologyGroupSettings(MKWorkspaceTopologyGroupSettings updatedSettings) {
-        if (updatedSettings == null || updatedSettings.topologyGroupId().isBlank()) {
+    public MKWorkspaceTopologyProfile withPlannerScopeSettings(MKWorkspacePlannerScopeSettings updatedSettings) {
+        if (updatedSettings == null || updatedSettings.scopeId().isBlank()) {
             return this;
         }
-        MKWorkspacePlannerSettingsEntry current = plannerSettingsEntry(updatedSettings.topologyGroupId())
-                .orElseGet(() -> new MKWorkspacePlannerSettingsEntry(plannerId, updatedSettings.topologyGroupId(),
+        MKWorkspacePlannerSettingsEntry current = plannerSettingsEntry(updatedSettings.scopeId())
+                .orElseGet(() -> new MKWorkspacePlannerSettingsEntry(plannerId, updatedSettings.scopeId(),
                         new net.minecraft.nbt.CompoundTag()));
         return withPlannerSettingsEntry(current.withPaletteOverride(updatedSettings.paletteOverride()));
     }
 
-    public MKWorkspaceTopologyProfile withTopologyGroupPaletteOverride(
-            String topologyGroupId, Optional<MKWorkspacePaletteOverride> paletteOverride) {
-        return withTopologyGroupSettings(MKWorkspaceTopologyGroupSettings.palette(topologyGroupId, paletteOverride));
+    public MKWorkspaceTopologyProfile withPlannerScopePaletteOverride(
+            String scopeId, Optional<MKWorkspacePaletteOverride> paletteOverride) {
+        return withPlannerScopeSettings(MKWorkspacePlannerScopeSettings.palette(scopeId, paletteOverride));
     }
 
     public List<MKWorkspaceVerticalStackSettings> verticalStackSettings() {

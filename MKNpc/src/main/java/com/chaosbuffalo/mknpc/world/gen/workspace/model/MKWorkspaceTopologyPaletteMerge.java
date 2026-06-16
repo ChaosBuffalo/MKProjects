@@ -20,7 +20,7 @@ public final class MKWorkspaceTopologyPaletteMerge {
                 .toList();
         return new MKWorkspaceTopologyProfile(
                 source.plannerId(),
-                materialSource.topologyGroupSettings(),
+                materialSource.plannerScopeSettings(),
                 stackSettings,
                 floorSettings,
                 source.pathSettings(),

@@ -37,15 +37,15 @@ public final class FloorPlanDraftEditor {
     }
 
     public MKWorkspaceMaterialPalette inheritedPalette() {
-        return session.resolveTopologyGroupPalette(stackId);
+        return session.resolvePlannerScopePalette(stackId);
     }
 
     public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {
-        return session.topologyGroupPaletteOverride(topologyGroupId());
+        return session.plannerScopePaletteOverride(topologyGroupId());
     }
 
     public void paletteOverride(Optional<MKWorkspacePaletteOverride> value) {
-        session.topologyGroupPaletteOverride(topologyGroupId(), value);
+        session.plannerScopePaletteOverride(topologyGroupId(), value);
     }
 
     public String topologyGroupId() {

@@ -306,15 +306,15 @@ public final class WorkspaceVerticalStackDraftEditor {
     }
 
     public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {
-        return session.topologyGroupPaletteOverride(stackId);
+        return session.plannerScopePaletteOverride(stackId);
     }
 
     public void paletteOverride(Optional<MKWorkspacePaletteOverride> value) {
-        session.topologyGroupPaletteOverride(stackId, value);
+        session.plannerScopePaletteOverride(stackId, value);
     }
 
     public MKWorkspaceMaterialPalette resolvedPalette() {
-        return session.resolveTopologyGroupPalette(stackId);
+        return session.resolvePlannerScopePalette(stackId);
     }
 
     public void resetDefaults() {
