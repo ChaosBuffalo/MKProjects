@@ -513,18 +513,18 @@ public class MKWorkspaceVerticalStackPlanner {
         MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
         tags.put("workspace_topology_group", resolvedFamily.slotMetadata().topologyGroupId());
         if (!stackDefinition.stackId().isBlank()) {
-            tags.put("workspace_tower_stack_id", stackDefinition.stackId());
-            tags.put("workspace_tower_stack_min_main_floors", Integer.toString(stackDefinition.minMainFloors()));
-            tags.put("workspace_tower_stack_main_floors", Integer.toString(stackDefinition.mainFloors()));
-            tags.put("workspace_tower_stack_min_basement_floors", Integer.toString(stackDefinition.minBasementFloors()));
-            tags.put("workspace_tower_stack_basement_floors", Integer.toString(stackDefinition.basementFloors()));
+            tags.put("workspace_vertical_stack_id", stackDefinition.stackId());
+            tags.put("workspace_vertical_stack_min_main_floors", Integer.toString(stackDefinition.minMainFloors()));
+            tags.put("workspace_vertical_stack_main_floors", Integer.toString(stackDefinition.mainFloors()));
+            tags.put("workspace_vertical_stack_min_basement_floors", Integer.toString(stackDefinition.minBasementFloors()));
+            tags.put("workspace_vertical_stack_basement_floors", Integer.toString(stackDefinition.basementFloors()));
             MKWorkspaceVerticalStackSlot.fromTopologySlotId(family.topologySlotId())
-                    .ifPresent(slot -> tags.put("workspace_tower_stack_slot", slot.suffix()));
-            tags.put("workspace_tower_stack_top_cap_approach_enabled",
+                    .ifPresent(slot -> tags.put("workspace_vertical_stack_slot", slot.suffix()));
+            tags.put("workspace_vertical_stack_top_cap_approach_enabled",
                     Boolean.toString(stackDefinition.topCapApproachEnabled()));
-            tags.put("workspace_tower_stack_basement_entry_enabled",
+            tags.put("workspace_vertical_stack_basement_entry_enabled",
                     Boolean.toString(stackDefinition.basementEntryEnabled()));
-            tags.put("workspace_tower_stack_basement_cap_approach_enabled",
+            tags.put("workspace_vertical_stack_basement_cap_approach_enabled",
                     Boolean.toString(stackDefinition.basementCapApproachEnabled()));
         }
         applyVoidMarginTags(family, resolvedFamily, tags);

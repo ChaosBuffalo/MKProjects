@@ -328,10 +328,10 @@ public class MKDungeonLayoutController {
             return Optional.empty();
         }
         if (!childMetadata.hasVerticalStackLayout()) {
-            return Optional.of("tower_stack_metadata_required");
+            return Optional.of("vertical_stack_metadata_required");
         }
         if (!parentState.verticalStackId().equals(childMetadata.verticalStackId())) {
-            return Optional.of("tower_stack_mismatch");
+            return Optional.of("vertical_stack_mismatch");
         }
         return switch (connector.role()) {
             case CONNECT_UP -> getUpwardverticalStackRejection(parentState, childMetadata);
@@ -344,45 +344,45 @@ public class MKDungeonLayoutController {
     private Optional<String> getUpwardverticalStackRejection(MKDungeonPieceState parentState,
                                                           MKJigsawPieceMetadata childMetadata) {
         if (STACK_SLOT_TOP_CAP_APPROACH.equals(parentState.verticalStackSlot())) {
-            return requireverticalStackSlot(childMetadata, STACK_SLOT_TOP_CAP, "tower_stack_top_cap_required");
+            return requireverticalStackSlot(childMetadata, STACK_SLOT_TOP_CAP, "vertical_stack_top_cap_required");
         }
         if (parentState.verticalStackMainPlacedFloors() < parentState.verticalStackMainTargetFloors()) {
-            return requireverticalStackSlot(childMetadata, STACK_SLOT_MAIN_FLOOR, "tower_stack_main_floor_required");
+            return requireverticalStackSlot(childMetadata, STACK_SLOT_MAIN_FLOOR, "vertical_stack_main_floor_required");
         }
         String targetSlot = parentState.verticalStackTopCapApproachEnabled()
                 ? STACK_SLOT_TOP_CAP_APPROACH
                 : STACK_SLOT_TOP_CAP;
-        return requireverticalStackSlot(childMetadata, targetSlot, "tower_stack_top_cap_required");
+        return requireverticalStackSlot(childMetadata, targetSlot, "vertical_stack_top_cap_required");
     }
 
     private Optional<String> getDownwardverticalStackRejection(MKDungeonPieceState parentState,
                                                             MKJigsawPieceMetadata childMetadata) {
         if (STACK_SLOT_BASEMENT_CAP_APPROACH.equals(parentState.verticalStackSlot())) {
-            return requireverticalStackSlot(childMetadata, STACK_SLOT_BASEMENT_CAP, "tower_stack_basement_cap_required");
+            return requireverticalStackSlot(childMetadata, STACK_SLOT_BASEMENT_CAP, "vertical_stack_basement_cap_required");
         }
         if (STACK_SLOT_ENTRY.equals(parentState.verticalStackSlot()) &&
                 parentState.verticalStackBasementEntryEnabled() &&
                 parentState.verticalStackBasementTargetFloors() > 0) {
-            return requireverticalStackSlot(childMetadata, STACK_SLOT_BASEMENT_ENTRY, "tower_stack_basement_entry_required");
+            return requireverticalStackSlot(childMetadata, STACK_SLOT_BASEMENT_ENTRY, "vertical_stack_basement_entry_required");
         }
         if (parentState.verticalStackBasementPlacedFloors() < parentState.verticalStackBasementTargetFloors()) {
-            return requireverticalStackSlot(childMetadata, STACK_SLOT_BASEMENT_FLOOR, "tower_stack_basement_floor_required");
+            return requireverticalStackSlot(childMetadata, STACK_SLOT_BASEMENT_FLOOR, "vertical_stack_basement_floor_required");
         }
         String targetSlot = parentState.verticalStackBasementCapApproachEnabled()
                 ? STACK_SLOT_BASEMENT_CAP_APPROACH
                 : STACK_SLOT_BASEMENT_CAP;
-        return requireverticalStackSlot(childMetadata, targetSlot, "tower_stack_basement_cap_required");
+        return requireverticalStackSlot(childMetadata, targetSlot, "vertical_stack_basement_cap_required");
     }
 
     private Optional<String> getVerticalStackCapRejection(MKDungeonPieceState parentState,
                                                        MKJigsawPieceMetadata childMetadata) {
         if (STACK_SLOT_TOP_CAP_APPROACH.equals(parentState.verticalStackSlot())) {
-            return requireverticalStackSlot(childMetadata, STACK_SLOT_TOP_CAP, "tower_stack_top_cap_required");
+            return requireverticalStackSlot(childMetadata, STACK_SLOT_TOP_CAP, "vertical_stack_top_cap_required");
         }
         if (STACK_SLOT_BASEMENT_CAP_APPROACH.equals(parentState.verticalStackSlot())) {
-            return requireverticalStackSlot(childMetadata, STACK_SLOT_BASEMENT_CAP, "tower_stack_basement_cap_required");
+            return requireverticalStackSlot(childMetadata, STACK_SLOT_BASEMENT_CAP, "vertical_stack_basement_cap_required");
         }
-        return Optional.of("tower_stack_cap_connector_forbidden");
+        return Optional.of("vertical_stack_cap_connector_forbidden");
     }
 
     private Optional<String> requireverticalStackSlot(MKJigsawPieceMetadata childMetadata,

@@ -155,16 +155,16 @@ class TowerWorkspaceV2Test {
                 .findFirst()
                 .orElseThrow();
 
-        assertEquals("keep.center", entry.tags().get("workspace_tower_stack_id"));
+        assertEquals("keep.center", entry.tags().get("workspace_vertical_stack_id"));
         assertTrue(entry.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_UP &&
-                        "tower_stacks/keep/center/connect_up".equals(connector.targetPoolName())));
+                        "vertical_stacks/keep/center/connect_up".equals(connector.targetPoolName())));
         assertTrue(floor.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_DOWN &&
-                        "tower_stacks/keep/center/connect_up".equals(connector.incomingPoolName())));
+                        "vertical_stacks/keep/center/connect_up".equals(connector.incomingPoolName())));
         assertTrue(topCapApproach.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.TOP_CAP_FORWARD &&
-                        "tower_stacks/keep/center/top_cap".equals(connector.targetPoolName())));
+                        "vertical_stacks/keep/center/top_cap".equals(connector.targetPoolName())));
     }
 
     @Test
@@ -193,9 +193,9 @@ class TowerWorkspaceV2Test {
                 .findFirst()
                 .orElseThrow();
 
-        assertEquals("tower.primary", entry.tags().get("workspace_tower_stack_id"));
-        assertEquals("2", entry.tags().get("workspace_tower_stack_main_floors"));
-        assertEquals("0", entry.tags().get("workspace_tower_stack_basement_floors"));
+        assertEquals("tower.primary", entry.tags().get("workspace_vertical_stack_id"));
+        assertEquals("2", entry.tags().get("workspace_vertical_stack_main_floors"));
+        assertEquals("0", entry.tags().get("workspace_vertical_stack_basement_floors"));
         assertEquals("tower.primary.entry", entry.tags().get("workspace_topology_slot_id"));
         assertEquals(11, entry.interiorWidth());
         assertEquals(13, entry.interiorLength());
@@ -665,10 +665,10 @@ class TowerWorkspaceV2Test {
         assertEquals("keep.center", centerEntry.tags().get("workspace_vertical_access_group_id"));
         assertTrue(centerEntry.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_UP &&
-                        "tower_stacks/keep/center/connect_up".equals(connector.targetPoolName())));
+                        "vertical_stacks/keep/center/connect_up".equals(connector.targetPoolName())));
         assertTrue(centerEntry.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_DOWN &&
-                        "tower_stacks/keep/center/connect_down".equals(connector.targetPoolName())));
+                        "vertical_stacks/keep/center/connect_down".equals(connector.targetPoolName())));
 
         assertEquals("linear_run", northWall.tags().get("tower_piece_kind"));
         assertEquals("keep.perimeter.north_west.0", northWall.tags().get("workspace_topology_slot_id"));
@@ -708,7 +708,7 @@ class TowerWorkspaceV2Test {
         assertEquals("keep.center.entry", centerEntry.tags().get("workspace_topology_slot_id"));
         assertTrue(centerEntry.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_DOWN &&
-                        "tower_stacks/keep/center/connect_down".equals(connector.targetPoolName())));
+                        "vertical_stacks/keep/center/connect_down".equals(connector.targetPoolName())));
         assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_basement_entry")));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_basement_floor")));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_basement_cap")));
@@ -1567,9 +1567,9 @@ class TowerWorkspaceV2Test {
                 .findFirst()
                 .orElseThrow();
 
-        assertEquals("keep.center", centerEntry.tags().get("workspace_tower_stack_id"));
-        assertEquals("3", centerEntry.tags().get("workspace_tower_stack_main_floors"));
-        assertEquals("2", centerEntry.tags().get("workspace_tower_stack_basement_floors"));
+        assertEquals("keep.center", centerEntry.tags().get("workspace_vertical_stack_id"));
+        assertEquals("3", centerEntry.tags().get("workspace_vertical_stack_main_floors"));
+        assertEquals("2", centerEntry.tags().get("workspace_vertical_stack_basement_floors"));
         assertEquals("2", northWall.tags().get(MKWorkspaceVoidMarginTags.TOP_VOID_MARGIN_TAG));
     }
 
@@ -3189,15 +3189,15 @@ class TowerWorkspaceV2Test {
         var downConnector = connectorInfo(MKConnectorRole.CONNECT_DOWN);
 
         assertTrue(controller.getRejectionReason(startState, upConnector, mainFloor).isEmpty());
-        assertEquals(Optional.of("tower_stack_main_floor_required"),
+        assertEquals(Optional.of("vertical_stack_main_floor_required"),
                 controller.getRejectionReason(startState, upConnector, topCapApproach));
-        assertEquals(Optional.of("tower_stack_basement_floor_required"),
+        assertEquals(Optional.of("vertical_stack_basement_floor_required"),
                 controller.getRejectionReason(startState, downConnector, basementEntry));
         assertTrue(controller.getRejectionReason(startState, downConnector, basementFloor).isEmpty());
 
         MKDungeonPieceState afterMain = controller.nextState(startState, upConnector, mainFloor, null);
         assertTrue(controller.getRejectionReason(afterMain, upConnector, topCapApproach).isEmpty());
-        assertEquals(Optional.of("tower_stack_top_cap_required"),
+        assertEquals(Optional.of("vertical_stack_top_cap_required"),
                 controller.getRejectionReason(afterMain, upConnector, mainFloor));
     }
 

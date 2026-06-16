@@ -382,7 +382,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
 
     private static boolean isKeepCornerStackPiece(Map<String, String> tags) {
         String topologySlotId = tags.getOrDefault("workspace_topology_slot_id", "");
-        String stackId = tags.getOrDefault("workspace_tower_stack_id", "");
+        String stackId = tags.getOrDefault("workspace_vertical_stack_id", "");
         return topologySlotId.startsWith("keep.corner.") || stackId.startsWith("keep.corner.");
     }
 
@@ -1622,9 +1622,9 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         tags.put("workspace_horizontal_extrusion_mode", effectiveRoomExtrusionMode(workspace, family).getSerializedName());
         verticalStackSettingsForTopologySlot(workspace, family.topologySlotId())
                 .ifPresent(settings -> {
-                    tags.put("workspace_tower_stack_id", settings.stackId());
-                    tags.put("workspace_tower_stack_main_floors", Integer.toString(settings.mainFloors()));
-                    tags.put("workspace_tower_stack_basement_floors", Integer.toString(settings.basementFloors()));
+                    tags.put("workspace_vertical_stack_id", settings.stackId());
+                    tags.put("workspace_vertical_stack_main_floors", Integer.toString(settings.mainFloors()));
+                    tags.put("workspace_vertical_stack_basement_floors", Integer.toString(settings.basementFloors()));
                 });
         MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
         tags.put("workspace_topology_group", resolvedFamily.slotMetadata().topologyGroupId());

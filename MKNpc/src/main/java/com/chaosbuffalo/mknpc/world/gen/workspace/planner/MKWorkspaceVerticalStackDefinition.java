@@ -53,7 +53,7 @@ public record MKWorkspaceVerticalStackDefinition(
 
     public static MKWorkspaceVerticalStackDefinition scoped(String stackId, boolean startPiece,
                                                 MKWorkspaceVerticalStackSettings stackSettings) {
-        String prefix = "tower_stacks/" + stackId.replace('.', '/');
+        String prefix = "vertical_stacks/" + stackId.replace('.', '/');
         return new MKWorkspaceVerticalStackDefinition(
                 stackId,
                 stackSettings.minMainFloors(),

@@ -253,8 +253,8 @@ public record MKJigsawPieceMetadata(
             boolean basementCapApproachEnabled
     ) {
         private static final MapCodec<VerticalStackMetadata> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                Codec.STRING.optionalFieldOf("tower_stack_id", "").forGetter(VerticalStackMetadata::verticalStackId),
-                Codec.STRING.optionalFieldOf("tower_stack_slot", "").forGetter(VerticalStackMetadata::verticalStackSlot),
+                Codec.STRING.optionalFieldOf("vertical_stack_id", "").forGetter(VerticalStackMetadata::verticalStackId),
+                Codec.STRING.optionalFieldOf("vertical_stack_slot", "").forGetter(VerticalStackMetadata::verticalStackSlot),
                 Codec.INT.optionalFieldOf("min_main_floors", 0).forGetter(VerticalStackMetadata::minMainFloors),
                 Codec.INT.optionalFieldOf("max_main_floors", 0).forGetter(VerticalStackMetadata::maxMainFloors),
                 Codec.INT.optionalFieldOf("min_basement_floors", 0).forGetter(VerticalStackMetadata::minBasementFloors),

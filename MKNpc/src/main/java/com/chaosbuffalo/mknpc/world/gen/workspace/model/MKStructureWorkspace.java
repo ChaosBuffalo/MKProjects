@@ -435,7 +435,7 @@ public class MKStructureWorkspace {
     }
 
     public MKWorkspaceStairAuthoringConfig stairConfigForPiece(MKWorkspacePieceDefinition piece) {
-        String stackId = piece.tags().getOrDefault("workspace_tower_stack_id", "");
+        String stackId = piece.tags().getOrDefault("workspace_vertical_stack_id", "");
         if (stackId.isBlank()) {
             return stairConfig;
         }
