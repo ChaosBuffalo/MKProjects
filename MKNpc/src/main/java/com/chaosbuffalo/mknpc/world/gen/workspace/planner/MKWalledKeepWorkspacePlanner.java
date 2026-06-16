@@ -1018,7 +1018,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                 courtyardPathConnectors(workspace, path, pathSize, availableSlots, opening),
                 buildCourtyardPathTags(workspace, family, path.slotId(), path.shape(), laneInset)
         );
-        return withExportCrop(withTemplateReuse(piece, path.sourcePieceName(), path.rotation(), false));
+        return withTemplateReuse(piece, path.sourcePieceName(), path.rotation(), false);
     }
 
     private int courtyardPathLaneCenterInset(MKStructureWorkspace workspace, ResolvedOpeningProfile opening) {
@@ -1430,21 +1430,6 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         tags.put(MKWorkspaceTemplateReuseTags.REUSE_MODE_TAG,
                 MKWorkspaceTemplateReuseTags.REUSE_MODE_ROTATE_EXPORT);
         tags.put(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG, Boolean.toString(authoringSource));
-        return new MKPlannedPiece(
-                piece.roleId(),
-                piece.pieceName(),
-                piece.interiorWidth(),
-                piece.interiorLength(),
-                piece.interiorHeight(),
-                piece.connectors(),
-                tags
-        );
-    }
-
-    private MKPlannedPiece withExportCrop(MKPlannedPiece piece) {
-        LinkedHashMap<String, String> tags = new LinkedHashMap<>(piece.tags());
-        tags.put(MKWorkspaceTemplateReuseTags.CROP_MODE_TAG,
-                MKWorkspaceTemplateReuseTags.CROP_MODE_NON_STRUCTURE_VOID);
         return new MKPlannedPiece(
                 piece.roleId(),
                 piece.pieceName(),
