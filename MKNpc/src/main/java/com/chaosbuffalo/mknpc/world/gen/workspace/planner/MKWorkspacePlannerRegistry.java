@@ -9,22 +9,28 @@ import java.util.List;
 import java.util.Map;
 
 public class MKWorkspacePlannerRegistry {
+    private static final MKWorkspacePlannerRegistry SHARED = new MKWorkspacePlannerRegistry();
+
+    static {
+        registerBuiltIns(SHARED);
+    }
+
     private final Map<ResourceLocation, MKWorkspacePlanner> planners = new LinkedHashMap<>();
 
     public MKWorkspacePlannerRegistry() {
     }
 
-    public static MKWorkspacePlannerRegistry withBuiltIns() {
-        MKWorkspacePlannerRegistry registry = new MKWorkspacePlannerRegistry();
-        registry.register(new MKTowerWorkspacePlanner());
-        registry.register(new MKWalledKeepWorkspacePlanner());
-        return registry;
+    public static MKWorkspacePlannerRegistry shared() {
+        return SHARED;
     }
 
-    public MKWorkspacePlannerRegistry registerBuiltIns() {
-        register(new MKTowerWorkspacePlanner());
-        register(new MKWalledKeepWorkspacePlanner());
-        return this;
+    public static void registerShared(MKWorkspacePlanner planner) {
+        SHARED.register(planner);
+    }
+
+    private static void registerBuiltIns(MKWorkspacePlannerRegistry registry) {
+        registry.register(new MKTowerWorkspacePlanner());
+        registry.register(new MKWalledKeepWorkspacePlanner());
     }
 
     public void register(MKWorkspacePlanner planner) {

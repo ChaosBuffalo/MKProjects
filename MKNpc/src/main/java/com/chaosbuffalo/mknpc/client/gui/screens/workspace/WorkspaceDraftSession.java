@@ -1216,7 +1216,7 @@ public class WorkspaceDraftSession {
     }
 
     private MKWorkspaceTopologySchema topologySchema() {
-        return MKWorkspacePlannerRegistry.withBuiltIns()
+        return MKWorkspacePlannerRegistry.shared()
                 .plannerFor(topologyPlannerId())
                 .schema();
     }

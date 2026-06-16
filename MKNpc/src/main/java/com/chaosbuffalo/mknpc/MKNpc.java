@@ -110,7 +110,7 @@ public class MKNpc {
     private void clientSetup(final FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             QuestPage.registerPlayerPage();
-            WorkspacePlannerClientRegistry.init();
+            WorkspacePlannerClientRegistry.registerBuiltIns();
         });
     }
 

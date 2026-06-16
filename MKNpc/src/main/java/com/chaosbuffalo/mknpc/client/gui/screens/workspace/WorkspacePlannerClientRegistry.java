@@ -26,7 +26,7 @@ public final class WorkspacePlannerClientRegistry {
     private WorkspacePlannerClientRegistry() {
     }
 
-    public static void init() {
+    public static void registerBuiltIns() {
         registerInternal(MKTowerWorkspacePlanner.PLANNER_ID,
                 Component.literal("Tower"), TowerPlannerClientContributor::new);
         registerInternal(MKWalledKeepWorkspacePlanner.PLANNER_ID,

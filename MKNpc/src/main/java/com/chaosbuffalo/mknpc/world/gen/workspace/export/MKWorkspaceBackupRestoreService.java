@@ -19,7 +19,7 @@ public class MKWorkspaceBackupRestoreService {
     private final MKWorkspaceBackupManifestWriter backupWriter = new MKWorkspaceBackupManifestWriter();
     private final MKWorkspaceBackupArchiveStore archiveStore = new MKWorkspaceBackupArchiveStore();
     private final MKStructureWorkspaceImportService importService = new MKStructureWorkspaceImportService();
-    private final MKWorkspacePlannerRegistry plannerRegistry = MKWorkspacePlannerRegistry.withBuiltIns();
+    private final MKWorkspacePlannerRegistry plannerRegistry = MKWorkspacePlannerRegistry.shared();
 
     public record RestoreResult(@Nullable MKStructureWorkspace workspace, @Nullable Path selectedBackupPath,
                                 @Nullable Path beforeRestoreBackupPath,

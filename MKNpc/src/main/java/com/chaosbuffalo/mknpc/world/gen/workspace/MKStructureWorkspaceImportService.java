@@ -71,7 +71,7 @@ public class MKStructureWorkspaceImportService {
     private final MKWorkspaceImportManifestDiscovery discovery = new MKWorkspaceImportManifestDiscovery(
             MKWorkspaceExportManifestLoader.resolveModuleRoot(MKNpc.MODULE_DIRECTORY_NAME), MKNpc.MODID);
     private final MKWorkspaceScaffoldBuilder scaffoldBuilder = new MKWorkspaceScaffoldBuilder();
-    private final MKWorkspacePlannerRegistry plannerRegistry = MKWorkspacePlannerRegistry.withBuiltIns();
+    private final MKWorkspacePlannerRegistry plannerRegistry = MKWorkspacePlannerRegistry.shared();
 
     public Optional<MKWorkspaceImportResult> importWorkspaceAtAnchor(ServerLevel level, BlockPos anchor,
                                                                      ResourceLocation manifestId) {
@@ -419,7 +419,7 @@ public class MKStructureWorkspaceImportService {
 
     static Map<String, String> migrateImportedRuntimeTags(MKStructureWorkspace workspace,
                                                           Map<String, String> sourceTags) {
-        return MKWorkspacePlannerRegistry.withBuiltIns()
+        return MKWorkspacePlannerRegistry.shared()
                 .plannerFor(workspace)
                 .migrateImportedRuntimeTags(workspace, sourceTags);
     }
