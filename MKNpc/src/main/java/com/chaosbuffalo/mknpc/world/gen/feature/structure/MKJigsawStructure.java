@@ -175,18 +175,19 @@ public class MKJigsawStructure extends MKStructure {
                 }
             }
         }
-        closeUnconnectedFloorOpenings(level, boundingBox, pieces, Set.of());
+        ResolvedFloorLinks solverFloorLinks = resolveSolverFloorLinks(pieces);
+        closeUnconnectedFloorOpenings(level, boundingBox, pieces, solverFloorLinks.linkedOpenings());
         applyPieceFoundations(level, boundingBox, pieces);
         // Link carving must run last so generic opening closure and foundations cannot overwrite planned corridors.
-        applySolverFloorLinks(level, boundingBox, pieces);
+        carveSolverFloorLinks(level, boundingBox, solverFloorLinks);
     }
 
-    private Set<BlockPos> applySolverFloorLinks(WorldGenLevel level, BoundingBox chunkBounds,
-                                                PiecesContainer pieces) {
+    private ResolvedFloorLinks resolveSolverFloorLinks(PiecesContainer pieces) {
         if (dungeonLayout == null) {
-            return Set.of();
+            return ResolvedFloorLinks.EMPTY;
         }
         HashSet<BlockPos> linkedOpenings = new HashSet<>();
+        ArrayList<LinkCandidate> candidates = new ArrayList<>();
         for (MKDungeonTopologyGroupRule rule : dungeonLayout.topologyGroupRules()) {
             if (rule.floorTopologySettings().isEmpty() || !rule.linksEnabled()) {
                 continue;
@@ -217,7 +218,7 @@ public class MKJigsawStructure extends MKStructure {
                     rootLength, rootExits, leadIn, planSeed, maxDistanceFromCenter);
             Map<Integer, PlacedFloorSegment> placedSegments = lockedPlacedSegments(rule.topologyGroup(), root,
                     plan, pieces);
-            int carvedLinks = 0;
+            int resolvedLinks = 0;
             int missingEndpoints = 0;
             int missingRoutes = 0;
             for (MKFloorLayoutSolver.AcceptedLink link : plan.acceptedLinks()) {
@@ -241,36 +242,50 @@ public class MKJigsawStructure extends MKStructure {
                     continue;
                 }
                 LinkRoute linkRoute = route.orElseThrow();
-                LinkCandidate candidate = new LinkCandidate(a.orElseThrow(), b.orElseThrow(), linkRoute);
-                int carvedBlocks = carveLink(level, chunkBounds, candidate);
                 linkedOpenings.add(a.orElseThrow().pos());
                 linkedOpenings.add(b.orElseThrow().pos());
-                if (carvedBlocks > 0) {
-                    carvedLinks++;
-                    if (MKNpc.DEV_LOGGING) {
-                        MKNpc.LOGGER.debug("solver floor link carved group={} aSegment={} bSegment={} aPos={} aFacing={} bPos={} bFacing={} expectedRouteStart={} expectedRouteEnd={} routeStart={} routeEnd={} routeCells={} carvedBlocks={}",
-                                rule.topologyGroup(), link.a().segmentIndex(), link.b().segmentIndex(),
-                                a.orElseThrow().pos(), a.orElseThrow().facing(),
-                                b.orElseThrow().pos(), b.orElseThrow().facing(),
-                                a.orElseThrow().pos().relative(a.orElseThrow().facing()),
-                                b.orElseThrow().pos().relative(b.orElseThrow().facing()),
-                                linkRoute.positions().getFirst(), linkRoute.positions().getLast(),
-                                linkRoute.positions().size(), carvedBlocks);
-                    }
-                }
+                candidates.add(new LinkCandidate(rule.topologyGroup(), link.a().segmentIndex(),
+                        link.b().segmentIndex(), a.orElseThrow(), b.orElseThrow(), linkRoute));
+                resolvedLinks++;
             }
-            if (MKNpc.DEV_LOGGING && (carvedLinks > 0 || missingEndpoints > 0 || missingRoutes > 0)) {
+            if (MKNpc.DEV_LOGGING && (resolvedLinks > 0 || missingEndpoints > 0 || missingRoutes > 0)) {
                 long expectedSegments = plan.segments().stream()
                         .filter(segment -> segment.kind() != MKFloorLayoutSolver.SegmentKind.LINK_HALL)
                         .count();
                 MKNpc.LOGGER.debug("solver floor link plan group={} expectedSegments={} mappedSegments={} links={} seed={} locked={}",
                         rule.topologyGroup(), expectedSegments, placedSegments.size(), plan.acceptedLinks().size(),
                         planSeed, rule.lockedLayoutSeed().isPresent());
-                MKNpc.LOGGER.debug("solver floor link summary group={} carved={} endpointMissing={} routeMissing={}",
-                        rule.topologyGroup(), carvedLinks, missingEndpoints, missingRoutes);
+                MKNpc.LOGGER.debug("solver floor link resolve summary group={} resolved={} endpointMissing={} routeMissing={}",
+                        rule.topologyGroup(), resolvedLinks, missingEndpoints, missingRoutes);
             }
         }
-        return Set.copyOf(linkedOpenings);
+        return new ResolvedFloorLinks(Set.copyOf(linkedOpenings), List.copyOf(candidates));
+    }
+
+    private void carveSolverFloorLinks(WorldGenLevel level, BoundingBox chunkBounds, ResolvedFloorLinks links) {
+        HashMap<String, Integer> carvedByGroup = new HashMap<>();
+        for (LinkCandidate candidate : links.candidates()) {
+            int carvedBlocks = carveLink(level, chunkBounds, candidate);
+            if (carvedBlocks > 0) {
+                carvedByGroup.merge(candidate.topologyGroup(), 1, Integer::sum);
+                if (MKNpc.DEV_LOGGING) {
+                    MKNpc.LOGGER.debug("solver floor link carved group={} aSegment={} bSegment={} aPos={} aFacing={} bPos={} bFacing={} expectedRouteStart={} expectedRouteEnd={} routeStart={} routeEnd={} routeCells={} carvedBlocks={}",
+                            candidate.topologyGroup(), candidate.aSegmentIndex(), candidate.bSegmentIndex(),
+                            candidate.a().pos(), candidate.a().facing(),
+                            candidate.b().pos(), candidate.b().facing(),
+                            candidate.a().pos().relative(candidate.a().facing()),
+                            candidate.b().pos().relative(candidate.b().facing()),
+                            candidate.route().positions().getFirst(), candidate.route().positions().getLast(),
+                            candidate.route().positions().size(), carvedBlocks);
+                }
+            }
+        }
+        if (MKNpc.DEV_LOGGING) {
+            for (Map.Entry<String, Integer> entry : carvedByGroup.entrySet()) {
+                MKNpc.LOGGER.debug("solver floor link carve summary group={} carved={}",
+                        entry.getKey(), entry.getValue());
+            }
+        }
     }
 
     private Optional<LockedRootPiece> lockedRootPiece(MKDungeonTopologyGroupRule rule, PiecesContainer pieces) {
@@ -771,7 +786,12 @@ public class MKJigsawStructure extends MKStructure {
     private record LinkRoute(List<BlockPos> positions) {
     }
 
-    private record LinkCandidate(PlacedLinkEndpoint a, PlacedLinkEndpoint b, LinkRoute route) {
+    private record LinkCandidate(String topologyGroup, int aSegmentIndex, int bSegmentIndex,
+                                 PlacedLinkEndpoint a, PlacedLinkEndpoint b, LinkRoute route) {
+    }
+
+    private record ResolvedFloorLinks(Set<BlockPos> linkedOpenings, List<LinkCandidate> candidates) {
+        private static final ResolvedFloorLinks EMPTY = new ResolvedFloorLinks(Set.of(), List.of());
     }
 
     private record LockedRootPiece(PoolElementStructurePiece piece, MKJigsawPieceMetadata metadata) {
