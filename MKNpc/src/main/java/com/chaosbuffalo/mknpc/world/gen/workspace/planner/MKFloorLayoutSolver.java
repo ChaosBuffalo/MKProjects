@@ -62,7 +62,7 @@ public class MKFloorLayoutSolver {
                              MKWorkspaceFloorTopologySettings settings, LogicalRect start, Direction direction,
                              int branchDepth, int leadIn, Random random, int parentSegmentIndex) {
         boolean hallwaysEnabled = settings.mainHallwaysEnabled();
-        int hallwayLength = Math.max(1, leadIn);
+        int hallwayLength = hallwayLength(settings, true, leadIn);
         ArrayList<PendingBranchSource> pendingBranches = new ArrayList<>();
         List<MainStepSpec> steps = mainStepSpecs(settings, random);
         Optional<MainFailure> failure = placeMainStep(segments, settings, start, direction, branchDepth, leadIn,
@@ -179,7 +179,7 @@ public class MKFloorLayoutSolver {
                                int branchDepth, int leadIn, Random random, boolean explicitRootExit,
                                int parentSegmentIndex) {
         boolean hallwaysEnabled = settings.branchHallwaysEnabled();
-        int hallwayLength = Math.max(1, leadIn);
+        int hallwayLength = hallwayLength(settings, false, leadIn);
         LogicalRect cursor = start;
         int cursorParentSegmentIndex = parentSegmentIndex;
         int desiredRoomCount = sampledCount(0, settings.maxBranchPiecesBeforeCap(), settings.sprawl(), random);
@@ -375,8 +375,7 @@ public class MKFloorLayoutSolver {
                                       boolean leadIn, int segmentIndex, int parentSegmentIndex) {
         MKWorkspaceFloorRoomProfile reference = main ? settings.mainRoomProfiles().getFirst() :
                 settings.branchRoomProfiles().getFirst();
-        int hallwayMinor = main ? Math.max(3, Math.min(7, reference.width() / 2)) :
-                Math.max(3, Math.min(5, reference.width() / 2));
+        int hallwayMinor = hallwayWidth(settings, main, reference);
         LogicalRect rect = rectAfter(cursor, direction, hallwayLength, hallwayMinor);
         String label = main ? "Main Hall" : "Branch Hall";
         segments.add(new LogicalSegment(rect, main ? SegmentKind.MAIN_HALL : SegmentKind.BRANCH_HALL, direction,
@@ -384,6 +383,21 @@ public class MKFloorLayoutSolver {
                 (leadIn ? "\nlead-in " + hallwayLength : "\nlink " + hallwayLength), false, "",
                 segmentIndex, parentSegmentIndex, null));
         return rect;
+    }
+
+    private int hallwayLength(MKWorkspaceFloorTopologySettings settings, boolean main, int leadIn) {
+        int explicit = main ? settings.mainHallwayLength() : settings.branchHallwayLength();
+        return Math.max(1, explicit > 0 ? explicit : leadIn);
+    }
+
+    private int hallwayWidth(MKWorkspaceFloorTopologySettings settings, boolean main,
+                             MKWorkspaceFloorRoomProfile reference) {
+        int explicit = main ? settings.mainHallwayWidth() : settings.branchHallwayWidth();
+        if (explicit > 0) {
+            return explicit;
+        }
+        return main ? Math.max(3, Math.min(7, reference.width() / 2)) :
+                Math.max(3, Math.min(5, reference.width() / 2));
     }
 
     private LogicalRect appendRoom(ArrayList<LogicalSegment> segments, LogicalRect cursor, Direction direction,

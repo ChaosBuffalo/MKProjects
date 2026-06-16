@@ -509,15 +509,19 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     }
 
     private MKFloorLayoutSolver.FloorLayoutResult floorLayoutResult() {
+        int padding = controls.layoutFootprintPadding();
         return new MKFloorLayoutSolver().solve(previewSettings(),
-                controls.stackWidth(sectionKey),
-                controls.stackLength(sectionKey),
+                controls.stackWidth(sectionKey) + padding,
+                controls.stackLength(sectionKey) + padding,
                 controls.rootExits(sectionKey),
                 controls.effectiveHallwayLeadInPieces(sectionKey),
                 controls.previewSeed(sectionKey));
     }
 
     private MKWorkspaceFloorTopologySettings previewSettings() {
+        int padding = controls.layoutFootprintPadding();
+        int leadIn = controls.effectiveHallwayLeadInPieces(sectionKey);
+        int hallwayWidth = Math.max(3, 3 + padding);
         return new MKWorkspaceFloorTopologySettings(
                 stackId,
                 sectionKey,
@@ -542,7 +546,8 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.BRANCH_CAP),
                 controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.MAIN_CAP_APPROACH),
                 controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.MAIN_CAP)
-        );
+        ).withPhysicalFootprintPadding(padding)
+                .withLayoutHallwayFootprints(leadIn + padding, hallwayWidth, leadIn + padding, hallwayWidth);
     }
 
     private List<PlanSegment> planSegments(ButtonBounds panel) {
@@ -1667,6 +1672,10 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             return floorHallwayLeadInMode(sectionKey) == MKWorkspaceHallwayLeadInMode.MANUAL ?
                     floorManualHallwayLeadInPieces(sectionKey) :
                     recommendedHallwayLeadInPieces(sectionKey);
+        }
+
+        default int layoutFootprintPadding() {
+            return 0;
         }
 
         int floorRoomHeightMin(String sectionKey);

@@ -733,7 +733,7 @@ public class MKJigsawPlacement {
                     if (lockedTemplateMatchesSegment(candidate, segment, rotation)) {
                         return Optional.of(candidate);
                     }
-                    rejected.add(lockedTemplateRejectSummary(candidate, segment));
+                    rejected.add(lockedTemplateRejectSummary(candidate, segment, rotation));
                 }
             }
             logLockedFloorPlanFailure(context.topologyGroup(), "no template candidates matched segment " +
@@ -794,7 +794,7 @@ public class MKJigsawPlacement {
             }
             MKJigsawPieceMetadata metadata = metadataOpt.get();
             String path = templateId.get().getPath();
-            return switch (segment.kind()) {
+            boolean roleMatches = switch (segment.kind()) {
                 case MAIN_HALL -> path.contains("_linear_run_") && path.contains("_main") &&
                         metadata.allowOnMainPath() && !metadata.mainPathEnding() && !metadata.branchCap();
                 case BRANCH_HALL -> path.contains("_linear_run_") && path.contains("_branch") &&
@@ -808,10 +808,12 @@ public class MKJigsawPlacement {
                 case MAIN_CAP -> metadata.mainPathEnding() && floorMaskMatches(metadata, segment);
                 default -> false;
             };
+            return roleMatches && lockedTemplateFootprintMatches(element, segment, rotation);
         }
 
         private String lockedTemplateRejectSummary(StructurePoolElement element,
-                                                   MKFloorLayoutSolver.LogicalSegment segment) {
+                                                   MKFloorLayoutSolver.LogicalSegment segment,
+                                                   Rotation rotation) {
             Optional<ResourceLocation> templateId = getTemplateId(element);
             if (templateId.isEmpty()) {
                 return "<no-template-id>";
@@ -827,7 +829,26 @@ public class MKJigsawPlacement {
                     ":allowMain=" + metadata.allowOnMainPath() +
                     ":branchCap=" + metadata.branchCap() +
                     ":mainEnd=" + metadata.mainPathEnding() +
+                    ":footprint=" + lockedTemplateFootprint(element, rotation) +
+                    ":expectedFootprint=" + expectedLockedFootprint(segment) +
                     ":expectedMask=" + segment.acceptedMask();
+        }
+
+        private boolean lockedTemplateFootprintMatches(StructurePoolElement element,
+                                                       MKFloorLayoutSolver.LogicalSegment segment,
+                                                       Rotation rotation) {
+            BoundingBox box = element.getBoundingBox(this.structureTemplateManager, BlockPos.ZERO, rotation);
+            return box.getXSpan() == Math.round(segment.rect().width()) &&
+                    box.getZSpan() == Math.round(segment.rect().height());
+        }
+
+        private String lockedTemplateFootprint(StructurePoolElement element, Rotation rotation) {
+            BoundingBox box = element.getBoundingBox(this.structureTemplateManager, BlockPos.ZERO, rotation);
+            return box.getXSpan() + "x" + box.getZSpan();
+        }
+
+        private String expectedLockedFootprint(MKFloorLayoutSolver.LogicalSegment segment) {
+            return Math.round(segment.rect().width()) + "x" + Math.round(segment.rect().height());
         }
 
         private boolean floorMaskMatches(MKJigsawPieceMetadata metadata, MKFloorLayoutSolver.LogicalSegment segment) {

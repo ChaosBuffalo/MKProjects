@@ -1037,6 +1037,11 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             @Override
+            public int layoutFootprintPadding() {
+                return 2 * (editor.shellMargin() + editor.exteriorAirMargin());
+            }
+
+            @Override
             public float floorSprawl(String sectionKey) {
                 return floorEditor(editor, stackId, sectionKey).sprawl();
             }

@@ -9,7 +9,10 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonLayoutSetting
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonTopologyGroupRule;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKVerticalProgressionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKFloorTopologyPlanner;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
@@ -130,27 +133,29 @@ public class NpcStructures {
         ArrayList<MKDungeonTopologyGroupRule> rules = new ArrayList<>();
         MKWorkspaceExportManifest manifest = manifestOpt.get();
         for (MKWorkspaceFloorTopologySettings settings : manifest.settings().topologyProfile().floorTopologySettings()) {
+            MKWorkspaceFloorTopologySettings physicalSettings = physicalFloorTopologySettings(manifest, settings);
             String topologyGroupId = floorTopologyGroupId(settings.stackId(), settings.floorRole());
             String endingPool = settings.mainCapApproachEnabled() ?
                     MKFloorTopologyPlanner.mainCapApproachPoolName(topologyGroupId) :
                     MKFloorTopologyPlanner.mainCapPoolName(topologyGroupId);
+            int horizontalPadding = horizontalPadding(manifest);
             int rootWidth = manifest.settings().topologyProfile()
-                    .verticalStackSettingsOrDefault(settings.stackId()).width();
+                    .verticalStackSettingsOrDefault(settings.stackId()).width() + horizontalPadding;
             int rootLength = manifest.settings().topologyProfile()
-                    .verticalStackSettingsOrDefault(settings.stackId()).length();
+                    .verticalStackSettingsOrDefault(settings.stackId()).length() + horizontalPadding;
             rules.add(new MKDungeonTopologyGroupRule(
                     topologyGroupId,
-                    settings.minMainPathPieces(),
-                    settings.maxMainPathPieces(),
-                    settings.maxBranchPiecesBeforeCap(),
-                    settings.sprawl(),
-                    settings.linksEnabled(),
-                    settings.linkDensity(),
-                    settings.maxLinksPerFloor(),
-                    settings.maxLinksPerRoom(),
-                    settings.maxLinkLength(),
-                    settings.lockedLayoutSeed(),
-                    Optional.of(settings),
+                    physicalSettings.minMainPathPieces(),
+                    physicalSettings.maxMainPathPieces(),
+                    physicalSettings.maxBranchPiecesBeforeCap(),
+                    physicalSettings.sprawl(),
+                    physicalSettings.linksEnabled(),
+                    physicalSettings.linkDensity(),
+                    physicalSettings.maxLinksPerFloor(),
+                    physicalSettings.maxLinksPerRoom(),
+                    physicalSettings.maxLinkLength(),
+                    physicalSettings.lockedLayoutSeed(),
+                    Optional.of(physicalSettings),
                     rootWidth,
                     rootLength,
                     true,
@@ -158,6 +163,165 @@ public class NpcStructures {
             ));
         }
         return List.copyOf(rules);
+    }
+
+    private static MKWorkspaceFloorTopologySettings physicalFloorTopologySettings(
+            MKWorkspaceExportManifest manifest,
+            MKWorkspaceFloorTopologySettings settings) {
+        int horizontalPadding = horizontalPadding(manifest);
+        HallwayFootprint mainHallway = hallwayFootprint(manifest, settings, true, horizontalPadding);
+        HallwayFootprint branchHallway = hallwayFootprint(manifest, settings, false, horizontalPadding);
+        return settings.withRoomProfiles(
+                        physicalRoomProfiles(manifest, settings, settings.mainRoomProfiles(), horizontalPadding),
+                        physicalRoomProfiles(manifest, settings, settings.branchRoomProfiles(), horizontalPadding),
+                        physicalRoomProfiles(manifest, settings, settings.branchCapProfiles(), horizontalPadding),
+                        physicalRoomProfiles(manifest, settings, settings.mainCapApproachProfiles(), horizontalPadding),
+                        physicalRoomProfiles(manifest, settings, settings.mainCapProfiles(), horizontalPadding))
+                .withLayoutHallwayFootprints(mainHallway.length(), mainHallway.width(),
+                        branchHallway.length(), branchHallway.width());
+    }
+
+    private static int horizontalPadding(MKWorkspaceExportManifest manifest) {
+        return 2 * (manifest.settings().shellMargin() + manifest.settings().exteriorAirMargin());
+    }
+
+    private static HallwayFootprint hallwayFootprint(MKWorkspaceExportManifest manifest,
+                                                     MKWorkspaceFloorTopologySettings settings,
+                                                     boolean mainPath,
+                                                     int horizontalPadding) {
+        Optional<HallwayFootprint> exportedFootprint = exportedHallwayFootprint(manifest, settings, mainPath);
+        if (exportedFootprint.isPresent()) {
+            return exportedFootprint.orElseThrow();
+        }
+        String openingProfileId = floorOpeningProfileId(manifest, settings, mainPath)
+                .orElseGet(() -> firstOpeningProfileId(manifest, mainPath).orElse(""));
+        Optional<MKWorkspaceExportManifest.ExportLinearRunFamily> linearRun = manifest.settings().linearRunFamilies()
+                .stream()
+                .filter(candidate -> isFloorTopologyLinearRun(candidate, mainPath))
+                .filter(candidate -> openingProfileId.isBlank() ||
+                        candidate.openingProfileId().equals(openingProfileId))
+                .findFirst();
+        if (linearRun.isPresent()) {
+            MKWorkspaceExportManifest.ExportLinearRunFamily run = linearRun.orElseThrow();
+            return new HallwayFootprint(
+                    run.length() + horizontalPadding,
+                    Math.max(1, run.interiorWidth() + horizontalPadding)
+            );
+        }
+        int leadIn = settings.hallwayLeadInMode() == MKWorkspaceHallwayLeadInMode.MANUAL ?
+                Math.max(1, settings.manualHallwayLeadInPieces()) :
+                Math.max(1, Math.ceilDiv(Math.max(
+                        manifest.settings().topologyProfile().verticalStackSettingsOrDefault(settings.stackId()).width(),
+                        manifest.settings().topologyProfile().verticalStackSettingsOrDefault(settings.stackId()).length()), 8));
+        int openingWidth = openingProfile(manifest, openingProfileId)
+                .map(MKWorkspaceExportManifest.ExportOpeningProfile::openingWidth)
+                .orElse(3);
+        return new HallwayFootprint(leadIn + horizontalPadding, openingWidth + horizontalPadding);
+    }
+
+    private static Optional<HallwayFootprint> exportedHallwayFootprint(MKWorkspaceExportManifest manifest,
+                                                                       MKWorkspaceFloorTopologySettings settings,
+                                                                       boolean mainPath) {
+        String pathKind = mainPath ? "main" : "branch";
+        return manifest.pieces().stream()
+                .filter(piece -> "floor_plan_linear_run".equals(piece.tags().get("tower_piece_kind")))
+                .filter(piece -> settings.stackId().equals(piece.tags().get("workspace_floor_topology_stack_id")))
+                .filter(piece -> settings.floorRole().equals(piece.tags().get("workspace_floor_topology_floor_role")))
+                .filter(piece -> pathKind.equals(piece.tags().get("workspace_linear_run_path_kind")))
+                .filter(NpcStructures::baseTemplatePiece)
+                .map(piece -> new HallwayFootprint(
+                        piece.placement().exportBounds().sizeX(),
+                        piece.placement().exportBounds().sizeZ()))
+                .findFirst();
+    }
+
+    private static List<MKWorkspaceFloorRoomProfile> physicalRoomProfiles(
+            MKWorkspaceExportManifest manifest,
+            MKWorkspaceFloorTopologySettings settings,
+            List<MKWorkspaceFloorRoomProfile> profiles,
+            int horizontalPadding) {
+        return profiles.stream()
+                .map(profile -> physicalRoomProfile(manifest, settings, profile, horizontalPadding))
+                .toList();
+    }
+
+    private static MKWorkspaceFloorRoomProfile physicalRoomProfile(MKWorkspaceExportManifest manifest,
+                                                                   MKWorkspaceFloorTopologySettings settings,
+                                                                   MKWorkspaceFloorRoomProfile profile,
+                                                                   int horizontalPadding) {
+        return exportedRoomFootprint(manifest, settings, profile)
+                .map(footprint -> profile.withWidth(footprint.width()).withLength(footprint.length()))
+                .orElseGet(() -> profile.withWidth(profile.width() + horizontalPadding)
+                        .withLength(profile.length() + horizontalPadding));
+    }
+
+    private static Optional<RoomFootprint> exportedRoomFootprint(MKWorkspaceExportManifest manifest,
+                                                                 MKWorkspaceFloorTopologySettings settings,
+                                                                 MKWorkspaceFloorRoomProfile profile) {
+        return manifest.pieces().stream()
+                .filter(piece -> "floor_plan_room".equals(piece.tags().get("tower_piece_kind")))
+                .filter(piece -> settings.stackId().equals(piece.tags().get("workspace_floor_topology_stack_id")))
+                .filter(piece -> settings.floorRole().equals(piece.tags().get("workspace_floor_topology_floor_role")))
+                .filter(piece -> profile.id().equals(piece.tags().get("workspace_floor_room_profile_id")))
+                .filter(piece -> profile.kind().getSerializedName()
+                        .equals(piece.tags().get("workspace_floor_room_kind")))
+                .filter(NpcStructures::baseTemplatePiece)
+                .map(piece -> new RoomFootprint(
+                        piece.placement().exportBounds().sizeX(),
+                        piece.placement().exportBounds().sizeZ()))
+                .findFirst();
+    }
+
+    private static boolean baseTemplatePiece(MKWorkspaceExportManifest.ExportPiece piece) {
+        return "template".equals(piece.workspacePieceKind()) && piece.pieceName().endsWith("_template");
+    }
+
+    private static boolean isFloorTopologyLinearRun(MKWorkspaceExportManifest.ExportLinearRunFamily linearRun,
+                                                    boolean mainPath) {
+        if (mainPath && !linearRun.allowOnMainPath()) {
+            return false;
+        }
+        if (!mainPath && !linearRun.allowOnBranchPath()) {
+            return false;
+        }
+        return !linearRun.topologySlotId().startsWith("keep.");
+    }
+
+    private static Optional<String> floorOpeningProfileId(MKWorkspaceExportManifest manifest,
+                                                          MKWorkspaceFloorTopologySettings settings,
+                                                          boolean mainPath) {
+        String topologySlotId = settings.stackId() + "." + settings.floorRole();
+        MKWorkspaceHorizontalExitPathKind pathKind = mainPath ?
+                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT :
+                MKWorkspaceHorizontalExitPathKind.BRANCH;
+        return manifest.settings().familyDefinitions().stream()
+                .filter(family -> family.topologySlotId().equals(topologySlotId))
+                .flatMap(family -> family.horizontalExits().stream())
+                .filter(exit -> exit.pathKind() == pathKind)
+                .map(MKWorkspaceExportManifest.ExportFamilyHorizontalExit::openingProfileId)
+                .filter(id -> !id.isBlank())
+                .findFirst();
+    }
+
+    private static Optional<String> firstOpeningProfileId(MKWorkspaceExportManifest manifest, boolean mainPath) {
+        return manifest.settings().openingProfiles().stream()
+                .filter(profile -> mainPath ? profile.allowOnMainPath() : profile.allowOnBranchPath())
+                .map(MKWorkspaceExportManifest.ExportOpeningProfile::profileId)
+                .findFirst();
+    }
+
+    private static Optional<MKWorkspaceExportManifest.ExportOpeningProfile> openingProfile(
+            MKWorkspaceExportManifest manifest,
+            String profileId) {
+        return manifest.settings().openingProfiles().stream()
+                .filter(profile -> profile.profileId().equals(profileId))
+                .findFirst();
+    }
+
+    private record HallwayFootprint(int length, int width) {
+    }
+
+    private record RoomFootprint(int width, int length) {
     }
 
     private static int maxFloorBranchDepth(List<MKDungeonTopologyGroupRule> rules, int fallback) {
