@@ -917,11 +917,12 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                         linearRun.openingProfileId()));
         DirectionPair directions = directionsForSlot(linearRun.topologySlotId());
         int effectiveLength = effectiveLinearRunLength(workspace, linearRun, slots.courtyardPlan(), opening);
+        int effectiveWidth = effectiveLinearRunWidth(workspace, linearRun, slots.courtyardPlan(), opening);
         MKPlannedPiece piece = new MKPlannedPiece(
                 linearRun.topologySlotId(),
                 linearRun.linearRunId(),
-                directions.eastWest() ? effectiveLength : linearRun.interiorWidth(),
-                directions.eastWest() ? linearRun.interiorWidth() : effectiveLength,
+                directions.eastWest() ? effectiveLength : effectiveWidth,
+                directions.eastWest() ? effectiveWidth : effectiveLength,
                 linearRun.interiorHeight() + Math.abs(linearRun.slopeDelta()),
                 linearRunLayoutConnectors(workspace, linearRun, directions, slots.availableSlots(), opening,
                         effectiveLength),
@@ -1042,6 +1043,18 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         return effectiveEntryApproachLength(workspace, linearRun.length(), opening);
     }
 
+    private int effectiveLinearRunWidth(MKStructureWorkspace workspace, MKWorkspaceLinearRunFamilyDefinition linearRun,
+                                        CourtyardPlan courtyardPlan, ResolvedOpeningProfile opening) {
+        if (!ENTRY_APPROACH_SLOT.equals(linearRun.topologySlotId()) || courtyardPlan.paths().isEmpty()) {
+            return linearRun.interiorWidth();
+        }
+        MKWorkspaceLinearRunFamilyDefinition pathFamily = courtyardPathFamily(workspace);
+        ResolvedOpeningProfile pathOpening = resolveOpeningProfile(workspace, pathFamily.openingProfileId())
+                .orElseGet(() -> defaultOpeningProfile(workspace));
+        int laneInset = courtyardPathLaneCenterInset(workspace, pathOpening);
+        return Math.max(linearRun.interiorWidth(), courtyardPathSize(workspace, pathFamily, laneInset));
+    }
+
     private int effectiveEntryApproachLength(MKStructureWorkspace workspace, int requestedLength,
                                              ResolvedOpeningProfile entryOpening) {
         MKWorkspaceLinearRunFamilyDefinition pathFamily = courtyardPathFamily(workspace);
@@ -1072,8 +1085,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                 .or(() -> east.map(family -> verticalSegmentCountForSpan(workspace, family,
                         verticalPerimeterSpan(workspace))))
                 .orElse(0);
-        int frontBranchSegments = horizontalSegments > 0 ?
-                Math.max(1, (int) Math.ceil(horizontalSegments / 2.0)) : 0;
+        int frontBranchSegments = south.map(family -> frontBranchSegmentsForSpan(family,
+                        horizontalPerimeterSpan(workspace)))
+                .or(() -> north.map(family -> frontBranchSegmentsForSpan(family, horizontalPerimeterSpan(workspace))))
+                .orElse(0);
         int backWallSegments = backWallSegmentCount(south.isPresent(), north.isPresent(), horizontalSegments,
                 frontBranchSegments);
         int northWestSegments = backWallSegments > 0 ?
@@ -1157,8 +1172,11 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         ResolvedOpeningProfile pathOpening = resolveOpeningProfile(workspace, pathFamily.openingProfileId())
                 .orElseGet(() -> defaultOpeningProfile(workspace));
         int laneInset = courtyardPathLaneCenterInset(workspace, pathOpening);
-        return smallestOddAtLeast(centerWidth(workspace) +
-                (2 * courtyardBandSize(workspace, settings, laneInset, pathOpening)));
+        int padding = 2 * (workspace.shellMargin() + workspace.exteriorAirMargin());
+        int pathSize = courtyardPathSize(workspace, pathFamily, laneInset);
+        int pathExportSpan = exportedSpan(pathSize, padding);
+        int halfSpan = courtyardHorizontalCollisionHalfSpan(workspace, settings, pathExportSpan);
+        return smallestOddAtLeast((2 * halfSpan) + 1);
     }
 
     private int verticalPerimeterSpan(MKStructureWorkspace workspace) {
@@ -1188,6 +1206,11 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         return Math.max(1, (int) Math.ceil(span / (double) Math.max(1, family.length())));
     }
 
+    private int frontBranchSegmentsForSpan(MKWorkspaceLinearRunFamilyDefinition family, int span) {
+        int totalWallUnits = segmentCountForSpan(family, span);
+        return Math.max(1, (int) Math.ceil(Math.max(0, totalWallUnits - 1) / 2.0));
+    }
+
     private int verticalSegmentCountForSpan(MKStructureWorkspace workspace, MKWorkspaceLinearRunFamilyDefinition family,
                                             int span) {
         return segmentCountForSpan(family, span) + courtyardRearWallBufferSegments(workspace);
@@ -1210,6 +1233,19 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
 
     private int courtyardContentCollisionSpan(MKStructureWorkspace workspace, MKWalledKeepCourtyardSettings settings) {
         return settings.courtyardContentTemplateSize() + (2 * (workspace.shellMargin() + workspace.exteriorAirMargin()));
+    }
+
+    private int courtyardHorizontalCollisionHalfSpan(MKStructureWorkspace workspace,
+                                                     MKWalledKeepCourtyardSettings settings,
+                                                     int pathExportSpan) {
+        int pathHalf = pathExportSpan / 2;
+        int contentSpan = settings.courtyardContentEnabled() && settings.courtyardSocketGenerationEnabled() ?
+                courtyardContentCollisionSpan(workspace, settings) : 0;
+        return pathExportSpan + pathHalf + contentSpan;
+    }
+
+    private int exportedSpan(int authoredSpan, int padding) {
+        return Math.max(1, authoredSpan + padding);
     }
 
     private CourtyardPlan createCourtyardPlan(MKStructureWorkspace workspace, PerimeterPlan perimeterPlan) {
