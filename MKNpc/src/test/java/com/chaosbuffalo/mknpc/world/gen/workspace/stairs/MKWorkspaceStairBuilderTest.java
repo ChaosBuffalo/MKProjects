@@ -280,7 +280,7 @@ class MKWorkspaceStairBuilderTest {
         return new MKWorkspacePieceDefinition(
                 UUID.randomUUID(),
                 workspaceId,
-                roleId,
+                roleId.replace('.', '_'),
                 roleId,
                 0,
                 new MKWorkspaceDimensions(9, 9, 5, 5, 5, 3, 3, 3),
