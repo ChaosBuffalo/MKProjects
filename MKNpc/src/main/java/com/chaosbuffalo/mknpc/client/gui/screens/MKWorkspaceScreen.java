@@ -373,7 +373,7 @@ public class MKWorkspaceScreen extends MKScreen {
     public void openWorkspacePlannerNode(String stackId) {
         selectedPlannerStackId = stackId;
         if (stackId != null) {
-            WorkspacePlannerClientRegistry.getPlannerUi(draftSession.topologyPlannerId())
+            WorkspacePlannerClientRegistry.getClientContributor(draftSession.topologyPlannerId())
                     .selectPlannerNode(draftSession, stackId);
         }
         pushState(WorkspacePlannerNodePage.ID);
@@ -387,7 +387,7 @@ public class MKWorkspaceScreen extends MKScreen {
     public void openWorkspaceFloorPlanNode(String stackId, String sectionKey) {
         selectedPlannerStackId = stackId;
         if (stackId != null) {
-            WorkspacePlannerClientRegistry.getPlannerUi(draftSession.topologyPlannerId())
+            WorkspacePlannerClientRegistry.getClientContributor(draftSession.topologyPlannerId())
                     .selectPlannerNode(draftSession, stackId);
         }
         selectedFloorPlanStackId = stackId;

@@ -32,7 +32,7 @@ public class WorkspaceFloorPlanPage extends WorkspacePageBase {
         int contentHeight = screen.panelY() + screen.panelHeight() - screen.bottomPadding() -
                 screen.buttonHeight() - 12 - contentTop;
         WorkspacePlannerLayout layout = addPlannerLayout(screen, root, contentTop, contentHeight);
-        WorkspacePlannerClientRegistry.getPlannerUi(screen.draftSession().topologyPlannerId())
+        WorkspacePlannerClientRegistry.getClientContributor(screen.draftSession().topologyPlannerId())
                 .addFloorPlanLayout(screen, layout, screen.draftSession(), stackId, sectionKey);
         finishPlannerLayout(screen, layout);
         addBackButton(screen, root, WorkspacePlannerNodePage.ID);

@@ -30,7 +30,7 @@ public class WorkspacePlannerNodePage extends WorkspacePageBase {
         int contentHeight = screen.panelY() + screen.panelHeight() - screen.bottomPadding() -
                 screen.buttonHeight() - 12 - contentTop;
         WorkspacePlannerLayout layout = addPlannerLayout(screen, root, contentTop, contentHeight);
-        WorkspacePlannerClientRegistry.getPlannerUi(screen.draftSession().topologyPlannerId())
+        WorkspacePlannerClientRegistry.getClientContributor(screen.draftSession().topologyPlannerId())
                 .addPlannerNodeLayout(screen, layout, screen.draftSession(), stackId, label);
         finishPlannerLayout(screen, layout);
         addBackButton(screen, root, WorkspaceManagePage.ID);
