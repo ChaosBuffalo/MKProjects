@@ -1143,8 +1143,22 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
     }
 
     private int horizontalPerimeterSpan(MKStructureWorkspace workspace) {
-        return cornerWidth(workspace) + DEFAULT_COURTYARD_CLEARANCE + centerWidth(workspace) +
+        int baseSpan = cornerWidth(workspace) + DEFAULT_COURTYARD_CLEARANCE + centerWidth(workspace) +
                 DEFAULT_COURTYARD_CLEARANCE + cornerWidth(workspace);
+        return Math.max(baseSpan, courtyardRequiredHorizontalSpan(workspace));
+    }
+
+    private int courtyardRequiredHorizontalSpan(MKStructureWorkspace workspace) {
+        MKWalledKeepCourtyardSettings settings = keepSettings(workspace).courtyardSettings();
+        if (!settings.courtyardContentEnabled() || !settings.courtyardSocketGenerationEnabled()) {
+            return centerWidth(workspace);
+        }
+        MKWorkspaceLinearRunFamilyDefinition pathFamily = courtyardPathFamily(workspace);
+        ResolvedOpeningProfile pathOpening = resolveOpeningProfile(workspace, pathFamily.openingProfileId())
+                .orElseGet(() -> defaultOpeningProfile(workspace));
+        int laneInset = courtyardPathLaneCenterInset(workspace, pathOpening);
+        return smallestOddAtLeast(centerWidth(workspace) +
+                (2 * courtyardBandSize(workspace, settings, laneInset, pathOpening)));
     }
 
     private int verticalPerimeterSpan(MKStructureWorkspace workspace) {

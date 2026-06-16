@@ -36,7 +36,7 @@ public class MKWalledKeepSizingCalculator {
         MKWorkspaceLinearRunFamilyDefinition entryFamily = entryApproachFamily(workspace).orElse(pathFamily);
         MKWorkspaceRoomFamilyDefinition gateFamily = gateFamily(workspace).orElse(null);
 
-        int horizontalRequiredSpan = horizontalPerimeterSpan(workspace);
+        int horizontalRequiredSpan = horizontalPerimeterSpan(workspace, pathFamily);
         int verticalRequiredSpan = verticalPerimeterSpan(workspace, pathFamily, entryFamily);
         int horizontalSegments = segmentCountForSpan(wallFamily, horizontalRequiredSpan);
         int verticalSegments = verticalSegmentCountForSpan(workspace, wallFamily, verticalRequiredSpan);
@@ -101,6 +101,10 @@ public class MKWalledKeepSizingCalculator {
                 courtyardSettings.courtyardContentTemplateSize(),
                 freeHorizontal,
                 freeVertical,
+                horizontalRequiredSpan,
+                verticalRequiredSpan,
+                realizedHorizontalSpan,
+                realizedVerticalSpan,
                 horizontalSegments,
                 verticalSegments,
                 frontBranchSegments,
@@ -254,9 +258,22 @@ public class MKWalledKeepSizingCalculator {
         return new ResolvedOpening(profile.openingWidth(), profile.openingHeight());
     }
 
-    private int horizontalPerimeterSpan(MKStructureWorkspace workspace) {
-        return cornerWidth(workspace) + DEFAULT_COURTYARD_CLEARANCE + centerWidth(workspace) +
+    private int horizontalPerimeterSpan(MKStructureWorkspace workspace, MKWorkspaceLinearRunFamilyDefinition pathFamily) {
+        int baseSpan = cornerWidth(workspace) + DEFAULT_COURTYARD_CLEARANCE + centerWidth(workspace) +
                 DEFAULT_COURTYARD_CLEARANCE + cornerWidth(workspace);
+        return Math.max(baseSpan, courtyardRequiredHorizontalSpan(workspace, pathFamily));
+    }
+
+    private int courtyardRequiredHorizontalSpan(MKStructureWorkspace workspace,
+                                                MKWorkspaceLinearRunFamilyDefinition pathFamily) {
+        MKWalledKeepCourtyardSettings settings = keepSettings(workspace).courtyardSettings();
+        if (!settings.courtyardContentEnabled() || !settings.courtyardSocketGenerationEnabled()) {
+            return centerWidth(workspace);
+        }
+        ResolvedOpening pathOpening = resolveOpeningProfile(workspace, pathFamily.openingProfileId());
+        int laneInset = courtyardPathLaneCenterInset(workspace, pathOpening);
+        return smallestOddAtLeast(centerWidth(workspace) +
+                (2 * courtyardBandSize(workspace, settings, laneInset, pathOpening)));
     }
 
     private int verticalPerimeterSpan(MKStructureWorkspace workspace, MKWorkspaceLinearRunFamilyDefinition pathFamily,

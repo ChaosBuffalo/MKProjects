@@ -179,6 +179,10 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
                 "Perimeter wall\nfront segments " + report.frontBranchSegments() + "+" +
                         report.frontBranchSegments() + "\nside segments " + report.verticalWallSegments() +
                         "\nback segments " + report.backWallSegments() +
+                        "\ncourtyard required " + report.courtyardRequiredHorizontalSpan() + "x" +
+                        report.courtyardRequiredVerticalSpan() +
+                        "\ncourtyard realized " + report.courtyardRealizedHorizontalSpan() + "x" +
+                        report.courtyardRealizedVerticalSpan() +
                         "\nunit span " + wallUnitSpan() +
                         "\nrecommended span " + report.recommendedWallUnitSpan() +
                         "\npassage " + wallPassageWidth +
