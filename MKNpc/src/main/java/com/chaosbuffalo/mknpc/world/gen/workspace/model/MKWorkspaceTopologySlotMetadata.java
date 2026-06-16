@@ -4,6 +4,8 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import java.util.Optional;
+
 public record MKWorkspaceTopologySlotMetadata(
         String topologySlotId,
         String topologyGroupId,
@@ -20,23 +22,31 @@ public record MKWorkspaceTopologySlotMetadata(
     ).apply(instance, MKWorkspaceTopologySlotMetadata::fromTopologyRole));
 
     public static MKWorkspaceTopologySlotMetadata fromFamily(MKWorkspaceRoomFamilyDefinition family) {
-        return family.slotMetadata();
+        return fromVerticalStackTopologySlotId(family.topologySlotId())
+                .orElse(family.slotMetadata());
     }
 
     public static MKWorkspaceTopologySlotMetadata fromTopologySlotId(String topologySlotId) {
-        return MKWorkspaceVerticalStackSlot.fromTopologySlotId(topologySlotId)
-                .map(slot -> new MKWorkspaceTopologySlotMetadata(
-                        topologySlotId,
-                        slot.topologyGroupId(),
-                        slot.roleKind(),
-                        slot.pieceKind(),
-                        slot.terminal(),
-                        jigsawRoleFor(slot.roleKind(), slot.pieceKind())))
-                .orElseGet(() -> fromTopologyRole(topologySlotId, "floor", "room", false));
+        return fromTopologyRole(topologySlotId, "floor", "room", false);
     }
 
     public static MKWorkspaceTopologySlotMetadata fromVerticalStackSlot(MKWorkspaceVerticalStackSlot slot, String stackId) {
-        return fromTopologySlotId(slot.slotId(stackId));
+        return new MKWorkspaceTopologySlotMetadata(
+                slot.slotId(stackId),
+                slot.topologyGroupId(),
+                slot.roleKind(),
+                slot.pieceKind(),
+                slot.terminal(),
+                jigsawRoleFor(slot.roleKind(), slot.pieceKind()));
+    }
+
+    public static Optional<MKWorkspaceTopologySlotMetadata> fromVerticalStackTopologySlotId(String topologySlotId) {
+        Optional<MKWorkspaceVerticalStackSlot> slot = MKWorkspaceVerticalStackSlot.fromTopologySlotId(topologySlotId);
+        Optional<String> stackId = MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(topologySlotId);
+        if (slot.isEmpty() || stackId.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(fromVerticalStackSlot(slot.get(), stackId.get()));
     }
 
     public static MKWorkspaceTopologySlotMetadata explicit(String topologySlotId, String roleKind,
@@ -46,27 +56,18 @@ public record MKWorkspaceTopologySlotMetadata(
 
     public static MKWorkspaceTopologySlotMetadata fromTopologyRole(String topologySlotId, String roleKind,
                                                                    String pieceKind, boolean terminal) {
-        return MKWorkspaceVerticalStackSlot.fromTopologySlotId(topologySlotId)
-                .map(slot -> new MKWorkspaceTopologySlotMetadata(
-                        topologySlotId,
-                        slot.topologyGroupId(),
-                        slot.roleKind(),
-                        slot.pieceKind(),
-                        slot.terminal(),
-                        jigsawRoleFor(slot.roleKind(), slot.pieceKind())))
-                .orElseGet(() -> {
-                    return new MKWorkspaceTopologySlotMetadata(
-                            topologySlotId,
-                            topologyGroupForRole(roleKind, pieceKind),
-                            roleKind,
-                            pieceKind,
-                            terminal,
-                            jigsawRoleFor(roleKind, pieceKind));
-                });
+        return new MKWorkspaceTopologySlotMetadata(
+                topologySlotId,
+                topologyGroupForRole(roleKind, pieceKind),
+                roleKind,
+                pieceKind,
+                terminal,
+                jigsawRoleFor(roleKind, pieceKind));
     }
 
     public MKWorkspaceTopologySlotMetadata withTopologySlotId(String topologySlotId) {
-        return fromTopologyRole(topologySlotId, roleKind, pieceKind, terminal);
+        return new MKWorkspaceTopologySlotMetadata(topologySlotId, topologyGroupId, roleKind, pieceKind, terminal,
+                jigsawPieceRole);
     }
 
     private static String topologyGroupForRole(String roleKind, String pieceKind) {

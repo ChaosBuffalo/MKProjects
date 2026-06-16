@@ -103,7 +103,8 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                                                                     @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
                                                                     @Nullable MKWorkspacePaletteOverride paletteOverride) {
         return forTopologySlot(baseName,
-                MKWorkspaceTopologySlotMetadata.fromTopologySlotId(topologySlotId),
+                MKWorkspaceTopologySlotMetadata.fromVerticalStackTopologySlotId(topologySlotId)
+                        .orElseGet(() -> MKWorkspaceTopologySlotMetadata.fromTopologySlotId(topologySlotId)),
                 verticalAccessGroupId,
                 supportsVerticalAccess,
                 roomWidth,
@@ -147,7 +148,10 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                                                                     int bottomVoidMargin,
                                                                     @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
                                                                     @Nullable MKWorkspacePaletteOverride paletteOverride) {
-        return new MKWorkspaceRoomFamilyDefinition(baseName, slotMetadata, slotMetadata.topologySlotId(),
+        MKWorkspaceTopologySlotMetadata resolvedMetadata = MKWorkspaceTopologySlotMetadata
+                .fromVerticalStackTopologySlotId(slotMetadata.topologySlotId())
+                .orElse(slotMetadata);
+        return new MKWorkspaceRoomFamilyDefinition(baseName, resolvedMetadata, resolvedMetadata.topologySlotId(),
                 verticalAccessGroupId, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
                 horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin,
                 foundationPolicy, paletteOverride);

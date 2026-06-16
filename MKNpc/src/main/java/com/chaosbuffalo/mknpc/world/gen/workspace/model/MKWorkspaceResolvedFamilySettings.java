@@ -32,7 +32,8 @@ public record MKWorkspaceResolvedFamilySettings(
                 familyDefinition.bottomVoidMargin(),
                 foundationPolicy,
                 palette,
-                MKWorkspaceTopologySlotMetadata.fromFamily(familyDefinition),
+                MKWorkspaceTopologySlotMetadata.fromVerticalStackTopologySlotId(familyDefinition.topologySlotId())
+                        .orElseGet(() -> MKWorkspaceTopologySlotMetadata.fromFamily(familyDefinition)),
                 stackSettings == null ? workspace.verticalAccessSpec() :
                         new MKWorkspaceVerticalAccessSpec(stackSettings.shaftSize(),
                                 stackSettings.verticalAccessPlacement(), stackSettings.stairConfig())

@@ -46,8 +46,12 @@ final class WorkspaceVerticalStackSlotDraftSupport {
     }
 
     static Optional<MKWorkspaceTopologySlotMetadata> topologySlotMetadata(MKWorkspaceSlotSchema slot) {
-        return MKWorkspaceVerticalStackSlot.fromTopologySlotId(slot.slotId())
-                .map(ignored -> MKWorkspaceTopologySlotMetadata.fromTopologySlotId(slot.slotId()));
+        Optional<MKWorkspaceVerticalStackSlot> verticalSlot = MKWorkspaceVerticalStackSlot.fromTopologySlotId(slot.slotId());
+        Optional<String> stackId = MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(slot.slotId());
+        if (verticalSlot.isEmpty() || stackId.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(MKWorkspaceTopologySlotMetadata.fromVerticalStackSlot(verticalSlot.get(), stackId.get()));
     }
 
     static List<Integer> allowedMainFloorCounts(MKWorkspaceVerticalStackSettings settings, int basementFloors) {
