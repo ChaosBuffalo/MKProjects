@@ -402,10 +402,8 @@ public class MKFloorLayoutSolver {
 
     private LogicalRect appendRoom(ArrayList<LogicalSegment> segments, LogicalRect cursor, Direction direction,
                                    RoomStep step, int segmentIndex, int parentSegmentIndex) {
-        int major = direction == Direction.NORTH || direction == Direction.SOUTH ?
-                step.profile().length() : step.profile().width();
-        int minor = direction == Direction.NORTH || direction == Direction.SOUTH ?
-                step.profile().width() : step.profile().length();
+        int major = step.profile().length();
+        int minor = step.profile().width();
         LogicalRect rect = rectAfter(cursor, direction, major, minor);
         segments.add(new LogicalSegment(rect, step.kind(), direction, step.label(),
                 step.profile().label() + "\n" + step.profile().width() + " x " + step.profile().length() +
