@@ -30,13 +30,12 @@ public class WorkspaceFloorPlanPage extends WorkspacePageBase {
 
         int contentTop = screen.scrollTopAfterHeader(root, summary);
         int contentHeight = screen.panelY() + screen.panelHeight() - screen.bottomPadding() -
-                (screen.buttonHeight() * 2) - screen.buttonGap() - 12 - contentTop;
+                screen.buttonHeight() - 12 - contentTop;
         WorkspacePlannerLayout layout = addPlannerLayout(screen, root, contentTop, contentHeight);
         WorkspacePlannerClientRegistry.getClientContributor(screen.draftSession().topologyPlannerId())
                 .addFloorPlanLayout(screen, layout, screen.draftSession(), stackId, sectionKey);
         finishPlannerLayout(screen, layout);
-        addApplyButton(screen, root, 1);
-        addBackButton(screen, root, WorkspacePlannerNodePage.ID);
+        addApplyBackButtonRow(screen, root, WorkspacePlannerNodePage.ID);
         return root;
     }
 }

@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.StackConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
+import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutHorizontal;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
@@ -118,12 +119,28 @@ public abstract class WorkspacePageBase {
         return back;
     }
 
-    protected MKButton addApplyButton(MKWorkspaceScreen screen, MKLayout root, int rowsAboveBottom) {
-        MKButton apply = addBottomButton(screen, root, Component.literal("Apply Changes"), 160, rowsAboveBottom);
+    protected MKStackLayoutHorizontal addApplyBackButtonRow(MKWorkspaceScreen screen, MKLayout root,
+                                                            String backTargetState) {
+        MKStackLayoutHorizontal row = new MKStackLayoutHorizontal(0, 0, screen.buttonHeight());
+        row.setPaddingLeft(4).setPaddingRight(4);
+
+        MKButton apply = new MKButton(Component.literal("Apply Changes"), 160, screen.buttonHeight());
         apply.setPressedCallback((button, mouseButton) -> {
             screen.draftSession().submit();
             return true;
         });
-        return apply;
+        row.addWidget(apply);
+
+        MKButton back = new MKButton(Component.literal("Back"), 120, screen.buttonHeight());
+        back.setPressedCallback((button, mouseButton) -> {
+            screen.goBackOrSwitchTo(backTargetState);
+            return true;
+        });
+        row.addWidget(back);
+
+        root.addWidget(row);
+        root.addConstraintToWidget(new CenterXConstraint(), row);
+        row.setY(screen.panelY() + screen.panelHeight() - screen.bottomPadding() - screen.buttonHeight());
+        return row;
     }
 }
