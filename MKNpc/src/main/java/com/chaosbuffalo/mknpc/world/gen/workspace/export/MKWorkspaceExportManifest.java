@@ -715,8 +715,8 @@ public record MKWorkspaceExportManifest(
             String topologyGroup,
             boolean mainPathEnding,
             boolean branchCap,
-            String towerStackId,
-            String towerStackSlot,
+            String verticalStackId,
+            String verticalStackSlot,
             int minMainFloors,
             int maxMainFloors,
             int minBasementFloors,
@@ -742,18 +742,18 @@ public record MKWorkspaceExportManifest(
                 Codec.STRING.optionalFieldOf("topology_group", "").forGetter(ExportRuntimePieceMetadata::topologyGroup),
                 Codec.BOOL.optionalFieldOf("main_path_ending", false).forGetter(ExportRuntimePieceMetadata::mainPathEnding),
                 Codec.BOOL.optionalFieldOf("branch_cap", false).forGetter(ExportRuntimePieceMetadata::branchCap),
-                ExportTowerStackMetadata.CODEC.forGetter(ExportRuntimePieceMetadata::towerStackMetadata),
+                ExportVerticalStackMetadata.CODEC.forGetter(ExportRuntimePieceMetadata::verticalStackMetadata),
                 ExportFloorRuntimeMetadata.CODEC.forGetter(ExportRuntimePieceMetadata::floorRuntimeMetadata)
         ).apply(instance, (role, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath,
-                           terminal, topCapOnly, topologyGroup, mainPathEnding, branchCap, towerStackMetadata,
+                           terminal, topCapOnly, topologyGroup, mainPathEnding, branchCap, verticalStackMetadata,
                            floorRuntimeMetadata) ->
                 new ExportRuntimePieceMetadata(role, progressionDelta, verticalLevelDelta, allowOnMainPath,
                         allowOnBranchPath, terminal, topCapOnly, topologyGroup, mainPathEnding, branchCap,
-                        towerStackMetadata.towerStackId(), towerStackMetadata.towerStackSlot(),
-                        towerStackMetadata.minMainFloors(), towerStackMetadata.maxMainFloors(),
-                        towerStackMetadata.minBasementFloors(), towerStackMetadata.maxBasementFloors(),
-                        towerStackMetadata.topCapApproachEnabled(), towerStackMetadata.basementEntryEnabled(),
-                        towerStackMetadata.basementCapApproachEnabled(), floorRuntimeMetadata.floorExitMask(),
+                        verticalStackMetadata.verticalStackId(), verticalStackMetadata.verticalStackSlot(),
+                        verticalStackMetadata.minMainFloors(), verticalStackMetadata.maxMainFloors(),
+                        verticalStackMetadata.minBasementFloors(), verticalStackMetadata.maxBasementFloors(),
+                        verticalStackMetadata.topCapApproachEnabled(), verticalStackMetadata.basementEntryEnabled(),
+                        verticalStackMetadata.basementCapApproachEnabled(), floorRuntimeMetadata.floorExitMask(),
                         floorRuntimeMetadata.foundationPolicy(), floorRuntimeMetadata.wallBlock(),
                         floorRuntimeMetadata.floorLinkCandidates(), floorRuntimeMetadata.floorClosableOpenings(),
                         floorRuntimeMetadata.floorRootExits())));
@@ -812,8 +812,8 @@ public record MKWorkspaceExportManifest(
                     topologyGroup,
                     mainPathEnding,
                     branchCap,
-                    towerStackId,
-                    towerStackSlot,
+                    verticalStackId,
+                    verticalStackSlot,
                     minMainFloors,
                     maxMainFloors,
                     minBasementFloors,
@@ -984,8 +984,8 @@ public record MKWorkspaceExportManifest(
             }
         }
 
-        private ExportTowerStackMetadata towerStackMetadata() {
-            return new ExportTowerStackMetadata(towerStackId, towerStackSlot, minMainFloors, maxMainFloors,
+        private ExportVerticalStackMetadata verticalStackMetadata() {
+            return new ExportVerticalStackMetadata(verticalStackId, verticalStackSlot, minMainFloors, maxMainFloors,
                     minBasementFloors, maxBasementFloors, topCapApproachEnabled, basementEntryEnabled,
                     basementCapApproachEnabled);
         }
@@ -1022,9 +1022,9 @@ public record MKWorkspaceExportManifest(
         ).apply(instance, ExportFloorRuntimeMetadata::new));
     }
 
-    private record ExportTowerStackMetadata(
-            String towerStackId,
-            String towerStackSlot,
+    private record ExportVerticalStackMetadata(
+            String verticalStackId,
+            String verticalStackSlot,
             int minMainFloors,
             int maxMainFloors,
             int minBasementFloors,
@@ -1033,20 +1033,20 @@ public record MKWorkspaceExportManifest(
             boolean basementEntryEnabled,
             boolean basementCapApproachEnabled
     ) {
-        private static final MapCodec<ExportTowerStackMetadata> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                Codec.STRING.optionalFieldOf("tower_stack_id", "").forGetter(ExportTowerStackMetadata::towerStackId),
-                Codec.STRING.optionalFieldOf("tower_stack_slot", "").forGetter(ExportTowerStackMetadata::towerStackSlot),
-                Codec.INT.optionalFieldOf("min_main_floors", 0).forGetter(ExportTowerStackMetadata::minMainFloors),
-                Codec.INT.optionalFieldOf("max_main_floors", 0).forGetter(ExportTowerStackMetadata::maxMainFloors),
-                Codec.INT.optionalFieldOf("min_basement_floors", 0).forGetter(ExportTowerStackMetadata::minBasementFloors),
-                Codec.INT.optionalFieldOf("max_basement_floors", 0).forGetter(ExportTowerStackMetadata::maxBasementFloors),
+        private static final MapCodec<ExportVerticalStackMetadata> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                Codec.STRING.optionalFieldOf("tower_stack_id", "").forGetter(ExportVerticalStackMetadata::verticalStackId),
+                Codec.STRING.optionalFieldOf("tower_stack_slot", "").forGetter(ExportVerticalStackMetadata::verticalStackSlot),
+                Codec.INT.optionalFieldOf("min_main_floors", 0).forGetter(ExportVerticalStackMetadata::minMainFloors),
+                Codec.INT.optionalFieldOf("max_main_floors", 0).forGetter(ExportVerticalStackMetadata::maxMainFloors),
+                Codec.INT.optionalFieldOf("min_basement_floors", 0).forGetter(ExportVerticalStackMetadata::minBasementFloors),
+                Codec.INT.optionalFieldOf("max_basement_floors", 0).forGetter(ExportVerticalStackMetadata::maxBasementFloors),
                 Codec.BOOL.optionalFieldOf("top_cap_approach_enabled", true)
-                        .forGetter(ExportTowerStackMetadata::topCapApproachEnabled),
+                        .forGetter(ExportVerticalStackMetadata::topCapApproachEnabled),
                 Codec.BOOL.optionalFieldOf("basement_entry_enabled", true)
-                        .forGetter(ExportTowerStackMetadata::basementEntryEnabled),
+                        .forGetter(ExportVerticalStackMetadata::basementEntryEnabled),
                 Codec.BOOL.optionalFieldOf("basement_cap_approach_enabled", false)
-                        .forGetter(ExportTowerStackMetadata::basementCapApproachEnabled)
-        ).apply(instance, ExportTowerStackMetadata::new));
+                        .forGetter(ExportVerticalStackMetadata::basementCapApproachEnabled)
+        ).apply(instance, ExportVerticalStackMetadata::new));
     }
 
     public record ExportStairConfig(MKWorkspaceStairMode mode, MKWorkspaceStairRiseType riseType, int stairWidth) {
