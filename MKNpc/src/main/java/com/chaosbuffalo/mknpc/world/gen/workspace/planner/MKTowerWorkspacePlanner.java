@@ -3,15 +3,21 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepCourtyardSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackFloorCounts;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -48,7 +54,20 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     }
 
     public static MKWorkspaceTopologyProfile defaultTopologyProfile() {
-        return MKWorkspaceTopologyProfile.tower();
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        return new MKWorkspaceTopologyProfile(PLANNER_ID, false, false, false, false, false,
+                List.of(),
+                List.of(new MKWorkspaceVerticalStackSettings("tower.primary",
+                        MKWorkspaceVerticalStackFloorCounts.DEFAULT_MAIN_FLOORS,
+                        MKWorkspaceVerticalStackFloorCounts.DEFAULT_BASEMENT_FLOORS,
+                        dimensions.roomHeight(), dimensions.roomWidth(), dimensions.roomLength(),
+                        MKWorkspaceVerticalStackFloorCounts.DEFAULT_TOP_CAP_APPROACH_ENABLED,
+                        MKWorkspaceVerticalStackFloorCounts.DEFAULT_BASEMENT_ENTRY_ENABLED,
+                        MKWorkspaceVerticalStackFloorCounts.DEFAULT_BASEMENT_CAP_APPROACH_ENABLED)),
+                List.of(),
+                MKWorkspaceTopologyPathSettings.defaults(),
+                MKWalledKeepCourtyardSettings.defaults(),
+                TerrainAdjustment.BEARD_THIN);
     }
 
     @Override

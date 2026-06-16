@@ -19,6 +19,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamilySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
@@ -28,6 +29,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAcces
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepCourtyardSettings;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -270,15 +272,71 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
     }
 
     public static MKWorkspaceTopologyProfile defaultTopologyProfile(boolean uniqueCornerTowers) {
-        return MKWorkspaceTopologyProfile.walledKeep(uniqueCornerTowers);
+        return defaultTopologyProfile(uniqueCornerTowers, uniqueCornerTowers, uniqueCornerTowers, uniqueCornerTowers);
     }
 
     public static MKWorkspaceTopologyProfile defaultTopologyProfile(boolean uniqueNorthWestCornerTower,
                                                                     boolean uniqueNorthEastCornerTower,
                                                                     boolean uniqueSouthEastCornerTower,
                                                                     boolean uniqueSouthWestCornerTower) {
-        return MKWorkspaceTopologyProfile.walledKeep(uniqueNorthWestCornerTower, uniqueNorthEastCornerTower,
-                uniqueSouthEastCornerTower, uniqueSouthWestCornerTower);
+        return new MKWorkspaceTopologyProfile(
+                PLANNER_ID,
+                uniqueNorthWestCornerTower && uniqueNorthEastCornerTower &&
+                        uniqueSouthEastCornerTower && uniqueSouthWestCornerTower,
+                uniqueNorthWestCornerTower,
+                uniqueNorthEastCornerTower,
+                uniqueSouthEastCornerTower,
+                uniqueSouthWestCornerTower,
+                List.of(),
+                defaultVerticalStackSettings(uniqueNorthWestCornerTower, uniqueNorthEastCornerTower,
+                        uniqueSouthEastCornerTower, uniqueSouthWestCornerTower),
+                List.of(),
+                MKWorkspaceTopologyPathSettings.defaults(),
+                MKWalledKeepCourtyardSettings.defaults(),
+                TerrainAdjustment.BEARD_THIN
+        );
+    }
+
+    public static List<MKWorkspaceVerticalStackSettings> defaultVerticalStackSettings(
+            boolean uniqueNorthWestCornerTower,
+            boolean uniqueNorthEastCornerTower,
+            boolean uniqueSouthEastCornerTower,
+            boolean uniqueSouthWestCornerTower) {
+        ArrayList<MKWorkspaceVerticalStackSettings> settings = new ArrayList<>();
+        settings.add(defaultCenterStackSettings());
+        if (!uniqueNorthWestCornerTower || !uniqueNorthEastCornerTower ||
+                !uniqueSouthEastCornerTower || !uniqueSouthWestCornerTower) {
+            settings.add(defaultCornerStackSettings("keep.corner.shared"));
+        }
+        if (uniqueNorthWestCornerTower) {
+            settings.add(defaultCornerStackSettings("keep.corner.north_west"));
+        }
+        if (uniqueNorthEastCornerTower) {
+            settings.add(defaultCornerStackSettings("keep.corner.north_east"));
+        }
+        if (uniqueSouthEastCornerTower) {
+            settings.add(defaultCornerStackSettings("keep.corner.south_east"));
+        }
+        if (uniqueSouthWestCornerTower) {
+            settings.add(defaultCornerStackSettings("keep.corner.south_west"));
+        }
+        return List.copyOf(settings);
+    }
+
+    private static MKWorkspaceVerticalStackSettings defaultCenterStackSettings() {
+        return MKWorkspaceVerticalStackSettings.defaults("keep.center", 7)
+                .withTopCapApproachEnabled(false)
+                .withBasementEntryEnabled(false)
+                .withBasementCapApproachEnabled(false);
+    }
+
+    private static MKWorkspaceVerticalStackSettings defaultCornerStackSettings(String stackId) {
+        return MKWorkspaceVerticalStackSettings.defaults(stackId, 7)
+                .withMainFloors(0)
+                .withBasementFloors(0)
+                .withTopCapApproachEnabled(false)
+                .withBasementEntryEnabled(false)
+                .withBasementCapApproachEnabled(false);
     }
 
     @Override

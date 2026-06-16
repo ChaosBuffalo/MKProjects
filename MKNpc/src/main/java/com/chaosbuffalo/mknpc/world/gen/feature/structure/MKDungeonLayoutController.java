@@ -405,7 +405,11 @@ public class MKDungeonLayoutController {
                 !parentState.towerStackSlot().isBlank() &&
                 childMetadata.progressionDelta() == 0 &&
                 childMetadata.verticalLevelDelta() == 0 &&
-                childMetadata.topologyGroup().startsWith("floor/");
+            isFloorTopologyGroup(childMetadata.topologyGroup());
+    }
+
+    private boolean isFloorTopologyGroup(String topologyGroup) {
+        return topologyGroup.endsWith(".main_floor") || topologyGroup.endsWith(".basement_floor");
     }
 
     private boolean isStackConnector(MKConnectorRole role) {

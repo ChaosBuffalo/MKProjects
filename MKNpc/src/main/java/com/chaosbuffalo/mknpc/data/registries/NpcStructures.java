@@ -168,16 +168,7 @@ public class NpcStructures {
     }
 
     private static String floorTopologyGroupId(String stackId, String floorRole) {
-        return "floor/" + safeId(stackId) + "/" + safeId(floorRole);
-    }
-
-    private static String safeId(String value) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < value.length(); i++) {
-            char c = value.charAt(i);
-            builder.append(Character.isLetterOrDigit(c) ? c : '_');
-        }
-        return builder.toString();
+        return stackId + "." + floorRole;
     }
 
     private static ResourceLocation connector(String name) {

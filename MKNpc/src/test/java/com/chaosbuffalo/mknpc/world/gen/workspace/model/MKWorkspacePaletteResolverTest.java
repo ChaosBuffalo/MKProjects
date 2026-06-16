@@ -4,6 +4,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKFloorTopologyPlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceVerticalStackPlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -22,7 +23,7 @@ class MKWorkspacePaletteResolverTest {
     void topologyGroupPaletteWalksDotHierarchy() {
         MKWorkspaceMaterialPalette base = palette("smooth_stone", "stone_bricks", "smooth_stone",
                 "stone_brick_stairs", "stone_brick_slab", "ladder");
-        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.walledKeep(false)
+        MKWorkspaceTopologyProfile topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false)
                 .withTopologyGroupPaletteOverride("keep", Optional.of(new MKWorkspacePaletteOverride(
                         null, id("deepslate_bricks"), null, null, null, null)))
                 .withTopologyGroupPaletteOverride("keep.center", Optional.of(new MKWorkspacePaletteOverride(
@@ -43,7 +44,7 @@ class MKWorkspacePaletteResolverTest {
     void floorTopologyPaletteInheritsStackTopologyGroupPalette() {
         MKWorkspaceMaterialPalette base = palette("smooth_stone", "stone_bricks", "smooth_stone",
                 "stone_brick_stairs", "stone_brick_slab", "ladder");
-        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
+        MKWorkspaceTopologyProfile topologyProfile = MKTowerWorkspacePlanner.defaultTopologyProfile()
                 .withTopologyGroupPaletteOverride("tower", Optional.of(new MKWorkspacePaletteOverride(
                         null, id("deepslate_bricks"), null, null, null, null)))
                 .withTopologyGroupPaletteOverride("tower.primary", Optional.of(new MKWorkspacePaletteOverride(
@@ -126,8 +127,8 @@ class MKWorkspacePaletteResolverTest {
                 null,
                 null
         );
-        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
-                .withVerticalStackSettings(MKWorkspaceTopologyProfile.tower()
+        MKWorkspaceTopologyProfile topologyProfile = MKTowerWorkspacePlanner.defaultTopologyProfile()
+                .withVerticalStackSettings(MKTowerWorkspacePlanner.defaultTopologyProfile()
                         .verticalStackSettingsOrDefault("tower.primary")
                         .withPaletteOverride(java.util.Optional.of(stackOverride)));
         MKStructureWorkspace workspace = workspace(topologyProfile, base, List.of(family), List.of());
@@ -165,7 +166,7 @@ class MKWorkspacePaletteResolverTest {
                 null,
                 null
         );
-        MKWorkspaceVerticalStackSettings stackSettings = MKWorkspaceTopologyProfile.tower()
+        MKWorkspaceVerticalStackSettings stackSettings = MKTowerWorkspacePlanner.defaultTopologyProfile()
                 .verticalStackSettingsOrDefault("tower.primary")
                 .withPaletteOverride(java.util.Optional.of(stackOverride));
         MKWorkspaceFloorTopologySettings floorSettings = MKWorkspaceFloorTopologySettings
@@ -173,7 +174,7 @@ class MKWorkspacePaletteResolverTest {
                 .withPaletteOverride(java.util.Optional.of(floorOverride));
         floorSettings = floorSettings.withRoomProfile(MKWorkspaceFloorRoomKind.MAIN_ROOM, 0,
                 floorSettings.mainRoomProfiles().getFirst().withPaletteOverride(java.util.Optional.of(roomOverride)));
-        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
+        MKWorkspaceTopologyProfile topologyProfile = MKTowerWorkspacePlanner.defaultTopologyProfile()
                 .withVerticalStackSettings(stackSettings)
                 .withFloorTopologySettings(floorSettings);
         MKWorkspaceRoomFamilyDefinition family = MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot(
@@ -328,7 +329,7 @@ class MKWorkspacePaletteResolverTest {
     void workspaceCodecPreservesTopologyGroupPaletteOverrides() {
         MKWorkspaceMaterialPalette base = palette("smooth_stone", "stone_bricks", "smooth_stone",
                 "oak_stairs", "oak_slab", "ladder");
-        MKWorkspaceTopologyProfile topologyProfile = MKWorkspaceTopologyProfile.tower()
+        MKWorkspaceTopologyProfile topologyProfile = MKTowerWorkspacePlanner.defaultTopologyProfile()
                 .withTopologyGroupPaletteOverride("tower.primary.main_floor", Optional.of(new MKWorkspacePaletteOverride(
                         id("red_sandstone"), null, null, null, null, null)));
 
@@ -365,7 +366,7 @@ class MKWorkspacePaletteResolverTest {
     private static MKStructureWorkspace workspace(MKWorkspaceMaterialPalette palette,
                                                   List<MKWorkspaceRoomFamilyDefinition> familyDefinitions,
                                                   List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies) {
-        return workspace(MKWorkspaceTopologyProfile.tower(), palette, familyDefinitions,
+        return workspace(MKTowerWorkspacePlanner.defaultTopologyProfile(), palette, familyDefinitions,
                 linearRunFamilies);
     }
 

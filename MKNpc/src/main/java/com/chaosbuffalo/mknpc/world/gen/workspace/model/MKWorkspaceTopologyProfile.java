@@ -24,15 +24,12 @@ public record MKWorkspaceTopologyProfile(
         MKWalledKeepCourtyardSettings courtyardSettings,
         TerrainAdjustment terrainAdjustment
 ) {
-    public static final ResourceLocation TOWER_PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "tower");
-    public static final ResourceLocation WALLED_KEEP_PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "walled_keep");
-    public static final TerrainAdjustment DEFAULT_WALLED_KEEP_TERRAIN_ADJUSTMENT = TerrainAdjustment.BEARD_THIN;
-    public static final TerrainAdjustment DEFAULT_TOWER_TERRAIN_ADJUSTMENT = TerrainAdjustment.BEARD_THIN;
+    private static final ResourceLocation DEFAULT_PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "tower");
     private static final Codec<TerrainAdjustment> TERRAIN_ADJUSTMENT_CODEC =
             StringRepresentable.fromEnum(TerrainAdjustment::values);
 
     public static final Codec<MKWorkspaceTopologyProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            ResourceLocation.CODEC.optionalFieldOf("planner_id", TOWER_PLANNER_ID)
+            ResourceLocation.CODEC.optionalFieldOf("planner_id", DEFAULT_PLANNER_ID)
                     .forGetter(MKWorkspaceTopologyProfile::plannerId),
             Codec.BOOL.optionalFieldOf("unique_corner_towers", false)
                     .forGetter(MKWorkspaceTopologyProfile::uniqueCornerTowers),
@@ -55,60 +52,9 @@ public record MKWorkspaceTopologyProfile(
             MKWalledKeepCourtyardSettings.CODEC.optionalFieldOf("courtyard_settings",
                             MKWalledKeepCourtyardSettings.defaults())
                     .forGetter(MKWorkspaceTopologyProfile::courtyardSettings),
-            TERRAIN_ADJUSTMENT_CODEC.optionalFieldOf("terrain_adjustment", DEFAULT_WALLED_KEEP_TERRAIN_ADJUSTMENT)
+            TERRAIN_ADJUSTMENT_CODEC.optionalFieldOf("terrain_adjustment", TerrainAdjustment.BEARD_THIN)
                     .forGetter(MKWorkspaceTopologyProfile::terrainAdjustment)
     ).apply(instance, MKWorkspaceTopologyProfile::new));
-
-    public static MKWorkspaceTopologyProfile tower() {
-        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
-        return new MKWorkspaceTopologyProfile(TOWER_PLANNER_ID, false, false, false, false, false,
-                List.of(),
-                List.of(new MKWorkspaceVerticalStackSettings("tower.primary",
-                        MKWorkspaceVerticalStackFloorCounts.DEFAULT_MAIN_FLOORS,
-                        MKWorkspaceVerticalStackFloorCounts.DEFAULT_BASEMENT_FLOORS,
-                        dimensions.roomHeight(), dimensions.roomWidth(), dimensions.roomLength(),
-                        MKWorkspaceVerticalStackFloorCounts.DEFAULT_TOP_CAP_APPROACH_ENABLED,
-                        MKWorkspaceVerticalStackFloorCounts.DEFAULT_BASEMENT_ENTRY_ENABLED,
-                        MKWorkspaceVerticalStackFloorCounts.DEFAULT_BASEMENT_CAP_APPROACH_ENABLED)),
-                List.of(),
-                MKWorkspaceTopologyPathSettings.defaults(),
-                MKWalledKeepCourtyardSettings.defaults(),
-                DEFAULT_TOWER_TERRAIN_ADJUSTMENT);
-    }
-
-    public static MKWorkspaceTopologyProfile walledKeep(boolean uniqueCornerTowers) {
-        return new MKWorkspaceTopologyProfile(WALLED_KEEP_PLANNER_ID, uniqueCornerTowers,
-                uniqueCornerTowers, uniqueCornerTowers, uniqueCornerTowers, uniqueCornerTowers,
-                List.of(),
-                defaultWalledKeepVerticalStackSettings(uniqueCornerTowers, uniqueCornerTowers, uniqueCornerTowers,
-                        uniqueCornerTowers),
-                List.of(),
-                MKWorkspaceTopologyPathSettings.defaults(),
-                MKWalledKeepCourtyardSettings.defaults(),
-                DEFAULT_WALLED_KEEP_TERRAIN_ADJUSTMENT);
-    }
-
-    public static MKWorkspaceTopologyProfile walledKeep(boolean uniqueNorthWestCornerTower,
-                                                        boolean uniqueNorthEastCornerTower,
-                                                        boolean uniqueSouthEastCornerTower,
-                                                        boolean uniqueSouthWestCornerTower) {
-        return new MKWorkspaceTopologyProfile(
-                WALLED_KEEP_PLANNER_ID,
-                uniqueNorthWestCornerTower && uniqueNorthEastCornerTower &&
-                        uniqueSouthEastCornerTower && uniqueSouthWestCornerTower,
-                uniqueNorthWestCornerTower,
-                uniqueNorthEastCornerTower,
-                uniqueSouthEastCornerTower,
-                uniqueSouthWestCornerTower,
-                List.of(),
-                defaultWalledKeepVerticalStackSettings(uniqueNorthWestCornerTower, uniqueNorthEastCornerTower,
-                        uniqueSouthEastCornerTower, uniqueSouthWestCornerTower),
-                List.of(),
-                MKWorkspaceTopologyPathSettings.defaults(),
-                MKWalledKeepCourtyardSettings.defaults(),
-                DEFAULT_WALLED_KEEP_TERRAIN_ADJUSTMENT
-        );
-    }
 
     public MKWorkspaceTopologyProfile(ResourceLocation plannerId,
                                       boolean uniqueCornerTowers,
@@ -128,7 +74,7 @@ public record MKWorkspaceTopologyProfile(
 
     public MKWorkspaceTopologyProfile {
         if (plannerId == null) {
-            plannerId = TOWER_PLANNER_ID;
+            plannerId = DEFAULT_PLANNER_ID;
         }
         if (uniqueCornerTowers) {
             uniqueNorthWestCornerTower = true;
@@ -138,14 +84,12 @@ public record MKWorkspaceTopologyProfile(
         }
         uniqueCornerTowers = uniqueNorthWestCornerTower && uniqueNorthEastCornerTower &&
                 uniqueSouthEastCornerTower && uniqueSouthWestCornerTower;
-        verticalStackSettings = normalizeVerticalStackSettings(plannerId, uniqueNorthWestCornerTower,
-                uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
-                verticalStackSettings);
+        verticalStackSettings = List.copyOf(verticalStackSettings == null ? List.of() : verticalStackSettings);
         topologyGroupSettings = MKWorkspaceTopologyGroupSettings.normalize(topologyGroupSettings);
         floorTopologySettings = MKWorkspaceFloorTopologySettings.normalize(floorTopologySettings, verticalStackSettings);
         pathSettings = MKWorkspaceTopologyPathSettings.normalize(pathSettings);
         courtyardSettings = courtyardSettings == null ? MKWalledKeepCourtyardSettings.defaults() : courtyardSettings;
-        terrainAdjustment = terrainAdjustment == null ? defaultTerrainAdjustment(plannerId) : terrainAdjustment;
+        terrainAdjustment = terrainAdjustment == null ? TerrainAdjustment.BEARD_THIN : terrainAdjustment;
     }
 
     public boolean anySharedCornerTower() {
@@ -301,76 +245,6 @@ public record MKWorkspaceTopologyProfile(
         return new MKWorkspaceTopologyProfile(plannerId, uniqueCornerTowers, uniqueNorthWestCornerTower,
                 uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
                 topologyGroupSettings, verticalStackSettings, floorTopologySettings, pathSettings, courtyardSettings,
-                updatedTerrainAdjustment == null ? defaultTerrainAdjustment(plannerId) : updatedTerrainAdjustment);
-    }
-
-    public static List<MKWorkspaceVerticalStackSettings> defaultWalledKeepVerticalStackSettings(
-            boolean uniqueNorthWestCornerTower,
-            boolean uniqueNorthEastCornerTower,
-            boolean uniqueSouthEastCornerTower,
-            boolean uniqueSouthWestCornerTower) {
-        ArrayList<MKWorkspaceVerticalStackSettings> settings = new ArrayList<>();
-        settings.add(walledKeepCenterStackDefaults());
-        if (!uniqueNorthWestCornerTower || !uniqueNorthEastCornerTower ||
-                !uniqueSouthEastCornerTower || !uniqueSouthWestCornerTower) {
-            settings.add(walledKeepCornerStackDefaults("keep.corner.shared"));
-        }
-        if (uniqueNorthWestCornerTower) {
-            settings.add(walledKeepCornerStackDefaults("keep.corner.north_west"));
-        }
-        if (uniqueNorthEastCornerTower) {
-            settings.add(walledKeepCornerStackDefaults("keep.corner.north_east"));
-        }
-        if (uniqueSouthEastCornerTower) {
-            settings.add(walledKeepCornerStackDefaults("keep.corner.south_east"));
-        }
-        if (uniqueSouthWestCornerTower) {
-            settings.add(walledKeepCornerStackDefaults("keep.corner.south_west"));
-        }
-        return List.copyOf(settings);
-    }
-
-    private static MKWorkspaceVerticalStackSettings walledKeepCenterStackDefaults() {
-        return MKWorkspaceVerticalStackSettings.defaults("keep.center", 7)
-                .withTopCapApproachEnabled(false)
-                .withBasementEntryEnabled(false)
-                .withBasementCapApproachEnabled(false);
-    }
-
-    private static MKWorkspaceVerticalStackSettings walledKeepCornerStackDefaults(String stackId) {
-        return MKWorkspaceVerticalStackSettings.defaults(stackId, 7)
-                .withMainFloors(0)
-                .withBasementFloors(0)
-                .withTopCapApproachEnabled(false)
-                .withBasementEntryEnabled(false)
-                .withBasementCapApproachEnabled(false);
-    }
-
-    private static List<MKWorkspaceVerticalStackSettings> normalizeVerticalStackSettings(
-            ResourceLocation plannerId,
-            boolean uniqueNorthWestCornerTower,
-            boolean uniqueNorthEastCornerTower,
-            boolean uniqueSouthEastCornerTower,
-            boolean uniqueSouthWestCornerTower,
-            List<MKWorkspaceVerticalStackSettings> currentSettings) {
-        if (!WALLED_KEEP_PLANNER_ID.equals(plannerId)) {
-            return List.copyOf(currentSettings == null ? List.of() : currentSettings);
-        }
-        ArrayList<MKWorkspaceVerticalStackSettings> normalized = new ArrayList<>();
-        List<MKWorkspaceVerticalStackSettings> defaults = defaultWalledKeepVerticalStackSettings(uniqueNorthWestCornerTower,
-                uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower);
-        for (MKWorkspaceVerticalStackSettings defaultSettings : defaults) {
-            MKWorkspaceVerticalStackSettings settings = currentSettings == null ? null : currentSettings.stream()
-                    .filter(existing -> existing.stackId().equals(defaultSettings.stackId()))
-                    .findFirst()
-                    .orElse(null);
-            normalized.add(settings == null ? defaultSettings : settings);
-        }
-        return List.copyOf(normalized);
-    }
-
-    private static TerrainAdjustment defaultTerrainAdjustment(ResourceLocation plannerId) {
-        return WALLED_KEEP_PLANNER_ID.equals(plannerId) ? DEFAULT_WALLED_KEEP_TERRAIN_ADJUSTMENT :
-                DEFAULT_TOWER_TERRAIN_ADJUSTMENT;
+                updatedTerrainAdjustment == null ? TerrainAdjustment.BEARD_THIN : updatedTerrainAdjustment);
     }
 }

@@ -321,7 +321,7 @@ class MKFloorConnectorPatchTest {
         tags.put(MKFloorMaskVariantExporter.FLOOR_RANDOMIZE_MAIN_EXIT_TAG, Boolean.toString(randomizeMainExit));
         tags.put("workspace_base_name", "floor_main_room_link");
         new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
-                true, true, false, false, "floor/tower/primary/main_floor", false)
+                true, true, false, false, "tower.primary.main_floor", false)
                 .applyToTags(tags);
         List<MKWorkspaceConnectorDefinition> connectors = new java.util.ArrayList<>();
         connectors.add(connector(MKConnectorRole.MAIN_FORWARD, Direction.SOUTH));
@@ -380,7 +380,7 @@ class MKFloorConnectorPatchTest {
     private static MKWorkspacePieceDefinition mainPathPiece(boolean mainPathEnding) {
         Map<String, String> tags = new LinkedHashMap<>();
         new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
-                true, false, mainPathEnding, false, "floor/tower/primary/main_floor", mainPathEnding)
+                true, false, mainPathEnding, false, "tower.primary.main_floor", mainPathEnding)
                 .applyToTags(tags);
         return new MKWorkspacePieceDefinition(
                 UUID.randomUUID(),
