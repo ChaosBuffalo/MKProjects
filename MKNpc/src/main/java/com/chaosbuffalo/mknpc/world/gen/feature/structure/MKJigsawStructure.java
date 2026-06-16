@@ -213,7 +213,7 @@ public class MKJigsawStructure extends MKStructure {
             int leadIn = effectiveHallwayLeadInPieces(settings, rootWidth, rootLength);
             long planSeed = MKJigsawPlacement.floorPlanSeed(rule, rule.topologyGroup(), root.piece().getPosition());
             MKFloorLayoutSolver.FloorLayoutResult plan = new MKFloorLayoutSolver().solve(settings, rootWidth,
-                    rootLength, rootExits, leadIn, planSeed);
+                    rootLength, rootExits, leadIn, planSeed, maxDistanceFromCenter);
             Map<Integer, PlacedFloorSegment> placedSegments = lockedPlacedSegments(rule.topologyGroup(), root,
                     plan, pieces);
             int carvedLinks = 0;

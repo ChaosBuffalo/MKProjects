@@ -157,7 +157,7 @@ public class MKJigsawPlacement {
                         VoxelShape free = Shapes.join(Shapes.create(aabb), Shapes.create(AABB.of(startPiece.getBoundingBox())), BooleanOp.ONLY_FIRST);
                         addPieces(context.randomState(), maxDepth, useExpansionHack, chunkGenerator, structureTemplateManager,
                                 levelHeightAccessor, random, registry, startPiece, pieces, free, aliasLookup, liquidSettings,
-                                layoutSettings, layoutController, rootState);
+                                layoutSettings, layoutController, rootState, maxDistanceFromCenter);
                         pieces.forEach(builder::addPiece);
                     }
                 }
@@ -198,9 +198,11 @@ public class MKJigsawPlacement {
             LiquidSettings liquidSettings,
             MKDungeonLayoutSettings layoutSettings,
             MKDungeonLayoutController layoutController,
-            MKDungeonPieceState rootState
+            MKDungeonPieceState rootState,
+            int maxDistanceFromCenter
     ) {
-        Placer placer = new Placer(pools, maxDepth, chunkGenerator, structureTemplateManager, pieces, random, layoutSettings, layoutController);
+        Placer placer = new Placer(pools, maxDepth, maxDistanceFromCenter, chunkGenerator, structureTemplateManager,
+                pieces, random, layoutSettings, layoutController);
         placer.tryPlacingChildren(startPiece, new MutableObject<>(free), 0, useExpansionHack, level, randomState, aliasLookup, liquidSettings, rootState);
         while (placer.placing.hasNext()) {
             MKPieceState pieceState = placer.placing.next();
@@ -214,6 +216,7 @@ public class MKJigsawPlacement {
     static final class Placer {
         private final Registry<StructureTemplatePool> pools;
         private final int maxDepth;
+        private final int maxDistanceFromCenter;
         private final ChunkGenerator chunkGenerator;
         private final StructureTemplateManager structureTemplateManager;
         private final List<? super PoolElementStructurePiece> pieces;
@@ -226,6 +229,7 @@ public class MKJigsawPlacement {
         Placer(
                 Registry<StructureTemplatePool> pools,
                 int maxDepth,
+                int maxDistanceFromCenter,
                 ChunkGenerator chunkGenerator,
                 StructureTemplateManager structureTemplateManager,
                 List<? super PoolElementStructurePiece> pieces,
@@ -235,6 +239,7 @@ public class MKJigsawPlacement {
         ) {
             this.pools = pools;
             this.maxDepth = maxDepth;
+            this.maxDistanceFromCenter = maxDistanceFromCenter;
             this.chunkGenerator = chunkGenerator;
             this.structureTemplateManager = structureTemplateManager;
             this.pieces = pieces;
@@ -480,7 +485,7 @@ public class MKJigsawPlacement {
             int rootLength = rootPiece.getBoundingBox().getZSpan();
             int leadIn = effectiveHallwayLeadInPieces(settings, rootWidth, rootLength);
             MKFloorLayoutSolver.FloorLayoutResult plan = new MKFloorLayoutSolver().solve(settings, rootWidth,
-                    rootLength, context.rootExits(), leadIn, planSeed);
+                    rootLength, context.rootExits(), leadIn, planSeed, maxDistanceFromCenter);
             if (plan.hasRequiredRejections() || !plan.fitsHardLimit()) {
                 logLockedFloorPlanFailure(topologyGroup, "solver rejected floor plan");
                 return;
