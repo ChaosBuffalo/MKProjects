@@ -93,7 +93,7 @@ public class MKWorkspaceVerticalStackPlanner {
         MKWorkspaceTopologySlotMetadata slotMetadata = resolvedFamily.slotMetadata();
         MKWorkspaceVerticalStackSlot stackSlot = MKWorkspaceVerticalStackSlot.fromTopologySlotId(slotMetadata.topologySlotId())
                 .orElseThrow(() -> new IllegalStateException("family " + family.baseName() +
-                        " is not a tower stack slot: " + slotMetadata.topologySlotId()));
+                        " is not a vertical stack slot: " + slotMetadata.topologySlotId()));
         return switch (stackSlot) {
             case ENTRY -> new MKPlannedPiece(
                     slotMetadata.topologySlotId(),

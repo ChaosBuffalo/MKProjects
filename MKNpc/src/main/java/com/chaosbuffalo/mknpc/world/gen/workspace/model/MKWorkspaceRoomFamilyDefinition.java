@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 
 public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily {
-    private static final String PRIMARY_TOWER_STACK_ID = "tower.primary";
+    private static final String PRIMARY_VERTICAL_STACK_ID = "tower.primary";
 
     public static final Codec<MKWorkspaceRoomFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("baseName").forGetter(MKWorkspaceRoomFamilyDefinition::baseName),
@@ -207,43 +207,43 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
 
     public static List<MKWorkspaceRoomFamilyDefinition> createDefaults(MKWorkspaceDimensions dimensions) {
         return List.of(
-                forVerticalStackSlot("entry", MKWorkspaceVerticalStackSlot.ENTRY, PRIMARY_TOWER_STACK_ID, true,
+                forVerticalStackSlot("entry", MKWorkspaceVerticalStackSlot.ENTRY, PRIMARY_VERTICAL_STACK_ID, true,
                         0, 0, 0,
                   MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
                   List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
                           MKWorkspaceHorizontalExitPathKind.INGRESS, "main_opening",
                           MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION)),
                   0, 0, null, null),
-                forVerticalStackSlot("floor_main", MKWorkspaceVerticalStackSlot.MAIN_FLOOR, PRIMARY_TOWER_STACK_ID, true,
+                forVerticalStackSlot("floor_main", MKWorkspaceVerticalStackSlot.MAIN_FLOOR, PRIMARY_VERTICAL_STACK_ID, true,
                         0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
                 forVerticalStackSlot("top_cap_approach", MKWorkspaceVerticalStackSlot.TOP_CAP_APPROACH,
-                        PRIMARY_TOWER_STACK_ID, true,
+                        PRIMARY_VERTICAL_STACK_ID, true,
                         0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
-                forVerticalStackSlot("top_cap", MKWorkspaceVerticalStackSlot.TOP_CAP, PRIMARY_TOWER_STACK_ID, true,
+                forVerticalStackSlot("top_cap", MKWorkspaceVerticalStackSlot.TOP_CAP, PRIMARY_VERTICAL_STACK_ID, true,
                         0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
                 forVerticalStackSlot("basement_entry", MKWorkspaceVerticalStackSlot.BASEMENT_ENTRY,
-                        PRIMARY_TOWER_STACK_ID, true,
+                        PRIMARY_VERTICAL_STACK_ID, true,
                         0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
                 forVerticalStackSlot("basement_main", MKWorkspaceVerticalStackSlot.BASEMENT_FLOOR,
-                        PRIMARY_TOWER_STACK_ID, true,
+                        PRIMARY_VERTICAL_STACK_ID, true,
                         0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
                 forVerticalStackSlot("basement_cap_approach", MKWorkspaceVerticalStackSlot.BASEMENT_CAP_APPROACH,
-                        PRIMARY_TOWER_STACK_ID, true,
+                        PRIMARY_VERTICAL_STACK_ID, true,
                         0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null),
                 forVerticalStackSlot("basement_cap", MKWorkspaceVerticalStackSlot.BASEMENT_CAP,
-                        PRIMARY_TOWER_STACK_ID, true,
+                        PRIMARY_VERTICAL_STACK_ID, true,
                         0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
                         null, null)

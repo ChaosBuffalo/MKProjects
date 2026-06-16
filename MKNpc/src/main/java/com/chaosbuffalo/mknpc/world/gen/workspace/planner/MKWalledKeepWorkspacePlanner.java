@@ -344,8 +344,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         return new MKWorkspaceTopologySchema(
                 plannerId(),
                 List.of(
-                        new MKWorkspaceRegionSchema("keep.center_tower", "tower_stack", true),
-                        new MKWorkspaceRegionSchema("keep.corner_towers", "tower_stack", true),
+                        new MKWorkspaceRegionSchema("keep.center_tower", "vertical_stack", true),
+                        new MKWorkspaceRegionSchema("keep.corner_towers", "vertical_stack", true),
                         new MKWorkspaceRegionSchema("keep.perimeter_runs", "linear_run", true),
                         new MKWorkspaceRegionSchema("keep.walkways", "linear_run", true),
                         new MKWorkspaceRegionSchema("keep.gates", "entry", false),

@@ -162,8 +162,8 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
 
     private void drawKeepElements(GuiGraphics graphics, List<PreviewElement> elements,
                                   int originX, int originY, double scale, Rect footprintRect) {
-        int centerWidth = towerStack("keep.center").width();
-        int centerLength = towerStack("keep.center").length();
+        int centerWidth = verticalStack("keep.center").width();
+        int centerLength = verticalStack("keep.center").length();
         Rect centerRect = worldRect(originX, originY, scale,
                 -centerWidth / 2.0, -centerLength / 2.0, centerWidth, centerLength);
 
@@ -223,21 +223,21 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
 
     private void drawCornerTowers(GuiGraphics graphics, List<PreviewElement> elements, Rect footprintRect,
                                   double scale) {
-        MKWorkspaceVerticalStackSettings corner = towerStack(cornerStackId("keep.corner.north_west"));
+        MKWorkspaceVerticalStackSettings corner = verticalStack(cornerStackId("keep.corner.north_west"));
         int cornerWidth = Math.max(4, px(scale, corner.width()));
         int cornerHeight = Math.max(4, px(scale, corner.length()));
         drawElement(graphics, elements,
                 new Rect(footprintRect.x(), footprintRect.y(), cornerWidth, cornerHeight),
                 CORNER_TOWER, "NW corner tower", cornerTooltip("NW", corner),
                 NavigationTarget.plannerStack(cornerStackId("keep.corner.north_west")));
-        corner = towerStack(cornerStackId("keep.corner.north_east"));
+        corner = verticalStack(cornerStackId("keep.corner.north_east"));
         cornerWidth = Math.max(4, px(scale, corner.width()));
         cornerHeight = Math.max(4, px(scale, corner.length()));
         drawElement(graphics, elements,
                 new Rect(footprintRect.right() - cornerWidth, footprintRect.y(), cornerWidth, cornerHeight),
                 CORNER_TOWER, "NE corner tower", cornerTooltip("NE", corner),
                 NavigationTarget.plannerStack(cornerStackId("keep.corner.north_east")));
-        corner = towerStack(cornerStackId("keep.corner.south_east"));
+        corner = verticalStack(cornerStackId("keep.corner.south_east"));
         cornerWidth = Math.max(4, px(scale, corner.width()));
         cornerHeight = Math.max(4, px(scale, corner.length()));
         drawElement(graphics, elements,
@@ -245,7 +245,7 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
                         cornerWidth, cornerHeight),
                 CORNER_TOWER, "SE corner tower", cornerTooltip("SE", corner),
                 NavigationTarget.plannerStack(cornerStackId("keep.corner.south_east")));
-        corner = towerStack(cornerStackId("keep.corner.south_west"));
+        corner = verticalStack(cornerStackId("keep.corner.south_west"));
         cornerWidth = Math.max(4, px(scale, corner.width()));
         cornerHeight = Math.max(4, px(scale, corner.length()));
         drawElement(graphics, elements,
@@ -349,7 +349,7 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
                 .findFirst();
     }
 
-    private MKWorkspaceVerticalStackSettings towerStack(String stackId) {
+    private MKWorkspaceVerticalStackSettings verticalStack(String stackId) {
         return workspace.topologyProfile().verticalStackSettingsOrDefault(stackId);
     }
 

@@ -75,9 +75,9 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         return new MKWorkspaceTopologySchema(
                 plannerId(),
                 List.of(
-                        new MKWorkspaceRegionSchema("tower.primary.entry", "tower_stack", true),
-                        new MKWorkspaceRegionSchema("tower.primary.main", "tower_stack", true),
-                        new MKWorkspaceRegionSchema("tower.primary.basement", "tower_stack", true),
+                        new MKWorkspaceRegionSchema("tower.primary.entry", "vertical_stack", true),
+                        new MKWorkspaceRegionSchema("tower.primary.main", "vertical_stack", true),
+                        new MKWorkspaceRegionSchema("tower.primary.basement", "vertical_stack", true),
                         new MKWorkspaceRegionSchema("tower.primary.top_cap", "tower_cap", true),
                         new MKWorkspaceRegionSchema("tower.primary.basement_cap", "tower_cap", true),
                         new MKWorkspaceRegionSchema("tower.linear_runs", "linear_run", true)
