@@ -10,15 +10,15 @@ public record MKDungeonPieceState(
         String topologyGroup,
         int mainPathPiecesInTopologyGroup,
         int mainPathTargetInTopologyGroup,
-        String towerStackId,
-        String towerStackSlot,
-        int towerStackMainTargetFloors,
-        int towerStackMainPlacedFloors,
-        int towerStackBasementTargetFloors,
-        int towerStackBasementPlacedFloors,
-        boolean towerStackTopCapApproachEnabled,
-        boolean towerStackBasementEntryEnabled,
-        boolean towerStackBasementCapApproachEnabled,
+        String verticalStackId,
+        String verticalStackSlot,
+        int verticalStackMainTargetFloors,
+        int verticalStackMainPlacedFloors,
+        int verticalStackBasementTargetFloors,
+        int verticalStackBasementPlacedFloors,
+        boolean verticalStackTopCapApproachEnabled,
+        boolean verticalStackBasementEntryEnabled,
+        boolean verticalStackBasementCapApproachEnabled,
         String floorExitMask
 ) {
     public MKDungeonPieceState {
@@ -49,19 +49,19 @@ public record MKDungeonPieceState(
                                String topologyGroup,
                                int mainPathPiecesInTopologyGroup,
                                int mainPathTargetInTopologyGroup,
-                               String towerStackId,
-                               String towerStackSlot,
-                               int towerStackMainTargetFloors,
-                               int towerStackMainPlacedFloors,
-                               int towerStackBasementTargetFloors,
-                               int towerStackBasementPlacedFloors,
-                               boolean towerStackTopCapApproachEnabled,
-                               boolean towerStackBasementEntryEnabled,
-                               boolean towerStackBasementCapApproachEnabled) {
+                               String verticalStackId,
+                               String verticalStackSlot,
+                               int verticalStackMainTargetFloors,
+                               int verticalStackMainPlacedFloors,
+                               int verticalStackBasementTargetFloors,
+                               int verticalStackBasementPlacedFloors,
+                               boolean verticalStackTopCapApproachEnabled,
+                               boolean verticalStackBasementEntryEnabled,
+                               boolean verticalStackBasementCapApproachEnabled) {
         this(progressionFloorIndex, verticalLevelIndex, piecesOnFloor, branchDepth, onMainPath, targetFloors,
-                topologyGroup, mainPathPiecesInTopologyGroup, mainPathTargetInTopologyGroup, towerStackId,
-                towerStackSlot, towerStackMainTargetFloors, towerStackMainPlacedFloors,
-                towerStackBasementTargetFloors, towerStackBasementPlacedFloors, towerStackTopCapApproachEnabled,
-                towerStackBasementEntryEnabled, towerStackBasementCapApproachEnabled, "");
+                topologyGroup, mainPathPiecesInTopologyGroup, mainPathTargetInTopologyGroup, verticalStackId,
+                verticalStackSlot, verticalStackMainTargetFloors, verticalStackMainPlacedFloors,
+                verticalStackBasementTargetFloors, verticalStackBasementPlacedFloors, verticalStackTopCapApproachEnabled,
+                verticalStackBasementEntryEnabled, verticalStackBasementCapApproachEnabled, "");
     }
 }

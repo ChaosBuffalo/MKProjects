@@ -21,8 +21,8 @@ public record MKJigsawPieceMetadata(
         String topologyGroup,
         boolean mainPathEnding,
         boolean branchCap,
-        String towerStackId,
-        String towerStackSlot,
+        String verticalStackId,
+        String verticalStackSlot,
         int minMainFloors,
         int maxMainFloors,
         int minBasementFloors,
@@ -50,18 +50,18 @@ public record MKJigsawPieceMetadata(
             Codec.STRING.optionalFieldOf("topology_group", "").forGetter(MKJigsawPieceMetadata::topologyGroup),
             Codec.BOOL.optionalFieldOf("main_path_ending", false).forGetter(MKJigsawPieceMetadata::mainPathEnding),
             Codec.BOOL.optionalFieldOf("branch_cap", false).forGetter(MKJigsawPieceMetadata::branchCap),
-            TowerStackMetadata.CODEC.forGetter(MKJigsawPieceMetadata::towerStackMetadata),
+            VerticalStackMetadata.CODEC.forGetter(MKJigsawPieceMetadata::verticalStackMetadata),
             FloorRuntimeMetadata.CODEC.forGetter(MKJigsawPieceMetadata::floorRuntimeMetadata)
     ).apply(instance, (pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath,
-                       terminal, topCapOnly, topologyGroup, mainPathEnding, branchCap, towerStackMetadata,
+                       terminal, topCapOnly, topologyGroup, mainPathEnding, branchCap, verticalStackMetadata,
                        floorRuntimeMetadata) ->
             new MKJigsawPieceMetadata(pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath,
                     allowOnBranchPath, terminal, topCapOnly, topologyGroup, mainPathEnding, branchCap,
-                    towerStackMetadata.towerStackId(), towerStackMetadata.towerStackSlot(),
-                    towerStackMetadata.minMainFloors(), towerStackMetadata.maxMainFloors(),
-                    towerStackMetadata.minBasementFloors(), towerStackMetadata.maxBasementFloors(),
-                    towerStackMetadata.topCapApproachEnabled(), towerStackMetadata.basementEntryEnabled(),
-                    towerStackMetadata.basementCapApproachEnabled(), floorRuntimeMetadata.floorExitMask(),
+                    verticalStackMetadata.verticalStackId(), verticalStackMetadata.verticalStackSlot(),
+                    verticalStackMetadata.minMainFloors(), verticalStackMetadata.maxMainFloors(),
+                    verticalStackMetadata.minBasementFloors(), verticalStackMetadata.maxBasementFloors(),
+                    verticalStackMetadata.topCapApproachEnabled(), verticalStackMetadata.basementEntryEnabled(),
+                    verticalStackMetadata.basementCapApproachEnabled(), floorRuntimeMetadata.floorExitMask(),
                     floorRuntimeMetadata.foundationPolicy(), floorRuntimeMetadata.wallBlock(),
                     floorRuntimeMetadata.floorLinkCandidates(), floorRuntimeMetadata.floorClosableOpenings(),
                     floorRuntimeMetadata.floorRootExits())));
@@ -110,23 +110,23 @@ public record MKJigsawPieceMetadata(
     public MKJigsawPieceMetadata(MKJigsawPieceRole pieceRole, int progressionDelta, int verticalLevelDelta,
                                  boolean allowOnMainPath, boolean allowOnBranchPath, boolean terminal,
                                  boolean topCapOnly, String topologyGroup, boolean mainPathEnding,
-                                 boolean branchCap, String towerStackId, String towerStackSlot,
+                                 boolean branchCap, String verticalStackId, String verticalStackSlot,
                                  int minMainFloors, int maxMainFloors, int minBasementFloors, int maxBasementFloors,
                                  boolean topCapApproachEnabled, boolean basementEntryEnabled,
                                  boolean basementCapApproachEnabled, MKWorkspaceFoundationPolicy foundationPolicy) {
         this(pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
-                topCapOnly, topologyGroup, mainPathEnding, branchCap, towerStackId, towerStackSlot, minMainFloors,
+                topCapOnly, topologyGroup, mainPathEnding, branchCap, verticalStackId, verticalStackSlot, minMainFloors,
                 maxMainFloors, minBasementFloors, maxBasementFloors, topCapApproachEnabled, basementEntryEnabled,
                 basementCapApproachEnabled, "", foundationPolicy, DEFAULT_WALL_BLOCK, List.of(), List.of(), List.of());
     }
 
-    public boolean hasTowerStackLayout() {
-        return towerStackId != null && !towerStackId.isBlank() &&
-                towerStackSlot != null && !towerStackSlot.isBlank();
+    public boolean hasVerticalStackLayout() {
+        return verticalStackId != null && !verticalStackId.isBlank() &&
+                verticalStackSlot != null && !verticalStackSlot.isBlank();
     }
 
-    private TowerStackMetadata towerStackMetadata() {
-        return new TowerStackMetadata(towerStackId, towerStackSlot, minMainFloors, maxMainFloors,
+    private VerticalStackMetadata verticalStackMetadata() {
+        return new VerticalStackMetadata(verticalStackId, verticalStackSlot, minMainFloors, maxMainFloors,
                 minBasementFloors, maxBasementFloors, topCapApproachEnabled, basementEntryEnabled,
                 basementCapApproachEnabled);
     }
@@ -241,9 +241,9 @@ public record MKJigsawPieceMetadata(
         }
     }
 
-    private record TowerStackMetadata(
-            String towerStackId,
-            String towerStackSlot,
+    private record VerticalStackMetadata(
+            String verticalStackId,
+            String verticalStackSlot,
             int minMainFloors,
             int maxMainFloors,
             int minBasementFloors,
@@ -252,20 +252,20 @@ public record MKJigsawPieceMetadata(
             boolean basementEntryEnabled,
             boolean basementCapApproachEnabled
     ) {
-        private static final MapCodec<TowerStackMetadata> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                Codec.STRING.optionalFieldOf("tower_stack_id", "").forGetter(TowerStackMetadata::towerStackId),
-                Codec.STRING.optionalFieldOf("tower_stack_slot", "").forGetter(TowerStackMetadata::towerStackSlot),
-                Codec.INT.optionalFieldOf("min_main_floors", 0).forGetter(TowerStackMetadata::minMainFloors),
-                Codec.INT.optionalFieldOf("max_main_floors", 0).forGetter(TowerStackMetadata::maxMainFloors),
-                Codec.INT.optionalFieldOf("min_basement_floors", 0).forGetter(TowerStackMetadata::minBasementFloors),
-                Codec.INT.optionalFieldOf("max_basement_floors", 0).forGetter(TowerStackMetadata::maxBasementFloors),
+        private static final MapCodec<VerticalStackMetadata> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                Codec.STRING.optionalFieldOf("tower_stack_id", "").forGetter(VerticalStackMetadata::verticalStackId),
+                Codec.STRING.optionalFieldOf("tower_stack_slot", "").forGetter(VerticalStackMetadata::verticalStackSlot),
+                Codec.INT.optionalFieldOf("min_main_floors", 0).forGetter(VerticalStackMetadata::minMainFloors),
+                Codec.INT.optionalFieldOf("max_main_floors", 0).forGetter(VerticalStackMetadata::maxMainFloors),
+                Codec.INT.optionalFieldOf("min_basement_floors", 0).forGetter(VerticalStackMetadata::minBasementFloors),
+                Codec.INT.optionalFieldOf("max_basement_floors", 0).forGetter(VerticalStackMetadata::maxBasementFloors),
                 Codec.BOOL.optionalFieldOf("top_cap_approach_enabled", true)
-                        .forGetter(TowerStackMetadata::topCapApproachEnabled),
+                        .forGetter(VerticalStackMetadata::topCapApproachEnabled),
                 Codec.BOOL.optionalFieldOf("basement_entry_enabled", true)
-                        .forGetter(TowerStackMetadata::basementEntryEnabled),
+                        .forGetter(VerticalStackMetadata::basementEntryEnabled),
                 Codec.BOOL.optionalFieldOf("basement_cap_approach_enabled", false)
-                        .forGetter(TowerStackMetadata::basementCapApproachEnabled)
-        ).apply(instance, TowerStackMetadata::new));
+                        .forGetter(VerticalStackMetadata::basementCapApproachEnabled)
+        ).apply(instance, VerticalStackMetadata::new));
     }
 
     private record FloorRuntimeMetadata(

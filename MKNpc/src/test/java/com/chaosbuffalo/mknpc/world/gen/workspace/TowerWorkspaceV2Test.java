@@ -89,7 +89,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void reusableTowerStackPlannerMatchesTowerRoomPieces() {
+    void reusableVerticalStackPlannerMatchesTowerRoomPieces() {
         MKStructureWorkspace workspace = baseWorkspace(
                 List.of(
                         new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
@@ -113,7 +113,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void reusableTowerStackPlannerSupportsScopedConnectorPools() {
+    void reusableVerticalStackPlannerSupportsScopedConnectorPools() {
         MKStructureWorkspace workspace = baseWorkspace(
                 List.of(
                         new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
@@ -1420,7 +1420,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void walledKeepValidationAllowsIndependentTowerStackHeights() {
+    void walledKeepValidationAllowsIndependentVerticalStackHeights() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceTopologyProfile topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false)
                 .withVerticalStackSettings(new MKWorkspaceVerticalStackSettings("keep.center", 1, 1, 9))
@@ -1517,7 +1517,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void walledKeepPlannerTagsTowerStacksAndLinearRunVoidMargins() {
+    void walledKeepPlannerTagsVerticalStacksAndLinearRunVoidMargins() {
         MKWorkspaceTopologyProfile topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false)
                 .withVerticalStackSettings(new MKWorkspaceVerticalStackSettings("keep.center", 3, 2, 7));
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
@@ -3161,7 +3161,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void layoutControllerEnforcesTowerStackFloorTargets() {
+    void layoutControllerEnforcesVerticalStackFloorTargets() {
         MKDungeonLayoutController controller = new MKDungeonLayoutController(new MKDungeonLayoutSettings(
                 1,
                 1,
@@ -3174,16 +3174,16 @@ class TowerWorkspaceV2Test {
         ));
         MKDungeonPieceState startState = controller.initialStateForStart(
                 new MKDungeonPieceState(0, 0, 1, 0, true, 1),
-                towerStackMetadata("entry", 1, 1, 1, 1, true, false, false,
+                VerticalStackMetadata("entry", 1, 1, 1, 1, true, false, false,
                         MKJigsawPieceRole.ROOM, 0, 0, false),
                 null);
-        MKJigsawPieceMetadata mainFloor = towerStackMetadata("main_floor", 1, 1, 1, 1, true, false, false,
+        MKJigsawPieceMetadata mainFloor = VerticalStackMetadata("main_floor", 1, 1, 1, 1, true, false, false,
                 MKJigsawPieceRole.ROOM, 1, 1, false);
-        MKJigsawPieceMetadata topCapApproach = towerStackMetadata("top_cap_approach", 1, 1, 1, 1, true, false, false,
+        MKJigsawPieceMetadata topCapApproach = VerticalStackMetadata("top_cap_approach", 1, 1, 1, 1, true, false, false,
                 MKJigsawPieceRole.TOP_CAP_APPROACH, 1, 1, false);
-        MKJigsawPieceMetadata basementEntry = towerStackMetadata("basement_entry", 1, 1, 1, 1, true, false, false,
+        MKJigsawPieceMetadata basementEntry = VerticalStackMetadata("basement_entry", 1, 1, 1, 1, true, false, false,
                 MKJigsawPieceRole.ROOM, 1, -1, false);
-        MKJigsawPieceMetadata basementFloor = towerStackMetadata("basement_floor", 1, 1, 1, 1, true, false, false,
+        MKJigsawPieceMetadata basementFloor = VerticalStackMetadata("basement_floor", 1, 1, 1, 1, true, false, false,
                 MKJigsawPieceRole.ROOM, 1, -1, false);
         var upConnector = connectorInfo(MKConnectorRole.CONNECT_UP);
         var downConnector = connectorInfo(MKConnectorRole.CONNECT_DOWN);
@@ -3202,7 +3202,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void layoutControllerAllowsTowerStackFloorPlanPiecesAtOuterFloorLimit() {
+    void layoutControllerAllowsVerticalStackFloorPlanPiecesAtOuterFloorLimit() {
         MKDungeonLayoutController controller = new MKDungeonLayoutController(new MKDungeonLayoutSettings(
                 1,
                 1,
@@ -3215,10 +3215,10 @@ class TowerWorkspaceV2Test {
         ));
         MKDungeonPieceState startState = controller.initialStateForStart(
                 new MKDungeonPieceState(0, 0, 1, 0, true, 1),
-                towerStackMetadata("entry", 1, 1, 1, 1, true, false, false,
+                VerticalStackMetadata("entry", 1, 1, 1, 1, true, false, false,
                         MKJigsawPieceRole.ROOM, 0, 0, false),
                 null);
-        MKJigsawPieceMetadata basementFloor = towerStackMetadata("basement_floor", 1, 1, 1, 1, true, false, false,
+        MKJigsawPieceMetadata basementFloor = VerticalStackMetadata("basement_floor", 1, 1, 1, 1, true, false, false,
                 MKJigsawPieceRole.ROOM, 1, -1, false);
         MKDungeonPieceState basementState = controller.nextState(startState, connectorInfo(MKConnectorRole.CONNECT_DOWN),
                 basementFloor, null);
@@ -3344,7 +3344,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void towerStackFloorCountsDefaultCapApproachFlags() {
+    void VerticalStackFloorCountsDefaultCapApproachFlags() {
         assertTrue(MKWorkspaceVerticalStackFloorCounts.DEFAULT_TOP_CAP_APPROACH_ENABLED);
         assertFalse(MKWorkspaceVerticalStackFloorCounts.DEFAULT_BASEMENT_CAP_APPROACH_ENABLED);
     }
@@ -3396,7 +3396,7 @@ class TowerWorkspaceV2Test {
 
     @Test
     void plannerConnectsTopCapDirectlyWhenApproachDisabled() {
-        MKStructureWorkspace workspace = withTowerStackFloorCounts(baseWorkspace(
+        MKStructureWorkspace workspace = withVerticalStackFloorCounts(baseWorkspace(
                         List.of(
                                 new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
                                 new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
@@ -3422,7 +3422,7 @@ class TowerWorkspaceV2Test {
 
     @Test
     void plannerConnectsBasementCapThroughApproachWhenEnabled() {
-        MKStructureWorkspace workspace = withTowerStackFloorCounts(baseWorkspace(
+        MKStructureWorkspace workspace = withVerticalStackFloorCounts(baseWorkspace(
                         List.of(
                                 new MKHorizontalOpeningProfile("entry_main", 3, 3, true, false),
                                 new MKHorizontalOpeningProfile("main_branch", 3, 3, false, true)
@@ -4269,7 +4269,7 @@ class TowerWorkspaceV2Test {
                 topVoidMargin, bottomVoidMargin, foundationPolicy, paletteOverride);
     }
 
-    private static MKStructureWorkspace withTowerStackFloorCounts(MKStructureWorkspace workspace,
+    private static MKStructureWorkspace withVerticalStackFloorCounts(MKStructureWorkspace workspace,
                                                                   int mainFloors,
                                                                   int basementFloors,
                                                                   boolean topCapApproachEnabled,
@@ -4345,7 +4345,7 @@ class TowerWorkspaceV2Test {
         );
     }
 
-    private static MKJigsawPieceMetadata towerStackMetadata(String slot,
+    private static MKJigsawPieceMetadata VerticalStackMetadata(String slot,
                                                             int minMainFloors,
                                                             int maxMainFloors,
                                                             int minBasementFloors,
