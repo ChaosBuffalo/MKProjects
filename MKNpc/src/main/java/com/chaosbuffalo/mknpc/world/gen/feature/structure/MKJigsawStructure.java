@@ -175,9 +175,10 @@ public class MKJigsawStructure extends MKStructure {
                 }
             }
         }
-        Set<BlockPos> linkedFloorOpenings = applySolverFloorLinks(level, boundingBox, pieces);
-        closeUnconnectedFloorOpenings(level, boundingBox, pieces, linkedFloorOpenings);
+        closeUnconnectedFloorOpenings(level, boundingBox, pieces, Set.of());
         applyPieceFoundations(level, boundingBox, pieces);
+        // Link carving must run last so generic opening closure and foundations cannot overwrite planned corridors.
+        applySolverFloorLinks(level, boundingBox, pieces);
     }
 
     private Set<BlockPos> applySolverFloorLinks(WorldGenLevel level, BoundingBox chunkBounds,
