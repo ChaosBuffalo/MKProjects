@@ -101,12 +101,14 @@ class MKFloorConnectorPatchTest {
     @Test
     void randomizedMainExitExportPromotesSelectedBranchConnectorToMain() {
         MKWorkspacePieceDefinition source = randomizedMainExitTemplate();
+        MKWorkspacePieceDefinition runtimeSource = runtimeContentVariant(source);
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
-                .withPieces(List.of(source));
+                .withPieces(List.of(source, runtimeSource));
 
         List<MKWorkspacePieceDefinition> exported = MKFloorMaskVariantExporter.exportPieces(workspace, true);
         List<MKWorkspacePieceDefinition> variants = exported.stream()
                 .filter(piece -> "instance".equals(piece.tags().get("workspace_piece_kind")))
+                .filter(piece -> piece.tags().containsKey(MKFloorMaskVariantExporter.FLOOR_MASK_TAG))
                 .toList();
         MKWorkspacePieceDefinition eastMainAllBranches = variants.stream()
                 .filter(piece -> "east".equals(piece.tags().get(MKFloorMaskVariantExporter.FLOOR_SELECTED_MAIN_EXIT_TAG)))
@@ -126,12 +128,13 @@ class MKFloorConnectorPatchTest {
     @Test
     void randomizedMainExitRuntimeMetadataClosesFormerMainExit() {
         MKWorkspacePieceDefinition source = linkCandidateTemplate(true);
+        MKWorkspacePieceDefinition runtimeSource = runtimeContentVariant(source);
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
-                .withPieces(List.of(runtimeStartPiece(), source));
+                .withPieces(List.of(runtimeStartPiece(), source, runtimeSource));
 
         MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 4, "test");
         MKWorkspaceExportManifest.ExportRuntimeTemplateGroup group = manifest.runtimeHints().templateGroups().stream()
-                .filter(templateGroup -> "floor_main_room_link_main_w_mask_none".equals(templateGroup.baseName()))
+                .filter(templateGroup -> "floor_main_room_link_1_main_w_mask_none".equals(templateGroup.baseName()))
                 .findFirst()
                 .orElseThrow();
 
@@ -142,11 +145,13 @@ class MKFloorConnectorPatchTest {
     @Test
     void linkCandidateExportIsPatchedClosedByDefault() {
         MKWorkspacePieceDefinition source = linkCandidateTemplate(false);
+        MKWorkspacePieceDefinition runtimeSource = runtimeContentVariant(source);
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
-                .withPieces(List.of(source));
+                .withPieces(List.of(source, runtimeSource));
 
         MKWorkspacePieceDefinition variant = MKFloorMaskVariantExporter.exportPieces(workspace, true).stream()
                 .filter(piece -> "instance".equals(piece.tags().get("workspace_piece_kind")))
+                .filter(piece -> piece.tags().containsKey(MKFloorMaskVariantExporter.FLOOR_MASK_TAG))
                 .findFirst()
                 .orElseThrow();
 
@@ -162,12 +167,13 @@ class MKFloorConnectorPatchTest {
     @Test
     void exportRuntimeMetadataIncludesLinkCandidateEndpoints() {
         MKWorkspacePieceDefinition source = linkCandidateTemplate(false);
+        MKWorkspacePieceDefinition runtimeSource = runtimeContentVariant(source);
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
-                .withPieces(List.of(runtimeStartPiece(), source));
+                .withPieces(List.of(runtimeStartPiece(), source, runtimeSource));
 
         MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 4, "test");
         MKWorkspaceExportManifest.ExportRuntimeTemplateGroup group = manifest.runtimeHints().templateGroups().stream()
-                .filter(templateGroup -> "floor_main_room_link_mask_none".equals(templateGroup.baseName()))
+                .filter(templateGroup -> "floor_main_room_link_1_mask_none".equals(templateGroup.baseName()))
                 .findFirst()
                 .orElseThrow();
 
@@ -192,13 +198,87 @@ class MKFloorConnectorPatchTest {
     }
 
     @Test
+    void nonFloorRuntimePieceDoesNotExportClosableOpenings() {
+        MKWorkspacePieceDefinition courtyardPath = runtimePiece(
+                "keep_courtyard_path_t_east",
+                "keep.courtyard.path.east",
+                Map.of(
+                        "tower_piece_kind", "linear_run",
+                        "workspace_topology_slot_id", "keep.courtyard.path.east",
+                        "workspace_linear_run_path_kind", "courtyard_path"
+                ),
+                List.of(connector(MKConnectorRole.BRANCH, Direction.EAST, new BlockPos(30, 1, 15))));
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(runtimeStartPiece(), courtyardPath));
+
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 4, "test");
+        MKWorkspaceExportManifest.ExportRuntimeTemplateGroup group = manifest.runtimeHints().templateGroups().stream()
+                .filter(templateGroup -> "keep_courtyard_path_t_east".equals(templateGroup.baseName()))
+                .findFirst()
+                .orElseThrow();
+
+        assertTrue(group.pieceMetadata().floorClosableOpenings().isEmpty());
+        assertTrue(group.pieceMetadata().floorRootExits().isEmpty());
+    }
+
+    @Test
+    void floorTopologyRootExportsClosableOpeningsAndRootExits() {
+        MKWorkspacePieceDefinition floorRoot = runtimePiece(
+                "keep_center_basement_floor",
+                "keep.center.basement_floor",
+                Map.of(
+                        "tower_piece_kind", "room",
+                        "workspace_topology_slot_id", "keep.center.basement_floor",
+                        "workspace_vertical_stack_slot", "basement_floor"
+                ),
+                List.of(floorRootConnector(MKConnectorRole.BRANCH, Direction.EAST, "branch")));
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(runtimeStartPiece(), floorRoot));
+
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 4, "test");
+        MKWorkspaceExportManifest.ExportRuntimeTemplateGroup group = manifest.runtimeHints().templateGroups().stream()
+                .filter(templateGroup -> "keep_center_basement_floor".equals(templateGroup.baseName()))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(1, group.pieceMetadata().floorClosableOpenings().size());
+        assertEquals(1, group.pieceMetadata().floorRootExits().size());
+        assertEquals("keep.center.basement_floor", group.pieceMetadata().floorRootExits().getFirst().topologyGroup());
+    }
+
+    @Test
+    void floorPlanLinearRunExportsClosableOpenings() {
+        MKWorkspacePieceDefinition hallway = runtimePiece(
+                "floor_branch_hallway",
+                "tower.floor_plan.linear_run.branch",
+                Map.of(
+                        "tower_piece_kind", "floor_plan_linear_run",
+                        "workspace_topology_slot_id", "tower.floor_plan.linear_run.branch",
+                        "workspace_topology_group", "keep.center.basement_floor"
+                ),
+                List.of(connector(MKConnectorRole.BRANCH, Direction.WEST, new BlockPos(0, 1, 4))));
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(runtimeStartPiece(), hallway));
+
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 4, "test");
+        MKWorkspaceExportManifest.ExportRuntimeTemplateGroup group = manifest.runtimeHints().templateGroups().stream()
+                .filter(templateGroup -> "floor_branch_hallway".equals(templateGroup.baseName()))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(1, group.pieceMetadata().floorClosableOpenings().size());
+    }
+
+    @Test
     void randomizedMainExitExportPatchesLinkCandidatesClosed() {
         MKWorkspacePieceDefinition source = linkCandidateTemplate(true);
+        MKWorkspacePieceDefinition runtimeSource = runtimeContentVariant(source);
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
-                .withPieces(List.of(source));
+                .withPieces(List.of(source, runtimeSource));
 
         List<MKWorkspacePieceDefinition> variants = MKFloorMaskVariantExporter.exportPieces(workspace, true).stream()
                 .filter(piece -> "instance".equals(piece.tags().get("workspace_piece_kind")))
+                .filter(piece -> piece.tags().containsKey(MKFloorMaskVariantExporter.FLOOR_MASK_TAG))
                 .toList();
 
         assertFalse(variants.isEmpty());
@@ -402,6 +482,59 @@ class MKFloorConnectorPatchTest {
         );
     }
 
+    private static MKWorkspacePieceDefinition runtimeContentVariant(MKWorkspacePieceDefinition source) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>(source.tags());
+        tags.put("workspace_piece_kind", "instance");
+        tags.put("workspace_base_name", source.tags().getOrDefault("workspace_base_name", source.pieceName()));
+        return new MKWorkspacePieceDefinition(
+                UUID.randomUUID(),
+                source.workspaceId(),
+                source.pieceName() + "_1",
+                source.roleId(),
+                1,
+                source.effectiveDimensions(),
+                source.shellMargin(),
+                source.connectors(),
+                source.worldOrigin(),
+                source.exportBounds(),
+                source.previewBounds(),
+                source.structureBlockPos(),
+                source.signPos(),
+                source.markerPositions(),
+                source.generatedStairPositions(),
+                tags
+        );
+    }
+
+    private static MKWorkspacePieceDefinition runtimePiece(String pieceName, String roleId, Map<String, String> extraTags,
+                                                           List<MKWorkspaceConnectorDefinition> connectors) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>(extraTags);
+        tags.put("workspace_piece_kind", "instance");
+        tags.put("workspace_base_name", pieceName);
+        new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
+                true, true, false, false,
+                tags.getOrDefault("workspace_topology_group", ""), false)
+                .applyToTags(tags);
+        return new MKWorkspacePieceDefinition(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                pieceName,
+                roleId,
+                1,
+                new MKWorkspaceDimensions(17, 17, 9, 9, 9, 3, 3, 3),
+                1,
+                connectors,
+                BlockPos.ZERO,
+                new BoundingBox(0, 0, 0, 30, 8, 30),
+                new BoundingBox(0, 0, 0, 30, 8, 30),
+                BlockPos.ZERO,
+                BlockPos.ZERO,
+                List.of(),
+                List.of(),
+                tags
+        );
+    }
+
     private static boolean hasClosedConnectorFacing(MKWorkspacePieceDefinition piece, Direction direction) {
         int count = Integer.parseInt(piece.tags().getOrDefault(
                 MKFloorMaskVariantExporter.CLOSED_CONNECTOR_COUNT_TAG, "0"));
@@ -431,6 +564,25 @@ class MKFloorConnectorPatchTest {
                 ResourceLocation.parse("mkdev:" + name),
                 ResourceLocation.parse("mkdev:" + name + "_target"),
                 ResourceLocation.parse("mkdev:" + name + "_pool"),
+                ResourceLocation.parse("mkdev:" + name + "_incoming")
+        );
+    }
+
+    private static MKWorkspaceConnectorDefinition floorRootConnector(MKConnectorRole role, Direction facing,
+                                                                     String pathKind) {
+        String name = role.getSerializedName();
+        return new MKWorkspaceConnectorDefinition(
+                role,
+                facing,
+                BlockPos.ZERO.relative(facing, 4),
+                3,
+                3,
+                0,
+                0,
+                ResourceLocation.parse("mkdev:" + name),
+                ResourceLocation.parse("mkdev:" + name + "_target"),
+                ResourceLocation.parse("mkdev:test_keep/floor_plan/keep.center.basement_floor/rooms/" +
+                        pathKind + "/" + pathKind + "_opening"),
                 ResourceLocation.parse("mkdev:" + name + "_incoming")
         );
     }

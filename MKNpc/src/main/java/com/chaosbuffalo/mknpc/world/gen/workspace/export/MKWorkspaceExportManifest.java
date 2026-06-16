@@ -26,6 +26,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
@@ -838,7 +839,7 @@ public record MKWorkspaceExportManifest(
         }
 
         private static List<MKJigsawPieceMetadata.FloorRootExit> floorRootExits(MKWorkspacePieceDefinition piece) {
-            if ("floor_plan_room".equals(piece.tags().get("tower_piece_kind"))) {
+            if (!isFloorTopologyRootPiece(piece)) {
                 return List.of();
             }
             return piece.connectors().stream()
@@ -913,6 +914,9 @@ public record MKWorkspaceExportManifest(
 
         private static List<MKJigsawPieceMetadata.FloorClosableOpening> floorClosableOpenings(
                 MKWorkspacePieceDefinition piece) {
+            if (!exportsFloorClosableOpenings(piece)) {
+                return List.of();
+            }
             return piece.connectors().stream()
                     .filter(connector -> isFloorClosableOpening(piece, connector))
                     .filter(connector -> connector.facing().getAxis().isHorizontal())
@@ -932,6 +936,29 @@ public record MKWorkspaceExportManifest(
                                                       MKWorkspaceConnectorDefinition connector) {
             return connector.role() == MKConnectorRole.MAIN_BACK ||
                     connector.role() == MKConnectorRole.BRANCH;
+        }
+
+        private static boolean exportsFloorClosableOpenings(MKWorkspacePieceDefinition piece) {
+            return isGeneratedFloorTopologyPiece(piece) || isFloorTopologyRootPiece(piece);
+        }
+
+        private static boolean isGeneratedFloorTopologyPiece(MKWorkspacePieceDefinition piece) {
+            String pieceKind = piece.tags().get("tower_piece_kind");
+            return "floor_plan_room".equals(pieceKind) || "floor_plan_linear_run".equals(pieceKind);
+        }
+
+        private static boolean isFloorTopologyRootPiece(MKWorkspacePieceDefinition piece) {
+            Optional<MKWorkspaceVerticalStackSlot> slot = MKWorkspaceVerticalStackSlot.fromTopologySlotId(
+                    piece.tags().getOrDefault("workspace_topology_slot_id", piece.roleId()));
+            if (slot.isEmpty() || !"floor".equals(slot.get().roleKind()) ||
+                    slot.get() == MKWorkspaceVerticalStackSlot.ENTRY) {
+                return false;
+            }
+            return piece.connectors().stream()
+                    .filter(connector -> connector.role() == MKConnectorRole.MAIN_BACK ||
+                            connector.role() == MKConnectorRole.BRANCH)
+                    .filter(connector -> connector.facing().getAxis().isHorizontal())
+                    .anyMatch(connector -> floorRootExit(connector).isPresent());
         }
 
         private static List<MKJigsawPieceMetadata.FloorLinkCandidate> floorLinkCandidates(Map<String, String> tags) {
