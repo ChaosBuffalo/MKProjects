@@ -30,8 +30,7 @@ public interface WorkspacePlannerUiContributor {
     }
 
     default void addPlannerNodeLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
-                                      WorkspaceDraftSession editor, String nodeId, String label,
-                                      boolean topLevelPlanner) {
+                                      WorkspaceDraftSession editor, String nodeId, String label) {
         WorkspaceTopologyUiSupport.addText(screen, layout.settingsContent(), Component.literal(
                 "No planner node UI is registered for " + nodeId + "."));
     }

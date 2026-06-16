@@ -53,9 +53,8 @@ public class TowerPlannerUiContributor implements WorkspacePlannerUiContributor 
 
     @Override
     public void addPlannerNodeLayout(MKWorkspaceScreen screen, WorkspacePlannerLayout layout,
-                                     WorkspaceDraftSession editor, String nodeId, String label,
-                                     boolean topLevelPlanner) {
-        verticalStackPanel.addStackEditor(screen, layout, editor, nodeId, label, topLevelPlanner);
+                                     WorkspaceDraftSession editor, String nodeId, String label) {
+        verticalStackPanel.addStackEditor(screen, layout, editor, nodeId, label, true);
     }
 
     @Override
