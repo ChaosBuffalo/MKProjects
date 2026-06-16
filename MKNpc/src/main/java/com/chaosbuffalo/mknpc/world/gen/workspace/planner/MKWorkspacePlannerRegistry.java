@@ -38,13 +38,9 @@ public class MKWorkspacePlannerRegistry {
     public MKWorkspacePlanner plannerFor(ResourceLocation plannerId) {
         MKWorkspacePlanner planner = planners.get(plannerId);
         if (planner == null) {
-            throw new IllegalArgumentException("No workspace topology planner registered for planner id " + plannerId);
+            throw new IllegalArgumentException("No workspace planner registered for planner id " + plannerId);
         }
         return planner;
-    }
-
-    public MKWorkspacePlanner towerPlanner() {
-        return plannerFor(MKTowerWorkspacePlanner.PLANNER_ID);
     }
 
     public List<String> validate(MKStructureWorkspace workspace) {
