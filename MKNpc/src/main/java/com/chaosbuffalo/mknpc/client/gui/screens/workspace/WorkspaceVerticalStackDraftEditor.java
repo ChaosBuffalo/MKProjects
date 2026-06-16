@@ -372,6 +372,7 @@ public final class WorkspaceVerticalStackDraftEditor {
             families.add(updated);
         }
         session.draft().familyDefinitions = List.copyOf(families);
+        session.markDirty();
     }
 
     private MKWorkspaceRoomFamilyDefinition copyFamilyWithVoidMargins(MKWorkspaceRoomFamilyDefinition family,

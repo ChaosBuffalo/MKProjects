@@ -60,6 +60,7 @@ public class WorkspaceDraftSession {
     private int selectedFamilyExitIndex;
     private int selectedOpeningIndex;
     private int selectedLinearRunIndex;
+    private boolean dirty;
     final WorkspaceDraftViewState viewState = new WorkspaceDraftViewState();
 
     public WorkspaceDraftSession(MKWorkspaceScreen screen, int selectedFamilyIndex, int selectedFamilyExitIndex, int selectedOpeningIndex,
@@ -106,6 +107,7 @@ public class WorkspaceDraftSession {
         draft.shaftSize = requestedShaftSize;
         seedDefaultsForTopology();
         snapDraftVerticalAccess();
+        clearDirty();
     }
 
     public String summary() {
@@ -126,6 +128,18 @@ public class WorkspaceDraftSession {
 
     public boolean hasExistingWorkspacePieces() {
         return screen.hasExistingWorkspacePieces();
+    }
+
+    public boolean dirty() {
+        return dirty;
+    }
+
+    public void markDirty() {
+        dirty = true;
+    }
+
+    public void clearDirty() {
+        dirty = false;
     }
 
     public void submit() {
@@ -149,6 +163,7 @@ public class WorkspaceDraftSession {
 
     public void namespace(String value) {
         draft().namespace = value;
+        markDirty();
     }
 
     public String structureName() {
@@ -157,6 +172,7 @@ public class WorkspaceDraftSession {
 
     public void structureName(String value) {
         draft().structureName = value;
+        markDirty();
     }
 
     public int shellMargin() {
@@ -165,6 +181,7 @@ public class WorkspaceDraftSession {
 
     public void shellMargin(int value) {
         draft().shellMargin = value;
+        markDirty();
     }
 
     public int exteriorAirMargin() {
@@ -173,6 +190,7 @@ public class WorkspaceDraftSession {
 
     public void exteriorAirMargin(int value) {
         draft().exteriorAirMargin = value;
+        markDirty();
     }
 
     public int previewMargin() {
@@ -181,6 +199,7 @@ public class WorkspaceDraftSession {
 
     public void previewMargin(int value) {
         draft().previewMargin = value;
+        markDirty();
     }
 
     public ResourceLocation topologyPlannerId() {
@@ -190,6 +209,7 @@ public class WorkspaceDraftSession {
     public void topologyPlannerId(ResourceLocation value) {
         draft().topologyProfile = plannerAdapterFor(value).profileForSwitch(this);
         seedDefaultsForTopology();
+        markDirty();
     }
 
     public void topologyDefaultHeight(int value) {
@@ -211,6 +231,7 @@ public class WorkspaceDraftSession {
         selectedOpeningIndex = -1;
         selectedLinearRunIndex = -1;
         snapDraftVerticalAccess();
+        markDirty();
     }
 
     public ResourceLocation floorBlock() {
@@ -279,6 +300,7 @@ public class WorkspaceDraftSession {
 
     public void palette(MKWorkspaceMaterialPalette value) {
         draft().palette = value;
+        markDirty();
     }
 
     public long familyCount(String topologySlotId) {
@@ -357,6 +379,7 @@ public class WorkspaceDraftSession {
         java.util.ArrayList<MKWorkspaceRoomFamilyDefinition> updated = new java.util.ArrayList<>(draft().familyDefinitions);
         updated.add(family);
         draft().familyDefinitions = List.copyOf(updated);
+        markDirty();
         return draft().familyDefinitions.size() - 1;
     }
 
@@ -368,18 +391,21 @@ public class WorkspaceDraftSession {
         java.util.ArrayList<MKHorizontalOpeningProfile> updated = new java.util.ArrayList<>(draft().openingProfiles);
         updated.set(index, updatedProfile);
         draft().openingProfiles = List.copyOf(updated);
+        markDirty();
     }
 
     public void removeOpeningProfile(int index) {
         java.util.ArrayList<MKHorizontalOpeningProfile> updated = new java.util.ArrayList<>(draft().openingProfiles);
         updated.remove(index);
         draft().openingProfiles = List.copyOf(updated);
+        markDirty();
     }
 
     public int addOpeningProfile() {
         java.util.ArrayList<MKHorizontalOpeningProfile> updated = new java.util.ArrayList<>(draft().openingProfiles);
         updated.add(new MKHorizontalOpeningProfile(nextUniqueOpeningProfileId(), 3, 3, false, true));
         draft().openingProfiles = List.copyOf(updated);
+        markDirty();
         return draft().openingProfiles.size() - 1;
     }
 
@@ -392,6 +418,7 @@ public class WorkspaceDraftSession {
                 new java.util.ArrayList<>(draft().linearRunFamilies);
         updated.set(index, updatedFamily);
         draft().linearRunFamilies = List.copyOf(updated);
+        markDirty();
     }
 
     public void removeLinearRunFamily(int index) {
@@ -399,6 +426,7 @@ public class WorkspaceDraftSession {
                 new java.util.ArrayList<>(draft().linearRunFamilies);
         updated.remove(index);
         draft().linearRunFamilies = List.copyOf(updated);
+        markDirty();
     }
 
     public int addLinearRunFamily() {
@@ -422,6 +450,7 @@ public class WorkspaceDraftSession {
                 null
         ));
         draft().linearRunFamilies = List.copyOf(updated);
+        markDirty();
         return draft().linearRunFamilies.size() - 1;
     }
 
@@ -458,6 +487,7 @@ public class WorkspaceDraftSession {
                                              Optional<MKWorkspacePaletteOverride> paletteOverride) {
         draft().topologyProfile = draft().topologyProfile.withPlannerScopePaletteOverride(scopeId,
                 paletteOverride == null ? Optional.empty() : paletteOverride);
+        markDirty();
     }
 
     public MKWorkspaceFoundationPolicy resolveFamilyInheritedFoundation(MKWorkspaceRoomFamilyDefinition family) {
@@ -526,6 +556,7 @@ public class WorkspaceDraftSession {
                                 settings.minMainPathPieces(),
                                 settings.maxMainPathPieces(),
                                 settings.maxBranchPiecesBeforeCap())));
+        markDirty();
     }
 
     private Optional<String> topologyGroupForFloorRole(String floorRole) {
@@ -536,6 +567,7 @@ public class WorkspaceDraftSession {
         java.util.ArrayList<MKWorkspaceRoomFamilyDefinition> updated = new java.util.ArrayList<>(draft().familyDefinitions);
         updated.set(index, normalizeFamilyDefinition(preserveFamilyMetadata(updated.get(index), updatedFamily)));
         draft().familyDefinitions = List.copyOf(updated);
+        markDirty();
     }
 
     public void replaceFamilyTopologySlotId(int index, String topologySlotId) {
@@ -576,12 +608,14 @@ public class WorkspaceDraftSession {
         java.util.ArrayList<MKWorkspaceRoomFamilyDefinition> updated = new java.util.ArrayList<>(draft().familyDefinitions);
         updated.set(index, normalizeFamilyDefinition(updatedFamily));
         draft().familyDefinitions = List.copyOf(updated);
+        markDirty();
     }
 
     public void removeFamilyDefinition(int index) {
         java.util.ArrayList<MKWorkspaceRoomFamilyDefinition> updated = new java.util.ArrayList<>(draft().familyDefinitions);
         updated.remove(index);
         draft().familyDefinitions = List.copyOf(updated);
+        markDirty();
     }
 
     public void replaceFamilyExit(int familyIndex, int exitIndex, MKWorkspaceFamilyHorizontalExitDefinition updatedExit) {
@@ -708,6 +742,7 @@ public class WorkspaceDraftSession {
 
     private void send(MKStructureWorkspace draft) {
         PacketDistributor.sendToServer(new CreateWorkspacePacket(draft, true));
+        clearDirty();
     }
 
     private boolean requiresDestructiveRegenerateConfirmation(MKStructureWorkspace draft) {
@@ -948,14 +983,21 @@ public class WorkspaceDraftSession {
         MKWorkspaceVerticalStackSettings settings = draft().topologyProfile.verticalStackSettings(stackId)
                 .orElseGet(() -> plannerAdapter().defaultVerticalStackSettings(this, stackId));
         if (draft().topologyProfile.verticalStackSettings(stackId).isEmpty()) {
-            replaceVerticalStackSettings(settings);
+            replaceVerticalStackSettings(settings, false);
         }
         return settings;
     }
 
     void replaceVerticalStackSettings(MKWorkspaceVerticalStackSettings settings) {
+        replaceVerticalStackSettings(settings, true);
+    }
+
+    private void replaceVerticalStackSettings(MKWorkspaceVerticalStackSettings settings, boolean markDirty) {
         draft().topologyProfile = draft().topologyProfile.withVerticalStackSettings(settings);
         plannerAdapter().syncDraftVerticalAccessFromStack(this, settings);
+        if (markDirty) {
+            markDirty();
+        }
     }
 
     void replaceVerticalStackSettingsWithNormalizedFloorCounts(MKWorkspaceVerticalStackSettings settings) {

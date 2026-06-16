@@ -117,4 +117,13 @@ public abstract class WorkspacePageBase {
         });
         return back;
     }
+
+    protected MKButton addApplyButton(MKWorkspaceScreen screen, MKLayout root, int rowsAboveBottom) {
+        MKButton apply = addBottomButton(screen, root, Component.literal("Apply Changes"), 160, rowsAboveBottom);
+        apply.setPressedCallback((button, mouseButton) -> {
+            screen.draftSession().submit();
+            return true;
+        });
+        return apply;
+    }
 }

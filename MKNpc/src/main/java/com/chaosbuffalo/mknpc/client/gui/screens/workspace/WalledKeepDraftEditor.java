@@ -37,6 +37,7 @@ public final class WalledKeepDraftEditor {
 
     public void terrainAdjustment(TerrainAdjustment value) {
         session.draft().topologyProfile = session.draft().topologyProfile.withTerrainAdjustment(value);
+        session.markDirty();
     }
 
     public MKWalledKeepCourtyardSettings courtyardSettings() {
@@ -127,6 +128,7 @@ public final class WalledKeepDraftEditor {
                 updatedSettings.uniqueSouthWestCornerTower());
         ensureFamiliesForActiveCornerSlots();
         normalizeVerticalStackTab();
+        session.markDirty();
     }
 
     public int wallHeight() {
@@ -145,6 +147,7 @@ public final class WalledKeepDraftEditor {
                                 Math.min(linearRun.topVoidMargin(), Math.max(0, height - 1))) :
                         linearRun)
                 .toList();
+        session.markDirty();
     }
 
     public int wallUnitSpan() {
@@ -163,6 +166,7 @@ public final class WalledKeepDraftEditor {
                         linearRun)
                 .toList();
         syncGatehouseWallDimensions(span, wallPassageWidth());
+        session.markDirty();
     }
 
     public int wallPassageWidth() {
@@ -181,6 +185,7 @@ public final class WalledKeepDraftEditor {
                         linearRun)
                 .toList();
         syncGatehouseWallDimensions(wallUnitSpan(), passageWidth);
+        session.markDirty();
     }
 
     public MKWorkspaceLinearRunKind perimeterRunKind() {
@@ -197,6 +202,7 @@ public final class WalledKeepDraftEditor {
                         copyLinearRunWithKind(linearRun, value) :
                         linearRun)
                 .toList();
+        session.markDirty();
     }
 
     public int wallTopVoidMargin() {
@@ -215,6 +221,7 @@ public final class WalledKeepDraftEditor {
                                 linearRun.interiorHeight(), Math.min(margin, Math.max(0, linearRun.interiorHeight() - 1))) :
                         linearRun)
                 .toList();
+        session.markDirty();
     }
 
     public void resetPerimeterDefaults() {
@@ -249,6 +256,7 @@ public final class WalledKeepDraftEditor {
         }
         session.draft().linearRunFamilies = List.copyOf(updated);
         syncGatehouseWallDimensions(wallUnitSpan(), wallPassageWidth());
+        session.markDirty();
     }
 
     private boolean isPerimeterTopologySlot(String topologySlotId) {
@@ -340,6 +348,7 @@ public final class WalledKeepDraftEditor {
 
     private void plannerSettings(MKWalledKeepPlannerSettings updatedSettings) {
         session.draft().topologyProfile = updatedSettings.applyTo(session.draft().topologyProfile);
+        session.markDirty();
     }
 
     private MKWorkspaceRoomFamilyDefinition copyFamilyWithGeometry(MKWorkspaceRoomFamilyDefinition family,

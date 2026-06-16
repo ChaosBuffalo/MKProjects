@@ -94,6 +94,8 @@ public class MKWorkspaceScreen extends MKScreen {
     private String blockPickerQuery = "";
     private ResourceLocation blockSwapSourceBlock;
     private ResourceLocation blockSwapTargetBlock;
+    private MKModal unsavedDraftModal;
+    private boolean forceClose;
     private boolean wasResized;
     private final MKCreativeBlockPickerSource blockPickerSource = new MKCreativeBlockPickerSource();
     private final WorkspaceTopologySlotEditor topologySlotEditor = new WorkspaceTopologySlotEditor(this);
@@ -335,8 +337,96 @@ public class MKWorkspaceScreen extends MKScreen {
         blockSwapTargetBlock = value;
     }
 
+    @Override
+    public void onClose() {
+        if (!forceClose && draftSession.dirty()) {
+            openUnsavedDraftModal();
+            return;
+        }
+        super.onClose();
+    }
+
     public void closeScreen() {
         onClose();
+    }
+
+    private void openUnsavedDraftModal() {
+        if (unsavedDraftModal != null) {
+            return;
+        }
+        int modalWidth = 380;
+        int modalHeight = 150;
+        int modalX = width / 2 - modalWidth / 2;
+        int modalY = height / 2 - modalHeight / 2;
+
+        MKModal modal = new MKBlockingModal();
+        modal.setCloseOnClickOutside(false);
+        modal.addWidget(buildUnsavedDraftModalContent(modalX, modalY, modalWidth, modalHeight, modal));
+        modal.setOnCloseCallback(() -> {
+            if (unsavedDraftModal == modal) {
+                unsavedDraftModal = null;
+            }
+        });
+        unsavedDraftModal = modal;
+        addModal(modal);
+    }
+
+    private MKLayout buildUnsavedDraftModalContent(int xPos, int yPos, int modalWidth, int modalHeight,
+                                                   MKModal modal) {
+        MKLayout root = new MKLayout(xPos, yPos, modalWidth, modalHeight);
+        root.setMargins(8, 8, 8, 8);
+        root.setPaddingTop(8).setPaddingBot(8);
+
+        MKText title = makeWhiteText(Component.literal("Unsaved Workspace Changes"));
+        root.addWidget(title);
+        root.addConstraintToWidget(MarginConstraint.TOP, title);
+        root.addConstraintToWidget(new CenterXConstraint(), title);
+
+        MKText message = makeWhiteText(Component.literal(
+                "This draft has changes that have not been applied to the workspace."));
+        message.setMultiline(true);
+        message.setWidth(modalWidth - 40);
+        message.setX(xPos + 20);
+        message.setY(yPos + 42);
+        root.addWidget(message);
+
+        int buttonY = yPos + modalHeight - BOTTOM_PADDING - BUTTON_HEIGHT;
+        int buttonWidth = 100;
+        int gap = 12;
+        int firstButtonX = xPos + (modalWidth - ((buttonWidth * 3) + (gap * 2))) / 2;
+
+        MKButton apply = new MKButton(Component.literal("Apply"), buttonWidth, BUTTON_HEIGHT);
+        apply.setX(firstButtonX);
+        apply.setY(buttonY);
+        root.addWidget(apply);
+        apply.setPressedCallback((button, mouseButton) -> {
+            closeModal(modal);
+            draftSession.submit();
+            return true;
+        });
+
+        MKButton discard = new MKButton(Component.literal("Discard"), buttonWidth, BUTTON_HEIGHT);
+        discard.setX(firstButtonX + buttonWidth + gap);
+        discard.setY(buttonY);
+        root.addWidget(discard);
+        discard.setPressedCallback((button, mouseButton) -> {
+            closeModal(modal);
+            draftSession.clearDirty();
+            forceClose = true;
+            onClose();
+            forceClose = false;
+            return true;
+        });
+
+        MKButton cancel = new MKButton(Component.literal("Cancel"), buttonWidth, BUTTON_HEIGHT);
+        cancel.setX(firstButtonX + ((buttonWidth + gap) * 2));
+        cancel.setY(buttonY);
+        root.addWidget(cancel);
+        cancel.setPressedCallback((button, mouseButton) -> {
+            closeModal(modal);
+            return true;
+        });
+        return root;
     }
 
     public void openWorkspaceTopologySlot(String topologyKey) {
