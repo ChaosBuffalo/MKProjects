@@ -35,4 +35,8 @@ public interface MKWorkspacePlanner extends MKWorkspacePiecePlanner {
                                                            Map<String, String> sourceTags) {
         return sourceTags;
     }
+
+    default boolean allowsRuntimePoolChild(String runtimePoolPath, Map<String, String> childTags) {
+        return true;
+    }
 }

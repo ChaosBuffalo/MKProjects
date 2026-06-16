@@ -37,7 +37,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     public static final ResourceLocation PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "tower");
     private static final String EMPTY_POOL = "minecraft:empty";
     private static final String LINEAR_RUN_POOL_PREFIX = "linear_runs";
-    private static final String PRIMARY_STACK_ID = "tower.primary";
+    public static final String PRIMARY_STACK_ID = "tower.primary";
     private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
     private final MKWorkspaceVerticalStackPlanner verticalStackPlanner = new MKWorkspaceVerticalStackPlanner(PRIMARY_STACK_ID);
     private final MKFloorTopologyPlanner floorTopologyPlanner = new MKFloorTopologyPlanner();

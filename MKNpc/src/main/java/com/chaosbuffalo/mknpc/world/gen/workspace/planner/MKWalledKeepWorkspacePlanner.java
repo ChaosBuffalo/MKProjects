@@ -18,6 +18,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunProj
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamilySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
@@ -64,7 +65,6 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
     public static final String CONTENT_WALKWAY_CONTINUATION_LENGTH_TAG = "workspace_content_walkway_continuation_length";
     public static final String COURTYARD_SOCKET_ID_TAG = "workspace_courtyard_socket_id";
     public static final String COURTYARD_SOCKET_MAX_SIZE_TAG = "workspace_courtyard_socket_max_square_size";
-    public static final String COURTYARD_DISABLED_REASON_TAG = "workspace_courtyard_disabled_reason";
     public static final String COURTYARD_AVAILABLE_HORIZONTAL_SPAN_TAG = "workspace_courtyard_available_horizontal_span";
     public static final String COURTYARD_AVAILABLE_VERTICAL_SPAN_TAG = "workspace_courtyard_available_vertical_span";
     public static final String COURTYARD_REQUESTED_MAX_SOCKET_SIZE_TAG = "workspace_courtyard_requested_max_socket_size";
@@ -504,6 +504,39 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
             tags.put(MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG, "true");
         }
         return tags;
+    }
+
+    @Override
+    public boolean allowsRuntimePoolChild(String runtimePoolPath, Map<String, String> childTags) {
+        if (!isCourtyardContentSocketRuntimePool(runtimePoolPath)) {
+            return true;
+        }
+        return courtyardContentFitsSocket(childTags);
+    }
+
+    private static boolean isCourtyardContentSocketRuntimePool(String runtimePoolPath) {
+        return runtimePoolPath.startsWith(SLOT_POOL_PREFIX + "keep/courtyard/") &&
+                !runtimePoolPath.startsWith(SLOT_POOL_PREFIX + "keep/courtyard/path/");
+    }
+
+    private static boolean courtyardContentFitsSocket(Map<String, String> tags) {
+        if (!COURTYARD_CONTENT_KIND.equals(tags.getOrDefault(CONTENT_KIND_TAG, ""))) {
+            return false;
+        }
+        int contentSize = parsePositiveInt(tags.get(CONTENT_SIZE_TAG));
+        int socketMaxSize = parsePositiveInt(tags.get(COURTYARD_SOCKET_MAX_SIZE_TAG));
+        return contentSize > 0 && socketMaxSize > 0 && contentSize <= socketMaxSize;
+    }
+
+    private static int parsePositiveInt(String value) {
+        if (value == null || value.isBlank()) {
+            return 0;
+        }
+        try {
+            return Math.max(0, Integer.parseInt(value));
+        } catch (NumberFormatException ignored) {
+            return 0;
+        }
     }
 
     private static boolean isKeepCornerStackPiece(Map<String, String> tags) {
@@ -1412,7 +1445,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
             return piece;
         }
         LinkedHashMap<String, String> tags = new LinkedHashMap<>(piece.tags());
-        tags.put(COURTYARD_DISABLED_REASON_TAG, courtyardPlan.disabledReason().get());
+            tags.put(MKWorkspacePieceTags.DISABLED_REASON, courtyardPlan.disabledReason().get());
         tags.put(COURTYARD_AVAILABLE_HORIZONTAL_SPAN_TAG,
                 Integer.toString(courtyardPlan.availableHorizontalSpan()));
         tags.put(COURTYARD_AVAILABLE_VERTICAL_SPAN_TAG,

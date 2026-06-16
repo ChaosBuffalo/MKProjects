@@ -24,16 +24,16 @@ class MKWorkspacePaletteResolverTest {
         MKWorkspaceMaterialPalette base = palette("smooth_stone", "stone_bricks", "smooth_stone",
                 "stone_brick_stairs", "stone_brick_slab", "ladder");
         MKWorkspaceTopologyProfile topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false)
-                .withTopologyGroupPaletteOverride("keep", Optional.of(new MKWorkspacePaletteOverride(
+                .withPlannerScopePaletteOverride("keep", Optional.of(new MKWorkspacePaletteOverride(
                         null, id("deepslate_bricks"), null, null, null, null)))
-                .withTopologyGroupPaletteOverride("keep.center", Optional.of(new MKWorkspacePaletteOverride(
+                .withPlannerScopePaletteOverride("keep.center", Optional.of(new MKWorkspacePaletteOverride(
                         id("red_sandstone"), null, null, null, null, null)))
-                .withTopologyGroupPaletteOverride("keep.center.main_floor", Optional.of(new MKWorkspacePaletteOverride(
+                .withPlannerScopePaletteOverride("keep.center.main_floor", Optional.of(new MKWorkspacePaletteOverride(
                         null, null, id("bamboo_planks"), null, null, null)));
         MKStructureWorkspace workspace = workspace(topologyProfile, base, List.of(), List.of());
 
         MKWorkspaceMaterialPalette resolved = new MKWorkspacePaletteResolver()
-                .resolveTopologyGroup(workspace, "keep.center.main_floor");
+                .resolvePlannerScope(workspace, "keep.center.main_floor");
 
         assertEquals(id("red_sandstone"), resolved.floorBlock());
         assertEquals(id("deepslate_bricks"), resolved.wallBlock());
@@ -45,11 +45,11 @@ class MKWorkspacePaletteResolverTest {
         MKWorkspaceMaterialPalette base = palette("smooth_stone", "stone_bricks", "smooth_stone",
                 "stone_brick_stairs", "stone_brick_slab", "ladder");
         MKWorkspaceTopologyProfile topologyProfile = MKTowerWorkspacePlanner.defaultTopologyProfile()
-                .withTopologyGroupPaletteOverride("tower", Optional.of(new MKWorkspacePaletteOverride(
+                .withPlannerScopePaletteOverride("tower", Optional.of(new MKWorkspacePaletteOverride(
                         null, id("deepslate_bricks"), null, null, null, null)))
-                .withTopologyGroupPaletteOverride("tower.primary", Optional.of(new MKWorkspacePaletteOverride(
+                .withPlannerScopePaletteOverride("tower.primary", Optional.of(new MKWorkspacePaletteOverride(
                         id("red_sandstone"), null, null, null, null, null)))
-                .withTopologyGroupPaletteOverride("tower.primary.main_floor", Optional.of(new MKWorkspacePaletteOverride(
+                .withPlannerScopePaletteOverride("tower.primary.main_floor", Optional.of(new MKWorkspacePaletteOverride(
                         null, null, id("bamboo_planks"), null, null, null)));
         MKStructureWorkspace workspace = workspace(topologyProfile, base, List.of(), List.of());
 
@@ -199,7 +199,7 @@ class MKWorkspacePaletteResolverTest {
         );
         MKStructureWorkspace workspace = workspace(topologyProfile, base, List.of(family), List.of());
 
-        MKPlannedPiece rootRoom = new MKWorkspaceVerticalStackPlanner().createRoomPieces(workspace, List.of(family)).getFirst();
+        MKPlannedPiece rootRoom = new MKWorkspaceVerticalStackPlanner(MKTowerWorkspacePlanner.PRIMARY_STACK_ID).createRoomPieces(workspace, List.of(family)).getFirst();
         List<MKPlannedPiece> floorPieces = new MKFloorTopologyPlanner().createFloorTopologyPieces(workspace,
                 List.of(family));
         MKPlannedPiece floorRoom = floorPieces.stream()
@@ -326,18 +326,18 @@ class MKWorkspacePaletteResolverTest {
     }
 
     @Test
-    void workspaceCodecPreservesTopologyGroupPaletteOverrides() {
+    void workspaceCodecPreservesplannerScopePaletteOverrides() {
         MKWorkspaceMaterialPalette base = palette("smooth_stone", "stone_bricks", "smooth_stone",
                 "oak_stairs", "oak_slab", "ladder");
         MKWorkspaceTopologyProfile topologyProfile = MKTowerWorkspacePlanner.defaultTopologyProfile()
-                .withTopologyGroupPaletteOverride("tower.primary.main_floor", Optional.of(new MKWorkspacePaletteOverride(
+                .withPlannerScopePaletteOverride("tower.primary.main_floor", Optional.of(new MKWorkspacePaletteOverride(
                         id("red_sandstone"), null, null, null, null, null)));
 
         MKStructureWorkspace roundTripped = MKStructureWorkspace.fromTag(
                 workspace(topologyProfile, base, List.of(), List.of()).toTag());
 
         assertEquals(id("red_sandstone"), roundTripped.topologyProfile()
-                .topologyGroupPaletteOverride("tower.primary.main_floor")
+                .plannerScopePaletteOverride("tower.primary.main_floor")
                 .orElseThrow()
                 .floorBlockOpt()
                 .orElseThrow());

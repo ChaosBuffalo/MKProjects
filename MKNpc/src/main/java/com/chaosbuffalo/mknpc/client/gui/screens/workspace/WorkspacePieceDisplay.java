@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 
 import java.util.Comparator;
@@ -64,7 +65,7 @@ public final class WorkspacePieceDisplay {
 
     public static String describePiece(MKWorkspacePieceDefinition piece) {
         String label = piece.variantIndex() == 0 ? "template" : "variant " + piece.variantIndex();
-        String warning = piece.tags().get("workspace_courtyard_disabled_reason");
+        String warning = piece.tags().get(MKWorkspacePieceTags.DISABLED_REASON);
         if (warning != null && !warning.isBlank()) {
             return label + ": " + piece.pieceName() + " | Warning: " + warning;
         }

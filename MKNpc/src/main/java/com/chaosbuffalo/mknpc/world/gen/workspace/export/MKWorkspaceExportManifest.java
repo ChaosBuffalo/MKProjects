@@ -26,6 +26,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceMetadata;
@@ -63,12 +64,6 @@ public record MKWorkspaceExportManifest(
 ) {
     private static final Codec<UUID> UUID_CODEC = Codec.STRING.xmap(UUID::fromString, UUID::toString);
     private static final ResourceLocation EMPTY_POOL = ResourceLocation.parse("minecraft:empty");
-    private static final String COURTYARD_SOCKET_POOL_PREFIX = "keep_slots/keep/courtyard/";
-    private static final String COURTYARD_PATH_POOL_PREFIX = "keep_slots/keep/courtyard/path/";
-    private static final String CONTENT_KIND_TAG = "workspace_content_kind";
-    private static final String CONTENT_SIZE_TAG = "workspace_content_size";
-    private static final String COURTYARD_SOCKET_MAX_SIZE_TAG = "workspace_courtyard_socket_max_square_size";
-
     public static final Codec<MKWorkspaceExportManifest> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.INT.fieldOf("schema_version").forGetter(MKWorkspaceExportManifest::schemaVersion),
             UUID_CODEC.fieldOf("workspace_id").forGetter(MKWorkspaceExportManifest::workspaceId),
@@ -1263,6 +1258,7 @@ public record MKWorkspaceExportManifest(
     private static List<ExportRuntimePool> buildRuntimePools(MKStructureWorkspace workspace,
                                                              List<MKWorkspacePieceDefinition> pieces) {
         LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool = new LinkedHashMap<>();
+        MKWorkspacePlanner planner = MKWorkspacePlannerRegistry.shared().plannerFor(workspace);
         for (MKWorkspacePieceDefinition piece : pieces) {
             if ("template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance"))) {
                 continue;
@@ -1285,8 +1281,7 @@ public record MKWorkspaceExportManifest(
                         runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnMainPath).orElse(true) == false) {
                     continue;
                 }
-                if (isCourtyardContentSocketRuntimePool(workspace, connector.incomingPool()) &&
-                        !courtyardContentFitsSocket(piece)) {
+                if (!planner.allowsRuntimePoolChild(runtimePoolPath(workspace, connector.incomingPool()), piece.tags())) {
                     continue;
                 }
                 childrenByPool.computeIfAbsent(connector.incomingPool(), key -> new LinkedHashSet<>()).add(baseName);
@@ -1304,6 +1299,7 @@ public record MKWorkspaceExportManifest(
 
     private static List<ExportRuntimePool> buildRuntimePoolsFromExportPieces(MKWorkspaceExportManifest manifest) {
         LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool = new LinkedHashMap<>();
+        MKWorkspacePlanner planner = MKWorkspacePlannerRegistry.shared().plannerFor(manifest.settings().topologyProfile().plannerId());
         for (ExportPiece piece : manifest.pieces()) {
             if ("template".equals(piece.workspacePieceKind())) {
                 continue;
@@ -1325,8 +1321,7 @@ public record MKWorkspaceExportManifest(
                         runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnMainPath).orElse(true) == false) {
                     continue;
                 }
-                if (isCourtyardContentSocketRuntimePool(manifest, connector.incomingPool()) &&
-                        !courtyardContentFitsSocket(piece.tags())) {
+                if (!planner.allowsRuntimePoolChild(runtimePoolPath(manifest, connector.incomingPool()), piece.tags())) {
                     continue;
                 }
                 childrenByPool.computeIfAbsent(connector.incomingPool(), key -> new LinkedHashSet<>())
@@ -1396,41 +1391,6 @@ public record MKWorkspaceExportManifest(
 
     private static boolean isBranchCapRuntimePool(MKWorkspaceExportManifest manifest, ResourceLocation poolId) {
         return runtimePoolPath(manifest, poolId).startsWith("branch_caps/");
-    }
-
-    private static boolean isCourtyardContentSocketRuntimePool(MKStructureWorkspace workspace, ResourceLocation poolId) {
-        String path = runtimePoolPath(workspace, poolId);
-        return path.startsWith(COURTYARD_SOCKET_POOL_PREFIX) && !path.startsWith(COURTYARD_PATH_POOL_PREFIX);
-    }
-
-    private static boolean courtyardContentFitsSocket(MKWorkspacePieceDefinition piece) {
-        return courtyardContentFitsSocket(piece.tags());
-    }
-
-    private static boolean isCourtyardContentSocketRuntimePool(MKWorkspaceExportManifest manifest,
-                                                               ResourceLocation poolId) {
-        String path = runtimePoolPath(manifest, poolId);
-        return path.startsWith(COURTYARD_SOCKET_POOL_PREFIX) && !path.startsWith(COURTYARD_PATH_POOL_PREFIX);
-    }
-
-    private static boolean courtyardContentFitsSocket(Map<String, String> tags) {
-        if (!"courtyard".equals(tags.getOrDefault(CONTENT_KIND_TAG, ""))) {
-            return false;
-        }
-        int contentSize = parsePositiveInt(tags.get(CONTENT_SIZE_TAG));
-        int socketMaxSize = parsePositiveInt(tags.get(COURTYARD_SOCKET_MAX_SIZE_TAG));
-        return contentSize > 0 && socketMaxSize > 0 && contentSize <= socketMaxSize;
-    }
-
-    private static int parsePositiveInt(String value) {
-        if (value == null || value.isBlank()) {
-            return 0;
-        }
-        try {
-            return Math.max(0, Integer.parseInt(value));
-        } catch (NumberFormatException ignored) {
-            return 0;
-        }
     }
 
     private static String runtimePoolPath(MKStructureWorkspace workspace, ResourceLocation poolId) {
