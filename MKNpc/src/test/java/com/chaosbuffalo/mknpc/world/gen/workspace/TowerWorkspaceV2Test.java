@@ -2215,8 +2215,15 @@ class TowerWorkspaceV2Test {
         JsonObject topologyJson = MKWorkspaceTopologyProfile.CODEC.encodeStart(JsonOps.INSTANCE, topologyProfile)
                 .getOrThrow()
                 .getAsJsonObject();
-        assertTrue(topologyJson.has("floor_topology_settings"));
-        assertFalse(topologyJson.getAsJsonArray("floor_topology_settings").isEmpty());
+        assertTrue(topologyJson.has("planner_settings"));
+        boolean hasFloorTopologySettings = false;
+        for (com.google.gson.JsonElement element : topologyJson.getAsJsonArray("planner_settings")) {
+            if (element.getAsJsonObject().get("planner_id").getAsString().equals("mknpc:floor_topology")) {
+                hasFloorTopologySettings = true;
+                break;
+            }
+        }
+        assertTrue(hasFloorTopologySettings);
     }
 
     @Test

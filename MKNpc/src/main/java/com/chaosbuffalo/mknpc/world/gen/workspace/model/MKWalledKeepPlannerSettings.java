@@ -12,6 +12,7 @@ public record MKWalledKeepPlannerSettings(
         MKWalledKeepCourtyardSettings courtyardSettings
 ) {
     public static final ResourceLocation PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "walled_keep");
+    public static final String SCOPE_ID = "keep";
     public static final Codec<MKWalledKeepPlannerSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.BOOL.optionalFieldOf("unique_north_west_corner_tower", false)
                     .forGetter(MKWalledKeepPlannerSettings::uniqueNorthWestCornerTower),
@@ -41,7 +42,7 @@ public record MKWalledKeepPlannerSettings(
     }
 
     public static MKWalledKeepPlannerSettings from(MKWorkspaceTopologyProfile profile) {
-        return profile.plannerSettingsEntry(PLANNER_ID)
+        return profile.plannerSettingsEntry(PLANNER_ID, SCOPE_ID)
                 .map(entry -> MKWorkspaceCodecs.parseNbt(CODEC, entry.settings(), "walled keep planner settings"))
                 .orElseGet(MKWalledKeepPlannerSettings::defaults);
     }
@@ -94,6 +95,7 @@ public record MKWalledKeepPlannerSettings(
     public MKWorkspaceTopologyProfile applyTo(MKWorkspaceTopologyProfile profile) {
         return profile.withPlannerSettingsEntry(new MKWorkspacePlannerSettingsEntry(
                 PLANNER_ID,
+                SCOPE_ID,
                 MKWorkspaceCodecs.encodeNbt(CODEC, this, "walled keep planner settings")));
     }
 }

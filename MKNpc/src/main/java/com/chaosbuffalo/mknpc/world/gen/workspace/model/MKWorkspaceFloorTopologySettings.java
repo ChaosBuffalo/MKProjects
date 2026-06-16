@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -48,6 +49,7 @@ public record MKWorkspaceFloorTopologySettings(
     public static final int MAX_LINKS_PER_FLOOR = 64;
     public static final int MAX_LINKS_PER_ROOM = 3;
     public static final int MAX_LINK_LENGTH = 128;
+    public static final ResourceLocation PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "floor_topology");
 
     public static final Codec<MKWorkspaceFloorTopologySettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ScalarSettings.CODEC.fieldOf("settings").forGetter(MKWorkspaceFloorTopologySettings::scalarSettings),
@@ -314,6 +316,21 @@ public record MKWorkspaceFloorTopologySettings(
         return settings.stream()
                 .filter(setting -> setting.key().equals(key))
                 .findFirst();
+    }
+
+    public static MKWorkspaceFloorTopologySettings fromPlannerSettingsEntry(MKWorkspacePlannerSettingsEntry entry) {
+        MKWorkspaceFloorTopologySettings settings = MKWorkspaceCodecs.parseNbt(CODEC, entry.settings(),
+                "workspace floor topology settings");
+        return settings.withPaletteOverride(entry.paletteOverride());
+    }
+
+    public MKWorkspacePlannerSettingsEntry plannerSettingsEntry() {
+        MKWorkspaceFloorTopologySettings settingsPayload = withPaletteOverride(Optional.empty());
+        return new MKWorkspacePlannerSettingsEntry(
+                PLANNER_ID,
+                key(),
+                paletteOverride,
+                MKWorkspaceCodecs.encodeNbt(CODEC, settingsPayload, "workspace floor topology settings"));
     }
 
     public MKWorkspaceFloorTopologySettings withMinMainPathPieces(int value) {

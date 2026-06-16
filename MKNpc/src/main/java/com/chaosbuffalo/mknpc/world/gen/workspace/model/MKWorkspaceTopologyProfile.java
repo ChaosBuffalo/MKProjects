@@ -6,17 +6,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
 public record MKWorkspaceTopologyProfile(
         ResourceLocation plannerId,
-        List<MKWorkspaceTopologyGroupSettings> topologyGroupSettings,
-        List<MKWorkspaceVerticalStackSettings> verticalStackSettings,
-        List<MKWorkspaceFloorTopologySettings> floorTopologySettings,
-        List<MKWorkspaceTopologyPathSettings> pathSettings,
         List<MKWorkspacePlannerSettingsEntry> plannerSettings,
         TerrainAdjustment terrainAdjustment
 ) {
@@ -27,14 +22,6 @@ public record MKWorkspaceTopologyProfile(
     public static final Codec<MKWorkspaceTopologyProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ResourceLocation.CODEC.optionalFieldOf("planner_id", DEFAULT_PLANNER_ID)
                     .forGetter(MKWorkspaceTopologyProfile::plannerId),
-            MKWorkspaceTopologyGroupSettings.CODEC.listOf().optionalFieldOf("topology_group_settings", List.of())
-                    .forGetter(MKWorkspaceTopologyProfile::topologyGroupSettings),
-            MKWorkspaceVerticalStackSettings.CODEC.listOf().optionalFieldOf("vertical_stack_settings", List.of())
-                    .forGetter(MKWorkspaceTopologyProfile::verticalStackSettings),
-            MKWorkspaceFloorTopologySettings.CODEC.listOf().optionalFieldOf("floor_topology_settings", List.of())
-                    .forGetter(MKWorkspaceTopologyProfile::floorTopologySettings),
-            MKWorkspaceTopologyPathSettings.CODEC.listOf().optionalFieldOf("path_settings", List.of())
-                    .forGetter(MKWorkspaceTopologyProfile::pathSettings),
             MKWorkspacePlannerSettingsEntry.CODEC.listOf().optionalFieldOf("planner_settings", List.of())
                     .forGetter(MKWorkspaceTopologyProfile::plannerSettings),
             TERRAIN_ADJUSTMENT_CODEC.optionalFieldOf("terrain_adjustment", TerrainAdjustment.BEARD_THIN)
@@ -51,16 +38,80 @@ public record MKWorkspaceTopologyProfile(
                 terrainAdjustment);
     }
 
+    public MKWorkspaceTopologyProfile(ResourceLocation plannerId,
+                                      List<MKWorkspaceTopologyGroupSettings> topologyGroupSettings,
+                                      List<MKWorkspaceVerticalStackSettings> verticalStackSettings,
+                                      List<MKWorkspaceFloorTopologySettings> floorTopologySettings,
+                                      List<MKWorkspaceTopologyPathSettings> pathSettings,
+                                      List<MKWorkspacePlannerSettingsEntry> plannerSettings,
+                                      TerrainAdjustment terrainAdjustment) {
+        this(plannerId, entriesFrom(plannerId, topologyGroupSettings, verticalStackSettings, floorTopologySettings,
+                pathSettings, plannerSettings), terrainAdjustment);
+    }
+
     public MKWorkspaceTopologyProfile {
         if (plannerId == null) {
             plannerId = DEFAULT_PLANNER_ID;
         }
-        verticalStackSettings = List.copyOf(verticalStackSettings == null ? List.of() : verticalStackSettings);
-        topologyGroupSettings = MKWorkspaceTopologyGroupSettings.normalize(topologyGroupSettings);
-        floorTopologySettings = MKWorkspaceFloorTopologySettings.normalize(floorTopologySettings, verticalStackSettings);
-        pathSettings = MKWorkspaceTopologyPathSettings.normalize(pathSettings);
         plannerSettings = normalizePlannerSettings(plannerSettings);
         terrainAdjustment = terrainAdjustment == null ? TerrainAdjustment.BEARD_THIN : terrainAdjustment;
+    }
+
+    private static List<MKWorkspacePlannerSettingsEntry> entriesFrom(
+            ResourceLocation ownerPlannerId,
+            List<MKWorkspaceTopologyGroupSettings> topologyGroupSettings,
+            List<MKWorkspaceVerticalStackSettings> verticalStackSettings,
+            List<MKWorkspaceFloorTopologySettings> floorTopologySettings,
+            List<MKWorkspaceTopologyPathSettings> pathSettings,
+            List<MKWorkspacePlannerSettingsEntry> plannerSettings) {
+        LinkedHashMap<String, MKWorkspacePlannerSettingsEntry> byScope = new LinkedHashMap<>();
+        addEntries(byScope, plannerSettings);
+        addTopologyGroupPaletteEntries(byScope, ownerPlannerId == null ? DEFAULT_PLANNER_ID : ownerPlannerId,
+                topologyGroupSettings);
+
+        List<MKWorkspaceVerticalStackSettings> normalizedStackSettings =
+                List.copyOf(verticalStackSettings == null ? List.of() : verticalStackSettings);
+        for (MKWorkspaceVerticalStackSettings settings : normalizedStackSettings) {
+            putEntry(byScope, settings.plannerSettingsEntry());
+        }
+
+        List<MKWorkspaceFloorTopologySettings> normalizedFloorSettings =
+                MKWorkspaceFloorTopologySettings.normalize(floorTopologySettings, normalizedStackSettings);
+        for (MKWorkspaceFloorTopologySettings settings : normalizedFloorSettings) {
+            putEntry(byScope, settings.plannerSettingsEntry());
+        }
+
+        List<MKWorkspaceTopologyPathSettings> normalizedPathSettings =
+                MKWorkspaceTopologyPathSettings.normalize(pathSettings);
+        for (MKWorkspaceTopologyPathSettings settings : normalizedPathSettings) {
+            putEntry(byScope, settings.plannerSettingsEntry());
+        }
+        return List.copyOf(byScope.values());
+    }
+
+    private static void addEntries(LinkedHashMap<String, MKWorkspacePlannerSettingsEntry> byScope,
+                                   List<MKWorkspacePlannerSettingsEntry> entries) {
+        if (entries == null) {
+            return;
+        }
+        for (MKWorkspacePlannerSettingsEntry entry : entries) {
+            putEntry(byScope, entry);
+        }
+    }
+
+    private static void addTopologyGroupPaletteEntries(
+            LinkedHashMap<String, MKWorkspacePlannerSettingsEntry> byScope,
+            ResourceLocation ownerPlannerId,
+            List<MKWorkspaceTopologyGroupSettings> topologyGroupSettings) {
+        for (MKWorkspaceTopologyGroupSettings settings : MKWorkspaceTopologyGroupSettings.normalize(topologyGroupSettings)) {
+            MKWorkspacePlannerSettingsEntry current = byScope.get(settings.topologyGroupId());
+            if (current == null) {
+                putEntry(byScope, new MKWorkspacePlannerSettingsEntry(ownerPlannerId, settings.topologyGroupId(),
+                        settings.paletteOverride(), new net.minecraft.nbt.CompoundTag()));
+            } else {
+                putEntry(byScope, current.withPaletteOverride(settings.paletteOverride()));
+            }
+        }
     }
 
     private static List<MKWorkspacePlannerSettingsEntry> normalizePlannerSettings(
@@ -68,77 +119,85 @@ public record MKWorkspaceTopologyProfile(
         if (entries == null || entries.isEmpty()) {
             return List.of();
         }
-        LinkedHashMap<ResourceLocation, MKWorkspacePlannerSettingsEntry> byPlanner = new LinkedHashMap<>();
-        for (MKWorkspacePlannerSettingsEntry entry : entries) {
-            if (entry != null) {
-                byPlanner.put(entry.plannerId(), entry);
-            }
-        }
-        return List.copyOf(byPlanner.values());
+        LinkedHashMap<String, MKWorkspacePlannerSettingsEntry> byScope = new LinkedHashMap<>();
+        addEntries(byScope, entries);
+        return List.copyOf(byScope.values());
     }
 
-    public Optional<MKWorkspacePlannerSettingsEntry> plannerSettingsEntry(ResourceLocation settingsPlannerId) {
+    private static void putEntry(LinkedHashMap<String, MKWorkspacePlannerSettingsEntry> byScope,
+                                 MKWorkspacePlannerSettingsEntry entry) {
+        if (entry == null) {
+            return;
+        }
+        if (entry.isEmpty()) {
+            byScope.remove(entry.scopeId());
+        } else {
+            byScope.put(entry.scopeId(), entry);
+        }
+    }
+
+    public Optional<MKWorkspacePlannerSettingsEntry> plannerSettingsEntry(ResourceLocation settingsPlannerId,
+                                                                          String scopeId) {
         return plannerSettings.stream()
                 .filter(entry -> entry.plannerId().equals(settingsPlannerId))
+                .filter(entry -> entry.scopeId().equals(scopeId))
+                .findFirst();
+    }
+
+    public Optional<MKWorkspacePlannerSettingsEntry> plannerSettingsEntry(String scopeId) {
+        return plannerSettings.stream()
+                .filter(entry -> entry.scopeId().equals(scopeId))
                 .findFirst();
     }
 
     public MKWorkspaceTopologyProfile withPlannerSettingsEntry(MKWorkspacePlannerSettingsEntry updatedSettings) {
-        ArrayList<MKWorkspacePlannerSettingsEntry> updated = new ArrayList<>();
-        boolean replaced = false;
-        for (MKWorkspacePlannerSettingsEntry settings : plannerSettings) {
-            if (settings.plannerId().equals(updatedSettings.plannerId())) {
-                updated.add(updatedSettings);
-                replaced = true;
-            } else {
-                updated.add(settings);
-            }
-        }
-        if (!replaced) {
-            updated.add(updatedSettings);
-        }
-        return new MKWorkspaceTopologyProfile(plannerId, topologyGroupSettings, verticalStackSettings,
-                floorTopologySettings, pathSettings, updated, terrainAdjustment);
+        LinkedHashMap<String, MKWorkspacePlannerSettingsEntry> byScope = new LinkedHashMap<>();
+        addEntries(byScope, plannerSettings);
+        putEntry(byScope, updatedSettings);
+        return new MKWorkspaceTopologyProfile(plannerId, List.copyOf(byScope.values()), terrainAdjustment);
     }
 
-    public Optional<MKWorkspaceVerticalStackSettings> verticalStackSettings(String stackId) {
-        return verticalStackSettings.stream()
-                .filter(settings -> settings.stackId().equals(stackId))
-                .findFirst();
+    public List<MKWorkspaceTopologyGroupSettings> topologyGroupSettings() {
+        return plannerSettings.stream()
+                .filter(entry -> entry.paletteOverride().isPresent())
+                .map(entry -> MKWorkspaceTopologyGroupSettings.palette(entry.scopeId(), entry.paletteOverride()))
+                .toList();
     }
 
     public Optional<MKWorkspaceTopologyGroupSettings> topologyGroupSettings(String topologyGroupId) {
-        return MKWorkspaceTopologyGroupSettings.find(topologyGroupSettings, topologyGroupId);
+        return MKWorkspaceTopologyGroupSettings.find(topologyGroupSettings(), topologyGroupId);
     }
 
     public Optional<MKWorkspacePaletteOverride> topologyGroupPaletteOverride(String topologyGroupId) {
-        return topologyGroupSettings(topologyGroupId)
-                .flatMap(MKWorkspaceTopologyGroupSettings::paletteOverride);
+        return plannerSettingsEntry(topologyGroupId)
+                .flatMap(MKWorkspacePlannerSettingsEntry::paletteOverride);
     }
 
     public MKWorkspaceTopologyProfile withTopologyGroupSettings(MKWorkspaceTopologyGroupSettings updatedSettings) {
-        ArrayList<MKWorkspaceTopologyGroupSettings> updated = new ArrayList<>();
-        boolean replaced = false;
-        for (MKWorkspaceTopologyGroupSettings settings : topologyGroupSettings) {
-            if (settings.topologyGroupId().equals(updatedSettings.topologyGroupId())) {
-                if (updatedSettings.paletteOverride().isPresent()) {
-                    updated.add(updatedSettings);
-                }
-                replaced = true;
-            } else {
-                updated.add(settings);
-            }
+        if (updatedSettings == null || updatedSettings.topologyGroupId().isBlank()) {
+            return this;
         }
-        if (!replaced && updatedSettings.paletteOverride().isPresent()) {
-            updated.add(updatedSettings);
-        }
-        return new MKWorkspaceTopologyProfile(plannerId, updated, verticalStackSettings, floorTopologySettings,
-                pathSettings, plannerSettings, terrainAdjustment);
+        MKWorkspacePlannerSettingsEntry current = plannerSettingsEntry(updatedSettings.topologyGroupId())
+                .orElseGet(() -> new MKWorkspacePlannerSettingsEntry(plannerId, updatedSettings.topologyGroupId(),
+                        new net.minecraft.nbt.CompoundTag()));
+        return withPlannerSettingsEntry(current.withPaletteOverride(updatedSettings.paletteOverride()));
     }
 
     public MKWorkspaceTopologyProfile withTopologyGroupPaletteOverride(
             String topologyGroupId, Optional<MKWorkspacePaletteOverride> paletteOverride) {
         return withTopologyGroupSettings(MKWorkspaceTopologyGroupSettings.palette(topologyGroupId, paletteOverride));
+    }
+
+    public List<MKWorkspaceVerticalStackSettings> verticalStackSettings() {
+        return plannerSettings.stream()
+                .filter(entry -> entry.plannerId().equals(MKWorkspaceVerticalStackSettings.PLANNER_ID))
+                .map(MKWorkspaceVerticalStackSettings::fromPlannerSettingsEntry)
+                .toList();
+    }
+
+    public Optional<MKWorkspaceVerticalStackSettings> verticalStackSettings(String stackId) {
+        return plannerSettingsEntry(MKWorkspaceVerticalStackSettings.PLANNER_ID, stackId)
+                .map(MKWorkspaceVerticalStackSettings::fromPlannerSettingsEntry);
     }
 
     public MKWorkspaceVerticalStackSettings verticalStackSettingsOrDefault(String stackId) {
@@ -147,25 +206,18 @@ public record MKWorkspaceTopologyProfile(
     }
 
     public MKWorkspaceTopologyProfile withVerticalStackSettings(MKWorkspaceVerticalStackSettings updatedSettings) {
-        ArrayList<MKWorkspaceVerticalStackSettings> updated = new ArrayList<>();
-        boolean replaced = false;
-        for (MKWorkspaceVerticalStackSettings settings : verticalStackSettings) {
-            if (settings.stackId().equals(updatedSettings.stackId())) {
-                updated.add(updatedSettings);
-                replaced = true;
-            } else {
-                updated.add(settings);
-            }
-        }
-        if (!replaced) {
-            updated.add(updatedSettings);
-        }
-        return new MKWorkspaceTopologyProfile(plannerId, topologyGroupSettings, updated, floorTopologySettings,
-                pathSettings, plannerSettings, terrainAdjustment);
+        return withPlannerSettingsEntry(updatedSettings.plannerSettingsEntry());
+    }
+
+    public List<MKWorkspaceFloorTopologySettings> floorTopologySettings() {
+        return MKWorkspaceFloorTopologySettings.normalize(plannerSettings.stream()
+                .filter(entry -> entry.plannerId().equals(MKWorkspaceFloorTopologySettings.PLANNER_ID))
+                .map(MKWorkspaceFloorTopologySettings::fromPlannerSettingsEntry)
+                .toList(), verticalStackSettings());
     }
 
     public Optional<MKWorkspaceFloorTopologySettings> floorTopologySettings(String stackId, String floorRole) {
-        return MKWorkspaceFloorTopologySettings.find(floorTopologySettings, stackId, floorRole);
+        return MKWorkspaceFloorTopologySettings.find(floorTopologySettings(), stackId, floorRole);
     }
 
     public MKWorkspaceFloorTopologySettings floorTopologySettingsOrDefault(String stackId, String floorRole) {
@@ -175,25 +227,18 @@ public record MKWorkspaceTopologyProfile(
     }
 
     public MKWorkspaceTopologyProfile withFloorTopologySettings(MKWorkspaceFloorTopologySettings updatedSettings) {
-        ArrayList<MKWorkspaceFloorTopologySettings> updated = new ArrayList<>();
-        boolean replaced = false;
-        for (MKWorkspaceFloorTopologySettings settings : floorTopologySettings) {
-            if (settings.key().equals(updatedSettings.key())) {
-                updated.add(updatedSettings);
-                replaced = true;
-            } else {
-                updated.add(settings);
-            }
-        }
-        if (!replaced) {
-            updated.add(updatedSettings);
-        }
-        return new MKWorkspaceTopologyProfile(plannerId, topologyGroupSettings, verticalStackSettings, updated,
-                pathSettings, plannerSettings, terrainAdjustment);
+        return withPlannerSettingsEntry(updatedSettings.plannerSettingsEntry());
+    }
+
+    public List<MKWorkspaceTopologyPathSettings> pathSettings() {
+        return MKWorkspaceTopologyPathSettings.normalize(plannerSettings.stream()
+                .filter(entry -> entry.plannerId().equals(MKWorkspaceTopologyPathSettings.PLANNER_ID))
+                .map(MKWorkspaceTopologyPathSettings::fromPlannerSettingsEntry)
+                .toList());
     }
 
     public Optional<MKWorkspaceTopologyPathSettings> pathSettings(String topologyGroupId) {
-        return MKWorkspaceTopologyPathSettings.find(pathSettings, topologyGroupId);
+        return MKWorkspaceTopologyPathSettings.find(pathSettings(), topologyGroupId);
     }
 
     public MKWorkspaceTopologyPathSettings pathSettingsOrDefault(String topologyGroupId) {
@@ -202,26 +247,11 @@ public record MKWorkspaceTopologyProfile(
     }
 
     public MKWorkspaceTopologyProfile withPathSettings(MKWorkspaceTopologyPathSettings updatedSettings) {
-        ArrayList<MKWorkspaceTopologyPathSettings> updated = new ArrayList<>();
-        boolean replaced = false;
-        for (MKWorkspaceTopologyPathSettings settings : pathSettings) {
-            if (settings.topologyGroupId().equals(updatedSettings.topologyGroupId())) {
-                updated.add(updatedSettings);
-                replaced = true;
-            } else {
-                updated.add(settings);
-            }
-        }
-        if (!replaced) {
-            updated.add(updatedSettings);
-        }
-        return new MKWorkspaceTopologyProfile(plannerId, topologyGroupSettings, verticalStackSettings,
-                floorTopologySettings, updated, plannerSettings, terrainAdjustment);
+        return withPlannerSettingsEntry(updatedSettings.plannerSettingsEntry());
     }
 
     public MKWorkspaceTopologyProfile withTerrainAdjustment(TerrainAdjustment updatedTerrainAdjustment) {
-        return new MKWorkspaceTopologyProfile(plannerId, topologyGroupSettings, verticalStackSettings,
-                floorTopologySettings, pathSettings, plannerSettings,
+        return new MKWorkspaceTopologyProfile(plannerId, plannerSettings,
                 updatedTerrainAdjustment == null ? TerrainAdjustment.BEARD_THIN : updatedTerrainAdjustment);
     }
 }

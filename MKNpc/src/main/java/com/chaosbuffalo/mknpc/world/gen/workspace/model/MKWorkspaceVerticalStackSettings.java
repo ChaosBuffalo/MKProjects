@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -26,6 +27,7 @@ public record MKWorkspaceVerticalStackSettings(
         MKWorkspaceFoundationPolicy foundationPolicy,
         @Nullable MKWorkspacePaletteOverride paletteOverride
 ) {
+    public static final ResourceLocation PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "vertical_stack");
     public static final Codec<MKWorkspaceVerticalStackSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("stack_id").forGetter(MKWorkspaceVerticalStackSettings::stackId),
             Codec.INT.optionalFieldOf("min_main_floors", 1).forGetter(MKWorkspaceVerticalStackSettings::minMainFloors),
@@ -215,6 +217,21 @@ public record MKWorkspaceVerticalStackSettings(
                 MKWorkspaceVerticalStackFloorCounts.DEFAULT_BASEMENT_ENTRY_ENABLED,
                 MKWorkspaceVerticalStackFloorCounts.DEFAULT_BASEMENT_CAP_APPROACH_ENABLED,
                 MKWorkspaceHorizontalExtrusionMode.FULL_BODY, MKWorkspaceFoundationPolicy.none(), null);
+    }
+
+    public static MKWorkspaceVerticalStackSettings fromPlannerSettingsEntry(MKWorkspacePlannerSettingsEntry entry) {
+        MKWorkspaceVerticalStackSettings settings = MKWorkspaceCodecs.parseNbt(CODEC, entry.settings(),
+                "workspace vertical stack settings");
+        return settings.withPaletteOverride(entry.paletteOverride());
+    }
+
+    public MKWorkspacePlannerSettingsEntry plannerSettingsEntry() {
+        MKWorkspaceVerticalStackSettings settingsPayload = withPaletteOverride(Optional.empty());
+        return new MKWorkspacePlannerSettingsEntry(
+                PLANNER_ID,
+                stackId,
+                paletteOverrideOpt(),
+                MKWorkspaceCodecs.encodeNbt(CODEC, settingsPayload, "workspace vertical stack settings"));
     }
 
     public MKWorkspaceVerticalStackSettings withMainFloors(int value) {

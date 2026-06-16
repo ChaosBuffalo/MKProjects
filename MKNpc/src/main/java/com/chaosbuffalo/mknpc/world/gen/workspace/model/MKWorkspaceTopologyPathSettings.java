@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -19,6 +20,7 @@ public record MKWorkspaceTopologyPathSettings(
     public static final int DEFAULT_MAX_MAIN_PATH_PIECES = 1;
     public static final int DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP = 0;
     public static final int MAX_BRANCH_PIECES_BEFORE_CAP = 10;
+    public static final ResourceLocation PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "topology_path");
     public static final List<String> DEFAULT_TOPOLOGY_GROUP_IDS = List.of(
             "entry",
             "main",
@@ -79,6 +81,17 @@ public record MKWorkspaceTopologyPathSettings(
         return normalize(settings).stream()
                 .filter(setting -> setting.topologyGroupId().equals(topologyGroupId))
                 .findFirst();
+    }
+
+    public static MKWorkspaceTopologyPathSettings fromPlannerSettingsEntry(MKWorkspacePlannerSettingsEntry entry) {
+        return MKWorkspaceCodecs.parseNbt(CODEC, entry.settings(), "workspace topology path settings");
+    }
+
+    public MKWorkspacePlannerSettingsEntry plannerSettingsEntry() {
+        return new MKWorkspacePlannerSettingsEntry(
+                PLANNER_ID,
+                topologyGroupId,
+                MKWorkspaceCodecs.encodeNbt(CODEC, this, "workspace topology path settings"));
     }
 
     public MKWorkspaceTopologyPathSettings withMinMainPathPieces(int value) {
