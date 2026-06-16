@@ -27,6 +27,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVoidMarginTag
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepCourtyardSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepPlannerSettings;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
@@ -40,7 +41,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
-    public static final ResourceLocation PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "walled_keep");
+    public static final ResourceLocation PLANNER_ID = MKWalledKeepPlannerSettings.PLANNER_ID;
     private static final String EMPTY_POOL = "minecraft:empty";
     private static final String PERIMETER_ROOT_SLOT = "keep.perimeter";
     private static final String ENTRY_APPROACH_SLOT = "keep.entry_approach.main";
@@ -279,22 +280,21 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                                                                     boolean uniqueNorthEastCornerTower,
                                                                     boolean uniqueSouthEastCornerTower,
                                                                     boolean uniqueSouthWestCornerTower) {
-        return new MKWorkspaceTopologyProfile(
-                PLANNER_ID,
-                uniqueNorthWestCornerTower && uniqueNorthEastCornerTower &&
-                        uniqueSouthEastCornerTower && uniqueSouthWestCornerTower,
+        MKWalledKeepPlannerSettings plannerSettings = MKWalledKeepPlannerSettings.cornerModes(
                 uniqueNorthWestCornerTower,
                 uniqueNorthEastCornerTower,
                 uniqueSouthEastCornerTower,
-                uniqueSouthWestCornerTower,
+                uniqueSouthWestCornerTower);
+        return plannerSettings.applyTo(new MKWorkspaceTopologyProfile(
+                PLANNER_ID,
                 List.of(),
                 defaultVerticalStackSettings(uniqueNorthWestCornerTower, uniqueNorthEastCornerTower,
                         uniqueSouthEastCornerTower, uniqueSouthWestCornerTower),
                 List.of(),
                 MKWorkspaceTopologyPathSettings.defaults(),
-                MKWalledKeepCourtyardSettings.defaults(),
+                List.of(),
                 TerrainAdjustment.BEARD_THIN
-        );
+        ));
     }
 
     public static List<MKWorkspaceVerticalStackSettings> defaultVerticalStackSettings(
@@ -367,7 +367,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
 
     @Override
     public List<String> validateTopology(MKStructureWorkspace workspace) {
-        return workspace.topologyProfile().courtyardSettings().validate();
+        return keepSettings(workspace).courtyardSettings().validate();
     }
 
     @Override
@@ -533,7 +533,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                 workspace.topologyProfile().verticalStackSettingsOrDefault("keep.corner.shared"));
         for (String stackId : CONCRETE_CORNER_SLOTS) {
             List<MKWorkspaceRoomFamilyDefinition> stackFamilies;
-            if (workspace.topologyProfile().uniqueCornerTower(stackId)) {
+            if (keepSettings(workspace).uniqueCornerTower(stackId)) {
                 stackFamilies = workspace.familyDefinitions().stream()
                         .filter(family -> family.topologySlotId().startsWith(stackId + "."))
                         .toList();
@@ -553,7 +553,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         if (stackFamilies.isEmpty()) {
             return;
         }
-        boolean uniqueCorner = workspace.topologyProfile().uniqueCornerTower(stackId);
+        boolean uniqueCorner = keepSettings(workspace).uniqueCornerTower(stackId);
         MKWorkspaceVerticalStackSettings settings = workspace.topologyProfile().verticalStackSettingsOrDefault(
                 uniqueCorner ? stackId : "keep.corner.shared");
         if (!uniqueCorner) {
@@ -698,7 +698,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         LinkedHashSet<String> sharedCornerSlots = new LinkedHashSet<>();
         if (slots.contains("keep.corner.shared")) {
             CONCRETE_CORNER_SLOTS.stream()
-                    .filter(slot -> !workspace.topologyProfile().uniqueCornerTower(slot))
+                    .filter(slot -> !keepSettings(workspace).uniqueCornerTower(slot))
                     .filter(slot -> !slots.contains(slot))
                     .forEach(sharedCornerSlots::add);
             slots.addAll(sharedCornerSlots);
@@ -862,7 +862,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
 
     private int courtyardPathLaneCenterInset(MKStructureWorkspace workspace, ResolvedOpeningProfile opening) {
         return workspace.shellMargin() + workspace.exteriorAirMargin() +
-                workspace.topologyProfile().courtyardSettings().courtyardPathInnerMargin() +
+                keepSettings(workspace).courtyardSettings().courtyardPathInnerMargin() +
                 opening.openingWidth() / 2;
     }
 
@@ -1002,7 +1002,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         int laneInset = courtyardPathLaneCenterInset(workspace, pathOpening);
         int entryLength = effectiveEntryApproachLength(workspace, entryFamily.length(), entryOpening);
         int northBand = DEFAULT_COURTYARD_CLEARANCE + cornerLength(workspace);
-        MKWalledKeepCourtyardSettings settings = workspace.topologyProfile().courtyardSettings();
+        MKWalledKeepCourtyardSettings settings = keepSettings(workspace).courtyardSettings();
         if (settings.courtyardContentEnabled() && settings.courtyardSocketGenerationEnabled()) {
             northBand = Math.max(northBand, courtyardBandSize(workspace, settings, laneInset, pathOpening));
         }
@@ -1019,7 +1019,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
     }
 
     private int courtyardRearWallBufferSegments(MKStructureWorkspace workspace) {
-        MKWalledKeepCourtyardSettings settings = workspace.topologyProfile().courtyardSettings();
+        MKWalledKeepCourtyardSettings settings = keepSettings(workspace).courtyardSettings();
         return settings.courtyardContentEnabled() && settings.courtyardSocketGenerationEnabled() ? 1 : 0;
     }
 
@@ -1038,7 +1038,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
     }
 
     private CourtyardPlan createCourtyardPlan(MKStructureWorkspace workspace, PerimeterPlan perimeterPlan) {
-        MKWalledKeepCourtyardSettings settings = workspace.topologyProfile().courtyardSettings();
+        MKWalledKeepCourtyardSettings settings = keepSettings(workspace).courtyardSettings();
         if (!settings.courtyardContentEnabled() || !settings.courtyardSocketGenerationEnabled()) {
             return CourtyardPlan.empty();
         }
@@ -1091,7 +1091,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
     }
 
     private String cornerSettingsSlot(MKStructureWorkspace workspace) {
-        return workspace.topologyProfile().anySharedCornerTower() ? "keep.corner.shared" : "keep.corner.north_west";
+        return keepSettings(workspace).anySharedCornerTower() ? "keep.corner.shared" : "keep.corner.north_west";
     }
 
     private List<MKPlannedPiece> createPerimeterPieces(MKStructureWorkspace workspace, PerimeterPlan perimeterPlan) {
@@ -1127,7 +1127,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
 
     private List<MKPlannedPiece> createCourtyardContentPieces(MKStructureWorkspace workspace,
                                                               CourtyardPlan courtyardPlan) {
-        MKWalledKeepCourtyardSettings settings = workspace.topologyProfile().courtyardSettings();
+        MKWalledKeepCourtyardSettings settings = keepSettings(workspace).courtyardSettings();
         if (!settings.courtyardContentEnabled()) {
             return List.of();
         }
@@ -1662,7 +1662,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         }
         if (stackId.startsWith("keep.corner.") &&
                 !"keep.corner.shared".equals(stackId) &&
-                !workspace.topologyProfile().uniqueCornerTower(stackId)) {
+                !keepSettings(workspace).uniqueCornerTower(stackId)) {
             return workspace.topologyProfile().verticalStackSettings("keep.corner.shared");
         }
         return workspace.topologyProfile().verticalStackSettings(stackId);
@@ -1871,12 +1871,16 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
             topologySlotId = cornerStackId.get();
         }
         if ("keep.corner.shared".equals(topologySlotId)) {
-            return workspace.topologyProfile().anySharedCornerTower();
+            return keepSettings(workspace).anySharedCornerTower();
         }
         if (CONCRETE_CORNER_SLOTS.contains(topologySlotId)) {
-            return workspace.topologyProfile().uniqueCornerTower(topologySlotId);
+            return keepSettings(workspace).uniqueCornerTower(topologySlotId);
         }
         return isKnownKeepSlot(topologySlotId);
+    }
+
+    private static MKWalledKeepPlannerSettings keepSettings(MKStructureWorkspace workspace) {
+        return MKWalledKeepPlannerSettings.from(workspace.topologyProfile());
     }
 
     private DirectionPair directionsForSlot(String topologySlotId) {

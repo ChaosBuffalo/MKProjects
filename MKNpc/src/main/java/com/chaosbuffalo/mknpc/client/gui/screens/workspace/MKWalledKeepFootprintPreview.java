@@ -4,6 +4,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepPlannerSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingReport;
 import com.chaosbuffalo.mkwidgets.client.gui.instructions.HoveringTextInstruction;
 import com.chaosbuffalo.mkwidgets.client.gui.math.Vec2i;
@@ -255,7 +256,8 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
     }
 
     private String cornerStackId(String topologySlotId) {
-        return workspace.topologyProfile().uniqueCornerTower(topologySlotId) ? topologySlotId : "keep.corner.shared";
+        return MKWalledKeepPlannerSettings.from(workspace.topologyProfile()).uniqueCornerTower(topologySlotId) ?
+                topologySlotId : "keep.corner.shared";
     }
 
     private String cornerTooltip(String cornerLabel, MKWorkspaceVerticalStackSettings corner) {

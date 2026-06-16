@@ -50,6 +50,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAcces
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepCourtyardSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepPlannerSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceVerticalStackDefinition;
@@ -351,11 +352,12 @@ class TowerWorkspaceV2Test {
         MKStructureWorkspace decoded = MKStructureWorkspace.fromTag(workspace.toTag());
 
         assertEquals(MKWalledKeepWorkspacePlanner.PLANNER_ID, decoded.topologyProfile().plannerId());
-        assertTrue(decoded.topologyProfile().uniqueNorthWestCornerTower());
-        assertFalse(decoded.topologyProfile().uniqueNorthEastCornerTower());
-        assertTrue(decoded.topologyProfile().uniqueSouthEastCornerTower());
-        assertFalse(decoded.topologyProfile().uniqueSouthWestCornerTower());
-        assertFalse(decoded.topologyProfile().uniqueCornerTowers());
+        MKWalledKeepPlannerSettings decodedKeepSettings = MKWalledKeepPlannerSettings.from(decoded.topologyProfile());
+        assertTrue(decodedKeepSettings.uniqueNorthWestCornerTower());
+        assertFalse(decodedKeepSettings.uniqueNorthEastCornerTower());
+        assertTrue(decodedKeepSettings.uniqueSouthEastCornerTower());
+        assertFalse(decodedKeepSettings.uniqueSouthWestCornerTower());
+        assertFalse(decodedKeepSettings.uniqueCornerTowers());
         MKWorkspaceVerticalStackSettings centerSettings = decoded.topologyProfile()
                 .verticalStackSettings("keep.center")
                 .orElseThrow();
@@ -393,10 +395,11 @@ class TowerWorkspaceV2Test {
 
         assertEquals(MKWalledKeepWorkspacePlanner.PLANNER_ID, manifest.settings().topologyProfile().plannerId());
         assertEquals(MKWalledKeepWorkspacePlanner.PLANNER_ID, imported.topologyProfile().plannerId());
-        assertFalse(imported.topologyProfile().uniqueNorthWestCornerTower());
-        assertTrue(imported.topologyProfile().uniqueNorthEastCornerTower());
-        assertFalse(imported.topologyProfile().uniqueSouthEastCornerTower());
-        assertTrue(imported.topologyProfile().uniqueSouthWestCornerTower());
+        MKWalledKeepPlannerSettings importedKeepSettings = MKWalledKeepPlannerSettings.from(imported.topologyProfile());
+        assertFalse(importedKeepSettings.uniqueNorthWestCornerTower());
+        assertTrue(importedKeepSettings.uniqueNorthEastCornerTower());
+        assertFalse(importedKeepSettings.uniqueSouthEastCornerTower());
+        assertTrue(importedKeepSettings.uniqueSouthWestCornerTower());
         MKWorkspaceVerticalStackSettings centerSettings = imported.topologyProfile()
                 .verticalStackSettings("keep.center")
                 .orElseThrow();
@@ -866,7 +869,8 @@ class TowerWorkspaceV2Test {
     @Test
     void walledKeepPlannerDisablesCourtyardWhenSocketsDoNotFitAndReportsReason() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
-        MKWorkspaceTopologyProfile topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false)
+        MKWorkspaceTopologyProfile topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false);
+        topologyProfile = MKWalledKeepPlannerSettings.from(topologyProfile)
                 .withCourtyardSettings(new MKWalledKeepCourtyardSettings(
                         true,
                         true,
@@ -875,7 +879,8 @@ class TowerWorkspaceV2Test {
                         MKWalledKeepCourtyardSettings.DEFAULT_WALKWAY_CONTINUATION_LENGTH,
                         MKWalledKeepCourtyardSettings.DEFAULT_PATH_INNER_MARGIN,
                         99
-                ));
+                ))
+                .applyTo(topologyProfile);
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 topologyProfile,
@@ -933,7 +938,8 @@ class TowerWorkspaceV2Test {
                 MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions, workspacePalette())
         );
         int innerMargin = 4;
-        MKWorkspaceTopologyProfile marginProfile = baseProfile.withCourtyardSettings(new MKWalledKeepCourtyardSettings(
+        MKWorkspaceTopologyProfile marginProfile = MKWalledKeepPlannerSettings.from(baseProfile)
+                .withCourtyardSettings(new MKWalledKeepCourtyardSettings(
                 true,
                 true,
                 MKWalledKeepCourtyardSettings.DEFAULT_CONTENT_TEMPLATE_HEIGHT,
@@ -941,7 +947,8 @@ class TowerWorkspaceV2Test {
                 MKWalledKeepCourtyardSettings.DEFAULT_WALKWAY_CONTINUATION_LENGTH,
                 innerMargin,
                 MKWalledKeepCourtyardSettings.DEFAULT_CONTENT_TEMPLATE_SIZE
-        ));
+        ))
+                .applyTo(baseProfile);
         MKStructureWorkspace marginWorkspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 marginProfile,

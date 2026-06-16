@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFami
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepCourtyardSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepPlannerSettings;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 
 import java.util.Optional;
@@ -25,7 +26,7 @@ public class MKWalledKeepSizingCalculator {
     private static final int WALL_RECOMMENDATION_IMBALANCE_WEIGHT = 2;
 
     public MKWalledKeepSizingReport calculate(MKStructureWorkspace workspace) {
-        MKWalledKeepCourtyardSettings courtyardSettings = workspace.topologyProfile().courtyardSettings();
+        MKWalledKeepCourtyardSettings courtyardSettings = keepSettings(workspace).courtyardSettings();
         MKWorkspaceLinearRunFamilyDefinition wallFamily = perimeterFamilyForSide(workspace, "keep.perimeter.south")
                 .or(() -> perimeterFamilyForSide(workspace, "keep.perimeter.north"))
                 .or(() -> perimeterFamilyForSide(workspace, "keep.perimeter.west"))
@@ -269,7 +270,7 @@ public class MKWalledKeepSizingCalculator {
         int entryLength = effectiveEntryApproachLength(workspace, entryFamily.length(), entryOpening, pathFamily,
                 pathOpening, pathSize);
         int northBand = DEFAULT_COURTYARD_CLEARANCE + cornerLength(workspace);
-        MKWalledKeepCourtyardSettings settings = workspace.topologyProfile().courtyardSettings();
+        MKWalledKeepCourtyardSettings settings = keepSettings(workspace).courtyardSettings();
         if (settings.courtyardContentEnabled() && settings.courtyardSocketGenerationEnabled()) {
             northBand = Math.max(northBand, courtyardBandSize(workspace, settings, laneInset, pathOpening));
         }
@@ -287,13 +288,13 @@ public class MKWalledKeepSizingCalculator {
     }
 
     private int courtyardRearWallBufferSegments(MKStructureWorkspace workspace) {
-        MKWalledKeepCourtyardSettings settings = workspace.topologyProfile().courtyardSettings();
+        MKWalledKeepCourtyardSettings settings = keepSettings(workspace).courtyardSettings();
         return settings.courtyardContentEnabled() && settings.courtyardSocketGenerationEnabled() ? 1 : 0;
     }
 
     private int courtyardPathLaneCenterInset(MKStructureWorkspace workspace, ResolvedOpening opening) {
         return workspace.shellMargin() + workspace.exteriorAirMargin() +
-                workspace.topologyProfile().courtyardSettings().courtyardPathInnerMargin() +
+                keepSettings(workspace).courtyardSettings().courtyardPathInnerMargin() +
                 opening.openingWidth() / 2;
     }
 
@@ -345,11 +346,15 @@ public class MKWalledKeepSizingCalculator {
     }
 
     private String cornerStackId(MKStructureWorkspace workspace) {
-        return workspace.topologyProfile().anySharedCornerTower() ? "keep.corner.shared" : "keep.corner.north_west";
+        return keepSettings(workspace).anySharedCornerTower() ? "keep.corner.shared" : "keep.corner.north_west";
     }
 
     private MKWorkspaceVerticalStackSettings verticalStackSettings(MKStructureWorkspace workspace, String stackId) {
         return workspace.topologyProfile().verticalStackSettingsOrDefault(stackId);
+    }
+
+    private MKWalledKeepPlannerSettings keepSettings(MKStructureWorkspace workspace) {
+        return MKWalledKeepPlannerSettings.from(workspace.topologyProfile());
     }
 
     private int exportedSpan(int authoredSpan, int padding) {

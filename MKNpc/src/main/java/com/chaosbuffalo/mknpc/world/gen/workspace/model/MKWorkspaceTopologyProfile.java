@@ -7,21 +7,17 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
 public record MKWorkspaceTopologyProfile(
         ResourceLocation plannerId,
-        boolean uniqueCornerTowers,
-        boolean uniqueNorthWestCornerTower,
-        boolean uniqueNorthEastCornerTower,
-        boolean uniqueSouthEastCornerTower,
-        boolean uniqueSouthWestCornerTower,
         List<MKWorkspaceTopologyGroupSettings> topologyGroupSettings,
         List<MKWorkspaceVerticalStackSettings> verticalStackSettings,
         List<MKWorkspaceFloorTopologySettings> floorTopologySettings,
         List<MKWorkspaceTopologyPathSettings> pathSettings,
-        MKWalledKeepCourtyardSettings courtyardSettings,
+        List<MKWorkspacePlannerSettingsEntry> plannerSettings,
         TerrainAdjustment terrainAdjustment
 ) {
     private static final ResourceLocation DEFAULT_PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "tower");
@@ -31,16 +27,6 @@ public record MKWorkspaceTopologyProfile(
     public static final Codec<MKWorkspaceTopologyProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ResourceLocation.CODEC.optionalFieldOf("planner_id", DEFAULT_PLANNER_ID)
                     .forGetter(MKWorkspaceTopologyProfile::plannerId),
-            Codec.BOOL.optionalFieldOf("unique_corner_towers", false)
-                    .forGetter(MKWorkspaceTopologyProfile::uniqueCornerTowers),
-            Codec.BOOL.optionalFieldOf("unique_north_west_corner_tower", false)
-                    .forGetter(MKWorkspaceTopologyProfile::uniqueNorthWestCornerTower),
-            Codec.BOOL.optionalFieldOf("unique_north_east_corner_tower", false)
-                    .forGetter(MKWorkspaceTopologyProfile::uniqueNorthEastCornerTower),
-            Codec.BOOL.optionalFieldOf("unique_south_east_corner_tower", false)
-                    .forGetter(MKWorkspaceTopologyProfile::uniqueSouthEastCornerTower),
-            Codec.BOOL.optionalFieldOf("unique_south_west_corner_tower", false)
-                    .forGetter(MKWorkspaceTopologyProfile::uniqueSouthWestCornerTower),
             MKWorkspaceTopologyGroupSettings.CODEC.listOf().optionalFieldOf("topology_group_settings", List.of())
                     .forGetter(MKWorkspaceTopologyProfile::topologyGroupSettings),
             MKWorkspaceVerticalStackSettings.CODEC.listOf().optionalFieldOf("vertical_stack_settings", List.of())
@@ -49,62 +35,70 @@ public record MKWorkspaceTopologyProfile(
                     .forGetter(MKWorkspaceTopologyProfile::floorTopologySettings),
             MKWorkspaceTopologyPathSettings.CODEC.listOf().optionalFieldOf("path_settings", List.of())
                     .forGetter(MKWorkspaceTopologyProfile::pathSettings),
-            MKWalledKeepCourtyardSettings.CODEC.optionalFieldOf("courtyard_settings",
-                            MKWalledKeepCourtyardSettings.defaults())
-                    .forGetter(MKWorkspaceTopologyProfile::courtyardSettings),
+            MKWorkspacePlannerSettingsEntry.CODEC.listOf().optionalFieldOf("planner_settings", List.of())
+                    .forGetter(MKWorkspaceTopologyProfile::plannerSettings),
             TERRAIN_ADJUSTMENT_CODEC.optionalFieldOf("terrain_adjustment", TerrainAdjustment.BEARD_THIN)
                     .forGetter(MKWorkspaceTopologyProfile::terrainAdjustment)
     ).apply(instance, MKWorkspaceTopologyProfile::new));
 
     public MKWorkspaceTopologyProfile(ResourceLocation plannerId,
-                                      boolean uniqueCornerTowers,
-                                      boolean uniqueNorthWestCornerTower,
-                                      boolean uniqueNorthEastCornerTower,
-                                      boolean uniqueSouthEastCornerTower,
-                                      boolean uniqueSouthWestCornerTower,
                                       List<MKWorkspaceVerticalStackSettings> verticalStackSettings,
                                       List<MKWorkspaceFloorTopologySettings> floorTopologySettings,
                                       List<MKWorkspaceTopologyPathSettings> pathSettings,
-                                      MKWalledKeepCourtyardSettings courtyardSettings,
+                                      List<MKWorkspacePlannerSettingsEntry> plannerSettings,
                                       TerrainAdjustment terrainAdjustment) {
-        this(plannerId, uniqueCornerTowers, uniqueNorthWestCornerTower, uniqueNorthEastCornerTower,
-                uniqueSouthEastCornerTower, uniqueSouthWestCornerTower, List.of(), verticalStackSettings,
-                floorTopologySettings, pathSettings, courtyardSettings, terrainAdjustment);
+        this(plannerId, List.of(), verticalStackSettings, floorTopologySettings, pathSettings, plannerSettings,
+                terrainAdjustment);
     }
 
     public MKWorkspaceTopologyProfile {
         if (plannerId == null) {
             plannerId = DEFAULT_PLANNER_ID;
         }
-        if (uniqueCornerTowers) {
-            uniqueNorthWestCornerTower = true;
-            uniqueNorthEastCornerTower = true;
-            uniqueSouthEastCornerTower = true;
-            uniqueSouthWestCornerTower = true;
-        }
-        uniqueCornerTowers = uniqueNorthWestCornerTower && uniqueNorthEastCornerTower &&
-                uniqueSouthEastCornerTower && uniqueSouthWestCornerTower;
         verticalStackSettings = List.copyOf(verticalStackSettings == null ? List.of() : verticalStackSettings);
         topologyGroupSettings = MKWorkspaceTopologyGroupSettings.normalize(topologyGroupSettings);
         floorTopologySettings = MKWorkspaceFloorTopologySettings.normalize(floorTopologySettings, verticalStackSettings);
         pathSettings = MKWorkspaceTopologyPathSettings.normalize(pathSettings);
-        courtyardSettings = courtyardSettings == null ? MKWalledKeepCourtyardSettings.defaults() : courtyardSettings;
+        plannerSettings = normalizePlannerSettings(plannerSettings);
         terrainAdjustment = terrainAdjustment == null ? TerrainAdjustment.BEARD_THIN : terrainAdjustment;
     }
 
-    public boolean anySharedCornerTower() {
-        return !uniqueNorthWestCornerTower || !uniqueNorthEastCornerTower ||
-                !uniqueSouthEastCornerTower || !uniqueSouthWestCornerTower;
+    private static List<MKWorkspacePlannerSettingsEntry> normalizePlannerSettings(
+            List<MKWorkspacePlannerSettingsEntry> entries) {
+        if (entries == null || entries.isEmpty()) {
+            return List.of();
+        }
+        LinkedHashMap<ResourceLocation, MKWorkspacePlannerSettingsEntry> byPlanner = new LinkedHashMap<>();
+        for (MKWorkspacePlannerSettingsEntry entry : entries) {
+            if (entry != null) {
+                byPlanner.put(entry.plannerId(), entry);
+            }
+        }
+        return List.copyOf(byPlanner.values());
     }
 
-    public boolean uniqueCornerTower(String topologySlotId) {
-        return switch (topologySlotId) {
-            case "keep.corner.north_west" -> uniqueNorthWestCornerTower;
-            case "keep.corner.north_east" -> uniqueNorthEastCornerTower;
-            case "keep.corner.south_east" -> uniqueSouthEastCornerTower;
-            case "keep.corner.south_west" -> uniqueSouthWestCornerTower;
-            default -> false;
-        };
+    public Optional<MKWorkspacePlannerSettingsEntry> plannerSettingsEntry(ResourceLocation settingsPlannerId) {
+        return plannerSettings.stream()
+                .filter(entry -> entry.plannerId().equals(settingsPlannerId))
+                .findFirst();
+    }
+
+    public MKWorkspaceTopologyProfile withPlannerSettingsEntry(MKWorkspacePlannerSettingsEntry updatedSettings) {
+        ArrayList<MKWorkspacePlannerSettingsEntry> updated = new ArrayList<>();
+        boolean replaced = false;
+        for (MKWorkspacePlannerSettingsEntry settings : plannerSettings) {
+            if (settings.plannerId().equals(updatedSettings.plannerId())) {
+                updated.add(updatedSettings);
+                replaced = true;
+            } else {
+                updated.add(settings);
+            }
+        }
+        if (!replaced) {
+            updated.add(updatedSettings);
+        }
+        return new MKWorkspaceTopologyProfile(plannerId, topologyGroupSettings, verticalStackSettings,
+                floorTopologySettings, pathSettings, updated, terrainAdjustment);
     }
 
     public Optional<MKWorkspaceVerticalStackSettings> verticalStackSettings(String stackId) {
@@ -138,10 +132,8 @@ public record MKWorkspaceTopologyProfile(
         if (!replaced && updatedSettings.paletteOverride().isPresent()) {
             updated.add(updatedSettings);
         }
-        return new MKWorkspaceTopologyProfile(plannerId, uniqueCornerTowers, uniqueNorthWestCornerTower,
-                uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
-                updated, verticalStackSettings, floorTopologySettings, pathSettings, courtyardSettings,
-                terrainAdjustment);
+        return new MKWorkspaceTopologyProfile(plannerId, updated, verticalStackSettings, floorTopologySettings,
+                pathSettings, plannerSettings, terrainAdjustment);
     }
 
     public MKWorkspaceTopologyProfile withTopologyGroupPaletteOverride(
@@ -168,10 +160,8 @@ public record MKWorkspaceTopologyProfile(
         if (!replaced) {
             updated.add(updatedSettings);
         }
-        return new MKWorkspaceTopologyProfile(plannerId, uniqueCornerTowers, uniqueNorthWestCornerTower,
-                uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
-                topologyGroupSettings, updated, floorTopologySettings, pathSettings, courtyardSettings,
-                terrainAdjustment);
+        return new MKWorkspaceTopologyProfile(plannerId, topologyGroupSettings, updated, floorTopologySettings,
+                pathSettings, plannerSettings, terrainAdjustment);
     }
 
     public Optional<MKWorkspaceFloorTopologySettings> floorTopologySettings(String stackId, String floorRole) {
@@ -198,10 +188,8 @@ public record MKWorkspaceTopologyProfile(
         if (!replaced) {
             updated.add(updatedSettings);
         }
-        return new MKWorkspaceTopologyProfile(plannerId, uniqueCornerTowers, uniqueNorthWestCornerTower,
-                uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
-                topologyGroupSettings, verticalStackSettings, updated, pathSettings, courtyardSettings,
-                terrainAdjustment);
+        return new MKWorkspaceTopologyProfile(plannerId, topologyGroupSettings, verticalStackSettings, updated,
+                pathSettings, plannerSettings, terrainAdjustment);
     }
 
     public Optional<MKWorkspaceTopologyPathSettings> pathSettings(String topologyGroupId) {
@@ -227,24 +215,13 @@ public record MKWorkspaceTopologyProfile(
         if (!replaced) {
             updated.add(updatedSettings);
         }
-        return new MKWorkspaceTopologyProfile(plannerId, uniqueCornerTowers, uniqueNorthWestCornerTower,
-                uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
-                topologyGroupSettings, verticalStackSettings, floorTopologySettings, updated, courtyardSettings,
-                terrainAdjustment);
-    }
-
-    public MKWorkspaceTopologyProfile withCourtyardSettings(MKWalledKeepCourtyardSettings updatedSettings) {
-        return new MKWorkspaceTopologyProfile(plannerId, uniqueCornerTowers, uniqueNorthWestCornerTower,
-                uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
-                topologyGroupSettings, verticalStackSettings, floorTopologySettings, pathSettings,
-                updatedSettings == null ? MKWalledKeepCourtyardSettings.defaults() : updatedSettings,
-                terrainAdjustment);
+        return new MKWorkspaceTopologyProfile(plannerId, topologyGroupSettings, verticalStackSettings,
+                floorTopologySettings, updated, plannerSettings, terrainAdjustment);
     }
 
     public MKWorkspaceTopologyProfile withTerrainAdjustment(TerrainAdjustment updatedTerrainAdjustment) {
-        return new MKWorkspaceTopologyProfile(plannerId, uniqueCornerTowers, uniqueNorthWestCornerTower,
-                uniqueNorthEastCornerTower, uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
-                topologyGroupSettings, verticalStackSettings, floorTopologySettings, pathSettings, courtyardSettings,
+        return new MKWorkspaceTopologyProfile(plannerId, topologyGroupSettings, verticalStackSettings,
+                floorTopologySettings, pathSettings, plannerSettings,
                 updatedTerrainAdjustment == null ? TerrainAdjustment.BEARD_THIN : updatedTerrainAdjustment);
     }
 }

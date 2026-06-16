@@ -3,7 +3,6 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepCourtyardSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
@@ -55,8 +54,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
 
     public static MKWorkspaceTopologyProfile defaultTopologyProfile() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
-        return new MKWorkspaceTopologyProfile(PLANNER_ID, false, false, false, false, false,
-                List.of(),
+        return new MKWorkspaceTopologyProfile(PLANNER_ID,
                 List.of(new MKWorkspaceVerticalStackSettings("tower.primary",
                         MKWorkspaceVerticalStackFloorCounts.DEFAULT_MAIN_FLOORS,
                         MKWorkspaceVerticalStackFloorCounts.DEFAULT_BASEMENT_FLOORS,
@@ -66,7 +64,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                         MKWorkspaceVerticalStackFloorCounts.DEFAULT_BASEMENT_CAP_APPROACH_ENABLED)),
                 List.of(),
                 MKWorkspaceTopologyPathSettings.defaults(),
-                MKWalledKeepCourtyardSettings.defaults(),
+                List.of(),
                 TerrainAdjustment.BEARD_THIN);
     }
 

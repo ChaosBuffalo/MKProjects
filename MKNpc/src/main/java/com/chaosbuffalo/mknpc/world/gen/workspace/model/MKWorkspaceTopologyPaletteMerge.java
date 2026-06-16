@@ -20,16 +20,11 @@ public final class MKWorkspaceTopologyPaletteMerge {
                 .toList();
         return new MKWorkspaceTopologyProfile(
                 source.plannerId(),
-                source.uniqueCornerTowers(),
-                source.uniqueNorthWestCornerTower(),
-                source.uniqueNorthEastCornerTower(),
-                source.uniqueSouthEastCornerTower(),
-                source.uniqueSouthWestCornerTower(),
                 materialSource.topologyGroupSettings(),
                 stackSettings,
                 floorSettings,
                 source.pathSettings(),
-                source.courtyardSettings(),
+                source.plannerSettings(),
                 source.terrainAdjustment()
         );
     }

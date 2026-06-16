@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFami
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepPlannerSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 
@@ -39,7 +40,7 @@ public final class WalledKeepDraftEditor {
     }
 
     public MKWalledKeepCourtyardSettings courtyardSettings() {
-        return session.draft().topologyProfile.courtyardSettings();
+        return plannerSettings().courtyardSettings();
     }
 
     public int courtyardContentTemplateSize() {
@@ -52,8 +53,7 @@ public final class WalledKeepDraftEditor {
 
     public void courtyardPathInnerMargin(int value) {
         MKWalledKeepCourtyardSettings current = courtyardSettings();
-        session.draft().topologyProfile = session.draft().topologyProfile.withCourtyardSettings(
-                new MKWalledKeepCourtyardSettings(
+        plannerSettings(plannerSettings().withCourtyardSettings(new MKWalledKeepCourtyardSettings(
                         current.courtyardContentEnabled(),
                         current.courtyardSocketGenerationEnabled(),
                         current.courtyardContentTemplateHeight(),
@@ -61,13 +61,12 @@ public final class WalledKeepDraftEditor {
                         current.courtyardWalkwayContinuationLength(),
                         value,
                         current.courtyardContentTemplateSize()
-                ));
+                )));
     }
 
     public void courtyardContentTemplateSize(int value) {
         MKWalledKeepCourtyardSettings current = courtyardSettings();
-        session.draft().topologyProfile = session.draft().topologyProfile.withCourtyardSettings(
-                new MKWalledKeepCourtyardSettings(
+        plannerSettings(plannerSettings().withCourtyardSettings(new MKWalledKeepCourtyardSettings(
                         current.courtyardContentEnabled(),
                         current.courtyardSocketGenerationEnabled(),
                         current.courtyardContentTemplateHeight(),
@@ -75,17 +74,18 @@ public final class WalledKeepDraftEditor {
                         current.courtyardWalkwayContinuationLength(),
                         current.courtyardPathInnerMargin(),
                         value
-                ));
+                )));
     }
 
     public List<String> verticalStackTabs() {
         java.util.ArrayList<String> tabs = new java.util.ArrayList<>();
         tabs.add("keep.center");
-        if (session.draft().topologyProfile.anySharedCornerTower()) {
+        MKWalledKeepPlannerSettings settings = plannerSettings();
+        if (settings.anySharedCornerTower()) {
             tabs.add("keep.corner.shared");
         }
         for (String cornerSlot : KEEP_CORNER_STACK_IDS) {
-            if (session.draft().topologyProfile.uniqueCornerTower(cornerSlot)) {
+            if (settings.uniqueCornerTower(cornerSlot)) {
                 tabs.add(cornerSlot);
             }
         }
@@ -115,16 +115,16 @@ public final class WalledKeepDraftEditor {
     }
 
     public boolean uniqueCornerTower(String topologySlotId) {
-        return session.draft().topologyProfile.uniqueCornerTower(topologySlotId);
+        return plannerSettings().uniqueCornerTower(topologySlotId);
     }
 
     public void uniqueCornerTower(String topologySlotId, boolean value) {
-        MKWorkspaceTopologyProfile current = session.draft().topologyProfile;
-        boolean northWest = "keep.corner.north_west".equals(topologySlotId) ? value : current.uniqueNorthWestCornerTower();
-        boolean northEast = "keep.corner.north_east".equals(topologySlotId) ? value : current.uniqueNorthEastCornerTower();
-        boolean southEast = "keep.corner.south_east".equals(topologySlotId) ? value : current.uniqueSouthEastCornerTower();
-        boolean southWest = "keep.corner.south_west".equals(topologySlotId) ? value : current.uniqueSouthWestCornerTower();
-        session.draft().topologyProfile = topologyProfileWithCornerModes(northWest, northEast, southEast, southWest);
+        MKWalledKeepPlannerSettings updatedSettings = plannerSettings().withCornerMode(topologySlotId, value);
+        session.draft().topologyProfile = topologyProfileWithCornerModes(
+                updatedSettings.uniqueNorthWestCornerTower(),
+                updatedSettings.uniqueNorthEastCornerTower(),
+                updatedSettings.uniqueSouthEastCornerTower(),
+                updatedSettings.uniqueSouthWestCornerTower());
         ensureFamiliesForActiveCornerSlots();
         normalizeVerticalStackTab();
     }
@@ -284,30 +284,28 @@ public final class WalledKeepDraftEditor {
         if (southWest) {
             copyVerticalStackSettingsIfMissing(settings, "keep.corner.south_west", "keep.corner.shared");
         }
-        return new MKWorkspaceTopologyProfile(
+        MKWorkspaceTopologyProfile updatedProfile = new MKWorkspaceTopologyProfile(
                 MKWalledKeepWorkspacePlanner.PLANNER_ID,
-                northWest && northEast && southEast && southWest,
-                northWest,
-                northEast,
-                southEast,
-                southWest,
                 current.topologyGroupSettings(),
                 settings,
                 current.floorTopologySettings(),
                 current.pathSettings(),
-                current.courtyardSettings(),
+                current.plannerSettings(),
                 current.terrainAdjustment()
         );
+        return plannerSettings().withCornerModes(northWest, northEast, southEast, southWest)
+                .applyTo(updatedProfile);
     }
 
     void ensureFamiliesForActiveCornerSlots() {
         ArrayList<MKWorkspaceRoomFamilyDefinition> updated =
                 new ArrayList<>(session.draft().familyDefinitions);
-        if (session.draft().topologyProfile.anySharedCornerTower()) {
+        MKWalledKeepPlannerSettings settings = plannerSettings();
+        if (settings.anySharedCornerTower()) {
             session.ensureRoomFamiliesForVerticalStack(updated, "keep.corner.shared");
         }
         for (String cornerSlot : KEEP_CORNER_STACK_IDS) {
-            if (!session.draft().topologyProfile.uniqueCornerTower(cornerSlot)) {
+            if (!settings.uniqueCornerTower(cornerSlot)) {
                 continue;
             }
             session.ensureRoomFamiliesForVerticalStack(updated, cornerSlot);
@@ -334,6 +332,14 @@ public final class WalledKeepDraftEditor {
                 .filter(KEEP_CORNER_STACK_IDS::contains)
                 .findFirst()
                 .orElse("keep.center");
+    }
+
+    private MKWalledKeepPlannerSettings plannerSettings() {
+        return MKWalledKeepPlannerSettings.from(session.draft().topologyProfile);
+    }
+
+    private void plannerSettings(MKWalledKeepPlannerSettings updatedSettings) {
+        session.draft().topologyProfile = updatedSettings.applyTo(session.draft().topologyProfile);
     }
 
     private MKWorkspaceRoomFamilyDefinition copyFamilyWithGeometry(MKWorkspaceRoomFamilyDefinition family,

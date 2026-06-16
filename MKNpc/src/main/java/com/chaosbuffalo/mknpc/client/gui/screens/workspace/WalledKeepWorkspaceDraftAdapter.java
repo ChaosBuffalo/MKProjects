@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepPlannerSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import net.minecraft.resources.ResourceLocation;
 
@@ -20,11 +21,12 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
 
     @Override
     public MKWorkspaceTopologyProfile profileForSwitch(WorkspaceDraftSession session) {
+        MKWalledKeepPlannerSettings settings = MKWalledKeepPlannerSettings.from(session.draft().topologyProfile);
         return keepEditor(session).topologyProfileWithCornerModes(
-                session.draft().topologyProfile.uniqueNorthWestCornerTower(),
-                session.draft().topologyProfile.uniqueNorthEastCornerTower(),
-                session.draft().topologyProfile.uniqueSouthEastCornerTower(),
-                session.draft().topologyProfile.uniqueSouthWestCornerTower()
+                settings.uniqueNorthWestCornerTower(),
+                settings.uniqueNorthEastCornerTower(),
+                settings.uniqueSouthEastCornerTower(),
+                settings.uniqueSouthWestCornerTower()
         );
     }
 
@@ -41,11 +43,12 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
 
     @Override
     public void resetDefaults(WorkspaceDraftSession session, MKWorkspaceDimensions dimensions) {
+        MKWalledKeepPlannerSettings settings = MKWalledKeepPlannerSettings.from(session.draft().topologyProfile);
         session.draft().topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(
-                session.draft().topologyProfile.uniqueNorthWestCornerTower(),
-                session.draft().topologyProfile.uniqueNorthEastCornerTower(),
-                session.draft().topologyProfile.uniqueSouthEastCornerTower(),
-                session.draft().topologyProfile.uniqueSouthWestCornerTower());
+                settings.uniqueNorthWestCornerTower(),
+                settings.uniqueNorthEastCornerTower(),
+                settings.uniqueSouthEastCornerTower(),
+                settings.uniqueSouthWestCornerTower());
         session.draft().familyDefinitions = MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions);
         session.draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions,
                 session.draft().palette);
@@ -74,10 +77,11 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
         if (cornerStackId.isEmpty()) {
             return true;
         }
+        MKWalledKeepPlannerSettings settings = MKWalledKeepPlannerSettings.from(session.draft().topologyProfile);
         if ("keep.corner.shared".equals(cornerStackId.get())) {
-            return session.draft().topologyProfile.anySharedCornerTower();
+            return settings.anySharedCornerTower();
         }
-        return session.draft().topologyProfile.uniqueCornerTower(cornerStackId.get());
+        return settings.uniqueCornerTower(cornerStackId.get());
     }
 
     @Override
