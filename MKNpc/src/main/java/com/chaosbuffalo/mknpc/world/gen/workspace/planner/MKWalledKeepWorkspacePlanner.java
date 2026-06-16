@@ -370,6 +370,22 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         return workspace.topologyProfile().courtyardSettings().validate();
     }
 
+    @Override
+    public Map<String, String> migrateImportedRuntimeTags(MKStructureWorkspace workspace,
+                                                          Map<String, String> sourceTags) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>(sourceTags);
+        if (isKeepCornerStackPiece(tags)) {
+            tags.put(MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG, "true");
+        }
+        return tags;
+    }
+
+    private static boolean isKeepCornerStackPiece(Map<String, String> tags) {
+        String topologySlotId = tags.getOrDefault("workspace_topology_slot_id", "");
+        String stackId = tags.getOrDefault("workspace_tower_stack_id", "");
+        return topologySlotId.startsWith("keep.corner.") || stackId.startsWith("keep.corner.");
+    }
+
     private static List<MKWorkspaceSlotSchema> walledKeepSlots() {
         ArrayList<MKWorkspaceSlotSchema> slots = new ArrayList<>();
         addVerticalStackSlots(slots, "keep.center", "keep.center_tower");

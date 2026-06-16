@@ -15,14 +15,12 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
@@ -421,18 +419,9 @@ public class MKStructureWorkspaceImportService {
 
     static Map<String, String> migrateImportedRuntimeTags(MKStructureWorkspace workspace,
                                                           Map<String, String> sourceTags) {
-        LinkedHashMap<String, String> tags = new LinkedHashMap<>(sourceTags);
-        if (MKWalledKeepWorkspacePlanner.PLANNER_ID.equals(workspace.topologyProfile().plannerId()) &&
-                isKeepCornerStackPiece(tags)) {
-            tags.put(MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG, "true");
-        }
-        return tags;
-    }
-
-    private static boolean isKeepCornerStackPiece(Map<String, String> tags) {
-        String topologySlotId = tags.getOrDefault("workspace_topology_slot_id", "");
-        String stackId = tags.getOrDefault("workspace_tower_stack_id", "");
-        return topologySlotId.startsWith("keep.corner.") || stackId.startsWith("keep.corner.");
+        return MKWorkspacePlannerRegistry.withBuiltIns()
+                .plannerFor(workspace)
+                .migrateImportedRuntimeTags(workspace, sourceTags);
     }
 
     private MKWorkspaceDimensions dimensionsFromExport(MKWorkspaceExportManifest.ExportDimensions dimensions) {
