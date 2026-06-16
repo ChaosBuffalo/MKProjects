@@ -1,8 +1,6 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
@@ -12,7 +10,9 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKTextFieldWidget;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public class WorkspaceFormIdentityPage extends WorkspacePageBase {
@@ -55,11 +55,12 @@ public class WorkspaceFormIdentityPage extends WorkspacePageBase {
                 Integer.toString(editor.previewMargin()));
         previewMarginField.setTextChangeCallback((field, text) ->
                 editor.previewMargin(parseInt(text, editor.previewMargin())));
-        MKButton topologyButton = new MKButton(Component.literal(formatTopologyLabel(editor.topologyPlannerId().getPath())),
+        MKButton topologyButton = new MKButton(topologyPlannerLabel(editor.topologyPlannerId()),
                 180, screen.buttonHeight());
         topologyButton.setPressedCallback((button, mouseButton) -> {
-            editor.topologyPlannerId(MKTowerWorkspacePlanner.PLANNER_ID.equals(editor.topologyPlannerId()) ?
-                    MKWalledKeepWorkspacePlanner.PLANNER_ID : MKTowerWorkspacePlanner.PLANNER_ID);
+            WorkspacePlannerClientRegistry.PlannerUiDefinition nextPlanner = nextTopologyPlanner(
+                    editor.topologyPlannerId());
+            editor.topologyPlannerId(nextPlanner.getPlannerId());
             screen.flagNeedSetup();
             return true;
         });
@@ -103,8 +104,26 @@ public class WorkspaceFormIdentityPage extends WorkspacePageBase {
         root.addConstraintToWidget(new CenterXConstraint(), button);
     }
 
-    private String formatTopologyLabel(String key) {
-        return WorkspacePieceDisplay.formatTopologyLabel(key);
+    private Component topologyPlannerLabel(ResourceLocation plannerId) {
+        return WorkspacePlannerClientRegistry.plannerDefinitions().stream()
+                .filter(definition -> definition.getPlannerId().equals(plannerId))
+                .findFirst()
+                .map(WorkspacePlannerClientRegistry.PlannerUiDefinition::getDisplayName)
+                .orElseGet(() -> Component.literal(WorkspacePieceDisplay.formatTopologyLabel(plannerId.getPath())));
+    }
+
+    private WorkspacePlannerClientRegistry.PlannerUiDefinition nextTopologyPlanner(ResourceLocation currentPlannerId) {
+        List<WorkspacePlannerClientRegistry.PlannerUiDefinition> definitions =
+                WorkspacePlannerClientRegistry.plannerDefinitions();
+        if (definitions.isEmpty()) {
+            throw new IllegalStateException("No workspace planner UI definitions are registered");
+        }
+        for (int i = 0; i < definitions.size(); i++) {
+            if (definitions.get(i).getPlannerId().equals(currentPlannerId)) {
+                return definitions.get((i + 1) % definitions.size());
+            }
+        }
+        return definitions.get(0);
     }
 
     private int parseInt(String value, int fallback) {

@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -48,6 +49,10 @@ public final class WorkspacePlannerClientRegistry {
 
     public static WorkspacePlannerDraftAdapter getDraftAdapter(ResourceLocation plannerId) {
         return getPlannerUi(plannerId).createDraftAdapter();
+    }
+
+    public static List<PlannerUiDefinition> plannerDefinitions() {
+        return List.copyOf(DEFINITIONS.values());
     }
 
     private static void registerInternal(ResourceLocation plannerId, Component displayName,
