@@ -568,7 +568,15 @@ public class MKJigsawPlacement {
             if (Shapes.joinIsNotEmpty(free.getValue(), Shapes.create(AABB.of(movedChildBox).deflate(0.25)),
                     BooleanOp.ONLY_SECOND)) {
                 logLockedFloorPlanFailure(topologyGroup, "physical collision for segment " + segment.label() +
-                        " box=" + movedChildBox);
+                        " " + lockedFloorLogicalSummary(segment) +
+                        " parent=" + lockedFloorSegmentSummary(parent) +
+                        " template=" + getTemplateId(childElement).map(ResourceLocation::toString)
+                        .orElse("<unknown>") +
+                        " parentJigsaw=" + parentJigsaw.orElseThrow().pos() +
+                        " childJigsaw=" + childJigsaw.orElseThrow().pos() +
+                        " attach=" + childAttachPos +
+                        " box=" + movedChildBox +
+                        " overlaps=" + lockedFloorCollisionSummary(movedChildBox));
                 return Optional.empty();
             }
             free.setValue(Shapes.joinUnoptimized(free.getValue(), Shapes.create(AABB.of(movedChildBox)),
@@ -680,6 +688,43 @@ public class MKJigsawPlacement {
                     " dir=" + (segment.segment().direction() == null ? "none" :
                     segment.segment().direction().getSerializedName()) +
                     " template=" + template;
+        }
+
+        private String lockedFloorLogicalSummary(MKFloorLayoutSolver.LogicalSegment segment) {
+            MKFloorLayoutSolver.LogicalRect rect = segment.rect();
+            return segment.kind() + "#" + segment.segmentIndex() +
+                    " parent=" + segment.parentSegmentIndex() +
+                    " dir=" + (segment.direction() == null ? "none" : segment.direction().getSerializedName()) +
+                    " mask=" + segment.acceptedMask() +
+                    " rect=[" + rect.left() + "," + rect.top() + " -> " +
+                    rect.right() + "," + rect.bottom() + "]";
+        }
+
+        private String lockedFloorCollisionSummary(BoundingBox box) {
+            ArrayList<String> collisions = new ArrayList<>();
+            for (Object existing : this.pieces) {
+                if (!(existing instanceof PoolElementStructurePiece piece)) {
+                    continue;
+                }
+                BoundingBox existingBox = piece.getBoundingBox();
+                if (!boxesIntersect(existingBox, box)) {
+                    continue;
+                }
+                String template = getTemplateId(piece.getElement())
+                        .map(ResourceLocation::toString)
+                        .orElse("<unknown>");
+                collisions.add(template + " " + existingBox);
+                if (collisions.size() >= 5) {
+                    break;
+                }
+            }
+            return collisions.isEmpty() ? "[]" : collisions.toString();
+        }
+
+        private boolean boxesIntersect(BoundingBox left, BoundingBox right) {
+            return left.minX() <= right.maxX() && left.maxX() >= right.minX() &&
+                    left.minY() <= right.maxY() && left.maxY() >= right.minY() &&
+                    left.minZ() <= right.maxZ() && left.maxZ() >= right.minZ();
         }
 
         private String lockedFloorConnectorSummary(LockedFloorPlacedSegment parent,
