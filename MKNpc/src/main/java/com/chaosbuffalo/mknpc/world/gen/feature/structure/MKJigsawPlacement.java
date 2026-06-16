@@ -549,11 +549,12 @@ public class MKJigsawPlacement {
                         lockedFloorConnectorSummary(parent, aliasLookup));
                 return Optional.empty();
             }
+            MKConnectorRole childRole = childIncomingRole(segment);
             Optional<StructureTemplate.StructureBlockInfo> childJigsaw = lockedFloorChildJigsaw(
-                    parentJigsaw.orElseThrow(), childElement, childRotation, direction.getOpposite());
+                    parentJigsaw.orElseThrow(), childElement, childRotation, direction.getOpposite(), childRole);
             if (childJigsaw.isEmpty()) {
                 logLockedFloorPlanFailure(topologyGroup, "no child connector for segment " + segment.label() +
-                        " facing " + direction.getOpposite().getSerializedName());
+                        " facing " + direction.getOpposite().getSerializedName() + " role=" + childRole);
                 return Optional.empty();
             }
             BlockPos childAttachPos = parentJigsaw.orElseThrow().pos().relative(direction);
@@ -696,11 +697,16 @@ public class MKJigsawPlacement {
                 StructureTemplate.StructureBlockInfo parentJigsaw,
                 StructurePoolElement childElement,
                 Rotation childRotation,
-                Direction direction) {
+                Direction direction,
+                MKConnectorRole role) {
             return childElement.getShuffledJigsawBlocks(this.structureTemplateManager, BlockPos.ZERO,
                             childRotation, RandomSource.create(0L))
                     .stream()
                     .filter(info -> JigsawBlock.getFrontFacing(info.state()) == direction)
+                    .filter(info -> {
+                        MKConnectorRole actual = MKConnectorClassifier.resolve(info, layoutSettings).role();
+                        return actual == role || actual == MKConnectorRole.UNKNOWN;
+                    })
                     .filter(info -> JigsawBlock.canAttach(parentJigsaw, info))
                     .findFirst();
         }
@@ -708,6 +714,14 @@ public class MKJigsawPlacement {
         private MKConnectorRole parentOutgoingRole(MKFloorLayoutSolver.LogicalSegment segment) {
             return switch (segment.kind()) {
                 case MAIN_HALL, MAIN_ROOM, MAIN_CAP -> MKConnectorRole.MAIN_BACK;
+                case BRANCH_HALL, BRANCH_ROOM, BRANCH_CAP -> MKConnectorRole.BRANCH;
+                default -> MKConnectorRole.BRANCH;
+            };
+        }
+
+        private MKConnectorRole childIncomingRole(MKFloorLayoutSolver.LogicalSegment segment) {
+            return switch (segment.kind()) {
+                case MAIN_HALL, MAIN_ROOM, MAIN_CAP -> MKConnectorRole.MAIN_FORWARD;
                 case BRANCH_HALL, BRANCH_ROOM, BRANCH_CAP -> MKConnectorRole.BRANCH;
                 default -> MKConnectorRole.BRANCH;
             };
