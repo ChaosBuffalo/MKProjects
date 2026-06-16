@@ -13,6 +13,8 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.Optional;
 
 final class TowerWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapter {
+    static final String PRIMARY_STACK_ID = "tower.primary";
+
     @Override
     public ResourceLocation plannerId() {
         return MKTowerWorkspacePlanner.PLANNER_ID;
@@ -25,20 +27,20 @@ final class TowerWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapter {
 
     @Override
     public String primaryDimensionStackId() {
-        return WorkspaceVerticalStackDraftEditor.PRIMARY_STACK_ID;
+        return PRIMARY_STACK_ID;
     }
 
     @Override
     public void applyDefaultHeight(WorkspaceDraftSession session, int requestedHeight) {
         session.replaceVerticalStackSettingsWithNormalizedFloorCounts(
-                session.verticalStackSettings(WorkspaceVerticalStackDraftEditor.PRIMARY_STACK_ID).withHeight(requestedHeight));
+                session.verticalStackSettings(PRIMARY_STACK_ID).withHeight(requestedHeight));
         session.snapDraftVerticalAccess();
     }
 
     @Override
     public void resetDefaults(WorkspaceDraftSession session, MKWorkspaceDimensions dimensions) {
-        session.draft().familyDefinitions = MKWorkspaceRoomFamilyDefinition.createDefaults(dimensions);
-        session.draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.createDefaults(dimensions,
+        session.draft().familyDefinitions = MKTowerWorkspacePlanner.defaultRoomFamilyDefinitions(dimensions);
+        session.draft().linearRunFamilies = MKTowerWorkspacePlanner.defaultLinearRunFamilyDefinitions(dimensions,
                 session.draft().palette);
         session.draft().topologyProfile = MKTowerWorkspacePlanner.defaultTopologyProfile()
                 .withVerticalStackSettings(primaryVerticalStackSettingsFromDraft(session));
@@ -49,13 +51,13 @@ final class TowerWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapter {
         boolean hasTowerFamilies = session.draft().familyDefinitions.stream()
                 .anyMatch(family -> family.topologySlotId().startsWith("tower."));
         if (!hasTowerFamilies) {
-            session.draft().familyDefinitions = MKWorkspaceRoomFamilyDefinition.createDefaults(dimensions);
+            session.draft().familyDefinitions = MKTowerWorkspacePlanner.defaultRoomFamilyDefinitions(dimensions);
         }
-        session.verticalStackSettings(WorkspaceVerticalStackDraftEditor.PRIMARY_STACK_ID);
+        session.verticalStackSettings(PRIMARY_STACK_ID);
         boolean hasTowerLinearRuns = session.draft().linearRunFamilies.stream()
                 .anyMatch(linearRun -> linearRun.topologySlotId().startsWith("tower."));
         if (!hasTowerLinearRuns) {
-            session.draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.createDefaults(dimensions,
+            session.draft().linearRunFamilies = MKTowerWorkspacePlanner.defaultLinearRunFamilyDefinitions(dimensions,
                     session.draft().palette);
         }
     }
@@ -68,14 +70,14 @@ final class TowerWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapter {
     @Override
     public Optional<String> verticalStackIdForTopologySlot(WorkspaceDraftSession session, String topologySlotId) {
         return MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(topologySlotId)
-                .filter(stackId -> WorkspaceVerticalStackDraftEditor.PRIMARY_STACK_ID.equals(stackId) || "tower".equals(stackId))
-                .map(stackId -> WorkspaceVerticalStackDraftEditor.PRIMARY_STACK_ID);
+                .filter(stackId -> PRIMARY_STACK_ID.equals(stackId) || "tower".equals(stackId))
+                .map(stackId -> PRIMARY_STACK_ID);
     }
 
     @Override
     public MKWorkspaceVerticalStackSettings defaultVerticalStackSettings(WorkspaceDraftSession session,
                                                                          String stackId) {
-        if (!WorkspaceVerticalStackDraftEditor.PRIMARY_STACK_ID.equals(stackId)) {
+        if (!PRIMARY_STACK_ID.equals(stackId)) {
             return WorkspacePlannerDraftAdapter.super.defaultVerticalStackSettings(session, stackId);
         }
         return primaryVerticalStackSettingsFromDraft(session);
@@ -84,7 +86,7 @@ final class TowerWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapter {
     @Override
     public void syncDraftVerticalAccessFromStack(WorkspaceDraftSession session,
                                                  MKWorkspaceVerticalStackSettings settings) {
-        if (!WorkspaceVerticalStackDraftEditor.PRIMARY_STACK_ID.equals(settings.stackId())) {
+        if (!PRIMARY_STACK_ID.equals(settings.stackId())) {
             return;
         }
         session.draft().shaftSize = settings.shaftSize();
@@ -96,7 +98,9 @@ final class TowerWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapter {
 
     private MKWorkspaceVerticalStackSettings primaryVerticalStackSettingsFromDraft(WorkspaceDraftSession session) {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
-        return MKWorkspaceVerticalStackSettings.defaults(WorkspaceVerticalStackDraftEditor.PRIMARY_STACK_ID, dimensions.roomHeight())
+        return MKWorkspaceVerticalStackSettings.defaults(PRIMARY_STACK_ID, dimensions.roomHeight())
+                .withWidth(dimensions.roomWidth())
+                .withLength(dimensions.roomLength())
                 .withShaftSize(session.draft().shaftSize)
                 .withVerticalAccessPlacement(session.draft().verticalAccessPlacement)
                 .withStairConfig(new MKWorkspaceStairAuthoringConfig(

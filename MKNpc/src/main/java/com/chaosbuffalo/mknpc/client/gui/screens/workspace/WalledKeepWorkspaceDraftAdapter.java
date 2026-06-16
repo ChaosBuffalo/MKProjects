@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepPlannerSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceVerticalStackSizingReport;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
@@ -49,8 +50,8 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
                 settings.uniqueNorthEastCornerTower(),
                 settings.uniqueSouthEastCornerTower(),
                 settings.uniqueSouthWestCornerTower());
-        session.draft().familyDefinitions = MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions);
-        session.draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions,
+        session.draft().familyDefinitions = MKWalledKeepWorkspacePlanner.defaultRoomFamilyDefinitions(dimensions);
+        session.draft().linearRunFamilies = MKWalledKeepWorkspacePlanner.defaultLinearRunFamilyDefinitions(dimensions,
                 session.draft().palette);
     }
 
@@ -60,13 +61,13 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
         boolean hasKeepFamilies = session.draft().familyDefinitions.stream()
                 .anyMatch(family -> family.topologySlotId().startsWith("keep."));
         if (!hasKeepFamilies) {
-            session.draft().familyDefinitions = MKWorkspaceRoomFamilyDefinition.createWalledKeepDefaults(dimensions);
+            session.draft().familyDefinitions = MKWalledKeepWorkspacePlanner.defaultRoomFamilyDefinitions(dimensions);
         }
         keepEditor(session).ensureFamiliesForActiveCornerSlots();
         boolean hasKeepLinearRuns = session.draft().linearRunFamilies.stream()
                 .anyMatch(linearRun -> linearRun.topologySlotId().startsWith("keep."));
         if (!hasKeepLinearRuns) {
-            session.draft().linearRunFamilies = MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(dimensions,
+            session.draft().linearRunFamilies = MKWalledKeepWorkspacePlanner.defaultLinearRunFamilyDefinitions(dimensions,
                     session.draft().palette);
         }
     }
@@ -104,6 +105,15 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
         return session.draft().familyDefinitions.stream()
                 .filter(family -> family.topologySlotId().equals(sharedSlotId))
                 .findFirst();
+    }
+
+    @Override
+    public List<MKWorkspaceVerticalStackSizingReport.HorizontalExitInfo> previewFallbackEntryExits(
+            WorkspaceDraftSession session, String stackId) {
+        if (!"keep.center".equals(stackId)) {
+            return List.of();
+        }
+        return List.of(new MKWorkspaceVerticalStackSizingReport.HorizontalExitInfo("south", "ingress", 0, 0));
     }
 
     private void migratePerimeterLinearRuns(WorkspaceDraftSession session) {

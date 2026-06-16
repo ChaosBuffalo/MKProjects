@@ -12,8 +12,6 @@ import java.util.Optional;
 import java.util.Set;
 
 public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteFamily {
-    public static final int DEFAULT_WALLED_KEEP_WALL_SEGMENT_LENGTH = 15;
-
     public static final Codec<MKWorkspaceLinearRunFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("linearRunId").forGetter(MKWorkspaceLinearRunFamilyDefinition::linearRunId),
             Codec.STRING.optionalFieldOf("topologySlotId", "").forGetter(MKWorkspaceLinearRunFamilyDefinition::topologySlotId),
@@ -135,106 +133,6 @@ public class MKWorkspaceLinearRunFamilyDefinition implements MKWorkspacePaletteF
 
     public static MKWorkspaceLinearRunFamilyDefinition fromTag(CompoundTag tag) {
         return MKWorkspaceCodecs.parseNbt(CODEC, tag, "linear run family definition");
-    }
-
-    public static List<MKWorkspaceLinearRunFamilyDefinition> createDefaults(MKWorkspaceDimensions dimensions,
-                                                                            MKWorkspaceMaterialPalette palette) {
-        return List.of(
-                new MKWorkspaceLinearRunFamilyDefinition(
-                        "main",
-                        MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR,
-                        "main_opening",
-                        5,
-                        dimensions.doorwayWidth(),
-                        dimensions.doorwayHeight(),
-                        0,
-                        true,
-                        false,
-                        MKWorkspaceLinearRunProjection.RIGID,
-                        List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
-                        MKWorkspaceFoundationPolicy.none(),
-                        null
-                ),
-                new MKWorkspaceLinearRunFamilyDefinition(
-                        "branch",
-                        MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR,
-                        "branch_opening",
-                        5,
-                        dimensions.doorwayWidth(),
-                        dimensions.doorwayHeight(),
-                        0,
-                        false,
-                        true,
-                        MKWorkspaceLinearRunProjection.RIGID,
-                        List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
-                        MKWorkspaceFoundationPolicy.none(),
-                        null
-                )
-        );
-    }
-
-    public static List<MKWorkspaceLinearRunFamilyDefinition> createWalledKeepDefaults(MKWorkspaceDimensions dimensions,
-                                                                                      MKWorkspaceMaterialPalette palette) {
-        int keepHeight = 7;
-        MKWorkspaceFoundationPolicy wallFoundation = MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(List.of(
-                palette.wallBlock()
-        ));
-        return List.of(
-            keepRun("keep_wall_segment", "keep.perimeter", MKWorkspaceLinearRunKind.DEFENSIVE_WALL,
-                    "branch_opening", DEFAULT_WALLED_KEEP_WALL_SEGMENT_LENGTH, 3, keepHeight, false, true,
-                    wallFoundation),
-            keepRun("keep_entry_approach", "keep.entry_approach.main", MKWorkspaceLinearRunKind.OPEN_WALKWAY,
-                    "main_opening", defaultWalledKeepEntryApproachLength(dimensions), dimensions.shaftWidth(),
-                    keepHeight, true, false,
-                    MKWorkspaceFoundationPolicy.none()),
-            keepRun("keep_walkway_west", "keep.walkway.west", MKWorkspaceLinearRunKind.OPEN_WALKWAY,
-                    "branch_opening", 9, dimensions.shaftWidth(), keepHeight, false, true,
-                    MKWorkspaceFoundationPolicy.none()),
-            keepRun("keep_walkway_east", "keep.walkway.east", MKWorkspaceLinearRunKind.OPEN_WALKWAY,
-                    "branch_opening", 9, dimensions.shaftWidth(), keepHeight, false, true,
-                    MKWorkspaceFoundationPolicy.none())
-        );
-    }
-
-    private static int defaultWalledKeepEntryApproachLength(MKWorkspaceDimensions dimensions) {
-        int centerSpan = doubledOddFootprint(Math.max(9, dimensions.roomLength()));
-        int laneInset = 1 + 2 + dimensions.shaftWidth() / 2;
-        int gatehouseClearance = 1 + 2 + dimensions.shaftWidth();
-        return smallestOddAtLeast(centerSpan + (2 * laneInset) + gatehouseClearance);
-    }
-
-    private static int doubledOddFootprint(int footprint) {
-        int oddFootprint = footprint % 2 == 0 ? footprint + 1 : footprint;
-        return Math.max(3, (oddFootprint * 2) - 1);
-    }
-
-    private static int smallestOddAtLeast(int value) {
-        int normalized = Math.max(1, value);
-        return normalized % 2 == 0 ? normalized + 1 : normalized;
-    }
-
-    private static MKWorkspaceLinearRunFamilyDefinition keepRun(String linearRunId, String topologySlotId,
-                                                                MKWorkspaceLinearRunKind kind,
-                                                                String openingProfileId, int length,
-                                                                int interiorWidth, int interiorHeight,
-                                                                boolean allowOnMainPath, boolean allowOnBranchPath,
-                                                                MKWorkspaceFoundationPolicy foundationPolicy) {
-        return new MKWorkspaceLinearRunFamilyDefinition(
-                linearRunId,
-                topologySlotId,
-                kind,
-                openingProfileId,
-                length,
-                interiorWidth,
-                interiorHeight,
-                0,
-                allowOnMainPath,
-                allowOnBranchPath,
-                MKWorkspaceLinearRunProjection.RIGID,
-                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
-                foundationPolicy,
-                null
-        );
     }
 
     public CompoundTag toTag() {

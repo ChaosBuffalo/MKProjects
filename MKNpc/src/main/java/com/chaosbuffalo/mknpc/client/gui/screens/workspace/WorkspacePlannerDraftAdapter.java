@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceVerticalStackSizingReport;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceSlotSchema;
 import net.minecraft.resources.ResourceLocation;
 
@@ -75,5 +76,10 @@ interface WorkspacePlannerDraftAdapter {
     default Optional<MKWorkspaceRoomFamilyDefinition> sharedFamilySource(WorkspaceDraftSession session,
                                                                           String topologySlotId) {
         return Optional.empty();
+    }
+
+    default List<MKWorkspaceVerticalStackSizingReport.HorizontalExitInfo> previewFallbackEntryExits(
+            WorkspaceDraftSession session, String stackId) {
+        return List.of();
     }
 }

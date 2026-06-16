@@ -1,6 +1,11 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
@@ -10,6 +15,17 @@ public interface MKWorkspacePlanner extends MKWorkspacePiecePlanner {
     ResourceLocation plannerId();
 
     MKWorkspaceTopologySchema schema();
+
+    MKWorkspaceTopologyProfile createDefaultTopologyProfile();
+
+    default List<MKWorkspaceRoomFamilyDefinition> createDefaultRoomFamilyDefinitions(MKWorkspaceDimensions dimensions) {
+        return List.of();
+    }
+
+    default List<MKWorkspaceLinearRunFamilyDefinition> createDefaultLinearRunFamilyDefinitions(
+            MKWorkspaceDimensions dimensions, MKWorkspaceMaterialPalette palette) {
+        return List.of();
+    }
 
     default List<String> validateTopology(MKStructureWorkspace workspace) {
         return List.of();

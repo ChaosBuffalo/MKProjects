@@ -1,6 +1,11 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
@@ -10,6 +15,7 @@ import java.util.Map;
 
 public class MKWorkspacePlannerRegistry {
     private static final MKWorkspacePlannerRegistry SHARED = new MKWorkspacePlannerRegistry();
+    private static final ResourceLocation DEFAULT_PLANNER_ID = MKTowerWorkspacePlanner.PLANNER_ID;
 
     static {
         registerBuiltIns(SHARED);
@@ -47,6 +53,23 @@ public class MKWorkspacePlannerRegistry {
             throw new IllegalArgumentException("No workspace planner registered for planner id " + plannerId);
         }
         return planner;
+    }
+
+    public MKWorkspacePlanner defaultPlanner() {
+        return plannerFor(DEFAULT_PLANNER_ID);
+    }
+
+    public MKWorkspaceTopologyProfile defaultTopologyProfile() {
+        return defaultPlanner().createDefaultTopologyProfile();
+    }
+
+    public List<MKWorkspaceRoomFamilyDefinition> defaultRoomFamilyDefinitions(MKWorkspaceDimensions dimensions) {
+        return defaultPlanner().createDefaultRoomFamilyDefinitions(dimensions);
+    }
+
+    public List<MKWorkspaceLinearRunFamilyDefinition> defaultLinearRunFamilyDefinitions(
+            MKWorkspaceDimensions dimensions, MKWorkspaceMaterialPalette palette) {
+        return defaultPlanner().createDefaultLinearRunFamilyDefinitions(dimensions, palette);
     }
 
     public List<String> validate(MKStructureWorkspace workspace) {

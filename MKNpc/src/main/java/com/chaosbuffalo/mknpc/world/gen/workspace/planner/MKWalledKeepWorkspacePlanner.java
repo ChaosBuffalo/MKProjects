@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
@@ -14,6 +15,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFami
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunProjection;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamilySettings;
@@ -51,6 +53,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
     private static final String COURTYARD_PATH_SLOT_PREFIX = "keep.courtyard.path.";
     private static final String COURTYARD_CONTENT_KIND = "courtyard";
     private static final String COURTYARD_PATH_KIND = "courtyard_path";
+    public static final int DEFAULT_WALL_SEGMENT_LENGTH = 15;
     public static final String CONTENT_KIND_TAG = "workspace_content_kind";
     public static final String CONTENT_SIZE_TAG = "workspace_content_size";
     public static final String CONTENT_WIDTH_TAG = "workspace_content_width";
@@ -297,6 +300,127 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         ));
     }
 
+    @Override
+    public MKWorkspaceTopologyProfile createDefaultTopologyProfile() {
+        return defaultTopologyProfile(true);
+    }
+
+    public static List<MKWorkspaceRoomFamilyDefinition> defaultRoomFamilyDefinitions(MKWorkspaceDimensions dimensions) {
+        int keepHeight = 7;
+        int centerWidth = doubledOddFootprint(Math.max(9, dimensions.roomWidth()));
+        int centerLength = doubledOddFootprint(Math.max(9, dimensions.roomLength()));
+        int cornerFootprint = 7;
+        ArrayList<MKWorkspaceRoomFamilyDefinition> families = new ArrayList<>();
+        families.addAll(defaultVerticalStackFamilies("keep_center", "keep.center",
+                centerWidth, centerLength, keepHeight));
+        families.addAll(defaultVerticalStackFamilies("keep_corner_shared", "keep.corner.shared",
+                cornerFootprint, cornerFootprint, keepHeight));
+        families.add(MKWorkspaceRoomFamilyDefinition.forTopologySlot("keep_gate_main",
+                MKWorkspaceTopologySlotMetadata.explicit("keep.gate.main", "entry", "room", false),
+                "keep.gate", false,
+                DEFAULT_WALL_SEGMENT_LENGTH, 5, keepHeight,
+                MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
+                null, null));
+        return List.copyOf(families);
+    }
+
+    @Override
+    public List<MKWorkspaceRoomFamilyDefinition> createDefaultRoomFamilyDefinitions(MKWorkspaceDimensions dimensions) {
+        return defaultRoomFamilyDefinitions(dimensions);
+    }
+
+    public static List<MKWorkspaceLinearRunFamilyDefinition> defaultLinearRunFamilyDefinitions(
+            MKWorkspaceDimensions dimensions, MKWorkspaceMaterialPalette palette) {
+        int keepHeight = 7;
+        MKWorkspaceFoundationPolicy wallFoundation = MKWorkspaceFoundationPolicy.maskedExtendBottomBlocks(List.of(
+                palette.wallBlock()
+        ));
+        return List.of(
+                keepRun("keep_wall_segment", PERIMETER_ROOT_SLOT, MKWorkspaceLinearRunKind.DEFENSIVE_WALL,
+                        "branch_opening", DEFAULT_WALL_SEGMENT_LENGTH, 3, keepHeight, false, true,
+                        wallFoundation),
+                keepRun("keep_entry_approach", ENTRY_APPROACH_SLOT, MKWorkspaceLinearRunKind.OPEN_WALKWAY,
+                        "main_opening", defaultEntryApproachLength(dimensions), dimensions.shaftWidth(),
+                        keepHeight, true, false, MKWorkspaceFoundationPolicy.none()),
+                keepRun("keep_walkway_west", WALKWAY_WEST_ROOT_SLOT, MKWorkspaceLinearRunKind.OPEN_WALKWAY,
+                        "branch_opening", 9, dimensions.shaftWidth(), keepHeight, false, true,
+                        MKWorkspaceFoundationPolicy.none()),
+                keepRun("keep_walkway_east", WALKWAY_EAST_ROOT_SLOT, MKWorkspaceLinearRunKind.OPEN_WALKWAY,
+                        "branch_opening", 9, dimensions.shaftWidth(), keepHeight, false, true,
+                        MKWorkspaceFoundationPolicy.none())
+        );
+    }
+
+    @Override
+    public List<MKWorkspaceLinearRunFamilyDefinition> createDefaultLinearRunFamilyDefinitions(
+            MKWorkspaceDimensions dimensions, MKWorkspaceMaterialPalette palette) {
+        return defaultLinearRunFamilyDefinitions(dimensions, palette);
+    }
+
+    private static List<MKWorkspaceRoomFamilyDefinition> defaultVerticalStackFamilies(String basePrefix,
+                                                                                       String stackId,
+                                                                                       int width,
+                                                                                       int length,
+                                                                                       int height) {
+        return MKWorkspaceVerticalStackSlot.familyDefaultOrder().stream()
+                .map(slot -> MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot(
+                        slot.baseName(basePrefix),
+                        slot,
+                        stackId,
+                        true,
+                        0,
+                        0,
+                        0,
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                        List.of(),
+                        0,
+                        0,
+                        null,
+                        null))
+                .toList();
+    }
+
+    private static int defaultEntryApproachLength(MKWorkspaceDimensions dimensions) {
+        int centerSpan = doubledOddFootprint(Math.max(9, dimensions.roomLength()));
+        int laneInset = 1 + 2 + dimensions.shaftWidth() / 2;
+        int gatehouseClearance = 1 + 2 + dimensions.shaftWidth();
+        return smallestOddAtLeastDefault(centerSpan + (2 * laneInset) + gatehouseClearance);
+    }
+
+    private static int doubledOddFootprint(int footprint) {
+        int oddFootprint = footprint % 2 == 0 ? footprint + 1 : footprint;
+        return Math.max(3, (oddFootprint * 2) - 1);
+    }
+
+    private static int smallestOddAtLeastDefault(int value) {
+        int normalized = Math.max(1, value);
+        return normalized % 2 == 0 ? normalized + 1 : normalized;
+    }
+
+    private static MKWorkspaceLinearRunFamilyDefinition keepRun(String linearRunId, String topologySlotId,
+                                                                MKWorkspaceLinearRunKind kind,
+                                                                String openingProfileId, int length,
+                                                                int interiorWidth, int interiorHeight,
+                                                                boolean allowOnMainPath, boolean allowOnBranchPath,
+                                                                MKWorkspaceFoundationPolicy foundationPolicy) {
+        return new MKWorkspaceLinearRunFamilyDefinition(
+                linearRunId,
+                topologySlotId,
+                kind,
+                openingProfileId,
+                length,
+                interiorWidth,
+                interiorHeight,
+                0,
+                allowOnMainPath,
+                allowOnBranchPath,
+                MKWorkspaceLinearRunProjection.RIGID,
+                List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                foundationPolicy,
+                null
+        );
+    }
+
     public static List<MKWorkspaceVerticalStackSettings> defaultVerticalStackSettings(
             boolean uniqueNorthWestCornerTower,
             boolean uniqueNorthEastCornerTower,
@@ -325,6 +449,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
 
     private static MKWorkspaceVerticalStackSettings defaultCenterStackSettings() {
         return MKWorkspaceVerticalStackSettings.defaults("keep.center", 7)
+                .withWidth(17)
+                .withLength(17)
                 .withTopCapApproachEnabled(false)
                 .withBasementEntryEnabled(false)
                 .withBasementCapApproachEnabled(false);

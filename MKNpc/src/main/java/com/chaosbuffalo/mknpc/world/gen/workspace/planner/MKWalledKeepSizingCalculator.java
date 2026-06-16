@@ -209,7 +209,7 @@ public class MKWalledKeepSizingCalculator {
     private MKWorkspaceLinearRunFamilyDefinition fallbackWallFamily(MKStructureWorkspace workspace) {
         return new MKWorkspaceLinearRunFamilyDefinition("keep_wall_segment", PERIMETER_ROOT_SLOT,
                 com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind.DEFENSIVE_WALL,
-                "branch_opening", MKWorkspaceLinearRunFamilyDefinition.DEFAULT_WALLED_KEEP_WALL_SEGMENT_LENGTH,
+                "branch_opening", MKWalledKeepWorkspacePlanner.DEFAULT_WALL_SEGMENT_LENGTH,
                 3, 7, 0, false, true,
                 com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunProjection.RIGID,
                 java.util.List.of(com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape.STRAIGHT),

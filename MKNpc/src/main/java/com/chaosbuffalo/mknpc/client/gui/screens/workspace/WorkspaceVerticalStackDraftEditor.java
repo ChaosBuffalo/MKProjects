@@ -13,14 +13,13 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceVerticalStackSizingReport;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public final class WorkspaceVerticalStackDraftEditor {
-    static final String PRIMARY_STACK_ID = "tower.primary";
-
     private final WorkspaceDraftSession session;
     private final String stackId;
 
@@ -44,6 +43,10 @@ public final class WorkspaceVerticalStackDraftEditor {
                         .isPresent())
                 .map(session::normalizeFamilyDefinition)
                 .toList();
+    }
+
+    public List<MKWorkspaceVerticalStackSizingReport.HorizontalExitInfo> previewFallbackEntryExits() {
+        return session.plannerAdapter().previewFallbackEntryExits(session, stackId);
     }
 
     public String previewSelection() {

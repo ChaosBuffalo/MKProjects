@@ -37,7 +37,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotM
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceRegionSchema;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceRoleSchema;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceSlotSchema;
@@ -86,7 +85,7 @@ public class WorkspaceDraftSession {
         draft.namespace = valueOrDefault(workspace != null ? workspace.namespace() : null, "mkdev");
         draft.structureName = valueOrDefault(workspace != null ? workspace.structureName() : null, "tower_workspace");
         draft.topologyProfile = workspace != null ? workspace.topologyProfile() :
-                MKTowerWorkspacePlanner.defaultTopologyProfile();
+                MKWorkspacePlannerRegistry.shared().defaultTopologyProfile();
         draft.stairMode = workspace != null ? workspace.stairConfig().mode() : MKWorkspaceStairMode.AUTO;
         draft.stairRiseType = workspace != null ? workspace.stairConfig().riseType() : MKWorkspaceStairRiseType.MIXED;
         draft.stairWidth = workspace != null ? workspace.stairConfig().stairWidth() : 1;
@@ -96,11 +95,11 @@ public class WorkspaceDraftSession {
         draft.exteriorAirMargin = workspace != null ? workspace.exteriorAirMargin() : 2;
         draft.previewMargin = workspace != null ? workspace.previewMargin() : 4;
         draft.familyDefinitions = List.copyOf(workspace != null ? workspace.familyDefinitions() :
-                MKWorkspaceRoomFamilyDefinition.createDefaults());
+                MKWorkspacePlannerRegistry.shared().defaultRoomFamilyDefinitions(MKWorkspaceDimensions.defaultDimensions()));
         draft.openingProfiles = List.copyOf(workspace != null ? workspace.openingProfiles() :
                 MKHorizontalOpeningProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()));
         draft.linearRunFamilies = List.copyOf(workspace != null ? workspace.linearRunFamilies() :
-                MKWorkspaceLinearRunFamilyDefinition.createDefaults(MKWorkspaceDimensions.defaultDimensions(),
+                MKWorkspacePlannerRegistry.shared().defaultLinearRunFamilyDefinitions(MKWorkspaceDimensions.defaultDimensions(),
                         MKWorkspaceMaterialPalette.defaultPalette()));
         int requestedShaftSize = workspace != null ? workspace.verticalAccessSpec().shaftSize() :
                 MKWorkspaceVerticalAccessSpec.defaultSpec().shaftSize();
@@ -1207,7 +1206,7 @@ public class WorkspaceDraftSession {
         ));
     }
 
-    private WorkspacePlannerDraftAdapter plannerAdapter() {
+    WorkspacePlannerDraftAdapter plannerAdapter() {
         return plannerAdapterFor(topologyPlannerId());
     }
 

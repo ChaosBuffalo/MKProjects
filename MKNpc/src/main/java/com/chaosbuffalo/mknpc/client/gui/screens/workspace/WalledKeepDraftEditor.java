@@ -152,7 +152,7 @@ public final class WalledKeepDraftEditor {
                 .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))
                 .findFirst()
                 .map(MKWorkspaceLinearRunFamilyDefinition::length)
-                .orElse(MKWorkspaceLinearRunFamilyDefinition.DEFAULT_WALLED_KEEP_WALL_SEGMENT_LENGTH);
+                .orElse(MKWalledKeepWorkspacePlanner.DEFAULT_WALL_SEGMENT_LENGTH);
     }
 
     public void wallUnitSpan(int value) {
@@ -219,7 +219,7 @@ public final class WalledKeepDraftEditor {
 
     public void resetPerimeterDefaults() {
         Map<String, MKWorkspaceLinearRunFamilyDefinition> defaultsBySlot =
-                MKWorkspaceLinearRunFamilyDefinition.createWalledKeepDefaults(MKWorkspaceDimensions.defaultDimensions(),
+                MKWalledKeepWorkspacePlanner.defaultLinearRunFamilyDefinitions(MKWorkspaceDimensions.defaultDimensions(),
                                 session.draft().palette)
                         .stream()
                         .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))

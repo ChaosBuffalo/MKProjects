@@ -192,7 +192,7 @@ public record MKWorkspaceFloorTopologySettings(
     }
 
     public MKWorkspaceFloorTopologySettings {
-        stackId = stackId == null || stackId.isBlank() ? "tower.primary" : stackId;
+        stackId = stackId == null || stackId.isBlank() ? "vertical_stack" : stackId;
         floorRole = floorRole == null || floorRole.isBlank() ? MKWorkspaceVerticalStackSlot.MAIN_FLOOR.suffix() : floorRole;
         minMainPathPieces = Math.max(0, minMainPathPieces);
         maxMainPathPieces = Math.max(minMainPathPieces, maxMainPathPieces);

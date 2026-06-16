@@ -13,8 +13,6 @@ import java.util.Optional;
 import java.util.OptionalInt;
 
 public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily {
-    private static final String PRIMARY_VERTICAL_STACK_ID = "tower.primary";
-
     public static final Codec<MKWorkspaceRoomFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("baseName").forGetter(MKWorkspaceRoomFamilyDefinition::baseName),
             MKWorkspaceTopologySlotMetadata.CODEC.fieldOf("slotMetadata")
@@ -205,102 +203,6 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                 paletteOverride);
     }
 
-    public static List<MKWorkspaceRoomFamilyDefinition> createDefaults() {
-        return createDefaults(MKWorkspaceDimensions.defaultDimensions());
-    }
-
-    public static List<MKWorkspaceRoomFamilyDefinition> createDefaults(MKWorkspaceDimensions dimensions) {
-        return List.of(
-                forVerticalStackSlot("entry", MKWorkspaceVerticalStackSlot.ENTRY, PRIMARY_VERTICAL_STACK_ID, true,
-                        0, 0, 0,
-                  MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
-                  List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
-                          MKWorkspaceHorizontalExitPathKind.INGRESS, "main_opening",
-                          MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION)),
-                  0, 0, null, null),
-                forVerticalStackSlot("floor_main", MKWorkspaceVerticalStackSlot.MAIN_FLOOR, PRIMARY_VERTICAL_STACK_ID, true,
-                        0, 0, 0,
-                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
-                        null, null),
-                forVerticalStackSlot("top_cap_approach", MKWorkspaceVerticalStackSlot.TOP_CAP_APPROACH,
-                        PRIMARY_VERTICAL_STACK_ID, true,
-                        0, 0, 0,
-                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
-                        null, null),
-                forVerticalStackSlot("top_cap", MKWorkspaceVerticalStackSlot.TOP_CAP, PRIMARY_VERTICAL_STACK_ID, true,
-                        0, 0, 0,
-                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
-                        null, null),
-                forVerticalStackSlot("basement_entry", MKWorkspaceVerticalStackSlot.BASEMENT_ENTRY,
-                        PRIMARY_VERTICAL_STACK_ID, true,
-                        0, 0, 0,
-                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
-                        null, null),
-                forVerticalStackSlot("basement_main", MKWorkspaceVerticalStackSlot.BASEMENT_FLOOR,
-                        PRIMARY_VERTICAL_STACK_ID, true,
-                        0, 0, 0,
-                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
-                        null, null),
-                forVerticalStackSlot("basement_cap_approach", MKWorkspaceVerticalStackSlot.BASEMENT_CAP_APPROACH,
-                        PRIMARY_VERTICAL_STACK_ID, true,
-                        0, 0, 0,
-                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
-                        null, null),
-                forVerticalStackSlot("basement_cap", MKWorkspaceVerticalStackSlot.BASEMENT_CAP,
-                        PRIMARY_VERTICAL_STACK_ID, true,
-                        0, 0, 0,
-                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
-                        null, null)
-        );
-    }
-
-    public static List<MKWorkspaceRoomFamilyDefinition> createWalledKeepDefaults(MKWorkspaceDimensions dimensions) {
-        int keepHeight = 7;
-        int centerWidth = doubledOddFootprint(Math.max(9, dimensions.roomWidth()));
-        int centerLength = doubledOddFootprint(Math.max(9, dimensions.roomLength()));
-        int cornerFootprint = 7;
-        ArrayList<MKWorkspaceRoomFamilyDefinition> families = new ArrayList<>();
-        families.addAll(createKeepVerticalStackDefaults("keep_center", "keep.center",
-                centerWidth, centerLength, keepHeight));
-        families.addAll(createKeepVerticalStackDefaults("keep_corner_shared", "keep.corner.shared",
-                cornerFootprint, cornerFootprint, keepHeight));
-        families.add(forTopologySlot("keep_gate_main",
-                MKWorkspaceTopologySlotMetadata.explicit("keep.gate.main", "entry", "room", false),
-                "keep.gate", false,
-                MKWorkspaceLinearRunFamilyDefinition.DEFAULT_WALLED_KEEP_WALL_SEGMENT_LENGTH, 5, keepHeight,
-                MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0,
-                null, null));
-        return List.copyOf(families);
-    }
-
-    private static List<MKWorkspaceRoomFamilyDefinition> createKeepVerticalStackDefaults(String basePrefix,
-                                                                                       String stackId,
-                                                                                       int width,
-                                                                                       int length,
-                                                                                       int height) {
-        return MKWorkspaceVerticalStackSlot.familyDefaultOrder().stream()
-                .map(slot -> forVerticalStackSlot(
-                        slot.baseName(basePrefix),
-                        slot,
-                        stackId,
-                        true,
-                        0,
-                        0,
-                        0,
-                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
-                        List.of(),
-                        0,
-                        0,
-                        null,
-                        null))
-                .toList();
-    }
-
-    private static int doubledOddFootprint(int footprint) {
-        int oddFootprint = footprint % 2 == 0 ? footprint + 1 : footprint;
-        return Math.max(3, (oddFootprint * 2) - 1);
-    }
-
     private static List<MKWorkspaceFamilyHorizontalExitDefinition> normalizeFamilyExits(
             MKWorkspaceTopologySlotMetadata slotMetadata, boolean supportsVerticalAccess,
             List<MKWorkspaceFamilyHorizontalExitDefinition> exits) {
@@ -478,7 +380,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
 
     public static List<MKWorkspaceRoomFamilyDefinition> normalize(List<MKWorkspaceRoomFamilyDefinition> families) {
         if (families.isEmpty()) {
-            return createDefaults();
+            return List.of();
         }
         LinkedHashSet<String> seen = new LinkedHashSet<>();
         List<MKWorkspaceRoomFamilyDefinition> normalized = new ArrayList<>();
@@ -488,7 +390,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
             }
         }
         if (normalized.isEmpty()) {
-            return createDefaults();
+            return List.of();
         }
         return List.copyOf(normalized);
     }
@@ -685,7 +587,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
     }
 
     private static String defaultVerticalAccessGroupId(boolean supportsVerticalAccess) {
-        return supportsVerticalAccess ? "tower.core" : "";
+        return supportsVerticalAccess ? "vertical_access" : "";
     }
 }
 

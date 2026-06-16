@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 
@@ -55,7 +55,7 @@ public class MKStructureWorkspace {
                                 List<MKHorizontalOpeningProfile> openingProfiles,
                                 List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
                                 long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces) {
-        this(id, anchor, namespace, structureName, MKTowerWorkspacePlanner.defaultTopologyProfile(), dimensions, palette,
+        this(id, anchor, namespace, structureName, MKWorkspacePlannerRegistry.shared().defaultTopologyProfile(), dimensions, palette,
                 stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
                 familyDefinitions, openingProfiles, linearRunFamilies,
                 createdAt, updatedAt, pieces, List.of());
@@ -95,7 +95,7 @@ public class MKStructureWorkspace {
         this.anchor = anchor;
         this.namespace = namespace;
         this.structureName = structureName;
-        this.topologyProfile = topologyProfile == null ? MKTowerWorkspacePlanner.defaultTopologyProfile() : topologyProfile;
+        this.topologyProfile = topologyProfile == null ? MKWorkspacePlannerRegistry.shared().defaultTopologyProfile() : topologyProfile;
         this.dimensions = dimensions;
         this.palette = palette;
         this.stairConfig = stairConfig;
@@ -115,22 +115,26 @@ public class MKStructureWorkspace {
 
     public static MKStructureWorkspace createDraft(BlockPos anchor) {
         long now = System.currentTimeMillis();
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceMaterialPalette palette = MKWorkspaceMaterialPalette.defaultPalette();
+        MKWorkspacePlannerRegistry plannerRegistry = MKWorkspacePlannerRegistry.shared();
         return new MKStructureWorkspace(
                 UUID.randomUUID(),
                 anchor,
                 "mkdev",
                 "tower_workspace",
-                MKWorkspaceDimensions.defaultDimensions(),
-                MKWorkspaceMaterialPalette.defaultPalette(),
+                plannerRegistry.defaultTopologyProfile(),
+                dimensions,
+                palette,
                 MKWorkspaceStairAuthoringConfig.defaultConfig(),
                 MKVerticalAccessPlacement.CENTER,
                 1,
                 2,
                 4,
                 MKWorkspaceVerticalAccessSpec.defaultSpec(),
-                MKWorkspaceRoomFamilyDefinition.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
-                MKHorizontalOpeningProfile.createDefaults(MKWorkspaceDimensions.defaultDimensions()),
-                List.of(),
+                plannerRegistry.defaultRoomFamilyDefinitions(dimensions),
+                MKHorizontalOpeningProfile.createDefaults(dimensions),
+                plannerRegistry.defaultLinearRunFamilyDefinitions(dimensions, palette),
                 now,
                 now,
                 List.of()
@@ -215,7 +219,7 @@ public class MKStructureWorkspace {
             MKWorkspaceVerticalAccessSpec verticalAccessSpec
     ) {
         private static final MapCodec<SerializedWorkspaceCore> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                MKWorkspaceTopologyProfile.CODEC.optionalFieldOf("topologyProfile", MKTowerWorkspacePlanner.defaultTopologyProfile())
+                MKWorkspaceTopologyProfile.CODEC.optionalFieldOf("topologyProfile", MKWorkspacePlannerRegistry.shared().defaultTopologyProfile())
                         .forGetter(SerializedWorkspaceCore::topologyProfile),
                 MKWorkspaceDimensions.CODEC.fieldOf("dimensions").forGetter(SerializedWorkspaceCore::dimensions),
                 MKWorkspaceMaterialPalette.CODEC.optionalFieldOf("palette", MKWorkspaceMaterialPalette.defaultPalette())

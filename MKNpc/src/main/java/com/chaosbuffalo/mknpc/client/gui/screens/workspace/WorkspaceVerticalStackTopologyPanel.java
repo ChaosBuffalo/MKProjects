@@ -66,7 +66,7 @@ public class WorkspaceVerticalStackTopologyPanel {
                                 boolean showStackSizingControls) {
         WorkspaceVerticalStackDraftEditor towerEditor = towerEditor(editor, stackId);
         MKWorkspaceVerticalStackSizingReport report = MKWorkspaceVerticalStackSizingReport.fromSettings(towerEditor.settingsForUi(),
-                towerEditor.familiesForUi());
+                towerEditor.familiesForUi(), towerEditor.previewFallbackEntryExits());
         String selectedSection = normalizedSelectedSection(towerEditor, report);
         int previewWidth = Math.min(screen.contentWidth(), 320);
         MKWorkspaceVerticalStackSidePreview preview = new MKWorkspaceVerticalStackSidePreview(previewWidth, 440,

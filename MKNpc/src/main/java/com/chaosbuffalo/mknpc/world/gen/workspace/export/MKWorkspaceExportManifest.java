@@ -26,7 +26,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceMetadata;
 import com.mojang.serialization.Codec;
@@ -365,7 +365,7 @@ public record MKWorkspaceExportManifest(
                 ExportStairConfig.CODEC.fieldOf("stair_config").forGetter(ExportWorkspaceSettings::stairConfig),
                 ExportVerticalAccessSpec.CODEC.fieldOf("vertical_access_spec")
                         .forGetter(ExportWorkspaceSettings::verticalAccessSpec),
-                MKWorkspaceTopologyProfile.CODEC.optionalFieldOf("topology_profile", MKTowerWorkspacePlanner.defaultTopologyProfile())
+                MKWorkspaceTopologyProfile.CODEC.optionalFieldOf("topology_profile", MKWorkspacePlannerRegistry.shared().defaultTopologyProfile())
                         .forGetter(ExportWorkspaceSettings::topologyProfile),
                 ExportFamilyDefinition.CODEC.listOf().optionalFieldOf("family_definitions", List.of()).forGetter(ExportWorkspaceSettings::familyDefinitions),
                 ExportOpeningProfile.CODEC.listOf().optionalFieldOf("opening_profiles", List.of()).forGetter(ExportWorkspaceSettings::openingProfiles),

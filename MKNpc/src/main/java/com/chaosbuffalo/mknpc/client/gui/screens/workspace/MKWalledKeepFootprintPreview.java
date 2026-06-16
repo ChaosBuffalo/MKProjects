@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDef
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepPlannerSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingReport;
 import com.chaosbuffalo.mkwidgets.client.gui.instructions.HoveringTextInstruction;
 import com.chaosbuffalo.mkwidgets.client.gui.math.Vec2i;
@@ -298,7 +299,7 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
     private int wallUnitSpan() {
         return perimeterFamily()
                 .map(MKWorkspaceLinearRunFamilyDefinition::length)
-                .orElse(MKWorkspaceLinearRunFamilyDefinition.DEFAULT_WALLED_KEEP_WALL_SEGMENT_LENGTH);
+                .orElse(MKWalledKeepWorkspacePlanner.DEFAULT_WALL_SEGMENT_LENGTH);
     }
 
     private int wallPassageWidth() {

@@ -31,9 +31,18 @@ import java.util.Optional;
 
 public class MKWorkspaceVerticalStackPlanner {
     private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
+    private final String defaultStackId;
 
     private static final String EMPTY_POOL = "minecraft:empty";
     private static final String LINEAR_RUN_POOL_PREFIX = "linear_runs";
+
+    public MKWorkspaceVerticalStackPlanner() {
+        this("");
+    }
+
+    public MKWorkspaceVerticalStackPlanner(String defaultStackId) {
+        this.defaultStackId = defaultStackId == null ? "" : defaultStackId;
+    }
     private static final String ROOM_POOL_PREFIX = "rooms";
 
     private record ResolvedOpeningProfile(String profileId, int openingWidth, int openingHeight) {
@@ -244,9 +253,12 @@ public class MKWorkspaceVerticalStackPlanner {
     }
 
     private MKWorkspaceVerticalStackDefinition primaryStackDefinition(MKStructureWorkspace workspace) {
-        return workspace.topologyProfile().verticalStackSettings("tower.primary")
+        if (defaultStackId.isBlank()) {
+            throw new IllegalStateException("vertical stack planner requires an explicit stack definition");
+        }
+        return workspace.topologyProfile().verticalStackSettings(defaultStackId)
                 .map(MKWorkspaceVerticalStackDefinition::towerPrimary)
-                .orElseThrow(() -> new IllegalStateException("tower topology is missing tower.primary stack settings"));
+                .orElseThrow(() -> new IllegalStateException("workspace topology is missing " + defaultStackId + " stack settings"));
     }
 
     private List<MKPlannedConnector> entryConnectors(MKWorkspaceVerticalStackDefinition stackDefinition, int shaftWidth) {

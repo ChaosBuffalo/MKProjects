@@ -6,9 +6,18 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunProjection;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackFloorCounts;
@@ -30,7 +39,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     private static final String LINEAR_RUN_POOL_PREFIX = "linear_runs";
     private static final String PRIMARY_STACK_ID = "tower.primary";
     private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
-    private final MKWorkspaceVerticalStackPlanner verticalStackPlanner = new MKWorkspaceVerticalStackPlanner();
+    private final MKWorkspaceVerticalStackPlanner verticalStackPlanner = new MKWorkspaceVerticalStackPlanner(PRIMARY_STACK_ID);
     private final MKFloorTopologyPlanner floorTopologyPlanner = new MKFloorTopologyPlanner();
 
     private record ResolvedOpeningProfile(String profileId, int openingWidth, int openingHeight) {
@@ -66,6 +75,95 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                 MKWorkspaceTopologyPathSettings.defaults(),
                 List.of(),
                 TerrainAdjustment.BEARD_THIN);
+    }
+
+    @Override
+    public MKWorkspaceTopologyProfile createDefaultTopologyProfile() {
+        return defaultTopologyProfile();
+    }
+
+    public static List<MKWorkspaceRoomFamilyDefinition> defaultRoomFamilyDefinitions() {
+        return defaultRoomFamilyDefinitions(MKWorkspaceDimensions.defaultDimensions());
+    }
+
+    public static List<MKWorkspaceRoomFamilyDefinition> defaultRoomFamilyDefinitions(MKWorkspaceDimensions dimensions) {
+        return List.of(
+                MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("entry", MKWorkspaceVerticalStackSlot.ENTRY,
+                        PRIMARY_STACK_ID, true, 0, 0, 0,
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
+                        List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
+                                MKWorkspaceHorizontalExitPathKind.INGRESS, "main_opening",
+                                MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION)),
+                        0, 0, null, null),
+                MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("floor_main", MKWorkspaceVerticalStackSlot.MAIN_FLOOR,
+                        PRIMARY_STACK_ID, true, 0, 0, 0,
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0, null, null),
+                MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("top_cap_approach",
+                        MKWorkspaceVerticalStackSlot.TOP_CAP_APPROACH, PRIMARY_STACK_ID, true, 0, 0, 0,
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0, null, null),
+                MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("top_cap", MKWorkspaceVerticalStackSlot.TOP_CAP,
+                        PRIMARY_STACK_ID, true, 0, 0, 0,
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0, null, null),
+                MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("basement_entry",
+                        MKWorkspaceVerticalStackSlot.BASEMENT_ENTRY, PRIMARY_STACK_ID, true, 0, 0, 0,
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0, null, null),
+                MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("basement_main",
+                        MKWorkspaceVerticalStackSlot.BASEMENT_FLOOR, PRIMARY_STACK_ID, true, 0, 0, 0,
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0, null, null),
+                MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("basement_cap_approach",
+                        MKWorkspaceVerticalStackSlot.BASEMENT_CAP_APPROACH, PRIMARY_STACK_ID, true, 0, 0, 0,
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0, null, null),
+                MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("basement_cap",
+                        MKWorkspaceVerticalStackSlot.BASEMENT_CAP, PRIMARY_STACK_ID, true, 0, 0, 0,
+                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0, null, null)
+        );
+    }
+
+    @Override
+    public List<MKWorkspaceRoomFamilyDefinition> createDefaultRoomFamilyDefinitions(MKWorkspaceDimensions dimensions) {
+        return defaultRoomFamilyDefinitions(dimensions);
+    }
+
+    public static List<MKWorkspaceLinearRunFamilyDefinition> defaultLinearRunFamilyDefinitions(
+            MKWorkspaceDimensions dimensions, MKWorkspaceMaterialPalette palette) {
+        return List.of(
+                new MKWorkspaceLinearRunFamilyDefinition(
+                        "main",
+                        MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR,
+                        "main_opening",
+                        5,
+                        dimensions.doorwayWidth(),
+                        dimensions.doorwayHeight(),
+                        0,
+                        true,
+                        false,
+                        MKWorkspaceLinearRunProjection.RIGID,
+                        List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                        MKWorkspaceFoundationPolicy.none(),
+                        null
+                ),
+                new MKWorkspaceLinearRunFamilyDefinition(
+                        "branch",
+                        MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR,
+                        "branch_opening",
+                        5,
+                        dimensions.doorwayWidth(),
+                        dimensions.doorwayHeight(),
+                        0,
+                        false,
+                        true,
+                        MKWorkspaceLinearRunProjection.RIGID,
+                        List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                        MKWorkspaceFoundationPolicy.none(),
+                        null
+                )
+        );
+    }
+
+    @Override
+    public List<MKWorkspaceLinearRunFamilyDefinition> createDefaultLinearRunFamilyDefinitions(
+            MKWorkspaceDimensions dimensions, MKWorkspaceMaterialPalette palette) {
+        return defaultLinearRunFamilyDefinitions(dimensions, palette);
     }
 
     @Override
@@ -180,9 +278,9 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     }
 
     private MKWorkspaceVerticalStackDefinition verticalStackDefinition(MKStructureWorkspace workspace) {
-        return workspace.topologyProfile().verticalStackSettings("tower.primary")
+        return workspace.topologyProfile().verticalStackSettings(PRIMARY_STACK_ID)
                 .map(MKWorkspaceVerticalStackDefinition::towerPrimary)
-                .orElseThrow(() -> new IllegalStateException("tower topology is missing tower.primary stack settings"));
+                .orElseThrow(() -> new IllegalStateException("tower topology is missing " + PRIMARY_STACK_ID + " stack settings"));
     }
 
     private List<MKPlannedPiece> createLinearRunPieces(MKStructureWorkspace workspace) {

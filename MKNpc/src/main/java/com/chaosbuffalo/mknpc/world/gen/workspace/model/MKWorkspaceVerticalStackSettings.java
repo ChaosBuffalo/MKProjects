@@ -441,12 +441,6 @@ public record MKWorkspaceVerticalStackSettings(
     }
 
     private static int defaultFootprint(String stackId) {
-        if ("keep.center".equals(stackId)) {
-            return 17;
-        }
-        if ("tower.primary".equals(stackId)) {
-            return 9;
-        }
         return 7;
     }
 
