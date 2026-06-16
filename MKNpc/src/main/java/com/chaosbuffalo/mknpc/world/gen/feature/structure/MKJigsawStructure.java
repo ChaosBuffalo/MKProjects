@@ -192,7 +192,7 @@ public class MKJigsawStructure extends MKStructure {
             if (rule.floorTopologySettings().isEmpty() || !rule.linksEnabled()) {
                 continue;
             }
-            Optional<LockedRootPiece> rootOpt = lockedRootPiece(rule, pieces);
+            Optional<FloorRootPiece> rootOpt = floorRootPiece(rule, pieces);
             if (rootOpt.isEmpty()) {
                 if (MKNpc.DEV_LOGGING) {
                     MKNpc.LOGGER.debug("solver floor link skipped group={} reason=missing_root_metadata",
@@ -200,7 +200,7 @@ public class MKJigsawStructure extends MKStructure {
                 }
                 continue;
             }
-            LockedRootPiece root = rootOpt.orElseThrow();
+            FloorRootPiece root = rootOpt.orElseThrow();
             List<MKWorkspaceFamilyHorizontalExitDefinition> rootExits = rootExits(root, rule.topologyGroup());
             if (rootExits.isEmpty()) {
                 if (MKNpc.DEV_LOGGING) {
@@ -216,7 +216,7 @@ public class MKJigsawStructure extends MKStructure {
             long planSeed = MKJigsawPlacement.floorPlanSeed(rule, rule.topologyGroup(), root.piece().getPosition());
             MKFloorLayoutSolver.FloorLayoutResult plan = new MKFloorLayoutSolver().solve(settings, rootWidth,
                     rootLength, rootExits, leadIn, planSeed, maxDistanceFromCenter);
-            Map<Integer, PlacedFloorSegment> placedSegments = lockedPlacedSegments(rule.topologyGroup(), root,
+            Map<Integer, PlacedFloorSegment> placedSegments = placedFloorSegments(rule.topologyGroup(), root,
                     plan, pieces);
             int resolvedLinks = 0;
             int missingEndpoints = 0;
@@ -288,7 +288,7 @@ public class MKJigsawStructure extends MKStructure {
         }
     }
 
-    private Optional<LockedRootPiece> lockedRootPiece(MKDungeonTopologyGroupRule rule, PiecesContainer pieces) {
+    private Optional<FloorRootPiece> floorRootPiece(MKDungeonTopologyGroupRule rule, PiecesContainer pieces) {
         for (StructurePiece piece : pieces.pieces()) {
             if (!(piece instanceof PoolElementStructurePiece poolPiece)) {
                 continue;
@@ -304,13 +304,13 @@ public class MKJigsawStructure extends MKStructure {
             boolean hasRootExit = metadata.orElseThrow().floorRootExits().stream()
                     .anyMatch(exit -> rule.topologyGroup().equals(exit.topologyGroup()));
             if (hasRootExit) {
-                return Optional.of(new LockedRootPiece(poolPiece, metadata.orElseThrow()));
+                return Optional.of(new FloorRootPiece(poolPiece, metadata.orElseThrow()));
             }
         }
         return Optional.empty();
     }
 
-    private List<MKWorkspaceFamilyHorizontalExitDefinition> rootExits(LockedRootPiece root, String topologyGroup) {
+    private List<MKWorkspaceFamilyHorizontalExitDefinition> rootExits(FloorRootPiece root, String topologyGroup) {
         return root.metadata().floorRootExits().stream()
                 .filter(exit -> topologyGroup.equals(exit.topologyGroup()))
                 .map(exit -> new MKWorkspaceFamilyHorizontalExitDefinition(
@@ -321,9 +321,9 @@ public class MKJigsawStructure extends MKStructure {
                 .toList();
     }
 
-    private Map<Integer, PlacedFloorSegment> lockedPlacedSegments(String topologyGroup, LockedRootPiece root,
-                                                                  MKFloorLayoutSolver.FloorLayoutResult plan,
-                                                                  PiecesContainer pieces) {
+    private Map<Integer, PlacedFloorSegment> placedFloorSegments(String topologyGroup, FloorRootPiece root,
+                                                                 MKFloorLayoutSolver.FloorLayoutResult plan,
+                                                                 PiecesContainer pieces) {
         HashMap<Integer, PlacedFloorSegment> placed = new HashMap<>();
         placed.put(0, new PlacedFloorSegment(root.piece(), root.metadata()));
         List<MKFloorLayoutSolver.LogicalSegment> placeableSegments = plan.segments().stream()
@@ -794,7 +794,7 @@ public class MKJigsawStructure extends MKStructure {
         private static final ResolvedFloorLinks EMPTY = new ResolvedFloorLinks(Set.of(), List.of());
     }
 
-    private record LockedRootPiece(PoolElementStructurePiece piece, MKJigsawPieceMetadata metadata) {
+    private record FloorRootPiece(PoolElementStructurePiece piece, MKJigsawPieceMetadata metadata) {
     }
 
     private record PlacedFloorSegment(PoolElementStructurePiece piece, MKJigsawPieceMetadata metadata) {
