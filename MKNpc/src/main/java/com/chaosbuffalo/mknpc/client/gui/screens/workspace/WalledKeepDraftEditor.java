@@ -79,9 +79,6 @@ public final class WalledKeepDraftEditor {
     }
 
     public List<String> verticalStackTabs() {
-        if (!MKWalledKeepWorkspacePlanner.PLANNER_ID.equals(session.topologyPlannerId())) {
-            return List.of();
-        }
         java.util.ArrayList<String> tabs = new java.util.ArrayList<>();
         tabs.add("keep.center");
         if (session.draft().topologyProfile.anySharedCornerTower()) {
@@ -123,9 +120,6 @@ public final class WalledKeepDraftEditor {
 
     public void uniqueCornerTower(String topologySlotId, boolean value) {
         MKWorkspaceTopologyProfile current = session.draft().topologyProfile;
-        if (!MKWalledKeepWorkspacePlanner.PLANNER_ID.equals(current.plannerId())) {
-            return;
-        }
         boolean northWest = "keep.corner.north_west".equals(topologySlotId) ? value : current.uniqueNorthWestCornerTower();
         boolean northEast = "keep.corner.north_east".equals(topologySlotId) ? value : current.uniqueNorthEastCornerTower();
         boolean southEast = "keep.corner.south_east".equals(topologySlotId) ? value : current.uniqueSouthEastCornerTower();
