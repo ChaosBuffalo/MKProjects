@@ -1720,6 +1720,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         firstAvailableSlot(availableSlots, "keep.courtyard.path.south_west")
                 .ifPresent(targetSlot -> addBranchTargetDirect(connectors, Direction.WEST, targetSlot, opening,
                         branchOffset));
+        if (availableSlots.contains("keep.courtyard.path.south_east")) {
+            connectors.add(MKPlannedConnector.openingOnly(MKConnectorRole.BRANCH, Direction.EAST,
+                    opening.openingWidth(), opening.openingHeight(), branchOffset, 0));
+        }
         return List.copyOf(connectors);
     }
 
