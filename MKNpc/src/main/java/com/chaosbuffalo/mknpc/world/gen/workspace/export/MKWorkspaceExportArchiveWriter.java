@@ -74,9 +74,6 @@ public class MKWorkspaceExportArchiveWriter {
         int written = 0;
         Map<String, MKWorkspacePieceDefinition> sourcePieces = sourcePiecesByBaseNameAndVariant(exportPieces);
         for (MKWorkspacePieceDefinition piece : exportPieces) {
-            if ("template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance"))) {
-                continue;
-            }
             output.putNextEntry(new ZipEntry(structureEntryName(manifest, piece)));
             output.write(pieceNbtBytes(level, piece, sourcePieces));
             output.closeEntry();

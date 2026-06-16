@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public final class MKFloorMaskVariantExporter {
     public static final String FLOOR_MASK_TAG = "workspace_floor_exit_mask";
@@ -35,9 +36,19 @@ public final class MKFloorMaskVariantExporter {
         if (!includeRuntimeVariants) {
             return List.copyOf(pieces);
         }
+        Map<String, List<MKWorkspacePieceDefinition>> runtimeSourcesByBaseName = workspace.pieces().stream()
+                .filter(MKFloorMaskVariantExporter::isRuntimeContentVariant)
+                .collect(Collectors.groupingBy(
+                        piece -> piece.tags().getOrDefault("workspace_base_name", piece.pieceName()),
+                        LinkedHashMap::new,
+                        Collectors.toList()));
         for (MKWorkspacePieceDefinition piece : workspace.pieces()) {
             if (isFloorAuthoringTemplate(piece)) {
-                pieces.addAll(createMaskVariants(workspace, piece));
+                String baseName = piece.tags().getOrDefault("workspace_base_name", piece.pieceName());
+                for (MKWorkspacePieceDefinition runtimeSource :
+                        runtimeSourcesByBaseName.getOrDefault(baseName, List.of())) {
+                    pieces.addAll(createMaskVariants(workspace, runtimeSource));
+                }
             }
         }
         return List.copyOf(pieces);
@@ -46,6 +57,12 @@ public final class MKFloorMaskVariantExporter {
     public static boolean isFloorAuthoringTemplate(MKWorkspacePieceDefinition piece) {
         return "floor_plan_room".equals(piece.tags().get("tower_piece_kind")) &&
                 "template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance"));
+    }
+
+    private static boolean isRuntimeContentVariant(MKWorkspacePieceDefinition piece) {
+        return "floor_plan_room".equals(piece.tags().get("tower_piece_kind")) &&
+                !"template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance")) &&
+                !MKWorkspaceTemplateReuseTags.isDerived(piece.tags());
     }
 
     private static List<MKWorkspacePieceDefinition> createMaskVariants(MKStructureWorkspace workspace,
