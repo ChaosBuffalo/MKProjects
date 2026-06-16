@@ -705,16 +705,22 @@ public class MKJigsawStructure extends MKStructure {
 
     private int openEndpoint(WorldGenLevel level, BoundingBox chunkBounds, PlacedLinkEndpoint endpoint) {
         int carvedBlocks = 0;
-        int minAcross = -(endpoint.openingWidth() / 2);
-        int maxAcross = minAcross + endpoint.openingWidth() - 1;
+        int width = Math.max(1, endpoint.openingWidth());
+        int height = Math.max(1, endpoint.openingHeight());
+        int depthCount = Math.max(1, endpoint.closureDepth());
+        int minAcross = -((width - 1) / 2);
+        int maxAcross = width / 2;
         Direction.Axis acrossAxis = endpoint.facing().getAxis() == Direction.Axis.X ? Direction.Axis.Z : Direction.Axis.X;
-        for (int across = minAcross; across <= maxAcross; across++) {
-            for (int y = 0; y < endpoint.openingHeight(); y++) {
-                BlockPos pos = acrossAxis == Direction.Axis.X ?
-                        endpoint.pos().offset(across, y, 0) :
-                        endpoint.pos().offset(0, y, across);
-                if (setIfInChunk(level, chunkBounds, pos, Blocks.AIR.defaultBlockState())) {
-                    carvedBlocks++;
+        for (int depth = 0; depth < depthCount; depth++) {
+            BlockPos basePos = depth == 0 ? endpoint.pos() : endpoint.pos().relative(endpoint.facing().getOpposite(), depth);
+            for (int across = minAcross; across <= maxAcross; across++) {
+                for (int y = 0; y < height; y++) {
+                    BlockPos pos = acrossAxis == Direction.Axis.X ?
+                            basePos.offset(across, y, 0) :
+                            basePos.offset(0, y, across);
+                    if (setIfInChunk(level, chunkBounds, pos, Blocks.AIR.defaultBlockState())) {
+                        carvedBlocks++;
+                    }
                 }
             }
         }
