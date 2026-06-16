@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDef
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
@@ -145,6 +146,12 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
     }
 
     private record IngressConnection(ResolvedOpeningProfile opening, int lateralOffset, int verticalOffset) {
+    }
+
+    private record CornerEntryConnection(String cornerSlotId,
+                                         Direction incomingFacing,
+                                         Direction wallTargetFacing,
+                                         Optional<PerimeterSegment> wallTargetSegment) {
     }
 
     private record PerimeterSegment(String chainId,
@@ -372,12 +379,34 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                         0,
                         0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
-                        List.of(),
+                        defaultHorizontalExitsForVerticalStackSlot(stackId, slot),
                         0,
                         0,
                         null,
                         null))
                 .toList();
+    }
+
+    private static List<MKWorkspaceFamilyHorizontalExitDefinition> defaultHorizontalExitsForVerticalStackSlot(
+            String stackId, MKWorkspaceVerticalStackSlot slot) {
+        if (!"keep.corner.shared".equals(stackId) || slot != MKWorkspaceVerticalStackSlot.ENTRY) {
+            return List.of();
+        }
+        return List.of(
+                cornerEntryHorizontalExit(Direction.SOUTH),
+                cornerEntryHorizontalExit(Direction.EAST)
+        );
+    }
+
+    private static MKWorkspaceFamilyHorizontalExitDefinition cornerEntryHorizontalExit(Direction direction) {
+        return new MKWorkspaceFamilyHorizontalExitDefinition(
+                direction,
+                MKWorkspaceHorizontalExitPathKind.BRANCH,
+                "branch_opening",
+                MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN,
+                0,
+                0,
+                MKWorkspaceHorizontalExtrusionMode.FULL_FACE);
     }
 
     private static int defaultEntryApproachLength(MKWorkspaceDimensions dimensions) {
@@ -722,6 +751,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
         verticalStackPlanner.createRoomPieces(workspace, stackDefinition, stackFamilies).stream()
                 .map(piece -> withRoomLayoutConnectors(workspace, piece, slots, opening))
+                .map(piece -> withCornerEntryConnectorTargets(piece, slots.perimeterPlan()))
                 .map(piece -> uniqueCorner ? piece : withSharedCornerTemplateReuse(piece, stackId))
                 .forEach(pieces::add);
     }
@@ -746,7 +776,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                 normalizedRoomLength,
                 family.roomHeight(),
                 family.horizontalExtrusionMode(),
-                family.horizontalExits(),
+                rotateHorizontalExits(family.horizontalExits(), rotationForCornerStack(targetStackId)),
                 family.topVoidMargin(),
                 family.bottomVoidMargin(),
                 family.foundationPolicyOverride(),
@@ -799,6 +829,41 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         };
     }
 
+    private List<MKWorkspaceFamilyHorizontalExitDefinition> rotateHorizontalExits(
+            List<MKWorkspaceFamilyHorizontalExitDefinition> exits, String rotation) {
+        if (MKWorkspaceTemplateReuseTags.ROTATION_NONE.equals(rotation) || exits.isEmpty()) {
+            return exits;
+        }
+        return exits.stream()
+                .map(exit -> rotateHorizontalExit(exit, rotation))
+                .toList();
+    }
+
+    private MKWorkspaceFamilyHorizontalExitDefinition rotateHorizontalExit(
+            MKWorkspaceFamilyHorizontalExitDefinition exit, String rotation) {
+        if (exit.direction().getAxis().isVertical()) {
+            return exit;
+        }
+        Direction direction = rotateHorizontalDirection(exit.direction(), rotation);
+        return new MKWorkspaceFamilyHorizontalExitDefinition(
+                direction,
+                exit.pathKind(),
+                exit.openingProfileId(),
+                exit.connectionMode(),
+                exit.sideOffset(),
+                exit.verticalOffset(),
+                exit.horizontalExtrusionModeOverride());
+    }
+
+    private Direction rotateHorizontalDirection(Direction direction, String rotation) {
+        return switch (rotation) {
+            case MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_90 -> direction.getClockWise();
+            case MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_180 -> direction.getOpposite();
+            case MKWorkspaceTemplateReuseTags.ROTATION_CLOCKWISE_270 -> direction.getCounterClockWise();
+            default -> direction;
+        };
+    }
+
     private MKPlannedPiece withRoomLayoutConnectors(MKStructureWorkspace workspace, MKPlannedPiece piece,
                                                     SlotAvailability slots,
                                                     ResolvedOpeningProfile opening) {
@@ -815,6 +880,87 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                 List.copyOf(connectors),
                 keepRoomRuntimeTags(workspace, piece.tags())
         );
+    }
+
+    private MKPlannedPiece withCornerEntryConnectorTargets(MKPlannedPiece piece, PerimeterPlan perimeterPlan) {
+        String topologySlotId = piece.tags().getOrDefault("workspace_topology_slot_id", "");
+        Optional<CornerEntryConnection> connection = cornerEntryConnection(topologySlotId, perimeterPlan);
+        if (connection.isEmpty()) {
+            return piece;
+        }
+        CornerEntryConnection entryConnection = connection.get();
+        List<MKPlannedConnector> connectors = piece.connectors().stream()
+                .map(connector -> retargetCornerEntryConnector(connector, entryConnection))
+                .toList();
+        return new MKPlannedPiece(
+                piece.roleId(),
+                piece.pieceName(),
+                piece.interiorWidth(),
+                piece.interiorLength(),
+                piece.interiorHeight(),
+                connectors,
+                piece.tags(),
+                piece.plannerId()
+        );
+    }
+
+    private MKPlannedConnector retargetCornerEntryConnector(MKPlannedConnector connector,
+                                                            CornerEntryConnection connection) {
+        if (connector.role() != MKConnectorRole.BRANCH || connector.facing().getAxis().isVertical()) {
+            return connector;
+        }
+        if (connector.facing() == connection.incomingFacing()) {
+            return copyConnectorTarget(connector, EMPTY_POOL, slotPool(connection.cornerSlotId()),
+                    MKWorkspaceHorizontalExtrusionMode.FULL_FACE);
+        }
+        if (connector.facing() == connection.wallTargetFacing()) {
+            String targetPool = connection.wallTargetSegment()
+                    .map(segment -> slotPool(segment.slotId()))
+                    .orElse(EMPTY_POOL);
+            return copyConnectorTarget(connector, targetPool, null, MKWorkspaceHorizontalExtrusionMode.FULL_FACE);
+        }
+        return connector;
+    }
+
+    private MKPlannedConnector copyConnectorTarget(MKPlannedConnector connector, String targetPoolName,
+                                                   String incomingPoolName,
+                                                   MKWorkspaceHorizontalExtrusionMode extrusionMode) {
+        return new MKPlannedConnector(
+                connector.role(),
+                connector.facing(),
+                connector.openingWidth(),
+                connector.openingHeight(),
+                connector.lateralOffset(),
+                connector.verticalOffset(),
+                targetPoolName,
+                incomingPoolName,
+                connector.placesJigsaw(),
+                extrusionMode);
+    }
+
+    private Optional<CornerEntryConnection> cornerEntryConnection(String topologySlotId, PerimeterPlan perimeterPlan) {
+        return concreteCornerEntrySlot(topologySlotId)
+                .map(cornerSlotId -> switch (cornerSlotId) {
+                    case "keep.corner.north_west" -> new CornerEntryConnection(cornerSlotId, Direction.SOUTH,
+                            Direction.EAST, perimeterPlan.firstNorthWest());
+                    case "keep.corner.north_east" -> new CornerEntryConnection(cornerSlotId, Direction.SOUTH,
+                            Direction.WEST, perimeterPlan.firstNorthEast());
+                    case "keep.corner.south_east" -> new CornerEntryConnection(cornerSlotId, Direction.WEST,
+                            Direction.NORTH, perimeterPlan.firstEast());
+                    case "keep.corner.south_west" -> new CornerEntryConnection(cornerSlotId, Direction.EAST,
+                            Direction.NORTH, perimeterPlan.firstWest());
+                    default -> throw new IllegalStateException("unsupported corner slot " + cornerSlotId);
+                });
+    }
+
+    private Optional<String> concreteCornerEntrySlot(String topologySlotId) {
+        return CONCRETE_CORNER_SLOTS.stream()
+                .filter(cornerSlotId -> {
+                    String variantId = cornerSlotId.substring("keep.corner.".length());
+                    return topologySlotId.equals(cornerSlotId + ".entry") ||
+                            topologySlotId.equals("keep.corner.shared." + variantId + ".entry");
+                })
+                .findFirst();
     }
 
     private Map<String, String> keepRoomRuntimeTags(MKStructureWorkspace workspace, Map<String, String> sourceTags) {
@@ -1535,11 +1681,6 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                                                           ResolvedOpeningProfile opening) {
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
         Set<String> availableSlots = slots.availableSlots();
-        Optional<String> sharedCornerVariant = concreteCornerSlotForSharedVariant(topologySlotId);
-        if (sharedCornerVariant.isPresent()) {
-            addConcreteCornerConnectors(connectors, sharedCornerVariant.get(), slots.perimeterPlan(), opening);
-            return List.copyOf(connectors);
-        }
         switch (topologySlotId) {
             case "keep.center.entry" -> {
                 if (availableSlots.contains(ENTRY_APPROACH_SLOT)) {
@@ -1563,36 +1704,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                         .ifPresent(segment -> addFullFaceWallTarget(connectors, Direction.EAST,
                                 segment.slotId(), opening));
             }
-            case "keep.corner.shared" -> addSharedCornerConnectors(connectors, slots.sharedCornerSlots(),
-                    slots.perimeterPlan(), opening);
-            case "keep.corner.shared.entry" -> addSharedCornerConnectors(connectors, slots.sharedCornerSlots(),
-                    slots.perimeterPlan(), opening);
-            case "keep.corner.north_west", "keep.corner.north_east", "keep.corner.south_east",
-                 "keep.corner.south_west" -> addConcreteCornerConnectors(connectors, topologySlotId,
-                    slots.perimeterPlan(),
-                    opening);
-            case "keep.corner.north_west.entry", "keep.corner.north_east.entry", "keep.corner.south_east.entry",
-                 "keep.corner.south_west.entry" -> addConcreteCornerConnectors(connectors,
-                    topologySlotId.substring(0, topologySlotId.length() - ".entry".length()),
-                    slots.perimeterPlan(), opening);
             default -> {
             }
         }
         return List.copyOf(connectors);
-    }
-
-    private Optional<String> concreteCornerSlotForSharedVariant(String topologySlotId) {
-        String prefix = "keep.corner.shared.";
-        if (!topologySlotId.startsWith(prefix)) {
-            return Optional.empty();
-        }
-        return CONCRETE_CORNER_SLOTS.stream()
-                .filter(slotId -> {
-                    String variantId = slotId.substring("keep.corner.".length());
-                    return topologySlotId.equals(prefix + variantId) ||
-                            topologySlotId.startsWith(prefix + variantId + ".");
-                })
-                .findFirst();
     }
 
     private List<MKPlannedConnector> linearRunLayoutConnectors(MKStructureWorkspace workspace,
@@ -1757,57 +1872,6 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                         opening.openingWidth(), opening.openingHeight(), 0, positiveOffset,
                         poolOrEmpty(positiveCornerSlotId, availableSlots), slotPool(perimeterSlotId))
         );
-    }
-
-    private void addSharedCornerConnectors(List<MKPlannedConnector> connectors, Set<String> sharedCornerSlots,
-                                           PerimeterPlan perimeterPlan, ResolvedOpeningProfile opening) {
-        if (sharedCornerSlots.contains("keep.corner.north_west")) {
-            addConcreteCornerConnectors(connectors, "keep.corner.north_west", perimeterPlan, opening);
-        }
-        if (sharedCornerSlots.contains("keep.corner.north_east")) {
-            addConcreteCornerConnectors(connectors, "keep.corner.north_east", perimeterPlan, opening);
-        }
-        if (sharedCornerSlots.contains("keep.corner.south_east")) {
-            addConcreteCornerConnectors(connectors, "keep.corner.south_east", perimeterPlan, opening);
-        }
-        if (sharedCornerSlots.contains("keep.corner.south_west")) {
-            addConcreteCornerConnectors(connectors, "keep.corner.south_west", perimeterPlan, opening);
-        }
-    }
-
-    private void addConcreteCornerConnectors(List<MKPlannedConnector> connectors, String cornerSlotId,
-                                             PerimeterPlan perimeterPlan, ResolvedOpeningProfile opening) {
-        switch (cornerSlotId) {
-            case "keep.corner.north_west" -> {
-                addIncomingCornerConnector(connectors, cornerSlotId, Direction.SOUTH, opening);
-                perimeterPlan.firstNorthWest().ifPresent(segment -> addFullFaceWallTarget(connectors, Direction.EAST,
-                        segment.slotId(), opening));
-            }
-            case "keep.corner.north_east" -> {
-                addIncomingCornerConnector(connectors, cornerSlotId, Direction.SOUTH, opening);
-                perimeterPlan.firstNorthEast().ifPresent(segment -> addFullFaceWallTarget(connectors, Direction.WEST,
-                        segment.slotId(), opening));
-            }
-            case "keep.corner.south_east" -> {
-                addIncomingCornerConnector(connectors, cornerSlotId, Direction.WEST, opening);
-                perimeterPlan.firstEast().ifPresent(segment -> addFullFaceWallTarget(connectors, Direction.NORTH,
-                        segment.slotId(), opening));
-            }
-            case "keep.corner.south_west" -> {
-                addIncomingCornerConnector(connectors, cornerSlotId, Direction.EAST, opening);
-                perimeterPlan.firstWest().ifPresent(segment -> addFullFaceWallTarget(connectors, Direction.NORTH,
-                        segment.slotId(), opening));
-            }
-            default -> {
-            }
-        }
-    }
-
-    private void addIncomingCornerConnector(List<MKPlannedConnector> connectors, String cornerSlotId,
-                                            Direction facing, ResolvedOpeningProfile opening) {
-        connectors.add(new MKPlannedConnector(MKConnectorRole.BRANCH, facing,
-                opening.openingWidth(), opening.openingHeight(), 0, 0,
-                EMPTY_POOL, slotPool(cornerSlotId), MKWorkspaceHorizontalExtrusionMode.FULL_FACE));
     }
 
     private void addFullFaceWallTarget(List<MKPlannedConnector> connectors, Direction facing, String targetSlotId,

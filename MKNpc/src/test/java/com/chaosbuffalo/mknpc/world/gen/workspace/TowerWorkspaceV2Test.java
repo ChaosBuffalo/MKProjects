@@ -81,6 +81,7 @@ import java.util.function.IntPredicate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TowerWorkspaceV2Test {
@@ -726,6 +727,10 @@ class TowerWorkspaceV2Test {
         assertEquals("keep.corner.shared.entry", sharedCorner.tags().get("workspace_settings_topology_slot_id"));
         assertEquals("true", sharedCorner.tags().get(MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG));
         assertEquals("full_body", sharedCorner.tags().get("workspace_horizontal_extrusion_mode"));
+        assertTrue(sharedCorner.tags().get("workspace_horizontal_exits")
+                .contains("south:branch:linear_run:branch_opening:0:0"));
+        assertTrue(sharedCorner.tags().get("workspace_horizontal_exits")
+                .contains("east:branch:linear_run:branch_opening:0:0"));
         assertEquals(2, sharedCorner.connectors().stream()
                 .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
                 .count());
@@ -733,16 +738,42 @@ class TowerWorkspaceV2Test {
                 .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
                 .allMatch(connector -> connector.horizontalExtrusionModeOverride() ==
                         MKWorkspaceHorizontalExtrusionMode.FULL_FACE));
+        MKPlannedConnector sharedCornerIncoming = branchConnector(sharedCorner, Direction.SOUTH);
+        assertEquals("minecraft:empty", sharedCornerIncoming.targetPoolName());
+        assertEquals("keep_slots/keep/corner/north_west", sharedCornerIncoming.incomingPoolName());
+        MKPlannedConnector sharedCornerWallTarget = branchConnector(sharedCorner, Direction.EAST);
+        assertEquals("keep_slots/keep/perimeter/north_west/0", sharedCornerWallTarget.targetPoolName());
+        assertNull(sharedCornerWallTarget.incomingPoolName());
         assertTrue(sharedCorner.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_UP));
         assertFalse(sharedCorner.connectors().stream().anyMatch(connector ->
                 connector.role() == MKConnectorRole.CONNECT_DOWN));
         assertEquals("up", sharedCorner.tags().get(MKWorkspaceVerticalAccessTags.DIRECTION_TAG));
+        MKPlannedPiece northEastSharedCorner = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_corner_north_east_entry"))
+                .findFirst()
+                .orElseThrow();
+        assertEquals("keep.corner.shared.north_east.entry",
+                northEastSharedCorner.tags().get("workspace_topology_slot_id"));
+        assertTrue(northEastSharedCorner.tags().get("workspace_horizontal_exits")
+                .contains("south:branch:linear_run:branch_opening:0:0"));
+        assertTrue(northEastSharedCorner.tags().get("workspace_horizontal_exits")
+                .contains("west:branch:linear_run:branch_opening:0:0"));
+        MKPlannedConnector northEastIncoming = branchConnector(northEastSharedCorner, Direction.SOUTH);
+        assertEquals("minecraft:empty", northEastIncoming.targetPoolName());
+        assertEquals("keep_slots/keep/corner/north_east", northEastIncoming.incomingPoolName());
+        MKPlannedConnector northEastWallTarget = branchConnector(northEastSharedCorner, Direction.WEST);
+        assertEquals("keep_slots/keep/perimeter/north_east/0", northEastWallTarget.targetPoolName());
+        assertNull(northEastWallTarget.incomingPoolName());
         MKPlannedPiece cornerTopCap = pieces.stream()
                 .filter(piece -> piece.pieceName().equals("keep_corner_north_west_top_cap"))
                 .findFirst()
                 .orElseThrow();
         assertEquals("true", cornerTopCap.tags().get(MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG));
+        assertFalse(cornerTopCap.connectors().stream().anyMatch(connector ->
+                connector.role() == MKConnectorRole.BRANCH));
+        assertFalse(cornerTopCap.connectors().stream().anyMatch(connector ->
+                connector.facing().getAxis().isHorizontal()));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_top_cap")));
         assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_main_floor")));
         assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_corner_north_west_basement_entry")));
