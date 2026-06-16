@@ -406,7 +406,7 @@ public class MKStructureWorkspace {
     private Optional<Integer> maxRoomHeightForFamily(MKWorkspaceRoomFamilyDefinition familyDefinition) {
         Optional<MKWorkspaceVerticalStackSettings> stackSettings = verticalStackSettingsForFamily(familyDefinition);
         if (stackSettings.isPresent()) {
-            return Optional.of(stackSettings.get().heightForTopologySlot(familyDefinition.topologySlotId()));
+            return Optional.of(stackSettings.get().heightForTopologySlot(familyDefinition.settingsTopologySlotIdOrSelf()));
         }
         int fallbackHeight = defaultHeightForTopologyGroup(
                 MKWorkspaceTopologySlotMetadata.fromFamily(familyDefinition).topologyGroupId());
@@ -422,7 +422,7 @@ public class MKStructureWorkspace {
     }
 
     private MKWorkspaceVerticalAccessSpec verticalAccessSpecForFamily(MKWorkspaceRoomFamilyDefinition familyDefinition) {
-        String stackId = verticalStackIdForFamily(familyDefinition.topologySlotId());
+        String stackId = verticalStackIdForFamily(familyDefinition);
         if (stackId.isBlank()) {
             return verticalAccessSpec;
         }
@@ -454,15 +454,15 @@ public class MKStructureWorkspace {
 
     public Optional<MKWorkspaceVerticalStackSettings> verticalStackSettingsForFamily(
             MKWorkspaceRoomFamilyDefinition familyDefinition) {
-        String stackId = verticalStackIdForFamily(familyDefinition.topologySlotId());
+        String stackId = verticalStackIdForFamily(familyDefinition);
         if (stackId.isBlank()) {
             return Optional.empty();
         }
         return topologyProfile.verticalStackSettings(stackId);
     }
 
-    private String verticalStackIdForFamily(String topologySlotId) {
-        return MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(topologySlotId)
+    private String verticalStackIdForFamily(MKWorkspaceRoomFamilyDefinition familyDefinition) {
+        return MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(familyDefinition.settingsTopologySlotIdOrSelf())
                 .filter(stackId -> topologyProfile.verticalStackSettings(stackId).isPresent())
                 .orElse("");
     }

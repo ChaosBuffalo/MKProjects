@@ -75,7 +75,7 @@ public class MKWorkspaceVerticalStackPlanner {
 
     public boolean shouldCreateFamily(MKWorkspaceVerticalStackDefinition stackDefinition, MKWorkspaceRoomFamilyDefinition family) {
         Optional<MKWorkspaceVerticalStackSlot> stackSlot = MKWorkspaceVerticalStackSlot.fromTopologySlotId(
-                MKWorkspaceTopologySlotMetadata.fromFamily(family).topologySlotId());
+                family.sourceTopologySlotIdOrSelf());
         return stackSlot.map(slot -> switch (slot) {
             case MAIN_FLOOR -> stackDefinition.mainFloors() > 0;
             case TOP_CAP_APPROACH -> stackDefinition.topCapApproachEnabled();
@@ -100,7 +100,8 @@ public class MKWorkspaceVerticalStackPlanner {
         int shaftWidth = verticalAccessSpec.shaftSize();
         MKWorkspaceStairAuthoringConfig stairConfig = verticalAccessSpec.stairConfig();
         MKWorkspaceTopologySlotMetadata slotMetadata = resolvedFamily.slotMetadata();
-        MKWorkspaceVerticalStackSlot stackSlot = MKWorkspaceVerticalStackSlot.fromTopologySlotId(slotMetadata.topologySlotId())
+        MKWorkspaceVerticalStackSlot stackSlot = MKWorkspaceVerticalStackSlot.fromTopologySlotId(
+                        family.sourceTopologySlotIdOrSelf())
                 .orElseThrow(() -> new IllegalStateException("family " + family.baseName() +
                         " is not a vertical stack slot: " + slotMetadata.topologySlotId()));
         return switch (stackSlot) {
@@ -392,8 +393,10 @@ public class MKWorkspaceVerticalStackPlanner {
 
     private String floorTopologyTargetPool(MKWorkspaceRoomFamilyDefinition family, String openingProfileId,
                                            boolean mainPath, boolean useHallwayPool) {
-        Optional<MKWorkspaceVerticalStackSlot> slot = MKWorkspaceVerticalStackSlot.fromTopologySlotId(family.topologySlotId());
-        Optional<String> stackId = MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(family.topologySlotId());
+        Optional<MKWorkspaceVerticalStackSlot> slot = MKWorkspaceVerticalStackSlot.fromTopologySlotId(
+                family.settingsTopologySlotIdOrSelf());
+        Optional<String> stackId = MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(
+                family.settingsTopologySlotIdOrSelf());
         if (slot.isEmpty() || stackId.isEmpty()) {
             return mainPath ? MKFloorTopologyPlanner.directMainRoomPoolName(openingProfileId) :
                     MKFloorTopologyPlanner.directBranchRoomPoolName(openingProfileId);
@@ -426,11 +429,12 @@ public class MKWorkspaceVerticalStackPlanner {
         if (!pathKind.usesMainPath() && pathKind != MKWorkspaceHorizontalExitPathKind.BRANCH) {
             return Optional.empty();
         }
-        Optional<MKWorkspaceVerticalStackSlot> slot = MKWorkspaceVerticalStackSlot.fromTopologySlotId(family.topologySlotId());
+        Optional<MKWorkspaceVerticalStackSlot> slot = MKWorkspaceVerticalStackSlot.fromTopologySlotId(
+                family.settingsTopologySlotIdOrSelf());
         if (slot.isEmpty() || !"floor".equals(slot.get().roleKind()) || slot.get() == MKWorkspaceVerticalStackSlot.ENTRY) {
             return Optional.empty();
         }
-        return MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(family.topologySlotId())
+        return MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(family.settingsTopologySlotIdOrSelf())
                 .map(stackId -> workspace.topologyProfile().floorTopologySettingsOrDefault(stackId, slot.get().suffix()));
     }
 
@@ -530,7 +534,7 @@ public class MKWorkspaceVerticalStackPlanner {
             tags.put("workspace_vertical_stack_main_floors", Integer.toString(stackDefinition.mainFloors()));
             tags.put("workspace_vertical_stack_min_basement_floors", Integer.toString(stackDefinition.minBasementFloors()));
             tags.put("workspace_vertical_stack_basement_floors", Integer.toString(stackDefinition.basementFloors()));
-            MKWorkspaceVerticalStackSlot.fromTopologySlotId(family.topologySlotId())
+            MKWorkspaceVerticalStackSlot.fromTopologySlotId(family.sourceTopologySlotIdOrSelf())
                     .ifPresent(slot -> tags.put("workspace_vertical_stack_slot", slot.suffix()));
             tags.put("workspace_vertical_stack_top_cap_approach_enabled",
                     Boolean.toString(stackDefinition.topCapApproachEnabled()));
@@ -558,6 +562,10 @@ public class MKWorkspaceVerticalStackPlanner {
             tags.put(MKWorkspaceVerticalAccessTags.BOTTOM_CAP_TAG, "true");
         }
         runtimeInfo.applyToTags(tags);
+        family.sourceTopologySlotIdOpt()
+                .ifPresent(source -> tags.put("workspace_source_topology_slot_id", source));
+        family.settingsTopologySlotIdOpt()
+                .ifPresent(source -> tags.put("workspace_settings_topology_slot_id", source));
         MKWorkspacePaletteTags.apply(tags, paletteResolver.resolveFloorTopologyForFamily(workspace, family));
         return tags;
     }
@@ -596,7 +604,7 @@ public class MKWorkspaceVerticalStackPlanner {
         boolean up = family.hasVerticalAccess(Direction.UP);
         boolean down = family.hasVerticalAccess(Direction.DOWN);
         Optional<MKWorkspaceVerticalStackSlot> stackSlot = MKWorkspaceVerticalStackSlot.fromTopologySlotId(
-                MKWorkspaceTopologySlotMetadata.fromFamily(family).topologySlotId());
+                family.sourceTopologySlotIdOrSelf());
         if (stackSlot.isPresent() && stackSlot.get() == MKWorkspaceVerticalStackSlot.ENTRY &&
                 stackDefinition.basementFloors() <= 0) {
             down = false;

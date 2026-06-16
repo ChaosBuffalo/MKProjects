@@ -22,8 +22,9 @@ public record MKWorkspaceTopologySlotMetadata(
     ).apply(instance, MKWorkspaceTopologySlotMetadata::fromTopologyRole));
 
     public static MKWorkspaceTopologySlotMetadata fromFamily(MKWorkspaceRoomFamilyDefinition family) {
-        return fromVerticalStackTopologySlotId(family.topologySlotId())
-                .orElse(family.slotMetadata());
+        return fromVerticalStackTopologySlotId(family.sourceTopologySlotIdOrSelf())
+                .orElse(family.slotMetadata())
+                .withTopologySlotId(family.topologySlotId());
     }
 
     public static MKWorkspaceTopologySlotMetadata fromTopologySlotId(String topologySlotId) {

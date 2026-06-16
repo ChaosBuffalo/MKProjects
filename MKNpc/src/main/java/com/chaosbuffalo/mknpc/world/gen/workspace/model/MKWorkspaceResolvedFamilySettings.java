@@ -21,19 +21,19 @@ public record MKWorkspaceResolvedFamilySettings(
         MKWorkspaceFoundationPolicy foundationPolicy = familyDefinition.foundationPolicyOverrideOpt()
                 .orElseGet(() -> stackSettings == null ?
                         MKWorkspaceFoundationPolicy.none() : stackSettings.foundationPolicy());
+        String settingsTopologySlotId = familyDefinition.settingsTopologySlotIdOrSelf();
         return new MKWorkspaceResolvedFamilySettings(
                 familyDefinition,
                 resolveDimension(stackSettings == null ? 0 : stackSettings.width(), familyDefinition.roomWidth()),
                 resolveDimension(stackSettings == null ? 0 : stackSettings.length(), familyDefinition.roomLength()),
                 resolveDimension(stackSettings == null ? 0 :
-                        stackSettings.heightForTopologySlot(familyDefinition.topologySlotId()),
+                        stackSettings.heightForTopologySlot(settingsTopologySlotId),
                         familyDefinition.roomHeight()),
                 familyDefinition.topVoidMargin(),
                 familyDefinition.bottomVoidMargin(),
                 foundationPolicy,
                 palette,
-                MKWorkspaceTopologySlotMetadata.fromVerticalStackTopologySlotId(familyDefinition.topologySlotId())
-                        .orElseGet(() -> MKWorkspaceTopologySlotMetadata.fromFamily(familyDefinition)),
+                MKWorkspaceTopologySlotMetadata.fromFamily(familyDefinition),
                 stackSettings == null ? workspace.verticalAccessSpec() :
                         new MKWorkspaceVerticalAccessSpec(stackSettings.shaftSize(),
                                 stackSettings.verticalAccessPlacement(), stackSettings.stairConfig())

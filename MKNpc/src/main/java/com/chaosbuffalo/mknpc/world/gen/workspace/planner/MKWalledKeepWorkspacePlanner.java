@@ -731,7 +731,9 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                                                                      MKWorkspaceVerticalStackSettings sharedSettings) {
         String targetBasePrefix = targetStackId.replace('.', '_');
         String baseName = family.baseName().replace("keep_corner_shared", targetBasePrefix);
-        String topologySlotId = family.topologySlotId().replace("keep.corner.shared", targetStackId);
+        String variantId = targetStackId.substring("keep.corner.".length());
+        String topologySlotId = family.topologySlotId().replace("keep.corner.shared",
+                "keep.corner.shared." + variantId);
         int normalizedRoomWidth = normalizeSharedCornerFamilyDimension(family.roomWidth(), family.roomLength(),
                 sharedSettings.width());
         int normalizedRoomLength = normalizedRoomWidth;
@@ -749,7 +751,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                 family.bottomVoidMargin(),
                 family.foundationPolicyOverride(),
                 family.paletteOverride()
-        );
+        ).withGeneratedParentage(family.topologySlotId(), family.settingsTopologySlotIdOrSelf());
     }
 
     private MKWorkspaceVerticalStackSettings normalizeSharedCornerSettings(MKWorkspaceVerticalStackSettings settings) {
@@ -1483,6 +1485,11 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                                                           ResolvedOpeningProfile opening) {
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
         Set<String> availableSlots = slots.availableSlots();
+        Optional<String> sharedCornerVariant = concreteCornerSlotForSharedVariant(topologySlotId);
+        if (sharedCornerVariant.isPresent()) {
+            addConcreteCornerConnectors(connectors, sharedCornerVariant.get(), slots.perimeterPlan(), opening);
+            return List.copyOf(connectors);
+        }
         switch (topologySlotId) {
             case "keep.center.entry" -> {
                 if (availableSlots.contains(ENTRY_APPROACH_SLOT)) {
@@ -1522,6 +1529,20 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
             }
         }
         return List.copyOf(connectors);
+    }
+
+    private Optional<String> concreteCornerSlotForSharedVariant(String topologySlotId) {
+        String prefix = "keep.corner.shared.";
+        if (!topologySlotId.startsWith(prefix)) {
+            return Optional.empty();
+        }
+        return CONCRETE_CORNER_SLOTS.stream()
+                .filter(slotId -> {
+                    String variantId = slotId.substring("keep.corner.".length());
+                    return topologySlotId.equals(prefix + variantId) ||
+                            topologySlotId.startsWith(prefix + variantId + ".");
+                })
+                .findFirst();
     }
 
     private List<MKPlannedConnector> linearRunLayoutConnectors(MKStructureWorkspace workspace,
@@ -1796,6 +1817,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
             tags.put(MKWorkspaceVerticalAccessTags.DIRECTION_TAG, verticalAccessDirectionTag(family));
         }
         runtimeInfoForRoom(family).applyToTags(tags);
+        family.sourceTopologySlotIdOpt()
+                .ifPresent(source -> tags.put("workspace_source_topology_slot_id", source));
+        family.settingsTopologySlotIdOpt()
+                .ifPresent(source -> tags.put("workspace_settings_topology_slot_id", source));
         MKWorkspacePaletteTags.apply(tags, resolvedFamily.palette());
         return tags;
     }

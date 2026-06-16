@@ -720,7 +720,10 @@ class TowerWorkspaceV2Test {
                 .filter(piece -> piece.pieceName().equals("keep_corner_north_west_entry"))
                 .findFirst()
                 .orElseThrow();
-        assertEquals("keep.corner.north_west.entry", sharedCorner.tags().get("workspace_topology_slot_id"));
+        assertEquals(7, sharedCorner.interiorHeight());
+        assertEquals("keep.corner.shared.north_west.entry", sharedCorner.tags().get("workspace_topology_slot_id"));
+        assertEquals("keep.corner.shared.entry", sharedCorner.tags().get("workspace_source_topology_slot_id"));
+        assertEquals("keep.corner.shared.entry", sharedCorner.tags().get("workspace_settings_topology_slot_id"));
         assertEquals("true", sharedCorner.tags().get(MKWorkspaceRuntimePieceInfo.ALLOW_ON_BRANCH_PATH_TAG));
         assertEquals("full_body", sharedCorner.tags().get("workspace_horizontal_extrusion_mode"));
         assertEquals(2, sharedCorner.connectors().stream()

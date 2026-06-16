@@ -105,11 +105,11 @@ public record MKWorkspaceVerticalStackSizingReport(
                                                    List<MKWorkspaceRoomFamilyDefinition> families,
                                                    List<HorizontalExitInfo> fallbackEntryExits) {
         Map<MKWorkspaceVerticalStackSlot, MKWorkspaceRoomFamilyDefinition> familyBySlot = families.stream()
-                .filter(family -> MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(family.topologySlotId())
+                .filter(family -> MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(family.settingsTopologySlotIdOrSelf())
                         .filter(settings.stackId()::equals)
                         .isPresent())
                 .collect(Collectors.toMap(
-                        family -> MKWorkspaceVerticalStackSlot.fromTopologySlotId(family.topologySlotId()).orElseThrow(),
+                        family -> MKWorkspaceVerticalStackSlot.fromTopologySlotId(family.sourceTopologySlotIdOrSelf()).orElseThrow(),
                         family -> family,
                         (first, ignored) -> first
                 ));

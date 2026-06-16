@@ -29,18 +29,20 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                     .forGetter(MKWorkspaceRoomFamilyDefinition::horizontalExits),
             Codec.INT.optionalFieldOf("topVoidMargin", 0).forGetter(MKWorkspaceRoomFamilyDefinition::topVoidMargin),
             Codec.INT.optionalFieldOf("bottomVoidMargin", 0).forGetter(MKWorkspaceRoomFamilyDefinition::bottomVoidMargin),
+            Codec.STRING.optionalFieldOf("sourceTopologySlotId", "").forGetter(MKWorkspaceRoomFamilyDefinition::sourceTopologySlotId),
+            Codec.STRING.optionalFieldOf("settingsTopologySlotId", "").forGetter(MKWorkspaceRoomFamilyDefinition::settingsTopologySlotId),
             MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundationPolicy")
                     .forGetter(MKWorkspaceRoomFamilyDefinition::foundationPolicyOverrideOpt),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("paletteOverride")
                     .forGetter(MKWorkspaceRoomFamilyDefinition::paletteOverrideOpt)
     ).apply(instance, (baseName, slotMetadata, verticalAccessGroupId, supportsVerticalAccess,
                        roomWidth, roomLength, roomHeight,
-                       horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin, foundationPolicyOverride,
-                       paletteOverride) ->
+                       horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin,
+                       sourceTopologySlotId, settingsTopologySlotId, foundationPolicyOverride, paletteOverride) ->
             MKWorkspaceRoomFamilyDefinition.forTopologySlot(baseName, slotMetadata, verticalAccessGroupId,
                     supportsVerticalAccess, roomWidth, roomLength, roomHeight, horizontalExtrusionMode,
-                    horizontalExits, topVoidMargin, bottomVoidMargin, foundationPolicyOverride.orElse(null),
-                    paletteOverride.orElse(null))));
+                    horizontalExits, topVoidMargin, bottomVoidMargin, sourceTopologySlotId, settingsTopologySlotId,
+                    foundationPolicyOverride.orElse(null), paletteOverride.orElse(null))));
 
     private final String baseName;
     private final MKWorkspaceTopologySlotMetadata slotMetadata;
@@ -54,6 +56,8 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
     private final List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits;
     private final int topVoidMargin;
     private final int bottomVoidMargin;
+    private final String sourceTopologySlotId;
+    private final String settingsTopologySlotId;
     @Nullable
     private final MKWorkspaceFoundationPolicy foundationPolicyOverride;
     @Nullable
@@ -67,6 +71,8 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                                              MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
                                              List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
                                              int topVoidMargin, int bottomVoidMargin,
+                                             String sourceTopologySlotId,
+                                             String settingsTopologySlotId,
                                              @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
                                              @Nullable MKWorkspacePaletteOverride paletteOverride) {
         this.baseName = baseName;
@@ -83,8 +89,17 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                 .anyMatch(MKWorkspaceFamilyHorizontalExitDefinition::isVerticalAccess);
         this.topVoidMargin = Math.max(0, topVoidMargin);
         this.bottomVoidMargin = Math.max(0, bottomVoidMargin);
+        this.sourceTopologySlotId = normalizeInheritedTopologySlotId(sourceTopologySlotId, topologySlotId);
+        this.settingsTopologySlotId = normalizeInheritedTopologySlotId(settingsTopologySlotId, topologySlotId);
         this.foundationPolicyOverride = foundationPolicy;
         this.paletteOverride = paletteOverride != null && !paletteOverride.isEmpty() ? paletteOverride : null;
+    }
+
+    private static String normalizeInheritedTopologySlotId(String value, String ownTopologySlotId) {
+        if (value == null || value.isBlank() || value.equals(ownTopologySlotId)) {
+            return "";
+        }
+        return value;
     }
 
     public static MKWorkspaceRoomFamilyDefinition forTopologySlot(String baseName,
@@ -152,7 +167,31 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
         return new MKWorkspaceRoomFamilyDefinition(baseName, resolvedMetadata, resolvedMetadata.topologySlotId(),
                 verticalAccessGroupId, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
                 horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin,
-                foundationPolicy, paletteOverride);
+                "", "", foundationPolicy, paletteOverride);
+    }
+
+    public static MKWorkspaceRoomFamilyDefinition forTopologySlot(String baseName,
+                                                                    MKWorkspaceTopologySlotMetadata slotMetadata,
+                                                                    String verticalAccessGroupId,
+                                                                    boolean supportsVerticalAccess,
+                                                                    int roomWidth,
+                                                                    int roomLength,
+                                                                    int roomHeight,
+                                                                    MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
+                                                                    List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
+                                                                    int topVoidMargin,
+                                                                    int bottomVoidMargin,
+                                                                    String sourceTopologySlotId,
+                                                                    String settingsTopologySlotId,
+                                                                    @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
+                                                                    @Nullable MKWorkspacePaletteOverride paletteOverride) {
+        MKWorkspaceTopologySlotMetadata resolvedMetadata = MKWorkspaceTopologySlotMetadata
+                .fromVerticalStackTopologySlotId(slotMetadata.topologySlotId())
+                .orElse(slotMetadata);
+        return new MKWorkspaceRoomFamilyDefinition(baseName, resolvedMetadata, resolvedMetadata.topologySlotId(),
+                verticalAccessGroupId, supportsVerticalAccess, roomWidth, roomLength, roomHeight,
+                horizontalExtrusionMode, horizontalExits, topVoidMargin, bottomVoidMargin,
+                sourceTopologySlotId, settingsTopologySlotId, foundationPolicy, paletteOverride);
     }
 
     public static MKWorkspaceRoomFamilyDefinition forVerticalStackSlot(String baseName,
@@ -407,6 +446,52 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
         return topologySlotId;
     }
 
+    public String sourceTopologySlotId() {
+        return sourceTopologySlotId;
+    }
+
+    public Optional<String> sourceTopologySlotIdOpt() {
+        return sourceTopologySlotId.isBlank() ? Optional.empty() : Optional.of(sourceTopologySlotId);
+    }
+
+    public String sourceTopologySlotIdOrSelf() {
+        return sourceTopologySlotIdOpt().orElse(topologySlotId);
+    }
+
+    public String settingsTopologySlotId() {
+        return settingsTopologySlotId;
+    }
+
+    public Optional<String> settingsTopologySlotIdOpt() {
+        return settingsTopologySlotId.isBlank() ? Optional.empty() : Optional.of(settingsTopologySlotId);
+    }
+
+    public String settingsTopologySlotIdOrSelf() {
+        return settingsTopologySlotIdOpt().orElse(sourceTopologySlotIdOrSelf());
+    }
+
+    public MKWorkspaceRoomFamilyDefinition withGeneratedParentage(String sourceTopologySlotId,
+                                                                  String settingsTopologySlotId) {
+        return new MKWorkspaceRoomFamilyDefinition(
+                baseName,
+                slotMetadata,
+                topologySlotId,
+                verticalAccessGroupId,
+                supportsVerticalAccess,
+                roomWidth,
+                roomLength,
+                roomHeight,
+                horizontalExtrusionMode,
+                horizontalExits,
+                topVoidMargin,
+                bottomVoidMargin,
+                sourceTopologySlotId,
+                settingsTopologySlotId,
+                foundationPolicyOverride,
+                paletteOverride
+        );
+    }
+
     public String verticalAccessGroupId() {
         return verticalAccessGroupId;
     }
@@ -476,7 +561,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
         if (!supportsVerticalAccess()) {
             return true;
         }
-        return MKWorkspaceVerticalStackSlot.fromTopologySlotId(topologySlotId)
+        return MKWorkspaceVerticalStackSlot.fromTopologySlotId(sourceTopologySlotIdOrSelf())
                 .filter(slot -> slot == MKWorkspaceVerticalStackSlot.TOP_CAP)
                 .isPresent();
     }
@@ -485,7 +570,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
         if (!supportsVerticalAccess()) {
             return true;
         }
-        return MKWorkspaceVerticalStackSlot.fromTopologySlotId(topologySlotId)
+        return MKWorkspaceVerticalStackSlot.fromTopologySlotId(sourceTopologySlotIdOrSelf())
                 .filter(slot -> slot == MKWorkspaceVerticalStackSlot.BASEMENT_CAP)
                 .isPresent();
     }
