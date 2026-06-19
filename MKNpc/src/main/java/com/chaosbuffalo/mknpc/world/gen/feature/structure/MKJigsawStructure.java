@@ -9,6 +9,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorLinkGene
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKFloorLayoutSolver;
 import com.mojang.serialization.Codec;
@@ -17,8 +18,12 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.core.Direction;
@@ -46,8 +51,11 @@ import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBinding;
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasLookup;
 import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure;
+import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -62,6 +70,8 @@ import java.util.function.Function;
 
 public class MKJigsawStructure extends MKStructure {
     private static final BlockState TEMP_LINK_MARKER_STATE = Blocks.YELLOW_WOOL.defaultBlockState();
+    private static final BlockIgnoreProcessor STRUCTURE_VOID_IGNORE =
+            new BlockIgnoreProcessor(List.of(Blocks.STRUCTURE_VOID));
 
     public static final MapCodec<MKJigsawStructure> CODEC = RecordCodecBuilder.<MKJigsawStructure>mapCodec(builder ->
             builder.group(settingsCodec(builder),
@@ -749,7 +759,179 @@ public class MKJigsawStructure extends MKStructure {
                         positions.size(), width, height);
             }
         }
+        stampLinkInserts(level, chunkBounds, candidate);
         return carvedBlocks;
+    }
+
+    private void stampLinkInserts(WorldGenLevel level, BoundingBox chunkBounds, LinkCandidate candidate) {
+        if (candidate.settings().linkGenerationMode() == MKWorkspaceFloorLinkGenerationMode.DEBUG ||
+                candidate.settings().insertFamily().isEmpty() ||
+                candidate.settings().insertSpacing() <= 0 ||
+                candidate.settings().insertProbability() <= 0.0f) {
+            return;
+        }
+        Optional<ExportedWorkspaceId> workspaceId = exportedWorkspaceId();
+        if (workspaceId.isEmpty()) {
+            if (MKNpc.DEV_LOGGING) {
+                MKNpc.LOGGER.debug("solver floor link insert skipped group={} family={} reason=unknown_workspace_pool",
+                        candidate.topologyGroup(), candidate.settings().insertFamily().orElseThrow());
+            }
+            return;
+        }
+        String familyId = candidate.settings().insertFamily().orElseThrow();
+        ResourceLocation poolId = MKWorkspaceInsertFamilyDefinition.poolId(workspaceId.get().namespace(),
+                workspaceId.get().structureName(), familyId);
+        Registry<StructureTemplatePool> pools = level.registryAccess().registryOrThrow(Registries.TEMPLATE_POOL);
+        Optional<StructureTemplatePool> poolOpt = pools.getOptional(ResourceKey.create(Registries.TEMPLATE_POOL,
+                poolId));
+        if (poolOpt.isEmpty() || poolOpt.get().size() <= 0) {
+            if (MKNpc.DEV_LOGGING) {
+                MKNpc.LOGGER.debug("solver floor link insert skipped group={} family={} pool={} reason=missing_or_empty_pool",
+                        candidate.topologyGroup(), familyId, poolId);
+            }
+            return;
+        }
+
+        StructureTemplateManager templateManager = level.getLevel().getStructureManager();
+        List<InsertTemplate> inserts = insertTemplates(poolOpt.get(), templateManager, candidate, familyId);
+        if (inserts.isEmpty()) {
+            if (MKNpc.DEV_LOGGING) {
+                MKNpc.LOGGER.debug("solver floor link insert skipped group={} family={} pool={} reason=no_single_templates",
+                        candidate.topologyGroup(), familyId, poolId);
+            }
+            return;
+        }
+
+        List<BlockPos> positions = candidate.route().positions();
+        int routeLength = positions.size();
+        int endpointPadding = Math.max(1, candidate.settings().endpointIntactRadius());
+        int spacing = Math.max(1, candidate.settings().insertSpacing());
+        int configuredDepth = Math.max(1, candidate.settings().insertDepth());
+        int placed = 0;
+        for (int index = endpointPadding; index < routeLength - endpointPadding; index += spacing) {
+            InsertTemplate insert = selectInsert(inserts, candidate, positions.get(index), familyId);
+            int depth = Math.max(configuredDepth, insert.depth());
+            if (index + depth > routeLength - endpointPadding) {
+                continue;
+            }
+            Optional<Direction> direction = straightSpanDirection(positions, index, depth);
+            if (direction.isEmpty()) {
+                continue;
+            }
+            int decayIndex = Math.min(routeLength - 1, index + depth / 2);
+            float spanDecay = candidate.settings().linkGenerationMode() ==
+                    MKWorkspaceFloorLinkGenerationMode.DECAYING_HALLWAY ?
+                    candidate.settings().linkDecay() *
+                            routeDecayFactor(candidate.settings(), decayIndex, routeLength) :
+                    0.0f;
+            if (spanDecay > candidate.settings().insertMaxDecay()) {
+                continue;
+            }
+            if (deterministicNoise(candidate, positions.get(index), 71) > candidate.settings().insertProbability()) {
+                continue;
+            }
+            if (placeInsert(level, chunkBounds, candidate, insert, positions.get(index), direction.get())) {
+                placed++;
+            }
+        }
+        if (placed > 0 && MKNpc.DEV_LOGGING) {
+            MKNpc.LOGGER.debug("solver floor link inserts placed group={} family={} pool={} placed={}",
+                    candidate.topologyGroup(), familyId, poolId, placed);
+        }
+    }
+
+    private Optional<ExportedWorkspaceId> exportedWorkspaceId() {
+        return startPool.unwrapKey()
+                .map(key -> key.location())
+                .filter(id -> id.getPath().endsWith("/start"))
+                .map(id -> new ExportedWorkspaceId(id.getNamespace(),
+                        id.getPath().substring(0, id.getPath().length() - "/start".length())));
+    }
+
+    private List<InsertTemplate> insertTemplates(StructureTemplatePool pool, StructureTemplateManager templateManager,
+                                                 LinkCandidate candidate, String familyId) {
+        ArrayList<InsertTemplate> inserts = new ArrayList<>();
+        List<StructurePoolElement> elements = pool.getShuffledTemplates(RandomSource.create(
+                deterministicSeed(candidate, candidate.route().positions().getFirst(), familyId.hashCode())));
+        for (StructurePoolElement element : elements) {
+            Optional<ResourceLocation> templateId = getTemplateId(element);
+            if (templateId.isEmpty()) {
+                continue;
+            }
+            StructureTemplate template = templateManager.getOrCreate(templateId.get());
+            Vec3i size = template.getSize();
+            if (size.getX() <= 0 || size.getY() <= 0 || size.getZ() <= 0) {
+                continue;
+            }
+            inserts.add(new InsertTemplate(templateId.get(), template, size.getX(), size.getZ()));
+        }
+        return List.copyOf(inserts);
+    }
+
+    private InsertTemplate selectInsert(List<InsertTemplate> inserts, LinkCandidate candidate, BlockPos pos,
+                                        String familyId) {
+        if (inserts.size() == 1) {
+            return inserts.getFirst();
+        }
+        long seed = deterministicSeed(candidate, pos, familyId.hashCode() ^ 0x51F15EED);
+        int index = (int) Math.floorMod(seed, inserts.size());
+        return inserts.get(index);
+    }
+
+    private Optional<Direction> straightSpanDirection(List<BlockPos> positions, int startIndex, int depth) {
+        if (depth <= 1) {
+            return Optional.of(routeDirection(positions, startIndex));
+        }
+        if (startIndex + depth > positions.size()) {
+            return Optional.empty();
+        }
+        Direction direction = directionBetween(positions.get(startIndex), positions.get(startIndex + 1));
+        for (int index = startIndex + 1; index < startIndex + depth - 1; index++) {
+            if (directionBetween(positions.get(index), positions.get(index + 1)) != direction) {
+                return Optional.empty();
+            }
+        }
+        return Optional.of(direction);
+    }
+
+    private Direction routeDirection(List<BlockPos> positions, int index) {
+        if (positions.size() <= 1) {
+            return Direction.SOUTH;
+        }
+        if (index + 1 < positions.size()) {
+            return directionBetween(positions.get(index), positions.get(index + 1));
+        }
+        return directionBetween(positions.get(index - 1), positions.get(index));
+    }
+
+    private boolean placeInsert(WorldGenLevel level, BoundingBox chunkBounds, LinkCandidate candidate,
+                                InsertTemplate insert, BlockPos routeCenter,
+                                Direction direction) {
+        Rotation rotation = insertRotation(direction);
+        BlockPos origin = insertOrigin(routeCenter, rotation, insert.width());
+        StructurePlaceSettings settings = new StructurePlaceSettings()
+                .setMirror(Mirror.NONE)
+                .setRotation(rotation)
+                .setBoundingBox(chunkBounds)
+                .setLiquidSettings(LiquidSettings.IGNORE_WATERLOGGING);
+        settings.addProcessor(STRUCTURE_VOID_IGNORE);
+        return insert.template().placeInWorld(level, origin, origin, settings,
+                RandomSource.create(deterministicSeed(candidate, routeCenter, insert.templateId().hashCode())), 18);
+    }
+
+    private Rotation insertRotation(Direction direction) {
+        return switch (direction) {
+            case NORTH -> Rotation.CLOCKWISE_180;
+            case EAST -> Rotation.COUNTERCLOCKWISE_90;
+            case WEST -> Rotation.CLOCKWISE_90;
+            default -> Rotation.NONE;
+        };
+    }
+
+    private BlockPos insertOrigin(BlockPos routeCenter, Rotation rotation, int shellWidth) {
+        BlockPos localCenter = new BlockPos(shellWidth / 2, 0, 0);
+        BlockPos centerOffset = StructureTemplate.transform(localCenter, Mirror.NONE, rotation, BlockPos.ZERO);
+        return routeCenter.below().subtract(centerOffset);
     }
 
     private int openEndpoint(WorldGenLevel level, BoundingBox chunkBounds, PlacedLinkEndpoint endpoint) {
@@ -909,13 +1091,18 @@ public class MKJigsawStructure extends MKStructure {
     }
 
     private float deterministicNoise(LinkCandidate candidate, BlockPos pos, int salt) {
+        long seed = deterministicSeed(candidate, pos, salt);
+        return ((seed >>> 40) & 0xFFFFFF) / (float) 0x1000000;
+    }
+
+    private long deterministicSeed(LinkCandidate candidate, BlockPos pos, int salt) {
         long seed = 0x9E3779B97F4A7C15L;
         seed = mix(seed ^ candidate.topologyGroup().hashCode());
         seed = mix(seed ^ candidate.aSegmentIndex());
         seed = mix(seed ^ ((long) candidate.bSegmentIndex() << 32));
         seed = mix(seed ^ pos.asLong());
         seed = mix(seed ^ salt);
-        return ((seed >>> 40) & 0xFFFFFF) / (float) 0x1000000;
+        return seed;
     }
 
     private long mix(long value) {
@@ -960,6 +1147,12 @@ public class MKJigsawStructure extends MKStructure {
     }
 
     private record LinkPalette(BlockState floor, BlockState wall, BlockState ceiling) {
+    }
+
+    private record InsertTemplate(ResourceLocation templateId, StructureTemplate template, int width, int depth) {
+    }
+
+    private record ExportedWorkspaceId(String namespace, String structureName) {
     }
 
     private enum ShellBlockRole {
