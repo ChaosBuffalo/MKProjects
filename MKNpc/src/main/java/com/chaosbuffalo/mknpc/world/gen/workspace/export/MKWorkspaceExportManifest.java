@@ -10,6 +10,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPol
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
@@ -130,7 +132,8 @@ public record MKWorkspaceExportManifest(
                         workspace.topologyProfile(),
                         workspace.familyDefinitions().stream().map(ExportFamilyDefinition::from).toList(),
                         workspace.openingProfiles().stream().map(ExportOpeningProfile::from).toList(),
-                        workspace.linearRunFamilies().stream().map(ExportLinearRunFamily::from).toList()
+                        workspace.linearRunFamilies().stream().map(ExportLinearRunFamily::from).toList(),
+                        workspace.insertFamilies().stream().map(ExportInsertFamily::from).toList()
                 ),
                 resolvedRuntimeHints,
                 buildTemplateGroups(exportPieces),
@@ -348,7 +351,8 @@ public record MKWorkspaceExportManifest(
             MKWorkspaceTopologyProfile topologyProfile,
             List<ExportFamilyDefinition> familyDefinitions,
             List<ExportOpeningProfile> openingProfiles,
-            List<ExportLinearRunFamily> linearRunFamilies
+            List<ExportLinearRunFamily> linearRunFamilies,
+            List<ExportInsertFamily> insertFamilies
     ) {
         public static final Codec<ExportWorkspaceSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ExportBlockPos.CODEC.fieldOf("anchor").forGetter(ExportWorkspaceSettings::anchor),
@@ -365,8 +369,22 @@ public record MKWorkspaceExportManifest(
                         .forGetter(ExportWorkspaceSettings::topologyProfile),
                 ExportFamilyDefinition.CODEC.listOf().optionalFieldOf("family_definitions", List.of()).forGetter(ExportWorkspaceSettings::familyDefinitions),
                 ExportOpeningProfile.CODEC.listOf().optionalFieldOf("opening_profiles", List.of()).forGetter(ExportWorkspaceSettings::openingProfiles),
-                ExportLinearRunFamily.CODEC.listOf().optionalFieldOf("linear_run_families", List.of()).forGetter(ExportWorkspaceSettings::linearRunFamilies)
+                ExportLinearRunFamily.CODEC.listOf().optionalFieldOf("linear_run_families", List.of()).forGetter(ExportWorkspaceSettings::linearRunFamilies),
+                ExportInsertFamily.CODEC.listOf().optionalFieldOf("insert_families", List.of()).forGetter(ExportWorkspaceSettings::insertFamilies)
         ).apply(instance, ExportWorkspaceSettings::new));
+
+        public ExportWorkspaceSettings(ExportBlockPos anchor, int shellMargin, int exteriorAirMargin,
+                                       int previewMargin, MKVerticalAccessPlacement verticalAccessPlacement,
+                                       ExportDimensions dimensions, ExportPalette palette,
+                                       ExportStairConfig stairConfig, ExportVerticalAccessSpec verticalAccessSpec,
+                                       MKWorkspaceTopologyProfile topologyProfile,
+                                       List<ExportFamilyDefinition> familyDefinitions,
+                                       List<ExportOpeningProfile> openingProfiles,
+                                       List<ExportLinearRunFamily> linearRunFamilies) {
+            this(anchor, shellMargin, exteriorAirMargin, previewMargin, verticalAccessPlacement, dimensions,
+                    palette, stairConfig, verticalAccessSpec, topologyProfile, familyDefinitions, openingProfiles,
+                    linearRunFamilies, List.of());
+        }
     }
 
     public record ExportVerticalAccessSpec(
@@ -592,6 +610,32 @@ public record MKWorkspaceExportManifest(
 
         public Optional<MKWorkspacePaletteOverride> paletteOverrideOpt() {
             return Optional.ofNullable(paletteOverride);
+        }
+    }
+
+    public record ExportInsertFamily(
+            String familyId,
+            MKWorkspaceInsertFamilyKind kind,
+            int width,
+            int height,
+            int depth
+    ) {
+        public static final Codec<ExportInsertFamily> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.STRING.fieldOf("family_id").forGetter(ExportInsertFamily::familyId),
+                MKWorkspaceInsertFamilyKind.CODEC.optionalFieldOf("kind", MKWorkspaceInsertFamilyKind.FLOOR_LINK_HALLWAY)
+                        .forGetter(ExportInsertFamily::kind),
+                Codec.INT.fieldOf("width").forGetter(ExportInsertFamily::width),
+                Codec.INT.fieldOf("height").forGetter(ExportInsertFamily::height),
+                Codec.INT.fieldOf("depth").forGetter(ExportInsertFamily::depth)
+        ).apply(instance, ExportInsertFamily::new));
+
+        public static ExportInsertFamily from(MKWorkspaceInsertFamilyDefinition insertFamily) {
+            return new ExportInsertFamily(insertFamily.familyId(), insertFamily.kind(), insertFamily.width(),
+                    insertFamily.height(), insertFamily.depth());
+        }
+
+        public ResourceLocation poolId(MKWorkspaceExportManifest manifest) {
+            return MKWorkspaceInsertFamilyDefinition.poolId(manifest.namespace(), manifest.structureName(), familyId);
         }
     }
 
@@ -1315,6 +1359,7 @@ public record MKWorkspaceExportManifest(
                 addFloorMaskPoolChild(childrenByPool, connector.incomingPool(), baseName, piece.tags());
             }
         }
+        addInsertFamilyPools(workspace, pieces, childrenByPool);
         return childrenByPool.entrySet().stream()
                 .map(entry -> new ExportRuntimePool(
                         derivePoolBaseName(workspace, entry.getKey()),
@@ -1356,6 +1401,7 @@ public record MKWorkspaceExportManifest(
                 addFloorMaskPoolChild(childrenByPool, connector.incomingPool(), piece.baseName(), piece.tags());
             }
         }
+        addInsertFamilyPools(manifest, childrenByPool);
         return childrenByPool.entrySet().stream()
                 .map(entry -> new ExportRuntimePool(
                         derivePoolBaseName(manifest, entry.getKey()),
@@ -1363,6 +1409,43 @@ public record MKWorkspaceExportManifest(
                         List.copyOf(entry.getValue())
                 ))
                 .toList();
+    }
+
+    private static void addInsertFamilyPools(MKStructureWorkspace workspace,
+                                             List<MKWorkspacePieceDefinition> pieces,
+                                             LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool) {
+        for (MKWorkspaceInsertFamilyDefinition insertFamily : workspace.insertFamilies()) {
+            LinkedHashSet<String> childBaseNames = pieces.stream()
+                    .filter(piece -> !"template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance")))
+                    .filter(piece -> insertFamily.familyId().equals(piece.tags().get(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID)))
+                    .filter(piece -> insertFamily.kind().getSerializedName().equals(piece.tags()
+                            .getOrDefault(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_KIND,
+                                    insertFamily.kind().getSerializedName())))
+                    .map(piece -> piece.tags().getOrDefault("workspace_base_name", piece.pieceName()))
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            if (!childBaseNames.isEmpty()) {
+                childrenByPool.put(MKWorkspaceInsertFamilyDefinition.poolId(workspace.namespace(),
+                        workspace.structureName(), insertFamily.familyId()), childBaseNames);
+            }
+        }
+    }
+
+    private static void addInsertFamilyPools(MKWorkspaceExportManifest manifest,
+                                             LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool) {
+        for (ExportInsertFamily insertFamily : manifest.settings().insertFamilies()) {
+            LinkedHashSet<String> childBaseNames = manifest.pieces().stream()
+                    .filter(piece -> !"template".equals(piece.workspacePieceKind()))
+                    .filter(piece -> insertFamily.familyId().equals(piece.tags()
+                            .get(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID)))
+                    .filter(piece -> insertFamily.kind().getSerializedName().equals(piece.tags()
+                            .getOrDefault(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_KIND,
+                                    insertFamily.kind().getSerializedName())))
+                    .map(ExportPiece::baseName)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            if (!childBaseNames.isEmpty()) {
+                childrenByPool.put(insertFamily.poolId(manifest), childBaseNames);
+            }
+        }
     }
 
     private static void addFloorMaskPoolChild(LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool,
