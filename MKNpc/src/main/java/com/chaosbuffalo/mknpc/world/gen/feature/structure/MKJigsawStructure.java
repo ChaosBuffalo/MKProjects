@@ -5,9 +5,11 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorLinkGenerationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKFloorLayoutSolver;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -244,8 +246,9 @@ public class MKJigsawStructure extends MKStructure {
                 LinkRoute linkRoute = route.orElseThrow();
                 linkedOpenings.add(a.orElseThrow().pos());
                 linkedOpenings.add(b.orElseThrow().pos());
+                LinkPalette palette = linkPalette(settings, root.metadata());
                 candidates.add(new LinkCandidate(rule.topologyGroup(), link.a().segmentIndex(),
-                        link.b().segmentIndex(), a.orElseThrow(), b.orElseThrow(), linkRoute));
+                        link.b().segmentIndex(), a.orElseThrow(), b.orElseThrow(), linkRoute, settings, palette));
                 resolvedLinks++;
             }
             if (MKNpc.DEV_LOGGING && (resolvedLinks > 0 || missingEndpoints > 0 || missingRoutes > 0)) {
@@ -531,6 +534,28 @@ public class MKJigsawStructure extends MKStructure {
                 .orElse(Blocks.STONE_BRICKS.defaultBlockState());
     }
 
+    private LinkPalette linkPalette(MKWorkspaceFloorTopologySettings settings, MKJigsawPieceMetadata rootMetadata) {
+        MKWorkspaceMaterialPalette defaults = MKWorkspaceMaterialPalette.defaultPalette();
+        ResourceLocation wallBlock = BuiltInRegistries.BLOCK.getOptional(rootMetadata.wallBlock()).isPresent() ?
+                rootMetadata.wallBlock() : defaults.wallBlock();
+        MKWorkspaceMaterialPalette basePalette = new MKWorkspaceMaterialPalette(defaults.floorBlock(), wallBlock,
+                defaults.ceilingBlock(), defaults.stairBlock(), defaults.slabBlock(), defaults.ladderBlock());
+        MKWorkspaceMaterialPalette resolved = settings.paletteOverride()
+                .map(override -> override.resolve(basePalette))
+                .orElse(basePalette);
+        return new LinkPalette(
+                blockStateOrDefault(resolved.floorBlock(), Blocks.SMOOTH_STONE.defaultBlockState()),
+                blockStateOrDefault(resolved.wallBlock(), Blocks.STONE_BRICKS.defaultBlockState()),
+                blockStateOrDefault(resolved.ceilingBlock(), Blocks.SMOOTH_STONE.defaultBlockState())
+        );
+    }
+
+    private BlockState blockStateOrDefault(ResourceLocation blockId, BlockState fallback) {
+        return BuiltInRegistries.BLOCK.getOptional(blockId)
+                .map(block -> block.defaultBlockState())
+                .orElse(fallback);
+    }
+
     private Optional<String> openingTopologyGroup(MKJigsawPieceMetadata metadata,
                                                   MKJigsawPieceMetadata.FloorClosableOpening opening) {
         Optional<String> rootExitGroup = metadata.floorRootExits().stream()
@@ -710,10 +735,19 @@ public class MKJigsawStructure extends MKStructure {
 
     private int carveLink(WorldGenLevel level, BoundingBox chunkBounds, LinkCandidate candidate) {
         int height = Math.max(2, Math.min(candidate.a().openingHeight(), candidate.b().openingHeight()));
+        int width = Math.max(1, Math.min(candidate.a().openingWidth(), candidate.b().openingWidth()));
         int carvedBlocks = openEndpoint(level, chunkBounds, candidate.a());
         carvedBlocks += openEndpoint(level, chunkBounds, candidate.b());
-        for (BlockPos center : candidate.route().positions()) {
-            carvedBlocks += carveCorridorCell(level, chunkBounds, center, height);
+        List<BlockPos> positions = candidate.route().positions();
+        for (int index = 0; index < positions.size(); index++) {
+            BlockPos center = positions.get(index);
+            if (candidate.settings().linkGenerationMode() == MKWorkspaceFloorLinkGenerationMode.DEBUG) {
+                carvedBlocks += carveDebugCorridorCell(level, chunkBounds, center, height);
+            } else {
+                Direction.Axis axis = routeAxis(positions, index);
+                carvedBlocks += carveHallwayCorridorCell(level, chunkBounds, candidate, center, axis, index,
+                        positions.size(), width, height);
+            }
         }
         return carvedBlocks;
     }
@@ -742,7 +776,7 @@ public class MKJigsawStructure extends MKStructure {
         return carvedBlocks;
     }
 
-    private int carveCorridorCell(WorldGenLevel level, BoundingBox chunkBounds, BlockPos center, int height) {
+    private int carveDebugCorridorCell(WorldGenLevel level, BoundingBox chunkBounds, BlockPos center, int height) {
         int carvedBlocks = 0;
         for (int dx = -1; dx <= 1; dx++) {
             for (int dz = -1; dz <= 1; dz++) {
@@ -761,6 +795,140 @@ public class MKJigsawStructure extends MKStructure {
             }
         }
         return carvedBlocks;
+    }
+
+    private int carveHallwayCorridorCell(WorldGenLevel level, BoundingBox chunkBounds, LinkCandidate candidate,
+                                         BlockPos center, Direction.Axis axis, int routeIndex, int routeLength,
+                                         int width, int height) {
+        int carvedBlocks = 0;
+        int minInterior = -((width - 1) / 2);
+        int maxInterior = width / 2;
+        int minShell = minInterior - 1;
+        int maxShell = maxInterior + 1;
+        boolean decaying = candidate.settings().linkGenerationMode() ==
+                MKWorkspaceFloorLinkGenerationMode.DECAYING_HALLWAY;
+
+        for (int across = minShell; across <= maxShell; across++) {
+            boolean interior = across >= minInterior && across <= maxInterior;
+            BlockPos floor = offsetAcross(center, axis, across).below();
+            if (!decaying || shouldPlaceShellBlock(candidate, floor, routeIndex, routeLength,
+                    shellDecayWeight(ShellBlockRole.FLOOR, 0, height, interior))) {
+                if (setIfInChunk(level, chunkBounds, floor, candidate.palette().floor())) {
+                    carvedBlocks++;
+                }
+            }
+
+            if (interior) {
+                for (int y = 0; y < height; y++) {
+                    BlockPos air = offsetAcross(center, axis, across).above(y);
+                    if (!decaying || shouldCarveAir(candidate, air, routeIndex, routeLength,
+                            airDecayWeight(across, minInterior, maxInterior, y, height))) {
+                        if (setIfInChunk(level, chunkBounds, air, Blocks.AIR.defaultBlockState())) {
+                            carvedBlocks++;
+                        }
+                    }
+                }
+            } else {
+                for (int y = 0; y < height; y++) {
+                    BlockPos wall = offsetAcross(center, axis, across).above(y);
+                    if (!decaying || shouldPlaceShellBlock(candidate, wall, routeIndex, routeLength,
+                            shellDecayWeight(ShellBlockRole.WALL, y, height, false))) {
+                        if (setIfInChunk(level, chunkBounds, wall, candidate.palette().wall())) {
+                            carvedBlocks++;
+                        }
+                    }
+                }
+            }
+
+            BlockPos ceiling = offsetAcross(center, axis, across).above(height);
+            if (!decaying || shouldPlaceShellBlock(candidate, ceiling, routeIndex, routeLength,
+                    shellDecayWeight(ShellBlockRole.CEILING, height, height, interior))) {
+                if (setIfInChunk(level, chunkBounds, ceiling, candidate.palette().ceiling())) {
+                    carvedBlocks++;
+                }
+            }
+        }
+        return carvedBlocks;
+    }
+
+    private Direction.Axis routeAxis(List<BlockPos> positions, int index) {
+        if (positions.size() <= 1) {
+            return Direction.Axis.X;
+        }
+        if (index + 1 < positions.size()) {
+            return directionBetween(positions.get(index), positions.get(index + 1)).getAxis();
+        }
+        return directionBetween(positions.get(index - 1), positions.get(index)).getAxis();
+    }
+
+    private BlockPos offsetAcross(BlockPos center, Direction.Axis axis, int across) {
+        return axis == Direction.Axis.X ? center.offset(0, 0, across) : center.offset(across, 0, 0);
+    }
+
+    private boolean shouldPlaceShellBlock(LinkCandidate candidate, BlockPos pos, int routeIndex, int routeLength,
+                                          float verticalWeight) {
+        float chance = candidate.settings().linkDecay() * routeDecayFactor(candidate.settings(), routeIndex,
+                routeLength) * verticalWeight;
+        return deterministicNoise(candidate, pos, 17) >= clamp01(chance);
+    }
+
+    private boolean shouldCarveAir(LinkCandidate candidate, BlockPos pos, int routeIndex, int routeLength,
+                                   float verticalWeight) {
+        float chance = candidate.settings().linkDecay() * routeDecayFactor(candidate.settings(), routeIndex,
+                routeLength) * verticalWeight;
+        return deterministicNoise(candidate, pos, 37) >= clamp01(chance);
+    }
+
+    private float routeDecayFactor(MKWorkspaceFloorTopologySettings settings, int routeIndex, int routeLength) {
+        if (routeLength <= 1) {
+            return 0.0f;
+        }
+        int edgeDistance = Math.min(routeIndex, routeLength - 1 - routeIndex);
+        float endpointProgress = settings.endpointIntactRadius() <= 0 ? 1.0f :
+                clamp01(edgeDistance / (float) settings.endpointIntactRadius());
+        float middleProgress = (float) Math.sin(Math.PI * (routeIndex / (float) (routeLength - 1)));
+        float middleBias = clamp01(settings.middleDecayBonus());
+        return clamp01(endpointProgress * (1.0f - middleBias) + middleProgress * middleBias);
+    }
+
+    private float shellDecayWeight(ShellBlockRole role, int y, int height, boolean interior) {
+        return switch (role) {
+            case FLOOR -> interior ? 0.10f : 0.20f;
+            case CEILING -> 1.0f;
+            case WALL -> {
+                float vertical = height <= 1 ? 1.0f : y / (float) (height - 1);
+                yield 0.35f + vertical * 0.55f;
+            }
+        };
+    }
+
+    private float airDecayWeight(int across, int minInterior, int maxInterior, int y, int height) {
+        float vertical = height <= 1 ? 1.0f : y / (float) (height - 1);
+        boolean center = across > minInterior && across < maxInterior;
+        return center ? 0.08f + vertical * 0.16f : 0.12f + vertical * 0.18f;
+    }
+
+    private float deterministicNoise(LinkCandidate candidate, BlockPos pos, int salt) {
+        long seed = 0x9E3779B97F4A7C15L;
+        seed = mix(seed ^ candidate.topologyGroup().hashCode());
+        seed = mix(seed ^ candidate.aSegmentIndex());
+        seed = mix(seed ^ ((long) candidate.bSegmentIndex() << 32));
+        seed = mix(seed ^ pos.asLong());
+        seed = mix(seed ^ salt);
+        return ((seed >>> 40) & 0xFFFFFF) / (float) 0x1000000;
+    }
+
+    private long mix(long value) {
+        value ^= value >>> 33;
+        value *= 0xff51afd7ed558ccdL;
+        value ^= value >>> 33;
+        value *= 0xc4ceb9fe1a85ec53L;
+        value ^= value >>> 33;
+        return value;
+    }
+
+    private float clamp01(float value) {
+        return Math.max(0.0f, Math.min(1.0f, value));
     }
 
     private boolean setIfInChunk(WorldGenLevel level, BoundingBox chunkBounds, BlockPos pos, BlockState state) {
@@ -787,7 +955,17 @@ public class MKJigsawStructure extends MKStructure {
     }
 
     private record LinkCandidate(String topologyGroup, int aSegmentIndex, int bSegmentIndex,
-                                 PlacedLinkEndpoint a, PlacedLinkEndpoint b, LinkRoute route) {
+                                 PlacedLinkEndpoint a, PlacedLinkEndpoint b, LinkRoute route,
+                                 MKWorkspaceFloorTopologySettings settings, LinkPalette palette) {
+    }
+
+    private record LinkPalette(BlockState floor, BlockState wall, BlockState ceiling) {
+    }
+
+    private enum ShellBlockRole {
+        FLOOR,
+        WALL,
+        CEILING
     }
 
     private record ResolvedFloorLinks(Set<BlockPos> linkedOpenings, List<LinkCandidate> candidates) {
