@@ -1,1 +1,1 @@
-{"topology_group":"entry","top_cap_approach_enabled":false,"basement_entry_enabled":false,"min_basement_floors":1,"max_basement_floors":1,"tower_stack_id":"keep.center","tower_stack_slot":"entry","min_main_floors":1,"max_main_floors":1,"allow_on_branch_path":true,"role":"room"}
+{"top_cap_approach_enabled":false,"basement_entry_enabled":false,"min_basement_floors":1,"max_basement_floors":1,"vertical_stack_id":"keep.center","vertical_stack_slot":"entry","min_main_floors":1,"max_main_floors":1,"topology_group":"entry","allow_on_branch_path":true,"role":"room"}

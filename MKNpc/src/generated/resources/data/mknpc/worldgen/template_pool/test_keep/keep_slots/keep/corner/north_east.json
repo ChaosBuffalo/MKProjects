@@ -12,6 +12,19 @@
         "projection": "rigid"
       },
       "weight": 1
+    },
+    {
+      "element": {
+        "bWaterLog": false,
+        "element_type": "mknpc:mk_single_jigsaw",
+        "location": "mknpc:test_keep/keep_corner_north_east_top_cap_1",
+        "override_liquid_settings": "ignore_waterlogging",
+        "processors": {
+          "processors": []
+        },
+        "projection": "rigid"
+      },
+      "weight": 1
     }
   ],
   "fallback": "minecraft:empty"
