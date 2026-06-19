@@ -27,6 +27,15 @@ public record MKWorkspaceFloorTopologySettings(
         int maxLinksPerFloor,
         int maxLinksPerRoom,
         int maxLinkLength,
+        MKWorkspaceFloorLinkGenerationMode linkGenerationMode,
+        float linkDecay,
+        int endpointIntactRadius,
+        float middleDecayBonus,
+        Optional<String> insertFamily,
+        int insertDepth,
+        int insertSpacing,
+        float insertProbability,
+        float insertMaxDecay,
         int mainHallwayLength,
         int mainHallwayWidth,
         int branchHallwayLength,
@@ -50,9 +59,21 @@ public record MKWorkspaceFloorTopologySettings(
     public static final int DEFAULT_MAX_LINKS_PER_FLOOR = 10;
     public static final int DEFAULT_MAX_LINKS_PER_ROOM = 3;
     public static final int DEFAULT_MAX_LINK_LENGTH = 32;
+    public static final MKWorkspaceFloorLinkGenerationMode DEFAULT_LINK_GENERATION_MODE =
+            MKWorkspaceFloorLinkGenerationMode.FULL_HALLWAY;
+    public static final float DEFAULT_LINK_DECAY = 0.0f;
+    public static final int DEFAULT_ENDPOINT_INTACT_RADIUS = 3;
+    public static final float DEFAULT_MIDDLE_DECAY_BONUS = 0.25f;
+    public static final int DEFAULT_INSERT_DEPTH = 1;
+    public static final int DEFAULT_INSERT_SPACING = 0;
+    public static final float DEFAULT_INSERT_PROBABILITY = 1.0f;
+    public static final float DEFAULT_INSERT_MAX_DECAY = 0.55f;
     public static final int MAX_LINKS_PER_FLOOR = 64;
     public static final int MAX_LINKS_PER_ROOM = 3;
     public static final int MAX_LINK_LENGTH = 128;
+    public static final int MAX_ENDPOINT_INTACT_RADIUS = 16;
+    public static final int MAX_INSERT_DEPTH = 16;
+    public static final int MAX_INSERT_SPACING = 128;
     public static final ResourceLocation PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "floor_topology");
 
     public static final Codec<MKWorkspaceFloorTopologySettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -77,6 +98,15 @@ public record MKWorkspaceFloorTopologySettings(
             links.maxLinksPerFloor(),
             links.maxLinksPerRoom(),
             links.maxLinkLength(),
+            links.generationMode(),
+            links.decay(),
+            links.endpointIntactRadius(),
+            links.middleDecayBonus(),
+            links.insertFamily(),
+            links.insertDepth(),
+            links.insertSpacing(),
+            links.insertProbability(),
+            links.insertMaxDecay(),
             links.mainHallwayLength(),
             links.mainHallwayWidth(),
             links.branchHallwayLength(),
@@ -143,7 +173,8 @@ public record MKWorkspaceFloorTopologySettings(
             int mainHallwayLength,
             int mainHallwayWidth,
             int branchHallwayLength,
-            int branchHallwayWidth
+            int branchHallwayWidth,
+            LinkGenerationSettings generation
     ) {
         private static final LinkSettings DEFAULTS = new LinkSettings(
                 DEFAULT_LINKS_ENABLED,
@@ -154,9 +185,9 @@ public record MKWorkspaceFloorTopologySettings(
                 0,
                 0,
                 0,
-                0
+                0,
+                LinkGenerationSettings.DEFAULTS
         );
-
         private static final Codec<LinkSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.BOOL.optionalFieldOf("enabled", DEFAULT_LINKS_ENABLED)
                         .forGetter(LinkSettings::enabled),
@@ -175,8 +206,92 @@ public record MKWorkspaceFloorTopologySettings(
                 Codec.INT.optionalFieldOf("branch_hallway_length", 0)
                         .forGetter(LinkSettings::branchHallwayLength),
                 Codec.INT.optionalFieldOf("branch_hallway_width", 0)
-                        .forGetter(LinkSettings::branchHallwayWidth)
+                        .forGetter(LinkSettings::branchHallwayWidth),
+                LinkGenerationSettings.CODEC.optionalFieldOf("generation", LinkGenerationSettings.DEFAULTS)
+                        .forGetter(LinkSettings::generation)
         ).apply(instance, LinkSettings::new));
+
+        private MKWorkspaceFloorLinkGenerationMode generationMode() {
+            return generation.mode();
+        }
+
+        private float decay() {
+            return generation.decay();
+        }
+
+        private int endpointIntactRadius() {
+            return generation.endpointIntactRadius();
+        }
+
+        private float middleDecayBonus() {
+            return generation.middleDecayBonus();
+        }
+
+        private Optional<String> insertFamily() {
+            return generation.insertFamily();
+        }
+
+        private int insertDepth() {
+            return generation.insertDepth();
+        }
+
+        private int insertSpacing() {
+            return generation.insertSpacing();
+        }
+
+        private float insertProbability() {
+            return generation.insertProbability();
+        }
+
+        private float insertMaxDecay() {
+            return generation.insertMaxDecay();
+        }
+    }
+
+    private record LinkGenerationSettings(
+            MKWorkspaceFloorLinkGenerationMode mode,
+            float decay,
+            int endpointIntactRadius,
+            float middleDecayBonus,
+            Optional<String> insertFamily,
+            int insertDepth,
+            int insertSpacing,
+            float insertProbability,
+            float insertMaxDecay
+    ) {
+        private static final LinkGenerationSettings DEFAULTS = new LinkGenerationSettings(
+                DEFAULT_LINK_GENERATION_MODE,
+                DEFAULT_LINK_DECAY,
+                DEFAULT_ENDPOINT_INTACT_RADIUS,
+                DEFAULT_MIDDLE_DECAY_BONUS,
+                Optional.empty(),
+                DEFAULT_INSERT_DEPTH,
+                DEFAULT_INSERT_SPACING,
+                DEFAULT_INSERT_PROBABILITY,
+                DEFAULT_INSERT_MAX_DECAY
+        );
+
+        private static final Codec<LinkGenerationSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                MKWorkspaceFloorLinkGenerationMode.CODEC.optionalFieldOf("mode",
+                                DEFAULT_LINK_GENERATION_MODE)
+                        .forGetter(LinkGenerationSettings::mode),
+                Codec.FLOAT.optionalFieldOf("decay", DEFAULT_LINK_DECAY)
+                        .forGetter(LinkGenerationSettings::decay),
+                Codec.INT.optionalFieldOf("endpoint_intact_radius", DEFAULT_ENDPOINT_INTACT_RADIUS)
+                        .forGetter(LinkGenerationSettings::endpointIntactRadius),
+                Codec.FLOAT.optionalFieldOf("middle_decay_bonus", DEFAULT_MIDDLE_DECAY_BONUS)
+                        .forGetter(LinkGenerationSettings::middleDecayBonus),
+                Codec.STRING.optionalFieldOf("insert_family")
+                        .forGetter(LinkGenerationSettings::insertFamily),
+                Codec.INT.optionalFieldOf("insert_depth", DEFAULT_INSERT_DEPTH)
+                        .forGetter(LinkGenerationSettings::insertDepth),
+                Codec.INT.optionalFieldOf("insert_spacing", DEFAULT_INSERT_SPACING)
+                        .forGetter(LinkGenerationSettings::insertSpacing),
+                Codec.FLOAT.optionalFieldOf("insert_probability", DEFAULT_INSERT_PROBABILITY)
+                        .forGetter(LinkGenerationSettings::insertProbability),
+                Codec.FLOAT.optionalFieldOf("insert_max_decay", DEFAULT_INSERT_MAX_DECAY)
+                        .forGetter(LinkGenerationSettings::insertMaxDecay)
+        ).apply(instance, LinkGenerationSettings::new));
     }
 
     private record RoomProfiles(
@@ -208,7 +323,9 @@ public record MKWorkspaceFloorTopologySettings(
 
     private LinkSettings linkSettings() {
         return new LinkSettings(linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
-                mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth);
+                mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth,
+                new LinkGenerationSettings(linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus,
+                        insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay));
     }
 
     private RoomProfiles roomProfiles() {
@@ -230,6 +347,15 @@ public record MKWorkspaceFloorTopologySettings(
         maxLinksPerFloor = Math.max(0, Math.min(MAX_LINKS_PER_FLOOR, maxLinksPerFloor));
         maxLinksPerRoom = Math.max(0, Math.min(MAX_LINKS_PER_ROOM, maxLinksPerRoom));
         maxLinkLength = Math.max(0, Math.min(MAX_LINK_LENGTH, maxLinkLength));
+        linkGenerationMode = linkGenerationMode == null ? DEFAULT_LINK_GENERATION_MODE : linkGenerationMode;
+        linkDecay = Math.max(0.0f, Math.min(1.0f, linkDecay));
+        endpointIntactRadius = Math.max(0, Math.min(MAX_ENDPOINT_INTACT_RADIUS, endpointIntactRadius));
+        middleDecayBonus = Math.max(0.0f, Math.min(1.0f, middleDecayBonus));
+        insertFamily = insertFamily == null ? Optional.empty() : insertFamily.filter(value -> !value.isBlank());
+        insertDepth = Math.max(1, Math.min(MAX_INSERT_DEPTH, insertDepth));
+        insertSpacing = Math.max(0, Math.min(MAX_INSERT_SPACING, insertSpacing));
+        insertProbability = Math.max(0.0f, Math.min(1.0f, insertProbability));
+        insertMaxDecay = Math.max(0.0f, Math.min(1.0f, insertMaxDecay));
         mainHallwayLength = Math.max(0, mainHallwayLength);
         mainHallwayWidth = Math.max(0, mainHallwayWidth);
         branchHallwayLength = Math.max(0, branchHallwayLength);
@@ -269,7 +395,9 @@ public record MKWorkspaceFloorTopologySettings(
         this(stackId, floorRole, minMainPathPieces, maxMainPathPieces, maxBranchPiecesBeforeCap,
                 hallwayLeadInMode, manualHallwayLeadInPieces, mainHallwaysEnabled, branchHallwaysEnabled,
                 mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom,
-                maxLinkLength, 0, 0, 0, 0, lockedLayoutSeed, paletteOverride,
+                maxLinkLength, DEFAULT_LINK_GENERATION_MODE, DEFAULT_LINK_DECAY, DEFAULT_ENDPOINT_INTACT_RADIUS,
+                DEFAULT_MIDDLE_DECAY_BONUS, Optional.empty(), DEFAULT_INSERT_DEPTH, DEFAULT_INSERT_SPACING,
+                DEFAULT_INSERT_PROBABILITY, DEFAULT_INSERT_MAX_DECAY, 0, 0, 0, 0, lockedLayoutSeed, paletteOverride,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
@@ -293,8 +421,10 @@ public record MKWorkspaceFloorTopologySettings(
         this(stackId, floorRole, minMainPathPieces, maxMainPathPieces, maxBranchPiecesBeforeCap,
                 hallwayLeadInMode, manualHallwayLeadInPieces, mainHallwaysEnabled, branchHallwaysEnabled,
                 mainCapApproachEnabled, sprawl, DEFAULT_LINKS_ENABLED, DEFAULT_LINK_DENSITY,
-                DEFAULT_MAX_LINKS_PER_FLOOR, DEFAULT_MAX_LINKS_PER_ROOM, DEFAULT_MAX_LINK_LENGTH, lockedLayoutSeed,
-                Optional.empty(),
+                DEFAULT_MAX_LINKS_PER_FLOOR, DEFAULT_MAX_LINKS_PER_ROOM, DEFAULT_MAX_LINK_LENGTH,
+                DEFAULT_LINK_GENERATION_MODE, DEFAULT_LINK_DECAY, DEFAULT_ENDPOINT_INTACT_RADIUS,
+                DEFAULT_MIDDLE_DECAY_BONUS, Optional.empty(), DEFAULT_INSERT_DEPTH, DEFAULT_INSERT_SPACING,
+                DEFAULT_INSERT_PROBABILITY, DEFAULT_INSERT_MAX_DECAY, 0, 0, 0, 0, lockedLayoutSeed, Optional.empty(),
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
@@ -396,6 +526,7 @@ public record MKWorkspaceFloorTopologySettings(
         return new MKWorkspaceFloorTopologySettings(stackId, floorRole, value, Math.max(value, maxMainPathPieces),
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed, paletteOverride,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
@@ -404,6 +535,7 @@ public record MKWorkspaceFloorTopologySettings(
         return new MKWorkspaceFloorTopologySettings(stackId, floorRole, Math.min(minMainPathPieces, value), value,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed, paletteOverride,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
@@ -412,6 +544,7 @@ public record MKWorkspaceFloorTopologySettings(
         return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 value, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed, paletteOverride,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
@@ -420,6 +553,7 @@ public record MKWorkspaceFloorTopologySettings(
         return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, value, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed, paletteOverride,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
@@ -428,6 +562,7 @@ public record MKWorkspaceFloorTopologySettings(
         return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, value,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed, paletteOverride,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
@@ -436,6 +571,7 @@ public record MKWorkspaceFloorTopologySettings(
         return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 value, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed, paletteOverride,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
@@ -444,6 +580,7 @@ public record MKWorkspaceFloorTopologySettings(
         return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, value, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed, paletteOverride,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
@@ -452,6 +589,7 @@ public record MKWorkspaceFloorTopologySettings(
         return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, value, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed, paletteOverride,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
@@ -461,6 +599,8 @@ public record MKWorkspaceFloorTopologySettings(
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, value, linksEnabled, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth,
+                insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed,
                 paletteOverride,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
@@ -471,6 +611,8 @@ public record MKWorkspaceFloorTopologySettings(
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, value, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth,
+                insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed, paletteOverride,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
@@ -480,6 +622,8 @@ public record MKWorkspaceFloorTopologySettings(
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, value,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth,
+                insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed, paletteOverride,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
@@ -489,6 +633,8 @@ public record MKWorkspaceFloorTopologySettings(
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 value, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth,
+                insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed, paletteOverride,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
@@ -498,6 +644,8 @@ public record MKWorkspaceFloorTopologySettings(
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 maxLinksPerFloor, value, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth,
+                insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed, paletteOverride,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
@@ -507,7 +655,118 @@ public record MKWorkspaceFloorTopologySettings(
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, value,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth,
+                insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed, paletteOverride,
+                mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
+    }
+
+    public MKWorkspaceFloorTopologySettings withLinkGenerationMode(MKWorkspaceFloorLinkGenerationMode value) {
+        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+                maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
+                mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
+                maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                value, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing,
+                insertProbability, insertMaxDecay,
+                mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed,
+                paletteOverride,
+                mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
+    }
+
+    public MKWorkspaceFloorTopologySettings withLinkDecay(float value) {
+        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+                maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
+                mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
+                maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, value, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth,
+                insertSpacing, insertProbability, insertMaxDecay,
+                mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed,
+                paletteOverride,
+                mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
+    }
+
+    public MKWorkspaceFloorTopologySettings withEndpointIntactRadius(int value) {
+        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+                maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
+                mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
+                maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, value, middleDecayBonus, insertFamily, insertDepth, insertSpacing,
+                insertProbability, insertMaxDecay,
+                mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed,
+                paletteOverride,
+                mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
+    }
+
+    public MKWorkspaceFloorTopologySettings withMiddleDecayBonus(float value) {
+        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+                maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
+                mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
+                maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, value, insertFamily, insertDepth, insertSpacing,
+                insertProbability, insertMaxDecay,
+                mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed,
+                paletteOverride,
+                mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
+    }
+
+    public MKWorkspaceFloorTopologySettings withInsertFamily(Optional<String> value) {
+        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+                maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
+                mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
+                maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus,
+                value == null ? Optional.empty() : value, insertDepth, insertSpacing, insertProbability,
+                insertMaxDecay,
+                mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed,
+                paletteOverride,
+                mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
+    }
+
+    public MKWorkspaceFloorTopologySettings withInsertDepth(int value) {
+        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+                maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
+                mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
+                maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, value,
+                insertSpacing, insertProbability, insertMaxDecay,
+                mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed,
+                paletteOverride,
+                mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
+    }
+
+    public MKWorkspaceFloorTopologySettings withInsertSpacing(int value) {
+        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+                maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
+                mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
+                maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth,
+                value, insertProbability, insertMaxDecay,
+                mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed,
+                paletteOverride,
+                mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
+    }
+
+    public MKWorkspaceFloorTopologySettings withInsertProbability(float value) {
+        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+                maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
+                mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
+                maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth,
+                insertSpacing, value, insertMaxDecay,
+                mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed,
+                paletteOverride,
+                mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
+    }
+
+    public MKWorkspaceFloorTopologySettings withInsertMaxDecay(float value) {
+        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+                maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
+                mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
+                maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth,
+                insertSpacing, insertProbability, value,
+                mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed,
+                paletteOverride,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
@@ -516,6 +775,8 @@ public record MKWorkspaceFloorTopologySettings(
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth,
+                insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth,
                 value == null ? Optional.empty() : value,
                 paletteOverride,
@@ -527,6 +788,8 @@ public record MKWorkspaceFloorTopologySettings(
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth,
+                insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed,
                 value == null ? Optional.empty() : value,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
@@ -549,6 +812,7 @@ public record MKWorkspaceFloorTopologySettings(
         return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed, paletteOverride,
                 mainProfiles, branchProfiles, branchCaps, mainCapApproach, mainCaps);
     }
@@ -570,6 +834,7 @@ public record MKWorkspaceFloorTopologySettings(
         return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed, paletteOverride,
                 mainProfiles, branchProfiles, branchCaps, mainCapApproach, mainCaps);
     }
@@ -590,6 +855,7 @@ public record MKWorkspaceFloorTopologySettings(
         return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed, paletteOverride,
                 mainProfiles, branchProfiles, branchCaps, mainCapApproach, mainCaps);
     }
@@ -600,6 +866,8 @@ public record MKWorkspaceFloorTopologySettings(
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled,
                 linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth,
+                insertSpacing, insertProbability, insertMaxDecay,
                 mainLength, mainWidth, branchLength, branchWidth, lockedLayoutSeed, paletteOverride,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
@@ -610,6 +878,8 @@ public record MKWorkspaceFloorTopologySettings(
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled,
                 linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth,
+                insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth,
                 lockedLayoutSeed, paletteOverride,
                 physicalProfiles(mainRoomProfiles, padding),
@@ -629,6 +899,8 @@ public record MKWorkspaceFloorTopologySettings(
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled,
                 linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth,
+                insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth,
                 lockedLayoutSeed, paletteOverride,
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
@@ -638,6 +910,7 @@ public record MKWorkspaceFloorTopologySettings(
         return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
+                linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
                 mainHallwayLength, mainHallwayWidth, branchHallwayLength, branchHallwayWidth, lockedLayoutSeed, paletteOverride,
                 mainRoomProfiles.isEmpty() ? defaults.mainRoomProfiles() : mainRoomProfiles,
                 branchRoomProfiles.isEmpty() ? defaults.branchRoomProfiles() : branchRoomProfiles,

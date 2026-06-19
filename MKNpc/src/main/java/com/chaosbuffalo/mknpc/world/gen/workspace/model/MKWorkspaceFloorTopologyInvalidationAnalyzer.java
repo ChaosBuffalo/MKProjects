@@ -23,6 +23,10 @@ public final class MKWorkspaceFloorTopologyInvalidationAnalyzer {
             return hallwayRoutingReport(floorPlannerId);
         }
 
+        if (linkRenderingChanged(previous, updated)) {
+            return linkRenderingReport(floorPlannerId);
+        }
+
         return broadTopologyReport(floorPlannerId);
     }
 
@@ -66,6 +70,22 @@ public final class MKWorkspaceFloorTopologyInvalidationAnalyzer {
         );
     }
 
+    private MKWorkspaceInvalidationReport linkRenderingReport(MKWorkspacePlannerId floorPlannerId) {
+        return new MKWorkspaceInvalidationReport(
+                List.of(
+                        MKWorkspaceGeneratedLayer.SIDECAR_BLOCKS,
+                        MKWorkspaceGeneratedLayer.RUNTIME_METADATA
+                ),
+                List.of(floorPlannerId),
+                List.of(),
+                List.of(),
+                MKWorkspaceMutationSafety.SAFE_METADATA_UPDATE,
+                "Floor link rendering settings can be refreshed without regenerating floor topology.",
+                "refresh_link_rendering",
+                List.of()
+        );
+    }
+
     private boolean identityChanged(MKWorkspaceFloorTopologySettings previous,
                                     MKWorkspaceFloorTopologySettings updated) {
         return !Objects.equals(previous.stackId(), updated.stackId())
@@ -81,6 +101,19 @@ public final class MKWorkspaceFloorTopologyInvalidationAnalyzer {
                 || previous.maxLinksPerFloor() != updated.maxLinksPerFloor()
                 || previous.maxLinksPerRoom() != updated.maxLinksPerRoom()
                 || previous.maxLinkLength() != updated.maxLinkLength();
+    }
+
+    private boolean linkRenderingChanged(MKWorkspaceFloorTopologySettings previous,
+                                         MKWorkspaceFloorTopologySettings updated) {
+        return previous.linkGenerationMode() != updated.linkGenerationMode()
+                || Float.compare(previous.linkDecay(), updated.linkDecay()) != 0
+                || previous.endpointIntactRadius() != updated.endpointIntactRadius()
+                || Float.compare(previous.middleDecayBonus(), updated.middleDecayBonus()) != 0
+                || !Objects.equals(previous.insertFamily(), updated.insertFamily())
+                || previous.insertDepth() != updated.insertDepth()
+                || previous.insertSpacing() != updated.insertSpacing()
+                || Float.compare(previous.insertProbability(), updated.insertProbability()) != 0
+                || Float.compare(previous.insertMaxDecay(), updated.insertMaxDecay()) != 0;
     }
 
     private boolean topologyChanged(MKWorkspaceFloorTopologySettings previous,

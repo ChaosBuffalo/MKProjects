@@ -57,6 +57,31 @@ class MKWorkspaceFloorTopologyInvalidationAnalyzerTest {
     }
 
     @Test
+    void linkRenderingSettingsOnlyInvalidateMetadataLayers() {
+        MKWorkspaceInvalidationReport report = analyzer.analyze(
+                floorPlannerId,
+                settings(),
+                settings()
+                        .withLinkGenerationMode(MKWorkspaceFloorLinkGenerationMode.DECAYING_HALLWAY)
+                        .withLinkDecay(0.5f)
+                        .withEndpointIntactRadius(4)
+                        .withMiddleDecayBonus(0.3f)
+                        .withInsertFamily(Optional.of("crypt_link_supports"))
+                        .withInsertDepth(3)
+                        .withInsertSpacing(7)
+                        .withInsertProbability(0.65f)
+                        .withInsertMaxDecay(0.55f)
+        );
+
+        assertEquals("refresh_link_rendering", report.recommendedOperation());
+        assertEquals(MKWorkspaceMutationSafety.SAFE_METADATA_UPDATE, report.safety());
+        assertTrue(report.hasInvalidatedLayer(MKWorkspaceGeneratedLayer.RUNTIME_METADATA));
+        assertTrue(report.hasInvalidatedLayer(MKWorkspaceGeneratedLayer.SIDECAR_BLOCKS));
+        assertFalse(report.hasInvalidatedLayer(MKWorkspaceGeneratedLayer.PLANNER_TOPOLOGY));
+        assertFalse(report.hasInvalidatedLayer(MKWorkspaceGeneratedLayer.HALLWAY_ROUTING));
+    }
+
+    @Test
     void pathCountChangesInvalidateFloorTopology() {
         MKWorkspaceInvalidationReport report = analyzer.analyze(
                 floorPlannerId,
