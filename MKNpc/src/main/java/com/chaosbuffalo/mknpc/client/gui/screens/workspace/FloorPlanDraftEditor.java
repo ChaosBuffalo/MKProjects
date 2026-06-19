@@ -4,6 +4,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorLinkGenerationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
@@ -162,6 +163,38 @@ public final class FloorPlanDraftEditor {
 
     public void maxLinkLength(int value) {
         replace(settings().withMaxLinkLength(value));
+    }
+
+    public MKWorkspaceFloorLinkGenerationMode linkGenerationMode() {
+        return settings().linkGenerationMode();
+    }
+
+    public void linkGenerationMode(MKWorkspaceFloorLinkGenerationMode value) {
+        replace(settings().withLinkGenerationMode(value));
+    }
+
+    public float linkDecay() {
+        return settings().linkDecay();
+    }
+
+    public void linkDecay(float value) {
+        replace(settings().withLinkDecay(value));
+    }
+
+    public int endpointIntactRadius() {
+        return settings().endpointIntactRadius();
+    }
+
+    public void endpointIntactRadius(int value) {
+        replace(settings().withEndpointIntactRadius(value));
+    }
+
+    public float middleDecayBonus() {
+        return settings().middleDecayBonus();
+    }
+
+    public void middleDecayBonus(float value) {
+        replace(settings().withMiddleDecayBonus(value));
     }
 
     public long previewSeed() {

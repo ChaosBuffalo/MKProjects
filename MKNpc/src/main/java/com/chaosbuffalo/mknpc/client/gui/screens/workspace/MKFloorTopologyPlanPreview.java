@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorLinkGenerationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
@@ -47,7 +48,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     private static final int STRUCTURE_RADIUS_LIMIT = 128;
     private static final int PREVIEW_SIZE = 240;
     private static final int ROOT_EXIT_CONTROLS_HEIGHT = 124;
-    private static final int PATH_CONTROLS_HEIGHT = 276;
+    private static final int PATH_CONTROLS_HEIGHT = 374;
     private static final int ROOM_ROW_HEIGHT = 122;
     private static final int ROOM_SECTION_HEADER = 22;
     private static final int MASK_SIZE = 66;
@@ -292,6 +293,22 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         drawSlider(graphics, mc, "Length", controls.floorMaxLinkLength(sectionKey), 0,
                 MKWorkspaceFloorTopologySettings.MAX_LINK_LENGTH,
                 x, linkY + 90, width, mouseX, mouseY, "floorMaxLinkLength");
+        ButtonBounds linkMode = linkModeBounds(x, linkY, width);
+        graphics.fill(linkMode.x(), linkMode.y(), linkMode.x() + linkMode.width(),
+                linkMode.y() + linkMode.height(),
+                isInRect(mouseX, mouseY, linkMode.x(), linkMode.y(), linkMode.width(), linkMode.height()) ?
+                        CONTROL_ACTIVE : CONTROL);
+        graphics.drawString(mc.font, fit("Mode " +
+                        WorkspaceTopologyUiSupport.formatTopologyLabel(
+                                controls.floorLinkGenerationMode(sectionKey).getSerializedName()),
+                linkMode.width() - 4), linkMode.x() + 2, linkMode.y() + 3, TEXT, false);
+        drawSlider(graphics, mc, "Decay", Math.round(controls.floorLinkDecay(sectionKey) * 100.0f), 0, 100,
+                x, linkY + 136, width, mouseX, mouseY, "floorLinkDecay");
+        drawSlider(graphics, mc, "Endpoint", controls.floorEndpointIntactRadius(sectionKey), 0,
+                MKWorkspaceFloorTopologySettings.MAX_ENDPOINT_INTACT_RADIUS,
+                x, linkY + 158, width, mouseX, mouseY, "floorEndpointIntact");
+        drawSlider(graphics, mc, "Mid Decay", Math.round(controls.floorMiddleDecayBonus(sectionKey) * 100.0f),
+                0, 100, x, linkY + 180, width, mouseX, mouseY, "floorMiddleDecay");
     }
 
     private void drawRootExitControls(GuiGraphics graphics, Minecraft mc, int x, int y, int width,
@@ -825,13 +842,20 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             controls.floorLinksEnabled(sectionKey, !controls.floorLinksEnabled(sectionKey));
             return true;
         }
+        if (isInRect(mouseX, mouseY, linkModeBounds(x, linkY, width))) {
+            controls.cycleFloorLinkGenerationMode(sectionKey, WorkspaceTopologyUiSupport.isReverseClick(mouseButton));
+            return true;
+        }
         for (String slider : List.of("floorLinkDensity", "floorMaxLinks", "floorMaxLinksPerRoom",
-                "floorMaxLinkLength")) {
+                "floorMaxLinkLength", "floorLinkDecay", "floorEndpointIntact", "floorMiddleDecay")) {
             int sliderY = switch (slider) {
                 case "floorLinkDensity" -> linkY + 24;
                 case "floorMaxLinks" -> linkY + 46;
                 case "floorMaxLinksPerRoom" -> linkY + 68;
-                default -> linkY + 90;
+                case "floorMaxLinkLength" -> linkY + 90;
+                case "floorLinkDecay" -> linkY + 136;
+                case "floorEndpointIntact" -> linkY + 158;
+                default -> linkY + 180;
             };
             if (isInSlider(mouseX, mouseY, sliderBounds(x, sliderY, width, slider))) {
                 draggingSlider = slider;
@@ -1020,6 +1044,13 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         } else if ("floorMaxLinkLength".equals(draggingSlider)) {
             controls.floorMaxLinkLength(sectionKey, sliderValue(mouseX, bounds, 0,
                     MKWorkspaceFloorTopologySettings.MAX_LINK_LENGTH));
+        } else if ("floorLinkDecay".equals(draggingSlider)) {
+            controls.floorLinkDecay(sectionKey, sliderValue(mouseX, bounds, 0, 100) / 100.0f);
+        } else if ("floorEndpointIntact".equals(draggingSlider)) {
+            controls.floorEndpointIntactRadius(sectionKey, sliderValue(mouseX, bounds, 0,
+                    MKWorkspaceFloorTopologySettings.MAX_ENDPOINT_INTACT_RADIUS));
+        } else if ("floorMiddleDecay".equals(draggingSlider)) {
+            controls.floorMiddleDecayBonus(sectionKey, sliderValue(mouseX, bounds, 0, 100) / 100.0f);
         } else if (draggingSlider.startsWith("room:")) {
             String[] parts = draggingSlider.split(":");
             MKWorkspaceFloorRoomKind kind = roomKindFromSlider(parts[1]);
@@ -1149,6 +1180,15 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         if ("floorMaxLinkLength".equals(id)) {
             return sliderBounds(x, pathY + 254, width, id);
         }
+        if ("floorLinkDecay".equals(id)) {
+            return sliderBounds(x, pathY + 300, width, id);
+        }
+        if ("floorEndpointIntact".equals(id)) {
+            return sliderBounds(x, pathY + 322, width, id);
+        }
+        if ("floorMiddleDecay".equals(id)) {
+            return sliderBounds(x, pathY + 344, width, id);
+        }
         if (!id.startsWith("room:")) {
             return null;
         }
@@ -1257,6 +1297,10 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
 
     private ButtonBounds leadModeBounds(int x, int y, int width) {
         return new ButtonBounds(x + Math.max(0, width - 150), y + 26, Math.min(150, width), 16);
+    }
+
+    private ButtonBounds linkModeBounds(int x, int y, int width) {
+        return new ButtonBounds(x, y + 112, width, 16);
     }
 
     private void drawCheckbox(GuiGraphics graphics, Minecraft mc, ButtonBounds bounds, String label,
@@ -1655,6 +1699,22 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         int floorMaxLinkLength(String sectionKey);
 
         void floorMaxLinkLength(String sectionKey, int value);
+
+        MKWorkspaceFloorLinkGenerationMode floorLinkGenerationMode(String sectionKey);
+
+        void cycleFloorLinkGenerationMode(String sectionKey, boolean reverse);
+
+        float floorLinkDecay(String sectionKey);
+
+        void floorLinkDecay(String sectionKey, float value);
+
+        int floorEndpointIntactRadius(String sectionKey);
+
+        void floorEndpointIntactRadius(String sectionKey, int value);
+
+        float floorMiddleDecayBonus(String sectionKey);
+
+        void floorMiddleDecayBonus(String sectionKey, float value);
 
         long previewSeed(String sectionKey);
 

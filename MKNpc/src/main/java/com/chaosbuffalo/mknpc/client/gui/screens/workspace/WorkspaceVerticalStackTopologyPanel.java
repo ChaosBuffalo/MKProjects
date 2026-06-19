@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStack
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorLinkGenerationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationMode;
@@ -1104,6 +1105,53 @@ public class WorkspaceVerticalStackTopologyPanel {
             @Override
             public void floorMaxLinkLength(String sectionKey, int value) {
                 floorEditor(editor, stackId, sectionKey).maxLinkLength(value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public MKWorkspaceFloorLinkGenerationMode floorLinkGenerationMode(String sectionKey) {
+                return floorEditor(editor, stackId, sectionKey).linkGenerationMode();
+            }
+
+            @Override
+            public void cycleFloorLinkGenerationMode(String sectionKey, boolean reverse) {
+                FloorPlanDraftEditor floorEditor = floorEditor(editor, stackId, sectionKey);
+                floorEditor.linkGenerationMode(WorkspaceTopologyUiSupport.cycleValue(
+                        List.of(MKWorkspaceFloorLinkGenerationMode.values()), floorEditor.linkGenerationMode(),
+                        reverse));
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public float floorLinkDecay(String sectionKey) {
+                return floorEditor(editor, stackId, sectionKey).linkDecay();
+            }
+
+            @Override
+            public void floorLinkDecay(String sectionKey, float value) {
+                floorEditor(editor, stackId, sectionKey).linkDecay(value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public int floorEndpointIntactRadius(String sectionKey) {
+                return floorEditor(editor, stackId, sectionKey).endpointIntactRadius();
+            }
+
+            @Override
+            public void floorEndpointIntactRadius(String sectionKey, int value) {
+                floorEditor(editor, stackId, sectionKey).endpointIntactRadius(value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public float floorMiddleDecayBonus(String sectionKey) {
+                return floorEditor(editor, stackId, sectionKey).middleDecayBonus();
+            }
+
+            @Override
+            public void floorMiddleDecayBonus(String sectionKey, float value) {
+                floorEditor(editor, stackId, sectionKey).middleDecayBonus(value);
                 screen.flagNeedSetup();
             }
 
