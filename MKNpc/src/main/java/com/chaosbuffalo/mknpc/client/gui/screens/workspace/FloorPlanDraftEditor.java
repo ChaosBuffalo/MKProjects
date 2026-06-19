@@ -197,6 +197,46 @@ public final class FloorPlanDraftEditor {
         replace(settings().withMiddleDecayBonus(value));
     }
 
+    public Optional<String> insertFamily() {
+        return settings().insertFamily();
+    }
+
+    public void insertFamily(Optional<String> value) {
+        replace(settings().withInsertFamily(value));
+    }
+
+    public int insertDepth() {
+        return settings().insertDepth();
+    }
+
+    public void insertDepth(int value) {
+        replace(settings().withInsertDepth(value));
+    }
+
+    public int insertSpacing() {
+        return settings().insertSpacing();
+    }
+
+    public void insertSpacing(int value) {
+        replace(settings().withInsertSpacing(value));
+    }
+
+    public float insertProbability() {
+        return settings().insertProbability();
+    }
+
+    public void insertProbability(float value) {
+        replace(settings().withInsertProbability(value));
+    }
+
+    public float insertMaxDecay() {
+        return settings().insertMaxDecay();
+    }
+
+    public void insertMaxDecay(float value) {
+        replace(settings().withInsertMaxDecay(value));
+    }
+
     public long previewSeed() {
         return lockedLayoutSeed()
                 .orElseGet(() -> session.viewState.floorTopologyPreviewSeeds.computeIfAbsent(

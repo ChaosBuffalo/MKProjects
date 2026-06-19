@@ -48,7 +48,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     private static final int STRUCTURE_RADIUS_LIMIT = 128;
     private static final int PREVIEW_SIZE = 240;
     private static final int ROOT_EXIT_CONTROLS_HEIGHT = 124;
-    private static final int PATH_CONTROLS_HEIGHT = 374;
+    private static final int PATH_CONTROLS_HEIGHT = 490;
     private static final int ROOM_ROW_HEIGHT = 122;
     private static final int ROOM_SECTION_HEADER = 22;
     private static final int MASK_SIZE = 66;
@@ -309,6 +309,24 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 x, linkY + 158, width, mouseX, mouseY, "floorEndpointIntact");
         drawSlider(graphics, mc, "Mid Decay", Math.round(controls.floorMiddleDecayBonus(sectionKey) * 100.0f),
                 0, 100, x, linkY + 180, width, mouseX, mouseY, "floorMiddleDecay");
+        ButtonBounds insertFamily = insertFamilyBounds(x, linkY, width);
+        graphics.fill(insertFamily.x(), insertFamily.y(), insertFamily.x() + insertFamily.width(),
+                insertFamily.y() + insertFamily.height(),
+                isInRect(mouseX, mouseY, insertFamily.x(), insertFamily.y(), insertFamily.width(),
+                        insertFamily.height()) ? CONTROL_ACTIVE : CONTROL);
+        String insertLabel = controls.floorInsertFamily(sectionKey).orElse("None");
+        graphics.drawString(mc.font, fit("Insert " + insertLabel, insertFamily.width() - 4),
+                insertFamily.x() + 2, insertFamily.y() + 3, TEXT, false);
+        drawSlider(graphics, mc, "Depth", controls.floorInsertDepth(sectionKey), 1,
+                MKWorkspaceFloorTopologySettings.MAX_INSERT_DEPTH,
+                x, linkY + 226, width, mouseX, mouseY, "floorInsertDepth");
+        drawSlider(graphics, mc, "Spacing", controls.floorInsertSpacing(sectionKey), 0,
+                MKWorkspaceFloorTopologySettings.MAX_INSERT_SPACING,
+                x, linkY + 248, width, mouseX, mouseY, "floorInsertSpacing");
+        drawSlider(graphics, mc, "Chance", Math.round(controls.floorInsertProbability(sectionKey) * 100.0f),
+                0, 100, x, linkY + 270, width, mouseX, mouseY, "floorInsertProbability");
+        drawSlider(graphics, mc, "Max Decay", Math.round(controls.floorInsertMaxDecay(sectionKey) * 100.0f),
+                0, 100, x, linkY + 292, width, mouseX, mouseY, "floorInsertMaxDecay");
     }
 
     private void drawRootExitControls(GuiGraphics graphics, Minecraft mc, int x, int y, int width,
@@ -846,8 +864,13 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             controls.cycleFloorLinkGenerationMode(sectionKey, WorkspaceTopologyUiSupport.isReverseClick(mouseButton));
             return true;
         }
+        if (isInRect(mouseX, mouseY, insertFamilyBounds(x, linkY, width))) {
+            controls.cycleFloorInsertFamily(sectionKey, WorkspaceTopologyUiSupport.isReverseClick(mouseButton));
+            return true;
+        }
         for (String slider : List.of("floorLinkDensity", "floorMaxLinks", "floorMaxLinksPerRoom",
-                "floorMaxLinkLength", "floorLinkDecay", "floorEndpointIntact", "floorMiddleDecay")) {
+                "floorMaxLinkLength", "floorLinkDecay", "floorEndpointIntact", "floorMiddleDecay",
+                "floorInsertDepth", "floorInsertSpacing", "floorInsertProbability", "floorInsertMaxDecay")) {
             int sliderY = switch (slider) {
                 case "floorLinkDensity" -> linkY + 24;
                 case "floorMaxLinks" -> linkY + 46;
@@ -855,7 +878,11 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 case "floorMaxLinkLength" -> linkY + 90;
                 case "floorLinkDecay" -> linkY + 136;
                 case "floorEndpointIntact" -> linkY + 158;
-                default -> linkY + 180;
+                case "floorMiddleDecay" -> linkY + 180;
+                case "floorInsertDepth" -> linkY + 226;
+                case "floorInsertSpacing" -> linkY + 248;
+                case "floorInsertProbability" -> linkY + 270;
+                default -> linkY + 292;
             };
             if (isInSlider(mouseX, mouseY, sliderBounds(x, sliderY, width, slider))) {
                 draggingSlider = slider;
@@ -1051,6 +1078,16 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                     MKWorkspaceFloorTopologySettings.MAX_ENDPOINT_INTACT_RADIUS));
         } else if ("floorMiddleDecay".equals(draggingSlider)) {
             controls.floorMiddleDecayBonus(sectionKey, sliderValue(mouseX, bounds, 0, 100) / 100.0f);
+        } else if ("floorInsertDepth".equals(draggingSlider)) {
+            controls.floorInsertDepth(sectionKey, sliderValue(mouseX, bounds, 1,
+                    MKWorkspaceFloorTopologySettings.MAX_INSERT_DEPTH));
+        } else if ("floorInsertSpacing".equals(draggingSlider)) {
+            controls.floorInsertSpacing(sectionKey, sliderValue(mouseX, bounds, 0,
+                    MKWorkspaceFloorTopologySettings.MAX_INSERT_SPACING));
+        } else if ("floorInsertProbability".equals(draggingSlider)) {
+            controls.floorInsertProbability(sectionKey, sliderValue(mouseX, bounds, 0, 100) / 100.0f);
+        } else if ("floorInsertMaxDecay".equals(draggingSlider)) {
+            controls.floorInsertMaxDecay(sectionKey, sliderValue(mouseX, bounds, 0, 100) / 100.0f);
         } else if (draggingSlider.startsWith("room:")) {
             String[] parts = draggingSlider.split(":");
             MKWorkspaceFloorRoomKind kind = roomKindFromSlider(parts[1]);
@@ -1189,6 +1226,18 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         if ("floorMiddleDecay".equals(id)) {
             return sliderBounds(x, pathY + 344, width, id);
         }
+        if ("floorInsertDepth".equals(id)) {
+            return sliderBounds(x, pathY + 390, width, id);
+        }
+        if ("floorInsertSpacing".equals(id)) {
+            return sliderBounds(x, pathY + 412, width, id);
+        }
+        if ("floorInsertProbability".equals(id)) {
+            return sliderBounds(x, pathY + 434, width, id);
+        }
+        if ("floorInsertMaxDecay".equals(id)) {
+            return sliderBounds(x, pathY + 456, width, id);
+        }
         if (!id.startsWith("room:")) {
             return null;
         }
@@ -1301,6 +1350,10 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
 
     private ButtonBounds linkModeBounds(int x, int y, int width) {
         return new ButtonBounds(x, y + 112, width, 16);
+    }
+
+    private ButtonBounds insertFamilyBounds(int x, int y, int width) {
+        return new ButtonBounds(x, y + 204, width, 16);
     }
 
     private void drawCheckbox(GuiGraphics graphics, Minecraft mc, ButtonBounds bounds, String label,
@@ -1715,6 +1768,28 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         float floorMiddleDecayBonus(String sectionKey);
 
         void floorMiddleDecayBonus(String sectionKey, float value);
+
+        List<String> floorInsertFamilyIds();
+
+        Optional<String> floorInsertFamily(String sectionKey);
+
+        void cycleFloorInsertFamily(String sectionKey, boolean reverse);
+
+        int floorInsertDepth(String sectionKey);
+
+        void floorInsertDepth(String sectionKey, int value);
+
+        int floorInsertSpacing(String sectionKey);
+
+        void floorInsertSpacing(String sectionKey, int value);
+
+        float floorInsertProbability(String sectionKey);
+
+        void floorInsertProbability(String sectionKey, float value);
+
+        float floorInsertMaxDecay(String sectionKey);
+
+        void floorInsertMaxDecay(String sectionKey, float value);
 
         long previewSeed(String sectionKey);
 

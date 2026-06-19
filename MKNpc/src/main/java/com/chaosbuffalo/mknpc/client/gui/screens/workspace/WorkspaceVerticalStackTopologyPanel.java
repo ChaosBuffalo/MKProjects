@@ -1156,6 +1156,75 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             @Override
+            public List<String> floorInsertFamilyIds() {
+                return editor.insertFamilyIds();
+            }
+
+            @Override
+            public Optional<String> floorInsertFamily(String sectionKey) {
+                return floorEditor(editor, stackId, sectionKey).insertFamily();
+            }
+
+            @Override
+            public void cycleFloorInsertFamily(String sectionKey, boolean reverse) {
+                FloorPlanDraftEditor floorEditor = floorEditor(editor, stackId, sectionKey);
+                ArrayList<String> choices = new ArrayList<>();
+                choices.add("");
+                choices.addAll(editor.insertFamilyIds());
+                String current = floorEditor.insertFamily().orElse("");
+                if (!current.isBlank() && !choices.contains(current)) {
+                    choices.add(current);
+                }
+                String selected = WorkspaceTopologyUiSupport.cycleValue(choices, current, reverse);
+                floorEditor.insertFamily(selected.isBlank() ? Optional.empty() : Optional.of(selected));
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public int floorInsertDepth(String sectionKey) {
+                return floorEditor(editor, stackId, sectionKey).insertDepth();
+            }
+
+            @Override
+            public void floorInsertDepth(String sectionKey, int value) {
+                floorEditor(editor, stackId, sectionKey).insertDepth(value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public int floorInsertSpacing(String sectionKey) {
+                return floorEditor(editor, stackId, sectionKey).insertSpacing();
+            }
+
+            @Override
+            public void floorInsertSpacing(String sectionKey, int value) {
+                floorEditor(editor, stackId, sectionKey).insertSpacing(value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public float floorInsertProbability(String sectionKey) {
+                return floorEditor(editor, stackId, sectionKey).insertProbability();
+            }
+
+            @Override
+            public void floorInsertProbability(String sectionKey, float value) {
+                floorEditor(editor, stackId, sectionKey).insertProbability(value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public float floorInsertMaxDecay(String sectionKey) {
+                return floorEditor(editor, stackId, sectionKey).insertMaxDecay();
+            }
+
+            @Override
+            public void floorInsertMaxDecay(String sectionKey, float value) {
+                floorEditor(editor, stackId, sectionKey).insertMaxDecay(value);
+                screen.flagNeedSetup();
+            }
+
+            @Override
             public long previewSeed(String sectionKey) {
                 return floorEditor(editor, stackId, sectionKey).previewSeed();
             }

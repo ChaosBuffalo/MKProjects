@@ -16,6 +16,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExt
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
@@ -102,6 +103,7 @@ public class WorkspaceDraftSession {
         draft.linearRunFamilies = List.copyOf(workspace != null ? workspace.linearRunFamilies() :
                 MKWorkspacePlannerRegistry.shared().defaultLinearRunFamilyDefinitions(MKWorkspaceDimensions.defaultDimensions(),
                         MKWorkspaceMaterialPalette.defaultPalette()));
+        draft.insertFamilies = List.copyOf(workspace != null ? workspace.insertFamilies() : List.of());
         int requestedShaftSize = workspace != null ? workspace.verticalAccessSpec().shaftSize() :
                 MKWorkspaceVerticalAccessSpec.defaultSpec().shaftSize();
         draft.shaftSize = requestedShaftSize;
@@ -413,6 +415,13 @@ public class WorkspaceDraftSession {
         return List.copyOf(draft().linearRunFamilies);
     }
 
+    public List<String> insertFamilyIds() {
+        return draft().insertFamilies.stream()
+                .map(MKWorkspaceInsertFamilyDefinition::familyId)
+                .filter(id -> !id.isBlank())
+                .toList();
+    }
+
     public void replaceLinearRunFamily(int index, MKWorkspaceLinearRunFamilyDefinition updatedFamily) {
         java.util.ArrayList<MKWorkspaceLinearRunFamilyDefinition> updated =
                 new java.util.ArrayList<>(draft().linearRunFamilies);
@@ -527,8 +536,10 @@ public class WorkspaceDraftSession {
                 draft().familyDefinitions,
                 draft().openingProfiles,
                 draft().linearRunFamilies,
+                draft().insertFamilies,
                 now,
                 now,
+                List.of(),
                 List.of()
         );
     }
@@ -859,8 +870,10 @@ public class WorkspaceDraftSession {
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
                 workspace.linearRunFamilies(),
+                workspace.insertFamilies(),
                 0,
                 0,
+                List.of(),
                 List.of()
         ).toTag();
     }
@@ -896,9 +909,11 @@ public class WorkspaceDraftSession {
                                 .map(requested -> copyLinearRunFamily(linearRun, requested.paletteOverrideOpt()))
                                 .orElse(linearRun))
                         .toList(),
+                source.insertFamilies(),
                 source.createdAt(),
                 source.updatedAt(),
-                source.pieces()
+                source.pieces(),
+                source.layerStates()
         );
     }
 
@@ -1536,5 +1551,6 @@ public class WorkspaceDraftSession {
         public List<MKWorkspaceRoomFamilyDefinition> familyDefinitions;
         public List<MKHorizontalOpeningProfile> openingProfiles;
         public List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies;
+        public List<MKWorkspaceInsertFamilyDefinition> insertFamilies;
     }
 }
