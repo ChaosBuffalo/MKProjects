@@ -419,6 +419,12 @@ public class MKStructureWorkspace {
                 errors.add("insert family id must be unique: " + insertFamily.familyId());
             }
         }
+        for (MKWorkspaceFloorTopologySettings floorSettings : topologyProfile.floorTopologySettings()) {
+            floorSettings.insertFamily()
+                    .filter(familyId -> !insertFamilyIds.contains(familyId))
+                    .ifPresent(familyId -> errors.add("floor topology " + floorSettings.key() +
+                            " references missing insert family " + familyId));
+        }
         if (namespace.isBlank()) {
             errors.add("namespace cannot be blank");
         }

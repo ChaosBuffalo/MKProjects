@@ -12,6 +12,8 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceDraftSession
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceDeleteConfirmPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormFamiliesPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormFamilyDetailPage;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormInsertFamiliesPage;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormInsertFamilyDetailPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormLinearRunsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormLinearRunDetailPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormMaterialsPage;
@@ -139,7 +141,7 @@ public class MKWorkspaceScreen extends MKScreen {
     public MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace,
                              List<String> importManifestIds, List<String> backupManifestFiles) {
         this(anchor, workspace, importManifestIds, backupManifestFiles, List.of(), null, null, null, null,
-                -1, -1, -1, -1, null, null);
+                -1, -1, -1, -1, -1, null, null);
     }
 
     private MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace, List<String> importManifestIds,
@@ -153,6 +155,7 @@ public class MKWorkspaceScreen extends MKScreen {
                               int selectedFamilyExitIndex,
                               int selectedOpeningIndex,
                               int selectedLinearRunIndex,
+                              int selectedInsertFamilyIndex,
                               MKWorkspaceStairAuthoringConfig detailStairConfig,
                               MKWorkspaceMutationPreflight preflight) {
         super(Component.literal("Tower Workspace"));
@@ -168,7 +171,7 @@ public class MKWorkspaceScreen extends MKScreen {
         this.selectedFloorPlanSectionKey = selectedFloorPlanSectionKey;
         this.detailStairConfig = detailStairConfig;
         this.draftSession = new WorkspaceDraftSession(this, selectedFamilyIndex,
-                selectedFamilyExitIndex, selectedOpeningIndex, selectedLinearRunIndex);
+                selectedFamilyExitIndex, selectedOpeningIndex, selectedLinearRunIndex, selectedInsertFamilyIndex);
     }
 
     public MKWorkspaceScreen copyWithWorkspace(MKStructureWorkspace updatedWorkspace, List<String> updatedImportManifestIds) {
@@ -183,6 +186,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 draftSession.selectedFamilyIndex(),
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
                 draftSession.selectedLinearRunIndex(),
+                draftSession.selectedInsertFamilyIndex(),
                 detailStairConfig, preflight);
     }
 
@@ -193,6 +197,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 draftSession.selectedFamilyIndex(),
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
                 draftSession.selectedLinearRunIndex(),
+                draftSession.selectedInsertFamilyIndex(),
                 detailStairConfig, updatedPreflight);
     }
 
@@ -216,6 +221,8 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(new WorkspaceFormOpeningDetailPage());
         addWorkspacePage(new WorkspaceFormLinearRunsPage());
         addWorkspacePage(new WorkspaceFormLinearRunDetailPage());
+        addWorkspacePage(new WorkspaceFormInsertFamiliesPage());
+        addWorkspacePage(new WorkspaceFormInsertFamilyDetailPage());
         addWorkspacePage(new WorkspaceManagePage());
         addWorkspacePage(new WorkspaceUtilitiesPage());
         addWorkspacePage(new WorkspaceDeleteConfirmPage());

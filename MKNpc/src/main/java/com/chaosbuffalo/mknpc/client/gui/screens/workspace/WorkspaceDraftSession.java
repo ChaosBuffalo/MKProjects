@@ -61,16 +61,18 @@ public class WorkspaceDraftSession {
     private int selectedFamilyExitIndex;
     private int selectedOpeningIndex;
     private int selectedLinearRunIndex;
+    private int selectedInsertFamilyIndex;
     private boolean dirty;
     final WorkspaceDraftViewState viewState = new WorkspaceDraftViewState();
 
     public WorkspaceDraftSession(MKWorkspaceScreen screen, int selectedFamilyIndex, int selectedFamilyExitIndex, int selectedOpeningIndex,
-                                 int selectedLinearRunIndex) {
+                                 int selectedLinearRunIndex, int selectedInsertFamilyIndex) {
         this.screen = screen;
         this.selectedFamilyIndex = selectedFamilyIndex;
         this.selectedFamilyExitIndex = selectedFamilyExitIndex;
         this.selectedOpeningIndex = selectedOpeningIndex;
         this.selectedLinearRunIndex = selectedLinearRunIndex;
+        this.selectedInsertFamilyIndex = selectedInsertFamilyIndex;
     }
 
     public Draft draft() {
@@ -366,6 +368,14 @@ public class WorkspaceDraftSession {
         selectedLinearRunIndex = index;
     }
 
+    public int selectedInsertFamilyIndex() {
+        return selectedInsertFamilyIndex;
+    }
+
+    public void selectedInsertFamilyIndex(int index) {
+        selectedInsertFamilyIndex = index;
+    }
+
     public List<MKWorkspaceRoomFamilyDefinition> familyDefinitions() {
         return List.copyOf(draft().familyDefinitions);
     }
@@ -420,6 +430,35 @@ public class WorkspaceDraftSession {
                 .map(MKWorkspaceInsertFamilyDefinition::familyId)
                 .filter(id -> !id.isBlank())
                 .toList();
+    }
+
+    public List<MKWorkspaceInsertFamilyDefinition> insertFamilies() {
+        return List.copyOf(draft().insertFamilies);
+    }
+
+    public void replaceInsertFamily(int index, MKWorkspaceInsertFamilyDefinition updatedFamily) {
+        java.util.ArrayList<MKWorkspaceInsertFamilyDefinition> updated =
+                new java.util.ArrayList<>(draft().insertFamilies);
+        updated.set(index, updatedFamily);
+        draft().insertFamilies = List.copyOf(updated);
+        markDirty();
+    }
+
+    public void removeInsertFamily(int index) {
+        java.util.ArrayList<MKWorkspaceInsertFamilyDefinition> updated =
+                new java.util.ArrayList<>(draft().insertFamilies);
+        updated.remove(index);
+        draft().insertFamilies = List.copyOf(updated);
+        markDirty();
+    }
+
+    public int addInsertFamily() {
+        java.util.ArrayList<MKWorkspaceInsertFamilyDefinition> updated =
+                new java.util.ArrayList<>(draft().insertFamilies);
+        updated.add(MKWorkspaceInsertFamilyDefinition.floorLinkHallway(nextUniqueInsertFamilyId(), 5, 5, 3));
+        draft().insertFamilies = List.copyOf(updated);
+        markDirty();
+        return draft().insertFamilies.size() - 1;
     }
 
     public void replaceLinearRunFamily(int index, MKWorkspaceLinearRunFamilyDefinition updatedFamily) {
@@ -1434,6 +1473,18 @@ public class WorkspaceDraftSession {
         while (true) {
             String candidate = "linear_run_" + index;
             boolean used = draft().linearRunFamilies.stream().anyMatch(linearRun -> linearRun.linearRunId().equals(candidate));
+            if (!used) {
+                return candidate;
+            }
+            index++;
+        }
+    }
+
+    private String nextUniqueInsertFamilyId() {
+        int index = 1;
+        while (true) {
+            String candidate = "insert_family_" + index;
+            boolean used = draft().insertFamilies.stream().anyMatch(insertFamily -> insertFamily.familyId().equals(candidate));
             if (!used) {
                 return candidate;
             }

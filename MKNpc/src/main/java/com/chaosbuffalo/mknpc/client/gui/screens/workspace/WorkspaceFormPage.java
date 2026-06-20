@@ -35,12 +35,14 @@ public class WorkspaceFormPage extends WorkspacePageBase {
                 "Opening Profiles", "form_openings");
         addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 5),
                 "Linear Run Families", WorkspaceFormLinearRunsPage.ID);
+        addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 6),
+                "Insert Families", WorkspaceFormInsertFamiliesPage.ID);
 
         MKButton resetDefaults = new MKButton(Component.literal("Reset Topology Defaults"), 220,
                 screen.buttonHeight());
         root.addWidget(resetDefaults);
         root.addConstraintToWidget(new CenterXConstraint(), resetDefaults);
-        resetDefaults.setY(firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 6));
+        resetDefaults.setY(firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 7));
         resetDefaults.setPressedCallback((button, mouseButton) -> {
             screen.draftSession().resetCurrentTopologyDefaults();
             screen.flagNeedSetup();
