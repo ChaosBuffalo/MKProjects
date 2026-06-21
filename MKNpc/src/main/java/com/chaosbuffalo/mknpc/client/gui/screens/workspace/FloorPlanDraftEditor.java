@@ -12,6 +12,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalet
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomGeometry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import net.minecraft.core.Direction;
 
 import java.util.ArrayList;
@@ -197,6 +198,19 @@ public final class FloorPlanDraftEditor {
         replace(settings().withMiddleDecayBonus(value));
     }
 
+    public boolean linkInsertsEnabled() {
+        return settings().insertFamily().isPresent();
+    }
+
+    public void linkInsertsEnabled(boolean value) {
+        if (value) {
+            ensureLinkInsertFamily(settings().insertDepth());
+            replace(settings().withInsertFamily(Optional.of(linkInsertFamilyId())));
+        } else {
+            replace(settings().withInsertFamily(Optional.empty()));
+        }
+    }
+
     public Optional<String> insertFamily() {
         return settings().insertFamily();
     }
@@ -210,7 +224,12 @@ public final class FloorPlanDraftEditor {
     }
 
     public void insertDepth(int value) {
-        replace(settings().withInsertDepth(value));
+        MKWorkspaceFloorTopologySettings updated = settings().withInsertDepth(value);
+        if (updated.insertFamily().isPresent()) {
+            ensureLinkInsertFamily(value);
+            updated = updated.withInsertFamily(Optional.of(linkInsertFamilyId()));
+        }
+        replace(updated);
     }
 
     public int insertSpacing() {
@@ -218,7 +237,7 @@ public final class FloorPlanDraftEditor {
     }
 
     public void insertSpacing(int value) {
-        replace(settings().withInsertSpacing(value));
+        replace(withLinkInsertFamilyIfEnabled(settings().withInsertSpacing(value)));
     }
 
     public float insertProbability() {
@@ -226,7 +245,7 @@ public final class FloorPlanDraftEditor {
     }
 
     public void insertProbability(float value) {
-        replace(settings().withInsertProbability(value));
+        replace(withLinkInsertFamilyIfEnabled(settings().withInsertProbability(value)));
     }
 
     public float insertMaxDecay() {
@@ -234,7 +253,50 @@ public final class FloorPlanDraftEditor {
     }
 
     public void insertMaxDecay(float value) {
-        replace(settings().withInsertMaxDecay(value));
+        replace(withLinkInsertFamilyIfEnabled(settings().withInsertMaxDecay(value)));
+    }
+
+    private void ensureLinkInsertFamily(int depth) {
+        session.ensureFloorLinkInsertFamily(linkInsertFamilyId(), linkInsertWidth(), linkInsertHeight(), depth);
+    }
+
+    private MKWorkspaceFloorTopologySettings withLinkInsertFamilyIfEnabled(MKWorkspaceFloorTopologySettings updated) {
+        if (updated.insertFamily().isEmpty()) {
+            return updated;
+        }
+        ensureLinkInsertFamily(updated.insertDepth());
+        return updated.withInsertFamily(Optional.of(linkInsertFamilyId()));
+    }
+
+    private String linkInsertFamilyId() {
+        return sanitizeInsertFamilyId(topologyGroupId() + ".link_insert");
+    }
+
+    private int linkInsertWidth() {
+        return linkOpeningProfile().map(MKHorizontalOpeningProfile::openingWidth).orElse(3) + 2;
+    }
+
+    private int linkInsertHeight() {
+        return linkOpeningProfile().map(MKHorizontalOpeningProfile::openingHeight).orElse(3) + 2;
+    }
+
+    private Optional<MKHorizontalOpeningProfile> linkOpeningProfile() {
+        return session.firstCompatibleOpeningProfileId(MKWorkspaceHorizontalExitPathKind.BRANCH)
+                .flatMap(session::getOpeningProfile);
+    }
+
+    private String sanitizeInsertFamilyId(String value) {
+        StringBuilder builder = new StringBuilder();
+        for (char c : value.toCharArray()) {
+            if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) {
+                builder.append(c);
+            } else if (c >= 'A' && c <= 'Z') {
+                builder.append(Character.toLowerCase(c));
+            } else {
+                builder.append('_');
+            }
+        }
+        return builder.toString().replaceAll("_+", "_").replaceAll("^_|_$", "");
     }
 
     public long previewSeed() {

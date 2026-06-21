@@ -1156,27 +1156,13 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             @Override
-            public List<String> floorInsertFamilyIds() {
-                return editor.insertFamilyIds();
+            public boolean floorLinkInsertsEnabled(String sectionKey) {
+                return floorEditor(editor, stackId, sectionKey).linkInsertsEnabled();
             }
 
             @Override
-            public Optional<String> floorInsertFamily(String sectionKey) {
-                return floorEditor(editor, stackId, sectionKey).insertFamily();
-            }
-
-            @Override
-            public void cycleFloorInsertFamily(String sectionKey, boolean reverse) {
-                FloorPlanDraftEditor floorEditor = floorEditor(editor, stackId, sectionKey);
-                ArrayList<String> choices = new ArrayList<>();
-                choices.add("");
-                choices.addAll(editor.insertFamilyIds());
-                String current = floorEditor.insertFamily().orElse("");
-                if (!current.isBlank() && !choices.contains(current)) {
-                    choices.add(current);
-                }
-                String selected = WorkspaceTopologyUiSupport.cycleValue(choices, current, reverse);
-                floorEditor.insertFamily(selected.isBlank() ? Optional.empty() : Optional.of(selected));
+            public void floorLinkInsertsEnabled(String sectionKey, boolean value) {
+                floorEditor(editor, stackId, sectionKey).linkInsertsEnabled(value);
                 screen.flagNeedSetup();
             }
 

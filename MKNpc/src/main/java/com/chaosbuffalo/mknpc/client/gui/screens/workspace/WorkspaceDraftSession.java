@@ -452,6 +452,26 @@ public class WorkspaceDraftSession {
         markDirty();
     }
 
+    public void ensureFloorLinkInsertFamily(String familyId, int width, int height, int depth) {
+        MKWorkspaceInsertFamilyDefinition ensured =
+                MKWorkspaceInsertFamilyDefinition.floorLinkHallway(familyId, width, height, depth);
+        java.util.ArrayList<MKWorkspaceInsertFamilyDefinition> updated =
+                new java.util.ArrayList<>(draft().insertFamilies);
+        for (int index = 0; index < updated.size(); index++) {
+            if (updated.get(index).familyId().equals(familyId)) {
+                if (!updated.get(index).equals(ensured)) {
+                    updated.set(index, ensured);
+                    draft().insertFamilies = List.copyOf(updated);
+                    markDirty();
+                }
+                return;
+            }
+        }
+        updated.add(ensured);
+        draft().insertFamilies = List.copyOf(updated);
+        markDirty();
+    }
+
     public int addInsertFamily() {
         java.util.ArrayList<MKWorkspaceInsertFamilyDefinition> updated =
                 new java.util.ArrayList<>(draft().insertFamilies);
