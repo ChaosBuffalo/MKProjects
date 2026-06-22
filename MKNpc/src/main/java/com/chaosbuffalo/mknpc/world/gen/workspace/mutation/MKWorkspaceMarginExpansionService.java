@@ -575,11 +575,13 @@ public class MKWorkspaceMarginExpansionService {
     }
 
     private boolean isEmptyScaffold(MKPlannedPiece piece) {
-        return "embedded_stair".equals(piece.tags().get("tower_piece_kind"));
+        return "embedded_stair".equals(piece.tags().get("tower_piece_kind")) ||
+                "floor_link_insert".equals(piece.tags().get("tower_piece_kind"));
     }
 
     private boolean isEmptyScaffold(MKWorkspacePieceDefinition piece) {
-        return "embedded_stair".equals(piece.tags().get("tower_piece_kind"));
+        return "embedded_stair".equals(piece.tags().get("tower_piece_kind")) ||
+                "floor_link_insert".equals(piece.tags().get("tower_piece_kind"));
     }
 
     private int getTopVoidMargin(MKPlannedPiece piece) {
