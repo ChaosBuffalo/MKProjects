@@ -97,7 +97,7 @@ public class WorkspaceDraftSession {
         draft.verticalAccessPlacement = workspace != null ? workspace.verticalAccessSpec().placement() : MKVerticalAccessPlacement.CENTER;
         draft.shellMargin = workspace != null ? workspace.shellMargin() : 1;
         draft.exteriorAirMargin = workspace != null ? workspace.exteriorAirMargin() : 2;
-        draft.previewMargin = workspace != null ? workspace.previewMargin() : 4;
+        draft.previewMargin = workspace != null ? workspace.previewMargin() : 2;
         draft.familyDefinitions = List.copyOf(workspace != null ? workspace.familyDefinitions() :
                 MKWorkspacePlannerRegistry.shared().defaultRoomFamilyDefinitions(MKWorkspaceDimensions.defaultDimensions()));
         draft.openingProfiles = List.copyOf(workspace != null ? workspace.openingProfiles() :

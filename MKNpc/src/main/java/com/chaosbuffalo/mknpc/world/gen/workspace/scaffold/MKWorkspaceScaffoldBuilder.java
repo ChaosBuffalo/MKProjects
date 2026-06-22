@@ -44,7 +44,7 @@ import java.util.UUID;
 
 public class MKWorkspaceScaffoldBuilder {
     public static final int GRID_COLUMNS = 4;
-    public static final int CELL_PADDING = 4;
+    public static final int CELL_PADDING = 0;
     public static final int CLEAR_MARGIN = 4;
     private static final String LINEAR_RUN_SLOPE_DELTA_TAG = "workspace_linear_run_slope_delta";
     private static final String LINEAR_RUN_KIND_TAG = "workspace_linear_run_kind";

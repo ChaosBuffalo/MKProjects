@@ -152,7 +152,7 @@ public class MKStructureWorkspace {
                 MKVerticalAccessPlacement.CENTER,
                 1,
                 2,
-                4,
+                2,
                 MKWorkspaceVerticalAccessSpec.defaultSpec(),
                 plannerRegistry.defaultRoomFamilyDefinitions(dimensions),
                 MKHorizontalOpeningProfile.createDefaults(dimensions),
@@ -254,7 +254,7 @@ public class MKStructureWorkspace {
                         .forGetter(SerializedWorkspaceCore::verticalAccessPlacement),
                 Codec.INT.optionalFieldOf("shellMargin", 1).forGetter(SerializedWorkspaceCore::shellMargin),
                 Codec.INT.optionalFieldOf("exteriorAirMargin", 2).forGetter(SerializedWorkspaceCore::exteriorAirMargin),
-                Codec.INT.optionalFieldOf("previewMargin", 4).forGetter(SerializedWorkspaceCore::previewMargin),
+                Codec.INT.optionalFieldOf("previewMargin", 2).forGetter(SerializedWorkspaceCore::previewMargin),
                 MKWorkspaceVerticalAccessSpec.CODEC.fieldOf("verticalAccessSpec")
                         .forGetter(SerializedWorkspaceCore::verticalAccessSpec)
         ).apply(instance, SerializedWorkspaceCore::new));
