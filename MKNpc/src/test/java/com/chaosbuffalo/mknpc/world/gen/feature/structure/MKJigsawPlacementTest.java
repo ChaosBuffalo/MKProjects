@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MKJigsawPlacementTest {
@@ -140,5 +142,23 @@ class MKJigsawPlacementTest {
         assertEquals(floorBlock, decoded.floorBlock());
         assertEquals(wallBlock, decoded.wallBlock());
         assertEquals(ceilingBlock, decoded.ceilingBlock());
+    }
+
+    @Test
+    void linkInsertSpansAvoidDoglegConnectorArea() {
+        List<BlockPos> doglegRoute = List.of(
+                new BlockPos(0, 0, 0),
+                new BlockPos(1, 0, 0),
+                new BlockPos(2, 0, 0),
+                new BlockPos(2, 0, 1),
+                new BlockPos(2, 0, 2),
+                new BlockPos(2, 0, 3),
+                new BlockPos(2, 0, 4),
+                new BlockPos(2, 0, 5)
+        );
+
+        assertFalse(MKJigsawLinkInsertPlacement.spanClearsDoglegConnectorArea(doglegRoute, 2, 3, 5));
+        assertFalse(MKJigsawLinkInsertPlacement.spanClearsDoglegConnectorArea(doglegRoute, 4, 2, 5));
+        assertTrue(MKJigsawLinkInsertPlacement.spanClearsDoglegConnectorArea(doglegRoute, 5, 2, 5));
     }
 }

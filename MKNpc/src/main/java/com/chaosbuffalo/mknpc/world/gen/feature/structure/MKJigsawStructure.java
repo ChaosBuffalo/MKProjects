@@ -719,7 +719,7 @@ public class MKJigsawStructure extends MKStructure {
         return directionBetween(route.get(route.size() - 2), route.getLast()) == facing;
     }
 
-    private Direction directionBetween(BlockPos from, BlockPos to) {
+    private static Direction directionBetween(BlockPos from, BlockPos to) {
         int dx = Integer.compare(to.getX(), from.getX());
         int dz = Integer.compare(to.getZ(), from.getZ());
         if (dx > 0) {
@@ -816,6 +816,9 @@ public class MKJigsawStructure extends MKStructure {
             InsertTemplate insert = selectInsert(inserts, candidate, positions.get(index), familyId);
             int depth = Math.max(configuredDepth, insert.depth());
             if (index + depth > routeLength - endpointPadding) {
+                continue;
+            }
+            if (!MKJigsawLinkInsertPlacement.spanClearsDoglegConnectorArea(positions, index, depth, insert.width())) {
                 continue;
             }
             Optional<Direction> direction = straightSpanDirection(positions, index, depth);
