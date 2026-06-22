@@ -112,10 +112,10 @@ class MKWorkspaceScaffoldBuilderTest {
         assertNotNull(clearBounds);
         assertEquals(4, clearBounds.minX());
         assertEquals(-4, clearBounds.minY());
-        assertEquals(19, clearBounds.minZ());
-        assertEquals(41, clearBounds.maxX());
+        assertEquals(21, clearBounds.minZ());
+        assertEquals(43, clearBounds.maxX());
         assertEquals(10, clearBounds.maxY());
-        assertEquals(41, clearBounds.maxZ());
+        assertEquals(43, clearBounds.maxZ());
     }
 
     @Test
