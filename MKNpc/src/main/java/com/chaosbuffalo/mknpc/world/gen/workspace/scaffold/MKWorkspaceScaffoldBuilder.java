@@ -266,6 +266,7 @@ public class MKWorkspaceScaffoldBuilder {
                                                   MKWorkspaceGridLayout.Placement placement) {
         PieceBuildContext context = createBuildContext(workspace, plannedPiece, placement);
         int effectiveShellMargin = getShellMargin(plannedPiece, workspace.shellMargin());
+        int verticalShellThickness = getVerticalShellThickness(plannedPiece);
 
         BlockState floorState = resolvePaletteState(workspace, plannedPiece, MKWorkspacePaletteTags.FLOOR_BLOCK_TAG,
                 workspace.palette().floorBlock(), Blocks.SMOOTH_STONE.defaultBlockState());
@@ -282,7 +283,6 @@ public class MKWorkspaceScaffoldBuilder {
             placeFloorLinkInsertScaffold(level, context.exportBounds(), floorState, wallState);
         } else if (!emptyScaffold) {
             placeExteriorMargin(level, context.exportBounds(), context.geometryBounds());
-            int verticalShellThickness = getVerticalShellThickness(plannedPiece);
             placeScaffoldGeometry(level, context.geometryBounds(), context.geometryOrigin(), plannedPiece,
                     effectiveShellMargin, verticalShellThickness, context.geometryInteriorHeight(), floorState,
                     wallState, ceilingState);
@@ -290,18 +290,30 @@ public class MKWorkspaceScaffoldBuilder {
 
         List<MKWorkspaceConnectorDefinition> connectors = new ArrayList<>();
         List<BlockPos> markerPositions = new ArrayList<>();
-        for (MKPlannedConnector plannedConnector : plannedPiece.connectors()) {
-            MKWorkspaceConnectorDefinition connector = placeConnector(level, workspace, plannedPiece, plannedConnector,
+        List<MKPlannedConnector> plannedConnectors = plannedPiece.connectors();
+        for (MKPlannedConnector plannedConnector : plannedConnectors) {
+            MKWorkspaceConnectorDefinition connector = createLogicalConnector(workspace, plannedPiece, plannedConnector,
                     context.exportOrigin(), context.exportBounds(), context.geometryOrigin(), effectiveShellMargin,
-                    context.geometryBounds().getXSpan(), context.geometryBounds().getZSpan(),
-                    context.geometryBounds().getYSpan(), context.geometryInteriorHeight(), floorState, wallState,
-                    ceilingState);
-            if (connector == null) {
-                continue;
+                    verticalShellThickness, context.geometryBounds().getXSpan(), context.geometryBounds().getZSpan(),
+                    context.geometryBounds().getYSpan(), context.geometryInteriorHeight());
+            if (connector != null) {
+                connectors.add(connector);
             }
-            connectors.add(connector);
-            BlockPos markerPos = placeConnectorMarker(level, connector, context.exportBounds());
-            markerPositions.add(markerPos);
+        }
+        for (MKPlannedConnector plannedConnector : plannedConnectors) {
+            extendHorizontalConnectorShell(level, context.exportBounds(), context.geometryOrigin(), plannedPiece,
+                    plannedConnector, effectiveShellMargin, verticalShellThickness, context.geometryBounds().getXSpan(),
+                    context.geometryBounds().getZSpan(), context.geometryBounds().getYSpan(), floorState, wallState,
+                    ceilingState);
+        }
+        for (MKPlannedConnector plannedConnector : plannedConnectors) {
+            carveConnectorOpening(level, context.exportBounds(), context.geometryOrigin(), plannedPiece,
+                    plannedConnector, effectiveShellMargin, verticalShellThickness, context.geometryBounds().getXSpan(),
+                    context.geometryBounds().getZSpan(), context.geometryBounds().getYSpan());
+        }
+        for (MKWorkspaceConnectorDefinition connector : connectors) {
+            placeConnectorJigsaw(level, connector, context.exportOrigin());
+            markerPositions.add(placeConnectorMarker(level, connector, context.exportBounds()));
         }
 
         BlockPos structureBlockPos = placeStructureBlock(level, workspace, plannedPiece, context.exportOrigin(),
@@ -1064,60 +1076,19 @@ public class MKWorkspaceScaffoldBuilder {
         }
     }
 
-    private MKWorkspaceConnectorDefinition placeConnector(ServerLevel level, MKStructureWorkspace workspace, MKPlannedPiece piece,
-                                                          MKPlannedConnector plannedConnector, BlockPos exportOrigin,
-                                                          BoundingBox exportBounds,
-                                                          BlockPos geometryOrigin, int shellMargin, int geometryWidth,
-                                                          int geometryLength, int geometryHeight,
-                                                          int geometryInteriorHeight,
-                                                          BlockState floorState, BlockState wallState,
-                                                          BlockState ceilingState) {
-        Direction facing = plannedConnector.facing();
-        int verticalShellThickness = getVerticalShellThickness(piece);
-        int interiorCenterX = getConnectorCenterX(geometryOrigin, piece, shellMargin, plannedConnector);
-        int interiorCenterZ = getConnectorCenterZ(geometryOrigin, piece, shellMargin, plannedConnector);
-        int openingBaseY = getOpeningBaseY(geometryOrigin, verticalShellThickness, plannedConnector);
-        validateConnectorBounds(piece, plannedConnector, shellMargin, openingBaseY - geometryOrigin.getY(),
-                geometryInteriorHeight);
-        BlockPos connectorPos = connectorPosition(facing, exportBounds, geometryOrigin, geometryWidth,
-                geometryLength, geometryHeight, verticalShellThickness, interiorCenterX, interiorCenterZ, openingBaseY);
-
-        extendHorizontalConnectorShell(level, exportBounds, geometryOrigin, piece, plannedConnector, shellMargin,
-                verticalShellThickness, geometryWidth, geometryLength, geometryHeight, floorState, wallState,
-                ceilingState);
-        carveConnectorOpening(level, exportBounds, geometryOrigin, piece, plannedConnector, shellMargin,
-                verticalShellThickness, geometryWidth, geometryLength, geometryHeight);
-        if (!plannedConnector.placesJigsaw()) {
-            return null;
-        }
+    private void placeConnectorJigsaw(ServerLevel level, MKWorkspaceConnectorDefinition connector, BlockPos exportOrigin) {
+        BlockPos connectorPos = exportOrigin.offset(connector.relativePos());
         level.setBlock(connectorPos, Blocks.JIGSAW.defaultBlockState()
-                .setValue(JigsawBlock.ORIENTATION, getJigsawOrientation(facing)), Block.UPDATE_ALL);
+                .setValue(JigsawBlock.ORIENTATION, getJigsawOrientation(connector.facing())), Block.UPDATE_ALL);
         BlockEntity entity = level.getBlockEntity(connectorPos);
-        ResourceLocation pool = getConnectorPool(workspace, plannedConnector.targetPoolName(), piece);
-        ResourceLocation incomingPool = getIncomingConnectorPool(workspace, plannedConnector.incomingPoolName());
-        ResourceLocation name = getJigsawName(workspace, plannedConnector, incomingPool);
-        ResourceLocation target = getJigsawTarget(workspace, plannedConnector, pool);
         if (entity instanceof JigsawBlockEntity jigsaw) {
-            jigsaw.setName(name);
-            jigsaw.setTarget(target);
-            jigsaw.setPool(ResourceKey.create(Registries.TEMPLATE_POOL, pool));
+            jigsaw.setName(connector.jigsawName());
+            jigsaw.setTarget(connector.jigsawTarget());
+            jigsaw.setPool(ResourceKey.create(Registries.TEMPLATE_POOL, connector.targetPool()));
             jigsaw.setFinalState("minecraft:air");
             jigsaw.setJoint(JigsawBlockEntity.JointType.ALIGNED);
             jigsaw.setChanged();
         }
-        return new MKWorkspaceConnectorDefinition(
-                plannedConnector.role(),
-                facing,
-                connectorPos.subtract(exportOrigin),
-                plannedConnector.openingWidth(),
-                plannedConnector.openingHeight(),
-                plannedConnector.lateralOffset(),
-                plannedConnector.verticalOffset(),
-                name,
-                target,
-                pool,
-                incomingPool
-        );
     }
 
     private BlockPos connectorPosition(Direction facing, BoundingBox exportBounds, BlockPos geometryOrigin,

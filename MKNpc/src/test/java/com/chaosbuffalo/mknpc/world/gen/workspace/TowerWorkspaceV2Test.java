@@ -1092,6 +1092,10 @@ class TowerWorkspaceV2Test {
                 .orElseThrow();
         assertEquals(31, entryApproach.interiorLength());
         assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
+                connector.facing() == Direction.SOUTH &&
+                        connector.role() == MKConnectorRole.MAIN_BACK &&
+                        "keep_slots/keep/gate/main".equals(connector.targetPoolName())));
+        assertTrue(entryApproach.connectors().stream().anyMatch(connector ->
                 connector.facing() == Direction.WEST &&
                         "keep_slots/keep/courtyard/path/south_west".equals(connector.targetPoolName()) &&
                         connector.lateralOffset() == -3));
