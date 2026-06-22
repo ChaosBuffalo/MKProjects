@@ -753,18 +753,12 @@ public class MKJigsawStructure extends MKStructure {
         int carvedBlocks = openEndpoint(level, chunkBounds, candidate.a());
         carvedBlocks += openEndpoint(level, chunkBounds, candidate.b());
         List<BlockPos> positions = candidate.route().positions();
-        for (int index = 0; index < positions.size(); index++) {
-            BlockPos center = positions.get(index);
-            if (candidate.settings().linkGenerationMode() == MKWorkspaceFloorLinkGenerationMode.DEBUG) {
+        if (candidate.settings().linkGenerationMode() == MKWorkspaceFloorLinkGenerationMode.DEBUG) {
+            for (BlockPos center : positions) {
                 carvedBlocks += carveDebugCorridorCell(level, chunkBounds, center, height);
-            } else {
-                Direction.Axis axis = routeAxis(positions, index);
-                carvedBlocks += carveHallwayCorridorCell(level, chunkBounds, candidate, center, axis, index,
-                        positions.size(), width, height);
             }
-        }
-        if (candidate.settings().linkGenerationMode() != MKWorkspaceFloorLinkGenerationMode.DEBUG) {
-            carvedBlocks += repairDoglegCorridorCorners(level, chunkBounds, candidate, positions, width, height);
+        } else {
+            carvedBlocks += carveHallwayCorridorFootprint(level, chunkBounds, candidate, positions, width, height);
         }
         stampLinkInserts(level, chunkBounds, candidate);
         return carvedBlocks;
@@ -989,165 +983,47 @@ public class MKJigsawStructure extends MKStructure {
         return carvedBlocks;
     }
 
-    private int carveHallwayCorridorCell(WorldGenLevel level, BoundingBox chunkBounds, LinkCandidate candidate,
-                                         BlockPos center, Direction.Axis axis, int routeIndex, int routeLength,
-                                         int width, int height) {
+    private int carveHallwayCorridorFootprint(WorldGenLevel level, BoundingBox chunkBounds, LinkCandidate candidate,
+                                              List<BlockPos> positions, int width, int height) {
+        MKJigsawLinkFootprint.Footprint footprint = MKJigsawLinkFootprint.build(positions, width);
         int carvedBlocks = 0;
-        int minInterior = -((width - 1) / 2);
-        int maxInterior = width / 2;
-        int minShell = minInterior - 1;
-        int maxShell = maxInterior + 1;
+        int routeLength = positions.size();
         boolean decaying = candidate.settings().linkGenerationMode() ==
                 MKWorkspaceFloorLinkGenerationMode.DECAYING_HALLWAY;
-
-        for (int across = minShell; across <= maxShell; across++) {
-            boolean interior = across >= minInterior && across <= maxInterior;
-            BlockPos floor = offsetAcross(center, axis, across).below();
-            if (!decaying || shouldPlaceShellBlock(candidate, floor, routeIndex, routeLength,
-                    shellDecayWeight(ShellBlockRole.FLOOR, 0, height, interior))) {
-                if (setIfInChunk(level, chunkBounds, floor, candidate.palette().floor())) {
+        for (Map.Entry<BlockPos, MKJigsawLinkFootprint.Cell> entry : footprint.interior().entrySet()) {
+            BlockPos pos = entry.getKey();
+            MKJigsawLinkFootprint.Cell cell = entry.getValue();
+            int routeIndex = cell.routeIndex();
+            if (!decaying || shouldPlaceShellBlock(candidate, pos.below(), routeIndex, routeLength,
+                    shellDecayWeight(ShellBlockRole.FLOOR, 0, height, true))) {
+                if (setIfInChunk(level, chunkBounds, pos.below(), candidate.palette().floor())) {
                     carvedBlocks++;
                 }
             }
-
-            if (interior) {
-                for (int y = 0; y < height; y++) {
-                    BlockPos air = offsetAcross(center, axis, across).above(y);
-                    if (!decaying || shouldCarveAir(candidate, air, routeIndex, routeLength,
-                            airDecayWeight(across, minInterior, maxInterior, y, height))) {
-                        if (setIfInChunk(level, chunkBounds, air, Blocks.AIR.defaultBlockState())) {
-                            carvedBlocks++;
-                        }
-                    }
-                }
-            } else {
-                for (int y = 0; y < height; y++) {
-                    BlockPos wall = offsetAcross(center, axis, across).above(y);
-                    if (!decaying || shouldPlaceShellBlock(candidate, wall, routeIndex, routeLength,
-                            shellDecayWeight(ShellBlockRole.WALL, y, height, false))) {
-                        if (setIfInChunk(level, chunkBounds, wall, candidate.palette().wall())) {
-                            carvedBlocks++;
-                        }
+            for (int y = 0; y < height; y++) {
+                BlockPos air = pos.above(y);
+                if (!decaying || shouldCarveAir(candidate, air, routeIndex, routeLength,
+                        airDecayWeight(cell.center(), y, height))) {
+                    if (setIfInChunk(level, chunkBounds, air, Blocks.AIR.defaultBlockState())) {
+                        carvedBlocks++;
                     }
                 }
             }
-
-            BlockPos topShell = offsetAcross(center, axis, across).above(height);
+            BlockPos topShell = pos.above(height);
             if (!decaying || shouldPlaceShellBlock(candidate, topShell, routeIndex, routeLength,
-                    shellDecayWeight(ShellBlockRole.CEILING, height, height, interior))) {
+                    shellDecayWeight(ShellBlockRole.CEILING, height, height, true))) {
                 if (setIfInChunk(level, chunkBounds, topShell, candidate.palette().wall())) {
                     carvedBlocks++;
                 }
             }
         }
-        return carvedBlocks;
-    }
-
-    private int repairDoglegCorridorCorners(WorldGenLevel level, BoundingBox chunkBounds, LinkCandidate candidate,
-                                            List<BlockPos> positions, int width, int height) {
-        if (positions.size() < 3) {
-            return 0;
-        }
-        int minInterior = -((width - 1) / 2);
-        int maxInterior = width / 2;
-        int shellRadius = maxInterior + 1;
-        Set<BlockPos> protectedInterior = routeInteriorPositions(positions, minInterior, maxInterior);
-        int repairedBlocks = 0;
-        for (int bendIndex = 1; bendIndex < positions.size() - 1; bendIndex++) {
-            Direction previous = directionBetween(positions.get(bendIndex - 1), positions.get(bendIndex));
-            Direction next = directionBetween(positions.get(bendIndex), positions.get(bendIndex + 1));
-            if (previous == next) {
-                continue;
-            }
-            Set<BlockPos> cornerInterior = doglegCornerInterior(positions.get(bendIndex), previous, next,
-                    shellRadius, minInterior, maxInterior);
-            protectedInterior.addAll(cornerInterior);
-            Set<BlockPos> boundary = doglegCornerBoundary(cornerInterior, protectedInterior);
-            repairedBlocks += placeDoglegCornerInterior(level, chunkBounds, candidate, cornerInterior, bendIndex,
-                    positions.size(), height);
-            repairedBlocks += placeDoglegCornerBoundary(level, chunkBounds, candidate, boundary, bendIndex,
-                    positions.size(), height);
-        }
-        return repairedBlocks;
-    }
-
-    private Set<BlockPos> routeInteriorPositions(List<BlockPos> positions, int minInterior, int maxInterior) {
-        Set<BlockPos> interior = new HashSet<>();
-        for (int index = 0; index < positions.size(); index++) {
-            Direction.Axis axis = routeAxis(positions, index);
-            BlockPos center = positions.get(index);
-            for (int across = minInterior; across <= maxInterior; across++) {
-                interior.add(offsetAcross(center, axis, across));
-            }
-        }
-        return interior;
-    }
-
-    private Set<BlockPos> doglegCornerInterior(BlockPos bend, Direction previous, Direction next, int shellRadius,
-                                               int minInterior, int maxInterior) {
-        Set<BlockPos> interior = new HashSet<>();
-        addDoglegLegInterior(interior, bend, previous.getOpposite(), shellRadius, minInterior, maxInterior);
-        addDoglegLegInterior(interior, bend, next, shellRadius, minInterior, maxInterior);
-        return interior;
-    }
-
-    private void addDoglegLegInterior(Set<BlockPos> interior, BlockPos bend, Direction direction, int shellRadius,
-                                      int minInterior, int maxInterior) {
-        for (int step = 0; step <= shellRadius; step++) {
-            BlockPos center = bend.relative(direction, step);
-            for (int across = minInterior; across <= maxInterior; across++) {
-                interior.add(offsetAcross(center, direction.getAxis(), across));
-            }
-        }
-    }
-
-    private Set<BlockPos> doglegCornerBoundary(Set<BlockPos> cornerInterior, Set<BlockPos> protectedInterior) {
-        Set<BlockPos> boundary = new HashSet<>();
-        for (BlockPos interior : cornerInterior) {
-            for (int dx = -1; dx <= 1; dx++) {
-                for (int dz = -1; dz <= 1; dz++) {
-                    if (dx == 0 && dz == 0) {
-                        continue;
-                    }
-                    BlockPos candidate = interior.offset(dx, 0, dz);
-                    if (!protectedInterior.contains(candidate)) {
-                        boundary.add(candidate);
-                    }
-                }
-            }
-        }
-        return boundary;
-    }
-
-    private int placeDoglegCornerInterior(WorldGenLevel level, BoundingBox chunkBounds, LinkCandidate candidate,
-                                          Set<BlockPos> interior, int routeIndex, int routeLength, int height) {
-        int placedBlocks = 0;
-        for (BlockPos pos : interior) {
-            if (setIfInChunk(level, chunkBounds, pos.below(), candidate.palette().floor())) {
-                placedBlocks++;
-            }
-            for (int y = 0; y < height; y++) {
-                if (setIfInChunk(level, chunkBounds, pos.above(y), Blocks.AIR.defaultBlockState())) {
-                    placedBlocks++;
-                }
-            }
-            if (setIfInChunk(level, chunkBounds, pos.above(height), candidate.palette().wall())) {
-                placedBlocks++;
-            }
-        }
-        return placedBlocks;
-    }
-
-    private int placeDoglegCornerBoundary(WorldGenLevel level, BoundingBox chunkBounds, LinkCandidate candidate,
-                                          Set<BlockPos> boundary, int routeIndex, int routeLength, int height) {
-        int placedBlocks = 0;
-        boolean decaying = candidate.settings().linkGenerationMode() ==
-                MKWorkspaceFloorLinkGenerationMode.DECAYING_HALLWAY;
-        for (BlockPos pos : boundary) {
+        for (Map.Entry<BlockPos, MKJigsawLinkFootprint.Cell> entry : footprint.boundary().entrySet()) {
+            BlockPos pos = entry.getKey();
+            int routeIndex = entry.getValue().routeIndex();
             if (!decaying || shouldPlaceShellBlock(candidate, pos.below(), routeIndex, routeLength,
                     shellDecayWeight(ShellBlockRole.FLOOR, 0, height, false))) {
                 if (setIfInChunk(level, chunkBounds, pos.below(), candidate.palette().floor())) {
-                    placedBlocks++;
+                    carvedBlocks++;
                 }
             }
             for (int y = 0; y < height; y++) {
@@ -1155,7 +1031,7 @@ public class MKJigsawStructure extends MKStructure {
                 if (!decaying || shouldPlaceShellBlock(candidate, wall, routeIndex, routeLength,
                         shellDecayWeight(ShellBlockRole.WALL, y, height, false))) {
                     if (setIfInChunk(level, chunkBounds, wall, candidate.palette().wall())) {
-                        placedBlocks++;
+                        carvedBlocks++;
                     }
                 }
             }
@@ -1163,25 +1039,11 @@ public class MKJigsawStructure extends MKStructure {
             if (!decaying || shouldPlaceShellBlock(candidate, topShell, routeIndex, routeLength,
                     shellDecayWeight(ShellBlockRole.CEILING, height, height, false))) {
                 if (setIfInChunk(level, chunkBounds, topShell, candidate.palette().wall())) {
-                    placedBlocks++;
+                    carvedBlocks++;
                 }
             }
         }
-        return placedBlocks;
-    }
-
-    private Direction.Axis routeAxis(List<BlockPos> positions, int index) {
-        if (positions.size() <= 1) {
-            return Direction.Axis.X;
-        }
-        if (index + 1 < positions.size()) {
-            return directionBetween(positions.get(index), positions.get(index + 1)).getAxis();
-        }
-        return directionBetween(positions.get(index - 1), positions.get(index)).getAxis();
-    }
-
-    private BlockPos offsetAcross(BlockPos center, Direction.Axis axis, int across) {
-        return axis == Direction.Axis.X ? center.offset(0, 0, across) : center.offset(across, 0, 0);
+        return carvedBlocks;
     }
 
     private boolean shouldPlaceShellBlock(LinkCandidate candidate, BlockPos pos, int routeIndex, int routeLength,
@@ -1221,9 +1083,8 @@ public class MKJigsawStructure extends MKStructure {
         };
     }
 
-    private float airDecayWeight(int across, int minInterior, int maxInterior, int y, int height) {
+    private float airDecayWeight(boolean center, int y, int height) {
         float vertical = height <= 1 ? 1.0f : y / (float) (height - 1);
-        boolean center = across > minInterior && across < maxInterior;
         return center ? 0.08f + vertical * 0.16f : 0.12f + vertical * 0.18f;
     }
 

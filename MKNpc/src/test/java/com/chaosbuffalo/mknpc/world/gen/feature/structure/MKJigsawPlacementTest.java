@@ -161,4 +161,47 @@ class MKJigsawPlacementTest {
         assertFalse(MKJigsawLinkInsertPlacement.spanClearsDoglegConnectorArea(doglegRoute, 4, 2, 5));
         assertTrue(MKJigsawLinkInsertPlacement.spanClearsDoglegConnectorArea(doglegRoute, 5, 2, 5));
     }
+
+    @Test
+    void linkFootprintKeepsDoglegWalkspaceInterior() {
+        List<BlockPos> doglegRoute = List.of(
+                new BlockPos(0, 0, 0),
+                new BlockPos(1, 0, 0),
+                new BlockPos(2, 0, 0),
+                new BlockPos(2, 0, 1),
+                new BlockPos(2, 0, 2)
+        );
+
+        MKJigsawLinkFootprint.Footprint footprint = MKJigsawLinkFootprint.build(doglegRoute, 3);
+
+        assertTrue(footprint.interior().containsKey(new BlockPos(1, 0, 1)));
+        assertTrue(footprint.interior().containsKey(new BlockPos(1, 0, 2)));
+        assertTrue(footprint.interior().containsKey(new BlockPos(3, 0, 0)));
+        assertFalse(footprint.boundary().containsKey(new BlockPos(1, 0, 1)));
+        assertFalse(footprint.boundary().containsKey(new BlockPos(1, 0, 2)));
+        assertFalse(footprint.boundary().containsKey(new BlockPos(3, 0, 0)));
+    }
+
+    @Test
+    void linkFootprintDoesNotGenerateBoundaryInsideInteriorOrOpenEnds() {
+        List<BlockPos> doglegRoute = List.of(
+                new BlockPos(0, 0, 0),
+                new BlockPos(1, 0, 0),
+                new BlockPos(2, 0, 0),
+                new BlockPos(2, 0, 1),
+                new BlockPos(2, 0, 2)
+        );
+
+        MKJigsawLinkFootprint.Footprint footprint = MKJigsawLinkFootprint.build(doglegRoute, 3);
+
+        assertTrue(footprint.boundary().keySet().stream()
+                .noneMatch(footprint.interior()::containsKey));
+        assertFalse(footprint.boundary().containsKey(new BlockPos(-1, 0, -1)));
+        assertFalse(footprint.boundary().containsKey(new BlockPos(-1, 0, 0)));
+        assertFalse(footprint.boundary().containsKey(new BlockPos(-1, 0, 1)));
+        assertFalse(footprint.boundary().containsKey(new BlockPos(1, 0, 3)));
+        assertFalse(footprint.boundary().containsKey(new BlockPos(2, 0, 3)));
+        assertFalse(footprint.boundary().containsKey(new BlockPos(3, 0, 3)));
+        assertFalse(footprint.boundary().containsKey(new BlockPos(-1, 0, 2)));
+    }
 }
