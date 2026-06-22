@@ -177,9 +177,13 @@ class MKJigsawPlacementTest {
         assertTrue(footprint.interior().containsKey(new BlockPos(1, 0, 1)));
         assertTrue(footprint.interior().containsKey(new BlockPos(1, 0, 2)));
         assertTrue(footprint.interior().containsKey(new BlockPos(3, 0, 0)));
+        assertTrue(footprint.interior().containsKey(new BlockPos(3, 0, -1)));
         assertFalse(footprint.boundary().containsKey(new BlockPos(1, 0, 1)));
         assertFalse(footprint.boundary().containsKey(new BlockPos(1, 0, 2)));
         assertFalse(footprint.boundary().containsKey(new BlockPos(3, 0, 0)));
+        assertFalse(footprint.boundary().containsKey(new BlockPos(3, 0, -1)));
+        assertTrue(footprint.boundary().containsKey(new BlockPos(3, 0, -2)));
+        assertTrue(footprint.boundary().containsKey(new BlockPos(4, 0, -1)));
     }
 
     @Test
@@ -202,7 +206,5 @@ class MKJigsawPlacementTest {
         assertFalse(footprint.boundary().containsKey(new BlockPos(1, 0, 3)));
         assertFalse(footprint.boundary().containsKey(new BlockPos(2, 0, 3)));
         assertFalse(footprint.boundary().containsKey(new BlockPos(3, 0, 3)));
-        assertFalse(footprint.boundary().containsKey(new BlockPos(-1, 0, 2)));
-        assertFalse(footprint.boundary().containsKey(new BlockPos(3, 0, -1)));
     }
 }
