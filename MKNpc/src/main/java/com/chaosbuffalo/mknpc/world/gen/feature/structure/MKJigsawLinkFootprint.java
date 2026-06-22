@@ -20,6 +20,7 @@ final class MKJigsawLinkFootprint {
 
     static Footprint build(List<BlockPos> route, int width) {
         LinkedHashMap<BlockPos, Cell> interior = new LinkedHashMap<>();
+        LinkedHashMap<BlockPos, Cell> boundaryCandidates = new LinkedHashMap<>();
         if (route.isEmpty()) {
             return new Footprint(Map.of(), Map.of());
         }
@@ -31,18 +32,17 @@ final class MKJigsawLinkFootprint {
                     interior.putIfAbsent(offsetAcross(route.get(index), axis, across),
                             new Cell(index, across > minInterior && across < maxInterior));
                 }
+                boundaryCandidates.putIfAbsent(offsetAcross(route.get(index), axis, minInterior - 1),
+                        new Cell(index, false));
+                boundaryCandidates.putIfAbsent(offsetAcross(route.get(index), axis, maxInterior + 1),
+                        new Cell(index, false));
             }
         }
 
         LinkedHashMap<BlockPos, Cell> boundary = new LinkedHashMap<>();
-        Map<BlockPos, Cell> openEnds = openEndCells(route, minInterior, maxInterior);
-        for (Map.Entry<BlockPos, Cell> entry : interior.entrySet()) {
-            BlockPos pos = entry.getKey();
-            for (Direction direction : Direction.Plane.HORIZONTAL) {
-                BlockPos neighbor = pos.relative(direction);
-                if (!interior.containsKey(neighbor) && !openEnds.containsKey(neighbor)) {
-                    boundary.putIfAbsent(neighbor, new Cell(entry.getValue().routeIndex(), false));
-                }
+        for (Map.Entry<BlockPos, Cell> entry : boundaryCandidates.entrySet()) {
+            if (!interior.containsKey(entry.getKey())) {
+                boundary.put(entry.getKey(), entry.getValue());
             }
         }
         return new Footprint(unmodifiableCopy(interior), unmodifiableCopy(boundary));
@@ -65,27 +65,6 @@ final class MKJigsawLinkFootprint {
         Direction.Axis previous = directionBetween(route.get(index - 1), route.get(index)).getAxis();
         Direction.Axis next = directionBetween(route.get(index), route.get(index + 1)).getAxis();
         return previous == next ? List.of(previous) : List.of(previous, next);
-    }
-
-    private static Map<BlockPos, Cell> openEndCells(List<BlockPos> route, int minInterior, int maxInterior) {
-        LinkedHashMap<BlockPos, Cell> openEnds = new LinkedHashMap<>();
-        if (route.size() <= 1) {
-            return openEnds;
-        }
-        Direction firstDirection = directionBetween(route.get(0), route.get(1));
-        addOpenEnd(openEnds, route.get(0).relative(firstDirection.getOpposite()), firstDirection.getAxis(),
-                minInterior, maxInterior);
-        Direction lastDirection = directionBetween(route.get(route.size() - 2), route.getLast());
-        addOpenEnd(openEnds, route.getLast().relative(lastDirection), lastDirection.getAxis(), minInterior,
-                maxInterior);
-        return openEnds;
-    }
-
-    private static void addOpenEnd(Map<BlockPos, Cell> openEnds, BlockPos center, Direction.Axis axis,
-                                   int minInterior, int maxInterior) {
-        for (int across = minInterior; across <= maxInterior; across++) {
-            openEnds.put(offsetAcross(center, axis, across), new Cell(0, false));
-        }
     }
 
     private static BlockPos offsetAcross(BlockPos center, Direction.Axis axis, int across) {

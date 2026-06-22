@@ -203,5 +203,6 @@ class MKJigsawPlacementTest {
         assertFalse(footprint.boundary().containsKey(new BlockPos(2, 0, 3)));
         assertFalse(footprint.boundary().containsKey(new BlockPos(3, 0, 3)));
         assertFalse(footprint.boundary().containsKey(new BlockPos(-1, 0, 2)));
+        assertFalse(footprint.boundary().containsKey(new BlockPos(3, 0, -1)));
     }
 }
