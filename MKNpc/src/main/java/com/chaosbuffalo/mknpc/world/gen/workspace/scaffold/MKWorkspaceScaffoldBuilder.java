@@ -274,10 +274,13 @@ public class MKWorkspaceScaffoldBuilder {
         BlockState ceilingState = resolvePaletteState(workspace, plannedPiece, MKWorkspacePaletteTags.CEILING_BLOCK_TAG,
                 workspace.palette().ceilingBlock(), Blocks.SMOOTH_STONE.defaultBlockState());
         boolean emptyScaffold = isEmptyScaffold(plannedPiece);
+        boolean floorLinkInsert = isFloorLinkInsert(plannedPiece);
 
         clearWorkspaceHeightBounds(level, context.clearedBounds());
         clearBounds(level, context.exportBounds());
-        if (!emptyScaffold) {
+        if (floorLinkInsert) {
+            placeFloorLinkInsertScaffold(level, context.exportBounds(), floorState, wallState, ceilingState);
+        } else if (!emptyScaffold) {
             placeExteriorMargin(level, context.exportBounds(), context.geometryBounds());
             int verticalShellThickness = getVerticalShellThickness(plannedPiece);
             placeScaffoldGeometry(level, context.geometryBounds(), context.geometryOrigin(), plannedPiece,
@@ -448,10 +451,10 @@ public class MKWorkspaceScaffoldBuilder {
                                                  MKWorkspaceGridLayout.Placement placement) {
         int shellMargin = getShellMargin(plannedPiece, workspace.shellMargin());
         int verticalShellThickness = getVerticalShellThickness(plannedPiece);
-        boolean emptyScaffold = isEmptyScaffold(plannedPiece);
-        int exteriorAirMargin = emptyScaffold ? 0 : workspace.exteriorAirMargin();
-        int topVoidMargin = emptyScaffold ? 0 : getTopVoidMargin(plannedPiece);
-        int bottomVoidMargin = emptyScaffold ? 0 : getBottomVoidMargin(plannedPiece);
+        boolean exactBoundsScaffold = isExactBoundsScaffold(plannedPiece);
+        int exteriorAirMargin = exactBoundsScaffold ? 0 : workspace.exteriorAirMargin();
+        int topVoidMargin = exactBoundsScaffold ? 0 : getTopVoidMargin(plannedPiece);
+        int bottomVoidMargin = exactBoundsScaffold ? 0 : getBottomVoidMargin(plannedPiece);
         int exportWidth = plannedPiece.interiorWidth() + (2 * shellMargin) + (2 * exteriorAirMargin);
         int exportLength = plannedPiece.interiorLength() + (2 * shellMargin) + (2 * exteriorAirMargin);
         int bodyHeight = plannedPiece.interiorHeight() + (2 * verticalShellThickness);
@@ -498,6 +501,25 @@ public class MKWorkspaceScaffoldBuilder {
                     level.setBlock(destPos, state, Block.UPDATE_ALL);
                     copyBlockEntity(level, sourcePos, destPos, state);
                 }
+            }
+        }
+    }
+
+    private void placeFloorLinkInsertScaffold(ServerLevel level, BoundingBox bounds, BlockState floorState,
+                                              BlockState wallState, BlockState ceilingState) {
+        for (int x = bounds.minX(); x <= bounds.maxX(); x++) {
+            for (int z = bounds.minZ(); z <= bounds.maxZ(); z++) {
+                level.setBlock(new BlockPos(x, bounds.minY(), z), floorState, Block.UPDATE_ALL);
+                level.setBlock(new BlockPos(x, bounds.maxY(), z), ceilingState, Block.UPDATE_ALL);
+            }
+        }
+        if (bounds.getYSpan() <= 2) {
+            return;
+        }
+        for (int z = bounds.minZ(); z <= bounds.maxZ(); z++) {
+            for (int y = bounds.minY() + 1; y <= bounds.maxY() - 1; y++) {
+                level.setBlock(new BlockPos(bounds.minX(), y, z), wallState, Block.UPDATE_ALL);
+                level.setBlock(new BlockPos(bounds.maxX(), y, z), wallState, Block.UPDATE_ALL);
             }
         }
     }
@@ -635,16 +657,23 @@ public class MKWorkspaceScaffoldBuilder {
     }
 
     private boolean isEmptyScaffold(MKPlannedPiece piece) {
-        return "embedded_stair".equals(piece.tags().get("tower_piece_kind")) ||
-                "floor_link_insert".equals(piece.tags().get("tower_piece_kind"));
+        return "embedded_stair".equals(piece.tags().get("tower_piece_kind"));
+    }
+
+    private boolean isExactBoundsScaffold(MKPlannedPiece piece) {
+        return isEmptyScaffold(piece) || isFloorLinkInsert(piece);
+    }
+
+    private boolean isFloorLinkInsert(MKPlannedPiece piece) {
+        return "floor_link_insert".equals(piece.tags().get("tower_piece_kind"));
     }
 
     private int getShellMargin(MKPlannedPiece piece, int shellMargin) {
-        return isEmptyScaffold(piece) ? 0 : shellMargin;
+        return isExactBoundsScaffold(piece) ? 0 : shellMargin;
     }
 
     private int getVerticalShellThickness(MKPlannedPiece piece) {
-        return isEmptyScaffold(piece) ? 0 : 1;
+        return isExactBoundsScaffold(piece) ? 0 : 1;
     }
 
     private int getVariantIndex(MKPlannedPiece piece) {

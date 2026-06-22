@@ -74,13 +74,13 @@ public class MKWorkspaceGridLayout {
 
     private int getExportWidth(MKPlannedPiece piece, int shellMargin, int exteriorAirMargin) {
         int effectiveShellMargin = getShellMargin(piece, shellMargin);
-        int margin = isEmptyScaffold(piece) ? 0 : exteriorAirMargin;
+        int margin = isExactBoundsScaffold(piece) ? 0 : exteriorAirMargin;
         return piece.interiorWidth() + (2 * effectiveShellMargin) + (2 * margin);
     }
 
     private int getExportLength(MKPlannedPiece piece, int shellMargin, int exteriorAirMargin) {
         int effectiveShellMargin = getShellMargin(piece, shellMargin);
-        int margin = isEmptyScaffold(piece) ? 0 : exteriorAirMargin;
+        int margin = isExactBoundsScaffold(piece) ? 0 : exteriorAirMargin;
         return piece.interiorLength() + (2 * effectiveShellMargin) + (2 * margin);
     }
 
@@ -89,14 +89,14 @@ public class MKWorkspaceGridLayout {
     }
 
     private int getShellMargin(MKPlannedPiece piece, int shellMargin) {
-        return isEmptyScaffold(piece) ? 0 : shellMargin;
+        return isExactBoundsScaffold(piece) ? 0 : shellMargin;
     }
 
     private int getVerticalShellThickness(MKPlannedPiece piece) {
-        return isEmptyScaffold(piece) ? 0 : 1;
+        return isExactBoundsScaffold(piece) ? 0 : 1;
     }
 
-    private boolean isEmptyScaffold(MKPlannedPiece piece) {
+    private boolean isExactBoundsScaffold(MKPlannedPiece piece) {
         return "embedded_stair".equals(piece.tags().get("tower_piece_kind")) ||
                 "floor_link_insert".equals(piece.tags().get("tower_piece_kind"));
     }
