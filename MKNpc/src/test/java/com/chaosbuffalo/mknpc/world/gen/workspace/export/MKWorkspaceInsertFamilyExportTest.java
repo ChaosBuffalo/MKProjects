@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.export;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
+import com.chaosbuffalo.mknpc.world.gen.workspace.MKStructureWorkspaceImportService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
@@ -62,6 +63,10 @@ class MKWorkspaceInsertFamilyExportTest {
         assertEquals(1, manifest.settings().insertFamilies().size());
         assertTrue(manifest.templateGroups().stream()
                 .anyMatch(group -> group.baseName().equals("crypt_link_supports")));
+
+        MKStructureWorkspace imported = new MKStructureWorkspaceImportService()
+                .workspaceFromManifest(UUID.randomUUID(), BlockPos.ZERO, 123L, manifest);
+        assertEquals(List.of(insertFamily), imported.insertFamilies());
     }
 
     private static MKWorkspacePieceDefinition runtimeStartPiece(MKStructureWorkspace workspace) {

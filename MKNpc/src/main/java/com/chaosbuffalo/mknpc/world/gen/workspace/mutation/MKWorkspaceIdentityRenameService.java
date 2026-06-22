@@ -52,9 +52,11 @@ public class MKWorkspaceIdentityRenameService {
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
                 workspace.linearRunFamilies(),
+                workspace.insertFamilies(),
                 workspace.createdAt(),
                 System.currentTimeMillis(),
-                renamePieces(level, workspace, namespace, structureName)
+                renamePieces(level, workspace, namespace, structureName),
+                workspace.layerStates()
         );
         IMKStructureWorkspaceData.get(level).updateWorkspace(renamed);
         syncBlockEntity(level, renamed);

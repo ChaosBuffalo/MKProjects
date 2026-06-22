@@ -252,9 +252,11 @@ public class MKWorkspacePieceRelayoutService {
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
                 workspace.linearRunFamilies(),
+                workspace.insertFamilies(),
                 workspace.createdAt(),
                 System.currentTimeMillis(),
-                workspace.pieces()
+                workspace.pieces(),
+                workspace.layerStates()
         );
     }
 

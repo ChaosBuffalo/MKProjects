@@ -14,6 +14,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
@@ -258,6 +259,15 @@ public class MKStructureWorkspaceImportService {
                         linearRun.paletteOverride()
                 ))
                 .toList();
+        List<MKWorkspaceInsertFamilyDefinition> insertFamilies = settings.insertFamilies().stream()
+                .map(insertFamily -> new MKWorkspaceInsertFamilyDefinition(
+                        insertFamily.familyId(),
+                        insertFamily.kind(),
+                        insertFamily.width(),
+                        insertFamily.height(),
+                        insertFamily.depth()
+                ))
+                .toList();
         long now = System.currentTimeMillis();
         return new MKStructureWorkspace(
                 workspaceId,
@@ -283,8 +293,10 @@ public class MKStructureWorkspaceImportService {
                 familyDefinitions,
                 openingProfiles,
                 linearRunFamilies,
+                insertFamilies,
                 createdAt,
                 now,
+                List.of(),
                 List.of()
         );
     }

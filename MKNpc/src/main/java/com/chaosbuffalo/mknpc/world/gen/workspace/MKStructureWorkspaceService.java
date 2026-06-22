@@ -158,9 +158,11 @@ public class MKStructureWorkspaceService {
                     workspace.familyDefinitions(),
                     workspace.openingProfiles(),
                     workspace.linearRunFamilies(),
+                    workspace.insertFamilies(),
                     existing.createdAt(),
                     System.currentTimeMillis(),
-                    existing.pieces()
+                    existing.pieces(),
+                    existing.layerStates()
             );
             data.updateWorkspace(updated);
             syncBlockEntity(level, updated.anchor(), updated.id());
@@ -959,15 +961,17 @@ public class MKStructureWorkspaceService {
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
                 workspace.linearRunFamilies(),
+                workspace.insertFamilies(),
                 0,
                 0,
+                List.of(),
                 List.of()
         ).toTag();
     }
 
-    private MKStructureWorkspace workspaceForUpdate(MKStructureWorkspace existing, MKStructureWorkspace requested,
-                                                    List<MKWorkspacePieceDefinition> pieces,
-                                                    long nowEpochMillis) {
+    MKStructureWorkspace workspaceForUpdate(MKStructureWorkspace existing, MKStructureWorkspace requested,
+                                            List<MKWorkspacePieceDefinition> pieces,
+                                            long nowEpochMillis) {
         return new MKStructureWorkspace(
                 existing.id(),
                 requested.anchor(),
@@ -985,6 +989,7 @@ public class MKStructureWorkspaceService {
                 requested.familyDefinitions(),
                 requested.openingProfiles(),
                 requested.linearRunFamilies(),
+                requested.insertFamilies(),
                 existing.createdAt(),
                 nowEpochMillis,
                 pieces,
@@ -1053,9 +1058,11 @@ public class MKStructureWorkspaceService {
                                         requested.paletteOverride()))
                                 .orElse(linearRun))
                         .toList(),
+                source.insertFamilies(),
                 source.createdAt(),
                 source.updatedAt(),
-                source.pieces()
+                source.pieces(),
+                source.layerStates()
         );
     }
 
@@ -1079,4 +1086,3 @@ public class MKStructureWorkspaceService {
         );
     }
 }
-

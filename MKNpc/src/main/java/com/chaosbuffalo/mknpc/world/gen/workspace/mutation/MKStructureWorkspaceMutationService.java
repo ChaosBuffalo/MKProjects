@@ -148,9 +148,11 @@ public class MKStructureWorkspaceMutationService {
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
                 workspace.linearRunFamilies(),
+                workspace.insertFamilies(),
                 workspace.createdAt(),
                 System.currentTimeMillis(),
-                workspace.pieces()
+                workspace.pieces(),
+                workspace.layerStates()
         );
     }
 
@@ -172,9 +174,11 @@ public class MKStructureWorkspaceMutationService {
                 requested.familyDefinitions(),
                 requested.openingProfiles(),
                 requested.linearRunFamilies(),
+                requested.insertFamilies(),
                 existing.createdAt(),
                 System.currentTimeMillis(),
-                existing.pieces()
+                existing.pieces(),
+                existing.layerStates()
         );
     }
 

@@ -4,6 +4,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLayerStateService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
@@ -94,6 +95,25 @@ class MKStructureWorkspaceServicePreflightTest {
         assertEquals(List.of(orphanedId), preflight.report().orphanedTemplateBindings());
     }
 
+    @Test
+    void workspaceForUpdatePreservesRequestedInsertFamilies() {
+        List<MKWorkspaceInsertFamilyDefinition> insertFamilies = List.of(
+                MKWorkspaceInsertFamilyDefinition.floorLinkHallway("walled_keep_main_link_insert", 5, 5, 3));
+        MKStructureWorkspace existing = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(floorPiece("room_00_template", "room_00",
+                        MKWorkspacePlannerId.of("keep.main.floor_plan.room.room_00"))));
+        existing = new MKWorkspaceLayerStateService().ensureLayerStates(existing, 100L);
+        MKStructureWorkspace requested = withInsertFamilies(existing, insertFamilies);
+
+        MKStructureWorkspace updated = service.workspaceForUpdate(existing, requested, existing.pieces(), 456L);
+
+        assertEquals(insertFamilies, updated.insertFamilies());
+        assertEquals(existing.pieces(), updated.pieces());
+        assertEquals(existing.layerStates(), updated.layerStates());
+        assertEquals(existing.createdAt(), updated.createdAt());
+        assertEquals(456L, updated.updatedAt());
+    }
+
     private static MKWorkspaceFloorTopologySettings settings(String stackId, String floorRole) {
         return new MKWorkspaceFloorTopologySettings(
                 stackId,
@@ -135,6 +155,33 @@ class MKStructureWorkspaceServicePreflightTest {
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
                 workspace.linearRunFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces(),
+                workspace.layerStates()
+        );
+    }
+
+    private static MKStructureWorkspace withInsertFamilies(MKStructureWorkspace workspace,
+                                                           List<MKWorkspaceInsertFamilyDefinition> insertFamilies) {
+        return new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.topologyProfile(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.linearRunFamilies(),
+                insertFamilies,
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 workspace.pieces(),
