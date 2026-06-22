@@ -766,7 +766,9 @@ public record MKWorkspaceExportManifest(
             boolean basementCapApproachEnabled,
             String floorExitMask,
             MKWorkspaceFoundationPolicy foundationPolicy,
+            ResourceLocation floorBlock,
             ResourceLocation wallBlock,
+            ResourceLocation ceilingBlock,
             List<MKJigsawPieceMetadata.FloorLinkCandidate> floorLinkCandidates,
             List<MKJigsawPieceMetadata.FloorClosableOpening> floorClosableOpenings,
             List<MKJigsawPieceMetadata.FloorRootExit> floorRootExits
@@ -794,13 +796,16 @@ public record MKWorkspaceExportManifest(
                         verticalStackMetadata.minBasementFloors(), verticalStackMetadata.maxBasementFloors(),
                         verticalStackMetadata.topCapApproachEnabled(), verticalStackMetadata.basementEntryEnabled(),
                         verticalStackMetadata.basementCapApproachEnabled(), floorRuntimeMetadata.floorExitMask(),
-                        floorRuntimeMetadata.foundationPolicy(), floorRuntimeMetadata.wallBlock(),
+                        floorRuntimeMetadata.foundationPolicy(), floorRuntimeMetadata.floorBlock(),
+                        floorRuntimeMetadata.wallBlock(), floorRuntimeMetadata.ceilingBlock(),
                         floorRuntimeMetadata.floorLinkCandidates(), floorRuntimeMetadata.floorClosableOpenings(),
                         floorRuntimeMetadata.floorRootExits())));
 
         public ExportRuntimePieceMetadata {
             floorExitMask = floorExitMask == null ? "" : floorExitMask;
+            floorBlock = floorBlock == null ? MKWorkspaceMaterialPalette.defaultPalette().floorBlock() : floorBlock;
             wallBlock = wallBlock == null ? MKWorkspaceMaterialPalette.defaultPalette().wallBlock() : wallBlock;
+            ceilingBlock = ceilingBlock == null ? MKWorkspaceMaterialPalette.defaultPalette().ceilingBlock() : ceilingBlock;
             floorLinkCandidates = floorLinkCandidates == null ? List.of() : List.copyOf(floorLinkCandidates);
             floorClosableOpenings = floorClosableOpenings == null ? List.of() : List.copyOf(floorClosableOpenings);
             floorRootExits = floorRootExits == null ? List.of() : List.copyOf(floorRootExits);
@@ -832,8 +837,12 @@ public record MKWorkspaceExportManifest(
                     Boolean.parseBoolean(tags.getOrDefault("workspace_vertical_stack_basement_cap_approach_enabled", "false")),
                     tags.getOrDefault(MKFloorMaskVariantExporter.FLOOR_MASK_TAG, ""),
                     foundationPolicy,
+                    paletteBlock(tags, MKWorkspacePaletteTags.FLOOR_BLOCK_TAG,
+                            MKWorkspaceMaterialPalette.defaultPalette().floorBlock()),
                     paletteBlock(tags, MKWorkspacePaletteTags.WALL_BLOCK_TAG,
                             MKWorkspaceMaterialPalette.defaultPalette().wallBlock()),
+                    paletteBlock(tags, MKWorkspacePaletteTags.CEILING_BLOCK_TAG,
+                            MKWorkspaceMaterialPalette.defaultPalette().ceilingBlock()),
                     floorLinkCandidates(tags),
                     floorClosableOpenings(piece),
                     floorRootExits(piece)
@@ -863,7 +872,9 @@ public record MKWorkspaceExportManifest(
                     basementCapApproachEnabled,
                     piece.tags().getOrDefault(MKFloorMaskVariantExporter.FLOOR_MASK_TAG, floorExitMask),
                     foundationPolicy,
+                    paletteBlock(piece.tags(), MKWorkspacePaletteTags.FLOOR_BLOCK_TAG, floorBlock),
                     paletteBlock(piece.tags(), MKWorkspacePaletteTags.WALL_BLOCK_TAG, wallBlock),
+                    paletteBlock(piece.tags(), MKWorkspacePaletteTags.CEILING_BLOCK_TAG, ceilingBlock),
                     floorLinkCandidates(piece.tags()),
                     floorClosableOpenings(piece),
                     floorRootExits(piece)
@@ -1057,15 +1068,17 @@ public record MKWorkspaceExportManifest(
         }
 
         private ExportFloorRuntimeMetadata floorRuntimeMetadata() {
-            return new ExportFloorRuntimeMetadata(floorExitMask, foundationPolicy, wallBlock, floorLinkCandidates,
-                    floorClosableOpenings, floorRootExits);
+            return new ExportFloorRuntimeMetadata(floorExitMask, foundationPolicy, floorBlock, wallBlock, ceilingBlock,
+                    floorLinkCandidates, floorClosableOpenings, floorRootExits);
         }
     }
 
     private record ExportFloorRuntimeMetadata(
             String floorExitMask,
             MKWorkspaceFoundationPolicy foundationPolicy,
+            ResourceLocation floorBlock,
             ResourceLocation wallBlock,
+            ResourceLocation ceilingBlock,
             List<MKJigsawPieceMetadata.FloorLinkCandidate> floorLinkCandidates,
             List<MKJigsawPieceMetadata.FloorClosableOpening> floorClosableOpenings,
             List<MKJigsawPieceMetadata.FloorRootExit> floorRootExits
@@ -1074,8 +1087,12 @@ public record MKWorkspaceExportManifest(
                 Codec.STRING.optionalFieldOf("floor_exit_mask", "").forGetter(ExportFloorRuntimeMetadata::floorExitMask),
                 MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundation_policy", MKWorkspaceFoundationPolicy.none())
                         .forGetter(ExportFloorRuntimeMetadata::foundationPolicy),
+                ResourceLocation.CODEC.optionalFieldOf("floor_block", MKWorkspaceMaterialPalette.defaultPalette().floorBlock())
+                        .forGetter(ExportFloorRuntimeMetadata::floorBlock),
                 ResourceLocation.CODEC.optionalFieldOf("wall_block", MKWorkspaceMaterialPalette.defaultPalette().wallBlock())
                         .forGetter(ExportFloorRuntimeMetadata::wallBlock),
+                ResourceLocation.CODEC.optionalFieldOf("ceiling_block", MKWorkspaceMaterialPalette.defaultPalette().ceilingBlock())
+                        .forGetter(ExportFloorRuntimeMetadata::ceilingBlock),
                 MKJigsawPieceMetadata.FloorLinkCandidate.CODEC.listOf()
                         .optionalFieldOf("floor_link_candidates", List.of())
                         .forGetter(ExportFloorRuntimeMetadata::floorLinkCandidates),

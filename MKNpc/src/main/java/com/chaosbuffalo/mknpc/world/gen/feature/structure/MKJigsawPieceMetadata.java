@@ -32,12 +32,16 @@ public record MKJigsawPieceMetadata(
         boolean basementCapApproachEnabled,
         String floorExitMask,
         MKWorkspaceFoundationPolicy foundationPolicy,
+        ResourceLocation floorBlock,
         ResourceLocation wallBlock,
+        ResourceLocation ceilingBlock,
         List<FloorLinkCandidate> floorLinkCandidates,
         List<FloorClosableOpening> floorClosableOpenings,
         List<FloorRootExit> floorRootExits
 ) {
+    private static final ResourceLocation DEFAULT_FLOOR_BLOCK = MKWorkspaceMaterialPalette.defaultPalette().floorBlock();
     private static final ResourceLocation DEFAULT_WALL_BLOCK = MKWorkspaceMaterialPalette.defaultPalette().wallBlock();
+    private static final ResourceLocation DEFAULT_CEILING_BLOCK = MKWorkspaceMaterialPalette.defaultPalette().ceilingBlock();
 
     public static final Codec<MKJigsawPieceMetadata> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             MKJigsawPieceRole.CODEC.fieldOf("role").forGetter(MKJigsawPieceMetadata::pieceRole),
@@ -62,13 +66,16 @@ public record MKJigsawPieceMetadata(
                     verticalStackMetadata.minBasementFloors(), verticalStackMetadata.maxBasementFloors(),
                     verticalStackMetadata.topCapApproachEnabled(), verticalStackMetadata.basementEntryEnabled(),
                     verticalStackMetadata.basementCapApproachEnabled(), floorRuntimeMetadata.floorExitMask(),
-                    floorRuntimeMetadata.foundationPolicy(), floorRuntimeMetadata.wallBlock(),
+                    floorRuntimeMetadata.foundationPolicy(), floorRuntimeMetadata.floorBlock(),
+                    floorRuntimeMetadata.wallBlock(), floorRuntimeMetadata.ceilingBlock(),
                     floorRuntimeMetadata.floorLinkCandidates(), floorRuntimeMetadata.floorClosableOpenings(),
                     floorRuntimeMetadata.floorRootExits())));
 
     public MKJigsawPieceMetadata {
         floorExitMask = floorExitMask == null ? "" : floorExitMask;
+        floorBlock = floorBlock == null ? DEFAULT_FLOOR_BLOCK : floorBlock;
         wallBlock = wallBlock == null ? DEFAULT_WALL_BLOCK : wallBlock;
+        ceilingBlock = ceilingBlock == null ? DEFAULT_CEILING_BLOCK : ceilingBlock;
         floorLinkCandidates = floorLinkCandidates == null ? List.of() : List.copyOf(floorLinkCandidates);
         floorClosableOpenings = floorClosableOpenings == null ? List.of() : List.copyOf(floorClosableOpenings);
         floorRootExits = floorRootExits == null ? List.of() : List.copyOf(floorRootExits);
@@ -79,7 +86,8 @@ public record MKJigsawPieceMetadata(
                                  boolean topCapOnly) {
         this(pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
                 topCapOnly, "", false, false, "", "", 0, 0, 0, 0, true, true, false,
-                "", MKWorkspaceFoundationPolicy.none(), DEFAULT_WALL_BLOCK, List.of(), List.of(), List.of());
+                "", MKWorkspaceFoundationPolicy.none(), DEFAULT_FLOOR_BLOCK, DEFAULT_WALL_BLOCK,
+                DEFAULT_CEILING_BLOCK, List.of(), List.of(), List.of());
     }
 
     public MKJigsawPieceMetadata(MKJigsawPieceRole pieceRole, int progressionDelta, int verticalLevelDelta,
@@ -87,7 +95,8 @@ public record MKJigsawPieceMetadata(
                                  boolean topCapOnly, String topologyGroup, boolean mainPathEnding) {
         this(pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
                 topCapOnly, topologyGroup, mainPathEnding, false, "", "", 0, 0, 0, 0, true, true, false,
-                "", MKWorkspaceFoundationPolicy.none(), DEFAULT_WALL_BLOCK, List.of(), List.of(), List.of());
+                "", MKWorkspaceFoundationPolicy.none(), DEFAULT_FLOOR_BLOCK, DEFAULT_WALL_BLOCK,
+                DEFAULT_CEILING_BLOCK, List.of(), List.of(), List.of());
     }
 
     public MKJigsawPieceMetadata(MKJigsawPieceRole pieceRole, int progressionDelta, int verticalLevelDelta,
@@ -95,7 +104,8 @@ public record MKJigsawPieceMetadata(
                                  boolean topCapOnly, String topologyGroup, boolean mainPathEnding, boolean branchCap) {
         this(pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
                 topCapOnly, topologyGroup, mainPathEnding, branchCap, "", "", 0, 0, 0, 0, true, true, false,
-                "", MKWorkspaceFoundationPolicy.none(), DEFAULT_WALL_BLOCK, List.of(), List.of(), List.of());
+                "", MKWorkspaceFoundationPolicy.none(), DEFAULT_FLOOR_BLOCK, DEFAULT_WALL_BLOCK,
+                DEFAULT_CEILING_BLOCK, List.of(), List.of(), List.of());
     }
 
     public MKJigsawPieceMetadata(MKJigsawPieceRole pieceRole, int progressionDelta, int verticalLevelDelta,
@@ -104,7 +114,8 @@ public record MKJigsawPieceMetadata(
                                  boolean branchCap, MKWorkspaceFoundationPolicy foundationPolicy) {
         this(pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
                 topCapOnly, topologyGroup, mainPathEnding, branchCap, "", "", 0, 0, 0, 0, true, true, false,
-                "", foundationPolicy, DEFAULT_WALL_BLOCK, List.of(), List.of(), List.of());
+                "", foundationPolicy, DEFAULT_FLOOR_BLOCK, DEFAULT_WALL_BLOCK, DEFAULT_CEILING_BLOCK,
+                List.of(), List.of(), List.of());
     }
 
     public MKJigsawPieceMetadata(MKJigsawPieceRole pieceRole, int progressionDelta, int verticalLevelDelta,
@@ -117,7 +128,8 @@ public record MKJigsawPieceMetadata(
         this(pieceRole, progressionDelta, verticalLevelDelta, allowOnMainPath, allowOnBranchPath, terminal,
                 topCapOnly, topologyGroup, mainPathEnding, branchCap, verticalStackId, verticalStackSlot, minMainFloors,
                 maxMainFloors, minBasementFloors, maxBasementFloors, topCapApproachEnabled, basementEntryEnabled,
-                basementCapApproachEnabled, "", foundationPolicy, DEFAULT_WALL_BLOCK, List.of(), List.of(), List.of());
+                basementCapApproachEnabled, "", foundationPolicy, DEFAULT_FLOOR_BLOCK, DEFAULT_WALL_BLOCK,
+                DEFAULT_CEILING_BLOCK, List.of(), List.of(), List.of());
     }
 
     public boolean hasVerticalStackLayout() {
@@ -132,8 +144,8 @@ public record MKJigsawPieceMetadata(
     }
 
     private FloorRuntimeMetadata floorRuntimeMetadata() {
-        return new FloorRuntimeMetadata(floorExitMask, foundationPolicy, wallBlock, floorLinkCandidates,
-                floorClosableOpenings, floorRootExits);
+        return new FloorRuntimeMetadata(floorExitMask, foundationPolicy, floorBlock, wallBlock, ceilingBlock,
+                floorLinkCandidates, floorClosableOpenings, floorRootExits);
     }
 
     public record FloorLinkCandidate(
@@ -271,7 +283,9 @@ public record MKJigsawPieceMetadata(
     private record FloorRuntimeMetadata(
             String floorExitMask,
             MKWorkspaceFoundationPolicy foundationPolicy,
+            ResourceLocation floorBlock,
             ResourceLocation wallBlock,
+            ResourceLocation ceilingBlock,
             List<FloorLinkCandidate> floorLinkCandidates,
             List<FloorClosableOpening> floorClosableOpenings,
             List<FloorRootExit> floorRootExits
@@ -280,8 +294,12 @@ public record MKJigsawPieceMetadata(
                 Codec.STRING.optionalFieldOf("floor_exit_mask", "").forGetter(FloorRuntimeMetadata::floorExitMask),
                 MKWorkspaceFoundationPolicy.CODEC.optionalFieldOf("foundation_policy", MKWorkspaceFoundationPolicy.none())
                         .forGetter(FloorRuntimeMetadata::foundationPolicy),
+                ResourceLocation.CODEC.optionalFieldOf("floor_block", DEFAULT_FLOOR_BLOCK)
+                        .forGetter(FloorRuntimeMetadata::floorBlock),
                 ResourceLocation.CODEC.optionalFieldOf("wall_block", DEFAULT_WALL_BLOCK)
                         .forGetter(FloorRuntimeMetadata::wallBlock),
+                ResourceLocation.CODEC.optionalFieldOf("ceiling_block", DEFAULT_CEILING_BLOCK)
+                        .forGetter(FloorRuntimeMetadata::ceilingBlock),
                 FloorLinkCandidate.CODEC.listOf().optionalFieldOf("floor_link_candidates", List.of())
                         .forGetter(FloorRuntimeMetadata::floorLinkCandidates),
                 FloorClosableOpening.CODEC.listOf().optionalFieldOf("floor_closable_openings", List.of())

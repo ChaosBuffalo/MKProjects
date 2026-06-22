@@ -1,7 +1,9 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import org.junit.jupiter.api.Test;
 
@@ -93,5 +95,50 @@ class MKJigsawPlacementTest {
         assertEquals(12, decoded.maxLinksPerFloor());
         assertEquals(2, decoded.maxLinksPerRoom());
         assertEquals(48, decoded.maxLinkLength());
+    }
+
+    @Test
+    void pieceMetadataCodecCarriesFullFloorPalette() {
+        ResourceLocation floorBlock = ResourceLocation.parse("minecraft:polished_deepslate");
+        ResourceLocation wallBlock = ResourceLocation.parse("minecraft:deepslate_bricks");
+        ResourceLocation ceilingBlock = ResourceLocation.parse("minecraft:dark_oak_planks");
+        MKJigsawPieceMetadata metadata = new MKJigsawPieceMetadata(
+                MKJigsawPieceRole.ROOM,
+                0,
+                0,
+                true,
+                false,
+                false,
+                false,
+                "tower.primary.main_floor",
+                false,
+                false,
+                "",
+                "",
+                0,
+                0,
+                0,
+                0,
+                true,
+                true,
+                false,
+                "",
+                MKWorkspaceFoundationPolicy.none(),
+                floorBlock,
+                wallBlock,
+                ceilingBlock,
+                List.of(),
+                List.of(),
+                List.of()
+        );
+
+        JsonElement encoded = MKJigsawPieceMetadata.CODEC.encodeStart(JsonOps.INSTANCE, metadata)
+                .getOrThrow();
+        MKJigsawPieceMetadata decoded = MKJigsawPieceMetadata.CODEC.parse(JsonOps.INSTANCE, encoded)
+                .getOrThrow();
+
+        assertEquals(floorBlock, decoded.floorBlock());
+        assertEquals(wallBlock, decoded.wallBlock());
+        assertEquals(ceilingBlock, decoded.ceilingBlock());
     }
 }

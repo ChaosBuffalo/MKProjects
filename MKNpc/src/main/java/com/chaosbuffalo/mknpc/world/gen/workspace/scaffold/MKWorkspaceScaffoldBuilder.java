@@ -279,7 +279,7 @@ public class MKWorkspaceScaffoldBuilder {
         clearWorkspaceHeightBounds(level, context.clearedBounds());
         clearBounds(level, context.exportBounds());
         if (floorLinkInsert) {
-            placeFloorLinkInsertScaffold(level, context.exportBounds(), floorState, wallState, ceilingState);
+            placeFloorLinkInsertScaffold(level, context.exportBounds(), floorState, wallState);
         } else if (!emptyScaffold) {
             placeExteriorMargin(level, context.exportBounds(), context.geometryBounds());
             int verticalShellThickness = getVerticalShellThickness(plannedPiece);
@@ -506,11 +506,11 @@ public class MKWorkspaceScaffoldBuilder {
     }
 
     private void placeFloorLinkInsertScaffold(ServerLevel level, BoundingBox bounds, BlockState floorState,
-                                              BlockState wallState, BlockState ceilingState) {
+                                              BlockState wallState) {
         for (int x = bounds.minX(); x <= bounds.maxX(); x++) {
             for (int z = bounds.minZ(); z <= bounds.maxZ(); z++) {
                 level.setBlock(new BlockPos(x, bounds.minY(), z), floorState, Block.UPDATE_ALL);
-                level.setBlock(new BlockPos(x, bounds.maxY(), z), ceilingState, Block.UPDATE_ALL);
+                level.setBlock(new BlockPos(x, bounds.maxY(), z), wallState, Block.UPDATE_ALL);
             }
         }
         if (bounds.getYSpan() <= 2) {

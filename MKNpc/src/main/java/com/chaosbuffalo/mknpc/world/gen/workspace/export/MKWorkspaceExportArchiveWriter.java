@@ -128,7 +128,9 @@ public class MKWorkspaceExportArchiveWriter {
                     pieceMetadata.basementCapApproachEnabled(),
                     pieceMetadata.floorExitMask(),
                     pieceMetadata.foundationPolicy(),
+                    pieceMetadata.floorBlock(),
                     pieceMetadata.wallBlock(),
+                    pieceMetadata.ceilingBlock(),
                     pieceMetadata.floorLinkCandidates(),
                     pieceMetadata.floorClosableOpenings(),
                     pieceMetadata.floorRootExits()

@@ -546,10 +546,14 @@ public class MKJigsawStructure extends MKStructure {
 
     private LinkPalette linkPalette(MKWorkspaceFloorTopologySettings settings, MKJigsawPieceMetadata rootMetadata) {
         MKWorkspaceMaterialPalette defaults = MKWorkspaceMaterialPalette.defaultPalette();
+        ResourceLocation floorBlock = BuiltInRegistries.BLOCK.getOptional(rootMetadata.floorBlock()).isPresent() ?
+                rootMetadata.floorBlock() : defaults.floorBlock();
         ResourceLocation wallBlock = BuiltInRegistries.BLOCK.getOptional(rootMetadata.wallBlock()).isPresent() ?
                 rootMetadata.wallBlock() : defaults.wallBlock();
-        MKWorkspaceMaterialPalette basePalette = new MKWorkspaceMaterialPalette(defaults.floorBlock(), wallBlock,
-                defaults.ceilingBlock(), defaults.stairBlock(), defaults.slabBlock(), defaults.ladderBlock());
+        ResourceLocation ceilingBlock = BuiltInRegistries.BLOCK.getOptional(rootMetadata.ceilingBlock()).isPresent() ?
+                rootMetadata.ceilingBlock() : defaults.ceilingBlock();
+        MKWorkspaceMaterialPalette basePalette = new MKWorkspaceMaterialPalette(floorBlock, wallBlock,
+                ceilingBlock, defaults.stairBlock(), defaults.slabBlock(), defaults.ladderBlock());
         MKWorkspaceMaterialPalette resolved = settings.paletteOverride()
                 .map(override -> override.resolve(basePalette))
                 .orElse(basePalette);
@@ -1022,10 +1026,10 @@ public class MKJigsawStructure extends MKStructure {
                 }
             }
 
-            BlockPos ceiling = offsetAcross(center, axis, across).above(height);
-            if (!decaying || shouldPlaceShellBlock(candidate, ceiling, routeIndex, routeLength,
+            BlockPos topShell = offsetAcross(center, axis, across).above(height);
+            if (!decaying || shouldPlaceShellBlock(candidate, topShell, routeIndex, routeLength,
                     shellDecayWeight(ShellBlockRole.CEILING, height, height, interior))) {
-                if (setIfInChunk(level, chunkBounds, ceiling, candidate.palette().ceiling())) {
+                if (setIfInChunk(level, chunkBounds, topShell, candidate.palette().wall())) {
                     carvedBlocks++;
                 }
             }
