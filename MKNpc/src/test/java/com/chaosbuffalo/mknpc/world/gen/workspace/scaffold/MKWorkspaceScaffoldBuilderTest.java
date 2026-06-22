@@ -119,6 +119,23 @@ class MKWorkspaceScaffoldBuilderTest {
     }
 
     @Test
+    void gridLayoutUsesEachFamilyColumnWidthInsteadOfGlobalMaxWidth() {
+        MKWorkspaceGridLayout layout = new MKWorkspaceGridLayout();
+        MKPlannedPiece smallA = plannedPiece("small_a", 0, 5, 5, 5);
+        MKPlannedPiece wide = plannedPiece("wide", 0, 17, 5, 5);
+        MKPlannedPiece smallB = plannedPiece("small_b", 0, 5, 5, 5);
+
+        List<MKWorkspaceGridLayout.Placement> placements = layout.assignPlacements(BlockPos.ZERO,
+                List.of(smallA, wide, smallB), 1, 2, 2, 4, 2);
+
+        assertEquals(15, placements.get(0).previewBounds().getXSpan());
+        assertEquals(27, placements.get(1).previewBounds().getXSpan());
+        assertEquals(15, placements.get(2).previewBounds().getXSpan());
+        assertEquals(2, placements.get(1).previewBounds().minX() - placements.get(0).previewBounds().maxX() - 1);
+        assertEquals(2, placements.get(2).previewBounds().minX() - placements.get(1).previewBounds().maxX() - 1);
+    }
+
+    @Test
     void existingWorkspaceClearBoundsMergeExpandedPiecePreviewBounds() {
         MKWorkspaceScaffoldBuilder builder = new MKWorkspaceScaffoldBuilder();
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO).withPieces(List.of(
@@ -200,12 +217,16 @@ class MKWorkspaceScaffoldBuilderTest {
     }
 
     private static MKPlannedPiece plannedPiece(String baseName, int variantIndex) {
+        return plannedPiece(baseName, variantIndex, 5, 5, 5);
+    }
+
+    private static MKPlannedPiece plannedPiece(String baseName, int variantIndex, int width, int length, int height) {
         return new MKPlannedPiece(
                 "test." + baseName,
                 variantIndex == 0 ? baseName + "_template" : baseName + "_" + variantIndex,
-                5,
-                5,
-                5,
+                width,
+                length,
+                height,
                 List.of(),
                 Map.of(
                         MKWorkspaceGridLayout.TAG_BASE_NAME, baseName,

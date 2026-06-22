@@ -19,34 +19,37 @@ public class MKWorkspaceGridLayout {
 
     public List<Placement> assignPlacements(BlockPos anchor, List<MKPlannedPiece> pieces, int shellMargin,
                                             int exteriorAirMargin, int previewMargin, int columns, int cellPadding) {
-        int maxPreviewWidth = 0;
+        Map<String, Integer> columnWidths = new LinkedHashMap<>();
         int maxPreviewLength = 0;
         int maxPreviewHeight = 0;
         for (MKPlannedPiece piece : pieces) {
-            int exportWidth = getExportWidth(piece, shellMargin, exteriorAirMargin);
             int exportLength = getExportLength(piece, shellMargin, exteriorAirMargin);
             int exportHeight = getExportHeight(piece, shellMargin);
-            int previewWidth = exportWidth + (2 * previewMargin);
+            int previewWidth = getExportWidth(piece, shellMargin, exteriorAirMargin) + (2 * previewMargin);
             int previewLength = exportLength + (2 * previewMargin);
             int previewHeight = exportHeight;
-            maxPreviewWidth = Math.max(maxPreviewWidth, previewWidth);
+            String baseName = getBaseName(piece);
+            columnWidths.merge(baseName, previewWidth, Math::max);
             maxPreviewLength = Math.max(maxPreviewLength, previewLength);
             maxPreviewHeight = Math.max(maxPreviewHeight, previewHeight);
         }
 
-        int strideX = maxPreviewWidth + cellPadding;
+        Map<String, Integer> columnOrigins = new LinkedHashMap<>();
+        int nextColumnX = 0;
+        for (Map.Entry<String, Integer> entry : columnWidths.entrySet()) {
+            columnOrigins.put(entry.getKey(), nextColumnX);
+            nextColumnX += entry.getValue() + cellPadding;
+        }
         int strideZ = maxPreviewLength + cellPadding;
         BlockPos start = anchor.offset(WORKSPACE_START_MARGIN, 0, WORKSPACE_START_MARGIN);
-        Map<String, Integer> columnByBaseName = new LinkedHashMap<>();
         List<Placement> placements = new ArrayList<>();
         for (MKPlannedPiece piece : pieces) {
             String baseName = getBaseName(piece);
-            int column = columnByBaseName.computeIfAbsent(baseName, ignored -> columnByBaseName.size());
             int row = getVariantIndex(piece);
             int previewWidth = getExportWidth(piece, shellMargin, exteriorAirMargin) + (2 * previewMargin);
             int previewLength = getExportLength(piece, shellMargin, exteriorAirMargin) + (2 * previewMargin);
             int previewHeight = getExportHeight(piece, shellMargin);
-            BlockPos previewOrigin = start.offset(column * strideX, 0, row * strideZ);
+            BlockPos previewOrigin = start.offset(columnOrigins.getOrDefault(baseName, 0), 0, row * strideZ);
             BoundingBox previewBounds = new BoundingBox(
                     previewOrigin.getX(),
                     previewOrigin.getY(),
