@@ -212,6 +212,13 @@ public class MKStructureWorkspaceService {
                 .isPresent();
     }
 
+    public boolean canApplyLinkRenderingRefresh(ServerLevel level, MKStructureWorkspace requested) {
+        return IMKStructureWorkspaceData.get(level)
+                .getWorkspaceByAnchor(requested.anchor())
+                .filter(existing -> canRefreshLinkRenderingOnly(existing, requested))
+                .isPresent();
+    }
+
     public Optional<MKWorkspaceMutationPreflight> preflightWorkspaceUpdate(ServerLevel level,
                                                                            MKStructureWorkspace requested) {
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
