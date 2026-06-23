@@ -17,6 +17,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAcces
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologyMutationPreflightService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayerState;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInvalidationReport;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLayerStateService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
@@ -140,6 +141,9 @@ public class MKStructureWorkspaceService {
             }
             if (canRegenerateHallwayRoutingOnly(existing, workspace)) {
                 return regenerateHallwayRouting(level, existing, workspace);
+            }
+            if (canRefreshLinkRenderingOnly(existing, workspace)) {
+                return refreshLinkRenderingMetadata(level, existing, workspace);
             }
             MKStructureWorkspace updated = new MKStructureWorkspace(
                     existing.id(),
@@ -920,6 +924,35 @@ public class MKStructureWorkspaceService {
                 lockedInvalidatedLayers(existing, preflight.report()).isEmpty();
     }
 
+    boolean canRefreshLinkRenderingOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
+        if (existing.pieces().isEmpty()) {
+            return false;
+        }
+        MKWorkspaceMutationPreflight preflight = preflightWorkspaceUpdate(existing, requested,
+                System.currentTimeMillis());
+        return "refresh_link_rendering".equals(preflight.report().recommendedOperation()) &&
+                preflight.report().safety() == MKWorkspaceMutationSafety.SAFE_METADATA_UPDATE &&
+                lockedInvalidatedLayers(existing, preflight.report()).isEmpty();
+    }
+
+    private Optional<MKStructureWorkspace> refreshLinkRenderingMetadata(ServerLevel level,
+                                                                        MKStructureWorkspace existing,
+                                                                        MKStructureWorkspace requested) {
+        long nowEpochMillis = System.currentTimeMillis();
+        MKWorkspaceMutationPreflight preflight = preflightWorkspaceUpdate(existing, requested, nowEpochMillis);
+        if (!"refresh_link_rendering".equals(preflight.report().recommendedOperation()) ||
+                preflight.report().safety() != MKWorkspaceMutationSafety.SAFE_METADATA_UPDATE ||
+                !lockedInvalidatedLayers(existing, preflight.report()).isEmpty()) {
+            return Optional.empty();
+        }
+        MKStructureWorkspace updated = workspaceForUpdate(existing, requested, existing.pieces(), nowEpochMillis,
+                preflight.workspaceWithDirtyLayers().layerStates());
+        IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
+        data.updateWorkspace(updated);
+        syncBlockEntity(level, updated.anchor(), updated.id());
+        return Optional.of(updated);
+    }
+
     private net.minecraft.nbt.CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, java.util.UUID id,
                                                                 int previewMargin) {
         return settingsComparisonTag(workspace, id, previewMargin, workspace.palette());
@@ -972,6 +1005,13 @@ public class MKStructureWorkspaceService {
     MKStructureWorkspace workspaceForUpdate(MKStructureWorkspace existing, MKStructureWorkspace requested,
                                             List<MKWorkspacePieceDefinition> pieces,
                                             long nowEpochMillis) {
+        return workspaceForUpdate(existing, requested, pieces, nowEpochMillis, existing.layerStates());
+    }
+
+    MKStructureWorkspace workspaceForUpdate(MKStructureWorkspace existing, MKStructureWorkspace requested,
+                                            List<MKWorkspacePieceDefinition> pieces,
+                                            long nowEpochMillis,
+                                            List<MKWorkspaceGeneratedLayerState> layerStates) {
         return new MKStructureWorkspace(
                 existing.id(),
                 requested.anchor(),
@@ -993,7 +1033,7 @@ public class MKStructureWorkspaceService {
                 existing.createdAt(),
                 nowEpochMillis,
                 pieces,
-                existing.layerStates()
+                layerStates
         );
     }
 

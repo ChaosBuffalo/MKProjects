@@ -17,15 +17,20 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologyInvalidationAnalyzer;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInvalidationReport;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunProjection;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationSafety;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteSwapSafety;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomGeometry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
@@ -64,6 +69,8 @@ public class WorkspaceDraftSession {
     private int selectedInsertFamilyIndex;
     private boolean dirty;
     final WorkspaceDraftViewState viewState = new WorkspaceDraftViewState();
+    private final MKWorkspaceFloorTopologyInvalidationAnalyzer floorTopologyInvalidationAnalyzer =
+            new MKWorkspaceFloorTopologyInvalidationAnalyzer();
 
     public WorkspaceDraftSession(MKWorkspaceScreen screen, int selectedFamilyIndex, int selectedFamilyExitIndex, int selectedOpeningIndex,
                                  int selectedLinearRunIndex, int selectedInsertFamilyIndex) {
@@ -827,7 +834,8 @@ public class WorkspaceDraftSession {
         return canRelayoutPreviewMarginOnly(existing, requested) ||
                 canSwapPaletteOnly(existing, requested) ||
                 canRenameIdentityOnly(existing, requested) ||
-                canExpandMarginsOnly(existing, requested);
+                canExpandMarginsOnly(existing, requested) ||
+                canRefreshLinkRenderingOnly(existing, requested);
     }
 
     private boolean canRelayoutPreviewMarginOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
@@ -890,6 +898,47 @@ public class WorkspaceDraftSession {
                 .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin(),
                         requested.palette(), requested.namespace(), requested.structureName(),
                         requested.shellMargin(), requested.exteriorAirMargin()));
+    }
+
+    private boolean canRefreshLinkRenderingOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
+        List<MKWorkspaceInvalidationReport> reports = floorTopologyReports(existing, requested);
+        return !reports.isEmpty() && reports.stream().allMatch(this::isRefreshLinkRenderingReport) &&
+                reports.stream()
+                        .flatMap(report -> report.invalidatedLayers().stream())
+                        .noneMatch(existing::layerLocked);
+    }
+
+    private List<MKWorkspaceInvalidationReport> floorTopologyReports(MKStructureWorkspace existing,
+                                                                     MKStructureWorkspace requested) {
+        List<MKWorkspaceInvalidationReport> reports = new ArrayList<>();
+        for (MKWorkspaceFloorTopologySettings requestedSettings :
+                requested.topologyProfile().floorTopologySettings()) {
+            MKWorkspaceFloorTopologySettings previousSettings = existing.topologyProfile()
+                    .floorTopologySettings(requestedSettings.stackId(), requestedSettings.floorRole())
+                    .orElseGet(() -> existing.topologyProfile().floorTopologySettingsOrDefault(
+                            requestedSettings.stackId(), requestedSettings.floorRole()));
+            MKWorkspaceInvalidationReport report = floorTopologyInvalidationAnalyzer.analyze(
+                    floorPlannerId(requestedSettings), previousSettings, requestedSettings);
+            if (!report.invalidatedLayers().isEmpty()) {
+                reports.add(report);
+            }
+        }
+        return List.copyOf(reports);
+    }
+
+    private boolean isRefreshLinkRenderingReport(MKWorkspaceInvalidationReport report) {
+        return "refresh_link_rendering".equals(report.recommendedOperation()) &&
+                report.safety() == MKWorkspaceMutationSafety.SAFE_METADATA_UPDATE &&
+                report.invalidatedLayers().stream().allMatch(layer ->
+                        layer == MKWorkspaceGeneratedLayer.SIDECAR_BLOCKS ||
+                                layer == MKWorkspaceGeneratedLayer.RUNTIME_METADATA);
+    }
+
+    private MKWorkspacePlannerId floorPlannerId(MKWorkspaceFloorTopologySettings settings) {
+        return MKWorkspacePlannerId.of(settings.stackId())
+                .child("floor")
+                .child(settings.floorRole())
+                .child("floor_plan");
     }
 
     private CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, UUID id, int previewMargin) {

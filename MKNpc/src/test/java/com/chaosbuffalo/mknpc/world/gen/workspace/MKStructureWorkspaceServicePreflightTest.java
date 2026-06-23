@@ -2,12 +2,14 @@ package com.chaosbuffalo.mknpc.world.gen.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorLinkGenerationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLayerStateService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationSafety;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
@@ -22,6 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MKStructureWorkspaceServicePreflightTest {
@@ -76,6 +79,32 @@ class MKStructureWorkspaceServicePreflightTest {
 
         assertEquals(List.of(MKWorkspaceGeneratedLayer.HALLWAY_ROUTING),
                 service.lockedInvalidatedLayers(existing, preflight.report()));
+    }
+
+    @Test
+    void linkRenderingOnlyPreflightIsSafeMetadataUpdate() {
+        MKWorkspaceFloorTopologySettings previous = settings("tower.primary", "main_floor");
+        MKWorkspaceFloorTopologySettings updated = previous
+                .withLinkGenerationMode(MKWorkspaceFloorLinkGenerationMode.DECAYING_HALLWAY)
+                .withLinkDecay(0.65f);
+        MKStructureWorkspace existing = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(floorPiece("room_00_template", "room_00",
+                        MKWorkspacePlannerId.of("keep.main.floor_plan.room.room_00"))));
+        existing = withTopologyProfile(existing, existing.topologyProfile().withFloorTopologySettings(previous));
+        MKStructureWorkspace requested = withTopologyProfile(existing,
+                existing.topologyProfile().withFloorTopologySettings(updated));
+
+        MKWorkspaceMutationPreflight preflight = service.preflightWorkspaceUpdate(existing, requested, 123L);
+
+        assertEquals("refresh_link_rendering", preflight.report().recommendedOperation());
+        assertEquals(MKWorkspaceMutationSafety.SAFE_METADATA_UPDATE, preflight.report().safety());
+        assertTrue(service.canRefreshLinkRenderingOnly(existing, requested));
+        assertTrue(preflight.workspaceWithDirtyLayers()
+                .layerState(MKWorkspaceGeneratedLayer.SIDECAR_BLOCKS).orElseThrow().dirty());
+        assertTrue(preflight.workspaceWithDirtyLayers()
+                .layerState(MKWorkspaceGeneratedLayer.RUNTIME_METADATA).orElseThrow().dirty());
+        assertFalse(preflight.workspaceWithDirtyLayers()
+                .layerState(MKWorkspaceGeneratedLayer.HALLWAY_ROUTING).orElseThrow().dirty());
     }
 
     @Test
