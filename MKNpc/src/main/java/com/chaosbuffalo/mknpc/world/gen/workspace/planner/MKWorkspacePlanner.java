@@ -39,4 +39,8 @@ public interface MKWorkspacePlanner extends MKWorkspacePiecePlanner {
     default boolean allowsRuntimePoolChild(String runtimePoolPath, Map<String, String> childTags) {
         return true;
     }
+
+    default boolean usesRuntimePathFilters(String runtimePoolPath) {
+        return true;
+    }
 }

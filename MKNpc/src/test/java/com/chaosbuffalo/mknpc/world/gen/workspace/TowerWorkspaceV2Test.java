@@ -1250,6 +1250,18 @@ class TowerWorkspaceV2Test {
         assertRuntimePoolDoesNotContain(workspaceWithPieces, manifest,
                 "keep_slots/keep/courtyard/south_west",
                 "keep_courtyard_path_corner_t_south_west");
+        assertRuntimePoolContains(workspaceWithPieces, manifest,
+                "keep_slots/keep/corner/north_west",
+                "keep_corner_north_west_entry");
+        assertRuntimePoolContains(workspaceWithPieces, manifest,
+                "keep_slots/keep/corner/north_east",
+                "keep_corner_north_east_entry");
+        assertRuntimePoolContains(workspaceWithPieces, manifest,
+                "keep_slots/keep/corner/south_east",
+                "keep_corner_south_east_entry");
+        assertRuntimePoolContains(workspaceWithPieces, manifest,
+                "keep_slots/keep/corner/south_west",
+                "keep_corner_south_west_entry");
     }
 
     @Test
@@ -4607,7 +4619,10 @@ class TowerWorkspaceV2Test {
         MKWorkspaceExportManifest.ExportRuntimePool pool = manifest.runtimeHints().pools().stream()
                 .filter(candidate -> candidate.poolId().equals(poolId))
                 .findFirst()
-                .orElseThrow();
+                .orElseThrow(() -> new AssertionError("Missing runtime pool " + poolId + "; available pools: " +
+                        manifest.runtimeHints().pools().stream()
+                                .map(poolHint -> poolHint.poolId().toString())
+                                .toList()));
         assertTrue(pool.childBaseNames().contains(childBaseName),
                 "Expected " + poolId + " to contain " + childBaseName + " but found " + pool.childBaseNames());
     }

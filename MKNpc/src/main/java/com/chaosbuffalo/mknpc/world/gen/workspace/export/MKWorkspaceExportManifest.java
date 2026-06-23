@@ -1357,19 +1357,22 @@ public record MKWorkspaceExportManifest(
                 if (connector.incomingPool().equals(EMPTY_POOL)) {
                     continue;
                 }
-                if (isBranchCapRuntimePool(workspace, connector.incomingPool()) &&
-                        !runtimeInfo.map(MKWorkspaceRuntimePieceInfo::branchCap).orElse(false)) {
-                    continue;
+                String runtimePoolPath = runtimePoolPath(workspace, connector.incomingPool());
+                if (planner.usesRuntimePathFilters(runtimePoolPath)) {
+                    if (isBranchCapRuntimePool(workspace, connector.incomingPool()) &&
+                            !runtimeInfo.map(MKWorkspaceRuntimePieceInfo::branchCap).orElse(false)) {
+                        continue;
+                    }
+                    if (isBranchRuntimePool(workspace, connector.incomingPool()) &&
+                            runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnBranchPath).orElse(false) == false) {
+                        continue;
+                    }
+                    if (!isBranchRuntimePool(workspace, connector.incomingPool()) &&
+                            runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnMainPath).orElse(true) == false) {
+                        continue;
+                    }
                 }
-                if (isBranchRuntimePool(workspace, connector.incomingPool()) &&
-                        runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnBranchPath).orElse(false) == false) {
-                    continue;
-                }
-                if (!isBranchRuntimePool(workspace, connector.incomingPool()) &&
-                        runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnMainPath).orElse(true) == false) {
-                    continue;
-                }
-                if (!planner.allowsRuntimePoolChild(runtimePoolPath(workspace, connector.incomingPool()), piece.tags())) {
+                if (!planner.allowsRuntimePoolChild(runtimePoolPath, piece.tags())) {
                     continue;
                 }
                 childrenByPool.computeIfAbsent(connector.incomingPool(), key -> new LinkedHashSet<>()).add(baseName);
@@ -1398,19 +1401,22 @@ public record MKWorkspaceExportManifest(
                 if (connector.incomingPool().equals(EMPTY_POOL)) {
                     continue;
                 }
-                if (isBranchCapRuntimePool(manifest, connector.incomingPool()) &&
-                        !runtimeInfo.map(MKWorkspaceRuntimePieceInfo::branchCap).orElse(false)) {
-                    continue;
+                String runtimePoolPath = runtimePoolPath(manifest, connector.incomingPool());
+                if (planner.usesRuntimePathFilters(runtimePoolPath)) {
+                    if (isBranchCapRuntimePool(manifest, connector.incomingPool()) &&
+                            !runtimeInfo.map(MKWorkspaceRuntimePieceInfo::branchCap).orElse(false)) {
+                        continue;
+                    }
+                    if (isBranchRuntimePool(manifest, connector.incomingPool()) &&
+                            runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnBranchPath).orElse(false) == false) {
+                        continue;
+                    }
+                    if (!isBranchRuntimePool(manifest, connector.incomingPool()) &&
+                            runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnMainPath).orElse(true) == false) {
+                        continue;
+                    }
                 }
-                if (isBranchRuntimePool(manifest, connector.incomingPool()) &&
-                        runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnBranchPath).orElse(false) == false) {
-                    continue;
-                }
-                if (!isBranchRuntimePool(manifest, connector.incomingPool()) &&
-                        runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnMainPath).orElse(true) == false) {
-                    continue;
-                }
-                if (!planner.allowsRuntimePoolChild(runtimePoolPath(manifest, connector.incomingPool()), piece.tags())) {
+                if (!planner.allowsRuntimePoolChild(runtimePoolPath, piece.tags())) {
                     continue;
                 }
                 childrenByPool.computeIfAbsent(connector.incomingPool(), key -> new LinkedHashSet<>())
@@ -1495,16 +1501,14 @@ public record MKWorkspaceExportManifest(
     }
 
     private static boolean isBranchRuntimePool(MKStructureWorkspace workspace, ResourceLocation poolId) {
-        String path = runtimePoolPath(workspace, poolId);
-        return path.startsWith("linear_runs/branch/") ||
-                path.startsWith("rooms/branch/") ||
-                path.contains("/linear_runs/branch/") ||
-                path.contains("/rooms/branch/") ||
-                path.startsWith("branch_caps/");
+        return isBranchRuntimePoolPath(runtimePoolPath(workspace, poolId));
     }
 
     private static boolean isBranchRuntimePool(MKWorkspaceExportManifest manifest, ResourceLocation poolId) {
-        String path = runtimePoolPath(manifest, poolId);
+        return isBranchRuntimePoolPath(runtimePoolPath(manifest, poolId));
+    }
+
+    private static boolean isBranchRuntimePoolPath(String path) {
         return path.startsWith("linear_runs/branch/") ||
                 path.startsWith("rooms/branch/") ||
                 path.contains("/linear_runs/branch/") ||

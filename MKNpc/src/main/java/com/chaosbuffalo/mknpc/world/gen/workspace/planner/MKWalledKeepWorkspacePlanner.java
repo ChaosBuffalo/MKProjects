@@ -543,6 +543,11 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         return courtyardContentFitsSocket(childTags);
     }
 
+    @Override
+    public boolean usesRuntimePathFilters(String runtimePoolPath) {
+        return !runtimePoolPath.startsWith(SLOT_POOL_PREFIX);
+    }
+
     private static boolean isCourtyardContentSocketRuntimePool(String runtimePoolPath) {
         return runtimePoolPath.startsWith(SLOT_POOL_PREFIX + "keep/courtyard/") &&
                 !runtimePoolPath.startsWith(SLOT_POOL_PREFIX + "keep/courtyard/path/");
