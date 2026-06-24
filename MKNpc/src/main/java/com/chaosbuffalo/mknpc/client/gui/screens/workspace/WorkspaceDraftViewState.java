@@ -6,6 +6,7 @@ import java.util.Map;
 final class WorkspaceDraftViewState {
     final Map<String, Long> floorTopologyPreviewSeeds = new HashMap<>();
     final Map<String, String> verticalStackPreviewSelections = new HashMap<>();
+    final Map<String, Boolean> floorRootVariantDrawers = new HashMap<>();
     final Map<String, Boolean> floorRoomVariantDrawers = new HashMap<>();
     private final Map<String, String> plannerSelections = new HashMap<>();
 
@@ -14,6 +15,8 @@ final class WorkspaceDraftViewState {
         floorTopologyPreviewSeeds.putAll(source.floorTopologyPreviewSeeds);
         verticalStackPreviewSelections.clear();
         verticalStackPreviewSelections.putAll(source.verticalStackPreviewSelections);
+        floorRootVariantDrawers.clear();
+        floorRootVariantDrawers.putAll(source.floorRootVariantDrawers);
         floorRoomVariantDrawers.clear();
         floorRoomVariantDrawers.putAll(source.floorRoomVariantDrawers);
         plannerSelections.clear();

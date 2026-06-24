@@ -944,6 +944,48 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             @Override
+            public int floorRootVariantCount(String sectionKey) {
+                String baseName = floorRootVariantBaseName(editor, stackId, sectionKey);
+                if (baseName.isBlank() || screen.workspace() == null) {
+                    return 0;
+                }
+                return (int) screen.workspace().pieces().stream()
+                        .filter(piece -> baseName.equals(piece.tags().get("workspace_base_name")))
+                        .filter(WorkspacePieceDisplay::isAuthoredTemplatePiece)
+                        .count();
+            }
+
+            @Override
+            public boolean floorRootVariantsExpanded(String sectionKey) {
+                return editor.viewState.floorRootVariantDrawers.getOrDefault(
+                        floorRootVariantDrawerKey(stackId, sectionKey), false);
+            }
+
+            @Override
+            public void toggleFloorRootVariants(String sectionKey) {
+                String key = floorRootVariantDrawerKey(stackId, sectionKey);
+                boolean expanded = !editor.viewState.floorRootVariantDrawers.getOrDefault(key, false);
+                editor.viewState.floorRootVariantDrawers.put(key, expanded);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public void addFloorRootVariant(String sectionKey) {
+                String baseName = floorRootVariantBaseName(editor, stackId, sectionKey);
+                if (!baseName.isBlank()) {
+                    PacketDistributor.sendToServer(new AddWorkspaceVariantPacket(screen.anchor(), baseName));
+                }
+            }
+
+            @Override
+            public void openFloorRootVariants(String sectionKey) {
+                String topologySlot = floorRootTopologySlot(editor, stackId, sectionKey);
+                if (!topologySlot.isBlank()) {
+                    screen.openWorkspaceTopologySlotForPrefix(topologySlot);
+                }
+            }
+
+            @Override
             public int floorMinMainPathPieces(String sectionKey) {
                 return floorEditor(editor, stackId, sectionKey).minMainPathPieces();
             }
@@ -1585,6 +1627,22 @@ public class WorkspaceVerticalStackTopologyPanel {
         MKWorkspaceFloorRoomProfile profile = profiles.get(index);
         return "floor_plan_" + safeFloorRoomId(stackId) + "_" + safeFloorRoomId(sectionKey) + "_" +
                 kind.getSerializedName() + "_" + safeFloorRoomId(profile.id()) + "_" + index;
+    }
+
+    private String floorRootVariantBaseName(WorkspaceDraftSession editor, String stackId, String sectionKey) {
+        return familyForSection(editor, stackId, sectionKey)
+                .map(MKWorkspaceRoomFamilyDefinition::baseName)
+                .orElse("");
+    }
+
+    private String floorRootTopologySlot(WorkspaceDraftSession editor, String stackId, String sectionKey) {
+        return familyForSection(editor, stackId, sectionKey)
+                .map(MKWorkspaceRoomFamilyDefinition::topologySlotId)
+                .orElse("");
+    }
+
+    private String floorRootVariantDrawerKey(String stackId, String sectionKey) {
+        return stackId + "|" + sectionKey + "|root";
     }
 
     private String floorRoomTopologySlot(MKWorkspaceFloorRoomKind kind) {
