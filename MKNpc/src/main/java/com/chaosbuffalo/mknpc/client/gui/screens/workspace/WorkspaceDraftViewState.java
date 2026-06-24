@@ -6,6 +6,7 @@ import java.util.Map;
 final class WorkspaceDraftViewState {
     final Map<String, Long> floorTopologyPreviewSeeds = new HashMap<>();
     final Map<String, String> verticalStackPreviewSelections = new HashMap<>();
+    final Map<String, Boolean> floorRoomVariantDrawers = new HashMap<>();
     private final Map<String, String> plannerSelections = new HashMap<>();
 
     String plannerSelection(String key, String fallback) {

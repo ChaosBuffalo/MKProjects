@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.client.gui.widgets.MKIntegerSlider;
+import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
@@ -26,6 +27,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -1284,6 +1286,45 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             @Override
+            public int floorRoomVariantCount(String sectionKey, MKWorkspaceFloorRoomKind kind, int index) {
+                String baseName = floorRoomVariantBaseName(editor, stackId, sectionKey, kind, index);
+                if (baseName.isBlank()) {
+                    return 0;
+                }
+                return (int) screen.workspace().pieces().stream()
+                        .filter(piece -> baseName.equals(piece.tags().get("workspace_base_name")))
+                        .filter(WorkspacePieceDisplay::isAuthoredTemplatePiece)
+                        .count();
+            }
+
+            @Override
+            public boolean floorRoomVariantsExpanded(String sectionKey, MKWorkspaceFloorRoomKind kind, int index) {
+                return editor.viewState.floorRoomVariantDrawers.getOrDefault(
+                        floorRoomVariantDrawerKey(stackId, sectionKey, kind, index), false);
+            }
+
+            @Override
+            public void toggleFloorRoomVariants(String sectionKey, MKWorkspaceFloorRoomKind kind, int index) {
+                String key = floorRoomVariantDrawerKey(stackId, sectionKey, kind, index);
+                boolean expanded = !editor.viewState.floorRoomVariantDrawers.getOrDefault(key, false);
+                editor.viewState.floorRoomVariantDrawers.put(key, expanded);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public void addFloorRoomVariant(String sectionKey, MKWorkspaceFloorRoomKind kind, int index) {
+                String baseName = floorRoomVariantBaseName(editor, stackId, sectionKey, kind, index);
+                if (!baseName.isBlank()) {
+                    PacketDistributor.sendToServer(new AddWorkspaceVariantPacket(screen.anchor(), baseName));
+                }
+            }
+
+            @Override
+            public void openFloorRoomVariants(String sectionKey, MKWorkspaceFloorRoomKind kind) {
+                screen.openWorkspaceTopologySlotForPrefix(floorRoomTopologySlot(kind));
+            }
+
+            @Override
             public void setRoomMainExitDirection(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
                                                  Direction direction) {
                 floorEditor(editor, stackId, sectionKey).setRoomMainExitDirection(kind, index, direction);
@@ -1533,6 +1574,35 @@ public class WorkspaceVerticalStackTopologyPanel {
             WorkspaceTopologyUiSupport.addRow(screen, content,
                     screen.makeWhiteText(Component.literal("Foundation Block")), blockButton);
         }
+    }
+
+    private String floorRoomVariantBaseName(WorkspaceDraftSession editor, String stackId, String sectionKey,
+                                            MKWorkspaceFloorRoomKind kind, int index) {
+        List<MKWorkspaceFloorRoomProfile> profiles = floorEditor(editor, stackId, sectionKey).roomProfiles(kind);
+        if (index < 0 || index >= profiles.size()) {
+            return "";
+        }
+        MKWorkspaceFloorRoomProfile profile = profiles.get(index);
+        return "floor_plan_" + safeFloorRoomId(stackId) + "_" + safeFloorRoomId(sectionKey) + "_" +
+                kind.getSerializedName() + "_" + safeFloorRoomId(profile.id()) + "_" + index;
+    }
+
+    private String floorRoomTopologySlot(MKWorkspaceFloorRoomKind kind) {
+        return "tower.floor_plan." + kind.getSerializedName();
+    }
+
+    private String floorRoomVariantDrawerKey(String stackId, String sectionKey,
+                                             MKWorkspaceFloorRoomKind kind, int index) {
+        return stackId + "|" + sectionKey + "|" + kind.getSerializedName() + "|" + index;
+    }
+
+    private String safeFloorRoomId(String value) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            builder.append(Character.isLetterOrDigit(c) ? c : '_');
+        }
+        return builder.toString();
     }
 
     private MKWorkspaceFoundationPolicy foundationPolicyForMode(MKWorkspaceFoundationMode mode,
