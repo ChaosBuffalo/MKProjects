@@ -39,6 +39,8 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
     private static final String PERIMETER_ROOT_SLOT = "keep.perimeter";
     private static final String GATEHOUSE_SLOT = "keep.gate.main";
     private static final String ENTRY_APPROACH_SLOT = "keep.entry_approach.main";
+    private static final String COURTYARD_PATH_SLOT = "keep.courtyard.path";
+    private static final String COURTYARD_CONTENT_SLOT = "keep.courtyard.content";
     private static final String WALKWAY_WEST_SLOT = "keep.walkway.west";
     private static final String WALKWAY_EAST_SLOT = "keep.walkway.east";
 
@@ -201,7 +203,7 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
                 pathThickness, PATH);
         elements.add(new PreviewElement("Courtyard path loop",
                 "Courtyard path loop\n" + pathSize + " x " + pathSize + " blocks",
-                pathRect, NavigationTarget.templateSlot("keep.walkway")));
+                pathRect, NavigationTarget.templateSlot(COURTYARD_PATH_SLOT)));
 
         int entryLength = report.entryApproachLength();
         int entryWidth = entryApproachWidth();
@@ -297,7 +299,7 @@ public class MKWalledKeepFootprintPreview extends MKWidget {
         Rect rect = new Rect(centerX - slotPx / 2, centerY - slotPx / 2, slotPx, slotPx);
         drawElement(graphics, elements, rect, SLOT, name,
                 name + "\n" + socketSize + " x " + socketSize + " blocks",
-                NavigationTarget.templateSlot(topologySlotId));
+                NavigationTarget.templateSlot(COURTYARD_CONTENT_SLOT));
     }
 
     private int wallUnitSpan() {
