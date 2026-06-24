@@ -124,7 +124,12 @@ public abstract class WorkspacePageBase {
         MKStackLayoutHorizontal row = new MKStackLayoutHorizontal(0, 0, screen.buttonHeight());
         row.setPaddingLeft(4).setPaddingRight(4);
 
-        MKButton apply = new MKButton(Component.literal("Apply Changes"), 160, screen.buttonHeight());
+        MKButton apply = new MKButton(Component.literal("Apply Changes"), 160, screen.buttonHeight()) {
+            @Override
+            public boolean isEnabled() {
+                return super.isEnabled() && screen.draftSession().dirty();
+            }
+        };
         apply.setPressedCallback((button, mouseButton) -> {
             screen.draftSession().submit();
             return true;

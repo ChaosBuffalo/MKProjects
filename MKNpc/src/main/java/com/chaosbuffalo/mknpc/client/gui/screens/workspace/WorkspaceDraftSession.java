@@ -158,6 +158,9 @@ public class WorkspaceDraftSession {
     }
 
     public void submit() {
+        if (!dirty() && screen.workspace() != null) {
+            return;
+        }
         snapDraftVerticalAccess();
         MKStructureWorkspace draft = buildWorkspaceDraft();
         if (requiresDestructiveRegenerateConfirmation(draft)) {
