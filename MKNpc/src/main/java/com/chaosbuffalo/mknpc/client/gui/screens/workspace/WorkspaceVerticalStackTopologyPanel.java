@@ -17,6 +17,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadIn
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomGeometry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
@@ -986,6 +987,46 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             @Override
+            public int floorHallVariantCount(String sectionKey, boolean main) {
+                String baseName = floorHallVariantBaseName(editor, stackId, sectionKey, main);
+                if (baseName.isBlank() || screen.workspace() == null) {
+                    return 0;
+                }
+                return (int) screen.workspace().pieces().stream()
+                        .filter(piece -> baseName.equals(piece.tags().getOrDefault("workspace_base_name",
+                                piece.pieceName())))
+                        .filter(WorkspacePieceDisplay::isAuthoredTemplatePiece)
+                        .count();
+            }
+
+            @Override
+            public boolean floorHallVariantsExpanded(String sectionKey, boolean main) {
+                return editor.viewState.floorHallVariantDrawers.getOrDefault(
+                        floorHallVariantDrawerKey(stackId, sectionKey, main), false);
+            }
+
+            @Override
+            public void toggleFloorHallVariants(String sectionKey, boolean main) {
+                String key = floorHallVariantDrawerKey(stackId, sectionKey, main);
+                boolean expanded = !editor.viewState.floorHallVariantDrawers.getOrDefault(key, false);
+                editor.viewState.floorHallVariantDrawers.put(key, expanded);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public void addFloorHallVariant(String sectionKey, boolean main) {
+                String baseName = floorHallVariantBaseName(editor, stackId, sectionKey, main);
+                if (!baseName.isBlank()) {
+                    PacketDistributor.sendToServer(new AddWorkspaceVariantPacket(screen.anchor(), baseName));
+                }
+            }
+
+            @Override
+            public void openFloorHallVariants(String sectionKey, boolean main) {
+                screen.openWorkspaceTopologySlotForPrefix(floorHallTopologySlot(main));
+            }
+
+            @Override
             public int floorMinMainPathPieces(String sectionKey) {
                 return floorEditor(editor, stackId, sectionKey).minMainPathPieces();
             }
@@ -1252,6 +1293,46 @@ public class WorkspaceVerticalStackTopologyPanel {
             public void floorInsertMaxDecay(String sectionKey, float value) {
                 floorEditor(editor, stackId, sectionKey).insertMaxDecay(value);
                 screen.flagNeedSetup();
+            }
+
+            @Override
+            public int floorInsertVariantCount(String sectionKey) {
+                String baseName = floorInsertVariantBaseName(editor, stackId, sectionKey);
+                if (baseName.isBlank() || screen.workspace() == null) {
+                    return 0;
+                }
+                return (int) screen.workspace().pieces().stream()
+                        .filter(piece -> baseName.equals(piece.tags().getOrDefault("workspace_base_name",
+                                piece.pieceName())))
+                        .filter(WorkspacePieceDisplay::isAuthoredTemplatePiece)
+                        .count();
+            }
+
+            @Override
+            public boolean floorInsertVariantsExpanded(String sectionKey) {
+                return editor.viewState.floorInsertVariantDrawers.getOrDefault(
+                        floorInsertVariantDrawerKey(stackId, sectionKey), false);
+            }
+
+            @Override
+            public void toggleFloorInsertVariants(String sectionKey) {
+                String key = floorInsertVariantDrawerKey(stackId, sectionKey);
+                boolean expanded = !editor.viewState.floorInsertVariantDrawers.getOrDefault(key, false);
+                editor.viewState.floorInsertVariantDrawers.put(key, expanded);
+                screen.flagNeedSetup();
+            }
+
+            @Override
+            public void addFloorInsertVariant(String sectionKey) {
+                String baseName = floorInsertVariantBaseName(editor, stackId, sectionKey);
+                if (!baseName.isBlank()) {
+                    PacketDistributor.sendToServer(new AddWorkspaceVariantPacket(screen.anchor(), baseName));
+                }
+            }
+
+            @Override
+            public void openFloorInsertVariants(String sectionKey) {
+                screen.openWorkspaceTopologySlotForPrefix(floorInsertTopologySlot());
             }
 
             @Override
@@ -1643,6 +1724,64 @@ public class WorkspaceVerticalStackTopologyPanel {
 
     private String floorRootVariantDrawerKey(String stackId, String sectionKey) {
         return stackId + "|" + sectionKey + "|root";
+    }
+
+    private String floorHallVariantBaseName(WorkspaceDraftSession editor, String stackId, String sectionKey,
+                                            boolean main) {
+        String pathName = main ? "main" : "branch";
+        String linearRunId = floorHallLinearRunId(editor, stackId, sectionKey, main);
+        if (linearRunId.isBlank()) {
+            return "";
+        }
+        return "floor_plan_" + safeFloorRoomId(stackId) + "_" + safeFloorRoomId(sectionKey) +
+                "_linear_run_" + safeFloorRoomId(linearRunId) + "_" + pathName;
+    }
+
+    private String floorHallLinearRunId(WorkspaceDraftSession editor, String stackId, String sectionKey,
+                                        boolean main) {
+        String openingProfileId = floorHallOpeningProfileId(editor, stackId, sectionKey, main);
+        if (openingProfileId.isBlank()) {
+            return "";
+        }
+        Optional<MKWorkspaceLinearRunFamilyDefinition> family = editor.draft().linearRunFamilies.stream()
+                .filter(linearRun -> !linearRun.topologySlotId().startsWith("keep."))
+                .filter(linearRun -> main ? linearRun.allowOnMainPath() : linearRun.allowOnBranchPath())
+                .filter(linearRun -> openingProfileId.equals(linearRun.openingProfileId()))
+                .findFirst();
+        return family.map(MKWorkspaceLinearRunFamilyDefinition::linearRunId)
+                .orElse(main ? "floor_main_hallway" : "floor_branch_hallway");
+    }
+
+    private String floorHallOpeningProfileId(WorkspaceDraftSession editor, String stackId, String sectionKey,
+                                             boolean main) {
+        MKWorkspaceHorizontalExitPathKind pathKind = main ? MKWorkspaceHorizontalExitPathKind.MAIN_EXIT :
+                MKWorkspaceHorizontalExitPathKind.BRANCH;
+        return familyForSection(editor, stackId, sectionKey)
+                .flatMap(family -> family.horizontalExits().stream()
+                        .filter(exit -> exit.pathKind() == pathKind)
+                        .map(MKWorkspaceFamilyHorizontalExitDefinition::openingProfileId)
+                        .findFirst())
+                .orElse(main ? "main_opening" : "branch_opening");
+    }
+
+    private String floorHallTopologySlot(boolean main) {
+        return "tower.floor_plan.linear_run." + (main ? "main" : "branch");
+    }
+
+    private String floorHallVariantDrawerKey(String stackId, String sectionKey, boolean main) {
+        return stackId + "|" + sectionKey + "|hall|" + (main ? "main" : "branch");
+    }
+
+    private String floorInsertVariantBaseName(WorkspaceDraftSession editor, String stackId, String sectionKey) {
+        return floorEditor(editor, stackId, sectionKey).insertFamily().orElse("");
+    }
+
+    private String floorInsertTopologySlot() {
+        return "workspace.insert_family.floor_link_hallway";
+    }
+
+    private String floorInsertVariantDrawerKey(String stackId, String sectionKey) {
+        return stackId + "|" + sectionKey + "|insert";
     }
 
     private String floorRoomTopologySlot(MKWorkspaceFloorRoomKind kind) {

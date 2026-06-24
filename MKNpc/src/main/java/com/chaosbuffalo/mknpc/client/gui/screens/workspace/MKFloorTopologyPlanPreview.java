@@ -50,8 +50,12 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     private static final int ROOT_EXIT_CONTROLS_BODY_HEIGHT = 124;
     private static final int ROOT_VARIANTS_COLLAPSED_HEIGHT = 24;
     private static final int ROOT_VARIANTS_EXPANDED_HEIGHT = 70;
+    private static final int HALL_VARIANTS_COLLAPSED_HEIGHT = 24;
+    private static final int HALL_VARIANTS_EXPANDED_HEIGHT = 70;
     private static final int PATH_CONTROLS_HEIGHT = 374;
     private static final int PATH_CONTROLS_WITH_INSERTS_HEIGHT = 490;
+    private static final int INSERT_VARIANTS_COLLAPSED_HEIGHT = 24;
+    private static final int INSERT_VARIANTS_EXPANDED_HEIGHT = 70;
     private static final int ROOM_PROFILE_BODY_HEIGHT = 122;
     private static final int ROOM_VARIANTS_COLLAPSED_HEIGHT = 24;
     private static final int ROOM_VARIANTS_EXPANDED_HEIGHT = 70;
@@ -109,8 +113,10 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         if (viewMode == ViewMode.PREVIEW_ONLY) {
             return 12 + PREVIEW_SIZE + 18;
         }
-        int settingsHeight = rootExitControlsHeight(controls, sectionKey) + pathControlsHeight(controls, sectionKey) +
-                roomSectionsHeight(controls, sectionKey);
+        int settingsHeight = rootExitControlsHeight(controls, sectionKey);
+        if (hasRootPathExits(controls, sectionKey)) {
+            settingsHeight += pathControlsHeight(controls, sectionKey) + roomSectionsHeight(controls, sectionKey);
+        }
         if (viewMode == ViewMode.SETTINGS_ONLY) {
             return 12 + settingsHeight + 18;
         }
@@ -145,12 +151,41 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     }
 
     private static int pathControlsHeight(Controls controls, String sectionKey) {
-        return controls.floorLinkInsertsEnabled(sectionKey) ? PATH_CONTROLS_WITH_INSERTS_HEIGHT : PATH_CONTROLS_HEIGHT;
+        int height = controls.floorLinkInsertsEnabled(sectionKey) ? PATH_CONTROLS_WITH_INSERTS_HEIGHT :
+                PATH_CONTROLS_HEIGHT;
+        if (controls.floorLinkInsertsEnabled(sectionKey)) {
+            height += controls.floorInsertVariantsExpanded(sectionKey) ?
+                    INSERT_VARIANTS_EXPANDED_HEIGHT : INSERT_VARIANTS_COLLAPSED_HEIGHT;
+        }
+        return height;
     }
 
     private static int rootExitControlsHeight(Controls controls, String sectionKey) {
-        return ROOT_EXIT_CONTROLS_BODY_HEIGHT + (controls.floorRootVariantsExpanded(sectionKey) ?
+        int height = ROOT_EXIT_CONTROLS_BODY_HEIGHT + (controls.floorRootVariantsExpanded(sectionKey) ?
                 ROOT_VARIANTS_EXPANDED_HEIGHT : ROOT_VARIANTS_COLLAPSED_HEIGHT);
+        if (hasRootPathExits(controls, sectionKey)) {
+            if (controls.floorMainHallwaysEnabled(sectionKey) &&
+                    hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)) {
+                height += controls.floorHallVariantsExpanded(sectionKey, true) ?
+                        HALL_VARIANTS_EXPANDED_HEIGHT : HALL_VARIANTS_COLLAPSED_HEIGHT;
+            }
+            if (controls.floorBranchHallwaysEnabled(sectionKey) &&
+                    hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.BRANCH)) {
+                height += controls.floorHallVariantsExpanded(sectionKey, false) ?
+                        HALL_VARIANTS_EXPANDED_HEIGHT : HALL_VARIANTS_COLLAPSED_HEIGHT;
+            }
+        }
+        return height;
+    }
+
+    private static boolean hasRootPathExits(Controls controls, String sectionKey) {
+        return hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.MAIN_EXIT) ||
+                hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.BRANCH);
+    }
+
+    private static boolean hasRootPathKind(Controls controls, String sectionKey, MKWorkspaceHorizontalExitPathKind kind) {
+        return controls.rootExits(sectionKey).stream()
+                .anyMatch(exit -> exit.direction().getAxis().isHorizontal() && exit.pathKind() == kind);
     }
 
     @Override
@@ -170,10 +205,12 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             int cursorY = settingsStartY(x, y, width);
             drawRootExitControls(graphics, mc, x + 8, cursorY, width - 16, mouseX, mouseY);
             cursorY += rootExitControlsHeight(controls, sectionKey);
-            drawPathControls(graphics, mc, x + 8, cursorY, width - 16, mouseX, mouseY);
-            cursorY += pathControlsHeight(controls, sectionKey);
-            for (MKWorkspaceFloorRoomKind kind : roomKindsForUi()) {
-                cursorY = drawRoomSection(graphics, mc, x + 8, cursorY, width - 16, kind, mouseX, mouseY);
+            if (hasRootPathExits(controls, sectionKey)) {
+                drawPathControls(graphics, mc, x + 8, cursorY, width - 16, mouseX, mouseY);
+                cursorY += pathControlsHeight(controls, sectionKey);
+                for (MKWorkspaceFloorRoomKind kind : roomKindsForUi()) {
+                    cursorY = drawRoomSection(graphics, mc, x + 8, cursorY, width - 16, kind, mouseX, mouseY);
+                }
             }
         }
     }
@@ -189,10 +226,11 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         if (drawsSettings() && handleRootExitPress(mouseX, mouseY, mouseButton)) {
             return true;
         }
-        if (drawsSettings() && handlePathControlPress(mouseX, mouseY, mouseButton)) {
+        if (drawsSettings() && hasRootPathExits(controls, sectionKey) &&
+                handlePathControlPress(mouseX, mouseY, mouseButton)) {
             return true;
         }
-        return drawsSettings() && handleRoomPress(mouseX, mouseY, mouseButton);
+        return drawsSettings() && hasRootPathExits(controls, sectionKey) && handleRoomPress(mouseX, mouseY, mouseButton);
     }
 
     @Override
@@ -353,6 +391,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                     0, 100, x, linkY + 270, width, mouseX, mouseY, "floorInsertProbability");
             drawSlider(graphics, mc, "Max Decay", Math.round(controls.floorInsertMaxDecay(sectionKey) * 100.0f),
                     0, 100, x, linkY + 292, width, mouseX, mouseY, "floorInsertMaxDecay");
+            drawInsertVariantsDrawer(graphics, mc, x, linkY, width, mouseX, mouseY);
         }
     }
 
@@ -368,6 +407,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             graphics.drawString(mc.font, "Left: select", editorX, mask.y() + 6, MUTED_TEXT, false);
             graphics.drawString(mc.font, "Right: branch", editorX, mask.y() + 18, MUTED_TEXT, false);
             drawRootVariantsDrawer(graphics, mc, x, y, width, mouseX, mouseY);
+            drawHallVariantsDrawers(graphics, mc, x, y, width, mouseX, mouseY);
             return;
         }
         MKWorkspaceFamilyHorizontalExitDefinition exit = selected.get();
@@ -387,6 +427,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 controls.rootExitVerticalMax(sectionKey), editorX, mask.y() + 88, sliderWidth,
                 required ? -1 : mouseX, required ? -1 : mouseY, "rootExitVertical");
         drawRootVariantsDrawer(graphics, mc, x, y, width, mouseX, mouseY);
+        drawHallVariantsDrawers(graphics, mc, x, y, width, mouseX, mouseY);
     }
 
     private void drawRootVariantsDrawer(GuiGraphics graphics, Minecraft mc, int x, int y, int width,
@@ -402,6 +443,61 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         int drawerY = toggle.y() + toggle.height() + 4;
         ButtonBounds add = rootVariantAddButton(x, y, width);
         ButtonBounds open = rootVariantOpenButton(x, y, width);
+        drawButton(graphics, mc, add, "Add Variant", mouseX, mouseY, false);
+        drawButton(graphics, mc, open, "Open Page", mouseX, mouseY, false);
+        graphics.drawString(mc.font, variantCount == 0 ? "No authored variants" :
+                        "Authored variants " + variantCount,
+                x + 5, drawerY + 26, variantCount == 0 ? MUTED_TEXT : TEXT, false);
+    }
+
+    private void drawHallVariantsDrawers(GuiGraphics graphics, Minecraft mc, int x, int y, int width,
+                                         int mouseX, int mouseY) {
+        int offset = ROOT_EXIT_CONTROLS_BODY_HEIGHT + rootVariantsHeight();
+        if (controls.floorMainHallwaysEnabled(sectionKey) &&
+                hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)) {
+            drawHallVariantsDrawer(graphics, mc, x, y, width, offset, true, mouseX, mouseY);
+            offset += hallVariantsHeight(true);
+        }
+        if (controls.floorBranchHallwaysEnabled(sectionKey) &&
+                hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.BRANCH)) {
+            drawHallVariantsDrawer(graphics, mc, x, y, width, offset, false, mouseX, mouseY);
+        }
+    }
+
+    private void drawHallVariantsDrawer(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int offset,
+                                        boolean main, int mouseX, int mouseY) {
+        boolean expanded = controls.floorHallVariantsExpanded(sectionKey, main);
+        int variantCount = controls.floorHallVariantCount(sectionKey, main);
+        ButtonBounds toggle = variantToggleButton(x, y, width, offset);
+        String label = main ? "Main Hall Variants " : "Branch Hall Variants ";
+        drawButton(graphics, mc, toggle, label + (expanded ? "-" : "+") + " " + variantCount, mouseX, mouseY,
+                false);
+        if (!expanded) {
+            return;
+        }
+        int drawerY = toggle.y() + toggle.height() + 4;
+        ButtonBounds add = variantAddButton(x, y, width, offset);
+        ButtonBounds open = variantOpenButton(x, y, width, offset);
+        drawButton(graphics, mc, add, "Add Variant", mouseX, mouseY, false);
+        drawButton(graphics, mc, open, "Open Page", mouseX, mouseY, false);
+        graphics.drawString(mc.font, variantCount == 0 ? "No authored variants" :
+                        "Authored variants " + variantCount,
+                x + 5, drawerY + 26, variantCount == 0 ? MUTED_TEXT : TEXT, false);
+    }
+
+    private void drawInsertVariantsDrawer(GuiGraphics graphics, Minecraft mc, int x, int linkY, int width,
+                                          int mouseX, int mouseY) {
+        boolean expanded = controls.floorInsertVariantsExpanded(sectionKey);
+        int variantCount = controls.floorInsertVariantCount(sectionKey);
+        ButtonBounds toggle = insertVariantsToggleButton(x, linkY, width);
+        drawButton(graphics, mc, toggle, (expanded ? "Insert Variants -" : "Insert Variants +") + " " +
+                variantCount, mouseX, mouseY, false);
+        if (!expanded) {
+            return;
+        }
+        int drawerY = toggle.y() + toggle.height() + 4;
+        ButtonBounds add = insertVariantAddButton(x, linkY, width);
+        ButtonBounds open = insertVariantOpenButton(x, linkY, width);
         drawButton(graphics, mc, add, "Add Variant", mouseX, mouseY, false);
         drawButton(graphics, mc, open, "Open Page", mouseX, mouseY, false);
         graphics.drawString(mc.font, variantCount == 0 ? "No authored variants" :
@@ -939,6 +1035,22 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             controls.floorLinkInsertsEnabled(sectionKey, !controls.floorLinkInsertsEnabled(sectionKey));
             return true;
         }
+        if (controls.floorLinkInsertsEnabled(sectionKey)) {
+            if (isInRect(mouseX, mouseY, insertVariantsToggleButton(x, linkY, width))) {
+                controls.toggleFloorInsertVariants(sectionKey);
+                return true;
+            }
+            if (controls.floorInsertVariantsExpanded(sectionKey)) {
+                if (isInRect(mouseX, mouseY, insertVariantAddButton(x, linkY, width))) {
+                    controls.addFloorInsertVariant(sectionKey);
+                    return true;
+                }
+                if (isInRect(mouseX, mouseY, insertVariantOpenButton(x, linkY, width))) {
+                    controls.openFloorInsertVariants(sectionKey);
+                    return true;
+                }
+            }
+        }
         ArrayList<String> sliders = new ArrayList<>(List.of("floorLinkDensity", "floorMaxLinks",
                 "floorMaxLinksPerRoom", "floorMaxLinkLength", "floorLinkDecay", "floorEndpointIntact",
                 "floorMiddleDecay"));
@@ -999,6 +1111,9 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 return true;
             }
         }
+        if (handleHallVariantPress(x, y, getWidth() - 16, mouseX, mouseY)) {
+            return true;
+        }
         Optional<MKWorkspaceFamilyHorizontalExitDefinition> selected = controls.selectedRootExit(sectionKey)
                 .filter(exit -> exit.direction().getAxis().isHorizontal());
         if (selected.isEmpty()) {
@@ -1027,6 +1142,45 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 "rootExitVertical"))) {
             draggingSlider = "rootExitVertical";
             applySliderValue(mouseX);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean handleHallVariantPress(int x, int y, int width, double mouseX, double mouseY) {
+        if (!hasRootPathExits(controls, sectionKey)) {
+            return false;
+        }
+        int offset = ROOT_EXIT_CONTROLS_BODY_HEIGHT + rootVariantsHeight();
+        if (controls.floorMainHallwaysEnabled(sectionKey) &&
+                hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)) {
+            if (handleHallVariantPress(x, y, width, offset, true, mouseX, mouseY)) {
+                return true;
+            }
+            offset += hallVariantsHeight(true);
+        }
+        if (controls.floorBranchHallwaysEnabled(sectionKey) &&
+                hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.BRANCH)) {
+            return handleHallVariantPress(x, y, width, offset, false, mouseX, mouseY);
+        }
+        return false;
+    }
+
+    private boolean handleHallVariantPress(int x, int y, int width, int offset, boolean main,
+                                           double mouseX, double mouseY) {
+        if (isInRect(mouseX, mouseY, variantToggleButton(x, y, width, offset))) {
+            controls.toggleFloorHallVariants(sectionKey, main);
+            return true;
+        }
+        if (!controls.floorHallVariantsExpanded(sectionKey, main)) {
+            return false;
+        }
+        if (isInRect(mouseX, mouseY, variantAddButton(x, y, width, offset))) {
+            controls.addFloorHallVariant(sectionKey, main);
+            return true;
+        }
+        if (isInRect(mouseX, mouseY, variantOpenButton(x, y, width, offset))) {
+            controls.openFloorHallVariants(sectionKey, main);
             return true;
         }
         return false;
@@ -1248,6 +1402,13 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 return Optional.of("Open Variants Page\nManage variants for this floor root");
             }
         }
+        Optional<String> hallTooltip = hoveredHallVariantTooltip(rootX, rootY, rootWidth, mouseX, mouseY);
+        if (hallTooltip.isPresent()) {
+            return hallTooltip;
+        }
+        if (!hasRootPathExits(controls, sectionKey)) {
+            return Optional.empty();
+        }
         int cursorY = roomStartY(x, y, width);
         int roomX = x + 8;
         int roomWidth = width - 16;
@@ -1300,6 +1461,41 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 }
                 cursorY += roomProfileHeight(controls, sectionKey, kind, index);
             }
+        }
+        return Optional.empty();
+    }
+
+    private Optional<String> hoveredHallVariantTooltip(int x, int y, int width, int mouseX, int mouseY) {
+        int offset = ROOT_EXIT_CONTROLS_BODY_HEIGHT + rootVariantsHeight();
+        if (controls.floorMainHallwaysEnabled(sectionKey) &&
+                hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)) {
+            Optional<String> tooltip = hoveredHallVariantTooltip(x, y, width, offset, true, mouseX, mouseY);
+            if (tooltip.isPresent()) {
+                return tooltip;
+            }
+            offset += hallVariantsHeight(true);
+        }
+        if (controls.floorBranchHallwaysEnabled(sectionKey) &&
+                hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.BRANCH)) {
+            return hoveredHallVariantTooltip(x, y, width, offset, false, mouseX, mouseY);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<String> hoveredHallVariantTooltip(int x, int y, int width, int offset, boolean main,
+                                                      int mouseX, int mouseY) {
+        String label = main ? "Main Hall Variants" : "Branch Hall Variants";
+        if (isInRect(mouseX, mouseY, variantToggleButton(x, y, width, offset))) {
+            return Optional.of(label + "\nShow authored variants for this hallway category");
+        }
+        if (!controls.floorHallVariantsExpanded(sectionKey, main)) {
+            return Optional.empty();
+        }
+        if (isInRect(mouseX, mouseY, variantAddButton(x, y, width, offset))) {
+            return Optional.of("Add Variant\nCreate a new authored hallway variant");
+        }
+        if (isInRect(mouseX, mouseY, variantOpenButton(x, y, width, offset))) {
+            return Optional.of("Open Variants Page\nManage variants for this hallway category");
         }
         return Optional.empty();
     }
@@ -1489,18 +1685,52 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     }
 
     private ButtonBounds rootVariantsToggleButton(int x, int y, int width) {
-        return new ButtonBounds(x + 5, y + ROOT_EXIT_CONTROLS_BODY_HEIGHT, Math.min(132, width - 10), 18);
+        return variantToggleButton(x, y, width, ROOT_EXIT_CONTROLS_BODY_HEIGHT);
     }
 
     private ButtonBounds rootVariantAddButton(int x, int y, int width) {
-        int buttonY = y + ROOT_EXIT_CONTROLS_BODY_HEIGHT + 22;
-        return new ButtonBounds(x + 5, buttonY, Math.min(96, Math.max(72, (width - 15) / 2)), 18);
+        return variantAddButton(x, y, width, ROOT_EXIT_CONTROLS_BODY_HEIGHT);
     }
 
     private ButtonBounds rootVariantOpenButton(int x, int y, int width) {
-        ButtonBounds add = rootVariantAddButton(x, y, width);
+        return variantOpenButton(x, y, width, ROOT_EXIT_CONTROLS_BODY_HEIGHT);
+    }
+
+    private int rootVariantsHeight() {
+        return controls.floorRootVariantsExpanded(sectionKey) ? ROOT_VARIANTS_EXPANDED_HEIGHT :
+                ROOT_VARIANTS_COLLAPSED_HEIGHT;
+    }
+
+    private int hallVariantsHeight(boolean main) {
+        return controls.floorHallVariantsExpanded(sectionKey, main) ? HALL_VARIANTS_EXPANDED_HEIGHT :
+                HALL_VARIANTS_COLLAPSED_HEIGHT;
+    }
+
+    private ButtonBounds variantToggleButton(int x, int y, int width, int offset) {
+        return new ButtonBounds(x + 5, y + offset, Math.min(180, width - 10), 18);
+    }
+
+    private ButtonBounds variantAddButton(int x, int y, int width, int offset) {
+        int buttonY = y + offset + 22;
+        return new ButtonBounds(x + 5, buttonY, Math.min(96, Math.max(72, (width - 15) / 2)), 18);
+    }
+
+    private ButtonBounds variantOpenButton(int x, int y, int width, int offset) {
+        ButtonBounds add = variantAddButton(x, y, width, offset);
         return new ButtonBounds(add.x() + add.width() + 5, add.y(),
                 Math.min(96, Math.max(72, width - add.width() - 15)), 18);
+    }
+
+    private ButtonBounds insertVariantsToggleButton(int x, int linkY, int width) {
+        return variantToggleButton(x, linkY, width, 314);
+    }
+
+    private ButtonBounds insertVariantAddButton(int x, int linkY, int width) {
+        return variantAddButton(x, linkY, width, 314);
+    }
+
+    private ButtonBounds insertVariantOpenButton(int x, int linkY, int width) {
+        return variantOpenButton(x, linkY, width, 314);
     }
 
     private ButtonBounds pathToggleBounds(int x, int y, int index) {
@@ -1881,6 +2111,23 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         default void openFloorRootVariants(String sectionKey) {
         }
 
+        default int floorHallVariantCount(String sectionKey, boolean main) {
+            return 0;
+        }
+
+        default boolean floorHallVariantsExpanded(String sectionKey, boolean main) {
+            return false;
+        }
+
+        default void toggleFloorHallVariants(String sectionKey, boolean main) {
+        }
+
+        default void addFloorHallVariant(String sectionKey, boolean main) {
+        }
+
+        default void openFloorHallVariants(String sectionKey, boolean main) {
+        }
+
         int floorMinMainPathPieces(String sectionKey);
 
         void floorMinMainPathPieces(String sectionKey, int value);
@@ -1972,6 +2219,23 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         float floorInsertMaxDecay(String sectionKey);
 
         void floorInsertMaxDecay(String sectionKey, float value);
+
+        default int floorInsertVariantCount(String sectionKey) {
+            return 0;
+        }
+
+        default boolean floorInsertVariantsExpanded(String sectionKey) {
+            return false;
+        }
+
+        default void toggleFloorInsertVariants(String sectionKey) {
+        }
+
+        default void addFloorInsertVariant(String sectionKey) {
+        }
+
+        default void openFloorInsertVariants(String sectionKey) {
+        }
 
         long previewSeed(String sectionKey);
 
