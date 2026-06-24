@@ -659,9 +659,17 @@
             "branch_hallway_length": 9,
             "branch_hallway_width": 9,
             "enabled": true,
+            "generation": {
+              "decay": 0.68,
+              "insert_depth": 3,
+              "insert_family": "keep_center_basement_floor_link_insert",
+              "insert_spacing": 10,
+              "middle_decay_bonus": 0.39,
+              "mode": "decaying_hallway"
+            },
             "main_hallway_length": 9,
             "main_hallway_width": 9,
-            "max_link_length": 54
+            "max_link_length": 79
           },
           "profiles": {
             "branch_cap_profiles": [
@@ -692,7 +700,7 @@
                 "kind": "branch_cap",
                 "label": "Branch Cap",
                 "length": 23,
-                "width": 29
+                "width": 23
               }
             ],
             "branch_room_profiles": [
@@ -759,7 +767,7 @@
                 "id": "main_cap",
                 "kind": "main_cap",
                 "label": "Main Cap",
-                "length": 37,
+                "length": 23,
                 "width": 23
               }
             ],
@@ -790,24 +798,25 @@
                 "id": "main_room",
                 "kind": "main_room",
                 "label": "Main Room",
-                "length": 29,
+                "length": 23,
                 "randomize_main_exit": true,
-                "width": 29
+                "width": 23
               }
             ]
           },
           "settings": {
             "floor_role": "basement_floor",
-            "max_branch_pieces_before_cap": 2,
-            "max_main_path_pieces": 3,
+            "locked_layout_seed": -3494555354134417228,
+            "max_branch_pieces_before_cap": 1,
+            "max_main_path_pieces": 2,
             "stack_id": "keep.center"
           }
         },
         "links_enabled": true,
+        "locked_layout_seed": -3494555354134417228,
         "main_path_ending_pool": "mknpc:test_keep/main_caps/keep.center.basement_floor",
-        "max_branch_pieces_before_cap": 2,
-        "max_link_length": 54,
-        "max_main_path_pieces": 3,
+        "max_branch_pieces_before_cap": 1,
+        "max_link_length": 79,
         "min_main_path_pieces": 1,
         "root_length": 23,
         "root_width": 23,

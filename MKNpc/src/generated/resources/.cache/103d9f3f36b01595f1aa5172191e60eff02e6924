@@ -1,4 +1,4 @@
-// 1.21.1	2026-06-16T13:22:28.2856488	Registries
+// 1.21.1	2026-06-23T08:44:17.2962262	Registries
 1be1c5a6e5b47db3aecda7cf687a9dc6d0a4b26e data/mknpc/mknpc/mknpcs/test_ghost.json
 d35f18dc426304e4178fad5c486179efcfbe7c5f data/mknpc/mknpc/mknpcs/test_golem.json
 2df5da3c656a233fbaeab9ebfa2229dc1cd7dae8 data/mknpc/mknpc/mknpcs/test_golem_battleaxe.json
@@ -32,7 +32,7 @@ b1e1274b6120c375ed92fb113468681ca421a616 data/mknpc/mknpc/mknpcs/test_melee_spea
 a2580cd30a5f1bbe7c118527812144123dc3b10e data/mknpc/mknpc/mknpcs/test_skeleton.json
 5057c77db31f0ca80f2cb9f4857171fe34e22f34 data/mknpc/mknpc/mknpcs/test_skull_multi.json
 dd850fa55950d1374bc2352039833d325c2a1b4a data/mknpc/worldgen/structure/test_jigsaw.json
-b138542c9a2f279066337bb10817ee9cd185750a data/mknpc/worldgen/structure/test_keep.json
+34ade86747527e0c284e58f79dd77fa6ffe40a4f data/mknpc/worldgen/structure/test_keep.json
 055e63d7de4255d5171cc59b3415280fa697fd80 data/mknpc/worldgen/structure/test_tower.json
 b929e5aa6bfa0569378639d6b165070d95fae366 data/mknpc/worldgen/structure_set/test_keep.json
 be18e4bcdd225957d395a67141c44634856fdce8 data/mknpc/worldgen/structure_set/test_structures.json
@@ -59,10 +59,11 @@ b6e1d6f1f2af80fdabef97bf84a1d52cbf91e2db data/mknpc/worldgen/template_pool/test_
 40a10c4ea82c359dfb73c24ec064ee9220f60182 data/mknpc/worldgen/template_pool/test_keep/floor_plan/keep.center.basement_floor/rooms/main/main_opening/masks/none.json
 a2f49a620f0c4856d5555fcc36b7dcb3250172c2 data/mknpc/worldgen/template_pool/test_keep/floor_plan/keep.center.basement_floor/rooms/main/main_opening/masks/nw.json
 ac855f0879a103a61cb4fbec263e5770071c2fb2 data/mknpc/worldgen/template_pool/test_keep/floor_plan/keep.center.basement_floor/rooms/main/main_opening/masks/w.json
-2cb76cdc41a10171f3c7bbbf20f8dda310169427 data/mknpc/worldgen/template_pool/test_keep/keep_slots/keep/corner/north_east.json
-e0ecf814cdecafac64bc0fa656e1ee3f331e50e4 data/mknpc/worldgen/template_pool/test_keep/keep_slots/keep/corner/north_west.json
-9f928a2aeade8418e8edf8f281ff9620d1db2503 data/mknpc/worldgen/template_pool/test_keep/keep_slots/keep/corner/south_east.json
-36d976da68918d18706717ab2698244ab35099a0 data/mknpc/worldgen/template_pool/test_keep/keep_slots/keep/corner/south_west.json
+d9e66794f25f5cbebcc3bbf3fcb48839d138666f data/mknpc/worldgen/template_pool/test_keep/insert_families/keep_center_basement_floor_link_insert.json
+06617fd31b7ebc9e319f640fed175f7c6203d8a8 data/mknpc/worldgen/template_pool/test_keep/keep_slots/keep/corner/north_east.json
+462a6cdc167a6383e415701ca4593bee352aeb66 data/mknpc/worldgen/template_pool/test_keep/keep_slots/keep/corner/north_west.json
+d60551e14b93eee53918283a600d95ac7eb161c0 data/mknpc/worldgen/template_pool/test_keep/keep_slots/keep/corner/south_east.json
+fc5741c169affb412af9f6cccea8c0b9a2d9b242 data/mknpc/worldgen/template_pool/test_keep/keep_slots/keep/corner/south_west.json
 eab0cac3962d1d83d58b60102618f7831e6c18e7 data/mknpc/worldgen/template_pool/test_keep/keep_slots/keep/courtyard/east.json
 45b04aa25fec8fa099c5de0fddcd1515c0521f40 data/mknpc/worldgen/template_pool/test_keep/keep_slots/keep/courtyard/north.json
 cb5c4f5f0ad6b6407c26df09c9ce4328a1b9f550 data/mknpc/worldgen/template_pool/test_keep/keep_slots/keep/courtyard/north_east.json

@@ -27,7 +27,6 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePlannerNodeP
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePlannerClientRegistry;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTopologySlotEditor;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTopologySlotPage;
-import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTopologyDefaultsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTemplateGroupsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceUtilitiesPage;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
@@ -210,9 +209,6 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(new WorkspaceGenerateConfirmPage());
         addWorkspacePage(new WorkspaceFormIdentityPage());
         addWorkspacePage(new WorkspaceFormMaterialsPage());
-        WorkspaceTopologyDefaultsPage topologyDefaultsPage = new WorkspaceTopologyDefaultsPage();
-        addWorkspacePage(topologyDefaultsPage);
-        addState(WorkspaceTopologyDefaultsPage.DETAIL_ID, () -> topologyDefaultsPage.build(this));
         addWorkspacePage(new WorkspaceFormFamiliesPage());
         WorkspaceFormFamilyDetailPage familyDetailPage = new WorkspaceFormFamilyDetailPage();
         addWorkspacePage(familyDetailPage);
@@ -1076,7 +1072,7 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     private Map<String, List<MKWorkspacePieceDefinition>> groupPiecesByTopology() {
-        return WorkspacePieceDisplay.groupPiecesByTopology(workspace);
+        return WorkspacePieceDisplay.groupAuthoredPiecesByTopology(workspace);
     }
 
     public boolean supportsStairGeneration(MKWorkspacePieceDefinition piece) {

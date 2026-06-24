@@ -114,19 +114,6 @@ public class WorkspaceManagePage extends WorkspacePageBase {
             return true;
         });
 
-        MKButton editPlanner = new MKButton(Component.literal("Planner Settings"), 180, screen.buttonHeight());
-        content.addWidget(editPlanner);
-        content.addConstraintToWidget(new CenterXConstraint(), editPlanner);
-        editPlanner.setPressedCallback((button, mouseButton) -> {
-            openPlannerSettings(screen);
-            return true;
-        });
-    }
-
-    private void openPlannerSettings(MKWorkspaceScreen screen) {
-        screen.pushState(WorkspaceFormPage.ID);
-        screen.pushState(WorkspaceTopologyDefaultsPage.ID);
-        screen.flagNeedSetup();
     }
 
     private void addLayerStateSummary(MKWorkspaceScreen screen, MKStackLayoutVertical content,
@@ -143,17 +130,19 @@ public class WorkspaceManagePage extends WorkspacePageBase {
 
     private void addTemplateAuthoringSummary(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                              MKStructureWorkspace workspace) {
-        Map<String, List<MKWorkspacePieceDefinition>> groups = WorkspacePieceDisplay.groupPiecesByTopology(workspace);
-        int variantCount = groups.values().stream().mapToInt(WorkspacePieceDisplay::countVariants).sum();
+        Map<String, List<MKWorkspacePieceDefinition>> authoredGroups =
+                WorkspacePieceDisplay.groupAuthoredPiecesByTopology(workspace);
+        int variantCount = authoredGroups.values().stream().mapToInt(WorkspacePieceDisplay::countVariants).sum();
         long generatedStairCount = workspace.pieces().stream()
+                .filter(WorkspacePieceDisplay::isAuthoredTemplatePiece)
                 .filter(WorkspacePieceDisplay::hasGeneratedStairs)
                 .count();
         addText(screen, content, "Template Authoring");
-        addText(screen, content, groups.size() + " template groups - " + variantCount +
+        addText(screen, content, authoredGroups.size() + " authored template groups - " + variantCount +
                 " variants - " + generatedStairCount + " stair-authored pieces");
-        addText(screen, content, "Open template groups for variants and piece-level stair generation.");
+        addText(screen, content, "Open authored templates for variants and piece-level stair generation.");
 
-        MKButton openGroups = new MKButton(Component.literal("Template Groups"), 180, screen.buttonHeight());
+        MKButton openGroups = new MKButton(Component.literal("Authored Templates"), 180, screen.buttonHeight());
         content.addWidget(openGroups);
         content.addConstraintToWidget(new CenterXConstraint(), openGroups);
         openGroups.setPressedCallback((button, mouseButton) -> {

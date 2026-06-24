@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceTags;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 
 import java.util.Comparator;
@@ -15,8 +16,20 @@ public final class WorkspacePieceDisplay {
     }
 
     public static Map<String, List<MKWorkspacePieceDefinition>> groupPiecesByTopology(MKStructureWorkspace workspace) {
+        return groupPiecesByTopology(workspace.pieces());
+    }
+
+    public static Map<String, List<MKWorkspacePieceDefinition>> groupAuthoredPiecesByTopology(
+            MKStructureWorkspace workspace) {
+        return groupPiecesByTopology(workspace.pieces().stream()
+                .filter(WorkspacePieceDisplay::isAuthoredTemplatePiece)
+                .toList());
+    }
+
+    private static Map<String, List<MKWorkspacePieceDefinition>> groupPiecesByTopology(
+            List<MKWorkspacePieceDefinition> pieces) {
         Map<String, List<MKWorkspacePieceDefinition>> grouped = new LinkedHashMap<>();
-        List<MKWorkspacePieceDefinition> sortedPieces = workspace.pieces().stream()
+        List<MKWorkspacePieceDefinition> sortedPieces = pieces.stream()
                 .sorted(Comparator
                         .comparing(WorkspacePieceDisplay::buildWorkspaceGroupLabel)
                         .thenComparingInt(MKWorkspacePieceDefinition::variantIndex))
@@ -26,6 +39,11 @@ public final class WorkspacePieceDisplay {
             grouped.computeIfAbsent(topologyKey, ignored -> new java.util.ArrayList<>()).add(piece);
         }
         return grouped;
+    }
+
+    public static boolean isAuthoredTemplatePiece(MKWorkspacePieceDefinition piece) {
+        return !"template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance")) &&
+                !MKWorkspaceTemplateReuseTags.isDerived(piece.tags());
     }
 
     public static String buildWorkspaceGroupKey(MKWorkspacePieceDefinition piece) {
