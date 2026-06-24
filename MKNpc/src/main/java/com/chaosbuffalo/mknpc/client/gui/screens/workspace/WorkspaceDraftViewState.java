@@ -9,6 +9,17 @@ final class WorkspaceDraftViewState {
     final Map<String, Boolean> floorRoomVariantDrawers = new HashMap<>();
     private final Map<String, String> plannerSelections = new HashMap<>();
 
+    void copyFrom(WorkspaceDraftViewState source) {
+        floorTopologyPreviewSeeds.clear();
+        floorTopologyPreviewSeeds.putAll(source.floorTopologyPreviewSeeds);
+        verticalStackPreviewSelections.clear();
+        verticalStackPreviewSelections.putAll(source.verticalStackPreviewSelections);
+        floorRoomVariantDrawers.clear();
+        floorRoomVariantDrawers.putAll(source.floorRoomVariantDrawers);
+        plannerSelections.clear();
+        plannerSelections.putAll(source.plannerSelections);
+    }
+
     String plannerSelection(String key, String fallback) {
         return plannerSelections.getOrDefault(key, fallback);
     }

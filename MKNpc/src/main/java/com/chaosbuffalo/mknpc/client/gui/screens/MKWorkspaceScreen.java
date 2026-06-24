@@ -101,6 +101,9 @@ public class MKWorkspaceScreen extends MKScreen {
     private final MKCreativeBlockPickerSource blockPickerSource = new MKCreativeBlockPickerSource();
     private final WorkspaceTopologySlotEditor topologySlotEditor = new WorkspaceTopologySlotEditor(this);
     private final WorkspaceDraftSession draftSession;
+    private List<ScrollViewState> pendingScrollViewStates = List.of();
+    private boolean pendingScrollViewRestore;
+    private boolean pendingScrollViewReset;
 
     private record ScrollViewState(double offsetX, double offsetY) {
     }
@@ -179,7 +182,7 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public MKWorkspaceScreen copyWithWorkspace(MKStructureWorkspace updatedWorkspace, List<String> updatedImportManifestIds,
                                                List<String> updatedBackupManifestFiles) {
-        return new MKWorkspaceScreen(anchor, updatedWorkspace, updatedImportManifestIds, updatedBackupManifestFiles,
+        MKWorkspaceScreen copy = new MKWorkspaceScreen(anchor, updatedWorkspace, updatedImportManifestIds, updatedBackupManifestFiles,
                 getInitialStatesForRefresh(updatedWorkspace),
                 selectedTopologyKey, selectedPlannerStackId, selectedFloorPlanStackId, selectedFloorPlanSectionKey,
                 draftSession.selectedFamilyIndex(),
@@ -187,10 +190,12 @@ public class MKWorkspaceScreen extends MKScreen {
                 draftSession.selectedLinearRunIndex(),
                 draftSession.selectedInsertFamilyIndex(),
                 detailStairConfig, preflight);
+        copy.copyClientViewStateFrom(this);
+        return copy;
     }
 
     public MKWorkspaceScreen copyWithPreflight(MKWorkspaceMutationPreflight updatedPreflight) {
-        return new MKWorkspaceScreen(anchor, workspace, importManifestIds, backupManifestFiles,
+        MKWorkspaceScreen copy = new MKWorkspaceScreen(anchor, workspace, importManifestIds, backupManifestFiles,
                 getInitialStatesForRefresh(workspace),
                 selectedTopologyKey, selectedPlannerStackId, selectedFloorPlanStackId, selectedFloorPlanSectionKey,
                 draftSession.selectedFamilyIndex(),
@@ -198,6 +203,15 @@ public class MKWorkspaceScreen extends MKScreen {
                 draftSession.selectedLinearRunIndex(),
                 draftSession.selectedInsertFamilyIndex(),
                 detailStairConfig, updatedPreflight);
+        copy.copyClientViewStateFrom(this);
+        return copy;
+    }
+
+    private void copyClientViewStateFrom(MKWorkspaceScreen source) {
+        draftSession.copyViewStateFrom(source.draftSession);
+        pendingScrollViewStates = source.getActiveScrollViewStates();
+        pendingScrollViewRestore = !pendingScrollViewStates.isEmpty();
+        pendingScrollViewReset = source.wasResized;
     }
 
     @Override
@@ -234,6 +248,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 pushState(state);
             }
         }
+        restorePendingScrollViewStates();
     }
 
     private void addWorkspacePage(WorkspacePageBase page) {
@@ -1044,6 +1059,16 @@ public class MKWorkspaceScreen extends MKScreen {
             scrollView.setOffsetY(scrollState.offsetY());
             clampScrollViewOffsets(scrollView);
         }
+    }
+
+    private void restorePendingScrollViewStates() {
+        if (!pendingScrollViewRestore) {
+            return;
+        }
+        restoreActiveScrollViewStates(pendingScrollViewStates, pendingScrollViewReset);
+        pendingScrollViewStates = List.of();
+        pendingScrollViewRestore = false;
+        pendingScrollViewReset = false;
     }
 
     public void refreshPreservingActiveScroll() {

@@ -145,6 +145,10 @@ public class WorkspaceDraftSession {
         return dirty;
     }
 
+    public void copyViewStateFrom(WorkspaceDraftSession source) {
+        viewState.copyFrom(source.viewState);
+    }
+
     public void markDirty() {
         dirty = true;
     }
