@@ -1,14 +1,10 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mknpc.client.gui.widgets.MKBranchExitMaskWidget;
 import com.chaosbuffalo.mknpc.client.gui.widgets.MKIntegerSlider;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomGeometry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
@@ -32,7 +28,6 @@ import java.util.OptionalInt;
 
 public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
     public static final String ID = "form_family_detail";
-    public static final String EXIT_DETAIL_ID = "form_family_exit_detail";
 
     @Override
     public String id() {
@@ -56,7 +51,7 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         MKLayout root = createPanel(screen);
         addTitle(screen, root, Component.literal("Family: " + family.baseName()));
         MKText helpText = addHeaderText(screen, root, Component.literal(
-                "Edit one family at a time. Left click a side of the room diagram to open that exit editor below the widget. Left click again to close it. Right click toggles that exit on or off."));
+                "Edit one family at a time. Planner exits are configured from the planner editors."));
 
         int buttonAreaHeight = (2 * screen.buttonHeight()) + screen.buttonGap() + screen.bottomPadding();
         int scrollTop = screen.scrollTopAfterHeader(root, helpText);
@@ -126,44 +121,6 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
                 family.paletteOverrideOpt(),
                 override -> editor.replaceFamilyDefinition(index, editor.copyFamilyDefinition(family, override)));
 
-        MKText exitLabel = screen.makeWhiteText(Component.literal("Family Exits"));
-        content.addWidget(exitLabel);
-        content.addConstraintToWidget(MarginConstraint.LEFT, exitLabel);
-        MKBranchExitMaskWidget exitWidget = new MKBranchExitMaskWidget(family.horizontalExits())
-                .setSelectedDirection(editor.selectedFamilyExitIndex() >= 0 &&
-                        editor.selectedFamilyExitIndex() < family.horizontalExits().size() ?
-                        family.horizontalExits().get(editor.selectedFamilyExitIndex()).direction() : null)
-                .setEditCallback(direction -> {
-                    int exitIndex = editor.findFamilyExitIndexByDirection(index, direction);
-                    editor.selectedFamilyExitIndex(exitIndex == editor.selectedFamilyExitIndex() ? -1 : exitIndex);
-                    screen.refreshPreservingActiveScroll();
-                })
-                .setToggleCallback(direction -> {
-                    int exitIndex = editor.findFamilyExitIndexByDirection(index, direction);
-                    if (exitIndex >= 0) {
-                        editor.removeFamilyExit(index, exitIndex);
-                        if (editor.selectedFamilyExitIndex() == exitIndex) {
-                            editor.selectedFamilyExitIndex(-1);
-                        } else if (editor.selectedFamilyExitIndex() > exitIndex) {
-                            editor.selectedFamilyExitIndex(editor.selectedFamilyExitIndex() - 1);
-                        }
-                    } else {
-                        editor.addFamilyExitAtDirection(index, direction);
-                    }
-                    screen.refreshPreservingActiveScroll();
-                });
-        content.addWidget(exitWidget);
-        content.addConstraintToWidget(new CenterXConstraint(), exitWidget);
-        MKText exitSummary = screen.makeWhiteText(Component.literal("Current exits: " + summarizeFamilyExits(family)));
-        exitSummary.setWidth(screen.contentWidth());
-        exitSummary.setMultiline(true);
-        content.addWidget(exitSummary);
-        content.addConstraintToWidget(MarginConstraint.LEFT, exitSummary);
-        if (editor.selectedFamilyExitIndex() >= 0 && editor.selectedFamilyExitIndex() < family.horizontalExits().size()) {
-            addInlineFamilyExitEditor(screen, content, index, editor.selectedFamilyExitIndex(),
-                    family.horizontalExits().get(editor.selectedFamilyExitIndex()));
-        }
-
         finishScrollContent(screen, scrollView, content);
 
         MKButton remove = addBottomButton(screen, root, Component.literal("Remove Family"), 180, 1);
@@ -182,105 +139,6 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
             return true;
         });
         return root;
-    }
-
-    private void addInlineFamilyExitEditor(MKWorkspaceScreen screen, MKStackLayoutVertical content, int familyIndex,
-                                           int exitIndex, MKWorkspaceFamilyHorizontalExitDefinition exit) {
-        WorkspaceDraftSession editor = screen.draftSession();
-        MKText header = screen.makeWhiteText(Component.literal("Editing " + formatDirection(exit.direction()) + " exit"));
-        content.addWidget(header);
-        content.addConstraintToWidget(MarginConstraint.LEFT, header);
-
-        if (exit.isVerticalAccess()) {
-            return;
-        }
-
-        MKButton directionButton = new MKButton(Component.literal(formatDirection(exit.direction())), 180, 20);
-        directionButton.setPressedCallback((button, mouseButton) -> {
-            MKWorkspaceRoomFamilyDefinition family = editor.draft().familyDefinitions.get(familyIndex);
-            Direction nextDirection = cycleCardinalDirection(exit.direction(), isReverseClick(mouseButton));
-            editor.replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
-                    nextDirection,
-                    exit.pathKind(),
-                    exit.openingProfileId(),
-                    exit.connectionMode(),
-                    editor.clampSideOffset(family, nextDirection, exit.openingProfileId(), exit.sideOffset()),
-                    editor.clampVerticalOffset(family, exit.openingProfileId(), exit.verticalOffset()),
-                    exit.horizontalExtrusionModeOverride()
-            ));
-            screen.refreshPreservingActiveScroll();
-            return true;
-        });
-        MKButton pathKindButton = new MKButton(Component.literal(formatTopologyLabel(exit.pathKind().getSerializedName())), 180, 20);
-        pathKindButton.setPressedCallback((button, mouseButton) -> {
-            MKWorkspaceRoomFamilyDefinition family = editor.draft().familyDefinitions.get(familyIndex);
-            MKWorkspaceHorizontalExitPathKind nextPathKind = cycleValue(
-                    List.of(MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY, MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
-                            MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY, MKWorkspaceHorizontalExitPathKind.BRANCH,
-                            MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY),
-                    exit.pathKind(), isReverseClick(mouseButton));
-            String nextOpeningProfileId = editor.ensureCompatibleOpeningProfile(nextPathKind, exit.openingProfileId());
-            editor.replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
-                    exit.direction(),
-                    nextPathKind,
-                    nextOpeningProfileId,
-                    exit.connectionMode(),
-                    editor.clampSideOffset(family, exit.direction(), nextOpeningProfileId, exit.sideOffset()),
-                    editor.clampVerticalOffset(family, nextOpeningProfileId, exit.verticalOffset()),
-                    exit.horizontalExtrusionModeOverride()
-            ));
-            screen.refreshPreservingActiveScroll();
-            return true;
-        });
-        MKButton connectionModeButton = new MKButton(Component.literal(formatExitConnectionMode(exit.connectionMode())), 180, 20);
-        connectionModeButton.setPressedCallback((button, mouseButton) -> {
-            editor.replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
-                    exit.direction(),
-                    exit.pathKind(),
-                    exit.openingProfileId(),
-                    cycleValue(List.of(MKWorkspaceHorizontalExitConnectionMode.values()), exit.connectionMode(),
-                            isReverseClick(mouseButton)),
-                    exit.sideOffset(),
-                    exit.verticalOffset(),
-                    exit.horizontalExtrusionModeOverride()
-            ));
-            screen.refreshPreservingActiveScroll();
-            return true;
-        });
-        MKButton openingProfileButton = new MKButton(Component.literal(exit.openingProfileId()), 180, 20);
-        openingProfileButton.setPressedCallback((button, mouseButton) -> {
-            MKWorkspaceRoomFamilyDefinition family = editor.draft().familyDefinitions.get(familyIndex);
-            String nextOpeningProfileId = editor.nextOpeningProfileId(exit.pathKind(), exit.openingProfileId(),
-                    isReverseClick(mouseButton));
-            editor.replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
-                    exit.direction(),
-                    exit.pathKind(),
-                    nextOpeningProfileId,
-                    exit.connectionMode(),
-                    editor.clampSideOffset(family, exit.direction(), nextOpeningProfileId, exit.sideOffset()),
-                    editor.clampVerticalOffset(family, nextOpeningProfileId, exit.verticalOffset()),
-                    exit.horizontalExtrusionModeOverride()
-            ));
-            screen.refreshPreservingActiveScroll();
-            return true;
-        });
-        MKWorkspaceRoomFamilyDefinition family = editor.draft().familyDefinitions.get(familyIndex);
-        int sideMin = editor.minSideOffset(family, exit.direction(), exit.openingProfileId());
-        int sideMax = editor.maxSideOffset(family, exit.direction(), exit.openingProfileId());
-        int verticalMin = 0;
-        int verticalMax = editor.maxVerticalOffset(family, exit.openingProfileId());
-        MKIntegerSlider sideOffsetSlider = new MKIntegerSlider("Side", 180, 20, sideMin, sideMax,
-                clamp(exit.sideOffset(), sideMin, sideMax),
-                value -> editor.updateFamilyExitOffsets(familyIndex, exitIndex, value, null));
-        MKIntegerSlider verticalOffsetSlider = new MKIntegerSlider("Vertical", 180, 20, verticalMin, verticalMax,
-                clamp(exit.verticalOffset(), verticalMin, verticalMax),
-                value -> editor.updateFamilyExitOffsets(familyIndex, exitIndex, null, value));
-        addRow(screen, content, screen.makeWhiteText(Component.literal("Direction")), directionButton);
-        addRow(screen, content, screen.makeWhiteText(Component.literal("Exit Role")), pathKindButton);
-        addRow(screen, content, screen.makeWhiteText(Component.literal("Connection")), connectionModeButton);
-        addRow(screen, content, screen.makeWhiteText(Component.literal("Opening Profile")), openingProfileButton);
-        addRow(screen, content, screen.makeWhiteText(Component.literal("Side Offset")), sideOffsetSlider);
-        addRow(screen, content, screen.makeWhiteText(Component.literal("Vertical Offset")), verticalOffsetSlider);
     }
 
     private void addFoundationBlockPickerRow(MKWorkspaceScreen screen, MKStackLayoutVertical content, int familyIndex,
@@ -392,32 +250,6 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         MKTextFieldWidget widget = new MKTextFieldWidget(screen.font(), 0, 0, 180, 18, Component.literal(label));
         widget.setText(value);
         return widget;
-    }
-
-    private String summarizeFamilyExits(MKWorkspaceRoomFamilyDefinition family) {
-        if (family.horizontalExits().isEmpty()) {
-            return "none";
-        }
-        return family.horizontalExits().stream()
-                .map(this::describeFamilyExit)
-                .collect(java.util.stream.Collectors.joining(", "));
-    }
-
-    private String describeFamilyExit(MKWorkspaceFamilyHorizontalExitDefinition exit) {
-        if (exit.isVerticalAccess()) {
-            return formatDirection(exit.direction()) + " / " + formatTopologyLabel(exit.pathKind().getSerializedName());
-        }
-        return formatDirection(exit.direction()) + " / " + formatTopologyLabel(exit.pathKind().getSerializedName()) +
-                " / " + formatExitConnectionMode(exit.connectionMode()) + " / " + exit.openingProfileId() +
-                " / side " + exit.sideOffset() + " / up " + exit.verticalOffset();
-    }
-
-    private String formatExitConnectionMode(MKWorkspaceHorizontalExitConnectionMode connectionMode) {
-        return switch (connectionMode) {
-            case LINEAR_RUN -> "Linear Run";
-            case DIRECT_ROOM -> "Direct Room";
-            case NO_CONNECTION -> "No Connection";
-        };
     }
 
     private String formatFamilyExtrusionMode(MKWorkspaceHorizontalExtrusionMode mode) {
@@ -628,14 +460,6 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         WIDTH,
         LENGTH,
         HEIGHT
-    }
-
-    private String formatDirection(Direction direction) {
-        return formatTopologyLabel(direction.getSerializedName());
-    }
-
-    private Direction cycleCardinalDirection(Direction direction, boolean reverse) {
-        return cycleValue(List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST), direction, reverse);
     }
 
     private boolean isReverseClick(int mouseButton) {

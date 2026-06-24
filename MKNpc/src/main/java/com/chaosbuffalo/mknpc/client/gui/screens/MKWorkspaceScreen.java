@@ -226,7 +226,6 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(new WorkspaceFormFamiliesPage());
         WorkspaceFormFamilyDetailPage familyDetailPage = new WorkspaceFormFamilyDetailPage();
         addWorkspacePage(familyDetailPage);
-        addState(WorkspaceFormFamilyDetailPage.EXIT_DETAIL_ID, () -> familyDetailPage.build(this));
         addWorkspacePage(new WorkspaceFormOpeningsPage());
         addWorkspacePage(new WorkspaceFormOpeningDetailPage());
         addWorkspacePage(new WorkspaceFormLinearRunsPage());
