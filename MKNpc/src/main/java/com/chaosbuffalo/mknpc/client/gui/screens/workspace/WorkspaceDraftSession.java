@@ -332,8 +332,12 @@ public class WorkspaceDraftSession {
         Map<String, String> regionKinds = schema.regions().stream()
                 .collect(java.util.stream.Collectors.toMap(MKWorkspaceRegionSchema::regionId,
                         MKWorkspaceRegionSchema::regionKind));
+        Map<String, String> roleKinds = schema.roles().stream()
+                .collect(java.util.stream.Collectors.toMap(MKWorkspaceRoleSchema::roleId,
+                        MKWorkspaceRoleSchema::roleKind));
         return schema.slots().stream()
                 .filter(slot -> !"linear_run".equals(regionKinds.getOrDefault(slot.regionId(), "")))
+                .filter(slot -> !"linear_run".equals(roleKinds.getOrDefault(slot.roleId(), "")))
                 .filter(slot -> isActiveTopologySlot(slot.slotId()))
                 .toList();
     }

@@ -463,6 +463,16 @@ public class MKWorkspaceScreen extends MKScreen {
         return false;
     }
 
+    public boolean openWorkspaceTopologySlotForBaseName(String baseName) {
+        for (Map.Entry<String, List<MKWorkspacePieceDefinition>> entry : groupPiecesByTopology().entrySet()) {
+            if (entry.getValue().stream().anyMatch(piece -> baseName.equals(WorkspacePieceDisplay.getBaseName(piece)))) {
+                openWorkspaceTopologySlot(entry.getKey());
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean pieceMatchesTopologyPrefix(MKWorkspacePieceDefinition piece, String topologyPrefix) {
         String topologySlotId = piece.tags().get("workspace_topology_slot_id");
         String topologyGroup = piece.tags().get("workspace_topology_group");

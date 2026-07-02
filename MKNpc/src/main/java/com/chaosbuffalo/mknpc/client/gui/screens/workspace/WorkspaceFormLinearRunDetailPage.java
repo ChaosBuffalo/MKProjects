@@ -38,8 +38,8 @@ public class WorkspaceFormLinearRunDetailPage extends WorkspacePageBase {
         List<MKWorkspaceLinearRunFamilyDefinition> linearRuns = editor.linearRunFamilies();
         int index = editor.selectedLinearRunIndex();
         if (index < 0 || index >= linearRuns.size()) {
-            screen.switchToExistingState(WorkspaceFormLinearRunsPage.ID);
-            return new WorkspaceFormLinearRunsPage().build(screen);
+            screen.switchToExistingState(WorkspaceFormFamiliesPage.ID);
+            return new WorkspaceFormFamiliesPage().build(screen);
         }
 
         MKWorkspaceLinearRunFamilyDefinition linearRun = linearRuns.get(index);
@@ -167,11 +167,11 @@ public class WorkspaceFormLinearRunDetailPage extends WorkspacePageBase {
         remove.setPressedCallback((button, mouseButton) -> {
             editor.removeLinearRunFamily(index);
             editor.selectedLinearRunIndex(-1);
-            screen.switchToExistingState(WorkspaceFormLinearRunsPage.ID);
+            screen.switchToExistingState(WorkspaceFormFamiliesPage.ID);
             return true;
         });
 
-        addBackButton(screen, root, WorkspaceFormLinearRunsPage.ID);
+        addBackButton(screen, root, WorkspaceFormFamiliesPage.ID);
         return root;
     }
 
