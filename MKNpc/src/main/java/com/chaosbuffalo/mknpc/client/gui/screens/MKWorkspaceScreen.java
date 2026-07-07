@@ -821,6 +821,52 @@ public class MKWorkspaceScreen extends MKScreen {
         }
     }
 
+    public void addDefaultPaletteRows(MKStackLayoutVertical root, String title,
+                                      MKWorkspaceMaterialPalette palette,
+                                      MKWorkspaceMaterialPalette defaultPalette,
+                                      Consumer<MKWorkspaceMaterialPalette> updater) {
+        MKText header = makeWhiteText(Component.literal(title));
+        root.addWidget(header);
+        root.addConstraintToWidget(MarginConstraint.LEFT, header);
+        PaletteOverrideGrid grid = new PaletteOverrideGrid();
+        addPaletteOverrideEntry(grid, "Floor", defaultPalette.floorBlock(), Optional.of(palette.floorBlock()),
+                value -> updater.accept(new MKWorkspaceMaterialPalette(value, palette.wallBlock(),
+                        palette.ceilingBlock(), palette.stairBlock(), palette.slabBlock(), palette.ladderBlock())),
+                () -> updater.accept(new MKWorkspaceMaterialPalette(defaultPalette.floorBlock(), palette.wallBlock(),
+                        palette.ceilingBlock(), palette.stairBlock(), palette.slabBlock(), palette.ladderBlock())));
+        addPaletteOverrideEntry(grid, "Wall", defaultPalette.wallBlock(), Optional.of(palette.wallBlock()),
+                value -> updater.accept(new MKWorkspaceMaterialPalette(palette.floorBlock(), value,
+                        palette.ceilingBlock(), palette.stairBlock(), palette.slabBlock(), palette.ladderBlock())),
+                () -> updater.accept(new MKWorkspaceMaterialPalette(palette.floorBlock(), defaultPalette.wallBlock(),
+                        palette.ceilingBlock(), palette.stairBlock(), palette.slabBlock(), palette.ladderBlock())));
+        addPaletteOverrideEntry(grid, "Ceiling", defaultPalette.ceilingBlock(), Optional.of(palette.ceilingBlock()),
+                value -> updater.accept(new MKWorkspaceMaterialPalette(palette.floorBlock(), palette.wallBlock(),
+                        value, palette.stairBlock(), palette.slabBlock(), palette.ladderBlock())),
+                () -> updater.accept(new MKWorkspaceMaterialPalette(palette.floorBlock(), palette.wallBlock(),
+                        defaultPalette.ceilingBlock(), palette.stairBlock(), palette.slabBlock(),
+                        palette.ladderBlock())));
+        addPaletteOverrideEntry(grid, "Stair", defaultPalette.stairBlock(), Optional.of(palette.stairBlock()),
+                value -> updater.accept(new MKWorkspaceMaterialPalette(palette.floorBlock(), palette.wallBlock(),
+                        palette.ceilingBlock(), value, palette.slabBlock(), palette.ladderBlock())),
+                () -> updater.accept(new MKWorkspaceMaterialPalette(palette.floorBlock(), palette.wallBlock(),
+                        palette.ceilingBlock(), defaultPalette.stairBlock(), palette.slabBlock(),
+                        palette.ladderBlock())));
+        addPaletteOverrideEntry(grid, "Slab", defaultPalette.slabBlock(), Optional.of(palette.slabBlock()),
+                value -> updater.accept(new MKWorkspaceMaterialPalette(palette.floorBlock(), palette.wallBlock(),
+                        palette.ceilingBlock(), palette.stairBlock(), value, palette.ladderBlock())),
+                () -> updater.accept(new MKWorkspaceMaterialPalette(palette.floorBlock(), palette.wallBlock(),
+                        palette.ceilingBlock(), palette.stairBlock(), defaultPalette.slabBlock(),
+                        palette.ladderBlock())));
+        addPaletteOverrideEntry(grid, "Ladder", defaultPalette.ladderBlock(), Optional.of(palette.ladderBlock()),
+                value -> updater.accept(new MKWorkspaceMaterialPalette(palette.floorBlock(), palette.wallBlock(),
+                        palette.ceilingBlock(), palette.stairBlock(), palette.slabBlock(), value)),
+                () -> updater.accept(new MKWorkspaceMaterialPalette(palette.floorBlock(), palette.wallBlock(),
+                        palette.ceilingBlock(), palette.stairBlock(), palette.slabBlock(),
+                        defaultPalette.ladderBlock())));
+        root.addWidget(grid);
+        root.addConstraintToWidget(MarginConstraint.LEFT, grid);
+    }
+
     private void addPaletteOverrideEntry(PaletteOverrideGrid grid, String label, ResourceLocation inheritedBlock,
                                          Optional<ResourceLocation> overrideBlock,
                                          Consumer<ResourceLocation> setter, Runnable resetter) {

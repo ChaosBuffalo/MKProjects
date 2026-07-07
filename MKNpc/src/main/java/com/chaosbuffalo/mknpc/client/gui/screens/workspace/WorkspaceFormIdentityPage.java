@@ -14,7 +14,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public class WorkspaceFormIdentityPage extends WorkspacePageBase {
     public static final String ID = "form_identity";
@@ -108,39 +107,8 @@ public class WorkspaceFormIdentityPage extends WorkspacePageBase {
 
     private void addDefaultPaletteControls(MKWorkspaceScreen screen, MKStackLayoutVertical root,
                                            WorkspaceDraftSession editor) {
-        MKText header = screen.makeWhiteText(Component.literal("Default Palette"));
-        header.setWidth(screen.contentWidth());
-        root.addWidget(header);
-        root.addConstraintToWidget(MarginConstraint.LEFT, header);
-
-        MKWorkspaceMaterialPalette defaultPalette = MKWorkspaceMaterialPalette.defaultPalette();
-        addPaletteRow(screen, root, "Floor", editor.floorBlock(), defaultPalette.floorBlock(), editor::floorBlock);
-        addPaletteRow(screen, root, "Wall", editor.wallBlock(), defaultPalette.wallBlock(), editor::wallBlock);
-        addPaletteRow(screen, root, "Ceiling", editor.ceilingBlock(), defaultPalette.ceilingBlock(),
-                editor::ceilingBlock);
-        addPaletteRow(screen, root, "Stair", editor.stairBlock(), defaultPalette.stairBlock(), editor::stairBlock);
-        addPaletteRow(screen, root, "Slab", editor.slabBlock(), defaultPalette.slabBlock(), editor::slabBlock);
-        addPaletteRow(screen, root, "Ladder", editor.ladderBlock(), defaultPalette.ladderBlock(), editor::ladderBlock);
-    }
-
-    private void addPaletteRow(MKWorkspaceScreen screen, MKStackLayoutVertical root, String label,
-                               ResourceLocation blockId, ResourceLocation defaultBlock,
-                               Consumer<ResourceLocation> setter) {
-        MKButton button = new MKButton(screen.blockDisplayName(blockId), 180, screen.buttonHeight());
-        button.setTooltip(Component.literal(blockId + "\nLeft-click to choose. Right-click to reset."));
-        addRow(screen, root, label, button);
-        button.setPressedCallback((pressedButton, mouseButton) -> {
-            if (mouseButton == 1) {
-                setter.accept(defaultBlock);
-                screen.refreshPreservingActiveScroll();
-                return true;
-            }
-            screen.openBlockPicker("Choose " + label + " Block", blockId, value -> {
-                setter.accept(value);
-                screen.refreshPreservingActiveScroll();
-            }, false);
-            return true;
-        });
+        screen.addDefaultPaletteRows(root, "Default Palette", editor.palette(),
+                MKWorkspaceMaterialPalette.defaultPalette(), editor::palette);
     }
 
     private Component topologyPlannerLabel(ResourceLocation plannerId) {
