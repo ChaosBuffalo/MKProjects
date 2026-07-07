@@ -21,6 +21,7 @@ import com.chaosbuffalo.mknpc.network.packets.RestoreWorkspaceBackupPacket;
 import com.chaosbuffalo.mknpc.network.packets.SetWorkspaceLayerLockPacket;
 import com.chaosbuffalo.mknpc.network.packets.SetSpawnListPacket;
 import com.chaosbuffalo.mknpc.network.packets.SwapWorkspaceBlockPacket;
+import com.chaosbuffalo.mknpc.network.packets.TeleportToWorkspacePiecePacket;
 import com.chaosbuffalo.mknpc.network.packets.WorkspacePreflightReportPacket;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -135,6 +136,11 @@ public class PacketHandler {
                 DeleteWorkspacePacket.TYPE,
                 DeleteWorkspacePacket.STREAM_CODEC,
                 DeleteWorkspacePacket::handle
+        );
+        registrar.playToServer(
+                TeleportToWorkspacePiecePacket.TYPE,
+                TeleportToWorkspacePiecePacket.STREAM_CODEC,
+                TeleportToWorkspacePiecePacket::handle
         );
     }
 }

@@ -29,6 +29,7 @@ public class MKWorkspaceCommands {
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("mkworkspace")
                 .then(Commands.literal("list").executes(MKWorkspaceCommands::listWorkspaces))
+                .then(Commands.literal("open").executes(MKWorkspaceCommands::openWorkspaceAtPlayer))
                 .then(Commands.literal("backups")
                         .then(Commands.literal("list").executes(MKWorkspaceCommands::listBackupsAtNearestWorkspace))
                         .then(Commands.literal("restorelatest")
@@ -56,6 +57,19 @@ public class MKWorkspaceCommands {
         for (MKStructureWorkspace workspace : data.getAllWorkspaces()) {
             player.sendSystemMessage(Component.literal(String.format("%s:%s @ %s",
                     workspace.namespace(), workspace.structureName(), workspace.anchor())));
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int openWorkspaceAtPlayer(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        if (!player.isCreative()) {
+            player.sendSystemMessage(Component.literal("Only creative players can open workspace editors."));
+            return Command.SINGLE_SUCCESS;
+        }
+        boolean opened = new MKStructureWorkspaceService().openWorkspaceScreenAtPlayer(player);
+        if (!opened) {
+            player.sendSystemMessage(Component.literal("No workspace found at your current position."));
         }
         return Command.SINGLE_SUCCESS;
     }

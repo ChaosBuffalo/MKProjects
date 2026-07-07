@@ -45,6 +45,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -53,6 +55,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class MKStructureWorkspaceService {
@@ -699,6 +702,110 @@ public class MKStructureWorkspaceService {
         data.updateWorkspace(updated);
         syncBlockEntity(level, anchor, updated.id());
         return Optional.of(updated);
+    }
+
+    public boolean teleportToWorkspacePiece(ServerPlayer player, BlockPos anchor, UUID pieceId) {
+        IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(player.serverLevel());
+        Optional<MKWorkspacePieceDefinition> pieceOpt = data.getWorkspaceByAnchor(anchor)
+                .flatMap(workspace -> workspace.pieces().stream()
+                        .filter(piece -> piece.pieceId().equals(pieceId))
+                        .findFirst());
+        if (pieceOpt.isEmpty()) {
+            return false;
+        }
+
+        BlockPos target = findSafeTeleportTarget(player.serverLevel(), pieceOpt.get().signPos().west());
+        player.teleportTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
+        return true;
+    }
+
+    public boolean openWorkspaceScreenAtPlayer(ServerPlayer player) {
+        Optional<MKStructureWorkspace> workspace = findWorkspaceContaining(player.serverLevel(), player.blockPosition());
+        workspace.ifPresent(value -> openWorkspaceScreen(player, value.anchor()));
+        return workspace.isPresent();
+    }
+
+    public Optional<MKStructureWorkspace> findWorkspaceContaining(ServerLevel level, BlockPos pos) {
+        return IMKStructureWorkspaceData.get(level).getAllWorkspaces().stream()
+                .filter(workspace -> containsWorkspacePosition(workspace, pos))
+                .min((left, right) -> Integer.compare(
+                        left.anchor().distManhattan(pos),
+                        right.anchor().distManhattan(pos)));
+    }
+
+    private boolean containsWorkspacePosition(MKStructureWorkspace workspace, BlockPos pos) {
+        if (workspace.anchor().distManhattan(pos) <= MKWorkspaceScaffoldBuilder.CLEAR_MARGIN) {
+            return true;
+        }
+        BoundingBox workspaceBounds = null;
+        for (MKWorkspacePieceDefinition piece : workspace.pieces()) {
+            if (piece.previewBounds().isInside(pos) || piece.exportBounds().isInside(pos)) {
+                return true;
+            }
+            workspaceBounds = mergeBounds(workspaceBounds, piece.previewBounds());
+            workspaceBounds = mergeBounds(workspaceBounds, piece.exportBounds());
+            workspaceBounds = mergeBounds(workspaceBounds, singleBlockBounds(piece.structureBlockPos()));
+            workspaceBounds = mergeBounds(workspaceBounds, singleBlockBounds(piece.signPos()));
+        }
+        return workspaceBounds != null &&
+                expandBounds(workspaceBounds, MKWorkspaceScaffoldBuilder.CLEAR_MARGIN).isInside(pos);
+    }
+
+    private BlockPos findSafeTeleportTarget(ServerLevel level, BlockPos preferred) {
+        List<BlockPos> candidates = List.of(
+                preferred,
+                preferred.above(),
+                preferred.west(),
+                preferred.east(),
+                preferred.north(),
+                preferred.south(),
+                preferred.west().above(),
+                preferred.east().above(),
+                preferred.north().above(),
+                preferred.south().above()
+        );
+        for (BlockPos candidate : candidates) {
+            if (canStandAt(level, candidate)) {
+                return candidate;
+            }
+        }
+        return preferred;
+    }
+
+    private boolean canStandAt(ServerLevel level, BlockPos pos) {
+        BlockState feet = level.getBlockState(pos);
+        BlockState head = level.getBlockState(pos.above());
+        return feet.getCollisionShape(level, pos).isEmpty() &&
+                head.getCollisionShape(level, pos.above()).isEmpty();
+    }
+
+    private BoundingBox singleBlockBounds(BlockPos pos) {
+        return new BoundingBox(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    private BoundingBox expandBounds(BoundingBox bounds, int margin) {
+        return new BoundingBox(
+                bounds.minX() - margin,
+                bounds.minY() - margin,
+                bounds.minZ() - margin,
+                bounds.maxX() + margin,
+                bounds.maxY() + margin,
+                bounds.maxZ() + margin
+        );
+    }
+
+    private BoundingBox mergeBounds(@Nullable BoundingBox left, BoundingBox right) {
+        if (left == null) {
+            return right;
+        }
+        return new BoundingBox(
+                Math.min(left.minX(), right.minX()),
+                Math.min(left.minY(), right.minY()),
+                Math.min(left.minZ(), right.minZ()),
+                Math.max(left.maxX(), right.maxX()),
+                Math.max(left.maxY(), right.maxY()),
+                Math.max(left.maxZ(), right.maxZ())
+        );
     }
 
     public void openWorkspaceScreen(ServerPlayer player, BlockPos anchor) {

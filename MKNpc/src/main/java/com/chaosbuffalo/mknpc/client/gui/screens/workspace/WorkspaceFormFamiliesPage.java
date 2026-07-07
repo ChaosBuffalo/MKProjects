@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
+import com.chaosbuffalo.mknpc.network.packets.TeleportToWorkspacePiecePacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
@@ -14,6 +15,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.network.chat.Component;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
 import java.util.Locale;
@@ -149,6 +151,8 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
             openTemplatesForBaseNames(screen, baseNames);
             return true;
         });
+
+        addTeleportToRowButton(screen, content, authoredPieces);
     }
 
     private void addLinearRunFamily(MKWorkspaceScreen screen, MKStackLayoutVertical content,
@@ -190,6 +194,8 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
             screen.openWorkspaceTopologySlotForPrefix(linearRun.linearRunId());
             return true;
         });
+
+        addTeleportToRowButton(screen, content, authoredPieces);
     }
 
     private void addTemplateFamilyDisplay(MKWorkspaceScreen screen, MKStackLayoutVertical content,
@@ -217,6 +223,27 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
                 screen.openWorkspaceTopologySlotForPrefix(display.linearRunFamilyId());
             } else {
                 openTemplatesForBaseNames(screen, display.templateBaseNames());
+            }
+            return true;
+        });
+
+        addTeleportToRowButton(screen, content, authoredPieces);
+    }
+
+    private void addTeleportToRowButton(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                        List<MKWorkspacePieceDefinition> authoredPieces) {
+        MKButton teleport = new MKButton(Component.literal("Teleport To Row"), 180, screen.buttonHeight());
+        teleport.setEnabled(!authoredPieces.isEmpty());
+        content.addWidget(teleport);
+        content.addConstraintToWidget(new CenterXConstraint(), teleport);
+        teleport.setPressedCallback((button, mouseButton) -> {
+            MKWorkspacePieceDefinition targetPiece = authoredPieces.stream()
+                    .filter(piece -> piece.variantIndex() == 0)
+                    .findFirst()
+                    .orElse(authoredPieces.getFirst());
+            PacketDistributor.sendToServer(new TeleportToWorkspacePiecePacket(screen.anchor(), targetPiece.pieceId()));
+            if (!screen.draftSession().dirty()) {
+                screen.closeScreen();
             }
             return true;
         });
