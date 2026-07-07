@@ -79,14 +79,14 @@ interface WorkspacePlannerDraftAdapter {
         return !"linear_run".equals(regionKind) && !"linear_run".equals(roleKind);
     }
 
+    default boolean showLinearRunInTemplateFamilies(WorkspaceDraftSession session,
+                                                    MKWorkspaceLinearRunFamilyDefinition linearRun) {
+        return true;
+    }
+
     default List<String> templateBaseNamesForFamily(WorkspaceDraftSession session,
                                                     MKWorkspaceRoomFamilyDefinition family) {
         return List.of(family.baseName());
-    }
-
-    default List<String> templateLinearRunFamilyIds(WorkspaceDraftSession session,
-                                                    MKWorkspaceLinearRunFamilyDefinition linearRun) {
-        return List.of(linearRun.linearRunId());
     }
 
     default List<WorkspaceTemplateFamilyDisplay> extraTemplateFamilies(WorkspaceDraftSession session) {

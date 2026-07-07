@@ -50,7 +50,10 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
         addSectionHeader(screen, content, "Run Template Families");
         List<MKWorkspaceLinearRunFamilyDefinition> linearRuns = editor.linearRunFamilies();
         for (int i = 0; i < linearRuns.size(); i++) {
-            addLinearRunFamily(screen, content, editor, linearRuns.get(i), i);
+            MKWorkspaceLinearRunFamilyDefinition linearRun = linearRuns.get(i);
+            if (editor.plannerAdapter().showLinearRunInTemplateFamilies(editor, linearRun)) {
+                addLinearRunFamily(screen, content, editor, linearRun, i);
+            }
         }
         addAddLinearRunButton(screen, content, editor);
         List<WorkspaceTemplateFamilyDisplay> extraTemplateFamilies =
@@ -156,8 +159,8 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
     private void addLinearRunFamily(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                     WorkspaceDraftSession editor, MKWorkspaceLinearRunFamilyDefinition linearRun,
                                     int index) {
-        List<String> templateLinearRunIds = editor.plannerAdapter().templateLinearRunFamilyIds(editor, linearRun);
-        List<MKWorkspacePieceDefinition> authoredPieces = authoredPiecesForLinearRuns(screen, templateLinearRunIds);
+        List<MKWorkspacePieceDefinition> authoredPieces = authoredPiecesForLinearRuns(screen,
+                List.of(linearRun.linearRunId()));
         MKText header = screen.makeWhiteText(Component.literal(formatTopologyLabel(linearRun.linearRunId())));
         content.addWidget(header);
         content.addConstraintToWidget(MarginConstraint.LEFT, header);
@@ -189,7 +192,7 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
         content.addWidget(openTemplates);
         content.addConstraintToWidget(new CenterXConstraint(), openTemplates);
         openTemplates.setPressedCallback((button, mouseButton) -> {
-            openTemplatesForLinearRuns(screen, templateLinearRunIds);
+            screen.openWorkspaceTopologySlotForPrefix(linearRun.linearRunId());
             return true;
         });
     }

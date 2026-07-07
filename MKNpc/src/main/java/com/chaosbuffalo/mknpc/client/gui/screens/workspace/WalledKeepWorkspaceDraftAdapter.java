@@ -118,13 +118,10 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
     }
 
     @Override
-    public List<String> templateLinearRunFamilyIds(WorkspaceDraftSession session,
+    public boolean showLinearRunInTemplateFamilies(WorkspaceDraftSession session,
                                                    MKWorkspaceLinearRunFamilyDefinition linearRun) {
-        if (WALKWAY_WEST_ROOT_SLOT.equals(linearRun.topologySlotId()) ||
-                WALKWAY_EAST_ROOT_SLOT.equals(linearRun.topologySlotId())) {
-            return List.of(linearRun.linearRunId(), COURTYARD_PATH_LINEAR_RUN_ID);
-        }
-        return WorkspacePlannerDraftAdapter.super.templateLinearRunFamilyIds(session, linearRun);
+        return !WALKWAY_WEST_ROOT_SLOT.equals(linearRun.topologySlotId()) &&
+                !WALKWAY_EAST_ROOT_SLOT.equals(linearRun.topologySlotId());
     }
 
     @Override
