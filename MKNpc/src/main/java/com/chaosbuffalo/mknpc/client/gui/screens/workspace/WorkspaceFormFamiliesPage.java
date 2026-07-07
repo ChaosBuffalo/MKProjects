@@ -263,7 +263,10 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
         }
         return screen.workspace().pieces().stream()
                 .filter(WorkspacePieceDisplay::isAuthoredTemplatePiece)
-                .filter(piece -> linearRunIds.contains(piece.tags().get("workspace_linear_run_family_id")))
+                .filter(piece -> {
+                    String linearRunId = piece.tags().get("workspace_linear_run_family_id");
+                    return linearRunId != null && linearRunIds.contains(linearRunId);
+                })
                 .toList();
     }
 
