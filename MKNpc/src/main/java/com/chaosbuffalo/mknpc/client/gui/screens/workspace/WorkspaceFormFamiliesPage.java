@@ -107,7 +107,8 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
     private void addRoomFamily(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                WorkspaceDraftSession editor, MKWorkspaceRoomFamilyDefinition family, int index) {
         MKWorkspaceTopologySlotMetadata slotMetadata = MKWorkspaceTopologySlotMetadata.fromFamily(family);
-        List<MKWorkspacePieceDefinition> authoredPieces = authoredPiecesForBaseName(screen, family.baseName());
+        List<String> baseNames = templateBaseNamesForFamily(family);
+        List<MKWorkspacePieceDefinition> authoredPieces = authoredPiecesForBaseNames(screen, baseNames);
 
         MKText familyHeader = screen.makeWhiteText(Component.literal(" - " + family.baseName()));
         content.addWidget(familyHeader);
@@ -144,7 +145,7 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
         content.addWidget(openTemplates);
         content.addConstraintToWidget(new CenterXConstraint(), openTemplates);
         openTemplates.setPressedCallback((button, mouseButton) -> {
-            screen.openWorkspaceTopologySlotForBaseName(family.baseName());
+            openTemplatesForBaseNames(screen, baseNames);
             return true;
         });
     }
@@ -234,14 +235,31 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
                 linearRuns.stream().noneMatch(run -> COURTYARD_PATH_LINEAR_RUN_ID.equals(run.linearRunId()));
     }
 
-    private List<MKWorkspacePieceDefinition> authoredPiecesForBaseName(MKWorkspaceScreen screen, String baseName) {
+    private List<String> templateBaseNamesForFamily(MKWorkspaceRoomFamilyDefinition family) {
+        if (family.baseName().startsWith("keep_corner_shared")) {
+            return List.of(family.baseName(),
+                    family.baseName().replace("keep_corner_shared", "keep_corner_north_west"));
+        }
+        return List.of(family.baseName());
+    }
+
+    private List<MKWorkspacePieceDefinition> authoredPiecesForBaseNames(MKWorkspaceScreen screen,
+                                                                        List<String> baseNames) {
         if (screen.workspace() == null) {
             return List.of();
         }
         return screen.workspace().pieces().stream()
                 .filter(WorkspacePieceDisplay::isAuthoredTemplatePiece)
-                .filter(piece -> baseName.equals(WorkspacePieceDisplay.getBaseName(piece)))
+                .filter(piece -> baseNames.contains(WorkspacePieceDisplay.getBaseName(piece)))
                 .toList();
+    }
+
+    private void openTemplatesForBaseNames(MKWorkspaceScreen screen, List<String> baseNames) {
+        for (String baseName : baseNames) {
+            if (screen.openWorkspaceTopologySlotForBaseName(baseName)) {
+                return;
+            }
+        }
     }
 
     private List<MKWorkspacePieceDefinition> authoredPiecesForLinearRun(MKWorkspaceScreen screen,
