@@ -59,6 +59,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class MKStructureWorkspaceService {
+    private static final int WORKSPACE_OPEN_VERTICAL_MARGIN = 8;
+
     public record MKWorkspaceImportResponse(@Nullable MKStructureWorkspace workspace, List<String> validationErrors) {
         public static MKWorkspaceImportResponse success(MKStructureWorkspace workspace) {
             return new MKWorkspaceImportResponse(workspace, List.of());
@@ -748,7 +750,8 @@ public class MKStructureWorkspaceService {
             workspaceBounds = mergeBounds(workspaceBounds, singleBlockBounds(piece.signPos()));
         }
         return workspaceBounds != null &&
-                expandBounds(workspaceBounds, MKWorkspaceScaffoldBuilder.CLEAR_MARGIN).isInside(pos);
+                expandBounds(workspaceBounds, MKWorkspaceScaffoldBuilder.CLEAR_MARGIN,
+                        WORKSPACE_OPEN_VERTICAL_MARGIN).isInside(pos);
     }
 
     private BlockPos findSafeTeleportTarget(ServerLevel level, BlockPos preferred) {
@@ -783,14 +786,14 @@ public class MKStructureWorkspaceService {
         return new BoundingBox(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
     }
 
-    private BoundingBox expandBounds(BoundingBox bounds, int margin) {
+    private BoundingBox expandBounds(BoundingBox bounds, int horizontalMargin, int verticalMargin) {
         return new BoundingBox(
-                bounds.minX() - margin,
-                bounds.minY() - margin,
-                bounds.minZ() - margin,
-                bounds.maxX() + margin,
-                bounds.maxY() + margin,
-                bounds.maxZ() + margin
+                bounds.minX() - horizontalMargin,
+                bounds.minY() - verticalMargin,
+                bounds.minZ() - horizontalMargin,
+                bounds.maxX() + horizontalMargin,
+                bounds.maxY() + verticalMargin,
+                bounds.maxZ() + horizontalMargin
         );
     }
 
