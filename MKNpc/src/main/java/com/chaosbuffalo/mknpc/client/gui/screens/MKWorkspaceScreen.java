@@ -16,7 +16,6 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormInsertFa
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormInsertFamilyDetailPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormLinearRunsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormLinearRunDetailPage;
-import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormMaterialsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFloorPlanPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormOpeningsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceFormOpeningDetailPage;
@@ -222,7 +221,6 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(new WorkspaceFormPage());
         addWorkspacePage(new WorkspaceGenerateConfirmPage());
         addWorkspacePage(new WorkspaceFormIdentityPage());
-        addWorkspacePage(new WorkspaceFormMaterialsPage());
         addWorkspacePage(new WorkspaceFormFamiliesPage());
         WorkspaceFormFamilyDetailPage familyDetailPage = new WorkspaceFormFamilyDetailPage();
         addWorkspacePage(familyDetailPage);

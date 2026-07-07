@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
@@ -71,6 +72,7 @@ public class WorkspaceFormIdentityPage extends WorkspacePageBase {
         addRow(screen, content, "mknpc.workspace.field.shell_margin", shellMarginField);
         addRow(screen, content, "mknpc.workspace.field.exterior_air_margin", exteriorAirMarginField);
         addRow(screen, content, "mknpc.workspace.field.preview_margin", previewMarginField);
+        addDefaultPaletteControls(screen, content, editor);
 
         finishScrollContent(screen, scrollView, content);
         addBackButton(screen, root, WorkspaceFormPage.ID);
@@ -102,6 +104,43 @@ public class WorkspaceFormIdentityPage extends WorkspacePageBase {
         root.addConstraintToWidget(MarginConstraint.LEFT, label);
         root.addWidget(button);
         root.addConstraintToWidget(new CenterXConstraint(), button);
+    }
+
+    private void addDefaultPaletteControls(MKWorkspaceScreen screen, MKStackLayoutVertical root,
+                                           WorkspaceDraftSession editor) {
+        MKText header = screen.makeWhiteText(Component.literal("Default Palette"));
+        header.setWidth(screen.contentWidth());
+        root.addWidget(header);
+        root.addConstraintToWidget(MarginConstraint.LEFT, header);
+
+        MKWorkspaceMaterialPalette defaultPalette = MKWorkspaceMaterialPalette.defaultPalette();
+        addPaletteRow(screen, root, "Floor", editor.floorBlock(), defaultPalette.floorBlock(), editor::floorBlock);
+        addPaletteRow(screen, root, "Wall", editor.wallBlock(), defaultPalette.wallBlock(), editor::wallBlock);
+        addPaletteRow(screen, root, "Ceiling", editor.ceilingBlock(), defaultPalette.ceilingBlock(),
+                editor::ceilingBlock);
+        addPaletteRow(screen, root, "Stair", editor.stairBlock(), defaultPalette.stairBlock(), editor::stairBlock);
+        addPaletteRow(screen, root, "Slab", editor.slabBlock(), defaultPalette.slabBlock(), editor::slabBlock);
+        addPaletteRow(screen, root, "Ladder", editor.ladderBlock(), defaultPalette.ladderBlock(), editor::ladderBlock);
+    }
+
+    private void addPaletteRow(MKWorkspaceScreen screen, MKStackLayoutVertical root, String label,
+                               ResourceLocation blockId, ResourceLocation defaultBlock,
+                               Consumer<ResourceLocation> setter) {
+        MKButton button = new MKButton(screen.blockDisplayName(blockId), 180, screen.buttonHeight());
+        button.setTooltip(Component.literal(blockId + "\nLeft-click to choose. Right-click to reset."));
+        addRow(screen, root, label, button);
+        button.setPressedCallback((pressedButton, mouseButton) -> {
+            if (mouseButton == 1) {
+                setter.accept(defaultBlock);
+                screen.refreshPreservingActiveScroll();
+                return true;
+            }
+            screen.openBlockPicker("Choose " + label + " Block", blockId, value -> {
+                setter.accept(value);
+                screen.refreshPreservingActiveScroll();
+            }, false);
+            return true;
+        });
     }
 
     private Component topologyPlannerLabel(ResourceLocation plannerId) {
