@@ -338,6 +338,7 @@ public class WorkspaceDraftSession {
         return schema.slots().stream()
                 .filter(slot -> !"linear_run".equals(regionKinds.getOrDefault(slot.regionId(), "")))
                 .filter(slot -> !"linear_run".equals(roleKinds.getOrDefault(slot.roleId(), "")))
+                .filter(slot -> !"content_socket".equals(slot.slotKind()))
                 .filter(slot -> isActiveTopologySlot(slot.slotId()))
                 .toList();
     }

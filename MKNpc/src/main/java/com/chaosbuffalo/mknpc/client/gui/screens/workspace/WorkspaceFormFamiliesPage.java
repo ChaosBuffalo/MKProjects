@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
     public static final String ID = "form_families";
     private static final String COURTYARD_PATH_LINEAR_RUN_ID = "keep_courtyard_path";
+    private static final String COURTYARD_CONTENT_BASE_NAME = "keep_courtyard_content";
 
     @Override
     public String id() {
@@ -47,6 +48,9 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
         addSectionHeader(screen, content, "Room & Slot Families");
         for (MKWorkspaceSlotSchema slot : editor.roomTopologySlots()) {
             addRoomSlotFamily(screen, content, editor, slot);
+        }
+        if (shouldShowCourtyardContentSources(editor)) {
+            addSyntheticCourtyardContentFamily(screen, content);
         }
 
         addSectionHeader(screen, content, "Run Template Families");
@@ -216,6 +220,31 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
         });
     }
 
+    private void addSyntheticCourtyardContentFamily(MKWorkspaceScreen screen, MKStackLayoutVertical content) {
+        List<MKWorkspacePieceDefinition> authoredPieces = authoredPiecesForBaseNames(screen,
+                List.of(COURTYARD_CONTENT_BASE_NAME));
+        MKText header = screen.makeWhiteText(Component.literal("Courtyard Content"));
+        content.addWidget(header);
+        content.addConstraintToWidget(MarginConstraint.LEFT, header);
+
+        MKText summary = screen.makeWhiteText(Component.literal(
+                "Content  |  keep.courtyard.content  |  derives 7 courtyard sockets  |  " +
+                        authoredPieceSummary(authoredPieces)));
+        summary.setWidth(screen.contentWidth());
+        summary.setMultiline(true);
+        content.addWidget(summary);
+        content.addConstraintToWidget(MarginConstraint.LEFT, summary);
+
+        MKButton openTemplates = new MKButton(Component.literal("Open Templates"), 180, screen.buttonHeight());
+        openTemplates.setEnabled(!authoredPieces.isEmpty());
+        content.addWidget(openTemplates);
+        content.addConstraintToWidget(new CenterXConstraint(), openTemplates);
+        openTemplates.setPressedCallback((button, mouseButton) -> {
+            screen.openWorkspaceTopologySlotForBaseName(COURTYARD_CONTENT_BASE_NAME);
+            return true;
+        });
+    }
+
     private void addAddLinearRunButton(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                        WorkspaceDraftSession editor) {
         MKButton addLinearRun = new MKButton(Component.literal("Add Run Family"), 180, screen.buttonHeight());
@@ -233,6 +262,10 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
                                                    List<MKWorkspaceLinearRunFamilyDefinition> linearRuns) {
         return MKWalledKeepWorkspacePlanner.PLANNER_ID.equals(editor.topologyPlannerId()) &&
                 linearRuns.stream().noneMatch(run -> COURTYARD_PATH_LINEAR_RUN_ID.equals(run.linearRunId()));
+    }
+
+    private boolean shouldShowCourtyardContentSources(WorkspaceDraftSession editor) {
+        return MKWalledKeepWorkspacePlanner.PLANNER_ID.equals(editor.topologyPlannerId());
     }
 
     private List<String> templateBaseNamesForFamily(MKWorkspaceRoomFamilyDefinition family) {
