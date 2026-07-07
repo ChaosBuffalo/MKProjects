@@ -2,8 +2,6 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
@@ -15,12 +13,10 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
-import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
     public static final String ID = "form_families";
@@ -126,8 +122,7 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
                         editor.resolvedFamilyRoomHeight(family) +
                         (editor.familyHasTopologyStack(family) ? " stack" : "") + "  |  " +
                         formatTopologyLabel(slotMetadata.roleKind()) + " / " +
-                        formatTopologyLabel(slotMetadata.pieceKind()) + "  |  exits " +
-                        summarizeFamilyExits(family) + "  |  shaft " +
+                        formatTopologyLabel(slotMetadata.pieceKind()) + "  |  shaft " +
                         (family.supportsVerticalAccess() ? "yes" : "no") + "  |  " +
                         authoredPieceSummary(authoredPieces)));
         familySummary.setWidth(screen.contentWidth());
@@ -273,14 +268,6 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
                 .toList();
     }
 
-    private void openTemplatesForLinearRuns(MKWorkspaceScreen screen, List<String> linearRunIds) {
-        for (String linearRunId : linearRunIds) {
-            if (screen.openWorkspaceTopologySlotForPrefix(linearRunId)) {
-                return;
-            }
-        }
-    }
-
     private String authoredPieceSummary(List<MKWorkspacePieceDefinition> pieces) {
         if (pieces.isEmpty()) {
             return "no authored templates";
@@ -305,36 +292,6 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
             return "branch only";
         }
         return "disabled";
-    }
-
-    private String summarizeFamilyExits(MKWorkspaceRoomFamilyDefinition family) {
-        if (family.horizontalExits().isEmpty()) {
-            return "none";
-        }
-        return family.horizontalExits().stream()
-                .map(this::describeFamilyExit)
-                .collect(Collectors.joining(", "));
-    }
-
-    private String describeFamilyExit(MKWorkspaceFamilyHorizontalExitDefinition exit) {
-        if (exit.isVerticalAccess()) {
-            return formatDirection(exit.direction()) + " / " + formatTopologyLabel(exit.pathKind().getSerializedName());
-        }
-        return formatDirection(exit.direction()) + " / " + formatTopologyLabel(exit.pathKind().getSerializedName()) +
-                " / " + formatExitConnectionMode(exit.connectionMode()) + " / " + exit.openingProfileId() +
-                " / side " + exit.sideOffset() + " / up " + exit.verticalOffset();
-    }
-
-    private String formatExitConnectionMode(MKWorkspaceHorizontalExitConnectionMode connectionMode) {
-        return switch (connectionMode) {
-            case LINEAR_RUN -> "Linear Run";
-            case DIRECT_ROOM -> "Direct Room";
-            case NO_CONNECTION -> "No Connection";
-        };
-    }
-
-    private String formatDirection(Direction direction) {
-        return formatTopologyLabel(direction.getSerializedName());
     }
 
     private String formatTopologyLabel(String key) {
