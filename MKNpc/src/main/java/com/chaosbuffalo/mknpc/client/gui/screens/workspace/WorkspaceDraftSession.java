@@ -335,11 +335,11 @@ public class WorkspaceDraftSession {
         Map<String, String> roleKinds = schema.roles().stream()
                 .collect(java.util.stream.Collectors.toMap(MKWorkspaceRoleSchema::roleId,
                         MKWorkspaceRoleSchema::roleKind));
+        WorkspacePlannerDraftAdapter adapter = plannerAdapter();
         return schema.slots().stream()
-                .filter(slot -> !"linear_run".equals(regionKinds.getOrDefault(slot.regionId(), "")))
-                .filter(slot -> !"linear_run".equals(roleKinds.getOrDefault(slot.roleId(), "")))
-                .filter(slot -> !"path".equals(slot.slotKind()))
-                .filter(slot -> !"content_socket".equals(slot.slotKind()))
+                .filter(slot -> adapter.showTopologySlotInTemplateFamilies(this, slot,
+                        regionKinds.getOrDefault(slot.regionId(), ""),
+                        roleKinds.getOrDefault(slot.roleId(), "")))
                 .filter(slot -> isActiveTopologySlot(slot.slotId()))
                 .toList();
     }

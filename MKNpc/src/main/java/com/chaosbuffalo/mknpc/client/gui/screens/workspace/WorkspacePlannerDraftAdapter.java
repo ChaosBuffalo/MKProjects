@@ -73,6 +73,20 @@ interface WorkspacePlannerDraftAdapter {
         return WorkspaceVerticalStackSlotDraftSupport.topologySlotMetadata(slot);
     }
 
+    default boolean showTopologySlotInTemplateFamilies(WorkspaceDraftSession session, MKWorkspaceSlotSchema slot,
+                                                       String regionKind, String roleKind) {
+        return !"linear_run".equals(regionKind) && !"linear_run".equals(roleKind);
+    }
+
+    default List<String> templateBaseNamesForFamily(WorkspaceDraftSession session,
+                                                    MKWorkspaceRoomFamilyDefinition family) {
+        return List.of(family.baseName());
+    }
+
+    default List<WorkspaceTemplateFamilyDisplay> extraTemplateFamilies(WorkspaceDraftSession session) {
+        return List.of();
+    }
+
     default Optional<MKWorkspaceRoomFamilyDefinition> sharedFamilySource(WorkspaceDraftSession session,
                                                                           String topologySlotId) {
         return Optional.empty();

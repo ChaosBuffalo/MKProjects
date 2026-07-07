@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepPlannerSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceSlotSchema;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceVerticalStackSizingReport;
 import net.minecraft.resources.ResourceLocation;
 
@@ -15,6 +16,9 @@ import java.util.Map;
 import java.util.Optional;
 
 final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapter {
+    private static final String COURTYARD_CONTENT_BASE_NAME = "keep_courtyard_content";
+    private static final String COURTYARD_PATH_LINEAR_RUN_ID = "keep_courtyard_path";
+
     @Override
     public ResourceLocation plannerId() {
         return MKWalledKeepWorkspacePlanner.PLANNER_ID;
@@ -91,6 +95,42 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
             return Optional.of("keep.center");
         }
         return cornerStackIdForSlot(topologySlotId);
+    }
+
+    @Override
+    public boolean showTopologySlotInTemplateFamilies(WorkspaceDraftSession session, MKWorkspaceSlotSchema slot,
+                                                      String regionKind, String roleKind) {
+        return WorkspacePlannerDraftAdapter.super.showTopologySlotInTemplateFamilies(session, slot, regionKind, roleKind) &&
+                !"path".equals(slot.slotKind()) &&
+                !"content_socket".equals(slot.slotKind());
+    }
+
+    @Override
+    public List<String> templateBaseNamesForFamily(WorkspaceDraftSession session,
+                                                   MKWorkspaceRoomFamilyDefinition family) {
+        if (family.baseName().startsWith("keep_corner_shared")) {
+            return List.of(family.baseName(),
+                    family.baseName().replace("keep_corner_shared", "keep_corner_north_west"));
+        }
+        return WorkspacePlannerDraftAdapter.super.templateBaseNamesForFamily(session, family);
+    }
+
+    @Override
+    public List<WorkspaceTemplateFamilyDisplay> extraTemplateFamilies(WorkspaceDraftSession session) {
+        java.util.ArrayList<WorkspaceTemplateFamilyDisplay> displays = new java.util.ArrayList<>();
+        displays.add(WorkspaceTemplateFamilyDisplay.forBaseNames(
+                "Courtyard Content",
+                "Content  |  keep.courtyard.content  |  derives 7 courtyard sockets",
+                List.of(COURTYARD_CONTENT_BASE_NAME)));
+        boolean hasCourtyardPathLinearRun = session.linearRunFamilies().stream()
+                .anyMatch(linearRun -> COURTYARD_PATH_LINEAR_RUN_ID.equals(linearRun.linearRunId()));
+        if (!hasCourtyardPathLinearRun) {
+            displays.add(WorkspaceTemplateFamilyDisplay.forLinearRun(
+                    "Courtyard Path",
+                    "Open Walkway  |  keep.courtyard.path  |  derives 7 path sockets",
+                    COURTYARD_PATH_LINEAR_RUN_ID));
+        }
+        return List.copyOf(displays);
     }
 
     @Override
