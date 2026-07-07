@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Optional;
 
 final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapter {
+    private static final String WALKWAY_WEST_ROOT_SLOT = "keep.walkway.west";
+    private static final String WALKWAY_EAST_ROOT_SLOT = "keep.walkway.east";
     private static final String COURTYARD_CONTENT_BASE_NAME = "keep_courtyard_content";
     private static final String COURTYARD_PATH_LINEAR_RUN_ID = "keep_courtyard_path";
 
@@ -113,6 +115,16 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
                     family.baseName().replace("keep_corner_shared", "keep_corner_north_west"));
         }
         return WorkspacePlannerDraftAdapter.super.templateBaseNamesForFamily(session, family);
+    }
+
+    @Override
+    public List<String> templateLinearRunFamilyIds(WorkspaceDraftSession session,
+                                                   MKWorkspaceLinearRunFamilyDefinition linearRun) {
+        if (WALKWAY_WEST_ROOT_SLOT.equals(linearRun.topologySlotId()) ||
+                WALKWAY_EAST_ROOT_SLOT.equals(linearRun.topologySlotId())) {
+            return List.of(linearRun.linearRunId(), COURTYARD_PATH_LINEAR_RUN_ID);
+        }
+        return WorkspacePlannerDraftAdapter.super.templateLinearRunFamilyIds(session, linearRun);
     }
 
     @Override

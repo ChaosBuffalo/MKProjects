@@ -156,8 +156,8 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
     private void addLinearRunFamily(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                     WorkspaceDraftSession editor, MKWorkspaceLinearRunFamilyDefinition linearRun,
                                     int index) {
-        List<MKWorkspacePieceDefinition> authoredPieces = authoredPiecesForLinearRun(screen,
-                linearRun.linearRunId());
+        List<String> templateLinearRunIds = editor.plannerAdapter().templateLinearRunFamilyIds(editor, linearRun);
+        List<MKWorkspacePieceDefinition> authoredPieces = authoredPiecesForLinearRuns(screen, templateLinearRunIds);
         MKText header = screen.makeWhiteText(Component.literal(formatTopologyLabel(linearRun.linearRunId())));
         content.addWidget(header);
         content.addConstraintToWidget(MarginConstraint.LEFT, header);
@@ -189,7 +189,7 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
         content.addWidget(openTemplates);
         content.addConstraintToWidget(new CenterXConstraint(), openTemplates);
         openTemplates.setPressedCallback((button, mouseButton) -> {
-            screen.openWorkspaceTopologySlotForPrefix(linearRun.linearRunId());
+            openTemplatesForLinearRuns(screen, templateLinearRunIds);
             return true;
         });
     }
@@ -197,7 +197,7 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
     private void addTemplateFamilyDisplay(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                           WorkspaceTemplateFamilyDisplay display) {
         List<MKWorkspacePieceDefinition> authoredPieces = display.usesLinearRunFamily() ?
-                authoredPiecesForLinearRun(screen, display.linearRunFamilyId()) :
+                authoredPiecesForLinearRuns(screen, List.of(display.linearRunFamilyId())) :
                 authoredPiecesForBaseNames(screen, display.templateBaseNames());
         MKText header = screen.makeWhiteText(Component.literal(display.label()));
         content.addWidget(header);
@@ -256,15 +256,23 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
         }
     }
 
-    private List<MKWorkspacePieceDefinition> authoredPiecesForLinearRun(MKWorkspaceScreen screen,
-                                                                        String linearRunId) {
+    private List<MKWorkspacePieceDefinition> authoredPiecesForLinearRuns(MKWorkspaceScreen screen,
+                                                                         List<String> linearRunIds) {
         if (screen.workspace() == null) {
             return List.of();
         }
         return screen.workspace().pieces().stream()
                 .filter(WorkspacePieceDisplay::isAuthoredTemplatePiece)
-                .filter(piece -> linearRunId.equals(piece.tags().get("workspace_linear_run_family_id")))
+                .filter(piece -> linearRunIds.contains(piece.tags().get("workspace_linear_run_family_id")))
                 .toList();
+    }
+
+    private void openTemplatesForLinearRuns(MKWorkspaceScreen screen, List<String> linearRunIds) {
+        for (String linearRunId : linearRunIds) {
+            if (screen.openWorkspaceTopologySlotForPrefix(linearRunId)) {
+                return;
+            }
+        }
     }
 
     private String authoredPieceSummary(List<MKWorkspacePieceDefinition> pieces) {

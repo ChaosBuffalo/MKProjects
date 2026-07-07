@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
@@ -81,6 +82,11 @@ interface WorkspacePlannerDraftAdapter {
     default List<String> templateBaseNamesForFamily(WorkspaceDraftSession session,
                                                     MKWorkspaceRoomFamilyDefinition family) {
         return List.of(family.baseName());
+    }
+
+    default List<String> templateLinearRunFamilyIds(WorkspaceDraftSession session,
+                                                    MKWorkspaceLinearRunFamilyDefinition linearRun) {
+        return List.of(linearRun.linearRunId());
     }
 
     default List<WorkspaceTemplateFamilyDisplay> extraTemplateFamilies(WorkspaceDraftSession session) {
