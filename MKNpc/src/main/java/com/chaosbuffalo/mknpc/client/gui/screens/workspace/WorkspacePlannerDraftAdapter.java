@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceVerticalStackSizingReport;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceSlotSchema;
@@ -76,7 +77,19 @@ interface WorkspacePlannerDraftAdapter {
 
     default boolean showTopologySlotInTemplateFamilies(WorkspaceDraftSession session, MKWorkspaceSlotSchema slot,
                                                        String regionKind, String roleKind) {
-        return !"linear_run".equals(regionKind) && !"linear_run".equals(roleKind);
+        if ("linear_run".equals(regionKind) || "linear_run".equals(roleKind)) {
+            return false;
+        }
+        Optional<MKWorkspaceVerticalStackSlot> verticalSlot =
+                MKWorkspaceVerticalStackSlot.fromTopologySlotId(slot.slotId());
+        if (verticalSlot.isEmpty()) {
+            return true;
+        }
+        return verticalStackIdForTopologySlot(session, slot.slotId())
+                .map(stackId -> WorkspaceVerticalStackSlotDraftSupport.isEnabledInStackSettings(
+                        verticalSlot.get(),
+                        defaultVerticalStackSettings(session, stackId)))
+                .orElse(true);
     }
 
     default boolean showLinearRunInTemplateFamilies(WorkspaceDraftSession session,

@@ -54,6 +54,19 @@ final class WorkspaceVerticalStackSlotDraftSupport {
         return Optional.of(MKWorkspaceTopologySlotMetadata.fromVerticalStackSlot(verticalSlot.get(), stackId.get()));
     }
 
+    static boolean isEnabledInStackSettings(MKWorkspaceVerticalStackSlot slot,
+                                            MKWorkspaceVerticalStackSettings settings) {
+        return switch (slot) {
+            case MAIN_FLOOR -> settings.mainFloors() > 0;
+            case TOP_CAP_APPROACH -> settings.topCapApproachEnabled();
+            case BASEMENT_ENTRY -> settings.basementFloors() > 0 && settings.basementEntryEnabled();
+            case BASEMENT_FLOOR, BASEMENT_CAP -> settings.basementFloors() > 0;
+            case BASEMENT_CAP_APPROACH -> settings.basementFloors() > 0 &&
+                    settings.basementCapApproachEnabled();
+            default -> true;
+        };
+    }
+
     static List<Integer> allowedMainFloorCounts(MKWorkspaceVerticalStackSettings settings, int basementFloors) {
         return MKWorkspaceVerticalStackFloorCounts.allowedMainFloorCounts(MKWorkspaceVerticalStackBudget.fromStackSettings(settings),
                 basementFloors, settings.topCapApproachEnabled(), settings.basementEntryEnabled(),
