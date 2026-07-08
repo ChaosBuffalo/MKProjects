@@ -2,6 +2,8 @@ package com.chaosbuffalo.mknpc.world.gen.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorLinkGenerationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
@@ -16,11 +18,14 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefiniti
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceTopologySchema;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -209,6 +214,34 @@ class MKStructureWorkspaceServicePreflightTest {
                 .count());
     }
 
+    @Test
+    void walledKeepAddingFloorRoomUsesCatalogRelayoutInsteadOfFullRegenerate() {
+        MKWalledKeepWorkspacePlanner planner = new MKWalledKeepWorkspacePlanner();
+        MKStructureWorkspace existing = walledKeepWorkspace(planner);
+        List<MKWorkspacePieceDefinition> pieces = planner.createCanonicalPieces(existing).stream()
+                .filter(piece -> !com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags
+                        .isDerived(piece.tags()))
+                .flatMap(piece -> List.of(plannedTemplatePiece(piece), plannedVariantPiece(piece)).stream())
+                .toList();
+        existing = existing.withPieces(pieces);
+        MKWorkspaceFloorTopologySettings floorSettings = existing.topologyProfile()
+                .floorTopologySettingsOrDefault("keep.center", "entry");
+        MKWorkspaceFloorRoomProfile added = floorSettings.mainRoomProfiles().getFirst()
+                .withIdentity("extra_main_room", "Extra Main Room");
+        MKWorkspaceFloorTopologySettings updatedFloorSettings = floorSettings.withAddedRoomProfile(
+                MKWorkspaceFloorRoomKind.MAIN_ROOM, added);
+        MKStructureWorkspace requested = withTopologyProfile(existing,
+                existing.topologyProfile().withFloorTopologySettings(updatedFloorSettings));
+        requested = withCopiedPhysicalValueObjects(requested);
+
+        MKWorkspaceMutationPreflight preflight = service.preflightWorkspaceUpdate(existing, requested, 123L);
+
+        assertEquals("preserve_catalog_relayout", preflight.report().recommendedOperation());
+        assertFalse(preflight.report().relayoutImpacts().isEmpty());
+        assertFalse(preflight.report().warnings().stream()
+                .anyMatch(warning -> warning.contains("full regeneration will clear")));
+    }
+
     private static MKWorkspaceFloorTopologySettings settings(String stackId, String floorRole) {
         return new MKWorkspaceFloorTopologySettings(
                 stackId,
@@ -228,6 +261,75 @@ class MKStructureWorkspaceServicePreflightTest {
                 List.of(),
                 List.of(),
                 List.of()
+        );
+    }
+
+    private static MKStructureWorkspace walledKeepWorkspace(MKWalledKeepWorkspacePlanner planner) {
+        MKStructureWorkspace draft = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        return new MKStructureWorkspace(
+                draft.id(),
+                draft.anchor(),
+                draft.namespace(),
+                draft.structureName(),
+                MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false),
+                draft.dimensions(),
+                draft.palette(),
+                draft.stairConfig(),
+                draft.verticalAccessPlacement(),
+                draft.shellMargin(),
+                draft.exteriorAirMargin(),
+                draft.previewMargin(),
+                draft.verticalAccessSpec(),
+                planner.createDefaultRoomFamilyDefinitions(draft.dimensions()),
+                draft.openingProfiles(),
+                planner.createDefaultLinearRunFamilyDefinitions(draft.dimensions(), draft.palette()),
+                draft.insertFamilies(),
+                draft.createdAt(),
+                draft.updatedAt(),
+                draft.pieces(),
+                draft.layerStates()
+        );
+    }
+
+    private static MKWorkspacePieceDefinition plannedTemplatePiece(MKPlannedPiece plannedPiece) {
+        return plannedPiece(plannedPiece, plannedPiece.pieceName() + "_template", 0,
+                plannedPiece.plannerId(), "template");
+    }
+
+    private static MKWorkspacePieceDefinition plannedVariantPiece(MKPlannedPiece plannedPiece) {
+        return plannedPiece(plannedPiece, plannedPiece.pieceName() + "_1", 1,
+                plannedPiece.plannerId().child("variant_1"), "instance");
+    }
+
+    private static MKWorkspacePieceDefinition plannedPiece(MKPlannedPiece plannedPiece, String pieceName,
+                                                          int variantIndex, MKWorkspacePlannerId plannerId,
+                                                          String pieceKind) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>(plannedPiece.tags());
+        tags.put(MKWorkspaceGridLayout.TAG_BASE_NAME, plannedPiece.pieceName());
+        tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, Integer.toString(variantIndex));
+        tags.put("workspace_piece_kind", pieceKind);
+        return new MKWorkspacePieceDefinition(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                pieceName,
+                plannedPiece.roleId(),
+                plannerId,
+                variantIndex,
+                new MKWorkspaceDimensions(plannedPiece.interiorWidth(), plannedPiece.interiorLength(),
+                        plannedPiece.interiorHeight(), plannedPiece.interiorHeight(), plannedPiece.interiorHeight(),
+                        3, 3, 3),
+                1,
+                List.of(),
+                BlockPos.ZERO,
+                new BoundingBox(0, 0, 0, plannedPiece.interiorWidth() - 1,
+                        plannedPiece.interiorHeight() - 1, plannedPiece.interiorLength() - 1),
+                new BoundingBox(0, 0, 0, plannedPiece.interiorWidth() + 1,
+                        plannedPiece.interiorHeight() - 1, plannedPiece.interiorLength() + 1),
+                BlockPos.ZERO,
+                BlockPos.ZERO,
+                List.of(),
+                List.of(),
+                tags
         );
     }
 
@@ -277,6 +379,40 @@ class MKStructureWorkspaceServicePreflightTest {
                 workspace.openingProfiles(),
                 workspace.linearRunFamilies(),
                 insertFamilies,
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces(),
+                workspace.layerStates()
+        );
+    }
+
+    private static MKStructureWorkspace withCopiedPhysicalValueObjects(MKStructureWorkspace workspace) {
+        MKWorkspaceMaterialPalette palette = workspace.palette();
+        MKWorkspaceStairAuthoringConfig stairConfig = workspace.stairConfig();
+        MKWorkspaceVerticalAccessSpec verticalAccessSpec = workspace.verticalAccessSpec();
+        MKWorkspaceStairAuthoringConfig specStairConfig = verticalAccessSpec.stairConfig();
+        return new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.topologyProfile(),
+                workspace.dimensions(),
+                new MKWorkspaceMaterialPalette(palette.floorBlock(), palette.wallBlock(), palette.ceilingBlock(),
+                        palette.stairBlock(), palette.slabBlock(), palette.ladderBlock()),
+                new MKWorkspaceStairAuthoringConfig(stairConfig.mode(), stairConfig.riseType(),
+                        stairConfig.stairWidth()),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                new MKWorkspaceVerticalAccessSpec(verticalAccessSpec.shaftSize(), verticalAccessSpec.placement(),
+                        new MKWorkspaceStairAuthoringConfig(specStairConfig.mode(), specStairConfig.riseType(),
+                                specStairConfig.stairWidth())),
+                workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.linearRunFamilies(),
+                workspace.insertFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
                 workspace.pieces(),

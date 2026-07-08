@@ -6,6 +6,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Blocks;
 
+import java.util.Objects;
+
 public class MKWorkspaceMaterialPalette {
     private static final ResourceLocation DEFAULT_STAIR_BLOCK = ResourceLocation.parse("minecraft:stone_brick_stairs");
     private static final ResourceLocation DEFAULT_SLAB_BLOCK = ResourceLocation.parse("minecraft:stone_brick_slab");
@@ -82,5 +84,38 @@ public class MKWorkspaceMaterialPalette {
 
     public ResourceLocation ladderBlock() {
         return ladderBlock;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof MKWorkspaceMaterialPalette other)) {
+            return false;
+        }
+        return Objects.equals(floorBlock, other.floorBlock) &&
+                Objects.equals(wallBlock, other.wallBlock) &&
+                Objects.equals(ceilingBlock, other.ceilingBlock) &&
+                Objects.equals(stairBlock, other.stairBlock) &&
+                Objects.equals(slabBlock, other.slabBlock) &&
+                Objects.equals(ladderBlock, other.ladderBlock);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(floorBlock, wallBlock, ceilingBlock, stairBlock, slabBlock, ladderBlock);
+    }
+
+    @Override
+    public String toString() {
+        return "MKWorkspaceMaterialPalette{" +
+                "floorBlock=" + floorBlock +
+                ", wallBlock=" + wallBlock +
+                ", ceilingBlock=" + ceilingBlock +
+                ", stairBlock=" + stairBlock +
+                ", slabBlock=" + slabBlock +
+                ", ladderBlock=" + ladderBlock +
+                '}';
     }
 }

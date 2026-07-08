@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class MKWorkspaceVerticalAccessSpec {
     public static final Codec<MKWorkspaceVerticalAccessSpec> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -104,5 +105,32 @@ public class MKWorkspaceVerticalAccessSpec {
 
     public MKWorkspaceStairAuthoringConfig stairConfig() {
         return stairConfig;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof MKWorkspaceVerticalAccessSpec other)) {
+            return false;
+        }
+        return shaftSize == other.shaftSize &&
+                placement == other.placement &&
+                Objects.equals(stairConfig, other.stairConfig);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(shaftSize, placement, stairConfig);
+    }
+
+    @Override
+    public String toString() {
+        return "MKWorkspaceVerticalAccessSpec{" +
+                "shaftSize=" + shaftSize +
+                ", placement=" + placement +
+                ", stairConfig=" + stairConfig +
+                '}';
     }
 }

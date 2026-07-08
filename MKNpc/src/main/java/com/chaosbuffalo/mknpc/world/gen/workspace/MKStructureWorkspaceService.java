@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -284,7 +285,8 @@ public class MKStructureWorkspaceService {
                         nowEpochMillis);
             }
         }
-        return preflightForReport(existing, withDestructiveRegenerationImpacts(existing, floorReport), nowEpochMillis);
+        return preflightForReport(existing, withDestructiveRegenerationImpacts(existing, requested, floorReport,
+                nowEpochMillis), nowEpochMillis);
     }
 
     private MKWorkspaceMutationPreflight preflightForReport(MKStructureWorkspace existing,
@@ -303,7 +305,9 @@ public class MKStructureWorkspaceService {
 
     private MKWorkspaceInvalidationReport withDestructiveRegenerationImpacts(
             MKStructureWorkspace existing,
-            MKWorkspaceInvalidationReport report) {
+            MKStructureWorkspace requested,
+            MKWorkspaceInvalidationReport report,
+            long nowEpochMillis) {
         if (report.safety() != MKWorkspaceMutationSafety.DESTRUCTIVE_REGENERATE ||
                 !report.hasInvalidatedLayer(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS)) {
             return report;
@@ -321,6 +325,8 @@ public class MKStructureWorkspaceService {
         warnings.add("Catalog-preserving relayout is unavailable; full regeneration will clear " +
                 physicalPieces.size() + " physical authored template slots" +
                 (variantCount > 0 ? ", including " + variantCount + " variants." : "."));
+        catalogRelayoutUnavailableReasons(existing, requested, nowEpochMillis).forEach(reason ->
+                warnings.add("Catalog-preserving relayout unavailable reason: " + reason));
         ArrayList<MKWorkspaceRelayoutImpact> impacts = new ArrayList<>(report.relayoutImpacts());
         impacts.addAll(physicalPieces.stream()
                 .map(this::destructiveRegenerationImpact)
@@ -1292,16 +1298,61 @@ public class MKStructureWorkspaceService {
 
     private boolean canCatalogRelayoutSharePhysicalSettings(MKStructureWorkspace existing,
                                                             MKStructureWorkspace requested) {
-        return existing.anchor().equals(requested.anchor()) &&
-                existing.namespace().equals(requested.namespace()) &&
-                existing.structureName().equals(requested.structureName()) &&
-                existing.palette().equals(requested.palette()) &&
-                existing.stairConfig().equals(requested.stairConfig()) &&
-                existing.verticalAccessPlacement() == requested.verticalAccessPlacement() &&
-                existing.shellMargin() == requested.shellMargin() &&
-                existing.exteriorAirMargin() == requested.exteriorAirMargin() &&
-                existing.previewMargin() == requested.previewMargin() &&
-                existing.verticalAccessSpec().equals(requested.verticalAccessSpec());
+        return catalogRelayoutPhysicalSettingMismatches(existing, requested).isEmpty();
+    }
+
+    private List<String> catalogRelayoutUnavailableReasons(MKStructureWorkspace existing,
+                                                           MKStructureWorkspace requested,
+                                                           long nowEpochMillis) {
+        ArrayList<String> reasons = new ArrayList<>();
+        if (existing.pieces().isEmpty()) {
+            reasons.add("existing workspace has no pieces");
+            return List.copyOf(reasons);
+        }
+        reasons.addAll(catalogRelayoutPhysicalSettingMismatches(existing, requested));
+        if (!reasons.isEmpty()) {
+            return List.copyOf(reasons);
+        }
+        CatalogRelayoutTargets targets = catalogRelayoutTargets(existing, requested);
+        MKStructureWorkspace targetWorkspace = workspaceForUpdate(existing, requested, existing.pieces(),
+                nowEpochMillis);
+        MKWorkspacePieceRelayoutService.CatalogRelayoutDiagnostics diagnostics =
+                relayoutService.diagnoseCatalogRelayout(existing, targetWorkspace, targets.targetPieces(),
+                        targets.layoutPieces());
+        reasons.addAll(diagnostics.reasons());
+        if (reasons.isEmpty()) {
+            reasons.add("catalog key validation passed with " + diagnostics.existingPhysicalCount() +
+                    " existing physical pieces and " + diagnostics.targetPhysicalCount() +
+                    " target physical pieces, but relayout planner did not produce applicable work");
+        }
+        return List.copyOf(reasons);
+    }
+
+    private List<String> catalogRelayoutPhysicalSettingMismatches(MKStructureWorkspace existing,
+                                                                  MKStructureWorkspace requested) {
+        ArrayList<String> reasons = new ArrayList<>();
+        addMismatchReason(reasons, "anchor", existing.anchor(), requested.anchor());
+        addMismatchReason(reasons, "namespace", existing.namespace(), requested.namespace());
+        addMismatchReason(reasons, "structure name", existing.structureName(), requested.structureName());
+        addMismatchReason(reasons, "palette", existing.palette(), requested.palette());
+        addMismatchReason(reasons, "stair config", existing.stairConfig(), requested.stairConfig());
+        addMismatchReason(reasons, "vertical access placement", existing.verticalAccessPlacement(),
+                requested.verticalAccessPlacement());
+        addMismatchReason(reasons, "shell margin", existing.shellMargin(), requested.shellMargin());
+        addMismatchReason(reasons, "exterior air margin", existing.exteriorAirMargin(),
+                requested.exteriorAirMargin());
+        addMismatchReason(reasons, "preview margin", existing.previewMargin(), requested.previewMargin());
+        addMismatchReason(reasons, "vertical access spec", existing.verticalAccessSpec(),
+                requested.verticalAccessSpec());
+        return List.copyOf(reasons);
+    }
+
+    private void addMismatchReason(ArrayList<String> reasons, String field, Object existingValue,
+                                   Object requestedValue) {
+        if (!Objects.equals(existingValue, requestedValue)) {
+            reasons.add("physical setting changed: " + field + " existing=" + existingValue +
+                    " requested=" + requestedValue);
+        }
     }
 
     private CatalogRelayoutTargets catalogRelayoutTargets(MKStructureWorkspace existing,

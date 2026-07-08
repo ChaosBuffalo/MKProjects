@@ -145,6 +145,17 @@ public class MKWorkspacePieceRelayoutService {
         }
     }
 
+    public record CatalogRelayoutDiagnostics(List<String> reasons, int existingPhysicalCount,
+                                             int targetPhysicalCount) {
+        public CatalogRelayoutDiagnostics {
+            reasons = List.copyOf(reasons);
+        }
+
+        public boolean eligible() {
+            return reasons.isEmpty();
+        }
+    }
+
     public Optional<RelayoutResult> relayoutPreviewMargin(ServerLevel level, MKStructureWorkspace workspace,
                                                           int previewMargin) throws IOException {
         if (previewMargin < 2 || workspace.pieces().isEmpty()) {
@@ -200,6 +211,33 @@ public class MKWorkspacePieceRelayoutService {
                                                                      List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
         return planCatalogRelayout(existing, targetWorkspace, targetPieces, layoutPieces, acceptedRemaps)
                 .map(this::summarize);
+    }
+
+    public CatalogRelayoutDiagnostics diagnoseCatalogRelayout(MKStructureWorkspace existing,
+                                                              MKStructureWorkspace targetWorkspace,
+                                                              List<MKPlannedPiece> targetPieces,
+                                                              List<MKPlannedPiece> layoutPieces) {
+        ArrayList<String> reasons = new ArrayList<>();
+        if (existing.pieces().isEmpty()) {
+            reasons.add("existing workspace has no pieces");
+        }
+        if (!existing.anchor().equals(targetWorkspace.anchor())) {
+            reasons.add("workspace anchor changed from " + existing.anchor().toShortString() +
+                    " to " + targetWorkspace.anchor().toShortString());
+        }
+
+        List<MKWorkspacePieceDefinition> existingPhysical = existing.pieces().stream()
+                .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
+                .toList();
+        findExistingCatalogKeyProblems(existingPhysical, reasons);
+        findTargetCatalogKeyProblems(layoutPieces, reasons);
+        if (targetPieces.isEmpty()) {
+            reasons.add("target planner produced no catalog pieces");
+        }
+        if (layoutPieces.isEmpty()) {
+            reasons.add("target planner produced no physical catalog layout pieces");
+        }
+        return new CatalogRelayoutDiagnostics(List.copyOf(reasons), existingPhysical.size(), layoutPieces.size());
     }
 
     public Optional<RelayoutResult> relayoutCatalog(ServerLevel level, MKStructureWorkspace existing,
@@ -385,6 +423,39 @@ public class MKWorkspacePieceRelayoutService {
         return Optional.of(new CatalogPlan(List.copyOf(targetPieces), List.copyOf(layoutPieces), List.copyOf(moves),
                 List.copyOf(expansions), List.copyOf(removedPieces), List.copyOf(rebuilds),
                 List.copyOf(newPieces)));
+    }
+
+    private void findExistingCatalogKeyProblems(List<MKWorkspacePieceDefinition> existingPhysical,
+                                                ArrayList<String> reasons) {
+        Map<String, MKWorkspacePieceDefinition> existingByKey = new LinkedHashMap<>();
+        for (MKWorkspacePieceDefinition piece : existingPhysical) {
+            String key = catalogKey(piece);
+            if (key.isBlank()) {
+                reasons.add("existing physical piece has blank catalog key: " + piece.pieceName());
+                continue;
+            }
+            MKWorkspacePieceDefinition previous = existingByKey.putIfAbsent(key, piece);
+            if (previous != null) {
+                reasons.add("duplicate existing physical catalog key " + key +
+                        " used by " + previous.pieceName() + " and " + piece.pieceName());
+            }
+        }
+    }
+
+    private void findTargetCatalogKeyProblems(List<MKPlannedPiece> layoutPieces, ArrayList<String> reasons) {
+        Map<String, MKPlannedPiece> targetByKey = new LinkedHashMap<>();
+        for (MKPlannedPiece piece : layoutPieces) {
+            String key = catalogKey(piece);
+            if (key.isBlank()) {
+                reasons.add("target physical layout piece has blank catalog key: " + piece.pieceName());
+                continue;
+            }
+            MKPlannedPiece previous = targetByKey.putIfAbsent(key, piece);
+            if (previous != null) {
+                reasons.add("duplicate target physical catalog key " + key +
+                        " used by " + previous.pieceName() + " and " + piece.pieceName());
+            }
+        }
     }
 
     private Map<MKWorkspacePlannerId, MKWorkspacePlannerId> acceptedRemapTargets(

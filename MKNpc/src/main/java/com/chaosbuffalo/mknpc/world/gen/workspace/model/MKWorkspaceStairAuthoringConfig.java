@@ -4,6 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
 
+import java.util.Objects;
+
 public class MKWorkspaceStairAuthoringConfig {
     public static final Codec<MKWorkspaceStairAuthoringConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             MKWorkspaceCodecs.STAIR_MODE_CODEC.optionalFieldOf("mode", MKWorkspaceStairMode.AUTO)
@@ -65,5 +67,32 @@ public class MKWorkspaceStairAuthoringConfig {
 
     public int stairWidth() {
         return stairWidth;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof MKWorkspaceStairAuthoringConfig other)) {
+            return false;
+        }
+        return stairWidth == other.stairWidth &&
+                mode == other.mode &&
+                riseType == other.riseType;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mode, riseType, stairWidth);
+    }
+
+    @Override
+    public String toString() {
+        return "MKWorkspaceStairAuthoringConfig{" +
+                "mode=" + mode +
+                ", riseType=" + riseType +
+                ", stairWidth=" + stairWidth +
+                '}';
     }
 }
