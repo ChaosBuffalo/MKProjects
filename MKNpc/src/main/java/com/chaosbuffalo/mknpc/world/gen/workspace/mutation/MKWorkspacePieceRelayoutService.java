@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.mutation;
 
 import com.chaosbuffalo.mknpc.block_entities.MKWorkspaceDevBlockEntity;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
@@ -16,6 +17,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceScaffoldBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -59,6 +61,18 @@ public class MKWorkspacePieceRelayoutService {
     }
 
     private record BlockSnapshot(BlockState state, CompoundTag blockEntityTag) {
+    }
+
+    private record ConnectorSignature(
+            MKConnectorRole role,
+            Direction facing,
+            int openingWidth,
+            int openingHeight,
+            int lateralOffset,
+            int verticalOffset,
+            String targetPool,
+            String incomingPool
+    ) {
     }
 
     private record CatalogPlan(
@@ -417,8 +431,8 @@ public class MKWorkspacePieceRelayoutService {
                 existingPiece.effectiveDimensions().roomWidth() == targetPiece.interiorWidth() &&
                 existingPiece.effectiveDimensions().roomLength() == targetPiece.interiorLength() &&
                 existingPiece.effectiveDimensions().roomHeight() == targetPiece.interiorHeight() &&
-                Objects.equals(existingPiece.connectors().stream().map(this::toPlannedConnector).toList(),
-                        targetPiece.connectors());
+                Objects.equals(connectorSignatures(existingPiece),
+                        connectorSignatures(targetWorkspace, targetPiece));
     }
 
     private boolean canExpandPreservingAuthoredBlocks(MKWorkspacePieceDefinition existingPiece,
@@ -431,8 +445,56 @@ public class MKWorkspacePieceRelayoutService {
                 (targetPiece.interiorWidth() > existingPiece.effectiveDimensions().roomWidth() ||
                         targetPiece.interiorLength() > existingPiece.effectiveDimensions().roomLength() ||
                         targetPiece.interiorHeight() > existingPiece.effectiveDimensions().roomHeight()) &&
-                Objects.equals(existingPiece.connectors().stream().map(this::toPlannedConnector).toList(),
-                        targetPiece.connectors());
+                Objects.equals(connectorSignatures(existingPiece),
+                        connectorSignatures(targetWorkspace, targetPiece));
+    }
+
+    private List<ConnectorSignature> connectorSignatures(MKWorkspacePieceDefinition piece) {
+        return piece.connectors().stream()
+                .map(connector -> new ConnectorSignature(
+                        connector.role(),
+                        connector.facing(),
+                        connector.openingWidth(),
+                        connector.openingHeight(),
+                        connector.lateralOffset(),
+                        connector.verticalOffset(),
+                        connector.targetPool().toString(),
+                        connector.incomingPool().toString()))
+                .toList();
+    }
+
+    private List<ConnectorSignature> connectorSignatures(MKStructureWorkspace workspace, MKPlannedPiece piece) {
+        return piece.connectors().stream()
+                .filter(MKPlannedConnector::placesJigsaw)
+                .map(connector -> new ConnectorSignature(
+                        connector.role(),
+                        connector.facing(),
+                        connector.openingWidth(),
+                        connector.openingHeight(),
+                        connector.lateralOffset(),
+                        connector.verticalOffset(),
+                        resolveTargetPool(workspace, piece, connector.targetPoolName()),
+                        resolveIncomingPool(workspace, connector.incomingPoolName())))
+                .toList();
+    }
+
+    private String resolveTargetPool(MKStructureWorkspace workspace, MKPlannedPiece piece, String poolName) {
+        String resolvedPoolName = poolName == null ? baseName(piece) : poolName;
+        return parseConnectorPool(workspace, resolvedPoolName).toString();
+    }
+
+    private String resolveIncomingPool(MKStructureWorkspace workspace, String poolName) {
+        if (poolName == null || poolName.isBlank()) {
+            return "minecraft:empty";
+        }
+        return parseConnectorPool(workspace, poolName).toString();
+    }
+
+    private ResourceLocation parseConnectorPool(MKStructureWorkspace workspace, String poolName) {
+        if (poolName.contains(":")) {
+            return ResourceLocation.parse(poolName);
+        }
+        return ResourceLocation.fromNamespaceAndPath(workspace.namespace(), workspace.structureName() + "/" + poolName);
     }
 
     private MKWorkspaceDimensions targetDimensions(MKPlannedPiece targetPiece, MKWorkspaceDimensions existing) {
@@ -573,12 +635,14 @@ public class MKWorkspacePieceRelayoutService {
     }
 
     private String inferredStableCatalogKey(Map<String, String> tags) {
-        if (tags.containsKey("workspace_floor_room_profile_id")) {
+        String legacyProfileId = legacyFloorRoomProfileId(tags);
+        if (tags.containsKey("workspace_floor_room_profile_id") || legacyProfileId != null) {
+            String profileId = tags.getOrDefault("workspace_floor_room_profile_id", legacyProfileId);
             return "floor_room:floor." +
                     tags.getOrDefault("workspace_floor_topology_stack_id", "") + "." +
                     tags.getOrDefault("workspace_floor_topology_floor_role", "") + "." +
                     tags.getOrDefault("workspace_floor_room_kind", "") + "." +
-                    tags.get("workspace_floor_room_profile_id");
+                    profileId;
         }
         if (tags.containsKey("workspace_insert_family_id")) {
             return "floor_insert_family:floor.insert_family." + tags.get("workspace_insert_family_id");
@@ -625,6 +689,16 @@ public class MKWorkspacePieceRelayoutService {
             return "vertical_stack_room:" + topologySlotId;
         }
         return "";
+    }
+
+    private String legacyFloorRoomProfileId(Map<String, String> tags) {
+        if (!tags.containsKey("workspace_floor_topology_stack_id") ||
+                !tags.containsKey("workspace_floor_topology_floor_role") ||
+                !tags.containsKey("workspace_floor_room_kind")) {
+            return null;
+        }
+        String roomKind = tags.get("workspace_floor_room_kind");
+        return roomKind == null || roomKind.isBlank() ? null : roomKind;
     }
 
     private int variantIndex(Map<String, String> tags) {

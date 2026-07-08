@@ -1,16 +1,22 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.mutation;
 
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.junit.jupiter.api.Test;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -119,32 +125,90 @@ class MKWorkspacePieceRelayoutServiceTest {
         assertEquals(0, withRemap.removedCount());
     }
 
+    @Test
+    void catalogSummaryPreservesLegacyFloorRoomTagsWithoutProfileId() {
+        Map<String, String> existingTags = floorRoomTags(false);
+        Map<String, String> targetTags = floorRoomTags(true);
+        MKWorkspacePieceDefinition existingPiece = piece("main_room_template", "main_room",
+                plannerId("main_room"), 9, 9, 7, List.of(), existingTags);
+        MKStructureWorkspace existing = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(existingPiece));
+        List<MKPlannedPiece> targetPieces = List.of(planned("main_room_template", "main_room",
+                existingPiece.plannerId(), 9, 9, 7, List.of(), targetTags));
+
+        MKWorkspacePieceRelayoutService.CatalogRelayoutSummary summary = service
+                .summarizeCatalogRelayout(existing, existing, targetPieces, targetPieces)
+                .orElseThrow();
+
+        assertEquals(1, summary.preservedCount());
+        assertEquals(0, summary.newCount());
+        assertEquals(0, summary.removedCount());
+        assertEquals(0, summary.rebuildRequiredCount());
+    }
+
+    @Test
+    void catalogSummaryPreservesConnectorsWithResolvedWorkspacePools() {
+        MKStructureWorkspace draft = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        String localPoolName = "rooms/main/floor_main";
+        ResourceLocation targetPool = ResourceLocation.fromNamespaceAndPath(draft.namespace(),
+                draft.structureName() + "/" + localPoolName);
+        MKWorkspaceConnectorDefinition existingConnector = connector(MKConnectorRole.MAIN_BACK, Direction.NORTH,
+                5, 4, 0, 0, targetPool, ResourceLocation.parse("minecraft:empty"));
+        MKPlannedConnector plannedConnector = new MKPlannedConnector(MKConnectorRole.MAIN_BACK, Direction.NORTH,
+                5, 4, 0, 0, localPoolName, null);
+        MKWorkspacePieceDefinition existingPiece = piece("room_a_template", "room_a", plannerId("room_a"),
+                9, 9, 7, List.of(existingConnector), tags("room_a"));
+        MKStructureWorkspace existing = draft.withPieces(List.of(existingPiece));
+        List<MKPlannedPiece> targetPieces = List.of(planned("room_a_template", "room_a",
+                existingPiece.plannerId(), 9, 9, 7, List.of(plannedConnector), tags("room_a")));
+
+        MKWorkspacePieceRelayoutService.CatalogRelayoutSummary summary = service
+                .summarizeCatalogRelayout(existing, existing, targetPieces, targetPieces)
+                .orElseThrow();
+
+        assertEquals(1, summary.preservedCount());
+        assertEquals(0, summary.rebuildRequiredCount());
+    }
+
     private static MKPlannedPiece planned(String pieceName, String baseName, MKWorkspacePlannerId plannerId,
                                           int width, int length, int height) {
+        return planned(pieceName, baseName, plannerId, width, length, height, List.of(), tags(baseName));
+    }
+
+    private static MKPlannedPiece planned(String pieceName, String baseName, MKWorkspacePlannerId plannerId,
+                                          int width, int length, int height, List<MKPlannedConnector> connectors,
+                                          Map<String, String> tags) {
         return new MKPlannedPiece(
                 "floor.plan.room",
                 pieceName,
                 width,
                 length,
                 height,
-                List.of(),
-                tags(baseName),
+                connectors,
+                tags,
                 plannerId
         );
     }
 
     private static MKWorkspacePieceDefinition piece(String pieceName, String baseName,
                                                    int width, int length, int height) {
+        return piece(pieceName, baseName, plannerId(baseName), width, length, height, List.of(), tags(baseName));
+    }
+
+    private static MKWorkspacePieceDefinition piece(String pieceName, String baseName, MKWorkspacePlannerId plannerId,
+                                                   int width, int length, int height,
+                                                   List<MKWorkspaceConnectorDefinition> connectors,
+                                                   Map<String, String> tags) {
         return new MKWorkspacePieceDefinition(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 pieceName,
                 "floor.plan.room",
-                plannerId(baseName),
+                plannerId,
                 0,
                 new MKWorkspaceDimensions(width, length, height, height, height, 3, 3, 3),
                 1,
-                List.of(),
+                connectors,
                 BlockPos.ZERO,
                 new BoundingBox(0, 0, 0, width - 1, height - 1, length - 1),
                 new BoundingBox(0, 0, 0, width + 3, height - 1, length + 3),
@@ -152,7 +216,27 @@ class MKWorkspacePieceRelayoutServiceTest {
                 BlockPos.ZERO,
                 List.of(),
                 List.of(),
-                tags(baseName)
+                tags
+        );
+    }
+
+    private static MKWorkspaceConnectorDefinition connector(MKConnectorRole role, Direction facing,
+                                                            int width, int height,
+                                                            int lateralOffset, int verticalOffset,
+                                                            ResourceLocation targetPool,
+                                                            ResourceLocation incomingPool) {
+        return new MKWorkspaceConnectorDefinition(
+                role,
+                facing,
+                BlockPos.ZERO,
+                width,
+                height,
+                lateralOffset,
+                verticalOffset,
+                ResourceLocation.fromNamespaceAndPath("mknpc_test", role.getSerializedName()),
+                targetPool,
+                targetPool,
+                incomingPool
         );
     }
 
@@ -166,5 +250,16 @@ class MKWorkspacePieceRelayoutServiceTest {
                 MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "0",
                 "workspace_piece_kind", "template"
         );
+    }
+
+    private static Map<String, String> floorRoomTags(boolean includeProfileId) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>(tags("main_room"));
+        tags.put("workspace_floor_topology_stack_id", "tower.primary");
+        tags.put("workspace_floor_topology_floor_role", "main_floor");
+        tags.put("workspace_floor_room_kind", "main_room");
+        if (includeProfileId) {
+            tags.put("workspace_floor_room_profile_id", "main_room");
+        }
+        return Map.copyOf(tags);
     }
 }
