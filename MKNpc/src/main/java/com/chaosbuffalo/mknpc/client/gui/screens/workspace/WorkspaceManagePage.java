@@ -8,6 +8,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLaye
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInvalidationReport;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
@@ -180,6 +181,17 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         }
         if (!report.remapSuggestions().isEmpty()) {
             addText(screen, content, "Remap suggestions: " + report.remapSuggestions().size());
+            long safeRemaps = report.remapSuggestions().stream()
+                    .filter(suggestion -> suggestion.score() >= 85)
+                    .count();
+            if (safeRemaps > 0) {
+                addText(screen, content, "Safe remaps available: " + safeRemaps +
+                        " (accept-all apply is pending packet support).");
+            }
+            for (MKWorkspaceTemplateRemapSuggestion suggestion : report.remapSuggestions()) {
+                addText(screen, content, "Remap " + suggestion.orphanedPlannerId() + " -> " +
+                        suggestion.targetPlannerId() + " (" + suggestion.score() + ") " + suggestion.reason());
+            }
         }
         for (String warning : report.warnings()) {
             addText(screen, content, "Warning: " + warning);

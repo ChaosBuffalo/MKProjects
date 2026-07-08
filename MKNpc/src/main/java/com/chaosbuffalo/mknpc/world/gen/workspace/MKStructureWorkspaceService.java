@@ -247,6 +247,16 @@ public class MKStructureWorkspaceService {
     public MKWorkspaceMutationPreflight preflightWorkspaceUpdate(MKStructureWorkspace existing,
                                                                  MKStructureWorkspace requested,
                                                                  long nowEpochMillis) {
+        Optional<MKWorkspacePieceRelayoutService.CatalogRelayoutSummary> catalogSummary =
+                catalogRelayoutSummary(existing, requested, nowEpochMillis);
+        if (catalogSummary.isPresent() && catalogSummary.get().hasWork()) {
+            MKWorkspaceInvalidationReport report = catalogRelayoutReport(catalogSummary.get());
+            MKStructureWorkspace workspaceWithLayerStates = layerStateService.ensureLayerStates(existing,
+                    nowEpochMillis);
+            MKStructureWorkspace workspaceWithDirtyLayers = layerStateService.applyInvalidation(
+                    workspaceWithLayerStates, report, nowEpochMillis);
+            return new MKWorkspaceMutationPreflight(report, workspaceWithDirtyLayers);
+        }
         List<MKWorkspaceInvalidationReport> floorReports = floorTopologyReports(existing, requested, nowEpochMillis);
         MKWorkspaceInvalidationReport report = mergeReports(floorReports);
         MKStructureWorkspace workspaceWithLayerStates = layerStateService.ensureLayerStates(existing, nowEpochMillis);
@@ -1092,6 +1102,48 @@ public class MKStructureWorkspaceService {
                 System.currentTimeMillis());
         return relayoutService.canRelayoutCatalog(existing, targetWorkspace, targets.targetPieces(),
                 targets.layoutPieces());
+    }
+
+    private Optional<MKWorkspacePieceRelayoutService.CatalogRelayoutSummary> catalogRelayoutSummary(
+            MKStructureWorkspace existing, MKStructureWorkspace requested, long nowEpochMillis) {
+        if (existing.pieces().isEmpty() || !canCatalogRelayoutSharePhysicalSettings(existing, requested)) {
+            return Optional.empty();
+        }
+        CatalogRelayoutTargets targets = catalogRelayoutTargets(existing, requested);
+        MKStructureWorkspace targetWorkspace = workspaceForUpdate(existing, requested, existing.pieces(),
+                nowEpochMillis);
+        return relayoutService.summarizeCatalogRelayout(existing, targetWorkspace, targets.targetPieces(),
+                targets.layoutPieces());
+    }
+
+    private MKWorkspaceInvalidationReport catalogRelayoutReport(
+            MKWorkspacePieceRelayoutService.CatalogRelayoutSummary summary) {
+        LinkedHashSet<MKWorkspaceGeneratedLayer> layers = new LinkedHashSet<>();
+        if (summary.movedCount() > 0 || summary.expandedCount() > 0) {
+            layers.add(MKWorkspaceGeneratedLayer.PREVIEW_LAYOUT);
+            layers.add(MKWorkspaceGeneratedLayer.SIDECAR_BLOCKS);
+            layers.add(MKWorkspaceGeneratedLayer.RUNTIME_METADATA);
+        }
+        if (summary.newCount() > 0 || summary.removedCount() > 0 || summary.rebuildRequiredCount() > 0 ||
+                summary.expandedCount() > 0) {
+            layers.add(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS);
+            layers.add(MKWorkspaceGeneratedLayer.SCAFFOLD_BLOCKS);
+            layers.add(MKWorkspaceGeneratedLayer.SIDECAR_BLOCKS);
+            layers.add(MKWorkspaceGeneratedLayer.RUNTIME_METADATA);
+        }
+        MKWorkspaceMutationSafety safety = summary.rebuildRequiredCount() > 0 || summary.removedCount() > 0 ?
+                MKWorkspaceMutationSafety.CONDITIONALLY_SAFE_TOPOLOGY_PATCH :
+                MKWorkspaceMutationSafety.SAFE_RELAYOUT;
+        return new MKWorkspaceInvalidationReport(
+                List.copyOf(layers),
+                List.of(),
+                List.of(),
+                List.of(),
+                safety,
+                "Workspace catalog relayout will preserve matched physical authored templates.",
+                "preserve_catalog_relayout",
+                summary.warnings()
+        );
     }
 
     private Optional<MKStructureWorkspace> relayoutCatalogPreservingPieces(ServerLevel level,

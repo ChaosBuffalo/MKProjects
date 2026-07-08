@@ -52,6 +52,9 @@ public class MKWorkspacePieceRelayoutService {
     private record PieceMove(MKWorkspacePieceDefinition original, MKWorkspacePieceDefinition moved, BlockPos delta) {
     }
 
+    private record PieceExpansion(MKWorkspacePieceDefinition original, MKPlannedPiece targetPiece) {
+    }
+
     private record BlockSnapshot(BlockState state, CompoundTag blockEntityTag) {
     }
 
@@ -59,13 +62,45 @@ public class MKWorkspacePieceRelayoutService {
             List<MKPlannedPiece> targetPieces,
             List<MKPlannedPiece> layoutPieces,
             List<PieceMove> moves,
+            List<PieceExpansion> expansions,
             List<MKWorkspacePieceDefinition> removedPieces,
             List<MKWorkspacePieceDefinition> rebuildSourcePieces,
             List<MKPlannedPiece> buildPieces
     ) {
         boolean hasWork() {
-            return !moves.isEmpty() || !removedPieces.isEmpty() || !rebuildSourcePieces.isEmpty() ||
-                    !buildPieces.isEmpty();
+            return !moves.isEmpty() || !expansions.isEmpty() || !removedPieces.isEmpty() ||
+                    !rebuildSourcePieces.isEmpty() || !buildPieces.isEmpty();
+        }
+    }
+
+    public record CatalogRelayoutSummary(int preservedCount, int movedCount, int expandedCount, int newCount,
+                                         int removedCount, int rebuildRequiredCount) {
+        public boolean hasWork() {
+            return movedCount > 0 || expandedCount > 0 || newCount > 0 || removedCount > 0 ||
+                    rebuildRequiredCount > 0;
+        }
+
+        public List<String> warnings() {
+            ArrayList<String> warnings = new ArrayList<>();
+            if (preservedCount > 0) {
+                warnings.add(preservedCount + " physical authored templates will be preserved.");
+            }
+            if (movedCount > 0) {
+                warnings.add(movedCount + " preserved templates will move to new catalog positions.");
+            }
+            if (expandedCount > 0) {
+                warnings.add(expandedCount + " templates will expand while keeping existing authored blocks.");
+            }
+            if (newCount > 0) {
+                warnings.add(newCount + " new physical template slots will be scaffolded.");
+            }
+            if (removedCount > 0) {
+                warnings.add(removedCount + " removed physical template slots will be cleared.");
+            }
+            if (rebuildRequiredCount > 0) {
+                warnings.add(rebuildRequiredCount + " resized or connector-changed templates will be cleared and rebuilt.");
+            }
+            return List.copyOf(warnings);
         }
     }
 
@@ -104,6 +139,14 @@ public class MKWorkspacePieceRelayoutService {
                 .isPresent();
     }
 
+    public Optional<CatalogRelayoutSummary> summarizeCatalogRelayout(MKStructureWorkspace existing,
+                                                                     MKStructureWorkspace targetWorkspace,
+                                                                     List<MKPlannedPiece> targetPieces,
+                                                                     List<MKPlannedPiece> layoutPieces) {
+        return planCatalogRelayout(existing, targetWorkspace, targetPieces, layoutPieces)
+                .map(this::summarize);
+    }
+
     public Optional<RelayoutResult> relayoutCatalog(ServerLevel level, MKStructureWorkspace existing,
                                                     MKStructureWorkspace targetWorkspace,
                                                     List<MKPlannedPiece> targetPieces,
@@ -117,9 +160,11 @@ public class MKWorkspacePieceRelayoutService {
         MKWorkspaceBackupManifestWriter.WrittenBackup backup =
                 backupWriter.writeBeforeMutation(level, existing, "catalog-preserving-relayout");
 
-        Map<BlockPos, BlockSnapshot> snapshots = snapshotSources(level, plan.moves());
-        Map<BlockPos, BlockSnapshot> destinationSnapshots = mapDestinations(plan.moves(), snapshots);
-        clearCatalogSources(level, plan.moves(), plan.removedPieces(), plan.rebuildSourcePieces());
+        Map<BlockPos, BlockSnapshot> moveSnapshots = snapshotSources(level, plan.moves());
+        Map<BlockPos, BlockSnapshot> destinationSnapshots = mapDestinations(plan.moves(), moveSnapshots);
+        Map<PieceExpansion, Map<BlockPos, BlockSnapshot>> expansionSnapshots =
+                snapshotExpansionSources(level, plan.expansions());
+        clearCatalogSources(level, plan.moves(), plan.expansions(), plan.removedPieces(), plan.rebuildSourcePieces());
         placeDestinations(level, destinationSnapshots);
 
         Map<MKPlannedPiece, MKWorkspacePieceDefinition> physicalByPlan = new HashMap<>();
@@ -129,6 +174,14 @@ public class MKWorkspacePieceRelayoutService {
                 physicalByPlan.put(targetPiece, move.moved());
                 refreshSidecarMetadata(level, targetWorkspace, move.moved(), targetPiece);
             }
+        }
+        for (PieceExpansion expansion : plan.expansions()) {
+            MKWorkspacePieceDefinition generated = scaffoldBuilder.buildSingle(level, targetWorkspace,
+                    expansion.targetPiece(), plan.layoutPieces());
+            Map<BlockPos, BlockSnapshot> remappedSnapshots = remapExpansionSnapshots(
+                    expansion.original(), generated, expansionSnapshots.getOrDefault(expansion, Map.of()));
+            placeDestinations(level, remappedSnapshots);
+            physicalByPlan.put(expansion.targetPiece(), withPreservedIdentity(generated, expansion.original()));
         }
         for (MKPlannedPiece buildPiece : plan.buildPieces()) {
             MKWorkspacePieceDefinition generated = scaffoldBuilder.buildSingle(level, targetWorkspace, buildPiece,
@@ -170,15 +223,16 @@ public class MKWorkspacePieceRelayoutService {
         MKStructureWorkspace updated = targetWorkspace.withPieces(updatedPieces);
         IMKStructureWorkspaceData.get(level).updateWorkspace(updated);
         syncBlockEntity(level, updated);
-        return Optional.of(new RelayoutResult(updated, backup.path(), plan.moves().size(), snapshots.size()));
+        int movedBlocks = moveSnapshots.size() + expansionSnapshots.values().stream().mapToInt(Map::size).sum();
+        return Optional.of(new RelayoutResult(updated, backup.path(),
+                plan.moves().size() + plan.expansions().size(), movedBlocks));
     }
 
     private Optional<CatalogPlan> planCatalogRelayout(MKStructureWorkspace existing,
                                                       MKStructureWorkspace targetWorkspace,
                                                       List<MKPlannedPiece> targetPieces,
                                                       List<MKPlannedPiece> layoutPieces) {
-        if (existing.pieces().isEmpty() || !existing.anchor().equals(targetWorkspace.anchor()) ||
-                layoutPieces.isEmpty()) {
+        if (existing.pieces().isEmpty() || !existing.anchor().equals(targetWorkspace.anchor())) {
             return Optional.empty();
         }
         List<MKWorkspacePieceDefinition> existingPhysical = existing.pieces().stream()
@@ -213,6 +267,7 @@ public class MKWorkspacePieceRelayoutService {
         }
 
         List<PieceMove> moves = new ArrayList<>();
+        List<PieceExpansion> expansions = new ArrayList<>();
         List<MKWorkspacePieceDefinition> rebuildSourcePieces = new ArrayList<>();
         List<MKWorkspacePieceDefinition> removedPieces = new ArrayList<>();
         List<MKPlannedPiece> buildPieces = new ArrayList<>();
@@ -227,6 +282,8 @@ public class MKWorkspacePieceRelayoutService {
             consumedExistingKeys.add(key);
             if (canPreserveAuthoredBlocks(existingPiece, targetPiece, targetWorkspace)) {
                 moves.add(createCatalogMove(targetWorkspace, existingPiece, targetPiece, placementByPlan.get(targetPiece)));
+            } else if (canExpandPreservingAuthoredBlocks(existingPiece, targetPiece, targetWorkspace)) {
+                expansions.add(new PieceExpansion(existingPiece, targetPiece));
             } else {
                 rebuildSourcePieces.add(existingPiece);
                 buildPieces.add(targetPiece);
@@ -238,7 +295,23 @@ public class MKWorkspacePieceRelayoutService {
             }
         }
         return Optional.of(new CatalogPlan(List.copyOf(targetPieces), List.copyOf(layoutPieces), List.copyOf(moves),
-                List.copyOf(removedPieces), List.copyOf(rebuildSourcePieces), List.copyOf(buildPieces)));
+                List.copyOf(expansions), List.copyOf(removedPieces), List.copyOf(rebuildSourcePieces),
+                List.copyOf(buildPieces)));
+    }
+
+    private CatalogRelayoutSummary summarize(CatalogPlan plan) {
+        int movedCount = (int) plan.moves().stream()
+                .filter(move -> !move.delta().equals(BlockPos.ZERO))
+                .count();
+        int preservedCount = plan.moves().size() + plan.expansions().size();
+        return new CatalogRelayoutSummary(
+                preservedCount,
+                movedCount,
+                plan.expansions().size(),
+                plan.buildPieces().size(),
+                plan.removedPieces().size(),
+                plan.rebuildSourcePieces().size()
+        );
     }
 
     private PieceMove createCatalogMove(MKStructureWorkspace workspace, MKWorkspacePieceDefinition original,
@@ -291,6 +364,20 @@ public class MKWorkspacePieceRelayoutService {
                         targetPiece.connectors());
     }
 
+    private boolean canExpandPreservingAuthoredBlocks(MKWorkspacePieceDefinition existingPiece,
+                                                      MKPlannedPiece targetPiece,
+                                                      MKStructureWorkspace targetWorkspace) {
+        return existingPiece.shellMargin() == targetWorkspace.shellMargin() &&
+                targetPiece.interiorWidth() >= existingPiece.effectiveDimensions().roomWidth() &&
+                targetPiece.interiorLength() >= existingPiece.effectiveDimensions().roomLength() &&
+                targetPiece.interiorHeight() >= existingPiece.effectiveDimensions().roomHeight() &&
+                (targetPiece.interiorWidth() > existingPiece.effectiveDimensions().roomWidth() ||
+                        targetPiece.interiorLength() > existingPiece.effectiveDimensions().roomLength() ||
+                        targetPiece.interiorHeight() > existingPiece.effectiveDimensions().roomHeight()) &&
+                Objects.equals(existingPiece.connectors().stream().map(this::toPlannedConnector).toList(),
+                        targetPiece.connectors());
+    }
+
     private MKWorkspaceDimensions targetDimensions(MKPlannedPiece targetPiece, MKWorkspaceDimensions existing) {
         return new MKWorkspaceDimensions(
                 targetPiece.interiorWidth(),
@@ -314,12 +401,15 @@ public class MKWorkspacePieceRelayoutService {
         return null;
     }
 
-    private void clearCatalogSources(ServerLevel level, List<PieceMove> moves,
+    private void clearCatalogSources(ServerLevel level, List<PieceMove> moves, List<PieceExpansion> expansions,
                                      List<MKWorkspacePieceDefinition> removedPieces,
                                      List<MKWorkspacePieceDefinition> rebuildSourcePieces) {
         LinkedHashSet<BlockPos> positions = new LinkedHashSet<>();
         for (PieceMove move : moves) {
             positions.addAll(collectMovedPositions(move.original()));
+        }
+        for (PieceExpansion expansion : expansions) {
+            positions.addAll(collectMovedPositions(expansion.original()));
         }
         for (MKWorkspacePieceDefinition removedPiece : removedPieces) {
             positions.addAll(collectMovedPositions(removedPiece));
@@ -328,6 +418,56 @@ public class MKWorkspacePieceRelayoutService {
             positions.addAll(collectMovedPositions(rebuildSourcePiece));
         }
         clearSources(level, positions);
+    }
+
+    private Map<PieceExpansion, Map<BlockPos, BlockSnapshot>> snapshotExpansionSources(
+            ServerLevel level, List<PieceExpansion> expansions) {
+        LinkedHashMap<PieceExpansion, Map<BlockPos, BlockSnapshot>> snapshotsByExpansion = new LinkedHashMap<>();
+        for (PieceExpansion expansion : expansions) {
+            LinkedHashMap<BlockPos, BlockSnapshot> snapshots = new LinkedHashMap<>();
+            for (BlockPos sourcePos : collectExportPositions(expansion.original())) {
+                snapshots.put(sourcePos.immutable(), snapshot(level, sourcePos));
+            }
+            snapshotsByExpansion.put(expansion, snapshots);
+        }
+        return snapshotsByExpansion;
+    }
+
+    private Map<BlockPos, BlockSnapshot> remapExpansionSnapshots(MKWorkspacePieceDefinition original,
+                                                                MKWorkspacePieceDefinition generated,
+                                                                Map<BlockPos, BlockSnapshot> snapshots) {
+        LinkedHashMap<BlockPos, BlockSnapshot> remapped = new LinkedHashMap<>();
+        BlockPos delta = generated.worldOrigin().subtract(original.worldOrigin());
+        for (Map.Entry<BlockPos, BlockSnapshot> entry : snapshots.entrySet()) {
+            BlockPos destination = entry.getKey().offset(delta).immutable();
+            if (contains(generated.exportBounds(), destination)) {
+                remapped.put(destination, entry.getValue());
+            }
+        }
+        return remapped;
+    }
+
+    private MKWorkspacePieceDefinition withPreservedIdentity(MKWorkspacePieceDefinition generated,
+                                                            MKWorkspacePieceDefinition original) {
+        return new MKWorkspacePieceDefinition(
+                original.pieceId(),
+                generated.workspaceId(),
+                generated.pieceName(),
+                generated.roleId(),
+                generated.plannerId(),
+                generated.variantIndex(),
+                generated.effectiveDimensions(),
+                generated.shellMargin(),
+                generated.connectors(),
+                generated.worldOrigin(),
+                generated.exportBounds(),
+                generated.previewBounds(),
+                generated.structureBlockPos(),
+                generated.signPos(),
+                generated.markerPositions(),
+                generated.generatedStairPositions(),
+                generated.tags()
+        );
     }
 
     private String catalogKey(MKWorkspacePieceDefinition piece) {
@@ -506,6 +646,16 @@ public class MKWorkspacePieceRelayoutService {
 
     private List<BlockPos> collectMovedPositions(MKWorkspacePieceDefinition piece) {
         LinkedHashSet<BlockPos> positions = new LinkedHashSet<>();
+        positions.addAll(collectExportPositions(piece));
+        positions.add(piece.structureBlockPos());
+        positions.add(piece.signPos());
+        positions.addAll(piece.markerPositions());
+        positions.addAll(piece.generatedStairPositions());
+        return List.copyOf(positions);
+    }
+
+    private List<BlockPos> collectExportPositions(MKWorkspacePieceDefinition piece) {
+        LinkedHashSet<BlockPos> positions = new LinkedHashSet<>();
         BoundingBox bounds = piece.exportBounds();
         for (int x = bounds.minX(); x <= bounds.maxX(); x++) {
             for (int y = bounds.minY(); y <= bounds.maxY(); y++) {
@@ -514,10 +664,6 @@ public class MKWorkspacePieceRelayoutService {
                 }
             }
         }
-        positions.add(piece.structureBlockPos());
-        positions.add(piece.signPos());
-        positions.addAll(piece.markerPositions());
-        positions.addAll(piece.generatedStairPositions());
         return List.copyOf(positions);
     }
 
@@ -569,6 +715,12 @@ public class MKWorkspacePieceRelayoutService {
                 bounds.maxY() + delta.getY(),
                 bounds.maxZ() + delta.getZ()
         );
+    }
+
+    private boolean contains(BoundingBox bounds, BlockPos pos) {
+        return pos.getX() >= bounds.minX() && pos.getX() <= bounds.maxX() &&
+                pos.getY() >= bounds.minY() && pos.getY() <= bounds.maxY() &&
+                pos.getZ() >= bounds.minZ() && pos.getZ() <= bounds.maxZ();
     }
 
     private MKStructureWorkspace withPreviewMargin(MKStructureWorkspace workspace, int previewMargin) {
