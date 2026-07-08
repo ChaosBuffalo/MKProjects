@@ -186,7 +186,16 @@ public class WorkspaceManagePage extends WorkspacePageBase {
                     .count();
             if (safeRemaps > 0) {
                 addText(screen, content, "Safe remaps available: " + safeRemaps +
-                        " (accept-all apply is pending packet support).");
+                        " - accepted " + screen.draftSession().acceptedRemapCount());
+                MKButton acceptAllSafe = new MKButton(Component.literal("Accept All Safe Remaps"), 180,
+                        screen.buttonHeight());
+                content.addWidget(acceptAllSafe);
+                content.addConstraintToWidget(new CenterXConstraint(), acceptAllSafe);
+                acceptAllSafe.setPressedCallback((button, mouseButton) -> {
+                    screen.draftSession().acceptAllSafeRemaps(report);
+                    screen.flagNeedSetup();
+                    return true;
+                });
             }
             for (MKWorkspaceTemplateRemapSuggestion suggestion : report.remapSuggestions()) {
                 addText(screen, content, "Remap " + suggestion.orphanedPlannerId() + " -> " +

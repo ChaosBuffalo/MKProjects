@@ -4,6 +4,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
 import net.minecraft.core.BlockPos;
@@ -89,6 +90,33 @@ class MKWorkspacePieceRelayoutServiceTest {
 
         assertTrue(summary.isPresent());
         assertEquals(1, summary.get().removedCount());
+    }
+
+    @Test
+    void acceptedRemapPreservesCompatiblePhysicalPiece() {
+        MKWorkspacePieceDefinition existingPiece = piece("old_room_template", "old_room", 5, 5, 5);
+        MKStructureWorkspace existing = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(existingPiece));
+        MKWorkspacePlannerId targetPlannerId = plannerId("new_room");
+        List<MKPlannedPiece> targetPieces = List.of(
+                planned("new_room_template", "new_room", targetPlannerId, 5, 5, 5)
+        );
+
+        MKWorkspacePieceRelayoutService.CatalogRelayoutSummary withoutRemap = service
+                .summarizeCatalogRelayout(existing, existing, targetPieces, targetPieces)
+                .orElseThrow();
+        MKWorkspacePieceRelayoutService.CatalogRelayoutSummary withRemap = service
+                .summarizeCatalogRelayout(existing, existing, targetPieces, targetPieces, List.of(
+                        new MKWorkspaceTemplateRemapSuggestion(existingPiece.plannerId(), targetPlannerId, 100,
+                                "same floor piece kind, dimensions, and connector signature")
+                ))
+                .orElseThrow();
+
+        assertEquals(1, withoutRemap.newCount());
+        assertEquals(1, withoutRemap.removedCount());
+        assertEquals(1, withRemap.preservedCount());
+        assertEquals(0, withRemap.newCount());
+        assertEquals(0, withRemap.removedCount());
     }
 
     private static MKPlannedPiece planned(String pieceName, String baseName, MKWorkspacePlannerId plannerId,

@@ -4,8 +4,12 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.world.gen.workspace.MKStructureWorkspaceService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceCodecs;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -24,14 +28,21 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
 
     private final CompoundTag workspaceTag;
     private final boolean generateAfterCreate;
+    private final List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps;
 
     public CreateWorkspacePacket(MKStructureWorkspace workspace) {
         this(workspace, false);
     }
 
     public CreateWorkspacePacket(MKStructureWorkspace workspace, boolean generateAfterCreate) {
+        this(workspace, generateAfterCreate, List.of());
+    }
+
+    public CreateWorkspacePacket(MKStructureWorkspace workspace, boolean generateAfterCreate,
+                                 List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
         this.workspaceTag = workspace.toTag();
         this.generateAfterCreate = generateAfterCreate;
+        this.acceptedRemaps = List.copyOf(acceptedRemaps);
     }
 
     public CreateWorkspacePacket(FriendlyByteBuf buffer) {
@@ -41,6 +52,7 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
         }
         this.workspaceTag = tag;
         this.generateAfterCreate = buffer.readBoolean();
+        this.acceptedRemaps = readAcceptedRemaps(buffer);
     }
 
     @Override
@@ -51,6 +63,7 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
     public void toBytes(FriendlyByteBuf buffer) {
         buffer.writeNbt(workspaceTag);
         buffer.writeBoolean(generateAfterCreate);
+        writeAcceptedRemaps(buffer, acceptedRemaps);
     }
 
     public static void handle(CreateWorkspacePacket packet, IPayloadContext context) {
@@ -67,7 +80,8 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
         Optional<MKStructureWorkspace> existingOpt = IMKStructureWorkspaceData.get(player.serverLevel())
                 .getWorkspaceByAnchor(workspace.anchor());
         if (existingOpt.isPresent()) {
-            var preflight = service.preflightWorkspaceUpdate(existingOpt.get(), workspace, System.currentTimeMillis());
+            var preflight = service.preflightWorkspaceUpdate(existingOpt.get(), workspace, System.currentTimeMillis(),
+                    packet.acceptedRemaps);
             List<MKWorkspaceGeneratedLayer> lockedLayers =
                     service.lockedInvalidatedLayers(existingOpt.get(), preflight.report());
             if (!lockedLayers.isEmpty()) {
@@ -83,8 +97,9 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
         boolean nonDestructiveMarginExpansion = service.canApplyMarginExpansion(player.serverLevel(), workspace);
         boolean nonDestructiveHallwayRegeneration = service.canApplyHallwayRoutingRegeneration(player.serverLevel(), workspace);
         boolean nonDestructiveLinkRenderingRefresh = service.canApplyLinkRenderingRefresh(player.serverLevel(), workspace);
-        boolean nonDestructiveCatalogRelayout = service.canApplyCatalogRelayout(player.serverLevel(), workspace);
-        service.createOrUpdateWorkspace(player.serverLevel(), workspace)
+        boolean nonDestructiveCatalogRelayout = service.canApplyCatalogRelayout(player.serverLevel(), workspace,
+                packet.acceptedRemaps);
+        service.createOrUpdateWorkspace(player.serverLevel(), workspace, packet.acceptedRemaps)
                 .ifPresentOrElse(created -> {
                     if (packet.generateAfterCreate && !nonDestructivePreviewRelayout && !nonDestructivePaletteSwap &&
                             !nonDestructiveIdentityRename && !nonDestructiveMarginExpansion &&
@@ -96,5 +111,31 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
                     }
                     service.openWorkspaceScreen(player, created.anchor());
                 }, () -> MKWorkspaceValidationMessages.displayFailure(player, "Workspace creation failed."));
+    }
+
+    private static void writeAcceptedRemaps(FriendlyByteBuf buffer,
+                                            List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
+        CompoundTag tag = new CompoundTag();
+        ListTag remapsTag = new ListTag();
+        for (MKWorkspaceTemplateRemapSuggestion remap : acceptedRemaps) {
+            remapsTag.add(MKWorkspaceCodecs.encodeNbt(MKWorkspaceTemplateRemapSuggestion.CODEC, remap,
+                    "workspace template remap suggestion"));
+        }
+        tag.put("acceptedRemaps", remapsTag);
+        buffer.writeNbt(tag);
+    }
+
+    private static List<MKWorkspaceTemplateRemapSuggestion> readAcceptedRemaps(FriendlyByteBuf buffer) {
+        CompoundTag tag = buffer.readNbt();
+        if (tag == null) {
+            return List.of();
+        }
+        ListTag remapsTag = tag.getList("acceptedRemaps", Tag.TAG_COMPOUND);
+        java.util.ArrayList<MKWorkspaceTemplateRemapSuggestion> remaps = new java.util.ArrayList<>();
+        for (int i = 0; i < remapsTag.size(); i++) {
+            remaps.add(MKWorkspaceCodecs.parseNbt(MKWorkspaceTemplateRemapSuggestion.CODEC,
+                    remapsTag.getCompound(i), "workspace template remap suggestion"));
+        }
+        return List.copyOf(remaps);
     }
 }

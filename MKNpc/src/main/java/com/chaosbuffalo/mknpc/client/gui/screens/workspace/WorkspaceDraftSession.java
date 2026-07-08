@@ -35,6 +35,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomGeometry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPaletteMerge;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
@@ -68,6 +69,7 @@ public class WorkspaceDraftSession {
     private int selectedLinearRunIndex;
     private int selectedInsertFamilyIndex;
     private boolean dirty;
+    private List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps = List.of();
     final WorkspaceDraftViewState viewState = new WorkspaceDraftViewState();
     private final MKWorkspaceFloorTopologyInvalidationAnalyzer floorTopologyInvalidationAnalyzer =
             new MKWorkspaceFloorTopologyInvalidationAnalyzer();
@@ -147,14 +149,31 @@ public class WorkspaceDraftSession {
 
     public void copyViewStateFrom(WorkspaceDraftSession source) {
         viewState.copyFrom(source.viewState);
+        acceptedRemaps = List.copyOf(source.acceptedRemaps);
     }
 
     public void markDirty() {
         dirty = true;
+        acceptedRemaps = List.of();
     }
 
     public void clearDirty() {
         dirty = false;
+    }
+
+    public int acceptAllSafeRemaps(MKWorkspaceInvalidationReport report) {
+        acceptedRemaps = report.remapSuggestions().stream()
+                .filter(suggestion -> suggestion.score() >= 85)
+                .toList();
+        return acceptedRemaps.size();
+    }
+
+    public int acceptedRemapCount() {
+        return acceptedRemaps.size();
+    }
+
+    public List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps() {
+        return List.copyOf(acceptedRemaps);
     }
 
     public void submit() {
@@ -831,8 +850,9 @@ public class WorkspaceDraftSession {
     }
 
     private void send(MKStructureWorkspace draft) {
-        PacketDistributor.sendToServer(new CreateWorkspacePacket(draft, true));
+        PacketDistributor.sendToServer(new CreateWorkspacePacket(draft, true, acceptedRemaps));
         clearDirty();
+        acceptedRemaps = List.of();
     }
 
     private boolean requiresDestructiveRegenerateConfirmation(MKStructureWorkspace draft) {

@@ -11,6 +11,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolv
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteSwapSafety;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPaletteMerge;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
@@ -106,6 +107,11 @@ public class MKStructureWorkspaceService {
     }
 
     public Optional<MKStructureWorkspace> createOrUpdateWorkspace(ServerLevel level, MKStructureWorkspace workspace) {
+        return createOrUpdateWorkspace(level, workspace, List.of());
+    }
+
+    public Optional<MKStructureWorkspace> createOrUpdateWorkspace(ServerLevel level, MKStructureWorkspace workspace,
+                                                                  List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
         List<String> errors = validateWorkspace(workspace);
         if (!errors.isEmpty()) {
             return Optional.empty();
@@ -153,8 +159,8 @@ public class MKStructureWorkspaceService {
             if (canRefreshLinkRenderingOnly(existing, workspace)) {
                 return refreshLinkRenderingMetadata(level, existing, workspace);
             }
-            if (canApplyCatalogRelayout(existing, workspace)) {
-                return relayoutCatalogPreservingPieces(level, existing, workspace);
+            if (canApplyCatalogRelayout(existing, workspace, acceptedRemaps)) {
+                return relayoutCatalogPreservingPieces(level, existing, workspace, acceptedRemaps);
             }
             MKStructureWorkspace updated = new MKStructureWorkspace(
                     existing.id(),
@@ -231,9 +237,14 @@ public class MKStructureWorkspaceService {
     }
 
     public boolean canApplyCatalogRelayout(ServerLevel level, MKStructureWorkspace requested) {
+        return canApplyCatalogRelayout(level, requested, List.of());
+    }
+
+    public boolean canApplyCatalogRelayout(ServerLevel level, MKStructureWorkspace requested,
+                                           List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
         return IMKStructureWorkspaceData.get(level)
                 .getWorkspaceByAnchor(requested.anchor())
-                .filter(existing -> canApplyCatalogRelayout(existing, requested))
+                .filter(existing -> canApplyCatalogRelayout(existing, requested, acceptedRemaps))
                 .isPresent();
     }
 
@@ -247,8 +258,15 @@ public class MKStructureWorkspaceService {
     public MKWorkspaceMutationPreflight preflightWorkspaceUpdate(MKStructureWorkspace existing,
                                                                  MKStructureWorkspace requested,
                                                                  long nowEpochMillis) {
+        return preflightWorkspaceUpdate(existing, requested, nowEpochMillis, List.of());
+    }
+
+    public MKWorkspaceMutationPreflight preflightWorkspaceUpdate(MKStructureWorkspace existing,
+                                                                 MKStructureWorkspace requested,
+                                                                 long nowEpochMillis,
+                                                                 List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
         Optional<MKWorkspacePieceRelayoutService.CatalogRelayoutSummary> catalogSummary =
-                catalogRelayoutSummary(existing, requested, nowEpochMillis);
+                catalogRelayoutSummary(existing, requested, nowEpochMillis, acceptedRemaps);
         if (catalogSummary.isPresent() && catalogSummary.get().hasWork()) {
             MKWorkspaceInvalidationReport report = catalogRelayoutReport(catalogSummary.get());
             MKStructureWorkspace workspaceWithLayerStates = layerStateService.ensureLayerStates(existing,
@@ -1093,7 +1111,8 @@ public class MKStructureWorkspaceService {
         return Optional.of(updated);
     }
 
-    private boolean canApplyCatalogRelayout(MKStructureWorkspace existing, MKStructureWorkspace requested) {
+    private boolean canApplyCatalogRelayout(MKStructureWorkspace existing, MKStructureWorkspace requested,
+                                            List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
         if (existing.pieces().isEmpty() || !canCatalogRelayoutSharePhysicalSettings(existing, requested)) {
             return false;
         }
@@ -1101,11 +1120,17 @@ public class MKStructureWorkspaceService {
         MKStructureWorkspace targetWorkspace = workspaceForUpdate(existing, requested, existing.pieces(),
                 System.currentTimeMillis());
         return relayoutService.canRelayoutCatalog(existing, targetWorkspace, targets.targetPieces(),
-                targets.layoutPieces());
+                targets.layoutPieces(), acceptedRemaps);
     }
 
     private Optional<MKWorkspacePieceRelayoutService.CatalogRelayoutSummary> catalogRelayoutSummary(
             MKStructureWorkspace existing, MKStructureWorkspace requested, long nowEpochMillis) {
+        return catalogRelayoutSummary(existing, requested, nowEpochMillis, List.of());
+    }
+
+    private Optional<MKWorkspacePieceRelayoutService.CatalogRelayoutSummary> catalogRelayoutSummary(
+            MKStructureWorkspace existing, MKStructureWorkspace requested, long nowEpochMillis,
+            List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
         if (existing.pieces().isEmpty() || !canCatalogRelayoutSharePhysicalSettings(existing, requested)) {
             return Optional.empty();
         }
@@ -1113,7 +1138,7 @@ public class MKStructureWorkspaceService {
         MKStructureWorkspace targetWorkspace = workspaceForUpdate(existing, requested, existing.pieces(),
                 nowEpochMillis);
         return relayoutService.summarizeCatalogRelayout(existing, targetWorkspace, targets.targetPieces(),
-                targets.layoutPieces());
+                targets.layoutPieces(), acceptedRemaps);
     }
 
     private MKWorkspaceInvalidationReport catalogRelayoutReport(
@@ -1148,7 +1173,8 @@ public class MKStructureWorkspaceService {
 
     private Optional<MKStructureWorkspace> relayoutCatalogPreservingPieces(ServerLevel level,
                                                                           MKStructureWorkspace existing,
-                                                                          MKStructureWorkspace requested) {
+                                                                          MKStructureWorkspace requested,
+                                                                          List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
         long nowEpochMillis = System.currentTimeMillis();
         CatalogRelayoutTargets targets = catalogRelayoutTargets(existing, requested);
         MKStructureWorkspace targetWorkspace = workspaceForUpdate(existing, requested, existing.pieces(), nowEpochMillis);
@@ -1165,7 +1191,7 @@ public class MKStructureWorkspaceService {
                 nowEpochMillis);
         try {
             return relayoutService.relayoutCatalog(level, existing, targetWorkspace, targets.targetPieces(),
-                            targets.layoutPieces())
+                            targets.layoutPieces(), acceptedRemaps)
                     .map(MKWorkspacePieceRelayoutService.RelayoutResult::workspace);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to write workspace backup before catalog relayout", e);
