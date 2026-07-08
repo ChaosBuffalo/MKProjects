@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.network.packets;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.world.gen.workspace.MKStructureWorkspaceService;
+import com.chaosbuffalo.mknpc.world.gen.workspace.MKWorkspacePreflightLogger;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceCodecs;
@@ -81,6 +82,8 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
                 .getWorkspaceByAnchor(workspace.anchor());
         if (existingOpt.isPresent()) {
             var preflight = service.preflightWorkspaceUpdate(existingOpt.get(), workspace, System.currentTimeMillis(),
+                    packet.acceptedRemaps);
+            new MKWorkspacePreflightLogger().logConfirmEffects("apply", player, workspace, preflight,
                     packet.acceptedRemaps);
             List<MKWorkspaceGeneratedLayer> lockedLayers =
                     service.lockedInvalidatedLayers(existingOpt.get(), preflight.report());

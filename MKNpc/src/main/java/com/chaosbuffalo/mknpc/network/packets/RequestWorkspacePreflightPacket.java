@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.network.packets;
 
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.world.gen.workspace.MKWorkspacePreflightLogger;
 import com.chaosbuffalo.mknpc.world.gen.workspace.MKStructureWorkspaceService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceCodecs;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
@@ -78,8 +79,12 @@ public class RequestWorkspacePreflightPacket implements CustomPacketPayload {
         }
         service.preflightWorkspaceUpdate(player.serverLevel(), requested, acceptedRemaps)
                 .ifPresentOrElse(
-                        preflight -> PacketDistributor.sendToPlayer(player,
-                                new WorkspacePreflightReportPacket(requested.anchor(), preflight)),
+                        preflight -> {
+                            new MKWorkspacePreflightLogger().logConfirmEffects("confirm", player, requested,
+                                    preflight, acceptedRemaps);
+                            PacketDistributor.sendToPlayer(player,
+                                    new WorkspacePreflightReportPacket(requested.anchor(), preflight));
+                        },
                         () -> MKWorkspaceValidationMessages.displayFailure(player,
                                 "Workspace preflight failed: no workspace found at this anchor.")
                 );
