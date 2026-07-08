@@ -71,8 +71,7 @@ public final class WorkspacePieceDisplay {
         if (familyId != null) {
             return formatTopologyLabel(piece.tags().getOrDefault("workspace_topology_slot_id",
                     piece.tags().getOrDefault("workspace_topology_group", "main"))) +
-                    " / " + familyId +
-                    " / exits " + piece.tags().getOrDefault("workspace_horizontal_exits", "none");
+                    " / " + familyId;
         }
         return formatTopologyLabel(piece.roleId());
     }
