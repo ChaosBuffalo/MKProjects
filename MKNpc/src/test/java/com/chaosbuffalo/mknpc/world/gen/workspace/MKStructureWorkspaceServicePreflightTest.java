@@ -8,16 +8,27 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadIn
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLayerStateService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationSafety;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlanner;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
+import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceTopologySchema;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 import org.junit.jupiter.api.Test;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,7 +39,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MKStructureWorkspaceServicePreflightTest {
+    private static final ResourceLocation RENAMED_BASE_PLANNER_ID =
+            ResourceLocation.fromNamespaceAndPath("mknpc_test", "renamed_base_catalog");
     private final MKStructureWorkspaceService service = new MKStructureWorkspaceService();
+
+    static {
+        MKWorkspacePlannerRegistry.registerShared(new RenamedBaseCatalogPlanner());
+    }
 
     @Test
     void preflightWorkspaceUpdateAggregatesFloorTopologyChanges() {
@@ -143,6 +160,27 @@ class MKStructureWorkspaceServicePreflightTest {
         assertEquals(456L, updated.updatedAt());
     }
 
+    @Test
+    void catalogRelayoutPreservesVariantsWhenCanonicalBaseNameChanges() {
+        MKStructureWorkspace existing = withTopologyProfile(MKStructureWorkspace.createDraft(BlockPos.ZERO),
+                renamedBaseProfile());
+        existing = existing.withPieces(List.of(
+                variantAwarePiece("old_floor_room_template", "old_floor_room", 0,
+                        MKWorkspacePlannerId.of("renamed.base.old_floor_room")),
+                variantAwarePiece("old_floor_room_1", "old_floor_room", 1,
+                        MKWorkspacePlannerId.of("renamed.base.old_floor_room").child("variant_1"))
+        ));
+        MKStructureWorkspace requested = withInsertFamilies(existing, List.of(
+                MKWorkspaceInsertFamilyDefinition.floorLinkHallway("trigger_new_base", 5, 5, 3)));
+
+        MKWorkspaceMutationPreflight preflight = service.preflightWorkspaceUpdate(existing, requested, 123L);
+
+        assertEquals("preserve_catalog_relayout", preflight.report().recommendedOperation());
+        assertTrue(preflight.report().warnings().contains("2 physical authored templates will be preserved."));
+        assertFalse(preflight.report().warnings().stream()
+                .anyMatch(warning -> warning.contains("removed physical template slots")));
+    }
+
     private static MKWorkspaceFloorTopologySettings settings(String stackId, String floorRole) {
         return new MKWorkspaceFloorTopologySettings(
                 stackId,
@@ -220,13 +258,35 @@ class MKStructureWorkspaceServicePreflightTest {
 
     private static MKWorkspacePieceDefinition floorPiece(String pieceName, String baseName,
                                                         MKWorkspacePlannerId plannerId) {
+        return floorPiece(pieceName, baseName, plannerId, 0, Map.of(
+                "workspace_floor_topology_stack_id", "tower.primary",
+                "workspace_floor_topology_floor_role", "main_floor",
+                MKWorkspaceGridLayout.TAG_BASE_NAME, baseName,
+                MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "0",
+                "workspace_piece_kind", "template"
+        ));
+    }
+
+    private static MKWorkspacePieceDefinition variantAwarePiece(String pieceName, String baseName, int variantIndex,
+                                                               MKWorkspacePlannerId plannerId) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>();
+        tags.put(MKWorkspaceGridLayout.TAG_BASE_NAME, baseName);
+        tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, Integer.toString(variantIndex));
+        tags.put("workspace_piece_kind", variantIndex == 0 ? "template" : "instance");
+        MKWorkspaceStableSlotIdentity.apply(tags, "test_room", "stable.floor.room");
+        return floorPiece(pieceName, baseName, plannerId, variantIndex, tags);
+    }
+
+    private static MKWorkspacePieceDefinition floorPiece(String pieceName, String baseName,
+                                                        MKWorkspacePlannerId plannerId, int variantIndex,
+                                                        Map<String, String> tags) {
         return new MKWorkspacePieceDefinition(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 pieceName,
                 "floor.plan.room",
                 plannerId,
-                0,
+                variantIndex,
                 MKWorkspaceDimensions.defaultDimensions(),
                 1,
                 List.of(),
@@ -237,13 +297,60 @@ class MKStructureWorkspaceServicePreflightTest {
                 BlockPos.ZERO,
                 List.of(),
                 List.of(),
-                Map.of(
-                        "workspace_floor_topology_stack_id", "tower.primary",
-                        "workspace_floor_topology_floor_role", "main_floor",
-                        MKWorkspaceGridLayout.TAG_BASE_NAME, baseName,
-                        MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "0",
-                        "workspace_piece_kind", "template"
-                )
+                tags
         );
+    }
+
+    private static MKWorkspaceTopologyProfile renamedBaseProfile() {
+        return new MKWorkspaceTopologyProfile(RENAMED_BASE_PLANNER_ID, List.of(), TerrainAdjustment.BEARD_THIN);
+    }
+
+    private static final class RenamedBaseCatalogPlanner implements MKWorkspacePlanner {
+        @Override
+        public ResourceLocation plannerId() {
+            return RENAMED_BASE_PLANNER_ID;
+        }
+
+        @Override
+        public MKWorkspaceTopologySchema schema() {
+            return new MKWorkspaceTopologySchema(RENAMED_BASE_PLANNER_ID, List.of(), List.of(), List.of(), List.of());
+        }
+
+        @Override
+        public MKWorkspaceTopologyProfile createDefaultTopologyProfile() {
+            return renamedBaseProfile();
+        }
+
+        @Override
+        public List<MKWorkspaceRoomFamilyDefinition> createDefaultRoomFamilyDefinitions(
+                MKWorkspaceDimensions dimensions) {
+            return List.of();
+        }
+
+        @Override
+        public List<MKWorkspaceLinearRunFamilyDefinition> createDefaultLinearRunFamilyDefinitions(
+                MKWorkspaceDimensions dimensions, MKWorkspaceMaterialPalette palette) {
+            return List.of();
+        }
+
+        @Override
+        public List<MKPlannedPiece> createCanonicalPieces(MKStructureWorkspace workspace) {
+            String baseName = workspace.insertFamilies().isEmpty() ? "old_floor_room" : "new_floor_room";
+            LinkedHashMap<String, String> tags = new LinkedHashMap<>();
+            tags.put(MKWorkspaceGridLayout.TAG_BASE_NAME, baseName);
+            tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "0");
+            tags.put("workspace_piece_kind", "template");
+            MKWorkspaceStableSlotIdentity.apply(tags, "test_room", "stable.floor.room");
+            return List.of(new MKPlannedPiece(
+                    "test.room",
+                    baseName,
+                    MKWorkspaceDimensions.defaultDimensions().roomWidth(),
+                    MKWorkspaceDimensions.defaultDimensions().roomLength(),
+                    MKWorkspaceDimensions.defaultDimensions().roomHeight(),
+                    List.of(),
+                    tags,
+                    MKWorkspacePlannerId.of("renamed.base").child(baseName)
+            ));
+        }
     }
 }

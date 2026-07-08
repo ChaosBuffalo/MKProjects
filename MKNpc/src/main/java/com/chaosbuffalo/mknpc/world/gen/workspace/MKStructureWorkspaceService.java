@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefiniti
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteSwapSafety;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPaletteMerge;
@@ -949,6 +950,10 @@ public class MKStructureWorkspaceService {
         if (basePiece == null) {
             throw new IllegalStateException("missing canonical piece for base name " + baseName);
         }
+        return toExistingVariantPiece(piece, basePiece);
+    }
+
+    private MKPlannedPiece toExistingVariantPiece(MKWorkspacePieceDefinition piece, MKPlannedPiece basePiece) {
         return new MKPlannedPiece(
                 basePiece.roleId(),
                 piece.pieceName(),
@@ -1235,18 +1240,63 @@ public class MKStructureWorkspaceService {
         List<MKPlannedPiece> canonicalPieces = plannerRegistry.plannerFor(requested).createCanonicalPieces(requested);
         Map<String, MKPlannedPiece> canonicalByBaseName = canonicalPieces.stream()
                 .collect(Collectors.toMap(MKPlannedPiece::pieceName, piece -> piece));
+        Map<String, MKPlannedPiece> canonicalByStableSlot = canonicalPieces.stream()
+                .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
+                .filter(piece -> !stableSlotKey(piece.tags()).isBlank())
+                .collect(Collectors.toMap(piece -> stableSlotKey(piece.tags()), piece -> piece,
+                        (first, ignored) -> first));
         ArrayList<MKPlannedPiece> targetPieces = canonicalPieces.stream()
                 .map(this::toTemplatePiece)
                 .collect(Collectors.toCollection(ArrayList::new));
         targetPieces.addAll(existing.pieces().stream()
                 .filter(piece -> piece.variantIndex() > 0)
-                .filter(piece -> canonicalByBaseName.containsKey(getBaseName(piece)))
-                .map(piece -> toExistingVariantPiece(piece, canonicalByBaseName))
+                .map(piece -> toExistingVariantPiece(piece, canonicalByBaseName, canonicalByStableSlot))
+                .flatMap(Optional::stream)
                 .toList());
         List<MKPlannedPiece> layoutPieces = targetPieces.stream()
                 .filter(this::usesPhysicalWorkspaceCell)
                 .toList();
         return new CatalogRelayoutTargets(List.copyOf(targetPieces), List.copyOf(layoutPieces));
+    }
+
+    private Optional<MKPlannedPiece> toExistingVariantPiece(
+            MKWorkspacePieceDefinition piece,
+            Map<String, MKPlannedPiece> canonicalByBaseName,
+            Map<String, MKPlannedPiece> canonicalByStableSlot) {
+        MKPlannedPiece basePiece = canonicalByBaseName.get(getBaseName(piece));
+        if (basePiece == null) {
+            basePiece = canonicalByStableSlot.get(stableSlotKey(piece.tags()));
+        }
+        return basePiece == null ? Optional.empty() : Optional.of(toExistingVariantPiece(piece, basePiece));
+    }
+
+    private String stableSlotKey(Map<String, String> tags) {
+        String key = MKWorkspaceStableSlotIdentity.key(tags);
+        if (!key.isBlank()) {
+            return key;
+        }
+        String legacyFloorRoomProfileId = legacyFloorRoomProfileId(tags);
+        if (legacyFloorRoomProfileId != null) {
+            return "floor_room:floor." +
+                    tags.getOrDefault("workspace_floor_topology_stack_id", "") + "." +
+                    tags.getOrDefault("workspace_floor_topology_floor_role", "") + "." +
+                    tags.getOrDefault("workspace_floor_room_kind", "") + "." +
+                    legacyFloorRoomProfileId;
+        }
+        return "";
+    }
+
+    private String legacyFloorRoomProfileId(Map<String, String> tags) {
+        if (!tags.containsKey("workspace_floor_topology_stack_id") ||
+                !tags.containsKey("workspace_floor_topology_floor_role") ||
+                !tags.containsKey("workspace_floor_room_kind")) {
+            return null;
+        }
+        String profileId = tags.get("workspace_floor_room_profile_id");
+        if (profileId == null || profileId.isBlank()) {
+            profileId = tags.get("workspace_floor_room_kind");
+        }
+        return profileId == null || profileId.isBlank() ? null : profileId;
     }
 
     private net.minecraft.nbt.CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, java.util.UUID id,
