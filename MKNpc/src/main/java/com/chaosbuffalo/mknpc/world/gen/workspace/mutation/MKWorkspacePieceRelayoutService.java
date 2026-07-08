@@ -5,18 +5,27 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspa
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceScaffoldBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignText;
+import net.minecraft.world.level.block.entity.StructureBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.StructureMode;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 import java.io.IOException;
@@ -26,11 +35,15 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 
 public class MKWorkspacePieceRelayoutService {
     private final MKWorkspaceBackupManifestWriter backupWriter = new MKWorkspaceBackupManifestWriter();
     private final MKWorkspaceGridLayout gridLayout = new MKWorkspaceGridLayout();
+    private final MKWorkspaceScaffoldBuilder scaffoldBuilder = new MKWorkspaceScaffoldBuilder();
 
     public record RelayoutResult(MKStructureWorkspace workspace, Path backupPath, int movedPieceCount,
                                  int movedBlockCount) {
@@ -40,6 +53,20 @@ public class MKWorkspacePieceRelayoutService {
     }
 
     private record BlockSnapshot(BlockState state, CompoundTag blockEntityTag) {
+    }
+
+    private record CatalogPlan(
+            List<MKPlannedPiece> targetPieces,
+            List<MKPlannedPiece> layoutPieces,
+            List<PieceMove> moves,
+            List<MKWorkspacePieceDefinition> removedPieces,
+            List<MKWorkspacePieceDefinition> rebuildSourcePieces,
+            List<MKPlannedPiece> buildPieces
+    ) {
+        boolean hasWork() {
+            return !moves.isEmpty() || !removedPieces.isEmpty() || !rebuildSourcePieces.isEmpty() ||
+                    !buildPieces.isEmpty();
+        }
     }
 
     public Optional<RelayoutResult> relayoutPreviewMargin(ServerLevel level, MKStructureWorkspace workspace,
@@ -68,6 +95,315 @@ public class MKWorkspacePieceRelayoutService {
         IMKStructureWorkspaceData.get(level).updateWorkspace(updated);
         syncBlockEntity(level, updated);
         return Optional.of(new RelayoutResult(updated, backup.path(), moves.size(), snapshots.size()));
+    }
+
+    public boolean canRelayoutCatalog(MKStructureWorkspace existing, MKStructureWorkspace targetWorkspace,
+                                      List<MKPlannedPiece> targetPieces, List<MKPlannedPiece> layoutPieces) {
+        return planCatalogRelayout(existing, targetWorkspace, targetPieces, layoutPieces)
+                .filter(CatalogPlan::hasWork)
+                .isPresent();
+    }
+
+    public Optional<RelayoutResult> relayoutCatalog(ServerLevel level, MKStructureWorkspace existing,
+                                                    MKStructureWorkspace targetWorkspace,
+                                                    List<MKPlannedPiece> targetPieces,
+                                                    List<MKPlannedPiece> layoutPieces) throws IOException {
+        Optional<CatalogPlan> planOpt = planCatalogRelayout(existing, targetWorkspace, targetPieces, layoutPieces);
+        if (planOpt.isEmpty() || !planOpt.get().hasWork()) {
+            return Optional.empty();
+        }
+
+        CatalogPlan plan = planOpt.get();
+        MKWorkspaceBackupManifestWriter.WrittenBackup backup =
+                backupWriter.writeBeforeMutation(level, existing, "catalog-preserving-relayout");
+
+        Map<BlockPos, BlockSnapshot> snapshots = snapshotSources(level, plan.moves());
+        Map<BlockPos, BlockSnapshot> destinationSnapshots = mapDestinations(plan.moves(), snapshots);
+        clearCatalogSources(level, plan.moves(), plan.removedPieces(), plan.rebuildSourcePieces());
+        placeDestinations(level, destinationSnapshots);
+
+        Map<MKPlannedPiece, MKWorkspacePieceDefinition> physicalByPlan = new HashMap<>();
+        for (PieceMove move : plan.moves()) {
+            MKPlannedPiece targetPiece = matchingLayoutPiece(move.moved(), plan.layoutPieces());
+            if (targetPiece != null) {
+                physicalByPlan.put(targetPiece, move.moved());
+                refreshSidecarMetadata(level, targetWorkspace, move.moved(), targetPiece);
+            }
+        }
+        for (MKPlannedPiece buildPiece : plan.buildPieces()) {
+            MKWorkspacePieceDefinition generated = scaffoldBuilder.buildSingle(level, targetWorkspace, buildPiece,
+                    plan.layoutPieces());
+            physicalByPlan.put(buildPiece, generated);
+        }
+
+        Map<String, MKWorkspacePieceDefinition> authoringByBaseName = new HashMap<>();
+        Map<String, MKWorkspacePieceDefinition> authoringByBaseNameAndVariant = new HashMap<>();
+        for (Map.Entry<MKPlannedPiece, MKWorkspacePieceDefinition> entry : physicalByPlan.entrySet()) {
+            authoringByBaseName.put(baseName(entry.getKey()), entry.getValue());
+            authoringByBaseNameAndVariant.put(baseName(entry.getKey()) + ":" + variantIndex(entry.getKey().tags()),
+                    entry.getValue());
+        }
+
+        List<MKWorkspacePieceDefinition> updatedPieces = new ArrayList<>();
+        for (MKPlannedPiece targetPiece : plan.targetPieces()) {
+            if (MKWorkspaceTemplateReuseTags.isDerived(targetPiece.tags())) {
+                String sourceId = MKWorkspaceTemplateReuseTags.sourceId(targetPiece.tags());
+                MKWorkspacePieceDefinition sourcePiece = authoringByBaseNameAndVariant.get(sourceId + ":" +
+                        variantIndex(targetPiece.tags()));
+                if (sourcePiece == null) {
+                    sourcePiece = authoringByBaseName.get(sourceId);
+                }
+                if (sourcePiece == null) {
+                    throw new IllegalStateException("derived workspace piece " + targetPiece.pieceName() +
+                            " references missing authoring source " + sourceId);
+                }
+                updatedPieces.add(scaffoldBuilder.createDerivedLogicalPiece(targetWorkspace, targetPiece, sourcePiece));
+            } else {
+                MKWorkspacePieceDefinition physical = physicalByPlan.get(targetPiece);
+                if (physical == null) {
+                    throw new IllegalStateException("missing physical workspace piece for " + targetPiece.pieceName());
+                }
+                updatedPieces.add(physical);
+            }
+        }
+
+        MKStructureWorkspace updated = targetWorkspace.withPieces(updatedPieces);
+        IMKStructureWorkspaceData.get(level).updateWorkspace(updated);
+        syncBlockEntity(level, updated);
+        return Optional.of(new RelayoutResult(updated, backup.path(), plan.moves().size(), snapshots.size()));
+    }
+
+    private Optional<CatalogPlan> planCatalogRelayout(MKStructureWorkspace existing,
+                                                      MKStructureWorkspace targetWorkspace,
+                                                      List<MKPlannedPiece> targetPieces,
+                                                      List<MKPlannedPiece> layoutPieces) {
+        if (existing.pieces().isEmpty() || !existing.anchor().equals(targetWorkspace.anchor()) ||
+                layoutPieces.isEmpty()) {
+            return Optional.empty();
+        }
+        List<MKWorkspacePieceDefinition> existingPhysical = existing.pieces().stream()
+                .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
+                .toList();
+        Map<String, MKWorkspacePieceDefinition> existingByKey = new LinkedHashMap<>();
+        for (MKWorkspacePieceDefinition piece : existingPhysical) {
+            String key = catalogKey(piece);
+            if (key.isBlank() || existingByKey.putIfAbsent(key, piece) != null) {
+                return Optional.empty();
+            }
+        }
+
+        List<MKWorkspaceGridLayout.Placement> placements = gridLayout.assignPlacements(
+                targetWorkspace.anchor(),
+                layoutPieces,
+                targetWorkspace.shellMargin(),
+                targetWorkspace.exteriorAirMargin(),
+                targetWorkspace.previewMargin(),
+                MKWorkspaceScaffoldBuilder.GRID_COLUMNS,
+                MKWorkspaceScaffoldBuilder.CELL_PADDING
+        );
+        Map<MKPlannedPiece, MKWorkspaceGridLayout.Placement> placementByPlan = new HashMap<>();
+        Map<String, MKPlannedPiece> targetByKey = new LinkedHashMap<>();
+        for (int i = 0; i < layoutPieces.size(); i++) {
+            MKPlannedPiece plannedPiece = layoutPieces.get(i);
+            String key = catalogKey(plannedPiece);
+            if (key.isBlank() || targetByKey.putIfAbsent(key, plannedPiece) != null) {
+                return Optional.empty();
+            }
+            placementByPlan.put(plannedPiece, placements.get(i));
+        }
+
+        List<PieceMove> moves = new ArrayList<>();
+        List<MKWorkspacePieceDefinition> rebuildSourcePieces = new ArrayList<>();
+        List<MKWorkspacePieceDefinition> removedPieces = new ArrayList<>();
+        List<MKPlannedPiece> buildPieces = new ArrayList<>();
+        HashSet<String> consumedExistingKeys = new HashSet<>();
+        for (MKPlannedPiece targetPiece : layoutPieces) {
+            String key = catalogKey(targetPiece);
+            MKWorkspacePieceDefinition existingPiece = existingByKey.get(key);
+            if (existingPiece == null) {
+                buildPieces.add(targetPiece);
+                continue;
+            }
+            consumedExistingKeys.add(key);
+            if (canPreserveAuthoredBlocks(existingPiece, targetPiece, targetWorkspace)) {
+                moves.add(createCatalogMove(targetWorkspace, existingPiece, targetPiece, placementByPlan.get(targetPiece)));
+            } else {
+                rebuildSourcePieces.add(existingPiece);
+                buildPieces.add(targetPiece);
+            }
+        }
+        for (Map.Entry<String, MKWorkspacePieceDefinition> entry : existingByKey.entrySet()) {
+            if (!consumedExistingKeys.contains(entry.getKey())) {
+                removedPieces.add(entry.getValue());
+            }
+        }
+        return Optional.of(new CatalogPlan(List.copyOf(targetPieces), List.copyOf(layoutPieces), List.copyOf(moves),
+                List.copyOf(removedPieces), List.copyOf(rebuildSourcePieces), List.copyOf(buildPieces)));
+    }
+
+    private PieceMove createCatalogMove(MKStructureWorkspace workspace, MKWorkspacePieceDefinition original,
+                                        MKPlannedPiece targetPiece, MKWorkspaceGridLayout.Placement placement) {
+        BlockPos newOrigin = placement.previewOrigin().offset(workspace.previewMargin(), 0, workspace.previewMargin());
+        BlockPos delta = newOrigin.subtract(original.worldOrigin());
+        return new PieceMove(original, movedCatalogPiece(workspace, original, targetPiece,
+                placement.previewBounds(), delta), delta);
+    }
+
+    private MKWorkspacePieceDefinition movedCatalogPiece(MKStructureWorkspace workspace,
+                                                         MKWorkspacePieceDefinition original,
+                                                         MKPlannedPiece targetPiece,
+                                                         BoundingBox previewBounds,
+                                                         BlockPos delta) {
+        Map<String, String> tags = new LinkedHashMap<>(targetPiece.tags());
+        for (Map.Entry<String, String> entry : original.tags().entrySet()) {
+            if (entry.getKey().startsWith("generated_stair_")) {
+                tags.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return new MKWorkspacePieceDefinition(
+                original.pieceId(),
+                workspace.id(),
+                targetPiece.pieceName(),
+                targetPiece.roleId(),
+                targetPiece.plannerId(),
+                original.variantIndex(),
+                targetDimensions(targetPiece, original.effectiveDimensions()),
+                original.shellMargin(),
+                original.connectors(),
+                original.worldOrigin().offset(delta),
+                shift(original.exportBounds(), delta),
+                previewBounds,
+                original.structureBlockPos().offset(delta),
+                original.signPos().offset(delta),
+                original.markerPositions().stream().map(pos -> pos.offset(delta)).toList(),
+                original.generatedStairPositions().stream().map(pos -> pos.offset(delta)).toList(),
+                tags
+        );
+    }
+
+    private boolean canPreserveAuthoredBlocks(MKWorkspacePieceDefinition existingPiece, MKPlannedPiece targetPiece,
+                                              MKStructureWorkspace targetWorkspace) {
+        return existingPiece.shellMargin() == targetWorkspace.shellMargin() &&
+                existingPiece.effectiveDimensions().roomWidth() == targetPiece.interiorWidth() &&
+                existingPiece.effectiveDimensions().roomLength() == targetPiece.interiorLength() &&
+                existingPiece.effectiveDimensions().roomHeight() == targetPiece.interiorHeight() &&
+                Objects.equals(existingPiece.connectors().stream().map(this::toPlannedConnector).toList(),
+                        targetPiece.connectors());
+    }
+
+    private MKWorkspaceDimensions targetDimensions(MKPlannedPiece targetPiece, MKWorkspaceDimensions existing) {
+        return new MKWorkspaceDimensions(
+                targetPiece.interiorWidth(),
+                targetPiece.interiorLength(),
+                targetPiece.interiorHeight(),
+                targetPiece.interiorHeight(),
+                targetPiece.interiorHeight(),
+                existing.shaftWidth(),
+                existing.doorwayWidth(),
+                existing.doorwayHeight()
+        );
+    }
+
+    private MKPlannedPiece matchingLayoutPiece(MKWorkspacePieceDefinition piece, List<MKPlannedPiece> layoutPieces) {
+        String key = catalogKey(piece);
+        for (MKPlannedPiece plannedPiece : layoutPieces) {
+            if (catalogKey(plannedPiece).equals(key)) {
+                return plannedPiece;
+            }
+        }
+        return null;
+    }
+
+    private void clearCatalogSources(ServerLevel level, List<PieceMove> moves,
+                                     List<MKWorkspacePieceDefinition> removedPieces,
+                                     List<MKWorkspacePieceDefinition> rebuildSourcePieces) {
+        LinkedHashSet<BlockPos> positions = new LinkedHashSet<>();
+        for (PieceMove move : moves) {
+            positions.addAll(collectMovedPositions(move.original()));
+        }
+        for (MKWorkspacePieceDefinition removedPiece : removedPieces) {
+            positions.addAll(collectMovedPositions(removedPiece));
+        }
+        for (MKWorkspacePieceDefinition rebuildSourcePiece : rebuildSourcePieces) {
+            positions.addAll(collectMovedPositions(rebuildSourcePiece));
+        }
+        clearSources(level, positions);
+    }
+
+    private String catalogKey(MKWorkspacePieceDefinition piece) {
+        return catalogKey(piece.tags(), piece.plannerId().toString(), piece.pieceName(), piece.variantIndex());
+    }
+
+    private String catalogKey(MKPlannedPiece piece) {
+        return catalogKey(piece.tags(), piece.plannerId().toString(), piece.pieceName(),
+                variantIndex(piece.tags()));
+    }
+
+    private String catalogKey(Map<String, String> tags, String plannerId, String pieceName, int variantIndex) {
+        if (tags.containsKey("workspace_floor_room_profile_id")) {
+            return "floor-room:" +
+                    tags.getOrDefault("workspace_floor_topology_stack_id", "") + ":" +
+                    tags.getOrDefault("workspace_floor_topology_floor_role", "") + ":" +
+                    tags.getOrDefault("workspace_floor_room_kind", "") + ":" +
+                    tags.get("workspace_floor_room_profile_id") + ":" +
+                    variantIndex;
+        }
+        if (tags.containsKey("workspace_linear_run_family_id")) {
+            return "linear-run:" +
+                    tags.getOrDefault("workspace_floor_topology_stack_id", "") + ":" +
+                    tags.getOrDefault("workspace_floor_topology_floor_role", "") + ":" +
+                    tags.get("workspace_linear_run_family_id") + ":" +
+                    tags.getOrDefault("workspace_linear_run_path_kind", "") + ":" +
+                    variantIndex;
+        }
+        if (tags.containsKey("workspace_insert_family_id")) {
+            return "insert-family:" + tags.get("workspace_insert_family_id") + ":" + variantIndex;
+        }
+        String baseName = tags.getOrDefault(MKWorkspaceGridLayout.TAG_BASE_NAME, pieceName);
+        return plannerId + ":" + baseName + ":" + variantIndex;
+    }
+
+    private int variantIndex(Map<String, String> tags) {
+        try {
+            return Integer.parseInt(tags.getOrDefault(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "0"));
+        } catch (NumberFormatException ignored) {
+            return 0;
+        }
+    }
+
+    private String baseName(MKPlannedPiece piece) {
+        return piece.tags().getOrDefault(MKWorkspaceGridLayout.TAG_BASE_NAME, piece.pieceName());
+    }
+
+    private void refreshSidecarMetadata(ServerLevel level, MKStructureWorkspace workspace,
+                                        MKWorkspacePieceDefinition piece, MKPlannedPiece plannedPiece) {
+        BlockEntity structureEntity = level.getBlockEntity(piece.structureBlockPos());
+        BlockState structureState = level.getBlockState(piece.structureBlockPos());
+        if (structureEntity instanceof StructureBlockEntity structureBlock) {
+            structureBlock.setMode(StructureMode.SAVE);
+            structureBlock.setIgnoreEntities(true);
+            structureBlock.setShowBoundingBox(true);
+            structureBlock.setStructureName(ResourceLocation.fromNamespaceAndPath(workspace.namespace(),
+                    workspace.structureName() + "/" + plannedPiece.pieceName()));
+            structureBlock.setStructurePos(piece.worldOrigin().subtract(piece.structureBlockPos()));
+            structureBlock.setStructureSize(new Vec3i(piece.exportBounds().getXSpan(),
+                    piece.exportBounds().getYSpan(), piece.exportBounds().getZSpan()));
+            structureBlock.setChanged();
+            level.sendBlockUpdated(piece.structureBlockPos(), structureState, structureState, Block.UPDATE_ALL);
+        }
+        BlockEntity signEntity = level.getBlockEntity(piece.signPos());
+        BlockState signState = level.getBlockState(piece.signPos());
+        if (signEntity instanceof SignBlockEntity sign) {
+            SignText text = sign.getFrontText()
+                    .setMessage(0, Component.literal(workspace.namespace()))
+                    .setMessage(1, Component.literal(workspace.structureName()))
+                    .setMessage(2, Component.literal(plannedPiece.roleId()))
+                    .setMessage(3, Component.literal(plannedPiece.pieceName()));
+            sign.setText(text, true);
+            sign.setText(text, false);
+            sign.setChanged();
+            level.sendBlockUpdated(piece.signPos(), signState, signState, Block.UPDATE_ALL);
+        }
     }
 
     private List<PieceMove> buildMoves(MKStructureWorkspace targetWorkspace, List<MKWorkspacePieceDefinition> pieces) {
@@ -181,6 +517,7 @@ public class MKWorkspacePieceRelayoutService {
         positions.add(piece.structureBlockPos());
         positions.add(piece.signPos());
         positions.addAll(piece.markerPositions());
+        positions.addAll(piece.generatedStairPositions());
         return List.copyOf(positions);
     }
 

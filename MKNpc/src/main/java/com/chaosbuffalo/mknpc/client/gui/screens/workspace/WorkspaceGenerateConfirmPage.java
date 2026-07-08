@@ -17,12 +17,12 @@ public class WorkspaceGenerateConfirmPage extends WorkspacePageBase {
     public MKLayout build(MKWorkspaceScreen screen) {
         MKLayout root = createPanel(screen);
 
-        addTitle(screen, root, Component.literal("Confirm Regenerate"));
+        addTitle(screen, root, Component.literal("Confirm Workspace Update"));
         addHeaderText(screen, root, Component.literal(
-                "This change is not covered by a safe live mutation. Regenerating will rebuild the workspace scaffold and overwrite existing authored workspace blocks."));
+                "This change may rebuild workspace scaffold. Matching authored templates are preserved when possible; unmatched or affected pieces may be cleared and rebuilt."));
         addHeaderText(screen, root, Component.literal(screen.draftSession().workspaceId()));
 
-        MKButton confirm = addBottomButton(screen, root, Component.literal("Regenerate Workspace"), 200, 1);
+        MKButton confirm = addBottomButton(screen, root, Component.literal("Apply Workspace Update"), 200, 1);
         confirm.setPressedCallback((button, mouseButton) -> {
             screen.draftSession().send();
             return true;

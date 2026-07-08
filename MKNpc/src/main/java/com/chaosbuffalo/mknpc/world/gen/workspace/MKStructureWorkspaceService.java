@@ -98,6 +98,9 @@ public class MKStructureWorkspaceService {
     private final MKWorkspaceTemplateBindingDiffService templateBindingDiffService =
             new MKWorkspaceTemplateBindingDiffService();
 
+    private record CatalogRelayoutTargets(List<MKPlannedPiece> targetPieces, List<MKPlannedPiece> layoutPieces) {
+    }
+
     public List<String> validateWorkspace(MKStructureWorkspace workspace) {
         return plannerRegistry.validate(workspace);
     }
@@ -149,6 +152,9 @@ public class MKStructureWorkspaceService {
             }
             if (canRefreshLinkRenderingOnly(existing, workspace)) {
                 return refreshLinkRenderingMetadata(level, existing, workspace);
+            }
+            if (canApplyCatalogRelayout(existing, workspace)) {
+                return relayoutCatalogPreservingPieces(level, existing, workspace);
             }
             MKStructureWorkspace updated = new MKStructureWorkspace(
                     existing.id(),
@@ -221,6 +227,13 @@ public class MKStructureWorkspaceService {
         return IMKStructureWorkspaceData.get(level)
                 .getWorkspaceByAnchor(requested.anchor())
                 .filter(existing -> canRefreshLinkRenderingOnly(existing, requested))
+                .isPresent();
+    }
+
+    public boolean canApplyCatalogRelayout(ServerLevel level, MKStructureWorkspace requested) {
+        return IMKStructureWorkspaceData.get(level)
+                .getWorkspaceByAnchor(requested.anchor())
+                .filter(existing -> canApplyCatalogRelayout(existing, requested))
                 .isPresent();
     }
 
@@ -1068,6 +1081,76 @@ public class MKStructureWorkspaceService {
         data.updateWorkspace(updated);
         syncBlockEntity(level, updated.anchor(), updated.id());
         return Optional.of(updated);
+    }
+
+    private boolean canApplyCatalogRelayout(MKStructureWorkspace existing, MKStructureWorkspace requested) {
+        if (existing.pieces().isEmpty() || !canCatalogRelayoutSharePhysicalSettings(existing, requested)) {
+            return false;
+        }
+        CatalogRelayoutTargets targets = catalogRelayoutTargets(existing, requested);
+        MKStructureWorkspace targetWorkspace = workspaceForUpdate(existing, requested, existing.pieces(),
+                System.currentTimeMillis());
+        return relayoutService.canRelayoutCatalog(existing, targetWorkspace, targets.targetPieces(),
+                targets.layoutPieces());
+    }
+
+    private Optional<MKStructureWorkspace> relayoutCatalogPreservingPieces(ServerLevel level,
+                                                                          MKStructureWorkspace existing,
+                                                                          MKStructureWorkspace requested) {
+        long nowEpochMillis = System.currentTimeMillis();
+        CatalogRelayoutTargets targets = catalogRelayoutTargets(existing, requested);
+        MKStructureWorkspace targetWorkspace = workspaceForUpdate(existing, requested, existing.pieces(), nowEpochMillis);
+        targetWorkspace = layerStateService.refreshLayers(layerStateService.ensureLayerStates(targetWorkspace,
+                        nowEpochMillis),
+                List.of(
+                        MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS,
+                        MKWorkspaceGeneratedLayer.SCAFFOLD_BLOCKS,
+                        MKWorkspaceGeneratedLayer.SIDECAR_BLOCKS,
+                        MKWorkspaceGeneratedLayer.PREVIEW_LAYOUT,
+                        MKWorkspaceGeneratedLayer.RUNTIME_METADATA
+                ),
+                settingsComparisonTag(requested, existing.id(), requested.previewMargin()).hashCode(),
+                nowEpochMillis);
+        try {
+            return relayoutService.relayoutCatalog(level, existing, targetWorkspace, targets.targetPieces(),
+                            targets.layoutPieces())
+                    .map(MKWorkspacePieceRelayoutService.RelayoutResult::workspace);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to write workspace backup before catalog relayout", e);
+        }
+    }
+
+    private boolean canCatalogRelayoutSharePhysicalSettings(MKStructureWorkspace existing,
+                                                            MKStructureWorkspace requested) {
+        return existing.anchor().equals(requested.anchor()) &&
+                existing.namespace().equals(requested.namespace()) &&
+                existing.structureName().equals(requested.structureName()) &&
+                existing.palette().equals(requested.palette()) &&
+                existing.stairConfig().equals(requested.stairConfig()) &&
+                existing.verticalAccessPlacement() == requested.verticalAccessPlacement() &&
+                existing.shellMargin() == requested.shellMargin() &&
+                existing.exteriorAirMargin() == requested.exteriorAirMargin() &&
+                existing.previewMargin() == requested.previewMargin() &&
+                existing.verticalAccessSpec().equals(requested.verticalAccessSpec());
+    }
+
+    private CatalogRelayoutTargets catalogRelayoutTargets(MKStructureWorkspace existing,
+                                                          MKStructureWorkspace requested) {
+        List<MKPlannedPiece> canonicalPieces = plannerRegistry.plannerFor(requested).createCanonicalPieces(requested);
+        Map<String, MKPlannedPiece> canonicalByBaseName = canonicalPieces.stream()
+                .collect(Collectors.toMap(MKPlannedPiece::pieceName, piece -> piece));
+        ArrayList<MKPlannedPiece> targetPieces = canonicalPieces.stream()
+                .map(this::toTemplatePiece)
+                .collect(Collectors.toCollection(ArrayList::new));
+        targetPieces.addAll(existing.pieces().stream()
+                .filter(piece -> piece.variantIndex() > 0)
+                .filter(piece -> canonicalByBaseName.containsKey(getBaseName(piece)))
+                .map(piece -> toExistingVariantPiece(piece, canonicalByBaseName))
+                .toList());
+        List<MKPlannedPiece> layoutPieces = targetPieces.stream()
+                .filter(this::usesPhysicalWorkspaceCell)
+                .toList();
+        return new CatalogRelayoutTargets(List.copyOf(targetPieces), List.copyOf(layoutPieces));
     }
 
     private net.minecraft.nbt.CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, java.util.UUID id,
