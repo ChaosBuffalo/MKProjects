@@ -5,6 +5,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import net.minecraft.resources.ResourceLocation;
 
@@ -74,7 +76,37 @@ public class MKWorkspacePlannerRegistry {
 
     public List<String> validate(MKStructureWorkspace workspace) {
         ArrayList<String> errors = new ArrayList<>(workspace.validate());
-        errors.addAll(plannerFor(workspace).validateTopology(workspace));
+        MKWorkspacePlanner planner = plannerFor(workspace);
+        errors.addAll(planner.validateTopology(workspace));
+        errors.addAll(validateCanonicalCatalog(workspace, planner));
         return List.copyOf(errors);
+    }
+
+    private List<String> validateCanonicalCatalog(MKStructureWorkspace workspace, MKWorkspacePlanner planner) {
+        ArrayList<String> errors = new ArrayList<>();
+        LinkedHashMap<String, MKPlannedPiece> physicalByStableIdentity = new LinkedHashMap<>();
+        List<MKPlannedPiece> pieces;
+        try {
+            pieces = planner.createCanonicalPieces(workspace);
+        } catch (RuntimeException ex) {
+            errors.add("workspace planner catalog failed: " + ex.getMessage());
+            return errors;
+        }
+        for (MKPlannedPiece piece : pieces) {
+            if (MKWorkspaceTemplateReuseTags.isDerived(piece.tags())) {
+                continue;
+            }
+            String key = MKWorkspaceStableSlotIdentity.key(piece.tags());
+            if (key.isBlank()) {
+                errors.add("planned piece " + piece.pieceName() + " is missing stable template identity");
+                continue;
+            }
+            MKPlannedPiece previous = physicalByStableIdentity.putIfAbsent(key, piece);
+            if (previous != null) {
+                errors.add("stable template identity " + key + " is used by both " +
+                        previous.pieceName() + " and " + piece.pieceName());
+            }
+        }
+        return errors;
     }
 }

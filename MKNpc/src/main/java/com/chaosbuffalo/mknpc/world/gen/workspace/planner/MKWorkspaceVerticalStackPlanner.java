@@ -15,6 +15,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamilySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
@@ -528,6 +529,8 @@ public class MKWorkspaceVerticalStackPlanner {
         tags.put("workspace_horizontal_extrusion_mode", effectiveHorizontalExtrusionMode(family).getSerializedName());
         MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
         tags.put("workspace_topology_group", resolvedFamily.slotMetadata().topologyGroupId());
+        MKWorkspaceStableSlotIdentity.apply(tags, "vertical_stack_room",
+                family.sourceTopologySlotIdOrSelf());
         if (!stackDefinition.stackId().isBlank()) {
             tags.put("workspace_vertical_stack_id", stackDefinition.stackId());
             tags.put("workspace_vertical_stack_min_main_floors", Integer.toString(stackDefinition.minMainFloors()));

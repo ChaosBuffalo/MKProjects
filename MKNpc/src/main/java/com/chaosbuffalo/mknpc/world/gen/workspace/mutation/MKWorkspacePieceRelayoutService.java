@@ -8,6 +8,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
@@ -536,6 +537,10 @@ public class MKWorkspacePieceRelayoutService {
     }
 
     private String catalogKey(Map<String, String> tags, String plannerId, String pieceName, int variantIndex) {
+        String stableKey = stableCatalogKey(tags, variantIndex);
+        if (!stableKey.isBlank()) {
+            return stableKey;
+        }
         if (tags.containsKey("workspace_floor_room_profile_id")) {
             return "floor-room:" +
                     tags.getOrDefault("workspace_floor_topology_stack_id", "") + ":" +
@@ -557,6 +562,69 @@ public class MKWorkspacePieceRelayoutService {
         }
         String baseName = tags.getOrDefault(MKWorkspaceGridLayout.TAG_BASE_NAME, pieceName);
         return plannerId + ":" + baseName + ":" + variantIndex;
+    }
+
+    private String stableCatalogKey(Map<String, String> tags, int variantIndex) {
+        String key = MKWorkspaceStableSlotIdentity.key(tags);
+        if (key.isBlank()) {
+            key = inferredStableCatalogKey(tags);
+        }
+        return key.isBlank() ? "" : "stable:" + key + ":" + variantIndex;
+    }
+
+    private String inferredStableCatalogKey(Map<String, String> tags) {
+        if (tags.containsKey("workspace_floor_room_profile_id")) {
+            return "floor_room:floor." +
+                    tags.getOrDefault("workspace_floor_topology_stack_id", "") + "." +
+                    tags.getOrDefault("workspace_floor_topology_floor_role", "") + "." +
+                    tags.getOrDefault("workspace_floor_room_kind", "") + "." +
+                    tags.get("workspace_floor_room_profile_id");
+        }
+        if (tags.containsKey("workspace_insert_family_id")) {
+            return "floor_insert_family:floor.insert_family." + tags.get("workspace_insert_family_id");
+        }
+        if (tags.containsKey("workspace_perimeter_source_slot_id") &&
+                tags.containsKey("workspace_linear_run_family_id")) {
+            return "keep_perimeter_linear_run:keep.perimeter." + tags.get("workspace_linear_run_family_id");
+        }
+        if ("courtyard_path".equals(tags.get("workspace_content_kind"))) {
+            return "keep_courtyard_path:keep.courtyard.path." +
+                    tags.getOrDefault("workspace_courtyard_path_shape", "");
+        }
+        if ("courtyard".equals(tags.get("workspace_content_kind"))) {
+            return "keep_courtyard_content:keep.courtyard.content";
+        }
+        if (tags.containsKey("workspace_floor_topology_stack_id") &&
+                tags.containsKey("workspace_linear_run_family_id")) {
+            return "floor_linear_run:floor." +
+                    tags.getOrDefault("workspace_floor_topology_stack_id", "") + "." +
+                    tags.getOrDefault("workspace_floor_topology_floor_role", "") + "." +
+                    tags.get("workspace_linear_run_family_id") + "." +
+                    tags.getOrDefault("workspace_linear_run_path_kind", "");
+        }
+        if (tags.containsKey("workspace_linear_run_family_id")) {
+            String topologySlotId = tags.getOrDefault("workspace_topology_slot_id", "");
+            String familyId = tags.get("workspace_linear_run_family_id");
+            String pathKind = tags.getOrDefault("workspace_linear_run_path_kind", "");
+            if (topologySlotId.startsWith("tower.linear_run.")) {
+                return "tower_linear_run:tower.linear_run." + familyId + "." + pathKind;
+            }
+            if (topologySlotId.startsWith("keep.")) {
+                return "keep_linear_run:" + topologySlotId + "." + familyId;
+            }
+        }
+        if ("room".equals(tags.get("tower_piece_kind"))) {
+            String topologySlotId = tags.getOrDefault("workspace_source_topology_slot_id",
+                    tags.getOrDefault("workspace_topology_slot_id", ""));
+            if (topologySlotId.isBlank()) {
+                return "";
+            }
+            if (topologySlotId.startsWith("keep.") && !tags.containsKey("workspace_vertical_stack_id")) {
+                return "keep_room:" + topologySlotId;
+            }
+            return "vertical_stack_room:" + topologySlotId;
+        }
+        return "";
     }
 
     private int variantIndex(Map<String, String> tags) {

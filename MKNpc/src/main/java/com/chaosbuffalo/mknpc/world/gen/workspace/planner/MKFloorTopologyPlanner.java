@@ -24,6 +24,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolv
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamilySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKFloorMaskVariantExporter;
 import net.minecraft.core.Direction;
@@ -123,6 +124,8 @@ public class MKFloorTopologyPlanner {
         tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID, insertFamily.familyId());
         tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_KIND,
                 insertFamily.kind().getSerializedName());
+        MKWorkspaceStableSlotIdentity.apply(tags, "floor_insert_family",
+                "floor.insert_family." + insertFamily.familyId());
         tags.put("workspace_insert_family_width", Integer.toString(insertFamily.width()));
         tags.put("workspace_insert_family_height", Integer.toString(insertFamily.height()));
         tags.put("workspace_insert_family_depth", Integer.toString(insertFamily.depth()));
@@ -189,6 +192,9 @@ public class MKFloorTopologyPlanner {
             tags.put("workspace_linear_run_path_kind", pathKind.serializedName);
             tags.put("workspace_linear_run_slope_delta", Integer.toString(linearRun.slopeDelta()));
             tags.put("workspace_opening_profile_id", linearRun.openingProfileId());
+            MKWorkspaceStableSlotIdentity.apply(tags, "floor_linear_run",
+                    "floor." + context.stackId() + "." + context.floorRole() + "." +
+                            linearRun.linearRunId() + "." + pathKind.serializedName);
             MKWorkspacePaletteTags.apply(tags, linearRun.paletteOverrideOpt()
                     .map(override -> override.resolve(context.palette()))
                     .orElse(context.palette()));
@@ -347,6 +353,9 @@ public class MKFloorTopologyPlanner {
         tags.put("workspace_floor_topology_floor_role", context.floorRole());
         tags.put("workspace_floor_room_profile_id", profile.id());
         tags.put("workspace_floor_room_kind", profile.kind().getSerializedName());
+        MKWorkspaceStableSlotIdentity.apply(tags, "floor_room",
+                "floor." + context.stackId() + "." + context.floorRole() + "." +
+                        profile.kind().getSerializedName() + "." + profile.id());
         tags.put(MKFloorMaskVariantExporter.FLOOR_RANDOMIZE_MAIN_EXIT_TAG,
                 Boolean.toString(profile.randomizeMainExit()));
         tags.put("workspace_topology_group", context.topologyGroupId());

@@ -22,6 +22,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamilySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
@@ -1564,6 +1565,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         tags.put(CONTENT_CONNECTOR_EDGE_TAG, connectorFacing.getSerializedName());
         tags.put(CONTENT_WALKWAY_CONTINUATION_LENGTH_TAG,
                 Integer.toString(settings.courtyardWalkwayContinuationLength()));
+        MKWorkspaceStableSlotIdentity.apply(tags, "keep_courtyard_content", "keep.courtyard.content");
         if (socket != null) {
             tags.put(COURTYARD_SOCKET_ID_TAG, socket.slotId());
             tags.put(COURTYARD_SOCKET_MAX_SIZE_TAG, Integer.toString(socket.maxSquareSize()));
@@ -1588,6 +1590,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         tags.put(COURTYARD_PATH_SLOT_ID_TAG, topologySlotId);
         tags.put(COURTYARD_PATH_SHAPE_TAG, shape);
         tags.put(COURTYARD_PATH_LANE_INSET_TAG, Integer.toString(laneInset));
+        MKWorkspaceStableSlotIdentity.apply(tags, "keep_courtyard_path",
+                "keep.courtyard.path." + shape);
         return tags;
     }
 
@@ -1931,6 +1935,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                 });
         MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
         tags.put("workspace_topology_group", resolvedFamily.slotMetadata().topologyGroupId());
+        MKWorkspaceStableSlotIdentity.apply(tags, "keep_room", family.topologySlotId());
         applyFoundationTags(resolvedFamily.foundationPolicy(), tags);
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, Boolean.toString(family.supportsVerticalAccess()));
         if (family.supportsVerticalAccess()) {
@@ -1990,6 +1995,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         tags.put("workspace_perimeter_side", segment.side());
         tags.put("workspace_perimeter_segment_index", Integer.toString(segment.index()));
         tags.put("workspace_perimeter_segment_count", Integer.toString(segment.count()));
+        MKWorkspaceStableSlotIdentity.apply(tags, "keep_perimeter_linear_run",
+                "keep.perimeter." + linearRun.linearRunId());
         return tags;
     }
 
@@ -2009,6 +2016,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         tags.put("workspace_linear_run_path_kind", "keep");
         tags.put("workspace_linear_run_slope_delta", Integer.toString(linearRun.slopeDelta()));
         tags.put("workspace_opening_profile_id", linearRun.openingProfileId());
+        MKWorkspaceStableSlotIdentity.apply(tags, "keep_linear_run",
+                topologySlotId + "." + linearRun.linearRunId());
         if (linearRun.kind() == MKWorkspaceLinearRunKind.DEFENSIVE_WALL) {
             tags.put("workspace_horizontal_extrusion_mode",
                     MKWorkspaceHorizontalExtrusionMode.FULL_FACE.getSerializedName());

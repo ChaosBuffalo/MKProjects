@@ -13,6 +13,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolv
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
@@ -326,6 +327,8 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         tags.put("workspace_linear_run_path_kind", pathKind.serializedName);
         tags.put("workspace_linear_run_slope_delta", Integer.toString(linearRun.slopeDelta()));
         tags.put("workspace_opening_profile_id", linearRun.openingProfileId());
+        MKWorkspaceStableSlotIdentity.apply(tags, "tower_linear_run",
+                "tower.linear_run." + linearRun.linearRunId() + "." + pathKind.serializedName);
         applyFoundationTags(linearRun.foundationPolicy(), tags);
         MKWorkspacePaletteTags.apply(tags, paletteResolver.resolveFamily(workspace, linearRun));
         new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
