@@ -60,9 +60,11 @@ import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public class MKWorkspaceScreen extends MKScreen {
@@ -81,6 +83,9 @@ public class MKWorkspaceScreen extends MKScreen {
     private final MKWorkspaceMutationPreflight preflight;
     private final List<String> importManifestIds;
     private final List<String> backupManifestFiles;
+    private final int totalWorkspacePieces;
+    private final int nextPieceOffset;
+    private final long pieceRevision;
     private final List<String> initialStates;
     private String selectedTopologyKey;
     private String selectedPlannerStackId;
@@ -140,8 +145,16 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace,
                              List<String> importManifestIds, List<String> backupManifestFiles) {
+        this(anchor, workspace, importManifestIds, backupManifestFiles,
+                workspace == null ? 0 : workspace.pieces().size(),
+                workspace == null ? 0 : workspace.pieces().size(), 0L);
+    }
+
+    public MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace,
+                             List<String> importManifestIds, List<String> backupManifestFiles,
+                             int totalWorkspacePieces, int nextPieceOffset, long pieceRevision) {
         this(anchor, workspace, importManifestIds, backupManifestFiles, List.of(), null, null, null, null,
-                -1, -1, -1, -1, -1, null, null);
+                -1, -1, -1, -1, -1, null, null, totalWorkspacePieces, nextPieceOffset, pieceRevision);
     }
 
     private MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace, List<String> importManifestIds,
@@ -157,13 +170,19 @@ public class MKWorkspaceScreen extends MKScreen {
                               int selectedLinearRunIndex,
                               int selectedInsertFamilyIndex,
                               MKWorkspaceStairAuthoringConfig detailStairConfig,
-                              MKWorkspaceMutationPreflight preflight) {
+                              MKWorkspaceMutationPreflight preflight,
+                              int totalWorkspacePieces,
+                              int nextPieceOffset,
+                              long pieceRevision) {
         super(Component.literal("Tower Workspace"));
         this.anchor = anchor;
         this.workspace = workspace;
         this.preflight = preflight;
         this.importManifestIds = List.copyOf(importManifestIds);
         this.backupManifestFiles = List.copyOf(backupManifestFiles);
+        this.totalWorkspacePieces = Math.max(totalWorkspacePieces, workspace == null ? 0 : workspace.pieces().size());
+        this.nextPieceOffset = nextPieceOffset;
+        this.pieceRevision = pieceRevision;
         this.initialStates = List.copyOf(initialStates);
         this.selectedTopologyKey = selectedTopologyKey;
         this.selectedPlannerStackId = selectedPlannerStackId;
@@ -180,6 +199,14 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public MKWorkspaceScreen copyWithWorkspace(MKStructureWorkspace updatedWorkspace, List<String> updatedImportManifestIds,
                                                List<String> updatedBackupManifestFiles) {
+        return copyWithWorkspace(updatedWorkspace, updatedImportManifestIds, updatedBackupManifestFiles,
+                updatedWorkspace == null ? 0 : updatedWorkspace.pieces().size(),
+                updatedWorkspace == null ? 0 : updatedWorkspace.pieces().size(), 0L);
+    }
+
+    public MKWorkspaceScreen copyWithWorkspace(MKStructureWorkspace updatedWorkspace, List<String> updatedImportManifestIds,
+                                               List<String> updatedBackupManifestFiles, int updatedTotalPieces,
+                                               int updatedNextPieceOffset, long updatedPieceRevision) {
         MKWorkspaceScreen copy = new MKWorkspaceScreen(anchor, updatedWorkspace, updatedImportManifestIds, updatedBackupManifestFiles,
                 getInitialStatesForRefresh(updatedWorkspace),
                 selectedTopologyKey, selectedPlannerStackId, selectedFloorPlanStackId, selectedFloorPlanSectionKey,
@@ -187,7 +214,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
                 draftSession.selectedLinearRunIndex(),
                 draftSession.selectedInsertFamilyIndex(),
-                detailStairConfig, preflight);
+                detailStairConfig, preflight, updatedTotalPieces, updatedNextPieceOffset, updatedPieceRevision);
         copy.copyClientViewStateFrom(this);
         return copy;
     }
@@ -200,9 +227,27 @@ public class MKWorkspaceScreen extends MKScreen {
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
                 draftSession.selectedLinearRunIndex(),
                 draftSession.selectedInsertFamilyIndex(),
-                detailStairConfig, updatedPreflight);
+                detailStairConfig, updatedPreflight, totalWorkspacePieces, nextPieceOffset, pieceRevision);
         copy.copyClientViewStateFrom(this);
         return copy;
+    }
+
+    public MKWorkspaceScreen copyWithWorkspacePieceChunk(List<MKWorkspacePieceDefinition> pieces, int updatedTotalPieces,
+                                                        int updatedNextPieceOffset, long updatedPieceRevision) {
+        if (workspace == null || updatedPieceRevision != pieceRevision) {
+            return this;
+        }
+        LinkedHashMap<UUID, MKWorkspacePieceDefinition> mergedPieces = new LinkedHashMap<>();
+        for (MKWorkspacePieceDefinition piece : workspace.pieces()) {
+            mergedPieces.put(piece.pieceId(), piece);
+        }
+        for (MKWorkspacePieceDefinition piece : pieces) {
+            mergedPieces.put(piece.pieceId(), piece);
+        }
+        MKStructureWorkspace updatedWorkspace = withPiecesPreservingMetadata(workspace,
+                List.copyOf(mergedPieces.values()));
+        return copyWithWorkspace(updatedWorkspace, importManifestIds, backupManifestFiles, updatedTotalPieces,
+                updatedNextPieceOffset, updatedPieceRevision);
     }
 
     private void copyClientViewStateFrom(MKWorkspaceScreen source) {
@@ -251,7 +296,7 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     public boolean hasExistingWorkspacePieces() {
-        return workspace != null && !workspace.pieces().isEmpty();
+        return workspace != null && totalWorkspacePieces > 0;
     }
 
     public Font font() {
@@ -264,6 +309,18 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public MKStructureWorkspace workspace() {
         return workspace;
+    }
+
+    public int totalWorkspacePieces() {
+        return totalWorkspacePieces;
+    }
+
+    public int loadedWorkspacePieces() {
+        return workspace == null ? 0 : workspace.pieces().size();
+    }
+
+    public boolean loadingWorkspacePieces() {
+        return nextPieceOffset < totalWorkspacePieces;
     }
 
     public MKWorkspaceMutationPreflight preflight() {
@@ -1160,7 +1217,7 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     private List<String> getDefaultInitialStates() {
-        if (workspace != null && !workspace.pieces().isEmpty()) {
+        if (workspace != null && totalWorkspacePieces > 0) {
             return List.of("workspace");
         }
         return importManifestIds.isEmpty() ? List.of("form") : List.of("home");
@@ -1169,44 +1226,75 @@ public class MKWorkspaceScreen extends MKScreen {
     private List<String> getInitialStatesForRefresh(MKStructureWorkspace updatedWorkspace) {
         String currentState = getState();
         if (WorkspaceTopologySlotPage.ID.equals(currentState) && selectedTopologyKey != null &&
-                updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
+                updatedWorkspace != null && hasPiecesForRefresh(updatedWorkspace)) {
             return List.of("workspace", WorkspaceTopologySlotPage.ID);
         }
         if (WorkspacePlannerNodePage.ID.equals(currentState) && selectedPlannerStackId != null &&
-                updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
+                updatedWorkspace != null && hasPiecesForRefresh(updatedWorkspace)) {
             return List.of("workspace", WorkspacePlannerNodePage.ID);
         }
         if (WorkspaceFloorPlanPage.ID.equals(currentState) && selectedFloorPlanStackId != null &&
-                selectedFloorPlanSectionKey != null && updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
+                selectedFloorPlanSectionKey != null && updatedWorkspace != null && hasPiecesForRefresh(updatedWorkspace)) {
             return List.of("workspace", WorkspacePlannerNodePage.ID, WorkspaceFloorPlanPage.ID);
         }
-        if ("backups".equals(currentState) && updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
+        if ("backups".equals(currentState) && updatedWorkspace != null && hasPiecesForRefresh(updatedWorkspace)) {
             return List.of("workspace", "backups");
         }
-        if ("utilities".equals(currentState) && updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
+        if ("utilities".equals(currentState) && updatedWorkspace != null && hasPiecesForRefresh(updatedWorkspace)) {
             return List.of("workspace", "utilities");
         }
-        if ("block_swap".equals(currentState) && updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
+        if ("block_swap".equals(currentState) && updatedWorkspace != null && hasPiecesForRefresh(updatedWorkspace)) {
             return List.of("workspace", "utilities", "block_swap");
         }
         if ("form".equals(currentState)) {
-            return updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()
+            return updatedWorkspace != null && hasPiecesForRefresh(updatedWorkspace)
                     ? List.of("workspace", "form")
                     : List.of("form");
         }
         if (WorkspaceGenerateConfirmPage.ID.equals(currentState)) {
-            return updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()
+            return updatedWorkspace != null && hasPiecesForRefresh(updatedWorkspace)
                     ? List.of("workspace", "form", WorkspaceGenerateConfirmPage.ID)
                     : List.of("form", WorkspaceGenerateConfirmPage.ID);
         }
         if (currentState.startsWith("form_")) {
-            return updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()
+            return updatedWorkspace != null && hasPiecesForRefresh(updatedWorkspace)
                     ? List.of("workspace", "form", currentState)
                     : List.of("form", currentState);
         }
-        return updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()
+        return updatedWorkspace != null && hasPiecesForRefresh(updatedWorkspace)
                 ? List.of("workspace")
                 : List.of("form");
+    }
+
+    private boolean hasPiecesForRefresh(MKStructureWorkspace updatedWorkspace) {
+        return totalWorkspacePieces > 0 || !updatedWorkspace.pieces().isEmpty();
+    }
+
+    private MKStructureWorkspace withPiecesPreservingMetadata(MKStructureWorkspace source,
+                                                              List<MKWorkspacePieceDefinition> pieces) {
+        return new MKStructureWorkspace(
+                source.id(),
+                source.anchor(),
+                source.namespace(),
+                source.structureName(),
+                source.topologyProfile(),
+                source.dimensions(),
+                source.palette(),
+                source.stairConfig(),
+                source.verticalAccessPlacement(),
+                source.shellMargin(),
+                source.exteriorAirMargin(),
+                source.previewMargin(),
+                source.verticalAccessSpec(),
+                source.familyDefinitions(),
+                source.openingProfiles(),
+                source.linearRunFamilies(),
+                source.insertFamilies(),
+                source.createdAt(),
+                source.updatedAt(),
+                pieces,
+                source.layerStates()
+        );
     }
 
     public void switchToExistingState(String stateName) {

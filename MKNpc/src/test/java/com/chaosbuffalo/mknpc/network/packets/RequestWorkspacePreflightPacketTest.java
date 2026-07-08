@@ -100,6 +100,38 @@ class RequestWorkspacePreflightPacketTest {
     }
 
     @Test
+    void screenWorkspacePieceChunksKeepLargeWorkspacesBelowNbtLimit() {
+        String largeTagValue = "x".repeat(5000);
+        MKWorkspacePieceDefinition[] pieces = IntStream.range(0, 250)
+                .mapToObj(index -> piece("authored_" + index, Map.of("large", largeTagValue)))
+                .toArray(MKWorkspacePieceDefinition[]::new);
+        MKStructureWorkspace workspace = workspaceWithPieces(pieces);
+
+        MKWorkspacePacketPayloads.PieceChunk chunk = MKWorkspacePacketPayloads.firstPieceChunk(workspace);
+        MKStructureWorkspace decoded = MKStructureWorkspace.fromTag(
+                MKWorkspacePacketPayloads.screenWorkspaceChunkTag(workspace, chunk));
+
+        assertEquals(250, chunk.totalPieces());
+        assertEquals(chunk.pieces().size(), decoded.pieces().size());
+        assertEquals(chunk.nextOffset(), decoded.pieces().size());
+        org.junit.jupiter.api.Assertions.assertTrue(chunk.nextOffset() < chunk.totalPieces());
+        org.junit.jupiter.api.Assertions.assertTrue(MKWorkspacePacketPayloads.encodedNbtBytes(
+                MKWorkspacePacketPayloads.screenWorkspaceChunkTag(workspace, chunk)) < 2_097_152);
+    }
+
+    @Test
+    void pieceChunkPayloadRoundTripsPieceDefinitions() {
+        MKWorkspacePieceDefinition first = piece("first", Map.of());
+        MKWorkspacePieceDefinition second = piece("second", Map.of());
+
+        List<MKWorkspacePieceDefinition> decoded = MKWorkspacePacketPayloads.parsePieceListTag(
+                MKWorkspacePacketPayloads.pieceListTag(List.of(first, second)));
+
+        assertEquals(List.of("first", "second"),
+                decoded.stream().map(MKWorkspacePieceDefinition::pieceName).toList());
+    }
+
+    @Test
     void preflightPayloadDropsDirtyWorkspacePiecesButKeepsReportAndLayerState() {
         MKStructureWorkspace workspace = workspaceWithPieces(piece("authored", Map.of()));
         MKWorkspaceInvalidationReport report = new MKWorkspaceInvalidationReport(

@@ -17,11 +17,13 @@ import com.chaosbuffalo.mknpc.network.packets.OpenMKSpawnerPacket;
 import com.chaosbuffalo.mknpc.network.packets.CreateWorkspacePacket;
 import com.chaosbuffalo.mknpc.network.packets.DeleteWorkspacePacket;
 import com.chaosbuffalo.mknpc.network.packets.RequestWorkspacePreflightPacket;
+import com.chaosbuffalo.mknpc.network.packets.RequestWorkspacePieceChunkPacket;
 import com.chaosbuffalo.mknpc.network.packets.RestoreWorkspaceBackupPacket;
 import com.chaosbuffalo.mknpc.network.packets.SetWorkspaceLayerLockPacket;
 import com.chaosbuffalo.mknpc.network.packets.SetSpawnListPacket;
 import com.chaosbuffalo.mknpc.network.packets.SwapWorkspaceBlockPacket;
 import com.chaosbuffalo.mknpc.network.packets.TeleportToWorkspacePiecePacket;
+import com.chaosbuffalo.mknpc.network.packets.WorkspacePieceChunkPacket;
 import com.chaosbuffalo.mknpc.network.packets.WorkspacePreflightReportPacket;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -73,9 +75,19 @@ public class PacketHandler {
                 RequestWorkspacePreflightPacket::handle
         );
         registrar.playToServer(
+                RequestWorkspacePieceChunkPacket.TYPE,
+                RequestWorkspacePieceChunkPacket.STREAM_CODEC,
+                RequestWorkspacePieceChunkPacket::handle
+        );
+        registrar.playToServer(
                 SetWorkspaceLayerLockPacket.TYPE,
                 SetWorkspaceLayerLockPacket.STREAM_CODEC,
                 SetWorkspaceLayerLockPacket::handle
+        );
+        registrar.playToClient(
+                WorkspacePieceChunkPacket.TYPE,
+                WorkspacePieceChunkPacket.STREAM_CODEC,
+                WorkspacePieceChunkPacket::handle
         );
         registrar.playToClient(
                 WorkspacePreflightReportPacket.TYPE,

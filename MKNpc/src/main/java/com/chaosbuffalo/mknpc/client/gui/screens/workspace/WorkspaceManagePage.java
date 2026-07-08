@@ -35,7 +35,7 @@ public class WorkspaceManagePage extends WorkspacePageBase {
 
         addTitle(screen, root, Component.translatable("mknpc.workspace.screen.manage_title"));
         MKText summary = addHeaderText(screen, root, Component.translatable("mknpc.workspace.screen.manage_summary",
-                workspace.namespace(), workspace.structureName(), workspace.pieces().size()));
+                workspace.namespace(), workspace.structureName(), screen.totalWorkspacePieces()));
 
         int buttonAreaHeight = screen.buttonHeight() + screen.bottomPadding();
         int contentTop = screen.scrollTopAfterHeader(root, summary);
@@ -98,8 +98,11 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         MKStackLayoutVertical content = layout.settingsContent();
         addText(screen, content, "Planner Overview");
         addText(screen, content, "Planner " + workspace.topologyProfile().plannerId() +
-                " - pieces " + workspace.pieces().size() +
+                " - pieces " + screen.loadedWorkspacePieces() + "/" + screen.totalWorkspacePieces() +
                 " - layers " + workspace.layerStates().size());
+        if (screen.loadingWorkspacePieces()) {
+            addText(screen, content, "Loading workspace pieces...");
+        }
         WorkspacePlannerClientRegistry.getClientContributor(workspace.topologyProfile().plannerId())
                 .addWorkspaceOverviewLayout(screen, layout, screen.draftSession());
         addLayerStateSummary(screen, content, workspace);

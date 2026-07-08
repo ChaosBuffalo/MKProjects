@@ -10,6 +10,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public class OpenWorkspaceScreenPacket implements CustomPacketPayload {
@@ -22,6 +23,9 @@ public class OpenWorkspaceScreenPacket implements CustomPacketPayload {
     private final CompoundTag workspaceTag;
     private final java.util.List<String> importManifestIds;
     private final java.util.List<String> backupManifestFiles;
+    private final int totalPieces;
+    private final int nextPieceOffset;
+    private final long pieceRevision;
 
     public OpenWorkspaceScreenPacket(BlockPos anchor, MKStructureWorkspace workspace) {
         this(anchor, workspace, java.util.List.of(), java.util.List.of());
@@ -34,9 +38,15 @@ public class OpenWorkspaceScreenPacket implements CustomPacketPayload {
     public OpenWorkspaceScreenPacket(BlockPos anchor, MKStructureWorkspace workspace, java.util.List<String> importManifestIds,
                                      java.util.List<String> backupManifestFiles) {
         this.anchor = anchor;
-        this.workspaceTag = workspace != null ? MKWorkspacePacketPayloads.screenWorkspaceTag(workspace) : null;
+        MKWorkspacePacketPayloads.PieceChunk firstChunk = workspace != null ?
+                MKWorkspacePacketPayloads.firstPieceChunk(workspace) :
+                new MKWorkspacePacketPayloads.PieceChunk(java.util.List.of(), 0, 0, 0L);
+        this.workspaceTag = workspace != null ? MKWorkspacePacketPayloads.screenWorkspaceChunkTag(workspace, firstChunk) : null;
         this.importManifestIds = java.util.List.copyOf(importManifestIds);
         this.backupManifestFiles = java.util.List.copyOf(backupManifestFiles);
+        this.totalPieces = firstChunk.totalPieces();
+        this.nextPieceOffset = firstChunk.nextOffset();
+        this.pieceRevision = firstChunk.revision();
     }
 
     public OpenWorkspaceScreenPacket(FriendlyByteBuf buffer) {
@@ -44,10 +54,16 @@ public class OpenWorkspaceScreenPacket implements CustomPacketPayload {
         CompoundTag decodedWorkspaceTag = null;
         java.util.List<String> decodedImportManifestIds = java.util.List.of();
         java.util.List<String> decodedBackupManifestFiles = java.util.List.of();
+        int decodedTotalPieces = 0;
+        int decodedNextPieceOffset = 0;
+        long decodedPieceRevision = 0L;
         try {
             decodedWorkspaceTag = buffer.readBoolean() ? buffer.readNbt() : null;
             decodedImportManifestIds = buffer.readList(FriendlyByteBuf::readUtf);
             decodedBackupManifestFiles = buffer.readList(FriendlyByteBuf::readUtf);
+            decodedTotalPieces = buffer.readVarInt();
+            decodedNextPieceOffset = buffer.readVarInt();
+            decodedPieceRevision = buffer.readLong();
         } catch (RuntimeException ex) {
             MKNpc.LOGGER.error("Failed to decode workspace screen payload at {}; opening without workspace data.",
                     decodedAnchor, ex);
@@ -56,6 +72,9 @@ public class OpenWorkspaceScreenPacket implements CustomPacketPayload {
         this.workspaceTag = decodedWorkspaceTag;
         this.importManifestIds = decodedImportManifestIds;
         this.backupManifestFiles = decodedBackupManifestFiles;
+        this.totalPieces = decodedTotalPieces;
+        this.nextPieceOffset = decodedNextPieceOffset;
+        this.pieceRevision = decodedPieceRevision;
     }
 
     @Override
@@ -72,6 +91,9 @@ public class OpenWorkspaceScreenPacket implements CustomPacketPayload {
         }
         buffer.writeCollection(importManifestIds, FriendlyByteBuf::writeUtf);
         buffer.writeCollection(backupManifestFiles, FriendlyByteBuf::writeUtf);
+        buffer.writeVarInt(totalPieces);
+        buffer.writeVarInt(nextPieceOffset);
+        buffer.writeLong(pieceRevision);
         MKWorkspacePacketPayloads.warnIfLarge("open_workspace_screen", buffer.writerIndex() - startIndex);
     }
 
@@ -79,10 +101,14 @@ public class OpenWorkspaceScreenPacket implements CustomPacketPayload {
         MKStructureWorkspace workspace = packet.workspaceTag != null ? MKStructureWorkspace.fromTag(packet.workspaceTag) : null;
         if (Minecraft.getInstance().screen instanceof MKWorkspaceScreen current) {
             Minecraft.getInstance().setScreen(current.copyWithWorkspace(workspace, packet.importManifestIds,
-                    packet.backupManifestFiles));
+                    packet.backupManifestFiles, packet.totalPieces, packet.nextPieceOffset, packet.pieceRevision));
         } else {
             Minecraft.getInstance().setScreen(new MKWorkspaceScreen(packet.anchor, workspace, packet.importManifestIds,
-                    packet.backupManifestFiles));
+                    packet.backupManifestFiles, packet.totalPieces, packet.nextPieceOffset, packet.pieceRevision));
+        }
+        if (workspace != null && packet.nextPieceOffset < packet.totalPieces) {
+            PacketDistributor.sendToServer(new RequestWorkspacePieceChunkPacket(packet.anchor, packet.pieceRevision,
+                    packet.nextPieceOffset));
         }
     }
 }
