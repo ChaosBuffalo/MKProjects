@@ -40,10 +40,22 @@ public class OpenWorkspaceScreenPacket implements CustomPacketPayload {
     }
 
     public OpenWorkspaceScreenPacket(FriendlyByteBuf buffer) {
-        this.anchor = buffer.readBlockPos();
-        this.workspaceTag = buffer.readBoolean() ? buffer.readNbt() : null;
-        this.importManifestIds = buffer.readList(FriendlyByteBuf::readUtf);
-        this.backupManifestFiles = buffer.readList(FriendlyByteBuf::readUtf);
+        BlockPos decodedAnchor = buffer.readBlockPos();
+        CompoundTag decodedWorkspaceTag = null;
+        java.util.List<String> decodedImportManifestIds = java.util.List.of();
+        java.util.List<String> decodedBackupManifestFiles = java.util.List.of();
+        try {
+            decodedWorkspaceTag = buffer.readBoolean() ? buffer.readNbt() : null;
+            decodedImportManifestIds = buffer.readList(FriendlyByteBuf::readUtf);
+            decodedBackupManifestFiles = buffer.readList(FriendlyByteBuf::readUtf);
+        } catch (RuntimeException ex) {
+            MKNpc.LOGGER.error("Failed to decode workspace screen payload at {}; opening without workspace data.",
+                    decodedAnchor, ex);
+        }
+        this.anchor = decodedAnchor;
+        this.workspaceTag = decodedWorkspaceTag;
+        this.importManifestIds = decodedImportManifestIds;
+        this.backupManifestFiles = decodedBackupManifestFiles;
     }
 
     @Override

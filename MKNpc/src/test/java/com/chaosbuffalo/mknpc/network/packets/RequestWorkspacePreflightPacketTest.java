@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -80,6 +81,22 @@ class RequestWorkspacePreflightPacketTest {
 
         assertEquals(List.of("authored", "ordinary"),
                 decoded.pieces().stream().map(MKWorkspacePieceDefinition::pieceName).toList());
+    }
+
+    @Test
+    void screenWorkspacePayloadFallsBackToMetadataOnlyWhenPhysicalPiecesAreTooLarge() {
+        String largeTagValue = "x".repeat(5000);
+        MKWorkspacePieceDefinition[] pieces = IntStream.range(0, 250)
+                .mapToObj(index -> piece("authored_" + index, Map.of("large", largeTagValue)))
+                .toArray(MKWorkspacePieceDefinition[]::new);
+        MKStructureWorkspace workspace = workspaceWithPieces(pieces);
+
+        MKStructureWorkspace decoded = MKStructureWorkspace.fromTag(
+                MKWorkspacePacketPayloads.screenWorkspaceTag(workspace));
+
+        assertEquals(List.of(), decoded.pieces());
+        assertEquals(workspace.id(), decoded.id());
+        assertEquals(workspace.updatedAt(), decoded.updatedAt());
     }
 
     @Test
