@@ -26,7 +26,6 @@ import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePlannerNodeP
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePlannerClientRegistry;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTopologySlotEditor;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTopologySlotPage;
-import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceTemplateGroupsPage;
 import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspaceUtilitiesPage;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
@@ -235,7 +234,6 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(new WorkspaceDeleteConfirmPage());
         addWorkspacePage(new WorkspaceBlockSwapPage());
         addWorkspacePage(new WorkspaceBackupPage());
-        addWorkspacePage(new WorkspaceTemplateGroupsPage());
         addWorkspacePage(new WorkspacePlannerNodePage());
         addWorkspacePage(new WorkspaceFloorPlanPage());
         addWorkspacePage(new WorkspaceTopologySlotPage());
@@ -1181,10 +1179,6 @@ public class MKWorkspaceScreen extends MKScreen {
         if (WorkspaceFloorPlanPage.ID.equals(currentState) && selectedFloorPlanStackId != null &&
                 selectedFloorPlanSectionKey != null && updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
             return List.of("workspace", WorkspacePlannerNodePage.ID, WorkspaceFloorPlanPage.ID);
-        }
-        if (WorkspaceTemplateGroupsPage.ID.equals(currentState) &&
-                updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
-            return List.of("workspace", WorkspaceTemplateGroupsPage.ID);
         }
         if ("backups".equals(currentState) && updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()) {
             return List.of("workspace", "backups");

@@ -140,13 +140,13 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         addText(screen, content, "Template Authoring");
         addText(screen, content, authoredGroups.size() + " authored template groups - " + variantCount +
                 " variants - " + generatedStairCount + " stair-authored pieces");
-        addText(screen, content, "Open authored templates for variants and piece-level stair generation.");
+        addText(screen, content, "Open template families for variants and piece-level stair generation.");
 
-        MKButton openGroups = new MKButton(Component.literal("Authored Templates"), 180, screen.buttonHeight());
+        MKButton openGroups = new MKButton(Component.literal("Template Families"), 180, screen.buttonHeight());
         content.addWidget(openGroups);
         content.addConstraintToWidget(new CenterXConstraint(), openGroups);
         openGroups.setPressedCallback((button, mouseButton) -> {
-            screen.pushState(WorkspaceTemplateGroupsPage.ID);
+            screen.pushState(WorkspaceFormFamiliesPage.ID);
             screen.flagNeedSetup();
             return true;
         });
