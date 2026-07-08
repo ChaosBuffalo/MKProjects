@@ -1194,6 +1194,11 @@ public class MKWorkspaceScreen extends MKScreen {
                     ? List.of("workspace", "form")
                     : List.of("form");
         }
+        if (WorkspaceGenerateConfirmPage.ID.equals(currentState)) {
+            return updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()
+                    ? List.of("workspace", "form", WorkspaceGenerateConfirmPage.ID)
+                    : List.of("form", WorkspaceGenerateConfirmPage.ID);
+        }
         if (currentState.startsWith("form_")) {
             return updatedWorkspace != null && !updatedWorkspace.pieces().isEmpty()
                     ? List.of("workspace", "form", currentState)

@@ -25,6 +25,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLayerStateSer
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationSafety;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRelayoutImpact;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportArchiveWriter;
@@ -251,9 +252,16 @@ public class MKStructureWorkspaceService {
 
     public Optional<MKWorkspaceMutationPreflight> preflightWorkspaceUpdate(ServerLevel level,
                                                                            MKStructureWorkspace requested) {
+        return preflightWorkspaceUpdate(level, requested, List.of());
+    }
+
+    public Optional<MKWorkspaceMutationPreflight> preflightWorkspaceUpdate(ServerLevel level,
+                                                                           MKStructureWorkspace requested,
+                                                                           List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         return data.getWorkspaceByAnchor(requested.anchor())
-                .map(existing -> preflightWorkspaceUpdate(existing, requested, System.currentTimeMillis()));
+                .map(existing -> preflightWorkspaceUpdate(existing, requested, System.currentTimeMillis(),
+                        acceptedRemaps));
     }
 
     public MKWorkspaceMutationPreflight preflightWorkspaceUpdate(MKStructureWorkspace existing,
@@ -388,6 +396,7 @@ public class MKStructureWorkspaceService {
         LinkedHashSet<MKWorkspacePlannerId> preserved = new LinkedHashSet<>();
         LinkedHashSet<MKWorkspacePlannerId> orphaned = new LinkedHashSet<>();
         ArrayList<String> warnings = new ArrayList<>();
+        ArrayList<MKWorkspaceRelayoutImpact> impacts = new ArrayList<>();
         MKWorkspaceMutationSafety safety = MKWorkspaceMutationSafety.SAFE_METADATA_UPDATE;
         LinkedHashSet<String> operations = new LinkedHashSet<>();
         for (MKWorkspaceInvalidationReport report : reports) {
@@ -396,6 +405,7 @@ public class MKStructureWorkspaceService {
             preserved.addAll(report.preservedTemplateBindings());
             orphaned.addAll(report.orphanedTemplateBindings());
             warnings.addAll(report.warnings());
+            impacts.addAll(report.relayoutImpacts());
             safety = maxSafety(safety, report.safety());
             operations.add(report.recommendedOperation());
         }
@@ -407,7 +417,9 @@ public class MKStructureWorkspaceService {
                 safety,
                 summaryForReports(reports, safety),
                 operations.size() == 1 ? operations.getFirst() : "mixed_workspace_update",
-                List.copyOf(warnings)
+                List.copyOf(warnings),
+                List.of(),
+                List.copyOf(impacts)
         );
     }
 
@@ -1190,7 +1202,8 @@ public class MKStructureWorkspaceService {
                 "Workspace catalog relayout will preserve matched physical authored templates.",
                 "preserve_catalog_relayout",
                 List.copyOf(warnings),
-                baseReport.remapSuggestions()
+                baseReport.remapSuggestions(),
+                summary.impacts()
         );
     }
 

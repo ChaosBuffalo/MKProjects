@@ -9,6 +9,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRelayoutImpact;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
@@ -60,6 +61,9 @@ public class MKWorkspacePieceRelayoutService {
     private record PieceExpansion(MKWorkspacePieceDefinition original, MKPlannedPiece targetPiece) {
     }
 
+    private record PieceRebuild(MKWorkspacePieceDefinition original, MKPlannedPiece targetPiece, boolean remapped) {
+    }
+
     private record BlockSnapshot(BlockState state, CompoundTag blockEntityTag) {
     }
 
@@ -81,17 +85,33 @@ public class MKWorkspacePieceRelayoutService {
             List<PieceMove> moves,
             List<PieceExpansion> expansions,
             List<MKWorkspacePieceDefinition> removedPieces,
-            List<MKWorkspacePieceDefinition> rebuildSourcePieces,
-            List<MKPlannedPiece> buildPieces
+            List<PieceRebuild> rebuilds,
+            List<MKPlannedPiece> newPieces
     ) {
         boolean hasWork() {
             return !moves.isEmpty() || !expansions.isEmpty() || !removedPieces.isEmpty() ||
-                    !rebuildSourcePieces.isEmpty() || !buildPieces.isEmpty();
+                    !rebuilds.isEmpty() || !newPieces.isEmpty();
+        }
+
+        List<MKWorkspacePieceDefinition> rebuildSourcePieces() {
+            return rebuilds.stream()
+                    .map(PieceRebuild::original)
+                    .toList();
+        }
+
+        List<MKPlannedPiece> buildPieces() {
+            ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
+            pieces.addAll(rebuilds.stream()
+                    .map(PieceRebuild::targetPiece)
+                    .toList());
+            pieces.addAll(newPieces);
+            return List.copyOf(pieces);
         }
     }
 
     public record CatalogRelayoutSummary(int preservedCount, int movedCount, int expandedCount, int newCount,
-                                         int removedCount, int rebuildRequiredCount) {
+                                         int removedCount, int rebuildRequiredCount,
+                                         List<MKWorkspaceRelayoutImpact> impacts) {
         public boolean hasWork() {
             return movedCount > 0 || expandedCount > 0 || newCount > 0 || removedCount > 0 ||
                     rebuildRequiredCount > 0;
@@ -118,6 +138,10 @@ public class MKWorkspacePieceRelayoutService {
                 warnings.add(rebuildRequiredCount + " resized or connector-changed templates will be cleared and rebuilt.");
             }
             return List.copyOf(warnings);
+        }
+
+        public CatalogRelayoutSummary {
+            impacts = List.copyOf(impacts);
         }
     }
 
@@ -319,9 +343,9 @@ public class MKWorkspacePieceRelayoutService {
 
         List<PieceMove> moves = new ArrayList<>();
         List<PieceExpansion> expansions = new ArrayList<>();
-        List<MKWorkspacePieceDefinition> rebuildSourcePieces = new ArrayList<>();
+        List<PieceRebuild> rebuilds = new ArrayList<>();
         List<MKWorkspacePieceDefinition> removedPieces = new ArrayList<>();
-        List<MKPlannedPiece> buildPieces = new ArrayList<>();
+        List<MKPlannedPiece> newPieces = new ArrayList<>();
         HashSet<String> consumedExistingKeys = new HashSet<>();
         HashSet<MKWorkspacePlannerId> consumedPlannerIds = new HashSet<>();
         for (MKPlannedPiece targetPiece : layoutPieces) {
@@ -334,7 +358,7 @@ public class MKWorkspacePieceRelayoutService {
                 remapped = existingPiece != null && !consumedPlannerIds.contains(orphanedPlannerId);
             }
             if (existingPiece == null) {
-                buildPieces.add(targetPiece);
+                newPieces.add(targetPiece);
                 continue;
             }
             consumedExistingKeys.add(catalogKey(existingPiece));
@@ -343,12 +367,8 @@ public class MKWorkspacePieceRelayoutService {
                 moves.add(createCatalogMove(targetWorkspace, existingPiece, targetPiece, placementByPlan.get(targetPiece)));
             } else if (canExpandPreservingAuthoredBlocks(existingPiece, targetPiece, targetWorkspace)) {
                 expansions.add(new PieceExpansion(existingPiece, targetPiece));
-            } else if (remapped) {
-                rebuildSourcePieces.add(existingPiece);
-                buildPieces.add(targetPiece);
             } else {
-                rebuildSourcePieces.add(existingPiece);
-                buildPieces.add(targetPiece);
+                rebuilds.add(new PieceRebuild(existingPiece, targetPiece, remapped));
             }
         }
         for (Map.Entry<String, MKWorkspacePieceDefinition> entry : existingByKey.entrySet()) {
@@ -357,8 +377,8 @@ public class MKWorkspacePieceRelayoutService {
             }
         }
         return Optional.of(new CatalogPlan(List.copyOf(targetPieces), List.copyOf(layoutPieces), List.copyOf(moves),
-                List.copyOf(expansions), List.copyOf(removedPieces), List.copyOf(rebuildSourcePieces),
-                List.copyOf(buildPieces)));
+                List.copyOf(expansions), List.copyOf(removedPieces), List.copyOf(rebuilds),
+                List.copyOf(newPieces)));
     }
 
     private Map<MKWorkspacePlannerId, MKWorkspacePlannerId> acceptedRemapTargets(
@@ -379,9 +399,65 @@ public class MKWorkspacePieceRelayoutService {
                 preservedCount,
                 movedCount,
                 plan.expansions().size(),
-                plan.buildPieces().size(),
+                plan.newPieces().size(),
                 plan.removedPieces().size(),
-                plan.rebuildSourcePieces().size()
+                plan.rebuilds().size(),
+                relayoutImpacts(plan)
+        );
+    }
+
+    private List<MKWorkspaceRelayoutImpact> relayoutImpacts(CatalogPlan plan) {
+        ArrayList<MKWorkspaceRelayoutImpact> impacts = new ArrayList<>();
+        for (PieceMove move : plan.moves()) {
+            boolean moved = !move.delta().equals(BlockPos.ZERO);
+            impacts.add(impact(move.moved(),
+                    moved ? "moved" : "preserved",
+                    moved ? "authored blocks will move to the target catalog position" :
+                            "authored blocks stay in the current catalog position"));
+        }
+        for (PieceExpansion expansion : plan.expansions()) {
+            impacts.add(impact(expansion.targetPiece(), "expanded",
+                    "scaffold will expand while existing authored blocks are preserved"));
+        }
+        for (MKPlannedPiece newPiece : plan.newPieces()) {
+            impacts.add(impact(newPiece, "new", "new physical authored template slot will be scaffolded"));
+        }
+        for (PieceRebuild rebuild : plan.rebuilds()) {
+            String reason = rebuild.remapped() ?
+                    "accepted remap still requires clearing and rebuilding this target slot" :
+                    "existing authored blocks will be cleared because dimensions or connectors changed";
+            impacts.add(impact(rebuild.targetPiece(), "rebuild", reason));
+        }
+        for (MKWorkspacePieceDefinition removedPiece : plan.removedPieces()) {
+            impacts.add(impact(removedPiece, "removed", "physical authored template slot is not present in the target catalog"));
+        }
+        return List.copyOf(impacts);
+    }
+
+    private MKWorkspaceRelayoutImpact impact(MKWorkspacePieceDefinition piece, String outcome, String reason) {
+        String stableKey = stableCatalogKey(piece.tags(), piece.variantIndex());
+        return new MKWorkspaceRelayoutImpact(
+                outcome,
+                piece.pieceName(),
+                piece.tags().getOrDefault(MKWorkspaceGridLayout.TAG_BASE_NAME, piece.pieceName()),
+                piece.variantIndex(),
+                piece.plannerId().toString(),
+                stableKey.isBlank() ? catalogKey(piece) : stableKey,
+                reason
+        );
+    }
+
+    private MKWorkspaceRelayoutImpact impact(MKPlannedPiece piece, String outcome, String reason) {
+        int variantIndex = variantIndex(piece.tags());
+        String stableKey = stableCatalogKey(piece.tags(), variantIndex);
+        return new MKWorkspaceRelayoutImpact(
+                outcome,
+                piece.pieceName(),
+                baseName(piece),
+                variantIndex,
+                piece.plannerId().toString(),
+                stableKey.isBlank() ? catalogKey(piece) : stableKey,
+                reason
         );
     }
 

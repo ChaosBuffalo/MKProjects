@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.network.packets.CreateWorkspacePacket;
+import com.chaosbuffalo.mknpc.network.packets.RequestWorkspacePreflightPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
@@ -184,6 +185,7 @@ public class WorkspaceDraftSession {
         MKStructureWorkspace draft = buildWorkspaceDraft();
         if (requiresDestructiveRegenerateConfirmation(draft)) {
             screen.pushState("generate_confirm");
+            PacketDistributor.sendToServer(new RequestWorkspacePreflightPacket(draft, acceptedRemaps));
             screen.flagNeedSetup();
             return;
         }

@@ -14,7 +14,8 @@ public record MKWorkspaceInvalidationReport(
         String summary,
         String recommendedOperation,
         List<String> warnings,
-        List<MKWorkspaceTemplateRemapSuggestion> remapSuggestions
+        List<MKWorkspaceTemplateRemapSuggestion> remapSuggestions,
+        List<MKWorkspaceRelayoutImpact> relayoutImpacts
 ) {
     public static final Codec<MKWorkspaceInvalidationReport> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
@@ -33,7 +34,9 @@ public record MKWorkspaceInvalidationReport(
                             .forGetter(MKWorkspaceInvalidationReport::recommendedOperation),
                     Codec.STRING.listOf().fieldOf("warnings").forGetter(MKWorkspaceInvalidationReport::warnings),
                     MKWorkspaceTemplateRemapSuggestion.CODEC.listOf().optionalFieldOf("remapSuggestions", List.of())
-                            .forGetter(MKWorkspaceInvalidationReport::remapSuggestions)
+                            .forGetter(MKWorkspaceInvalidationReport::remapSuggestions),
+                    MKWorkspaceRelayoutImpact.CODEC.listOf().optionalFieldOf("relayoutImpacts", List.of())
+                            .forGetter(MKWorkspaceInvalidationReport::relayoutImpacts)
             ).apply(instance, MKWorkspaceInvalidationReport::new)
     );
 
@@ -46,7 +49,20 @@ public record MKWorkspaceInvalidationReport(
                                          String recommendedOperation,
                                          List<String> warnings) {
         this(invalidatedLayers, affectedPlannerIds, preservedTemplateBindings, orphanedTemplateBindings, safety,
-                summary, recommendedOperation, warnings, List.of());
+                summary, recommendedOperation, warnings, List.of(), List.of());
+    }
+
+    public MKWorkspaceInvalidationReport(List<MKWorkspaceGeneratedLayer> invalidatedLayers,
+                                         List<MKWorkspacePlannerId> affectedPlannerIds,
+                                         List<MKWorkspacePlannerId> preservedTemplateBindings,
+                                         List<MKWorkspacePlannerId> orphanedTemplateBindings,
+                                         MKWorkspaceMutationSafety safety,
+                                         String summary,
+                                         String recommendedOperation,
+                                         List<String> warnings,
+                                         List<MKWorkspaceTemplateRemapSuggestion> remapSuggestions) {
+        this(invalidatedLayers, affectedPlannerIds, preservedTemplateBindings, orphanedTemplateBindings, safety,
+                summary, recommendedOperation, warnings, remapSuggestions, List.of());
     }
 
     public MKWorkspaceInvalidationReport {
@@ -56,6 +72,7 @@ public record MKWorkspaceInvalidationReport(
         orphanedTemplateBindings = List.copyOf(orphanedTemplateBindings);
         warnings = List.copyOf(warnings);
         remapSuggestions = List.copyOf(remapSuggestions);
+        relayoutImpacts = List.copyOf(relayoutImpacts);
     }
 
     public static MKWorkspaceInvalidationReport noChanges(String summary) {
@@ -67,6 +84,7 @@ public record MKWorkspaceInvalidationReport(
                 MKWorkspaceMutationSafety.SAFE_METADATA_UPDATE,
                 summary,
                 "none",
+                List.of(),
                 List.of(),
                 List.of()
         );
@@ -91,7 +109,8 @@ public record MKWorkspaceInvalidationReport(
                 summary,
                 recommendedOperation,
                 warnings,
-                remapSuggestions
+                remapSuggestions,
+                relayoutImpacts
         );
     }
 
@@ -106,7 +125,23 @@ public record MKWorkspaceInvalidationReport(
                 summary,
                 recommendedOperation,
                 warnings,
-                newRemapSuggestions
+                newRemapSuggestions,
+                relayoutImpacts
+        );
+    }
+
+    public MKWorkspaceInvalidationReport withRelayoutImpacts(List<MKWorkspaceRelayoutImpact> newRelayoutImpacts) {
+        return new MKWorkspaceInvalidationReport(
+                invalidatedLayers,
+                affectedPlannerIds,
+                preservedTemplateBindings,
+                orphanedTemplateBindings,
+                safety,
+                summary,
+                recommendedOperation,
+                warnings,
+                remapSuggestions,
+                newRelayoutImpacts
         );
     }
 }

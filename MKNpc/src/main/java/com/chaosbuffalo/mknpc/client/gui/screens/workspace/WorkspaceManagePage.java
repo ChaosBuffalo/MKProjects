@@ -10,7 +10,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPrefl
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
-import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
@@ -111,7 +110,7 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         content.addConstraintToWidget(new CenterXConstraint(), preflight);
         preflight.setPressedCallback((button, mouseButton) -> {
             PacketDistributor.sendToServer(new RequestWorkspacePreflightPacket(
-                    screen.draftSession().buildWorkspaceDraft()));
+                    screen.draftSession().buildWorkspaceDraft(), screen.draftSession().acceptedRemaps()));
             return true;
         });
 
@@ -179,6 +178,7 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         if (!report.orphanedTemplateBindings().isEmpty()) {
             addText(screen, content, "Orphaned bindings: " + report.orphanedTemplateBindings().size());
         }
+        addRelayoutImpactReport(screen, content, report);
         if (!report.remapSuggestions().isEmpty()) {
             addText(screen, content, "Remap suggestions: " + report.remapSuggestions().size());
             long safeRemaps = report.remapSuggestions().stream()
@@ -193,6 +193,8 @@ public class WorkspaceManagePage extends WorkspacePageBase {
                 content.addConstraintToWidget(new CenterXConstraint(), acceptAllSafe);
                 acceptAllSafe.setPressedCallback((button, mouseButton) -> {
                     screen.draftSession().acceptAllSafeRemaps(report);
+                    PacketDistributor.sendToServer(new RequestWorkspacePreflightPacket(
+                            screen.draftSession().buildWorkspaceDraft(), screen.draftSession().acceptedRemaps()));
                     screen.flagNeedSetup();
                     return true;
                 });
@@ -206,12 +208,4 @@ public class WorkspaceManagePage extends WorkspacePageBase {
             addText(screen, content, "Warning: " + warning);
         }
     }
-
-    private void addText(MKWorkspaceScreen screen, MKStackLayoutVertical content, String text) {
-        MKText widget = screen.makeWhiteText(Component.literal(text));
-        widget.setWidth(screen.contentWidth());
-        content.addWidget(widget);
-        content.addConstraintToWidget(MarginConstraint.LEFT, widget);
-    }
-
 }

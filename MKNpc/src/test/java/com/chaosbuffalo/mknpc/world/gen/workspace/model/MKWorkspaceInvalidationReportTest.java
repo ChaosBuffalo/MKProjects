@@ -28,7 +28,15 @@ class MKWorkspaceInvalidationReportTest {
                         MKWorkspacePlannerId.of("keep.main.floor_plan.hallway.old_branch_01"),
                         MKWorkspacePlannerId.of("keep.main.floor_plan.hallway.new_branch_01"),
                         100,
-                        "same floor piece kind, dimensions, and connector signature"))
+                        "same floor piece kind, dimensions, and connector signature")),
+                List.of(new MKWorkspaceRelayoutImpact(
+                        "moved",
+                        "main_room_1",
+                        "main_room",
+                        1,
+                        "keep.main.floor_plan.room.main_00.variant_1",
+                        "stable:floor_room:floor.keep.main.main.room:1",
+                        "authored blocks will move to the target catalog position"))
         );
 
         JsonElement encoded = MKWorkspaceInvalidationReport.CODEC.encodeStart(JsonOps.INSTANCE, report).getOrThrow();
@@ -39,10 +47,12 @@ class MKWorkspaceInvalidationReportTest {
         assertTrue(decoded.hasInvalidatedLayer(MKWorkspaceGeneratedLayer.HALLWAY_ROUTING));
         assertTrue(decoded.hasOrphanedBindings());
         assertEquals(1, decoded.remapSuggestions().size());
+        assertEquals(1, decoded.relayoutImpacts().size());
         JsonObject object = encoded.getAsJsonObject();
         assertEquals("conditionally_safe_topology_patch", object.get("safety").getAsString());
         assertEquals("regenerate_hallway_routing", object.get("recommendedOperation").getAsString());
         assertTrue(object.has("remapSuggestions"));
+        assertTrue(object.has("relayoutImpacts"));
     }
 
     @Test

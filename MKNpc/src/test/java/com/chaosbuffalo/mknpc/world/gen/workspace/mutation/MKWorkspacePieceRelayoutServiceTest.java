@@ -47,6 +47,10 @@ class MKWorkspacePieceRelayoutServiceTest {
         assertEquals(1, summary.newCount());
         assertEquals(1, summary.removedCount());
         assertEquals(0, summary.rebuildRequiredCount());
+        assertEquals(3, summary.impacts().size());
+        assertEquals(1, countPreservedWorkImpacts(summary));
+        assertEquals(1, countImpacts(summary, "new"));
+        assertEquals(1, countImpacts(summary, "removed"));
         assertTrue(summary.warnings().stream().anyMatch(warning -> warning.contains("preserved")));
     }
 
@@ -66,6 +70,7 @@ class MKWorkspacePieceRelayoutServiceTest {
         assertEquals(1, summary.preservedCount());
         assertEquals(1, summary.expandedCount());
         assertEquals(0, summary.rebuildRequiredCount());
+        assertEquals(1, countImpacts(summary, "expanded"));
     }
 
     @Test
@@ -83,6 +88,8 @@ class MKWorkspacePieceRelayoutServiceTest {
 
         assertEquals(0, summary.preservedCount());
         assertEquals(1, summary.rebuildRequiredCount());
+        assertEquals(0, summary.newCount());
+        assertEquals(1, countImpacts(summary, "rebuild"));
     }
 
     @Test
@@ -123,6 +130,7 @@ class MKWorkspacePieceRelayoutServiceTest {
         assertEquals(1, withRemap.preservedCount());
         assertEquals(0, withRemap.newCount());
         assertEquals(0, withRemap.removedCount());
+        assertEquals(1, countPreservedWorkImpacts(withRemap));
     }
 
     @Test
@@ -144,6 +152,7 @@ class MKWorkspacePieceRelayoutServiceTest {
         assertEquals(0, summary.newCount());
         assertEquals(0, summary.removedCount());
         assertEquals(0, summary.rebuildRequiredCount());
+        assertEquals(1, countPreservedWorkImpacts(summary));
     }
 
     @Test
@@ -168,6 +177,20 @@ class MKWorkspacePieceRelayoutServiceTest {
 
         assertEquals(1, summary.preservedCount());
         assertEquals(0, summary.rebuildRequiredCount());
+    }
+
+    private static long countImpacts(MKWorkspacePieceRelayoutService.CatalogRelayoutSummary summary, String outcome) {
+        return summary.impacts().stream()
+                .filter(impact -> outcome.equals(impact.outcome()))
+                .count();
+    }
+
+    private static long countPreservedWorkImpacts(MKWorkspacePieceRelayoutService.CatalogRelayoutSummary summary) {
+        return summary.impacts().stream()
+                .filter(impact -> "preserved".equals(impact.outcome()) ||
+                        "moved".equals(impact.outcome()) ||
+                        "expanded".equals(impact.outcome()))
+                .count();
     }
 
     private static MKPlannedPiece planned(String pieceName, String baseName, MKWorkspacePlannerId plannerId,

@@ -177,6 +177,11 @@ class MKStructureWorkspaceServicePreflightTest {
 
         assertEquals("preserve_catalog_relayout", preflight.report().recommendedOperation());
         assertTrue(preflight.report().warnings().contains("2 physical authored templates will be preserved."));
+        assertEquals(2, preflight.report().relayoutImpacts().stream()
+                .filter(impact -> "preserved".equals(impact.outcome()) ||
+                        "moved".equals(impact.outcome()) ||
+                        "expanded".equals(impact.outcome()))
+                .count());
         assertFalse(preflight.report().warnings().stream()
                 .anyMatch(warning -> warning.contains("removed physical template slots")));
     }
