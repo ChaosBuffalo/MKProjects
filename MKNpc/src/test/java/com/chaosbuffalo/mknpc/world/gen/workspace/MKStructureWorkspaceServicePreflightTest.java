@@ -237,7 +237,11 @@ class MKStructureWorkspaceServicePreflightTest {
         MKWorkspaceMutationPreflight preflight = service.preflightWorkspaceUpdate(existing, requested, 123L);
 
         assertEquals("preserve_catalog_relayout", preflight.report().recommendedOperation());
-        assertFalse(preflight.report().relayoutImpacts().isEmpty());
+        assertTrue(preflight.report().relayoutImpacts().stream()
+                .anyMatch(impact -> "new".equals(impact.outcome()) &&
+                        impact.stableSlotKey().contains("floor.keep.center.entry.main_room.extra_main_room")),
+                () -> "expected added entry-floor main room in relayout impacts: " +
+                        preflight.report().relayoutImpacts());
         assertFalse(preflight.report().warnings().stream()
                 .anyMatch(warning -> warning.contains("full regeneration will clear")));
     }

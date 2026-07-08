@@ -300,9 +300,6 @@ public class MKFloorTopologyPlanner {
         if (!"floor".equals(slot.roleKind())) {
             return Optional.empty();
         }
-        if (slot == MKWorkspaceVerticalStackSlot.ENTRY) {
-            return Optional.empty();
-        }
         Optional<ResolvedOpeningProfile> mainOpening = rootFamily.horizontalOnlyExits().stream()
                 .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)
                 .map(exit -> resolveOpening(workspace, exit.openingProfileId()))
@@ -313,9 +310,6 @@ public class MKFloorTopologyPlanner {
                 .map(exit -> resolveOpening(workspace, exit.openingProfileId()))
                 .flatMap(Optional::stream)
                 .findFirst();
-        if (mainOpening.isEmpty() && branchOpening.isEmpty()) {
-            return Optional.empty();
-        }
         String stackId = MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(rootFamily.topologySlotId()).orElse("");
         if (stackId.isBlank()) {
             return Optional.empty();
