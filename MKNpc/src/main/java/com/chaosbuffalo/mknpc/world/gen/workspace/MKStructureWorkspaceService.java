@@ -265,22 +265,31 @@ public class MKStructureWorkspaceService {
                                                                  MKStructureWorkspace requested,
                                                                  long nowEpochMillis,
                                                                  List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
-        Optional<MKWorkspacePieceRelayoutService.CatalogRelayoutSummary> catalogSummary =
-                catalogRelayoutSummary(existing, requested, nowEpochMillis, acceptedRemaps);
-        if (catalogSummary.isPresent() && catalogSummary.get().hasWork()) {
-            MKWorkspaceInvalidationReport report = catalogRelayoutReport(catalogSummary.get());
-            MKStructureWorkspace workspaceWithLayerStates = layerStateService.ensureLayerStates(existing,
-                    nowEpochMillis);
-            MKStructureWorkspace workspaceWithDirtyLayers = layerStateService.applyInvalidation(
-                    workspaceWithLayerStates, report, nowEpochMillis);
-            return new MKWorkspaceMutationPreflight(report, workspaceWithDirtyLayers);
-        }
         List<MKWorkspaceInvalidationReport> floorReports = floorTopologyReports(existing, requested, nowEpochMillis);
-        MKWorkspaceInvalidationReport report = mergeReports(floorReports);
+        MKWorkspaceInvalidationReport floorReport = mergeReports(floorReports);
+        if (canConsiderCatalogRelayout(floorReport)) {
+            Optional<MKWorkspacePieceRelayoutService.CatalogRelayoutSummary> catalogSummary =
+                    catalogRelayoutSummary(existing, requested, nowEpochMillis, acceptedRemaps);
+            if (catalogSummary.isPresent() && catalogSummary.get().hasWork()) {
+                return preflightForReport(existing, catalogRelayoutReport(catalogSummary.get(), floorReport),
+                        nowEpochMillis);
+            }
+        }
+        return preflightForReport(existing, floorReport, nowEpochMillis);
+    }
+
+    private MKWorkspaceMutationPreflight preflightForReport(MKStructureWorkspace existing,
+                                                            MKWorkspaceInvalidationReport report,
+                                                            long nowEpochMillis) {
         MKStructureWorkspace workspaceWithLayerStates = layerStateService.ensureLayerStates(existing, nowEpochMillis);
         MKStructureWorkspace workspaceWithDirtyLayers = layerStateService.applyInvalidation(
                 workspaceWithLayerStates, report, nowEpochMillis);
         return new MKWorkspaceMutationPreflight(report, workspaceWithDirtyLayers);
+    }
+
+    private boolean canConsiderCatalogRelayout(MKWorkspaceInvalidationReport floorReport) {
+        return "none".equals(floorReport.recommendedOperation()) ||
+                floorReport.hasInvalidatedLayer(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS);
     }
 
     public Optional<MKStructureWorkspace> setLayerLocked(ServerLevel level, BlockPos anchor,
@@ -1143,6 +1152,12 @@ public class MKStructureWorkspaceService {
 
     private MKWorkspaceInvalidationReport catalogRelayoutReport(
             MKWorkspacePieceRelayoutService.CatalogRelayoutSummary summary) {
+        return catalogRelayoutReport(summary, MKWorkspaceInvalidationReport.noChanges(""));
+    }
+
+    private MKWorkspaceInvalidationReport catalogRelayoutReport(
+            MKWorkspacePieceRelayoutService.CatalogRelayoutSummary summary,
+            MKWorkspaceInvalidationReport baseReport) {
         LinkedHashSet<MKWorkspaceGeneratedLayer> layers = new LinkedHashSet<>();
         if (summary.movedCount() > 0 || summary.expandedCount() > 0) {
             layers.add(MKWorkspaceGeneratedLayer.PREVIEW_LAYOUT);
@@ -1159,15 +1174,18 @@ public class MKStructureWorkspaceService {
         MKWorkspaceMutationSafety safety = summary.rebuildRequiredCount() > 0 || summary.removedCount() > 0 ?
                 MKWorkspaceMutationSafety.CONDITIONALLY_SAFE_TOPOLOGY_PATCH :
                 MKWorkspaceMutationSafety.SAFE_RELAYOUT;
+        ArrayList<String> warnings = new ArrayList<>(baseReport.warnings());
+        warnings.addAll(summary.warnings());
         return new MKWorkspaceInvalidationReport(
                 List.copyOf(layers),
-                List.of(),
-                List.of(),
-                List.of(),
+                baseReport.affectedPlannerIds(),
+                baseReport.preservedTemplateBindings(),
+                baseReport.orphanedTemplateBindings(),
                 safety,
                 "Workspace catalog relayout will preserve matched physical authored templates.",
                 "preserve_catalog_relayout",
-                summary.warnings()
+                List.copyOf(warnings),
+                baseReport.remapSuggestions()
         );
     }
 
