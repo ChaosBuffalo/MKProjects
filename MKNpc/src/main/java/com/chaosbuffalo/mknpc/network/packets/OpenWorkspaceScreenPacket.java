@@ -34,7 +34,7 @@ public class OpenWorkspaceScreenPacket implements CustomPacketPayload {
     public OpenWorkspaceScreenPacket(BlockPos anchor, MKStructureWorkspace workspace, java.util.List<String> importManifestIds,
                                      java.util.List<String> backupManifestFiles) {
         this.anchor = anchor;
-        this.workspaceTag = workspace != null ? workspace.toTag() : null;
+        this.workspaceTag = workspace != null ? MKWorkspacePacketPayloads.screenWorkspaceTag(workspace) : null;
         this.importManifestIds = java.util.List.copyOf(importManifestIds);
         this.backupManifestFiles = java.util.List.copyOf(backupManifestFiles);
     }
@@ -52,6 +52,7 @@ public class OpenWorkspaceScreenPacket implements CustomPacketPayload {
     }
 
     public void toBytes(FriendlyByteBuf buffer) {
+        int startIndex = buffer.writerIndex();
         buffer.writeBlockPos(anchor);
         buffer.writeBoolean(workspaceTag != null);
         if (workspaceTag != null) {
@@ -59,6 +60,7 @@ public class OpenWorkspaceScreenPacket implements CustomPacketPayload {
         }
         buffer.writeCollection(importManifestIds, FriendlyByteBuf::writeUtf);
         buffer.writeCollection(backupManifestFiles, FriendlyByteBuf::writeUtf);
+        MKWorkspacePacketPayloads.warnIfLarge("open_workspace_screen", buffer.writerIndex() - startIndex);
     }
 
     public static void handle(OpenWorkspaceScreenPacket packet, IPayloadContext context) {

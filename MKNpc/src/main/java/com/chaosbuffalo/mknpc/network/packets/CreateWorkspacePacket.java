@@ -41,7 +41,7 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
 
     public CreateWorkspacePacket(MKStructureWorkspace workspace, boolean generateAfterCreate,
                                  List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
-        this.workspaceTag = workspace.toTag();
+        this.workspaceTag = MKWorkspacePacketPayloads.editableWorkspaceTag(workspace);
         this.generateAfterCreate = generateAfterCreate;
         this.acceptedRemaps = List.copyOf(acceptedRemaps);
     }
@@ -62,9 +62,11 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
     }
 
     public void toBytes(FriendlyByteBuf buffer) {
+        int startIndex = buffer.writerIndex();
         buffer.writeNbt(workspaceTag);
         buffer.writeBoolean(generateAfterCreate);
         writeAcceptedRemaps(buffer, acceptedRemaps);
+        MKWorkspacePacketPayloads.warnIfLarge("create_workspace", buffer.writerIndex() - startIndex);
     }
 
     public static void handle(CreateWorkspacePacket packet, IPayloadContext context) {

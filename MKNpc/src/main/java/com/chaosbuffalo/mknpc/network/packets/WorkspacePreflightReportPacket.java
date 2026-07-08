@@ -24,8 +24,8 @@ public class WorkspacePreflightReportPacket implements CustomPacketPayload {
 
     public WorkspacePreflightReportPacket(BlockPos anchor, MKWorkspaceMutationPreflight preflight) {
         this.anchor = anchor;
-        this.preflightTag = MKWorkspaceCodecs.encodeNbt(MKWorkspaceMutationPreflight.CODEC, preflight,
-                "workspace mutation preflight");
+        this.preflightTag = MKWorkspaceCodecs.encodeNbt(MKWorkspaceMutationPreflight.CODEC,
+                MKWorkspacePacketPayloads.compactPreflight(preflight), "workspace mutation preflight");
     }
 
     public WorkspacePreflightReportPacket(FriendlyByteBuf buffer) {
@@ -43,8 +43,10 @@ public class WorkspacePreflightReportPacket implements CustomPacketPayload {
     }
 
     public void toBytes(FriendlyByteBuf buffer) {
+        int startIndex = buffer.writerIndex();
         buffer.writeBlockPos(anchor);
         buffer.writeNbt(preflightTag);
+        MKWorkspacePacketPayloads.warnIfLarge("workspace_preflight_report", buffer.writerIndex() - startIndex);
     }
 
     public static void handle(WorkspacePreflightReportPacket packet, IPayloadContext context) {

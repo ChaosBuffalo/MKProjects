@@ -34,7 +34,7 @@ public class RequestWorkspacePreflightPacket implements CustomPacketPayload {
 
     public RequestWorkspacePreflightPacket(MKStructureWorkspace workspace,
                                            List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
-        this.workspaceTag = workspace.toTag();
+        this.workspaceTag = MKWorkspacePacketPayloads.editableWorkspaceTag(workspace);
         this.acceptedRemapsTag = encodeAcceptedRemaps(acceptedRemaps);
     }
 
@@ -57,8 +57,10 @@ public class RequestWorkspacePreflightPacket implements CustomPacketPayload {
     }
 
     public void toBytes(FriendlyByteBuf buffer) {
+        int startIndex = buffer.writerIndex();
         buffer.writeNbt(workspaceTag);
         buffer.writeNbt(acceptedRemapsTag);
+        MKWorkspacePacketPayloads.warnIfLarge("request_workspace_preflight", buffer.writerIndex() - startIndex);
     }
 
     List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps() {
