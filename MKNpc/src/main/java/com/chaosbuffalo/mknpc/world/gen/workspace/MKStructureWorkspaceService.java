@@ -284,7 +284,7 @@ public class MKStructureWorkspaceService {
                         nowEpochMillis);
             }
         }
-        return preflightForReport(existing, floorReport, nowEpochMillis);
+        return preflightForReport(existing, withDestructiveRegenerationImpacts(existing, floorReport), nowEpochMillis);
     }
 
     private MKWorkspaceMutationPreflight preflightForReport(MKStructureWorkspace existing,
@@ -299,6 +299,62 @@ public class MKStructureWorkspaceService {
     private boolean canConsiderCatalogRelayout(MKWorkspaceInvalidationReport floorReport) {
         return "none".equals(floorReport.recommendedOperation()) ||
                 floorReport.hasInvalidatedLayer(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS);
+    }
+
+    private MKWorkspaceInvalidationReport withDestructiveRegenerationImpacts(
+            MKStructureWorkspace existing,
+            MKWorkspaceInvalidationReport report) {
+        if (report.safety() != MKWorkspaceMutationSafety.DESTRUCTIVE_REGENERATE ||
+                !report.hasInvalidatedLayer(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS)) {
+            return report;
+        }
+        List<MKWorkspacePieceDefinition> physicalPieces = existing.pieces().stream()
+                .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
+                .toList();
+        if (physicalPieces.isEmpty()) {
+            return report;
+        }
+        long variantCount = physicalPieces.stream()
+                .filter(piece -> piece.variantIndex() > 0)
+                .count();
+        ArrayList<String> warnings = new ArrayList<>(report.warnings());
+        warnings.add("Catalog-preserving relayout is unavailable; full regeneration will clear " +
+                physicalPieces.size() + " physical authored template slots" +
+                (variantCount > 0 ? ", including " + variantCount + " variants." : "."));
+        ArrayList<MKWorkspaceRelayoutImpact> impacts = new ArrayList<>(report.relayoutImpacts());
+        impacts.addAll(physicalPieces.stream()
+                .map(this::destructiveRegenerationImpact)
+                .toList());
+        return new MKWorkspaceInvalidationReport(
+                report.invalidatedLayers(),
+                report.affectedPlannerIds(),
+                report.preservedTemplateBindings(),
+                report.orphanedTemplateBindings(),
+                report.safety(),
+                report.summary(),
+                report.recommendedOperation(),
+                List.copyOf(warnings),
+                report.remapSuggestions(),
+                List.copyOf(impacts)
+        );
+    }
+
+    private MKWorkspaceRelayoutImpact destructiveRegenerationImpact(MKWorkspacePieceDefinition piece) {
+        String stableKey = stableSlotKey(piece.tags());
+        String catalogKey = stableKey.isBlank() ?
+                piece.plannerId() + ":" + getBaseName(piece) + ":" + piece.variantIndex() :
+                "stable:" + stableKey + ":" + piece.variantIndex();
+        boolean variant = piece.variantIndex() > 0;
+        return new MKWorkspaceRelayoutImpact(
+                variant ? "removed" : "rebuild",
+                piece.pieceName(),
+                getBaseName(piece),
+                piece.variantIndex(),
+                piece.plannerId().toString(),
+                catalogKey,
+                variant ? "full workspace regeneration will remove this authored variant" :
+                        "full workspace regeneration will clear and rebuild this authored template"
+        );
     }
 
     public Optional<MKStructureWorkspace> setLayerLocked(ServerLevel level, BlockPos anchor,

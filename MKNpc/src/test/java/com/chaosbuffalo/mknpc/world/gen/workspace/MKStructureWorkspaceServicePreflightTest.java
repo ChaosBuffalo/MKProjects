@@ -186,6 +186,29 @@ class MKStructureWorkspaceServicePreflightTest {
                 .anyMatch(warning -> warning.contains("removed physical template slots")));
     }
 
+    @Test
+    void catalogRelayoutDoesNotFallbackDestructiveForDuplicateLegacyVariantPlannerIds() {
+        MKWorkspacePlannerId duplicatePlannerId = MKWorkspacePlannerId.of("legacy.duplicate.floor_room");
+        MKStructureWorkspace existing = withTopologyProfile(MKStructureWorkspace.createDraft(BlockPos.ZERO),
+                renamedBaseProfile());
+        existing = existing.withPieces(List.of(
+                variantAwarePiece("old_floor_room_template", "old_floor_room", 0, duplicatePlannerId),
+                variantAwarePiece("old_floor_room_1", "old_floor_room", 1, duplicatePlannerId)
+        ));
+        MKStructureWorkspace requested = withInsertFamilies(existing, List.of(
+                MKWorkspaceInsertFamilyDefinition.floorLinkHallway("trigger_new_base", 5, 5, 3)));
+
+        MKWorkspaceMutationPreflight preflight = service.preflightWorkspaceUpdate(existing, requested, 123L);
+
+        assertEquals("preserve_catalog_relayout", preflight.report().recommendedOperation());
+        assertTrue(preflight.report().warnings().contains("2 physical authored templates will be preserved."));
+        assertEquals(2, preflight.report().relayoutImpacts().stream()
+                .filter(impact -> "preserved".equals(impact.outcome()) ||
+                        "moved".equals(impact.outcome()) ||
+                        "expanded".equals(impact.outcome()))
+                .count());
+    }
+
     private static MKWorkspaceFloorTopologySettings settings(String stackId, String floorRole) {
         return new MKWorkspaceFloorTopologySettings(
                 stackId,

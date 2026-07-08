@@ -312,12 +312,18 @@ public class MKWorkspacePieceRelayoutService {
                 .toList();
         Map<String, MKWorkspacePieceDefinition> existingByKey = new LinkedHashMap<>();
         Map<MKWorkspacePlannerId, MKWorkspacePieceDefinition> existingByPlannerId = new LinkedHashMap<>();
+        HashSet<MKWorkspacePlannerId> ambiguousPlannerIds = new HashSet<>();
         for (MKWorkspacePieceDefinition piece : existingPhysical) {
             String key = catalogKey(piece);
-            if (key.isBlank() || existingByKey.putIfAbsent(key, piece) != null ||
-                    existingByPlannerId.putIfAbsent(piece.plannerId(), piece) != null) {
+            if (key.isBlank() || existingByKey.putIfAbsent(key, piece) != null) {
                 return Optional.empty();
             }
+            if (existingByPlannerId.putIfAbsent(piece.plannerId(), piece) != null) {
+                ambiguousPlannerIds.add(piece.plannerId());
+            }
+        }
+        for (MKWorkspacePlannerId ambiguousPlannerId : ambiguousPlannerIds) {
+            existingByPlannerId.remove(ambiguousPlannerId);
         }
         Map<MKWorkspacePlannerId, MKWorkspacePlannerId> acceptedRemapTargets = acceptedRemapTargets(acceptedRemaps);
 

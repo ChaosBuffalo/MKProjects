@@ -134,6 +134,31 @@ class MKWorkspacePieceRelayoutServiceTest {
     }
 
     @Test
+    void duplicateExistingPlannerIdsDoNotBlockStableCatalogRelayout() {
+        MKWorkspacePlannerId duplicatePlannerId = plannerId("legacy_duplicate");
+        MKWorkspacePieceDefinition first = piece("room_a_template", "room_a", duplicatePlannerId,
+                5, 5, 5, List.of(), tags("room_a"));
+        MKWorkspacePieceDefinition second = piece("room_b_template", "room_b", duplicatePlannerId,
+                5, 5, 5, List.of(), tags("room_b"));
+        MKStructureWorkspace existing = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(first, second));
+        List<MKPlannedPiece> targetPieces = List.of(
+                planned("room_a_template", "room_a", duplicatePlannerId, 5, 5, 5),
+                planned("room_b_template", "room_b", duplicatePlannerId, 5, 5, 5),
+                planned("room_c_template", "room_c", plannerId("room_c"), 5, 5, 5)
+        );
+
+        MKWorkspacePieceRelayoutService.CatalogRelayoutSummary summary = service
+                .summarizeCatalogRelayout(existing, existing, targetPieces, targetPieces)
+                .orElseThrow();
+
+        assertEquals(2, summary.preservedCount());
+        assertEquals(1, summary.newCount());
+        assertEquals(0, summary.removedCount());
+        assertEquals(2, countPreservedWorkImpacts(summary));
+    }
+
+    @Test
     void catalogSummaryPreservesLegacyFloorRoomTagsWithoutProfileId() {
         Map<String, String> existingTags = floorRoomTags(false);
         Map<String, String> targetTags = floorRoomTags(true);
