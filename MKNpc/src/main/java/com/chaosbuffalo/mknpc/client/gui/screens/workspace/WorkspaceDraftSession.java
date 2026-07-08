@@ -149,6 +149,10 @@ public class WorkspaceDraftSession {
     }
 
     public void copyViewStateFrom(WorkspaceDraftSession source) {
+        if (source.draft != null) {
+            draft = source.copyDraft();
+        }
+        dirty = source.dirty;
         viewState.copyFrom(source.viewState);
         acceptedRemaps = List.copyOf(source.acceptedRemaps);
     }
@@ -1688,6 +1692,27 @@ public class WorkspaceDraftSession {
 
     private String valueOrDefault(String value, String fallback) {
         return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private Draft copyDraft() {
+        Draft copy = new Draft();
+        copy.namespace = draft.namespace;
+        copy.structureName = draft.structureName;
+        copy.topologyProfile = draft.topologyProfile;
+        copy.shaftSize = draft.shaftSize;
+        copy.verticalAccessPlacement = draft.verticalAccessPlacement;
+        copy.shellMargin = draft.shellMargin;
+        copy.exteriorAirMargin = draft.exteriorAirMargin;
+        copy.previewMargin = draft.previewMargin;
+        copy.stairMode = draft.stairMode;
+        copy.stairRiseType = draft.stairRiseType;
+        copy.stairWidth = draft.stairWidth;
+        copy.palette = draft.palette;
+        copy.familyDefinitions = List.copyOf(draft.familyDefinitions);
+        copy.openingProfiles = List.copyOf(draft.openingProfiles);
+        copy.linearRunFamilies = List.copyOf(draft.linearRunFamilies);
+        copy.insertFamilies = List.copyOf(draft.insertFamilies);
+        return copy;
     }
 
     public static class Draft {
