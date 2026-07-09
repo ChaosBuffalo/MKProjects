@@ -18,6 +18,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceI
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
@@ -432,11 +433,16 @@ public class MKWorkspaceVerticalStackPlanner {
         }
         Optional<MKWorkspaceVerticalStackSlot> slot = MKWorkspaceVerticalStackSlot.fromTopologySlotId(
                 family.settingsTopologySlotIdOrSelf());
-        if (slot.isEmpty() || !"floor".equals(slot.get().roleKind()) || slot.get() == MKWorkspaceVerticalStackSlot.ENTRY) {
+        Optional<String> stackId = MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(family.settingsTopologySlotIdOrSelf());
+        if (slot.isEmpty() || stackId.isEmpty()) {
             return Optional.empty();
         }
-        return MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(family.settingsTopologySlotIdOrSelf())
-                .map(stackId -> workspace.topologyProfile().floorTopologySettingsOrDefault(stackId, slot.get().suffix()));
+        MKWorkspaceVerticalStackSettings stackSettings = workspace.topologyProfile()
+                .verticalStackSettingsOrDefault(stackId.get());
+        if (!MKWorkspaceVerticalStackSlot.supportsFloorTopology(stackSettings, slot.get())) {
+            return Optional.empty();
+        }
+        return Optional.of(workspace.topologyProfile().floorTopologySettingsOrDefault(stackId.get(), slot.get().suffix()));
     }
 
     private String resolveLinearRunPool(MKStructureWorkspace workspace, String openingProfileId, LinearRunPathKind pathKind) {

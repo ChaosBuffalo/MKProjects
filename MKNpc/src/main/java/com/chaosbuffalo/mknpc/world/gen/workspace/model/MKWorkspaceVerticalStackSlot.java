@@ -41,6 +41,10 @@ public enum MKWorkspaceVerticalStackSlot {
             BASEMENT_CAP_APPROACH,
             BASEMENT_CAP
     );
+    private static final List<MKWorkspaceVerticalStackSlot> FLOOR_TOPOLOGY_ORDER = List.of(
+            MAIN_FLOOR,
+            BASEMENT_FLOOR
+    );
 
     private final String suffix;
     private final String topologyGroupId;
@@ -92,6 +96,22 @@ public enum MKWorkspaceVerticalStackSlot {
 
     public static List<MKWorkspaceVerticalStackSlot> familyDefaultOrder() {
         return FAMILY_DEFAULT_ORDER;
+    }
+
+    public static List<MKWorkspaceVerticalStackSlot> floorTopologyOrder() {
+        return FLOOR_TOPOLOGY_ORDER;
+    }
+
+    public static boolean supportsFloorTopology(MKWorkspaceVerticalStackSettings settings,
+                                                MKWorkspaceVerticalStackSlot slot) {
+        if (settings == null || slot == null) {
+            return false;
+        }
+        return switch (slot) {
+            case MAIN_FLOOR -> settings.mainFloors() > 0;
+            case BASEMENT_FLOOR -> settings.basementFloors() > 0;
+            default -> false;
+        };
     }
 
     public static Optional<MKWorkspaceVerticalStackSlot> fromTopologySlotId(String topologySlotId) {

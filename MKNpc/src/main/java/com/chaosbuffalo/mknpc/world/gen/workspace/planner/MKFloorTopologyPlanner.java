@@ -26,6 +26,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamil
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKFloorMaskVariantExporter;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -297,7 +298,13 @@ public class MKFloorTopologyPlanner {
             return Optional.empty();
         }
         MKWorkspaceVerticalStackSlot slot = slotOpt.get();
-        if (!"floor".equals(slot.roleKind())) {
+        String stackId = MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(rootFamily.topologySlotId()).orElse("");
+        if (stackId.isBlank()) {
+            return Optional.empty();
+        }
+        MKWorkspaceVerticalStackSettings stackSettings = workspace.topologyProfile()
+                .verticalStackSettingsOrDefault(stackId);
+        if (!MKWorkspaceVerticalStackSlot.supportsFloorTopology(stackSettings, slot)) {
             return Optional.empty();
         }
         Optional<ResolvedOpeningProfile> mainOpening = rootFamily.horizontalOnlyExits().stream()
@@ -310,10 +317,6 @@ public class MKFloorTopologyPlanner {
                 .map(exit -> resolveOpening(workspace, exit.openingProfileId()))
                 .flatMap(Optional::stream)
                 .findFirst();
-        String stackId = MKWorkspaceVerticalStackSlot.stackIdForTopologySlot(rootFamily.topologySlotId()).orElse("");
-        if (stackId.isBlank()) {
-            return Optional.empty();
-        }
         ResolvedOpeningProfile resolvedMain = mainOpening.orElseGet(() -> firstOpening(workspace, true)
                 .orElseThrow(() -> new IllegalStateException("floor topology requires a main-compatible opening profile")));
         ResolvedOpeningProfile resolvedBranch = branchOpening.orElseGet(() -> firstOpening(workspace, false)

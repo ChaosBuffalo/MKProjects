@@ -474,7 +474,10 @@ public record MKWorkspaceFloorTopologySettings(
     public static List<MKWorkspaceFloorTopologySettings> defaults(List<MKWorkspaceVerticalStackSettings> stackSettings) {
         ArrayList<MKWorkspaceFloorTopologySettings> defaults = new ArrayList<>();
         for (MKWorkspaceVerticalStackSettings settings : stackSettings) {
-            for (MKWorkspaceVerticalStackSlot slot : MKWorkspaceVerticalStackSlot.familyDefaultOrder()) {
+            for (MKWorkspaceVerticalStackSlot slot : MKWorkspaceVerticalStackSlot.floorTopologyOrder()) {
+                if (!MKWorkspaceVerticalStackSlot.supportsFloorTopology(settings, slot)) {
+                    continue;
+                }
                 defaults.add(defaults(settings, slot.suffix()));
             }
         }

@@ -2141,6 +2141,31 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void walledKeepFloorTopologyOnlyAuthorsActualCenterFloors() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false),
+                MKWalledKeepWorkspacePlanner.defaultRoomFamilyDefinitions(dimensions),
+                MKWalledKeepWorkspacePlanner.defaultLinearRunFamilyDefinitions(dimensions, workspacePalette())
+        );
+
+        List<String> floorGroups = workspace.topologyProfile().floorTopologySettings().stream()
+                .map(MKWorkspaceFloorTopologySettings::key)
+                .toList();
+        assertEquals(List.of("keep.center.main_floor", "keep.center.basement_floor"), floorGroups);
+
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+        List<String> plannedFloorGroups = pieces.stream()
+                .filter(piece -> "floor_plan_room".equals(piece.tags().get("tower_piece_kind")) ||
+                        "floor_plan_linear_run".equals(piece.tags().get("tower_piece_kind")))
+                .map(piece -> piece.tags().get(MKWorkspaceRuntimePieceInfo.TOPOLOGY_GROUP_TAG))
+                .distinct()
+                .toList();
+        assertEquals(List.of("keep.center.main_floor", "keep.center.basement_floor"), plannedFloorGroups);
+    }
+
+    @Test
     void stackPaletteDefaultsFlowToResolvedRoomPieces() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         ResourceLocation stackWallBlock = ResourceLocation.parse("minecraft:polished_blackstone_bricks");
