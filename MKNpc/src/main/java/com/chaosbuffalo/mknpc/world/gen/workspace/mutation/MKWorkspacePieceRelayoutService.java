@@ -267,7 +267,6 @@ public class MKWorkspacePieceRelayoutService {
         Map<PieceExpansion, Map<BlockPos, BlockSnapshot>> expansionSnapshots =
                 snapshotExpansionSources(level, plan.expansions());
         clearCatalogSources(level, plan.moves(), plan.expansions(), plan.removedPieces(), plan.rebuildSourcePieces());
-        placeDestinations(level, destinationSnapshots);
 
         Map<MKPlannedPiece, MKWorkspacePieceDefinition> physicalByPlan = new HashMap<>();
         ArrayList<MKPlannedPiece> piecesToBuild = new ArrayList<>();
@@ -277,6 +276,7 @@ public class MKWorkspacePieceRelayoutService {
         piecesToBuild.addAll(plan.buildPieces());
         Map<MKPlannedPiece, MKWorkspacePieceDefinition> generatedByPlan = scaffoldBuilder.buildSelected(
                 level, targetWorkspace, piecesToBuild, plan.layoutPieces());
+        placeDestinations(level, destinationSnapshots);
         for (PieceMove move : plan.moves()) {
             MKPlannedPiece targetPiece = matchingLayoutPiece(move.moved(), plan.layoutPieces());
             if (targetPiece != null) {
@@ -885,6 +885,7 @@ public class MKWorkspacePieceRelayoutService {
 
     private void refreshSidecarMetadata(ServerLevel level, MKStructureWorkspace workspace,
                                         MKWorkspacePieceDefinition piece, MKPlannedPiece plannedPiece) {
+        ensureStructureBlock(level, piece.structureBlockPos());
         BlockEntity structureEntity = level.getBlockEntity(piece.structureBlockPos());
         BlockState structureState = level.getBlockState(piece.structureBlockPos());
         if (structureEntity instanceof StructureBlockEntity structureBlock) {
@@ -899,6 +900,7 @@ public class MKWorkspacePieceRelayoutService {
             structureBlock.setChanged();
             level.sendBlockUpdated(piece.structureBlockPos(), structureState, structureState, Block.UPDATE_ALL);
         }
+        ensureSign(level, piece.signPos());
         BlockEntity signEntity = level.getBlockEntity(piece.signPos());
         BlockState signState = level.getBlockState(piece.signPos());
         if (signEntity instanceof SignBlockEntity sign) {
@@ -911,6 +913,18 @@ public class MKWorkspacePieceRelayoutService {
             sign.setText(text, false);
             sign.setChanged();
             level.sendBlockUpdated(piece.signPos(), signState, signState, Block.UPDATE_ALL);
+        }
+    }
+
+    private void ensureStructureBlock(ServerLevel level, BlockPos pos) {
+        if (!(level.getBlockEntity(pos) instanceof StructureBlockEntity)) {
+            level.setBlock(pos, Blocks.STRUCTURE_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+        }
+    }
+
+    private void ensureSign(ServerLevel level, BlockPos pos) {
+        if (!(level.getBlockEntity(pos) instanceof SignBlockEntity)) {
+            level.setBlock(pos, Blocks.OAK_SIGN.defaultBlockState(), Block.UPDATE_ALL);
         }
     }
 
