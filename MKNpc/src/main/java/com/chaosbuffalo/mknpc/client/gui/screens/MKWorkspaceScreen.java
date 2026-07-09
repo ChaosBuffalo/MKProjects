@@ -425,6 +425,11 @@ public class MKWorkspaceScreen extends MKScreen {
         super.onClose();
     }
 
+    @Override
+    public boolean isPauseScreen() {
+        return false;
+    }
+
     public void closeScreen() {
         onClose();
     }
