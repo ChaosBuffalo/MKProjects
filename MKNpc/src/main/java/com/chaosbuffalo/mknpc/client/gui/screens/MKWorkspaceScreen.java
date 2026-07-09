@@ -207,28 +207,30 @@ public class MKWorkspaceScreen extends MKScreen {
     public MKWorkspaceScreen copyWithWorkspace(MKStructureWorkspace updatedWorkspace, List<String> updatedImportManifestIds,
                                                List<String> updatedBackupManifestFiles, int updatedTotalPieces,
                                                int updatedNextPieceOffset, long updatedPieceRevision) {
+        List<String> refreshStates = getInitialStatesForRefresh(updatedWorkspace, false);
         MKWorkspaceScreen copy = new MKWorkspaceScreen(anchor, updatedWorkspace, updatedImportManifestIds, updatedBackupManifestFiles,
-                getInitialStatesForRefresh(updatedWorkspace, false),
+                refreshStates,
                 selectedTopologyKey, selectedPlannerStackId, selectedFloorPlanStackId, selectedFloorPlanSectionKey,
                 draftSession.selectedFamilyIndex(),
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
                 draftSession.selectedLinearRunIndex(),
                 draftSession.selectedInsertFamilyIndex(),
                 detailStairConfig, null, updatedTotalPieces, updatedNextPieceOffset, updatedPieceRevision);
-        copy.copyClientViewStateFrom(this);
+        copy.copyClientViewStateFrom(this, restoresCurrentPage(refreshStates));
         return copy;
     }
 
     public MKWorkspaceScreen copyWithPreflight(MKWorkspaceMutationPreflight updatedPreflight) {
+        List<String> refreshStates = getInitialStatesForRefresh(workspace, true);
         MKWorkspaceScreen copy = new MKWorkspaceScreen(anchor, workspace, importManifestIds, backupManifestFiles,
-                getInitialStatesForRefresh(workspace, true),
+                refreshStates,
                 selectedTopologyKey, selectedPlannerStackId, selectedFloorPlanStackId, selectedFloorPlanSectionKey,
                 draftSession.selectedFamilyIndex(),
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
                 draftSession.selectedLinearRunIndex(),
                 draftSession.selectedInsertFamilyIndex(),
                 detailStairConfig, updatedPreflight, totalWorkspacePieces, nextPieceOffset, pieceRevision);
-        copy.copyClientViewStateFrom(this);
+        copy.copyClientViewStateFrom(this, restoresCurrentPage(refreshStates));
         return copy;
     }
 
@@ -250,8 +252,15 @@ public class MKWorkspaceScreen extends MKScreen {
                 updatedNextPieceOffset, updatedPieceRevision);
     }
 
-    private void copyClientViewStateFrom(MKWorkspaceScreen source) {
+    private boolean restoresCurrentPage(List<String> refreshStates) {
+        return !refreshStates.isEmpty() && refreshStates.getLast().equals(getState());
+    }
+
+    private void copyClientViewStateFrom(MKWorkspaceScreen source, boolean restoreScrollViews) {
         draftSession.copyViewStateFrom(source.draftSession);
+        if (!restoreScrollViews) {
+            return;
+        }
         pendingScrollViewStates = source.getActiveScrollViewStates();
         pendingScrollViewRestore = !pendingScrollViewStates.isEmpty();
         pendingScrollViewReset = source.wasResized;
