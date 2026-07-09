@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepPlannerSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceSlotSchema;
@@ -46,6 +47,20 @@ final class WalledKeepWorkspaceDraftAdapter implements WorkspacePlannerDraftAdap
     public void applyDefaultHeight(WorkspaceDraftSession session, int requestedHeight) {
         session.replaceVerticalStackSettingsWithNormalizedFloorCounts(
                 session.verticalStackSettings("keep.center").withHeight(requestedHeight));
+    }
+
+    @Override
+    public MKWorkspaceVerticalStackSettings defaultVerticalStackSettings(WorkspaceDraftSession session, String stackId) {
+        MKWalledKeepPlannerSettings settings = MKWalledKeepPlannerSettings.from(session.draft().topologyProfile);
+        return MKWalledKeepWorkspacePlanner.defaultVerticalStackSettings(
+                        settings.uniqueNorthWestCornerTower(),
+                        settings.uniqueNorthEastCornerTower(),
+                        settings.uniqueSouthEastCornerTower(),
+                        settings.uniqueSouthWestCornerTower())
+                .stream()
+                .filter(stackSettings -> stackSettings.stackId().equals(stackId))
+                .findFirst()
+                .orElseGet(() -> WorkspacePlannerDraftAdapter.super.defaultVerticalStackSettings(session, stackId));
     }
 
     @Override

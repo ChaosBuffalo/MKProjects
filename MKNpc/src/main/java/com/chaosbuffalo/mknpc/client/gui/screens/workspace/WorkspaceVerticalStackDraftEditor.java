@@ -318,7 +318,7 @@ public final class WorkspaceVerticalStackDraftEditor {
     }
 
     public void resetDefaults() {
-        replace(MKWorkspaceVerticalStackSettings.defaults(stackId, 7));
+        replace(session.plannerAdapter().defaultVerticalStackSettings(session, stackId));
     }
 
     private MKWorkspaceVerticalStackSettings settings() {
