@@ -61,8 +61,7 @@ public class WorkspaceUtilitiesPage extends WorkspacePageBase {
             });
         }
 
-        MKButton addCopyForAll = new MKButton(
-                Component.translatable("mknpc.workspace.button.add_copy_for_all"), 180, 20);
+        MKButton addCopyForAll = new MKButton(Component.literal("Add Missing Variants"), 180, 20);
         content.addWidget(addCopyForAll);
         content.addConstraintToWidget(new CenterXConstraint(), addCopyForAll);
         addCopyForAll.setPressedCallback((button, mouseButton) -> {

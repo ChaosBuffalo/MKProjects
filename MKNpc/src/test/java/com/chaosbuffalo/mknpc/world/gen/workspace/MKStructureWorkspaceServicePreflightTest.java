@@ -21,6 +21,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
@@ -215,6 +216,24 @@ class MKStructureWorkspaceServicePreflightTest {
                         "moved".equals(impact.outcome()) ||
                         "expanded".equals(impact.outcome()))
                 .count());
+    }
+
+    @Test
+    void allVariantUtilityTargetsOnlyPhysicalTemplatesWithoutVariants() {
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(
+                        variantAwarePiece("room_without_variant_template", "room_without_variant", 0,
+                                MKWorkspacePlannerId.of("utility.room_without_variant")),
+                        variantAwarePiece("room_with_variant_template", "room_with_variant", 0,
+                                MKWorkspacePlannerId.of("utility.room_with_variant")),
+                        variantAwarePiece("room_with_variant_1", "room_with_variant", 1,
+                                MKWorkspacePlannerId.of("utility.room_with_variant").child("variant_1")),
+                        reuseAwarePiece("rotated_authoring_template", "rotated_authoring", true),
+                        reuseAwarePiece("derived_hidden_template", "derived_hidden", false)
+                ));
+
+        assertEquals(List.of("room_without_variant", "rotated_authoring"),
+                service.basePieceNamesWithoutPhysicalVariants(workspace));
     }
 
     @Test
@@ -505,6 +524,19 @@ class MKStructureWorkspaceServicePreflightTest {
         tags.put("workspace_piece_kind", variantIndex == 0 ? "template" : "instance");
         MKWorkspaceStableSlotIdentity.apply(tags, "test_room", "stable.floor.room");
         return floorPiece(pieceName, baseName, plannerId, variantIndex, tags);
+    }
+
+    private static MKWorkspacePieceDefinition reuseAwarePiece(String pieceName, String baseName,
+                                                              boolean authoringPiece) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>();
+        tags.put(MKWorkspaceGridLayout.TAG_BASE_NAME, baseName);
+        tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "0");
+        tags.put("workspace_piece_kind", "template");
+        tags.put(MKWorkspaceTemplateReuseTags.REUSE_MODE_TAG,
+                MKWorkspaceTemplateReuseTags.REUSE_MODE_ROTATE_EXPORT);
+        tags.put(MKWorkspaceTemplateReuseTags.AUTHORING_PIECE_TAG, Boolean.toString(authoringPiece));
+        tags.put(MKWorkspaceTemplateReuseTags.SOURCE_ID_TAG, "source_" + baseName);
+        return floorPiece(pieceName, baseName, MKWorkspacePlannerId.of("utility." + baseName), 0, tags);
     }
 
     private static MKWorkspacePieceDefinition floorPiece(String pieceName, String baseName,

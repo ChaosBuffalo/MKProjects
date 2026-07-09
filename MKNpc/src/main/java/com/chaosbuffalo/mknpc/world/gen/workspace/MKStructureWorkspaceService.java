@@ -655,11 +655,10 @@ public class MKStructureWorkspaceService {
             return Optional.empty();
         }
 
-        List<String> basePieceNames = workspace.pieces().stream()
-                .filter(piece -> piece.variantIndex() == 0)
-                .map(this::getBaseName)
-                .distinct()
-                .toList();
+        List<String> basePieceNames = basePieceNamesWithoutPhysicalVariants(workspace);
+        if (basePieceNames.isEmpty()) {
+            return Optional.of(workspace);
+        }
 
         List<MKPlannedPiece> canonicalPieces = plannerRegistry.plannerFor(workspace).createCanonicalPieces(workspace);
         Map<String, MKPlannedPiece> canonicalByBaseName = canonicalPieces.stream()
@@ -715,6 +714,22 @@ public class MKStructureWorkspaceService {
         data.updateWorkspace(updated);
         syncBlockEntity(level, anchor, updated.id());
         return Optional.of(updated);
+    }
+
+    List<String> basePieceNamesWithoutPhysicalVariants(MKStructureWorkspace workspace) {
+        LinkedHashSet<String> basesWithPhysicalVariants = workspace.pieces().stream()
+                .filter(piece -> piece.variantIndex() > 0)
+                .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
+                .map(this::getBaseName)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        return workspace.pieces().stream()
+                .filter(piece -> piece.variantIndex() == 0)
+                .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
+                .map(this::getBaseName)
+                .distinct()
+                .filter(basePieceName -> !basesWithPhysicalVariants.contains(basePieceName))
+                .toList();
     }
 
     List<MKPlannedPiece> physicalVariantLayoutPieces(MKStructureWorkspace workspace,
