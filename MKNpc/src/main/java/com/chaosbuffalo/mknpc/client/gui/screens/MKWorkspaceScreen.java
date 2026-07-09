@@ -208,20 +208,20 @@ public class MKWorkspaceScreen extends MKScreen {
                                                List<String> updatedBackupManifestFiles, int updatedTotalPieces,
                                                int updatedNextPieceOffset, long updatedPieceRevision) {
         MKWorkspaceScreen copy = new MKWorkspaceScreen(anchor, updatedWorkspace, updatedImportManifestIds, updatedBackupManifestFiles,
-                getInitialStatesForRefresh(updatedWorkspace),
+                getInitialStatesForRefresh(updatedWorkspace, false),
                 selectedTopologyKey, selectedPlannerStackId, selectedFloorPlanStackId, selectedFloorPlanSectionKey,
                 draftSession.selectedFamilyIndex(),
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
                 draftSession.selectedLinearRunIndex(),
                 draftSession.selectedInsertFamilyIndex(),
-                detailStairConfig, preflight, updatedTotalPieces, updatedNextPieceOffset, updatedPieceRevision);
+                detailStairConfig, null, updatedTotalPieces, updatedNextPieceOffset, updatedPieceRevision);
         copy.copyClientViewStateFrom(this);
         return copy;
     }
 
     public MKWorkspaceScreen copyWithPreflight(MKWorkspaceMutationPreflight updatedPreflight) {
         MKWorkspaceScreen copy = new MKWorkspaceScreen(anchor, workspace, importManifestIds, backupManifestFiles,
-                getInitialStatesForRefresh(workspace),
+                getInitialStatesForRefresh(workspace, true),
                 selectedTopologyKey, selectedPlannerStackId, selectedFloorPlanStackId, selectedFloorPlanSectionKey,
                 draftSession.selectedFamilyIndex(),
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
@@ -1223,7 +1223,8 @@ public class MKWorkspaceScreen extends MKScreen {
         return importManifestIds.isEmpty() ? List.of("form") : List.of("home");
     }
 
-    private List<String> getInitialStatesForRefresh(MKStructureWorkspace updatedWorkspace) {
+    private List<String> getInitialStatesForRefresh(MKStructureWorkspace updatedWorkspace,
+                                                    boolean preserveGenerateConfirmState) {
         String currentState = getState();
         if (WorkspaceTopologySlotPage.ID.equals(currentState) && selectedTopologyKey != null &&
                 updatedWorkspace != null && hasPiecesForRefresh(updatedWorkspace)) {
@@ -1252,6 +1253,11 @@ public class MKWorkspaceScreen extends MKScreen {
                     : List.of("form");
         }
         if (WorkspaceGenerateConfirmPage.ID.equals(currentState)) {
+            if (!preserveGenerateConfirmState) {
+                return updatedWorkspace != null && hasPiecesForRefresh(updatedWorkspace)
+                        ? List.of("workspace")
+                        : List.of("form");
+            }
             return updatedWorkspace != null && hasPiecesForRefresh(updatedWorkspace)
                     ? List.of("workspace", "form", WorkspaceGenerateConfirmPage.ID)
                     : List.of("form", WorkspaceGenerateConfirmPage.ID);

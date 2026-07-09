@@ -41,6 +41,8 @@ public class WorkspaceGenerateConfirmPage extends WorkspacePageBase {
 
         MKButton confirm = addBottomButton(screen, root, Component.literal("Apply Workspace Update"), 200, 1);
         confirm.setPressedCallback((button, mouseButton) -> {
+            button.setEnabled(false);
+            button.buttonText = Component.literal("Applying...");
             screen.draftSession().send();
             return true;
         });
