@@ -270,25 +270,42 @@ public class MKWorkspacePieceRelayoutService {
         placeDestinations(level, destinationSnapshots);
 
         Map<MKPlannedPiece, MKWorkspacePieceDefinition> physicalByPlan = new HashMap<>();
+        ArrayList<MKPlannedPiece> piecesToBuild = new ArrayList<>();
+        piecesToBuild.addAll(plan.expansions().stream()
+                .map(PieceExpansion::targetPiece)
+                .toList());
+        piecesToBuild.addAll(plan.buildPieces());
+        Map<MKPlannedPiece, MKWorkspacePieceDefinition> generatedByPlan = scaffoldBuilder.buildSelected(
+                level, targetWorkspace, piecesToBuild, plan.layoutPieces());
         for (PieceMove move : plan.moves()) {
             MKPlannedPiece targetPiece = matchingLayoutPiece(move.moved(), plan.layoutPieces());
             if (targetPiece != null) {
                 physicalByPlan.put(targetPiece, move.moved());
-                refreshSidecarMetadata(level, targetWorkspace, move.moved(), targetPiece);
             }
         }
         for (PieceExpansion expansion : plan.expansions()) {
-            MKWorkspacePieceDefinition generated = scaffoldBuilder.buildSingle(level, targetWorkspace,
-                    expansion.targetPiece(), plan.layoutPieces());
+            MKWorkspacePieceDefinition generated = generatedByPlan.get(expansion.targetPiece());
+            if (generated == null) {
+                throw new IllegalStateException("missing generated expansion workspace piece for " +
+                        expansion.targetPiece().pieceName());
+            }
             Map<BlockPos, BlockSnapshot> remappedSnapshots = remapExpansionSnapshots(
                     expansion.original(), generated, expansionSnapshots.getOrDefault(expansion, Map.of()));
             placeDestinations(level, remappedSnapshots);
             physicalByPlan.put(expansion.targetPiece(), withPreservedIdentity(generated, expansion.original()));
         }
         for (MKPlannedPiece buildPiece : plan.buildPieces()) {
-            MKWorkspacePieceDefinition generated = scaffoldBuilder.buildSingle(level, targetWorkspace, buildPiece,
-                    plan.layoutPieces());
+            MKWorkspacePieceDefinition generated = generatedByPlan.get(buildPiece);
+            if (generated == null) {
+                throw new IllegalStateException("missing generated workspace piece for " + buildPiece.pieceName());
+            }
             physicalByPlan.put(buildPiece, generated);
+        }
+        for (PieceMove move : plan.moves()) {
+            MKPlannedPiece targetPiece = matchingLayoutPiece(move.moved(), plan.layoutPieces());
+            if (targetPiece != null) {
+                refreshSidecarMetadata(level, targetWorkspace, move.moved(), targetPiece);
+            }
         }
 
         Map<String, MKWorkspacePieceDefinition> authoringByBaseName = new HashMap<>();

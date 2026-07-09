@@ -102,7 +102,7 @@ public class MKWorkspaceScaffoldBuilder {
         Map<MKPlannedPiece, MKWorkspacePieceDefinition> generatedByPlan = new HashMap<>();
         for (int i = 0; i < authoringPieces.size(); i++) {
             MKPlannedPiece plannedPiece = authoringPieces.get(i);
-            MKWorkspacePieceDefinition generated = buildPiece(level, workspace, plannedPiece, placements.get(i));
+            MKWorkspacePieceDefinition generated = buildPiece(level, workspace, plannedPiece, placements.get(i), false);
             generatedByPlan.put(plannedPiece, generated);
             authoringByBaseName.put(plannedPiece.tags().getOrDefault(MKWorkspaceGridLayout.TAG_BASE_NAME,
                     plannedPiece.pieceName()), generated);
@@ -127,7 +127,31 @@ public class MKWorkspaceScaffoldBuilder {
         if (index < 0) {
             throw new IllegalArgumentException("piece is not present in layout list");
         }
-        return buildPiece(level, workspace, piece, placements.get(index));
+        return buildPiece(level, workspace, piece, placements.get(index), true);
+    }
+
+    public Map<MKPlannedPiece, MKWorkspacePieceDefinition> buildSelected(ServerLevel level, MKStructureWorkspace workspace,
+                                                                         List<MKPlannedPiece> pieces,
+                                                                         List<MKPlannedPiece> layoutPieces) {
+        if (pieces.isEmpty()) {
+            return Map.of();
+        }
+        List<MKWorkspaceGridLayout.Placement> placements = gridLayout.assignPlacements(workspace.anchor(), layoutPieces,
+                workspace.shellMargin(), workspace.exteriorAirMargin(), workspace.previewMargin(), GRID_COLUMNS,
+                CELL_PADDING);
+        BoundingBox clearBounds = layoutClearBoundsForPieces(workspace, layoutPieces, pieces);
+        if (clearBounds != null) {
+            clearWorkspaceHeightBounds(level, clearBounds);
+        }
+        Map<MKPlannedPiece, MKWorkspacePieceDefinition> generated = new HashMap<>();
+        for (MKPlannedPiece piece : pieces) {
+            int index = layoutPieces.indexOf(piece);
+            if (index < 0) {
+                throw new IllegalArgumentException("piece is not present in layout list");
+            }
+            generated.put(piece, buildPiece(level, workspace, piece, placements.get(index), false));
+        }
+        return Map.copyOf(generated);
     }
 
     public MKWorkspacePieceDefinition cloneFromTemplate(ServerLevel level, MKStructureWorkspace workspace,
@@ -263,7 +287,7 @@ public class MKWorkspaceScaffoldBuilder {
     }
 
     private MKWorkspacePieceDefinition buildPiece(ServerLevel level, MKStructureWorkspace workspace, MKPlannedPiece plannedPiece,
-                                                  MKWorkspaceGridLayout.Placement placement) {
+                                                  MKWorkspaceGridLayout.Placement placement, boolean clearBeforeBuild) {
         PieceBuildContext context = createBuildContext(workspace, plannedPiece, placement);
         int effectiveShellMargin = getShellMargin(plannedPiece, workspace.shellMargin());
         int verticalShellThickness = getVerticalShellThickness(plannedPiece);
@@ -277,7 +301,9 @@ public class MKWorkspaceScaffoldBuilder {
         boolean emptyScaffold = isEmptyScaffold(plannedPiece);
         boolean floorLinkInsert = isFloorLinkInsert(plannedPiece);
 
-        clearWorkspaceHeightBounds(level, context.clearedBounds());
+        if (clearBeforeBuild) {
+            clearWorkspaceHeightBounds(level, context.clearedBounds());
+        }
         clearBounds(level, context.exportBounds());
         if (floorLinkInsert) {
             placeFloorLinkInsertScaffold(level, context.exportBounds(), floorState, wallState);
