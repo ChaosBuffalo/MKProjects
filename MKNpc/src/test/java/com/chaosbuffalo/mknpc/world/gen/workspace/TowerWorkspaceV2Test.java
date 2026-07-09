@@ -717,6 +717,7 @@ class TowerWorkspaceV2Test {
         assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_basement_entry")));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_basement_floor")));
         assertTrue(pieces.stream().anyMatch(piece -> piece.pieceName().equals("keep_center_basement_cap")));
+        assertFalse(pieces.stream().anyMatch(piece -> piece.pieceName().startsWith("floor_plan_keep_")));
         MKPlannedPiece sharedCorner = pieces.stream()
                 .filter(piece -> piece.pieceName().equals("keep_corner_north_west_entry"))
                 .findFirst()
@@ -2162,7 +2163,7 @@ class TowerWorkspaceV2Test {
                 .map(piece -> piece.tags().get(MKWorkspaceRuntimePieceInfo.TOPOLOGY_GROUP_TAG))
                 .distinct()
                 .toList();
-        assertEquals(List.of("keep.center.main_floor", "keep.center.basement_floor"), plannedFloorGroups);
+        assertEquals(List.of(), plannedFloorGroups);
     }
 
     @Test

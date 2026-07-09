@@ -307,6 +307,9 @@ public class MKFloorTopologyPlanner {
         if (!MKWorkspaceVerticalStackSlot.supportsFloorTopology(stackSettings, slot)) {
             return Optional.empty();
         }
+        if (!hasFloorTopologyExit(rootFamily)) {
+            return Optional.empty();
+        }
         Optional<ResolvedOpeningProfile> mainOpening = rootFamily.horizontalOnlyExits().stream()
                 .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)
                 .map(exit -> resolveOpening(workspace, exit.openingProfileId()))
@@ -331,6 +334,13 @@ public class MKFloorTopologyPlanner {
                 resolvedMain,
                 resolvedBranch
         ));
+    }
+
+    private boolean hasFloorTopologyExit(MKWorkspaceRoomFamilyDefinition rootFamily) {
+        return rootFamily.horizontalOnlyExits().stream()
+                .map(MKWorkspaceFamilyHorizontalExitDefinition::pathKind)
+                .anyMatch(pathKind -> pathKind == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT ||
+                        pathKind == MKWorkspaceHorizontalExitPathKind.BRANCH);
     }
 
     private MKPlannedPiece createRoomPiece(MKStructureWorkspace workspace,

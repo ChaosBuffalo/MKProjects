@@ -1,12 +1,14 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorLinkGenerationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLayerStateService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
@@ -28,6 +30,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceTopologySch
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
@@ -218,6 +221,7 @@ class MKStructureWorkspaceServicePreflightTest {
     void walledKeepAddingFloorRoomUsesCatalogRelayoutInsteadOfFullRegenerate() {
         MKWalledKeepWorkspacePlanner planner = new MKWalledKeepWorkspacePlanner();
         MKStructureWorkspace existing = walledKeepWorkspace(planner);
+        existing = withMainFloorExit(existing);
         List<MKWorkspacePieceDefinition> pieces = planner.createCanonicalPieces(existing).stream()
                 .filter(piece -> !com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags
                         .isDerived(piece.tags()))
@@ -295,6 +299,38 @@ class MKStructureWorkspaceServicePreflightTest {
         );
     }
 
+    private static MKStructureWorkspace withMainFloorExit(MKStructureWorkspace workspace) {
+        List<MKWorkspaceRoomFamilyDefinition> familyDefinitions = workspace.familyDefinitions().stream()
+                .map(family -> family.topologySlotId().equals("keep.center.main_floor") ?
+                        copyFamilyWithExits(family, List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
+                                Direction.SOUTH,
+                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                                "main_opening"
+                        ))) : family)
+                .toList();
+        return withFamilyDefinitions(workspace, familyDefinitions);
+    }
+
+    private static MKWorkspaceRoomFamilyDefinition copyFamilyWithExits(
+            MKWorkspaceRoomFamilyDefinition family,
+            List<MKWorkspaceFamilyHorizontalExitDefinition> exits) {
+        return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
+                family.baseName(),
+                family.slotMetadata(),
+                family.verticalAccessGroupId(),
+                family.supportsVerticalAccess(),
+                family.roomWidth(),
+                family.roomLength(),
+                family.roomHeight(),
+                family.horizontalExtrusionMode(),
+                exits,
+                family.topVoidMargin(),
+                family.bottomVoidMargin(),
+                family.foundationPolicyOverride(),
+                family.paletteOverride()
+        );
+    }
+
     private static MKWorkspacePieceDefinition plannedTemplatePiece(MKPlannedPiece plannedPiece) {
         return plannedPiece(plannedPiece, plannedPiece.pieceName() + "_template", 0,
                 plannedPiece.plannerId(), "template");
@@ -354,6 +390,32 @@ class MKStructureWorkspaceServicePreflightTest {
                 workspace.previewMargin(),
                 workspace.verticalAccessSpec(),
                 workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.linearRunFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces(),
+                workspace.layerStates()
+        );
+    }
+
+    private static MKStructureWorkspace withFamilyDefinitions(MKStructureWorkspace workspace,
+                                                              List<MKWorkspaceRoomFamilyDefinition> familyDefinitions) {
+        return new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.topologyProfile(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                familyDefinitions,
                 workspace.openingProfiles(),
                 workspace.linearRunFamilies(),
                 workspace.createdAt(),
