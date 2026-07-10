@@ -1,21 +1,21 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.model;
+package com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.util.StringRepresentable;
 
-public enum MKWorkspaceFloorRoomKind implements StringRepresentable {
+public enum MKFloorRoomKind implements StringRepresentable {
     MAIN_ROOM("main_room"),
     BRANCH_ROOM("branch_room"),
     BRANCH_CAP("branch_cap"),
     MAIN_CAP_APPROACH("main_cap_approach"),
     MAIN_CAP("main_cap");
 
-    public static final Codec<MKWorkspaceFloorRoomKind> CODEC = StringRepresentable.fromEnum(
-            MKWorkspaceFloorRoomKind::values);
+    public static final Codec<MKFloorRoomKind> CODEC = StringRepresentable.fromEnum(
+            MKFloorRoomKind::values);
 
     private final String serializedName;
 
-    MKWorkspaceFloorRoomKind(String serializedName) {
+    MKFloorRoomKind(String serializedName) {
         this.serializedName = serializedName;
     }
 

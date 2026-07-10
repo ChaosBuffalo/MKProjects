@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
 import net.minecraft.core.BlockPos;
 import org.junit.jupiter.api.Test;
 
@@ -17,8 +19,8 @@ class MKWorkspaceFloorTopologyMutationPreflightServiceTest {
     @Test
     void hallwayPreflightReturnsReportAndMarksHallwayLayersDirty() {
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
-        MKWorkspaceFloorTopologySettings previous = settings();
-        MKWorkspaceFloorTopologySettings updated = previous.withManualHallwayLeadInPieces(5);
+        MKFloorTopologySettings previous = settings();
+        MKFloorTopologySettings updated = previous.withManualHallwayLeadInPieces(5);
 
         MKWorkspaceMutationPreflight preflight = service.preflight(
                 workspace,
@@ -40,7 +42,7 @@ class MKWorkspaceFloorTopologyMutationPreflightServiceTest {
     @Test
     void noOpPreflightEnsuresLayerStatesWithoutDirtyingLayers() {
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
-        MKWorkspaceFloorTopologySettings settings = settings();
+        MKFloorTopologySettings settings = settings();
 
         MKWorkspaceMutationPreflight preflight = service.preflight(
                 workspace,
@@ -57,19 +59,19 @@ class MKWorkspaceFloorTopologyMutationPreflightServiceTest {
                 .noneMatch(MKWorkspaceGeneratedLayerState::dirty));
     }
 
-    private static MKWorkspaceFloorTopologySettings settings() {
-        return new MKWorkspaceFloorTopologySettings(
+    private static MKFloorTopologySettings settings() {
+        return new MKFloorTopologySettings(
                 "tower.primary",
                 "main_01",
                 1,
                 1,
                 0,
-                MKWorkspaceHallwayLeadInMode.AUTO,
+                MKHallwayLeadInMode.AUTO,
                 1,
                 true,
                 true,
                 false,
-                MKWorkspaceFloorTopologySettings.DEFAULT_SPRAWL,
+                MKFloorTopologySettings.DEFAULT_SPRAWL,
                 Optional.empty(),
                 List.of(),
                 List.of(),

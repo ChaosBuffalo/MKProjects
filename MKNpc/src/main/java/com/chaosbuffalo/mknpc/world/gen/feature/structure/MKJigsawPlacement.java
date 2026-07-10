@@ -1,13 +1,14 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKFloorMaskVariantExporter;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKFloorLayoutSolver;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorLayoutSolver;
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
@@ -480,7 +481,7 @@ public class MKJigsawPlacement {
                 return;
             }
             RootFloorPlanContext context = contextOpt.get();
-            MKWorkspaceFloorTopologySettings settings = rule.floorTopologySettings().orElseThrow();
+            MKFloorTopologySettings settings = rule.floorTopologySettings().orElseThrow();
             int rootWidth = rootPiece.getBoundingBox().getXSpan();
             int rootLength = rootPiece.getBoundingBox().getZSpan();
             int leadIn = effectiveHallwayLeadInPieces(settings, rootWidth, rootLength);
@@ -813,7 +814,7 @@ public class MKJigsawPlacement {
                     addMaskedPool(pools, context.pool("rooms/main/" + context.mainOpeningProfile()),
                             segment.acceptedMask());
                     if (segment.profile() != null &&
-                            segment.profile().kind() == MKWorkspaceFloorRoomKind.MAIN_CAP_APPROACH) {
+                            segment.profile().kind() == MKFloorRoomKind.MAIN_CAP_APPROACH) {
                         pools.add(context.structurePool("main_cap_approaches/" + context.topologyGroup()));
                     } else {
                         pools.add(context.structurePool("main_caps/" + context.topologyGroup()));
@@ -931,7 +932,7 @@ public class MKJigsawPlacement {
             List<StructureTemplate.StructureBlockInfo> jigsaws = parentElement.getShuffledJigsawBlocks(
                     this.structureTemplateManager, rootPiece.getPosition(), rootPiece.getRotation(),
                     RandomSource.create(0L));
-            ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> rootExits = new ArrayList<>();
+            ArrayList<MKFamilyHorizontalExitDefinition> rootExits = new ArrayList<>();
             ResourceLocation samplePool = null;
             String mainOpening = "";
             String branchOpening = "";
@@ -945,12 +946,12 @@ public class MKJigsawPlacement {
                 Direction facing = JigsawBlock.getFrontFacing(jigsaw.state());
                 String opening = openingProfileFromPool(poolKey.location()).orElse("");
                 if (connectorInfo.role() == MKConnectorRole.MAIN_BACK) {
-                    rootExits.add(new MKWorkspaceFamilyHorizontalExitDefinition(facing,
-                            MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, opening));
+                    rootExits.add(new MKFamilyHorizontalExitDefinition(facing,
+                            MKHorizontalExitPathKind.MAIN_EXIT, opening));
                     mainOpening = opening;
                 } else if (connectorInfo.role() == MKConnectorRole.BRANCH) {
-                    rootExits.add(new MKWorkspaceFamilyHorizontalExitDefinition(facing,
-                            MKWorkspaceHorizontalExitPathKind.BRANCH, opening));
+                    rootExits.add(new MKFamilyHorizontalExitDefinition(facing,
+                            MKHorizontalExitPathKind.BRANCH, opening));
                     branchOpening = opening;
                 }
                 samplePool = poolKey.location();
@@ -985,10 +986,10 @@ public class MKJigsawPlacement {
             return index <= 0 ? "" : path.substring(0, index);
         }
 
-        private int effectiveHallwayLeadInPieces(MKWorkspaceFloorTopologySettings settings, int rootWidth,
+        private int effectiveHallwayLeadInPieces(MKFloorTopologySettings settings, int rootWidth,
                                                  int rootLength) {
             if (settings.hallwayLeadInMode() ==
-                    com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode.MANUAL) {
+                    com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode.MANUAL) {
                 return Math.max(1, settings.manualHallwayLeadInPieces());
             }
             return Math.max(1, Math.ceilDiv(Math.max(rootWidth, rootLength), 8));
@@ -1063,7 +1064,7 @@ public class MKJigsawPlacement {
                 String namespace,
                 String mainOpeningProfile,
                 String branchOpeningProfile,
-                List<MKWorkspaceFamilyHorizontalExitDefinition> rootExits
+                List<MKFamilyHorizontalExitDefinition> rootExits
         ) {
             private ResourceLocation pool(String suffix) {
                 return ResourceLocation.fromNamespaceAndPath(namespace, poolPrefix + "floor_plan/" +

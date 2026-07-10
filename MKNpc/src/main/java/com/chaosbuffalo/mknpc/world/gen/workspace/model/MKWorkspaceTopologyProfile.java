@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
@@ -30,7 +31,7 @@ public record MKWorkspaceTopologyProfile(
 
     public MKWorkspaceTopologyProfile(ResourceLocation plannerId,
                                       List<MKWorkspaceVerticalStackSettings> verticalStackSettings,
-                                      List<MKWorkspaceFloorTopologySettings> floorTopologySettings,
+                                      List<MKFloorTopologySettings> floorTopologySettings,
                                       List<MKWorkspaceTopologyPathSettings> pathSettings,
                                       List<MKWorkspacePlannerSettingsEntry> plannerSettings,
                                       TerrainAdjustment terrainAdjustment) {
@@ -41,7 +42,7 @@ public record MKWorkspaceTopologyProfile(
     public MKWorkspaceTopologyProfile(ResourceLocation plannerId,
                                       List<MKWorkspacePlannerScopeSettings> plannerScopeSettings,
                                       List<MKWorkspaceVerticalStackSettings> verticalStackSettings,
-                                      List<MKWorkspaceFloorTopologySettings> floorTopologySettings,
+                                      List<MKFloorTopologySettings> floorTopologySettings,
                                       List<MKWorkspaceTopologyPathSettings> pathSettings,
                                       List<MKWorkspacePlannerSettingsEntry> plannerSettings,
                                       TerrainAdjustment terrainAdjustment) {
@@ -61,7 +62,7 @@ public record MKWorkspaceTopologyProfile(
             ResourceLocation ownerPlannerId,
             List<MKWorkspacePlannerScopeSettings> plannerScopeSettings,
             List<MKWorkspaceVerticalStackSettings> verticalStackSettings,
-            List<MKWorkspaceFloorTopologySettings> floorTopologySettings,
+            List<MKFloorTopologySettings> floorTopologySettings,
             List<MKWorkspaceTopologyPathSettings> pathSettings,
             List<MKWorkspacePlannerSettingsEntry> plannerSettings) {
         LinkedHashMap<String, MKWorkspacePlannerSettingsEntry> byScope = new LinkedHashMap<>();
@@ -75,9 +76,9 @@ public record MKWorkspaceTopologyProfile(
             putEntry(byScope, settings.plannerSettingsEntry());
         }
 
-        List<MKWorkspaceFloorTopologySettings> normalizedFloorSettings =
-                MKWorkspaceFloorTopologySettings.normalize(floorTopologySettings, normalizedStackSettings);
-        for (MKWorkspaceFloorTopologySettings settings : normalizedFloorSettings) {
+        List<MKFloorTopologySettings> normalizedFloorSettings =
+                MKFloorTopologySettings.normalize(floorTopologySettings, normalizedStackSettings);
+        for (MKFloorTopologySettings settings : normalizedFloorSettings) {
             putEntry(byScope, settings.plannerSettingsEntry());
         }
 
@@ -209,24 +210,24 @@ public record MKWorkspaceTopologyProfile(
         return withPlannerSettingsEntry(updatedSettings.plannerSettingsEntry());
     }
 
-    public List<MKWorkspaceFloorTopologySettings> floorTopologySettings() {
-        return MKWorkspaceFloorTopologySettings.normalize(plannerSettings.stream()
-                .filter(entry -> entry.plannerId().equals(MKWorkspaceFloorTopologySettings.PLANNER_ID))
-                .map(MKWorkspaceFloorTopologySettings::fromPlannerSettingsEntry)
+    public List<MKFloorTopologySettings> floorTopologySettings() {
+        return MKFloorTopologySettings.normalize(plannerSettings.stream()
+                .filter(entry -> entry.plannerId().equals(MKFloorTopologySettings.PLANNER_ID))
+                .map(MKFloorTopologySettings::fromPlannerSettingsEntry)
                 .toList(), verticalStackSettings());
     }
 
-    public Optional<MKWorkspaceFloorTopologySettings> floorTopologySettings(String stackId, String floorRole) {
-        return MKWorkspaceFloorTopologySettings.find(floorTopologySettings(), stackId, floorRole);
+    public Optional<MKFloorTopologySettings> floorTopologySettings(String stackId, String floorRole) {
+        return MKFloorTopologySettings.find(floorTopologySettings(), stackId, floorRole);
     }
 
-    public MKWorkspaceFloorTopologySettings floorTopologySettingsOrDefault(String stackId, String floorRole) {
+    public MKFloorTopologySettings floorTopologySettingsOrDefault(String stackId, String floorRole) {
         return floorTopologySettings(stackId, floorRole)
-                .orElseGet(() -> MKWorkspaceFloorTopologySettings.defaults(
+                .orElseGet(() -> MKFloorTopologySettings.defaults(
                         verticalStackSettingsOrDefault(stackId), floorRole));
     }
 
-    public MKWorkspaceTopologyProfile withFloorTopologySettings(MKWorkspaceFloorTopologySettings updatedSettings) {
+    public MKWorkspaceTopologyProfile withFloorTopologySettings(MKFloorTopologySettings updatedSettings) {
         return withPlannerSettingsEntry(updatedSettings.plannerSettingsEntry());
     }
 

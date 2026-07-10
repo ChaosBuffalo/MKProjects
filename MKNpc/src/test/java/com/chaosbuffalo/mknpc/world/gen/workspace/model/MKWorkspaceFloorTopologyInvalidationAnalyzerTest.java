@@ -1,5 +1,8 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorLinkGenerationMode;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -17,7 +20,7 @@ class MKWorkspaceFloorTopologyInvalidationAnalyzerTest {
 
     @Test
     void unchangedSettingsReportNoInvalidatedLayers() {
-        MKWorkspaceFloorTopologySettings settings = settings();
+        MKFloorTopologySettings settings = settings();
 
         MKWorkspaceInvalidationReport report = analyzer.analyze(floorPlannerId, settings, settings);
 
@@ -62,7 +65,7 @@ class MKWorkspaceFloorTopologyInvalidationAnalyzerTest {
                 floorPlannerId,
                 settings(),
                 settings()
-                        .withLinkGenerationMode(MKWorkspaceFloorLinkGenerationMode.DECAYING_HALLWAY)
+                        .withLinkGenerationMode(MKFloorLinkGenerationMode.DECAYING_HALLWAY)
                         .withLinkDecay(0.5f)
                         .withEndpointIntactRadius(4)
                         .withMiddleDecayBonus(0.3f)
@@ -109,19 +112,19 @@ class MKWorkspaceFloorTopologyInvalidationAnalyzerTest {
         assertEquals(MKWorkspaceMutationSafety.DESTRUCTIVE_REGENERATE, report.safety());
     }
 
-    private static MKWorkspaceFloorTopologySettings settings() {
-        return new MKWorkspaceFloorTopologySettings(
+    private static MKFloorTopologySettings settings() {
+        return new MKFloorTopologySettings(
                 "tower.primary",
                 "main_01",
                 1,
                 1,
                 0,
-                MKWorkspaceHallwayLeadInMode.AUTO,
+                MKHallwayLeadInMode.AUTO,
                 1,
                 true,
                 true,
                 false,
-                MKWorkspaceFloorTopologySettings.DEFAULT_SPRAWL,
+                MKFloorTopologySettings.DEFAULT_SPRAWL,
                 Optional.empty(),
                 List.of(),
                 List.of(),

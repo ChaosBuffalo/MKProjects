@@ -8,10 +8,10 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
@@ -388,7 +388,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                 .toList();
     }
 
-    private static List<MKWorkspaceFamilyHorizontalExitDefinition> defaultHorizontalExitsForVerticalStackSlot(
+    private static List<MKFamilyHorizontalExitDefinition> defaultHorizontalExitsForVerticalStackSlot(
             String stackId, MKWorkspaceVerticalStackSlot slot) {
         if (!"keep.corner.shared".equals(stackId) || slot != MKWorkspaceVerticalStackSlot.ENTRY) {
             return List.of();
@@ -399,10 +399,10 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         );
     }
 
-    private static MKWorkspaceFamilyHorizontalExitDefinition cornerEntryHorizontalExit(Direction direction) {
-        return new MKWorkspaceFamilyHorizontalExitDefinition(
+    private static MKFamilyHorizontalExitDefinition cornerEntryHorizontalExit(Direction direction) {
+        return new MKFamilyHorizontalExitDefinition(
                 direction,
-                MKWorkspaceHorizontalExitPathKind.BRANCH,
+                MKHorizontalExitPathKind.BRANCH,
                 "branch_opening",
                 MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN,
                 0,
@@ -835,8 +835,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         };
     }
 
-    private List<MKWorkspaceFamilyHorizontalExitDefinition> rotateHorizontalExits(
-            List<MKWorkspaceFamilyHorizontalExitDefinition> exits, String rotation) {
+    private List<MKFamilyHorizontalExitDefinition> rotateHorizontalExits(
+            List<MKFamilyHorizontalExitDefinition> exits, String rotation) {
         if (MKWorkspaceTemplateReuseTags.ROTATION_NONE.equals(rotation) || exits.isEmpty()) {
             return exits;
         }
@@ -845,13 +845,13 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                 .toList();
     }
 
-    private MKWorkspaceFamilyHorizontalExitDefinition rotateHorizontalExit(
-            MKWorkspaceFamilyHorizontalExitDefinition exit, String rotation) {
+    private MKFamilyHorizontalExitDefinition rotateHorizontalExit(
+            MKFamilyHorizontalExitDefinition exit, String rotation) {
         if (exit.direction().getAxis().isVertical()) {
             return exit;
         }
         Direction direction = rotateHorizontalDirection(exit.direction(), rotation);
-        return new MKWorkspaceFamilyHorizontalExitDefinition(
+        return new MKFamilyHorizontalExitDefinition(
                 direction,
                 exit.pathKind(),
                 exit.openingProfileId(),
@@ -2069,12 +2069,12 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                 .orElseGet(() -> new IngressConnection(fallbackOpening, 0, 0));
     }
 
-    private Optional<MKWorkspaceFamilyHorizontalExitDefinition> centerEntryIngress(MKStructureWorkspace workspace) {
+    private Optional<MKFamilyHorizontalExitDefinition> centerEntryIngress(MKStructureWorkspace workspace) {
         return workspace.familyDefinitions().stream()
                 .filter(family -> "keep.center.entry".equals(family.topologySlotId()))
                 .flatMap(family -> family.horizontalOnlyExits().stream())
                 .filter(exit -> exit.direction() == Direction.SOUTH)
-                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.INGRESS)
+                .filter(exit -> exit.pathKind() == MKHorizontalExitPathKind.INGRESS)
                 .findFirst();
     }
 

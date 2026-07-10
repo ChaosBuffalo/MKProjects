@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.widgets;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -30,12 +30,12 @@ public class MKBranchExitMaskWidget extends MKWidget {
     private static final int LABEL_ACTIVE = 0xFFF8FAFC;
     private static final int LABEL_INACTIVE = 0xFF9CA3AF;
 
-    private List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits;
+    private List<MKFamilyHorizontalExitDefinition> horizontalExits;
     private Consumer<Direction> editCallback;
     private Consumer<Direction> toggleCallback;
     private Direction selectedDirection;
 
-    public MKBranchExitMaskWidget(List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits) {
+    public MKBranchExitMaskWidget(List<MKFamilyHorizontalExitDefinition> horizontalExits) {
         super(0, 0, WIDGET_SIZE, WIDGET_SIZE);
         this.horizontalExits = List.copyOf(horizontalExits);
         setTooltip(Component.literal("Left click an active exit to edit it. Right click to toggle exits on or off."));
@@ -56,7 +56,7 @@ public class MKBranchExitMaskWidget extends MKWidget {
         return this;
     }
 
-    public void setHorizontalExits(List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits) {
+    public void setHorizontalExits(List<MKFamilyHorizontalExitDefinition> horizontalExits) {
         this.horizontalExits = List.copyOf(horizontalExits);
     }
 

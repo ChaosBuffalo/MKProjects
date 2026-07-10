@@ -3,12 +3,12 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomProfile;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
@@ -48,7 +48,7 @@ class MKWorkspaceStableSlotIdentityTest {
         MKStructureWorkspace workspace = floorTopologyWorkspace(planner);
         MKPlannedPiece baseline = planner.createCanonicalPieces(workspace).stream()
                 .filter(piece -> "floor_plan_room".equals(piece.tags().get("tower_piece_kind")))
-                .filter(piece -> MKWorkspaceFloorRoomKind.MAIN_ROOM.getSerializedName()
+                .filter(piece -> MKFloorRoomKind.MAIN_ROOM.getSerializedName()
                         .equals(piece.tags().get("workspace_floor_room_kind")))
                 .findFirst()
                 .orElseThrow();
@@ -57,13 +57,13 @@ class MKWorkspaceStableSlotIdentityTest {
 
         String stackId = baseline.tags().get("workspace_floor_topology_stack_id");
         String floorRole = baseline.tags().get("workspace_floor_topology_floor_role");
-        MKWorkspaceFloorTopologySettings settings = workspace.topologyProfile()
+        MKFloorTopologySettings settings = workspace.topologyProfile()
                 .floorTopologySettingsOrDefault(stackId, floorRole);
-        ArrayList<MKWorkspaceFloorRoomProfile> mainProfiles = new ArrayList<>(settings.mainRoomProfiles());
-        MKWorkspaceFloorRoomProfile inserted = mainProfiles.getFirst()
+        ArrayList<MKFloorRoomProfile> mainProfiles = new ArrayList<>(settings.mainRoomProfiles());
+        MKFloorRoomProfile inserted = mainProfiles.getFirst()
                 .withIdentity("new_main_room", "New Main Room");
         mainProfiles.add(0, inserted);
-        MKWorkspaceFloorTopologySettings updatedSettings = settings.withRoomProfiles(
+        MKFloorTopologySettings updatedSettings = settings.withRoomProfiles(
                 List.copyOf(mainProfiles),
                 settings.branchRoomProfiles(),
                 settings.branchCapProfiles(),
@@ -204,14 +204,14 @@ class MKWorkspaceStableSlotIdentityTest {
                 family.roomHeight(),
                 family.horizontalExtrusionMode(),
                 List.of(
-                        new MKWorkspaceFamilyHorizontalExitDefinition(
+                        new MKFamilyHorizontalExitDefinition(
                                 Direction.NORTH,
-                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                                MKHorizontalExitPathKind.MAIN_EXIT,
                                 "floor_main",
                                 MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN),
-                        new MKWorkspaceFamilyHorizontalExitDefinition(
+                        new MKFamilyHorizontalExitDefinition(
                                 Direction.EAST,
-                                MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                MKHorizontalExitPathKind.BRANCH,
                                 "floor_branch",
                                 MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN)
                 ),

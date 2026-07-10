@@ -1,14 +1,14 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorLinkGenerationMode;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomProfile;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorLinkGenerationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLayerStateService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
@@ -58,8 +58,8 @@ class MKStructureWorkspaceServicePreflightTest {
 
     @Test
     void preflightWorkspaceUpdateAggregatesFloorTopologyChanges() {
-        MKWorkspaceFloorTopologySettings previous = settings("tower.primary", "main_floor");
-        MKWorkspaceFloorTopologySettings updated = previous.withManualHallwayLeadInPieces(6);
+        MKFloorTopologySettings previous = settings("tower.primary", "main_floor");
+        MKFloorTopologySettings updated = previous.withManualHallwayLeadInPieces(6);
         MKStructureWorkspace existing = MKStructureWorkspace.createDraft(BlockPos.ZERO)
                 .withPieces(List.of());
         existing = withTopologyProfile(existing, existing.topologyProfile().withFloorTopologySettings(previous));
@@ -91,8 +91,8 @@ class MKStructureWorkspaceServicePreflightTest {
 
     @Test
     void lockedInvalidatedLayersReportsBlockedHallwayLayer() {
-        MKWorkspaceFloorTopologySettings previous = settings("tower.primary", "main_floor");
-        MKWorkspaceFloorTopologySettings updated = previous.withManualHallwayLeadInPieces(6);
+        MKFloorTopologySettings previous = settings("tower.primary", "main_floor");
+        MKFloorTopologySettings updated = previous.withManualHallwayLeadInPieces(6);
         MKStructureWorkspace existing = MKStructureWorkspace.createDraft(BlockPos.ZERO);
         existing = withTopologyProfile(existing, existing.topologyProfile().withFloorTopologySettings(previous));
         existing = new MKWorkspaceLayerStateService()
@@ -109,9 +109,9 @@ class MKStructureWorkspaceServicePreflightTest {
 
     @Test
     void linkRenderingOnlyPreflightIsSafeMetadataUpdate() {
-        MKWorkspaceFloorTopologySettings previous = settings("tower.primary", "main_floor");
-        MKWorkspaceFloorTopologySettings updated = previous
-                .withLinkGenerationMode(MKWorkspaceFloorLinkGenerationMode.DECAYING_HALLWAY)
+        MKFloorTopologySettings previous = settings("tower.primary", "main_floor");
+        MKFloorTopologySettings updated = previous
+                .withLinkGenerationMode(MKFloorLinkGenerationMode.DECAYING_HALLWAY)
                 .withLinkDecay(0.65f);
         MKStructureWorkspace existing = MKStructureWorkspace.createDraft(BlockPos.ZERO)
                 .withPieces(List.of(floorPiece("room_00_template", "room_00",
@@ -136,8 +136,8 @@ class MKStructureWorkspaceServicePreflightTest {
     @Test
     void broadTopologyPreflightReportsOrphanedTemplateBindings() {
         MKWorkspacePlannerId orphanedId = MKWorkspacePlannerId.of("keep.main.floor_plan.room.removed_00");
-        MKWorkspaceFloorTopologySettings previous = settings("tower.primary", "main_floor");
-        MKWorkspaceFloorTopologySettings updated = previous.withMaxMainPathPieces(3);
+        MKFloorTopologySettings previous = settings("tower.primary", "main_floor");
+        MKFloorTopologySettings updated = previous.withMaxMainPathPieces(3);
         MKStructureWorkspace existing = MKStructureWorkspace.createDraft(BlockPos.ZERO)
                 .withPieces(List.of(floorPiece("removed_00_template", "removed_00", orphanedId)));
         existing = withTopologyProfile(existing, existing.topologyProfile().withFloorTopologySettings(previous));
@@ -249,12 +249,12 @@ class MKStructureWorkspaceServicePreflightTest {
                 .flatMap(piece -> List.of(plannedTemplatePiece(piece), plannedVariantPiece(piece)).stream())
                 .toList();
         existing = existing.withPieces(pieces);
-        MKWorkspaceFloorTopologySettings floorSettings = existing.topologyProfile()
+        MKFloorTopologySettings floorSettings = existing.topologyProfile()
                 .floorTopologySettingsOrDefault("keep.center", "main_floor");
-        MKWorkspaceFloorRoomProfile added = floorSettings.mainRoomProfiles().getFirst()
+        MKFloorRoomProfile added = floorSettings.mainRoomProfiles().getFirst()
                 .withIdentity("extra_main_room", "Extra Main Room");
-        MKWorkspaceFloorTopologySettings updatedFloorSettings = floorSettings.withAddedRoomProfile(
-                MKWorkspaceFloorRoomKind.MAIN_ROOM, added);
+        MKFloorTopologySettings updatedFloorSettings = floorSettings.withAddedRoomProfile(
+                MKFloorRoomKind.MAIN_ROOM, added);
         MKStructureWorkspace requested = withTopologyProfile(existing,
                 existing.topologyProfile().withFloorTopologySettings(updatedFloorSettings));
         requested = withCopiedPhysicalValueObjects(requested);
@@ -271,19 +271,19 @@ class MKStructureWorkspaceServicePreflightTest {
                 .anyMatch(warning -> warning.contains("full regeneration will clear")));
     }
 
-    private static MKWorkspaceFloorTopologySettings settings(String stackId, String floorRole) {
-        return new MKWorkspaceFloorTopologySettings(
+    private static MKFloorTopologySettings settings(String stackId, String floorRole) {
+        return new MKFloorTopologySettings(
                 stackId,
                 floorRole,
                 1,
                 1,
                 0,
-                MKWorkspaceHallwayLeadInMode.AUTO,
+                MKHallwayLeadInMode.AUTO,
                 1,
                 true,
                 true,
                 false,
-                MKWorkspaceFloorTopologySettings.DEFAULT_SPRAWL,
+                MKFloorTopologySettings.DEFAULT_SPRAWL,
                 Optional.empty(),
                 List.of(),
                 List.of(),
@@ -323,9 +323,9 @@ class MKStructureWorkspaceServicePreflightTest {
     private static MKStructureWorkspace withMainFloorExit(MKStructureWorkspace workspace) {
         List<MKWorkspaceRoomFamilyDefinition> familyDefinitions = workspace.familyDefinitions().stream()
                 .map(family -> family.topologySlotId().equals("keep.center.main_floor") ?
-                        copyFamilyWithExits(family, List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
+                        copyFamilyWithExits(family, List.of(new MKFamilyHorizontalExitDefinition(
                                 Direction.SOUTH,
-                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                                MKHorizontalExitPathKind.MAIN_EXIT,
                                 "main_opening"
                         ))) : family)
                 .toList();
@@ -334,7 +334,7 @@ class MKStructureWorkspaceServicePreflightTest {
 
     private static MKWorkspaceRoomFamilyDefinition copyFamilyWithExits(
             MKWorkspaceRoomFamilyDefinition family,
-            List<MKWorkspaceFamilyHorizontalExitDefinition> exits) {
+            List<MKFamilyHorizontalExitDefinition> exits) {
         return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                 family.baseName(),
                 family.slotMetadata(),

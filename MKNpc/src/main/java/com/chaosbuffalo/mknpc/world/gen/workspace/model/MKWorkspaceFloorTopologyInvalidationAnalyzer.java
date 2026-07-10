@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -9,8 +10,8 @@ public final class MKWorkspaceFloorTopologyInvalidationAnalyzer {
     private static final String HALLWAY_ROUTING_OPERATION = "regenerate_hallway_routing";
 
     public MKWorkspaceInvalidationReport analyze(MKWorkspacePlannerId floorPlannerId,
-                                                 MKWorkspaceFloorTopologySettings previous,
-                                                 MKWorkspaceFloorTopologySettings updated) {
+                                                 MKFloorTopologySettings previous,
+                                                 MKFloorTopologySettings updated) {
         if (previous.equals(updated)) {
             return MKWorkspaceInvalidationReport.noChanges("Floor topology settings are unchanged.");
         }
@@ -86,14 +87,14 @@ public final class MKWorkspaceFloorTopologyInvalidationAnalyzer {
         );
     }
 
-    private boolean identityChanged(MKWorkspaceFloorTopologySettings previous,
-                                    MKWorkspaceFloorTopologySettings updated) {
+    private boolean identityChanged(MKFloorTopologySettings previous,
+                                    MKFloorTopologySettings updated) {
         return !Objects.equals(previous.stackId(), updated.stackId())
                 || !Objects.equals(previous.floorRole(), updated.floorRole());
     }
 
-    private boolean hallwayRoutingChanged(MKWorkspaceFloorTopologySettings previous,
-                                          MKWorkspaceFloorTopologySettings updated) {
+    private boolean hallwayRoutingChanged(MKFloorTopologySettings previous,
+                                          MKFloorTopologySettings updated) {
         return previous.hallwayLeadInMode() != updated.hallwayLeadInMode()
                 || previous.manualHallwayLeadInPieces() != updated.manualHallwayLeadInPieces()
                 || previous.linksEnabled() != updated.linksEnabled()
@@ -103,8 +104,8 @@ public final class MKWorkspaceFloorTopologyInvalidationAnalyzer {
                 || previous.maxLinkLength() != updated.maxLinkLength();
     }
 
-    private boolean linkRenderingChanged(MKWorkspaceFloorTopologySettings previous,
-                                         MKWorkspaceFloorTopologySettings updated) {
+    private boolean linkRenderingChanged(MKFloorTopologySettings previous,
+                                         MKFloorTopologySettings updated) {
         return previous.linkGenerationMode() != updated.linkGenerationMode()
                 || Float.compare(previous.linkDecay(), updated.linkDecay()) != 0
                 || previous.endpointIntactRadius() != updated.endpointIntactRadius()
@@ -116,8 +117,8 @@ public final class MKWorkspaceFloorTopologyInvalidationAnalyzer {
                 || Float.compare(previous.insertMaxDecay(), updated.insertMaxDecay()) != 0;
     }
 
-    private boolean topologyChanged(MKWorkspaceFloorTopologySettings previous,
-                                    MKWorkspaceFloorTopologySettings updated) {
+    private boolean topologyChanged(MKFloorTopologySettings previous,
+                                    MKFloorTopologySettings updated) {
         List<Boolean> checks = new ArrayList<>();
         checks.add(previous.minMainPathPieces() != updated.minMainPathPieces());
         checks.add(previous.maxMainPathPieces() != updated.maxMainPathPieces());

@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
@@ -20,7 +20,7 @@ public record MKDungeonTopologyGroupRule(
         int maxLinksPerRoom,
         int maxLinkLength,
         Optional<Long> lockedLayoutSeed,
-        Optional<MKWorkspaceFloorTopologySettings> floorTopologySettings,
+        Optional<MKFloorTopologySettings> floorTopologySettings,
         int rootWidth,
         int rootLength,
         boolean hasMainPathContinuations,
@@ -48,7 +48,7 @@ public record MKDungeonTopologyGroupRule(
                     .forGetter(MKDungeonTopologyGroupRule::maxLinkLength),
             Codec.LONG.optionalFieldOf("locked_layout_seed")
                     .forGetter(MKDungeonTopologyGroupRule::lockedLayoutSeed),
-            MKWorkspaceFloorTopologySettings.CODEC.optionalFieldOf("floor_topology_settings")
+            MKFloorTopologySettings.CODEC.optionalFieldOf("floor_topology_settings")
                     .forGetter(MKDungeonTopologyGroupRule::floorTopologySettings),
             Codec.INT.optionalFieldOf("root_width", 0)
                     .forGetter(MKDungeonTopologyGroupRule::rootWidth),
@@ -122,7 +122,7 @@ public record MKDungeonTopologyGroupRule(
                                       boolean linksEnabled, float linkDensity, int maxLinksPerFloor,
                                       int maxLinksPerRoom, int maxLinkLength,
                                       Optional<Long> lockedLayoutSeed,
-                                      Optional<MKWorkspaceFloorTopologySettings> floorTopologySettings,
+                                      Optional<MKFloorTopologySettings> floorTopologySettings,
                                       boolean hasMainPathContinuations,
                                       @Nullable ResourceLocation mainPathEndingPool) {
         this(topologyGroup, minMainPathPieces, maxMainPathPieces, maxBranchPiecesBeforeCap, sprawl,

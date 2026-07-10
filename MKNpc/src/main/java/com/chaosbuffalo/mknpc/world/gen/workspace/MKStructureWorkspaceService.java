@@ -17,7 +17,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPalet
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologyMutationPreflightService;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayerState;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInvalidationReport;
@@ -393,9 +393,9 @@ public class MKStructureWorkspaceService {
         List<MKWorkspaceInvalidationReport> reports = new ArrayList<>();
         List<MKPlannedPiece> requestedCanonicalPieces = plannerRegistry.plannerFor(requested)
                 .createCanonicalPieces(requested);
-        for (MKWorkspaceFloorTopologySettings requestedSettings :
+        for (MKFloorTopologySettings requestedSettings :
                 requested.topologyProfile().floorTopologySettings()) {
-            MKWorkspaceFloorTopologySettings previousSettings = existing.topologyProfile()
+            MKFloorTopologySettings previousSettings = existing.topologyProfile()
                     .floorTopologySettings(requestedSettings.stackId(), requestedSettings.floorRole())
                     .orElseGet(() -> existing.topologyProfile().floorTopologySettingsOrDefault(
                             requestedSettings.stackId(), requestedSettings.floorRole()));
@@ -417,8 +417,8 @@ public class MKStructureWorkspaceService {
     private MKWorkspaceInvalidationReport withConcreteTemplateBindings(
             MKStructureWorkspace existing,
             List<MKPlannedPiece> requestedCanonicalPieces,
-            MKWorkspaceFloorTopologySettings previousSettings,
-            MKWorkspaceFloorTopologySettings requestedSettings,
+            MKFloorTopologySettings previousSettings,
+            MKFloorTopologySettings requestedSettings,
             MKWorkspaceInvalidationReport report) {
         if (!report.hasInvalidatedLayer(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS)) {
             return report;
@@ -442,7 +442,7 @@ public class MKStructureWorkspaceService {
                         requestedSettings.floorRole()));
     }
 
-    private MKWorkspacePlannerId floorPlannerId(MKWorkspaceFloorTopologySettings settings) {
+    private MKWorkspacePlannerId floorPlannerId(MKFloorTopologySettings settings) {
         return MKWorkspacePlannerId.of(settings.stackId())
                 .child("floor")
                 .child(settings.floorRole())

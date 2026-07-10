@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 
 import java.util.ArrayList;
@@ -165,7 +165,7 @@ public record MKWorkspaceVerticalStackSizingReport(
         return new SectionInfo(key, label, height, active, exits);
     }
 
-    private static HorizontalExitInfo horizontalExitInfo(MKWorkspaceFamilyHorizontalExitDefinition exit) {
+    private static HorizontalExitInfo horizontalExitInfo(MKFamilyHorizontalExitDefinition exit) {
         return new HorizontalExitInfo(
                 exit.direction().getSerializedName(),
                 exit.pathKind().getSerializedName(),

@@ -1,5 +1,11 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.model;
+package com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout;
 
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceCodecs;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerSettingsEntry;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackBudget;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
@@ -10,13 +16,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public record MKWorkspaceFloorTopologySettings(
+public record MKFloorTopologySettings(
         String stackId,
         String floorRole,
         int minMainPathPieces,
         int maxMainPathPieces,
         int maxBranchPiecesBeforeCap,
-        MKWorkspaceHallwayLeadInMode hallwayLeadInMode,
+        MKHallwayLeadInMode hallwayLeadInMode,
         int manualHallwayLeadInPieces,
         boolean mainHallwaysEnabled,
         boolean branchHallwaysEnabled,
@@ -27,7 +33,7 @@ public record MKWorkspaceFloorTopologySettings(
         int maxLinksPerFloor,
         int maxLinksPerRoom,
         int maxLinkLength,
-        MKWorkspaceFloorLinkGenerationMode linkGenerationMode,
+        MKFloorLinkGenerationMode linkGenerationMode,
         float linkDecay,
         int endpointIntactRadius,
         float middleDecayBonus,
@@ -42,11 +48,11 @@ public record MKWorkspaceFloorTopologySettings(
         int branchHallwayWidth,
         Optional<Long> lockedLayoutSeed,
         Optional<MKWorkspacePaletteOverride> paletteOverride,
-        List<MKWorkspaceFloorRoomProfile> mainRoomProfiles,
-        List<MKWorkspaceFloorRoomProfile> branchRoomProfiles,
-        List<MKWorkspaceFloorRoomProfile> branchCapProfiles,
-        List<MKWorkspaceFloorRoomProfile> mainCapApproachProfiles,
-        List<MKWorkspaceFloorRoomProfile> mainCapProfiles
+        List<MKFloorRoomProfile> mainRoomProfiles,
+        List<MKFloorRoomProfile> branchRoomProfiles,
+        List<MKFloorRoomProfile> branchCapProfiles,
+        List<MKFloorRoomProfile> mainCapApproachProfiles,
+        List<MKFloorRoomProfile> mainCapProfiles
 ) {
     public static final int DEFAULT_MIN_MAIN_PATH_PIECES = 1;
     public static final int DEFAULT_MAX_MAIN_PATH_PIECES = 1;
@@ -59,8 +65,8 @@ public record MKWorkspaceFloorTopologySettings(
     public static final int DEFAULT_MAX_LINKS_PER_FLOOR = 10;
     public static final int DEFAULT_MAX_LINKS_PER_ROOM = 3;
     public static final int DEFAULT_MAX_LINK_LENGTH = 32;
-    public static final MKWorkspaceFloorLinkGenerationMode DEFAULT_LINK_GENERATION_MODE =
-            MKWorkspaceFloorLinkGenerationMode.FULL_HALLWAY;
+    public static final MKFloorLinkGenerationMode DEFAULT_LINK_GENERATION_MODE =
+            MKFloorLinkGenerationMode.FULL_HALLWAY;
     public static final float DEFAULT_LINK_DECAY = 0.0f;
     public static final int DEFAULT_ENDPOINT_INTACT_RADIUS = 3;
     public static final float DEFAULT_MIDDLE_DECAY_BONUS = 0.25f;
@@ -76,12 +82,12 @@ public record MKWorkspaceFloorTopologySettings(
     public static final int MAX_INSERT_SPACING = 128;
     public static final ResourceLocation PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "floor_topology");
 
-    public static final Codec<MKWorkspaceFloorTopologySettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            ScalarSettings.CODEC.fieldOf("settings").forGetter(MKWorkspaceFloorTopologySettings::scalarSettings),
+    public static final Codec<MKFloorTopologySettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            ScalarSettings.CODEC.fieldOf("settings").forGetter(MKFloorTopologySettings::scalarSettings),
             LinkSettings.CODEC.optionalFieldOf("links", LinkSettings.DEFAULTS)
-                    .forGetter(MKWorkspaceFloorTopologySettings::linkSettings),
-            RoomProfiles.CODEC.fieldOf("profiles").forGetter(MKWorkspaceFloorTopologySettings::roomProfiles)
-    ).apply(instance, (settings, links, profiles) -> new MKWorkspaceFloorTopologySettings(
+                    .forGetter(MKFloorTopologySettings::linkSettings),
+            RoomProfiles.CODEC.fieldOf("profiles").forGetter(MKFloorTopologySettings::roomProfiles)
+    ).apply(instance, (settings, links, profiles) -> new MKFloorTopologySettings(
             settings.stackId(),
             settings.floorRole(),
             settings.minMainPathPieces(),
@@ -126,7 +132,7 @@ public record MKWorkspaceFloorTopologySettings(
             int minMainPathPieces,
             int maxMainPathPieces,
             int maxBranchPiecesBeforeCap,
-            MKWorkspaceHallwayLeadInMode hallwayLeadInMode,
+            MKHallwayLeadInMode hallwayLeadInMode,
             int manualHallwayLeadInPieces,
             boolean mainHallwaysEnabled,
             boolean branchHallwaysEnabled,
@@ -144,8 +150,8 @@ public record MKWorkspaceFloorTopologySettings(
                         .forGetter(ScalarSettings::maxMainPathPieces),
                 Codec.INT.optionalFieldOf("max_branch_pieces_before_cap", DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP)
                         .forGetter(ScalarSettings::maxBranchPiecesBeforeCap),
-                MKWorkspaceHallwayLeadInMode.CODEC.optionalFieldOf("hallway_lead_in_mode",
-                                MKWorkspaceHallwayLeadInMode.AUTO)
+                MKHallwayLeadInMode.CODEC.optionalFieldOf("hallway_lead_in_mode",
+                                MKHallwayLeadInMode.AUTO)
                         .forGetter(ScalarSettings::hallwayLeadInMode),
                 Codec.INT.optionalFieldOf("manual_hallway_lead_in_pieces", 1)
                         .forGetter(ScalarSettings::manualHallwayLeadInPieces),
@@ -211,7 +217,7 @@ public record MKWorkspaceFloorTopologySettings(
                         .forGetter(LinkSettings::generation)
         ).apply(instance, LinkSettings::new));
 
-        private MKWorkspaceFloorLinkGenerationMode generationMode() {
+        private MKFloorLinkGenerationMode generationMode() {
             return generation.mode();
         }
 
@@ -249,7 +255,7 @@ public record MKWorkspaceFloorTopologySettings(
     }
 
     private record LinkGenerationSettings(
-            MKWorkspaceFloorLinkGenerationMode mode,
+            MKFloorLinkGenerationMode mode,
             float decay,
             int endpointIntactRadius,
             float middleDecayBonus,
@@ -272,7 +278,7 @@ public record MKWorkspaceFloorTopologySettings(
         );
 
         private static final Codec<LinkGenerationSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                MKWorkspaceFloorLinkGenerationMode.CODEC.optionalFieldOf("mode",
+                MKFloorLinkGenerationMode.CODEC.optionalFieldOf("mode",
                                 DEFAULT_LINK_GENERATION_MODE)
                         .forGetter(LinkGenerationSettings::mode),
                 Codec.FLOAT.optionalFieldOf("decay", DEFAULT_LINK_DECAY)
@@ -295,22 +301,22 @@ public record MKWorkspaceFloorTopologySettings(
     }
 
     private record RoomProfiles(
-            List<MKWorkspaceFloorRoomProfile> mainRoomProfiles,
-            List<MKWorkspaceFloorRoomProfile> branchRoomProfiles,
-            List<MKWorkspaceFloorRoomProfile> branchCapProfiles,
-            List<MKWorkspaceFloorRoomProfile> mainCapApproachProfiles,
-            List<MKWorkspaceFloorRoomProfile> mainCapProfiles
+            List<MKFloorRoomProfile> mainRoomProfiles,
+            List<MKFloorRoomProfile> branchRoomProfiles,
+            List<MKFloorRoomProfile> branchCapProfiles,
+            List<MKFloorRoomProfile> mainCapApproachProfiles,
+            List<MKFloorRoomProfile> mainCapProfiles
     ) {
         private static final Codec<RoomProfiles> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                MKWorkspaceFloorRoomProfile.CODEC.listOf().optionalFieldOf("main_room_profiles", List.of())
+                MKFloorRoomProfile.CODEC.listOf().optionalFieldOf("main_room_profiles", List.of())
                         .forGetter(RoomProfiles::mainRoomProfiles),
-                MKWorkspaceFloorRoomProfile.CODEC.listOf().optionalFieldOf("branch_room_profiles", List.of())
+                MKFloorRoomProfile.CODEC.listOf().optionalFieldOf("branch_room_profiles", List.of())
                         .forGetter(RoomProfiles::branchRoomProfiles),
-                MKWorkspaceFloorRoomProfile.CODEC.listOf().optionalFieldOf("branch_cap_profiles", List.of())
+                MKFloorRoomProfile.CODEC.listOf().optionalFieldOf("branch_cap_profiles", List.of())
                         .forGetter(RoomProfiles::branchCapProfiles),
-                MKWorkspaceFloorRoomProfile.CODEC.listOf().optionalFieldOf("main_cap_approach_profiles", List.of())
+                MKFloorRoomProfile.CODEC.listOf().optionalFieldOf("main_cap_approach_profiles", List.of())
                         .forGetter(RoomProfiles::mainCapApproachProfiles),
-                MKWorkspaceFloorRoomProfile.CODEC.listOf().optionalFieldOf("main_cap_profiles", List.of())
+                MKFloorRoomProfile.CODEC.listOf().optionalFieldOf("main_cap_profiles", List.of())
                         .forGetter(RoomProfiles::mainCapProfiles)
         ).apply(instance, RoomProfiles::new));
     }
@@ -333,13 +339,13 @@ public record MKWorkspaceFloorTopologySettings(
                 mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings {
+    public MKFloorTopologySettings {
         stackId = stackId == null || stackId.isBlank() ? "vertical_stack" : stackId;
         floorRole = floorRole == null || floorRole.isBlank() ? MKWorkspaceVerticalStackSlot.MAIN_FLOOR.suffix() : floorRole;
         minMainPathPieces = Math.max(0, minMainPathPieces);
         maxMainPathPieces = Math.max(minMainPathPieces, maxMainPathPieces);
         maxBranchPiecesBeforeCap = Math.max(0, Math.min(MAX_BRANCH_PIECES_BEFORE_CAP, maxBranchPiecesBeforeCap));
-        hallwayLeadInMode = hallwayLeadInMode == null ? MKWorkspaceHallwayLeadInMode.AUTO : hallwayLeadInMode;
+        hallwayLeadInMode = hallwayLeadInMode == null ? MKHallwayLeadInMode.AUTO : hallwayLeadInMode;
         manualHallwayLeadInPieces = Math.max(0,
                 Math.min(MAX_MANUAL_HALLWAY_LEAD_IN_PIECES, manualHallwayLeadInPieces));
         sprawl = Math.max(0.0f, Math.min(1.0f, sprawl));
@@ -362,19 +368,19 @@ public record MKWorkspaceFloorTopologySettings(
         branchHallwayWidth = Math.max(0, branchHallwayWidth);
         lockedLayoutSeed = lockedLayoutSeed == null ? Optional.empty() : lockedLayoutSeed;
         paletteOverride = paletteOverride == null ? Optional.empty() : paletteOverride.filter(override -> !override.isEmpty());
-        mainRoomProfiles = normalizeProfiles(mainRoomProfiles, MKWorkspaceFloorRoomKind.MAIN_ROOM);
-        branchRoomProfiles = normalizeProfiles(branchRoomProfiles, MKWorkspaceFloorRoomKind.BRANCH_ROOM);
-        branchCapProfiles = normalizeProfiles(branchCapProfiles, MKWorkspaceFloorRoomKind.BRANCH_CAP);
-        mainCapApproachProfiles = normalizeProfiles(mainCapApproachProfiles, MKWorkspaceFloorRoomKind.MAIN_CAP_APPROACH);
-        mainCapProfiles = normalizeProfiles(mainCapProfiles, MKWorkspaceFloorRoomKind.MAIN_CAP);
+        mainRoomProfiles = normalizeProfiles(mainRoomProfiles, MKFloorRoomKind.MAIN_ROOM);
+        branchRoomProfiles = normalizeProfiles(branchRoomProfiles, MKFloorRoomKind.BRANCH_ROOM);
+        branchCapProfiles = normalizeProfiles(branchCapProfiles, MKFloorRoomKind.BRANCH_CAP);
+        mainCapApproachProfiles = normalizeProfiles(mainCapApproachProfiles, MKFloorRoomKind.MAIN_CAP_APPROACH);
+        mainCapProfiles = normalizeProfiles(mainCapProfiles, MKFloorRoomKind.MAIN_CAP);
     }
 
-    public MKWorkspaceFloorTopologySettings(String stackId,
+    public MKFloorTopologySettings(String stackId,
                                             String floorRole,
                                             int minMainPathPieces,
                                             int maxMainPathPieces,
                                             int maxBranchPiecesBeforeCap,
-                                            MKWorkspaceHallwayLeadInMode hallwayLeadInMode,
+                                            MKHallwayLeadInMode hallwayLeadInMode,
                                             int manualHallwayLeadInPieces,
                                             boolean mainHallwaysEnabled,
                                             boolean branchHallwaysEnabled,
@@ -387,11 +393,11 @@ public record MKWorkspaceFloorTopologySettings(
                                             int maxLinkLength,
                                             Optional<Long> lockedLayoutSeed,
                                             Optional<MKWorkspacePaletteOverride> paletteOverride,
-                                            List<MKWorkspaceFloorRoomProfile> mainRoomProfiles,
-                                            List<MKWorkspaceFloorRoomProfile> branchRoomProfiles,
-                                            List<MKWorkspaceFloorRoomProfile> branchCapProfiles,
-                                            List<MKWorkspaceFloorRoomProfile> mainCapApproachProfiles,
-                                            List<MKWorkspaceFloorRoomProfile> mainCapProfiles) {
+                                            List<MKFloorRoomProfile> mainRoomProfiles,
+                                            List<MKFloorRoomProfile> branchRoomProfiles,
+                                            List<MKFloorRoomProfile> branchCapProfiles,
+                                            List<MKFloorRoomProfile> mainCapApproachProfiles,
+                                            List<MKFloorRoomProfile> mainCapProfiles) {
         this(stackId, floorRole, minMainPathPieces, maxMainPathPieces, maxBranchPiecesBeforeCap,
                 hallwayLeadInMode, manualHallwayLeadInPieces, mainHallwaysEnabled, branchHallwaysEnabled,
                 mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom,
@@ -401,23 +407,23 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings(String stackId,
+    public MKFloorTopologySettings(String stackId,
                                             String floorRole,
                                             int minMainPathPieces,
                                             int maxMainPathPieces,
                                             int maxBranchPiecesBeforeCap,
-                                            MKWorkspaceHallwayLeadInMode hallwayLeadInMode,
+                                            MKHallwayLeadInMode hallwayLeadInMode,
                                             int manualHallwayLeadInPieces,
                                             boolean mainHallwaysEnabled,
                                             boolean branchHallwaysEnabled,
                                             boolean mainCapApproachEnabled,
                                             float sprawl,
                                             Optional<Long> lockedLayoutSeed,
-                                            List<MKWorkspaceFloorRoomProfile> mainRoomProfiles,
-                                            List<MKWorkspaceFloorRoomProfile> branchRoomProfiles,
-                                            List<MKWorkspaceFloorRoomProfile> branchCapProfiles,
-                                            List<MKWorkspaceFloorRoomProfile> mainCapApproachProfiles,
-                                            List<MKWorkspaceFloorRoomProfile> mainCapProfiles) {
+                                            List<MKFloorRoomProfile> mainRoomProfiles,
+                                            List<MKFloorRoomProfile> branchRoomProfiles,
+                                            List<MKFloorRoomProfile> branchCapProfiles,
+                                            List<MKFloorRoomProfile> mainCapApproachProfiles,
+                                            List<MKFloorRoomProfile> mainCapProfiles) {
         this(stackId, floorRole, minMainPathPieces, maxMainPathPieces, maxBranchPiecesBeforeCap,
                 hallwayLeadInMode, manualHallwayLeadInPieces, mainHallwaysEnabled, branchHallwaysEnabled,
                 mainCapApproachEnabled, sprawl, DEFAULT_LINKS_ENABLED, DEFAULT_LINK_DENSITY,
@@ -436,16 +442,16 @@ public record MKWorkspaceFloorTopologySettings(
         return stackId + "." + floorRole;
     }
 
-    public static MKWorkspaceFloorTopologySettings defaults(MKWorkspaceVerticalStackSettings stackSettings,
+    public static MKFloorTopologySettings defaults(MKWorkspaceVerticalStackSettings stackSettings,
                                                             String floorRole) {
         int height = heightForFloorRole(stackSettings, floorRole);
-        return new MKWorkspaceFloorTopologySettings(
+        return new MKFloorTopologySettings(
                 stackSettings.stackId(),
                 floorRole,
                 DEFAULT_MIN_MAIN_PATH_PIECES,
                 DEFAULT_MAX_MAIN_PATH_PIECES,
                 DEFAULT_MAX_BRANCH_PIECES_BEFORE_CAP,
-                MKWorkspaceHallwayLeadInMode.AUTO,
+                MKHallwayLeadInMode.AUTO,
                 1,
                 true,
                 true,
@@ -458,21 +464,21 @@ public record MKWorkspaceFloorTopologySettings(
                 DEFAULT_MAX_LINK_LENGTH,
                 Optional.empty(),
                 Optional.empty(),
-                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.MAIN_ROOM,
+                List.of(MKFloorRoomProfile.defaults(MKFloorRoomKind.MAIN_ROOM,
                         stackSettings.width(), stackSettings.length(), height)),
-                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.BRANCH_ROOM,
+                List.of(MKFloorRoomProfile.defaults(MKFloorRoomKind.BRANCH_ROOM,
                         stackSettings.width(), stackSettings.length(), height)),
-                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.BRANCH_CAP,
+                List.of(MKFloorRoomProfile.defaults(MKFloorRoomKind.BRANCH_CAP,
                         stackSettings.width(), stackSettings.length(), height)),
-                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.MAIN_CAP_APPROACH,
+                List.of(MKFloorRoomProfile.defaults(MKFloorRoomKind.MAIN_CAP_APPROACH,
                         stackSettings.width(), stackSettings.length(), height)),
-                List.of(MKWorkspaceFloorRoomProfile.defaults(MKWorkspaceFloorRoomKind.MAIN_CAP,
+                List.of(MKFloorRoomProfile.defaults(MKFloorRoomKind.MAIN_CAP,
                         stackSettings.width(), stackSettings.length(), height))
         );
     }
 
-    public static List<MKWorkspaceFloorTopologySettings> defaults(List<MKWorkspaceVerticalStackSettings> stackSettings) {
-        ArrayList<MKWorkspaceFloorTopologySettings> defaults = new ArrayList<>();
+    public static List<MKFloorTopologySettings> defaults(List<MKWorkspaceVerticalStackSettings> stackSettings) {
+        ArrayList<MKFloorTopologySettings> defaults = new ArrayList<>();
         for (MKWorkspaceVerticalStackSettings settings : stackSettings) {
             for (MKWorkspaceVerticalStackSlot slot : MKWorkspaceVerticalStackSlot.floorTopologyOrder()) {
                 if (!MKWorkspaceVerticalStackSlot.supportsFloorTopology(settings, slot)) {
@@ -484,15 +490,15 @@ public record MKWorkspaceFloorTopologySettings(
         return List.copyOf(defaults);
     }
 
-    public static List<MKWorkspaceFloorTopologySettings> normalize(
-            List<MKWorkspaceFloorTopologySettings> currentSettings,
+    public static List<MKFloorTopologySettings> normalize(
+            List<MKFloorTopologySettings> currentSettings,
             List<MKWorkspaceVerticalStackSettings> stackSettings) {
-        Map<String, MKWorkspaceFloorTopologySettings> byKey = new LinkedHashMap<>();
-        for (MKWorkspaceFloorTopologySettings defaultSettings : defaults(stackSettings)) {
+        Map<String, MKFloorTopologySettings> byKey = new LinkedHashMap<>();
+        for (MKFloorTopologySettings defaultSettings : defaults(stackSettings)) {
             byKey.put(defaultSettings.key(), defaultSettings);
         }
         if (currentSettings != null) {
-            for (MKWorkspaceFloorTopologySettings settings : currentSettings) {
+            for (MKFloorTopologySettings settings : currentSettings) {
                 String key = settings.key();
                 if (byKey.containsKey(key)) {
                     byKey.put(key, settings.withDefaultProfilesFor(byKey.get(key)));
@@ -502,22 +508,22 @@ public record MKWorkspaceFloorTopologySettings(
         return List.copyOf(byKey.values());
     }
 
-    public static Optional<MKWorkspaceFloorTopologySettings> find(
-            List<MKWorkspaceFloorTopologySettings> settings, String stackId, String floorRole) {
+    public static Optional<MKFloorTopologySettings> find(
+            List<MKFloorTopologySettings> settings, String stackId, String floorRole) {
         String key = key(stackId, floorRole);
         return settings.stream()
                 .filter(setting -> setting.key().equals(key))
                 .findFirst();
     }
 
-    public static MKWorkspaceFloorTopologySettings fromPlannerSettingsEntry(MKWorkspacePlannerSettingsEntry entry) {
-        MKWorkspaceFloorTopologySettings settings = MKWorkspaceCodecs.parseNbt(CODEC, entry.settings(),
+    public static MKFloorTopologySettings fromPlannerSettingsEntry(MKWorkspacePlannerSettingsEntry entry) {
+        MKFloorTopologySettings settings = MKWorkspaceCodecs.parseNbt(CODEC, entry.settings(),
                 "workspace floor topology settings");
         return settings.withPaletteOverride(entry.paletteOverride());
     }
 
     public MKWorkspacePlannerSettingsEntry plannerSettingsEntry() {
-        MKWorkspaceFloorTopologySettings settingsPayload = withPaletteOverride(Optional.empty());
+        MKFloorTopologySettings settingsPayload = withPaletteOverride(Optional.empty());
         return new MKWorkspacePlannerSettingsEntry(
                 PLANNER_ID,
                 key(),
@@ -525,8 +531,8 @@ public record MKWorkspaceFloorTopologySettings(
                 MKWorkspaceCodecs.encodeNbt(CODEC, settingsPayload, "workspace floor topology settings"));
     }
 
-    public MKWorkspaceFloorTopologySettings withMinMainPathPieces(int value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, value, Math.max(value, maxMainPathPieces),
+    public MKFloorTopologySettings withMinMainPathPieces(int value) {
+        return new MKFloorTopologySettings(stackId, floorRole, value, Math.max(value, maxMainPathPieces),
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
                 linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
@@ -534,8 +540,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withMaxMainPathPieces(int value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, Math.min(minMainPathPieces, value), value,
+    public MKFloorTopologySettings withMaxMainPathPieces(int value) {
+        return new MKFloorTopologySettings(stackId, floorRole, Math.min(minMainPathPieces, value), value,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
                 linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
@@ -543,8 +549,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withMaxBranchPiecesBeforeCap(int value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withMaxBranchPiecesBeforeCap(int value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 value, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
                 linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
@@ -552,8 +558,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withHallwayLeadInMode(MKWorkspaceHallwayLeadInMode value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withHallwayLeadInMode(MKHallwayLeadInMode value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, value, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
                 linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
@@ -561,8 +567,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withManualHallwayLeadInPieces(int value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withManualHallwayLeadInPieces(int value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, value,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
                 linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
@@ -570,8 +576,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withMainHallwaysEnabled(boolean value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withMainHallwaysEnabled(boolean value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 value, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
                 linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
@@ -579,8 +585,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withBranchHallwaysEnabled(boolean value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withBranchHallwaysEnabled(boolean value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, value, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
                 linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
@@ -588,8 +594,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withMainCapApproachEnabled(boolean value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withMainCapApproachEnabled(boolean value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, value, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
                 linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
@@ -597,8 +603,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withSprawl(float value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withSprawl(float value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, value, linksEnabled, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
@@ -609,8 +615,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withLinksEnabled(boolean value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withLinksEnabled(boolean value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, value, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
@@ -620,8 +626,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withLinkDensity(float value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withLinkDensity(float value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, value,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
@@ -631,8 +637,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withMaxLinksPerFloor(int value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withMaxLinksPerFloor(int value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 value, maxLinksPerRoom, maxLinkLength,
@@ -642,8 +648,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withMaxLinksPerRoom(int value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withMaxLinksPerRoom(int value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 maxLinksPerFloor, value, maxLinkLength,
@@ -653,8 +659,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withMaxLinkLength(int value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withMaxLinkLength(int value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, value,
@@ -664,8 +670,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withLinkGenerationMode(MKWorkspaceFloorLinkGenerationMode value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withLinkGenerationMode(MKFloorLinkGenerationMode value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
@@ -676,8 +682,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withLinkDecay(float value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withLinkDecay(float value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
@@ -688,8 +694,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withEndpointIntactRadius(int value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withEndpointIntactRadius(int value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
@@ -700,8 +706,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withMiddleDecayBonus(float value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withMiddleDecayBonus(float value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
@@ -712,8 +718,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withInsertFamily(Optional<String> value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withInsertFamily(Optional<String> value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
@@ -725,8 +731,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withInsertDepth(int value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withInsertDepth(int value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
@@ -737,8 +743,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withInsertSpacing(int value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withInsertSpacing(int value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
@@ -749,8 +755,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withInsertProbability(float value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withInsertProbability(float value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
@@ -761,8 +767,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withInsertMaxDecay(float value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withInsertMaxDecay(float value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
@@ -773,8 +779,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withLockedLayoutSeed(Optional<Long> value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withLockedLayoutSeed(Optional<Long> value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
@@ -786,8 +792,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withPaletteOverride(Optional<MKWorkspacePaletteOverride> value) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withPaletteOverride(Optional<MKWorkspacePaletteOverride> value) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity,
                 maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
@@ -798,13 +804,13 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withRoomProfile(MKWorkspaceFloorRoomKind kind, int index,
-                                                            MKWorkspaceFloorRoomProfile profile) {
-        List<MKWorkspaceFloorRoomProfile> mainProfiles = mainRoomProfiles;
-        List<MKWorkspaceFloorRoomProfile> branchProfiles = branchRoomProfiles;
-        List<MKWorkspaceFloorRoomProfile> branchCaps = branchCapProfiles;
-        List<MKWorkspaceFloorRoomProfile> mainCapApproach = mainCapApproachProfiles;
-        List<MKWorkspaceFloorRoomProfile> mainCaps = mainCapProfiles;
+    public MKFloorTopologySettings withRoomProfile(MKFloorRoomKind kind, int index,
+                                                            MKFloorRoomProfile profile) {
+        List<MKFloorRoomProfile> mainProfiles = mainRoomProfiles;
+        List<MKFloorRoomProfile> branchProfiles = branchRoomProfiles;
+        List<MKFloorRoomProfile> branchCaps = branchCapProfiles;
+        List<MKFloorRoomProfile> mainCapApproach = mainCapApproachProfiles;
+        List<MKFloorRoomProfile> mainCaps = mainCapProfiles;
         switch (kind) {
             case MAIN_ROOM -> mainProfiles = replaceProfile(mainRoomProfiles, index, profile);
             case BRANCH_ROOM -> branchProfiles = replaceProfile(branchRoomProfiles, index, profile);
@@ -812,7 +818,7 @@ public record MKWorkspaceFloorTopologySettings(
             case MAIN_CAP_APPROACH -> mainCapApproach = replaceProfile(mainCapApproachProfiles, index, profile);
             case MAIN_CAP -> mainCaps = replaceProfile(mainCapProfiles, index, profile);
         }
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
                 linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
@@ -820,13 +826,13 @@ public record MKWorkspaceFloorTopologySettings(
                 mainProfiles, branchProfiles, branchCaps, mainCapApproach, mainCaps);
     }
 
-    public MKWorkspaceFloorTopologySettings withAddedRoomProfile(MKWorkspaceFloorRoomKind kind,
-                                                                 MKWorkspaceFloorRoomProfile profile) {
-        List<MKWorkspaceFloorRoomProfile> mainProfiles = mainRoomProfiles;
-        List<MKWorkspaceFloorRoomProfile> branchProfiles = branchRoomProfiles;
-        List<MKWorkspaceFloorRoomProfile> branchCaps = branchCapProfiles;
-        List<MKWorkspaceFloorRoomProfile> mainCapApproach = mainCapApproachProfiles;
-        List<MKWorkspaceFloorRoomProfile> mainCaps = mainCapProfiles;
+    public MKFloorTopologySettings withAddedRoomProfile(MKFloorRoomKind kind,
+                                                                 MKFloorRoomProfile profile) {
+        List<MKFloorRoomProfile> mainProfiles = mainRoomProfiles;
+        List<MKFloorRoomProfile> branchProfiles = branchRoomProfiles;
+        List<MKFloorRoomProfile> branchCaps = branchCapProfiles;
+        List<MKFloorRoomProfile> mainCapApproach = mainCapApproachProfiles;
+        List<MKFloorRoomProfile> mainCaps = mainCapProfiles;
         switch (kind) {
             case MAIN_ROOM -> mainProfiles = addProfile(mainRoomProfiles, profile, kind);
             case BRANCH_ROOM -> branchProfiles = addProfile(branchRoomProfiles, profile, kind);
@@ -834,7 +840,7 @@ public record MKWorkspaceFloorTopologySettings(
             case MAIN_CAP_APPROACH -> mainCapApproach = addProfile(mainCapApproachProfiles, profile, kind);
             case MAIN_CAP -> mainCaps = addProfile(mainCapProfiles, profile, kind);
         }
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
                 linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
@@ -842,12 +848,12 @@ public record MKWorkspaceFloorTopologySettings(
                 mainProfiles, branchProfiles, branchCaps, mainCapApproach, mainCaps);
     }
 
-    public MKWorkspaceFloorTopologySettings withRemovedRoomProfile(MKWorkspaceFloorRoomKind kind, int index) {
-        List<MKWorkspaceFloorRoomProfile> mainProfiles = mainRoomProfiles;
-        List<MKWorkspaceFloorRoomProfile> branchProfiles = branchRoomProfiles;
-        List<MKWorkspaceFloorRoomProfile> branchCaps = branchCapProfiles;
-        List<MKWorkspaceFloorRoomProfile> mainCapApproach = mainCapApproachProfiles;
-        List<MKWorkspaceFloorRoomProfile> mainCaps = mainCapProfiles;
+    public MKFloorTopologySettings withRemovedRoomProfile(MKFloorRoomKind kind, int index) {
+        List<MKFloorRoomProfile> mainProfiles = mainRoomProfiles;
+        List<MKFloorRoomProfile> branchProfiles = branchRoomProfiles;
+        List<MKFloorRoomProfile> branchCaps = branchCapProfiles;
+        List<MKFloorRoomProfile> mainCapApproach = mainCapApproachProfiles;
+        List<MKFloorRoomProfile> mainCaps = mainCapProfiles;
         switch (kind) {
             case MAIN_ROOM -> mainProfiles = removeProfile(mainRoomProfiles, index);
             case BRANCH_ROOM -> branchProfiles = removeProfile(branchRoomProfiles, index);
@@ -855,7 +861,7 @@ public record MKWorkspaceFloorTopologySettings(
             case MAIN_CAP_APPROACH -> mainCapApproach = removeProfile(mainCapApproachProfiles, index);
             case MAIN_CAP -> mainCaps = removeProfile(mainCapProfiles, index);
         }
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
                 linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
@@ -863,9 +869,9 @@ public record MKWorkspaceFloorTopologySettings(
                 mainProfiles, branchProfiles, branchCaps, mainCapApproach, mainCaps);
     }
 
-    public MKWorkspaceFloorTopologySettings withLayoutHallwayFootprints(int mainLength, int mainWidth,
+    public MKFloorTopologySettings withLayoutHallwayFootprints(int mainLength, int mainWidth,
                                                                         int branchLength, int branchWidth) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled,
                 linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
@@ -875,9 +881,9 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    public MKWorkspaceFloorTopologySettings withPhysicalFootprintPadding(int horizontalPadding) {
+    public MKFloorTopologySettings withPhysicalFootprintPadding(int horizontalPadding) {
         int padding = Math.max(0, horizontalPadding);
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled,
                 linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
@@ -892,13 +898,13 @@ public record MKWorkspaceFloorTopologySettings(
                 physicalProfiles(mainCapProfiles, padding));
     }
 
-    public MKWorkspaceFloorTopologySettings withRoomProfiles(
-            List<MKWorkspaceFloorRoomProfile> mainRoomProfiles,
-            List<MKWorkspaceFloorRoomProfile> branchRoomProfiles,
-            List<MKWorkspaceFloorRoomProfile> branchCapProfiles,
-            List<MKWorkspaceFloorRoomProfile> mainCapApproachProfiles,
-            List<MKWorkspaceFloorRoomProfile> mainCapProfiles) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    public MKFloorTopologySettings withRoomProfiles(
+            List<MKFloorRoomProfile> mainRoomProfiles,
+            List<MKFloorRoomProfile> branchRoomProfiles,
+            List<MKFloorRoomProfile> branchCapProfiles,
+            List<MKFloorRoomProfile> mainCapApproachProfiles,
+            List<MKFloorRoomProfile> mainCapProfiles) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled,
                 linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
@@ -909,8 +915,8 @@ public record MKWorkspaceFloorTopologySettings(
                 mainRoomProfiles, branchRoomProfiles, branchCapProfiles, mainCapApproachProfiles, mainCapProfiles);
     }
 
-    private MKWorkspaceFloorTopologySettings withDefaultProfilesFor(MKWorkspaceFloorTopologySettings defaults) {
-        return new MKWorkspaceFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
+    private MKFloorTopologySettings withDefaultProfilesFor(MKFloorTopologySettings defaults) {
+        return new MKFloorTopologySettings(stackId, floorRole, minMainPathPieces, maxMainPathPieces,
                 maxBranchPiecesBeforeCap, hallwayLeadInMode, manualHallwayLeadInPieces,
                 mainHallwaysEnabled, branchHallwaysEnabled, mainCapApproachEnabled, sprawl, linksEnabled, linkDensity, maxLinksPerFloor, maxLinksPerRoom, maxLinkLength,
                 linkGenerationMode, linkDecay, endpointIntactRadius, middleDecayBonus, insertFamily, insertDepth, insertSpacing, insertProbability, insertMaxDecay,
@@ -922,7 +928,7 @@ public record MKWorkspaceFloorTopologySettings(
                 mainCapProfiles.isEmpty() ? defaults.mainCapProfiles() : mainCapProfiles);
     }
 
-    private static List<MKWorkspaceFloorRoomProfile> physicalProfiles(List<MKWorkspaceFloorRoomProfile> profiles,
+    private static List<MKFloorRoomProfile> physicalProfiles(List<MKFloorRoomProfile> profiles,
                                                                       int horizontalPadding) {
         return profiles.stream()
                 .map(profile -> profile.withWidth(profile.width() + horizontalPadding)
@@ -930,8 +936,8 @@ public record MKWorkspaceFloorTopologySettings(
                 .toList();
     }
 
-    private static List<MKWorkspaceFloorRoomProfile> normalizeProfiles(
-            List<MKWorkspaceFloorRoomProfile> profiles, MKWorkspaceFloorRoomKind expectedKind) {
+    private static List<MKFloorRoomProfile> normalizeProfiles(
+            List<MKFloorRoomProfile> profiles, MKFloorRoomKind expectedKind) {
         if (profiles == null) {
             return List.of();
         }
@@ -940,34 +946,34 @@ public record MKWorkspaceFloorTopologySettings(
                 .toList();
     }
 
-    private static List<MKWorkspaceFloorRoomProfile> replaceProfile(List<MKWorkspaceFloorRoomProfile> profiles,
+    private static List<MKFloorRoomProfile> replaceProfile(List<MKFloorRoomProfile> profiles,
                                                                     int index,
-                                                                    MKWorkspaceFloorRoomProfile profile) {
+                                                                    MKFloorRoomProfile profile) {
         if (profile == null || index < 0 || index >= profiles.size()) {
             return profiles;
         }
-        ArrayList<MKWorkspaceFloorRoomProfile> updated = new ArrayList<>(profiles);
+        ArrayList<MKFloorRoomProfile> updated = new ArrayList<>(profiles);
         updated.set(index, profile);
         return List.copyOf(updated);
     }
 
-    private static List<MKWorkspaceFloorRoomProfile> addProfile(List<MKWorkspaceFloorRoomProfile> profiles,
-                                                                MKWorkspaceFloorRoomProfile profile,
-                                                                MKWorkspaceFloorRoomKind kind) {
+    private static List<MKFloorRoomProfile> addProfile(List<MKFloorRoomProfile> profiles,
+                                                                MKFloorRoomProfile profile,
+                                                                MKFloorRoomKind kind) {
         if (profile == null || profile.kind() != kind) {
             return profiles;
         }
-        ArrayList<MKWorkspaceFloorRoomProfile> updated = new ArrayList<>(profiles);
+        ArrayList<MKFloorRoomProfile> updated = new ArrayList<>(profiles);
         updated.add(profile);
         return List.copyOf(updated);
     }
 
-    private static List<MKWorkspaceFloorRoomProfile> removeProfile(List<MKWorkspaceFloorRoomProfile> profiles,
+    private static List<MKFloorRoomProfile> removeProfile(List<MKFloorRoomProfile> profiles,
                                                                    int index) {
         if (profiles.size() <= 1 || index < 0 || index >= profiles.size()) {
             return profiles;
         }
-        ArrayList<MKWorkspaceFloorRoomProfile> updated = new ArrayList<>(profiles);
+        ArrayList<MKFloorRoomProfile> updated = new ArrayList<>(profiles);
         updated.remove(index);
         return List.copyOf(updated);
     }

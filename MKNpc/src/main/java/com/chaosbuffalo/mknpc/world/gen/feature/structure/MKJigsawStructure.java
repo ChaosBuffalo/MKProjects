@@ -4,14 +4,14 @@ import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorLinkGenerationMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorLinkGenerationMode;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKFloorLayoutSolver;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorLayoutSolver;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
@@ -213,7 +213,7 @@ public class MKJigsawStructure extends MKStructure {
                 continue;
             }
             FloorRootPiece root = rootOpt.orElseThrow();
-            List<MKWorkspaceFamilyHorizontalExitDefinition> rootExits = rootExits(root, rule.topologyGroup());
+            List<MKFamilyHorizontalExitDefinition> rootExits = rootExits(root, rule.topologyGroup());
             if (rootExits.isEmpty()) {
                 if (MKNpc.DEV_LOGGING) {
                     MKNpc.LOGGER.debug("solver floor link skipped group={} reason=missing_root_exits",
@@ -221,7 +221,7 @@ public class MKJigsawStructure extends MKStructure {
                 }
                 continue;
             }
-            MKWorkspaceFloorTopologySettings settings = rule.floorTopologySettings().orElseThrow();
+            MKFloorTopologySettings settings = rule.floorTopologySettings().orElseThrow();
             int rootWidth = root.piece().getBoundingBox().getXSpan();
             int rootLength = root.piece().getBoundingBox().getZSpan();
             int leadIn = effectiveHallwayLeadInPieces(settings, rootWidth, rootLength);
@@ -323,12 +323,12 @@ public class MKJigsawStructure extends MKStructure {
         return Optional.empty();
     }
 
-    private List<MKWorkspaceFamilyHorizontalExitDefinition> rootExits(FloorRootPiece root, String topologyGroup) {
+    private List<MKFamilyHorizontalExitDefinition> rootExits(FloorRootPiece root, String topologyGroup) {
         return root.metadata().floorRootExits().stream()
                 .filter(exit -> topologyGroup.equals(exit.topologyGroup()))
-                .map(exit -> new MKWorkspaceFamilyHorizontalExitDefinition(
+                .map(exit -> new MKFamilyHorizontalExitDefinition(
                         root.piece().getRotation().rotate(exit.facing()),
-                        MKWorkspaceHorizontalExitPathKind.fromSerializedName(exit.pathKind()),
+                        MKHorizontalExitPathKind.fromSerializedName(exit.pathKind()),
                         exit.openingProfileId()
                 ))
                 .toList();
@@ -468,9 +468,9 @@ public class MKJigsawStructure extends MKStructure {
                 candidate.openingHeight(), candidate.closureDepth(), piece.getBoundingBox());
     }
 
-    private int effectiveHallwayLeadInPieces(MKWorkspaceFloorTopologySettings settings, int rootWidth,
+    private int effectiveHallwayLeadInPieces(MKFloorTopologySettings settings, int rootWidth,
                                              int rootLength) {
-        if (settings.hallwayLeadInMode() == MKWorkspaceHallwayLeadInMode.MANUAL) {
+        if (settings.hallwayLeadInMode() == MKHallwayLeadInMode.MANUAL) {
             return Math.max(1, settings.manualHallwayLeadInPieces());
         }
         return Math.max(1, Math.ceilDiv(Math.max(rootWidth, rootLength), 8));
@@ -544,7 +544,7 @@ public class MKJigsawStructure extends MKStructure {
                 .orElse(Blocks.STONE_BRICKS.defaultBlockState());
     }
 
-    private LinkPalette linkPalette(MKWorkspaceFloorTopologySettings settings, MKJigsawPieceMetadata rootMetadata) {
+    private LinkPalette linkPalette(MKFloorTopologySettings settings, MKJigsawPieceMetadata rootMetadata) {
         MKWorkspaceMaterialPalette defaults = MKWorkspaceMaterialPalette.defaultPalette();
         ResourceLocation floorBlock = BuiltInRegistries.BLOCK.getOptional(rootMetadata.floorBlock()).isPresent() ?
                 rootMetadata.floorBlock() : defaults.floorBlock();
@@ -753,7 +753,7 @@ public class MKJigsawStructure extends MKStructure {
         int carvedBlocks = openEndpoint(level, chunkBounds, candidate.a());
         carvedBlocks += openEndpoint(level, chunkBounds, candidate.b());
         List<BlockPos> positions = candidate.route().positions();
-        if (candidate.settings().linkGenerationMode() == MKWorkspaceFloorLinkGenerationMode.DEBUG) {
+        if (candidate.settings().linkGenerationMode() == MKFloorLinkGenerationMode.DEBUG) {
             for (BlockPos center : positions) {
                 carvedBlocks += carveDebugCorridorCell(level, chunkBounds, center, height);
             }
@@ -765,7 +765,7 @@ public class MKJigsawStructure extends MKStructure {
     }
 
     private void stampLinkInserts(WorldGenLevel level, BoundingBox chunkBounds, LinkCandidate candidate) {
-        if (candidate.settings().linkGenerationMode() == MKWorkspaceFloorLinkGenerationMode.DEBUG ||
+        if (candidate.settings().linkGenerationMode() == MKFloorLinkGenerationMode.DEBUG ||
                 candidate.settings().insertFamily().isEmpty() ||
                 candidate.settings().insertSpacing() <= 0 ||
                 candidate.settings().insertProbability() <= 0.0f) {
@@ -824,7 +824,7 @@ public class MKJigsawStructure extends MKStructure {
             }
             int decayIndex = Math.min(routeLength - 1, index + depth / 2);
             float spanDecay = candidate.settings().linkGenerationMode() ==
-                    MKWorkspaceFloorLinkGenerationMode.DECAYING_HALLWAY ?
+                    MKFloorLinkGenerationMode.DECAYING_HALLWAY ?
                     candidate.settings().linkDecay() *
                             routeDecayFactor(candidate.settings(), decayIndex, routeLength) :
                     0.0f;
@@ -989,7 +989,7 @@ public class MKJigsawStructure extends MKStructure {
         int carvedBlocks = 0;
         int routeLength = positions.size();
         boolean decaying = candidate.settings().linkGenerationMode() ==
-                MKWorkspaceFloorLinkGenerationMode.DECAYING_HALLWAY;
+                MKFloorLinkGenerationMode.DECAYING_HALLWAY;
         for (Map.Entry<BlockPos, MKJigsawLinkFootprint.Cell> entry : footprint.interior().entrySet()) {
             BlockPos pos = entry.getKey();
             MKJigsawLinkFootprint.Cell cell = entry.getValue();
@@ -1060,7 +1060,7 @@ public class MKJigsawStructure extends MKStructure {
         return deterministicNoise(candidate, pos, 37) >= clamp01(chance);
     }
 
-    private float routeDecayFactor(MKWorkspaceFloorTopologySettings settings, int routeIndex, int routeLength) {
+    private float routeDecayFactor(MKFloorTopologySettings settings, int routeIndex, int routeLength) {
         if (routeLength <= 1) {
             return 0.0f;
         }
@@ -1141,7 +1141,7 @@ public class MKJigsawStructure extends MKStructure {
 
     private record LinkCandidate(String topologyGroup, int aSegmentIndex, int bSegmentIndex,
                                  PlacedLinkEndpoint a, PlacedLinkEndpoint b, LinkRoute route,
-                                 MKWorkspaceFloorTopologySettings settings, LinkPalette palette) {
+                                 MKFloorTopologySettings settings, LinkPalette palette) {
     }
 
     private record LinkPalette(BlockState floor, BlockState wall, BlockState ceiling) {

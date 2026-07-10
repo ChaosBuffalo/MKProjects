@@ -9,10 +9,10 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonLayoutSetting
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonTopologyGroupRule;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKVerticalProgressionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomProfile;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKFloorTopologyPlanner;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
@@ -132,8 +132,8 @@ public class NpcStructures {
         }
         ArrayList<MKDungeonTopologyGroupRule> rules = new ArrayList<>();
         MKWorkspaceExportManifest manifest = manifestOpt.get();
-        for (MKWorkspaceFloorTopologySettings settings : manifest.settings().topologyProfile().floorTopologySettings()) {
-            MKWorkspaceFloorTopologySettings physicalSettings = physicalFloorTopologySettings(manifest, settings);
+        for (MKFloorTopologySettings settings : manifest.settings().topologyProfile().floorTopologySettings()) {
+            MKFloorTopologySettings physicalSettings = physicalFloorTopologySettings(manifest, settings);
             String topologyGroupId = floorTopologyGroupId(settings.stackId(), settings.floorRole());
             String endingPool = settings.mainCapApproachEnabled() ?
                     MKFloorTopologyPlanner.mainCapApproachPoolName(topologyGroupId) :
@@ -165,9 +165,9 @@ public class NpcStructures {
         return List.copyOf(rules);
     }
 
-    private static MKWorkspaceFloorTopologySettings physicalFloorTopologySettings(
+    private static MKFloorTopologySettings physicalFloorTopologySettings(
             MKWorkspaceExportManifest manifest,
-            MKWorkspaceFloorTopologySettings settings) {
+            MKFloorTopologySettings settings) {
         int horizontalPadding = horizontalPadding(manifest);
         HallwayFootprint mainHallway = hallwayFootprint(manifest, settings, true, horizontalPadding);
         HallwayFootprint branchHallway = hallwayFootprint(manifest, settings, false, horizontalPadding);
@@ -186,7 +186,7 @@ public class NpcStructures {
     }
 
     private static HallwayFootprint hallwayFootprint(MKWorkspaceExportManifest manifest,
-                                                     MKWorkspaceFloorTopologySettings settings,
+                                                     MKFloorTopologySettings settings,
                                                      boolean mainPath,
                                                      int horizontalPadding) {
         Optional<HallwayFootprint> exportedFootprint = exportedHallwayFootprint(manifest, settings, mainPath);
@@ -208,7 +208,7 @@ public class NpcStructures {
                     Math.max(1, run.interiorWidth() + horizontalPadding)
             );
         }
-        int leadIn = settings.hallwayLeadInMode() == MKWorkspaceHallwayLeadInMode.MANUAL ?
+        int leadIn = settings.hallwayLeadInMode() == MKHallwayLeadInMode.MANUAL ?
                 Math.max(1, settings.manualHallwayLeadInPieces()) :
                 Math.max(1, Math.ceilDiv(Math.max(
                         manifest.settings().topologyProfile().verticalStackSettingsOrDefault(settings.stackId()).width(),
@@ -220,7 +220,7 @@ public class NpcStructures {
     }
 
     private static Optional<HallwayFootprint> exportedHallwayFootprint(MKWorkspaceExportManifest manifest,
-                                                                       MKWorkspaceFloorTopologySettings settings,
+                                                                       MKFloorTopologySettings settings,
                                                                        boolean mainPath) {
         String pathKind = mainPath ? "main" : "branch";
         return manifest.pieces().stream()
@@ -235,19 +235,19 @@ public class NpcStructures {
                 .findFirst();
     }
 
-    private static List<MKWorkspaceFloorRoomProfile> physicalRoomProfiles(
+    private static List<MKFloorRoomProfile> physicalRoomProfiles(
             MKWorkspaceExportManifest manifest,
-            MKWorkspaceFloorTopologySettings settings,
-            List<MKWorkspaceFloorRoomProfile> profiles,
+            MKFloorTopologySettings settings,
+            List<MKFloorRoomProfile> profiles,
             int horizontalPadding) {
         return profiles.stream()
                 .map(profile -> physicalRoomProfile(manifest, settings, profile, horizontalPadding))
                 .toList();
     }
 
-    private static MKWorkspaceFloorRoomProfile physicalRoomProfile(MKWorkspaceExportManifest manifest,
-                                                                   MKWorkspaceFloorTopologySettings settings,
-                                                                   MKWorkspaceFloorRoomProfile profile,
+    private static MKFloorRoomProfile physicalRoomProfile(MKWorkspaceExportManifest manifest,
+                                                                   MKFloorTopologySettings settings,
+                                                                   MKFloorRoomProfile profile,
                                                                    int horizontalPadding) {
         return exportedRoomFootprint(manifest, settings, profile)
                 .map(footprint -> profile.withWidth(footprint.width()).withLength(footprint.length()))
@@ -256,8 +256,8 @@ public class NpcStructures {
     }
 
     private static Optional<RoomFootprint> exportedRoomFootprint(MKWorkspaceExportManifest manifest,
-                                                                 MKWorkspaceFloorTopologySettings settings,
-                                                                 MKWorkspaceFloorRoomProfile profile) {
+                                                                 MKFloorTopologySettings settings,
+                                                                 MKFloorRoomProfile profile) {
         return manifest.pieces().stream()
                 .filter(piece -> "floor_plan_room".equals(piece.tags().get("tower_piece_kind")))
                 .filter(piece -> settings.stackId().equals(piece.tags().get("workspace_floor_topology_stack_id")))
@@ -288,12 +288,12 @@ public class NpcStructures {
     }
 
     private static Optional<String> floorOpeningProfileId(MKWorkspaceExportManifest manifest,
-                                                          MKWorkspaceFloorTopologySettings settings,
+                                                          MKFloorTopologySettings settings,
                                                           boolean mainPath) {
         String topologySlotId = settings.stackId() + "." + settings.floorRole();
-        MKWorkspaceHorizontalExitPathKind pathKind = mainPath ?
-                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT :
-                MKWorkspaceHorizontalExitPathKind.BRANCH;
+        MKHorizontalExitPathKind pathKind = mainPath ?
+                MKHorizontalExitPathKind.MAIN_EXIT :
+                MKHorizontalExitPathKind.BRANCH;
         return manifest.settings().familyDefinitions().stream()
                 .filter(family -> family.topologySlotId().equals(topologySlotId))
                 .flatMap(family -> family.horizontalExits().stream())

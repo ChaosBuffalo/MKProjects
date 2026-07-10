@@ -1,19 +1,19 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.model;
+package com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.util.StringRepresentable;
 
-public enum MKWorkspaceFloorLinkGenerationMode implements StringRepresentable {
+public enum MKFloorLinkGenerationMode implements StringRepresentable {
     FULL_HALLWAY("full_hallway"),
     DECAYING_HALLWAY("decaying_hallway"),
     DEBUG("debug");
 
-    public static final Codec<MKWorkspaceFloorLinkGenerationMode> CODEC = StringRepresentable.fromEnum(
-            MKWorkspaceFloorLinkGenerationMode::values);
+    public static final Codec<MKFloorLinkGenerationMode> CODEC = StringRepresentable.fromEnum(
+            MKFloorLinkGenerationMode::values);
 
     private final String serializedName;
 
-    MKWorkspaceFloorLinkGenerationMode(String serializedName) {
+    MKFloorLinkGenerationMode(String serializedName) {
         this.serializedName = serializedName;
     }
 

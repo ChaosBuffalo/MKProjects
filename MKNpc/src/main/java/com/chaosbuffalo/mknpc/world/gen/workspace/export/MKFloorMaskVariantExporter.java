@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.export;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import net.minecraft.core.Direction;
@@ -271,7 +271,7 @@ public final class MKFloorMaskVariantExporter {
 
     private static boolean isOptionalBranch(MKWorkspacePieceDefinition piece,
                                             MKWorkspaceConnectorDefinition connector) {
-        MKWorkspaceFloorRoomKind kind = floorKind(piece);
+        MKFloorRoomKind kind = floorKind(piece);
         return allowsOptionalBranchExits(kind) &&
                 connector.role() == MKConnectorRole.BRANCH &&
                 connector.facing().getAxis().isHorizontal() &&
@@ -279,7 +279,7 @@ public final class MKFloorMaskVariantExporter {
     }
 
     private static boolean randomizesMainExit(MKWorkspacePieceDefinition piece) {
-        return floorKind(piece) == MKWorkspaceFloorRoomKind.MAIN_ROOM &&
+        return floorKind(piece) == MKFloorRoomKind.MAIN_ROOM &&
                 Boolean.parseBoolean(piece.tags().getOrDefault(FLOOR_RANDOMIZE_MAIN_EXIT_TAG, "false")) &&
                 randomMainExitCandidates(piece).size() > 1;
     }
@@ -306,15 +306,15 @@ public final class MKFloorMaskVariantExporter {
                 .orElseThrow(() -> new IllegalStateException("randomized main exit room requires a main exit connector"));
     }
 
-    private static MKWorkspaceFloorRoomKind floorKind(MKWorkspacePieceDefinition piece) {
-        return MKWorkspaceFloorRoomKind.valueOf(piece.tags()
-                .getOrDefault("workspace_floor_room_kind", MKWorkspaceFloorRoomKind.MAIN_ROOM.getSerializedName())
+    private static MKFloorRoomKind floorKind(MKWorkspacePieceDefinition piece) {
+        return MKFloorRoomKind.valueOf(piece.tags()
+                .getOrDefault("workspace_floor_room_kind", MKFloorRoomKind.MAIN_ROOM.getSerializedName())
                 .toUpperCase());
     }
 
-    private static boolean allowsOptionalBranchExits(MKWorkspaceFloorRoomKind kind) {
-        return kind != MKWorkspaceFloorRoomKind.BRANCH_CAP &&
-                kind != MKWorkspaceFloorRoomKind.MAIN_CAP;
+    private static boolean allowsOptionalBranchExits(MKFloorRoomKind kind) {
+        return kind != MKFloorRoomKind.BRANCH_CAP &&
+                kind != MKFloorRoomKind.MAIN_CAP;
     }
 
     private static String maskName(List<MKWorkspaceConnectorDefinition> activeOptional) {

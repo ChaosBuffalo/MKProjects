@@ -17,15 +17,15 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStack
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackBudget;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomProfile;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
@@ -515,7 +515,7 @@ class TowerWorkspaceV2Test {
                 0,
                 0,
                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
-                List.of(MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(Direction.DOWN)),
+                List.of(MKFamilyHorizontalExitDefinition.verticalAccess(Direction.DOWN)),
                 0,
                 0,
                 null,
@@ -1144,9 +1144,9 @@ class TowerWorkspaceV2Test {
                                 family.roomLength(),
                                 family.roomHeight(),
                                 family.horizontalExtrusionMode(),
-                                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
+                                List.of(new MKFamilyHorizontalExitDefinition(
                                         Direction.SOUTH,
-                                        MKWorkspaceHorizontalExitPathKind.INGRESS,
+                                        MKHorizontalExitPathKind.INGRESS,
                                         "wide_ingress",
                                         MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION,
                                         2,
@@ -1534,9 +1534,9 @@ class TowerWorkspaceV2Test {
                                 family.roomLength(),
                                 7,
                                 family.horizontalExtrusionMode(),
-                                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
+                                List.of(new MKFamilyHorizontalExitDefinition(
                                         Direction.NORTH,
-                                        MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                        MKHorizontalExitPathKind.BRANCH,
                                         "main_branch",
                                         MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM,
                                         5,
@@ -2089,10 +2089,10 @@ class TowerWorkspaceV2Test {
                                 family.roomHeight(),
                                 family.horizontalExtrusionMode(),
                                 List.of(
-                                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
-                                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "main_opening"),
-                                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.NORTH,
-                                                MKWorkspaceHorizontalExitPathKind.BRANCH, "branch_opening")
+                                        new MKFamilyHorizontalExitDefinition(Direction.SOUTH,
+                                                MKHorizontalExitPathKind.MAIN_EXIT, "main_opening"),
+                                        new MKFamilyHorizontalExitDefinition(Direction.NORTH,
+                                                MKHorizontalExitPathKind.BRANCH, "branch_opening")
                                 ),
                                 family.topVoidMargin(),
                                 family.bottomVoidMargin(),
@@ -2152,7 +2152,7 @@ class TowerWorkspaceV2Test {
         );
 
         List<String> floorGroups = workspace.topologyProfile().floorTopologySettings().stream()
-                .map(MKWorkspaceFloorTopologySettings::key)
+                .map(MKFloorTopologySettings::key)
                 .toList();
         assertEquals(List.of("keep.center.main_floor", "keep.center.basement_floor"), floorGroups);
 
@@ -2212,77 +2212,77 @@ class TowerWorkspaceV2Test {
     @Test
     void towerTopologyCreatesScopedFloorTopologyDefaults() {
         MKWorkspaceTopologyProfile topologyProfile = MKTowerWorkspacePlanner.defaultTopologyProfile();
-        MKWorkspaceFloorTopologySettings settings =
+        MKFloorTopologySettings settings =
                 topologyProfile.floorTopologySettingsOrDefault("tower.primary", "main_floor");
 
         assertEquals("tower.primary", settings.stackId());
         assertEquals("main_floor", settings.floorRole());
-        assertEquals(MKWorkspaceFloorTopologySettings.DEFAULT_MIN_MAIN_PATH_PIECES,
+        assertEquals(MKFloorTopologySettings.DEFAULT_MIN_MAIN_PATH_PIECES,
                 settings.minMainPathPieces());
-        assertEquals(MKWorkspaceFloorTopologySettings.DEFAULT_MAX_MAIN_PATH_PIECES,
+        assertEquals(MKFloorTopologySettings.DEFAULT_MAX_MAIN_PATH_PIECES,
                 settings.maxMainPathPieces());
         assertEquals(1, settings.mainRoomProfiles().size());
         assertEquals(1, settings.branchRoomProfiles().size());
         assertEquals(1, settings.branchCapProfiles().size());
-        assertEquals(MKWorkspaceFloorRoomKind.MAIN_ROOM, settings.mainRoomProfiles().getFirst().kind());
-        assertEquals(MKWorkspaceFloorRoomKind.BRANCH_ROOM, settings.branchRoomProfiles().getFirst().kind());
-        assertEquals(MKWorkspaceFloorRoomKind.BRANCH_CAP, settings.branchCapProfiles().getFirst().kind());
+        assertEquals(MKFloorRoomKind.MAIN_ROOM, settings.mainRoomProfiles().getFirst().kind());
+        assertEquals(MKFloorRoomKind.BRANCH_ROOM, settings.branchRoomProfiles().getFirst().kind());
+        assertEquals(MKFloorRoomKind.BRANCH_CAP, settings.branchCapProfiles().getFirst().kind());
         assertEquals(MKWorkspaceDimensions.defaultDimensions().roomWidth(), settings.mainRoomProfiles().getFirst().width());
         assertEquals(MKWorkspaceDimensions.defaultDimensions().roomLength(), settings.mainRoomProfiles().getFirst().length());
         assertEquals(MKWorkspaceDimensions.defaultDimensions().roomHeight(), settings.mainRoomProfiles().getFirst().height());
         assertTrue(settings.mainRoomProfiles().getFirst().horizontalExits().stream()
                 .anyMatch(exit -> exit.direction() == Direction.SOUTH &&
-                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY &&
-                        MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID.equals(exit.openingProfileId())));
+                        exit.pathKind() == MKHorizontalExitPathKind.MAIN_ENTRY &&
+                        MKFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID.equals(exit.openingProfileId())));
         assertTrue(settings.mainRoomProfiles().getFirst().horizontalExits().stream()
                 .anyMatch(exit -> exit.direction() == Direction.NORTH &&
-                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT &&
-                        MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID.equals(exit.openingProfileId())));
+                        exit.pathKind() == MKHorizontalExitPathKind.MAIN_EXIT &&
+                        MKFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID.equals(exit.openingProfileId())));
         assertTrue(settings.branchRoomProfiles().getFirst().horizontalExits().stream()
                 .anyMatch(exit -> exit.direction() == Direction.SOUTH &&
-                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH &&
-                        MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID.equals(exit.openingProfileId())));
+                        exit.pathKind() == MKHorizontalExitPathKind.BRANCH &&
+                        MKFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID.equals(exit.openingProfileId())));
         assertFalse(settings.branchRoomProfiles().getFirst().terminalBranchRoom());
         assertTrue(settings.branchCapProfiles().getFirst().horizontalExits().stream()
                 .anyMatch(exit -> exit.direction() == Direction.SOUTH &&
-                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY &&
-                        MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID.equals(exit.openingProfileId())));
+                        exit.pathKind() == MKHorizontalExitPathKind.BRANCH_CAP_ENTRY &&
+                        MKFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID.equals(exit.openingProfileId())));
         assertTrue(settings.branchCapProfiles().getFirst().terminalBranchRoom());
-        MKWorkspaceFloorTopologySettings resized = settings.withRoomProfile(
-                MKWorkspaceFloorRoomKind.MAIN_ROOM,
+        MKFloorTopologySettings resized = settings.withRoomProfile(
+                MKFloorRoomKind.MAIN_ROOM,
                 0,
                 settings.mainRoomProfiles().getFirst().withWidth(13).withLength(15).withHeight(5));
-        assertEquals(MKWorkspaceFloorRoomKind.MAIN_ROOM, resized.mainRoomProfiles().getFirst().kind());
+        assertEquals(MKFloorRoomKind.MAIN_ROOM, resized.mainRoomProfiles().getFirst().kind());
         assertEquals(13, resized.mainRoomProfiles().getFirst().width());
         assertEquals(15, resized.mainRoomProfiles().getFirst().length());
         assertEquals(5, resized.mainRoomProfiles().getFirst().height());
-        MKWorkspaceFloorTopologySettings expanded = resized.withAddedRoomProfile(
-                MKWorkspaceFloorRoomKind.MAIN_ROOM,
+        MKFloorTopologySettings expanded = resized.withAddedRoomProfile(
+                MKFloorRoomKind.MAIN_ROOM,
                 resized.mainRoomProfiles().getFirst().withIdentity("main_room_1", "Main Room 2"));
         assertEquals(2, expanded.mainRoomProfiles().size());
-        MKWorkspaceFloorTopologySettings withBranchExit = expanded.withRoomProfile(
-                MKWorkspaceFloorRoomKind.MAIN_ROOM,
+        MKFloorTopologySettings withBranchExit = expanded.withRoomProfile(
+                MKFloorRoomKind.MAIN_ROOM,
                 1,
                 expanded.mainRoomProfiles().get(1).withHorizontalExits(List.of(
-                        new MKWorkspaceFamilyHorizontalExitDefinition(
+                        new MKFamilyHorizontalExitDefinition(
                                 Direction.EAST,
-                                MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                MKHorizontalExitPathKind.BRANCH,
                                 "ignored_branch_opening"),
-                        new MKWorkspaceFamilyHorizontalExitDefinition(
+                        new MKFamilyHorizontalExitDefinition(
                                 Direction.WEST,
-                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                                MKHorizontalExitPathKind.MAIN_EXIT,
                                 "ignored_main_opening"))));
         assertTrue(withBranchExit.mainRoomProfiles().get(1).horizontalExits().stream()
                 .anyMatch(exit -> exit.direction() == Direction.EAST &&
-                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH &&
-                        MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID.equals(exit.openingProfileId())));
+                        exit.pathKind() == MKHorizontalExitPathKind.BRANCH &&
+                        MKFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID.equals(exit.openingProfileId())));
         assertTrue(withBranchExit.mainRoomProfiles().get(1).horizontalExits().stream()
                 .anyMatch(exit -> exit.direction() == Direction.SOUTH &&
-                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY));
+                        exit.pathKind() == MKHorizontalExitPathKind.MAIN_ENTRY));
         assertTrue(withBranchExit.mainRoomProfiles().get(1).horizontalExits().stream()
                 .anyMatch(exit -> exit.direction() == Direction.WEST &&
-                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT &&
-                        MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID.equals(exit.openingProfileId())));
+                        exit.pathKind() == MKHorizontalExitPathKind.MAIN_EXIT &&
+                        MKFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID.equals(exit.openingProfileId())));
 
         JsonObject topologyJson = MKWorkspaceTopologyProfile.CODEC.encodeStart(JsonOps.INSTANCE, topologyProfile)
                 .getOrThrow()
@@ -2329,10 +2329,10 @@ class TowerWorkspaceV2Test {
                 workspace.dimensions().roomHeight(),
                 MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
                 List.of(
-                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.NORTH,
-                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "floor_main"),
-                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.EAST,
-                                MKWorkspaceHorizontalExitPathKind.BRANCH, "floor_branch")
+                        new MKFamilyHorizontalExitDefinition(Direction.NORTH,
+                                MKHorizontalExitPathKind.MAIN_EXIT, "floor_main"),
+                        new MKFamilyHorizontalExitDefinition(Direction.EAST,
+                                MKHorizontalExitPathKind.BRANCH, "floor_branch")
                 ),
                 0,
                 0,
@@ -2454,10 +2454,10 @@ class TowerWorkspaceV2Test {
                 workspace.dimensions().roomHeight(),
                 MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
                 List.of(
-                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.NORTH,
-                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "floor_main"),
-                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.EAST,
-                                MKWorkspaceHorizontalExitPathKind.BRANCH, "floor_branch")
+                        new MKFamilyHorizontalExitDefinition(Direction.NORTH,
+                                MKHorizontalExitPathKind.MAIN_EXIT, "floor_main"),
+                        new MKFamilyHorizontalExitDefinition(Direction.EAST,
+                                MKHorizontalExitPathKind.BRANCH, "floor_branch")
                 ),
                 0,
                 0,
@@ -2467,19 +2467,19 @@ class TowerWorkspaceV2Test {
         workspace = withFamilies(workspace, workspace.familyDefinitions().stream()
                 .map(family -> family.topologySlotId().equals("tower.primary.main_floor") ? floorRoot : family)
                 .toList());
-        MKWorkspaceFloorTopologySettings settings = workspace.topologyProfile()
+        MKFloorTopologySettings settings = workspace.topologyProfile()
                 .floorTopologySettingsOrDefault("tower.primary", "main_floor");
-        MKWorkspaceFloorRoomProfile eastExitProfile = settings.mainRoomProfiles().getFirst()
+        MKFloorRoomProfile eastExitProfile = settings.mainRoomProfiles().getFirst()
                 .withHorizontalExits(List.of(
-                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.EAST,
-                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
-                                MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID),
-                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.NORTH,
-                                MKWorkspaceHorizontalExitPathKind.BRANCH,
-                                MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID),
-                        new MKWorkspaceFamilyHorizontalExitDefinition(Direction.WEST,
-                                MKWorkspaceHorizontalExitPathKind.BRANCH,
-                                MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID)
+                        new MKFamilyHorizontalExitDefinition(Direction.EAST,
+                                MKHorizontalExitPathKind.MAIN_EXIT,
+                                MKFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID),
+                        new MKFamilyHorizontalExitDefinition(Direction.NORTH,
+                                MKHorizontalExitPathKind.BRANCH,
+                                MKFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID),
+                        new MKFamilyHorizontalExitDefinition(Direction.WEST,
+                                MKHorizontalExitPathKind.BRANCH,
+                                MKFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID)
                 ));
         workspace = new MKStructureWorkspace(
                 workspace.id(),
@@ -2487,7 +2487,7 @@ class TowerWorkspaceV2Test {
                 workspace.namespace(),
                 workspace.structureName(),
                 workspace.topologyProfile().withFloorTopologySettings(
-                        settings.withRoomProfile(MKWorkspaceFloorRoomKind.MAIN_ROOM, 0, eastExitProfile)),
+                        settings.withRoomProfile(MKFloorRoomKind.MAIN_ROOM, 0, eastExitProfile)),
                 workspace.dimensions(),
                 workspace.palette(),
                 workspace.stairConfig(),
@@ -2631,10 +2631,10 @@ class TowerWorkspaceV2Test {
                 entryFamily.roomHeight(),
                 entryFamily.horizontalExtrusionMode(),
                 List.of(
-                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
-                                MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY, "entry_main"),
-                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
-                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "entry_main")
+                        new MKFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                                MKHorizontalExitPathKind.MAIN_ENTRY, "entry_main"),
+                        new MKFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
+                                MKHorizontalExitPathKind.MAIN_EXIT, "entry_main")
                 ),
                 entryFamily.topVoidMargin(),
                 entryFamily.bottomVoidMargin(),
@@ -2766,7 +2766,7 @@ class TowerWorkspaceV2Test {
                 9,
                 MKWorkspaceDimensions.defaultDimensions().roomHeight(),
                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
-                List.of(MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(net.minecraft.core.Direction.UP)),
+                List.of(MKFamilyHorizontalExitDefinition.verticalAccess(net.minecraft.core.Direction.UP)),
                 0,
                 0,
                 null,
@@ -2799,9 +2799,9 @@ class TowerWorkspaceV2Test {
                 workspace.dimensions().roomHeight(),
                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                 List.of(
-                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
-                                MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch"),
-                        MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(net.minecraft.core.Direction.UP)
+                        new MKFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                                MKHorizontalExitPathKind.BRANCH, "main_branch"),
+                        MKFamilyHorizontalExitDefinition.verticalAccess(net.minecraft.core.Direction.UP)
                 ),
                 0,
                 0,
@@ -2843,8 +2843,8 @@ class TowerWorkspaceV2Test {
                 9,
                 workspace.dimensions().roomHeight(),
                 MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
-                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
-                        MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch")),
+                List.of(new MKFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                        MKHorizontalExitPathKind.BRANCH, "main_branch")),
                 0,
                 0,
                 null,
@@ -2871,10 +2871,10 @@ class TowerWorkspaceV2Test {
                 .filter(family -> family.topologySlotId().endsWith(".entry"))
                 .findFirst()
                 .orElseThrow();
-        MKWorkspaceFamilyHorizontalExitDefinition entrance = entryFamily.horizontalExits().getFirst();
+        MKFamilyHorizontalExitDefinition entrance = entryFamily.horizontalExits().getFirst();
 
         assertEquals(MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, entryFamily.horizontalExtrusionMode());
-        assertEquals(MKWorkspaceHorizontalExitPathKind.INGRESS, entrance.pathKind());
+        assertEquals(MKHorizontalExitPathKind.INGRESS, entrance.pathKind());
         assertEquals(MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION, entrance.connectionMode());
 
         MKStructureWorkspace workspace = new MKStructureWorkspace(
@@ -2936,8 +2936,8 @@ class TowerWorkspaceV2Test {
                 9,
                 5,
                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
-                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
-                        MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY, "entry_main")),
+                List.of(new MKFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                        MKHorizontalExitPathKind.MAIN_ENDING_ENTRY, "entry_main")),
                 0,
                 0,
                 null,
@@ -2997,8 +2997,8 @@ class TowerWorkspaceV2Test {
                 9,
                 5,
                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
-                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
-                        MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY, "main_branch")),
+                List.of(new MKFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                        MKHorizontalExitPathKind.BRANCH_CAP_ENTRY, "main_branch")),
                 0,
                 0,
                 null,
@@ -3080,10 +3080,10 @@ class TowerWorkspaceV2Test {
                 5,
                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                 List.of(
-                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
-                                MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY, "entry_main"),
-                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
-                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "entry_main")
+                        new MKFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                                MKHorizontalExitPathKind.MAIN_ENDING_ENTRY, "entry_main"),
+                        new MKFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
+                                MKHorizontalExitPathKind.MAIN_EXIT, "entry_main")
                 ),
                 0,
                 0,
@@ -3134,11 +3134,11 @@ class TowerWorkspaceV2Test {
                 5,
                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                 List.of(
-                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
-                                MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY, "main_branch",
+                        new MKFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                                MKHorizontalExitPathKind.BRANCH_CAP_ENTRY, "main_branch",
                                 MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION),
-                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
-                                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "entry_main",
+                        new MKFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
+                                MKHorizontalExitPathKind.MAIN_EXIT, "entry_main",
                                 MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM)
                 ),
                 0,
@@ -3374,17 +3374,17 @@ class TowerWorkspaceV2Test {
                 workspace.dimensions().roomHeight(),
                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
                 List.of(
-                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
-                                MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch",
+                        new MKFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                                MKHorizontalExitPathKind.BRANCH, "main_branch",
                                 MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN, 2, 1),
-                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
-                                MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch",
+                        new MKFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
+                                MKHorizontalExitPathKind.BRANCH, "main_branch",
                                 MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN, 2, 1),
-                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.EAST,
-                                MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch",
+                        new MKFamilyHorizontalExitDefinition(net.minecraft.core.Direction.EAST,
+                                MKHorizontalExitPathKind.BRANCH, "main_branch",
                                 MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN, 2, 1),
-                        new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.WEST,
-                                MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch",
+                        new MKFamilyHorizontalExitDefinition(net.minecraft.core.Direction.WEST,
+                                MKHorizontalExitPathKind.BRANCH, "main_branch",
                                 MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN, 2, 1)
                 ),
                 0,
@@ -3562,9 +3562,9 @@ class TowerWorkspaceV2Test {
                                 family.roomLength(),
                                 family.roomHeight(),
                                 family.horizontalExtrusionMode(),
-                                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
+                                List.of(new MKFamilyHorizontalExitDefinition(
                                         net.minecraft.core.Direction.SOUTH,
-                                        MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                                        MKHorizontalExitPathKind.MAIN_EXIT,
                                         "entry_main",
                                         MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM
                                 )),
@@ -3583,9 +3583,9 @@ class TowerWorkspaceV2Test {
                                 family.roomLength(),
                                 family.roomHeight(),
                                 family.horizontalExtrusionMode(),
-                                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
+                                List.of(new MKFamilyHorizontalExitDefinition(
                                         net.minecraft.core.Direction.NORTH,
-                                        MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY,
+                                        MKHorizontalExitPathKind.MAIN_ENTRY,
                                         "entry_main",
                                         MKWorkspaceHorizontalExitConnectionMode.DIRECT_ROOM
                                 )),
@@ -3661,8 +3661,8 @@ class TowerWorkspaceV2Test {
                 9,
                 workspace.dimensions().roomHeight(),
                 MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
-                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
-                        MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch")),
+                List.of(new MKFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                        MKHorizontalExitPathKind.BRANCH, "main_branch")),
                 0,
                 0,
                 null,
@@ -4167,13 +4167,13 @@ class TowerWorkspaceV2Test {
                 List.of(
                         MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("entry", MKWorkspaceVerticalStackSlot.ENTRY,
                                 "tower.primary", true, 0, 0, 0, MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
-                                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
-                                        MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, "entry_main")),
+                                List.of(new MKFamilyHorizontalExitDefinition(net.minecraft.core.Direction.SOUTH,
+                                        MKHorizontalExitPathKind.MAIN_EXIT, "entry_main")),
                                 0, 0, null, null),
                         MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("floor_main", MKWorkspaceVerticalStackSlot.MAIN_FLOOR,
                                 "tower.primary", true, 0, 0, 0, MKWorkspaceHorizontalExtrusionMode.TUNNEL_ONLY,
-                                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
-                                        MKWorkspaceHorizontalExitPathKind.BRANCH, "main_branch")),
+                                List.of(new MKFamilyHorizontalExitDefinition(net.minecraft.core.Direction.NORTH,
+                                        MKHorizontalExitPathKind.BRANCH, "main_branch")),
                                 0, 0, null, null),
                         MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("top_cap_approach",
                                 MKWorkspaceVerticalStackSlot.TOP_CAP_APPROACH, "tower.primary", true, 0, 0, 0,
@@ -4326,7 +4326,7 @@ class TowerWorkspaceV2Test {
                                                                    int roomLength,
                                                                    int roomHeight,
                                                                    MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
-                                                                   List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
+                                                                   List<MKFamilyHorizontalExitDefinition> horizontalExits,
                                                                    int topVoidMargin,
                                                                    int bottomVoidMargin,
                                                                    MKWorkspaceFoundationPolicy foundationPolicy,
@@ -4345,7 +4345,7 @@ class TowerWorkspaceV2Test {
                                                                    int roomLength,
                                                                    int roomHeight,
                                                                    MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
-                                                                   List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
+                                                                   List<MKFamilyHorizontalExitDefinition> horizontalExits,
                                                                    int topVoidMargin,
                                                                    int bottomVoidMargin,
                                                                    MKWorkspaceFoundationPolicy foundationPolicy,

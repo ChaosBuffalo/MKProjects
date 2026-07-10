@@ -6,17 +6,17 @@ import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorLinkGenerationMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorLinkGenerationMode;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomGeometry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
@@ -359,21 +359,21 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             @Override
-            public List<MKWorkspaceFamilyHorizontalExitDefinition> exits(String sectionKey) {
-                List<MKWorkspaceFamilyHorizontalExitDefinition> exits = familyForSection(editor, stackId, sectionKey)
+            public List<MKFamilyHorizontalExitDefinition> exits(String sectionKey) {
+                List<MKFamilyHorizontalExitDefinition> exits = familyForSection(editor, stackId, sectionKey)
                         .map(MKWorkspaceRoomFamilyDefinition::horizontalExits)
                         .orElse(List.of());
                 return "entry".equals(sectionKey) ? entryExitsWithRequiredSouth(editor, exits) : exits;
             }
 
             @Override
-            public Optional<MKWorkspaceFamilyHorizontalExitDefinition> selectedExit(String sectionKey) {
+            public Optional<MKFamilyHorizontalExitDefinition> selectedExit(String sectionKey) {
                 OptionalInt familyIndex = familyIndexForSection(editor, stackId, sectionKey);
                 if (familyIndex.isEmpty()) {
                     return Optional.empty();
                 }
                 int exitIndex = editor.selectedFamilyExitIndex();
-                List<MKWorkspaceFamilyHorizontalExitDefinition> exits =
+                List<MKFamilyHorizontalExitDefinition> exits =
                         editor.draft().familyDefinitions.get(familyIndex.getAsInt()).horizontalExits();
                 return exitIndex >= 0 && exitIndex < exits.size() ? Optional.of(exits.get(exitIndex)) :
                         Optional.empty();
@@ -409,12 +409,12 @@ public class WorkspaceVerticalStackTopologyPanel {
                 familyIndexForSection(editor, stackId, sectionKey).ifPresent(familyIndex -> {
                     int exitIndex = editor.findFamilyExitIndexByDirection(familyIndex, direction);
                     if (exitIndex >= 0) {
-                        MKWorkspaceFamilyHorizontalExitDefinition exit =
+                        MKFamilyHorizontalExitDefinition exit =
                                 editor.draft().familyDefinitions.get(familyIndex).horizontalExits().get(exitIndex);
                         if (isRequiredVerticalStackExit(sectionKey, exit)) {
                             return;
                         }
-                        if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH) {
+                        if (exit.pathKind() == MKHorizontalExitPathKind.BRANCH) {
                             editor.removeFamilyExit(familyIndex, exitIndex);
                             if (editor.selectedFamilyExitIndex() == exitIndex) {
                                 editor.selectedFamilyExitIndex(-1);
@@ -423,11 +423,11 @@ public class WorkspaceVerticalStackTopologyPanel {
                             }
                         } else {
                             String branchOpeningProfileId = editor.ensureCompatibleOpeningProfile(
-                                    MKWorkspaceHorizontalExitPathKind.BRANCH, exit.openingProfileId());
+                                    MKHorizontalExitPathKind.BRANCH, exit.openingProfileId());
                             editor.replaceFamilyExit(familyIndex, exitIndex,
-                                    new MKWorkspaceFamilyHorizontalExitDefinition(
+                                    new MKFamilyHorizontalExitDefinition(
                                             exit.direction(),
-                                            MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                            MKHorizontalExitPathKind.BRANCH,
                                             branchOpeningProfileId,
                             exit.connectionMode(),
                             exit.sideOffset(),
@@ -454,7 +454,7 @@ public class WorkspaceVerticalStackTopologyPanel {
                         return exit;
                     }
                     Direction nextDirection = cycleMutableCardinalDirection(sectionKey, exit.direction(), reverse);
-                    return new MKWorkspaceFamilyHorizontalExitDefinition(
+                    return new MKFamilyHorizontalExitDefinition(
                             nextDirection,
                             exit.pathKind(),
                             exit.openingProfileId(),
@@ -476,12 +476,12 @@ public class WorkspaceVerticalStackTopologyPanel {
                     if (family == null) {
                         return exit;
                     }
-                    MKWorkspaceHorizontalExitPathKind nextPathKind = WorkspaceTopologyUiSupport.cycleValue(
+                    MKHorizontalExitPathKind nextPathKind = WorkspaceTopologyUiSupport.cycleValue(
                             allowedPathKinds(sectionKey),
                             exit.pathKind(), reverse);
                     String nextOpeningProfileId =
                             editor.ensureCompatibleOpeningProfile(nextPathKind, exit.openingProfileId());
-                    return new MKWorkspaceFamilyHorizontalExitDefinition(
+                    return new MKFamilyHorizontalExitDefinition(
                             exit.direction(),
                             nextPathKind,
                             nextOpeningProfileId,
@@ -493,9 +493,9 @@ public class WorkspaceVerticalStackTopologyPanel {
                 });
             }
 
-            private List<MKWorkspaceHorizontalExitPathKind> allowedPathKinds(String sectionKey) {
-                return List.of(MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
-                        MKWorkspaceHorizontalExitPathKind.BRANCH);
+            private List<MKHorizontalExitPathKind> allowedPathKinds(String sectionKey) {
+                return List.of(MKHorizontalExitPathKind.MAIN_EXIT,
+                        MKHorizontalExitPathKind.BRANCH);
             }
 
             @Override
@@ -504,7 +504,7 @@ public class WorkspaceVerticalStackTopologyPanel {
                     if (isRequiredVerticalStackExit(sectionKey, exit)) {
                         return exit;
                     }
-                    return new MKWorkspaceFamilyHorizontalExitDefinition(
+                    return new MKFamilyHorizontalExitDefinition(
                             exit.direction(),
                             exit.pathKind(),
                             exit.openingProfileId(),
@@ -526,7 +526,7 @@ public class WorkspaceVerticalStackTopologyPanel {
                     }
                     String nextOpeningProfileId =
                             editor.nextOpeningProfileId(exit.pathKind(), exit.openingProfileId(), reverse);
-                    return new MKWorkspaceFamilyHorizontalExitDefinition(
+                    return new MKFamilyHorizontalExitDefinition(
                             exit.direction(),
                             exit.pathKind(),
                             nextOpeningProfileId,
@@ -621,7 +621,7 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             @Override
-            public MKWorkspaceHallwayLeadInMode floorHallwayLeadInMode(String sectionKey) {
+            public MKHallwayLeadInMode floorHallwayLeadInMode(String sectionKey) {
                 return floorEditor(editor, stackId, sectionKey).hallwayLeadInMode();
             }
 
@@ -629,7 +629,7 @@ public class WorkspaceVerticalStackTopologyPanel {
             public void cycleFloorHallwayLeadInMode(String sectionKey, boolean reverse) {
                 FloorPlanDraftEditor floorEditor = floorEditor(editor, stackId, sectionKey);
                 floorEditor.hallwayLeadInMode(WorkspaceTopologyUiSupport.cycleValue(
-                        List.of(MKWorkspaceHallwayLeadInMode.values()), floorEditor.hallwayLeadInMode(), reverse));
+                        List.of(MKHallwayLeadInMode.values()), floorEditor.hallwayLeadInMode(), reverse));
                 screen.flagNeedSetup();
             }
 
@@ -684,34 +684,34 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             @Override
-            public int floorRoomWidth(String sectionKey, MKWorkspaceFloorRoomKind kind) {
+            public int floorRoomWidth(String sectionKey, MKFloorRoomKind kind) {
                 return floorEditor(editor, stackId, sectionKey).roomWidth(kind);
             }
 
             @Override
-            public void floorRoomWidth(String sectionKey, MKWorkspaceFloorRoomKind kind, int value) {
+            public void floorRoomWidth(String sectionKey, MKFloorRoomKind kind, int value) {
                 floorEditor(editor, stackId, sectionKey).roomWidth(kind, value);
                 screen.flagNeedSetup();
             }
 
             @Override
-            public int floorRoomLength(String sectionKey, MKWorkspaceFloorRoomKind kind) {
+            public int floorRoomLength(String sectionKey, MKFloorRoomKind kind) {
                 return floorEditor(editor, stackId, sectionKey).roomLength(kind);
             }
 
             @Override
-            public void floorRoomLength(String sectionKey, MKWorkspaceFloorRoomKind kind, int value) {
+            public void floorRoomLength(String sectionKey, MKFloorRoomKind kind, int value) {
                 floorEditor(editor, stackId, sectionKey).roomLength(kind, value);
                 screen.flagNeedSetup();
             }
 
             @Override
-            public int floorRoomHeight(String sectionKey, MKWorkspaceFloorRoomKind kind) {
+            public int floorRoomHeight(String sectionKey, MKFloorRoomKind kind) {
                 return floorEditor(editor, stackId, sectionKey).roomHeight(kind);
             }
 
             @Override
-            public void floorRoomHeight(String sectionKey, MKWorkspaceFloorRoomKind kind, int value) {
+            public void floorRoomHeight(String sectionKey, MKFloorRoomKind kind, int value) {
                 floorEditor(editor, stackId, sectionKey).roomHeight(kind, value);
                 screen.flagNeedSetup();
             }
@@ -721,7 +721,7 @@ public class WorkspaceVerticalStackTopologyPanel {
                 return floorEditor(editor, stackId, sectionKey).roomHeightMax();
             }
 
-            private Optional<MKWorkspaceFamilyHorizontalExitDefinition> exitForDirection(String sectionKey,
+            private Optional<MKFamilyHorizontalExitDefinition> exitForDirection(String sectionKey,
                                                                                          Direction direction) {
                 return exits(sectionKey).stream()
                         .filter(exit -> exit.direction() == direction)
@@ -733,10 +733,10 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             private void updateSelectedExit(String sectionKey,
-                                            java.util.function.Function<MKWorkspaceFamilyHorizontalExitDefinition,
-                                                    MKWorkspaceFamilyHorizontalExitDefinition> updater) {
+                                            java.util.function.Function<MKFamilyHorizontalExitDefinition,
+                                                    MKFamilyHorizontalExitDefinition> updater) {
                 OptionalInt familyIndex = familyIndexForSection(editor, stackId, sectionKey);
-                Optional<MKWorkspaceFamilyHorizontalExitDefinition> exit = selectedExit(sectionKey);
+                Optional<MKFamilyHorizontalExitDefinition> exit = selectedExit(sectionKey);
                 if (familyIndex.isEmpty() || exit.isEmpty()) {
                     return;
                 }
@@ -768,21 +768,21 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             @Override
-            public List<MKWorkspaceFamilyHorizontalExitDefinition> rootExits(String sectionKey) {
-                List<MKWorkspaceFamilyHorizontalExitDefinition> exits = familyForSection(editor, stackId, sectionKey)
+            public List<MKFamilyHorizontalExitDefinition> rootExits(String sectionKey) {
+                List<MKFamilyHorizontalExitDefinition> exits = familyForSection(editor, stackId, sectionKey)
                         .map(MKWorkspaceRoomFamilyDefinition::horizontalExits)
                         .orElse(List.of());
                 return "entry".equals(sectionKey) ? entryExitsWithRequiredSouth(editor, exits) : exits;
             }
 
             @Override
-            public Optional<MKWorkspaceFamilyHorizontalExitDefinition> selectedRootExit(String sectionKey) {
+            public Optional<MKFamilyHorizontalExitDefinition> selectedRootExit(String sectionKey) {
                 OptionalInt familyIndex = familyIndexForSection(editor, stackId, sectionKey);
                 if (familyIndex.isEmpty()) {
                     return Optional.empty();
                 }
                 int exitIndex = editor.selectedFamilyExitIndex();
-                List<MKWorkspaceFamilyHorizontalExitDefinition> exits =
+                List<MKFamilyHorizontalExitDefinition> exits =
                         editor.draft().familyDefinitions.get(familyIndex.getAsInt()).horizontalExits();
                 return exitIndex >= 0 && exitIndex < exits.size() &&
                         exits.get(exitIndex).direction().getAxis().isHorizontal() ?
@@ -818,12 +818,12 @@ public class WorkspaceVerticalStackTopologyPanel {
                 familyIndexForSection(editor, stackId, sectionKey).ifPresent(familyIndex -> {
                     int exitIndex = editor.findFamilyExitIndexByDirection(familyIndex, direction);
                     if (exitIndex >= 0) {
-                        MKWorkspaceFamilyHorizontalExitDefinition exit =
+                        MKFamilyHorizontalExitDefinition exit =
                                 editor.draft().familyDefinitions.get(familyIndex).horizontalExits().get(exitIndex);
                         if (isRequiredVerticalStackExit(sectionKey, exit)) {
                             return;
                         }
-                        if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH) {
+                        if (exit.pathKind() == MKHorizontalExitPathKind.BRANCH) {
                             editor.removeFamilyExit(familyIndex, exitIndex);
                             if (editor.selectedFamilyExitIndex() == exitIndex) {
                                 editor.selectedFamilyExitIndex(-1);
@@ -832,11 +832,11 @@ public class WorkspaceVerticalStackTopologyPanel {
                             }
                         } else {
                             String branchOpeningProfileId = editor.ensureCompatibleOpeningProfile(
-                                    MKWorkspaceHorizontalExitPathKind.BRANCH, exit.openingProfileId());
+                                    MKHorizontalExitPathKind.BRANCH, exit.openingProfileId());
                             editor.replaceFamilyExit(familyIndex, exitIndex,
-                                    new MKWorkspaceFamilyHorizontalExitDefinition(
+                                    new MKFamilyHorizontalExitDefinition(
                                             exit.direction(),
-                                            MKWorkspaceHorizontalExitPathKind.BRANCH,
+                                            MKHorizontalExitPathKind.BRANCH,
                                             branchOpeningProfileId,
                                             exit.connectionMode(),
                                             exit.sideOffset(),
@@ -862,12 +862,12 @@ public class WorkspaceVerticalStackTopologyPanel {
                     if (family == null) {
                         return exit;
                     }
-                    MKWorkspaceHorizontalExitPathKind nextPathKind = WorkspaceTopologyUiSupport.cycleValue(
-                            List.of(MKWorkspaceHorizontalExitPathKind.MAIN_EXIT, MKWorkspaceHorizontalExitPathKind.BRANCH),
+                    MKHorizontalExitPathKind nextPathKind = WorkspaceTopologyUiSupport.cycleValue(
+                            List.of(MKHorizontalExitPathKind.MAIN_EXIT, MKHorizontalExitPathKind.BRANCH),
                             exit.pathKind(), reverse);
                     String nextOpeningProfileId =
                             editor.ensureCompatibleOpeningProfile(nextPathKind, exit.openingProfileId());
-                    return new MKWorkspaceFamilyHorizontalExitDefinition(
+                    return new MKFamilyHorizontalExitDefinition(
                             exit.direction(),
                             nextPathKind,
                             nextOpeningProfileId,
@@ -888,7 +888,7 @@ public class WorkspaceVerticalStackTopologyPanel {
                     }
                     String nextOpeningProfileId =
                             editor.nextOpeningProfileId(exit.pathKind(), exit.openingProfileId(), reverse);
-                    return new MKWorkspaceFamilyHorizontalExitDefinition(
+                    return new MKFamilyHorizontalExitDefinition(
                             exit.direction(),
                             exit.pathKind(),
                             nextOpeningProfileId,
@@ -1060,7 +1060,7 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             @Override
-            public MKWorkspaceHallwayLeadInMode floorHallwayLeadInMode(String sectionKey) {
+            public MKHallwayLeadInMode floorHallwayLeadInMode(String sectionKey) {
                 return floorEditor(editor, stackId, sectionKey).hallwayLeadInMode();
             }
 
@@ -1068,7 +1068,7 @@ public class WorkspaceVerticalStackTopologyPanel {
             public void cycleFloorHallwayLeadInMode(String sectionKey, boolean reverse) {
                 FloorPlanDraftEditor floorEditor = floorEditor(editor, stackId, sectionKey);
                 floorEditor.hallwayLeadInMode(WorkspaceTopologyUiSupport.cycleValue(
-                        List.of(MKWorkspaceHallwayLeadInMode.values()), floorEditor.hallwayLeadInMode(), reverse));
+                        List.of(MKHallwayLeadInMode.values()), floorEditor.hallwayLeadInMode(), reverse));
                 screen.flagNeedSetup();
             }
 
@@ -1194,7 +1194,7 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             @Override
-            public MKWorkspaceFloorLinkGenerationMode floorLinkGenerationMode(String sectionKey) {
+            public MKFloorLinkGenerationMode floorLinkGenerationMode(String sectionKey) {
                 return floorEditor(editor, stackId, sectionKey).linkGenerationMode();
             }
 
@@ -1202,7 +1202,7 @@ public class WorkspaceVerticalStackTopologyPanel {
             public void cycleFloorLinkGenerationMode(String sectionKey, boolean reverse) {
                 FloorPlanDraftEditor floorEditor = floorEditor(editor, stackId, sectionKey);
                 floorEditor.linkGenerationMode(WorkspaceTopologyUiSupport.cycleValue(
-                        List.of(MKWorkspaceFloorLinkGenerationMode.values()), floorEditor.linkGenerationMode(),
+                        List.of(MKFloorLinkGenerationMode.values()), floorEditor.linkGenerationMode(),
                         reverse));
                 screen.flagNeedSetup();
             }
@@ -1374,42 +1374,42 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             @Override
-            public List<MKWorkspaceFloorRoomProfile> roomProfiles(String sectionKey, MKWorkspaceFloorRoomKind kind) {
+            public List<MKFloorRoomProfile> roomProfiles(String sectionKey, MKFloorRoomKind kind) {
                 return floorEditor(editor, stackId, sectionKey).roomProfiles(kind);
             }
 
             @Override
-            public void floorRoomWidth(String sectionKey, MKWorkspaceFloorRoomKind kind, int index, int value) {
+            public void floorRoomWidth(String sectionKey, MKFloorRoomKind kind, int index, int value) {
                 floorEditor(editor, stackId, sectionKey).roomWidth(kind, index, value);
                 screen.flagNeedSetup();
             }
 
             @Override
-            public void floorRoomLength(String sectionKey, MKWorkspaceFloorRoomKind kind, int index, int value) {
+            public void floorRoomLength(String sectionKey, MKFloorRoomKind kind, int index, int value) {
                 floorEditor(editor, stackId, sectionKey).roomLength(kind, index, value);
                 screen.flagNeedSetup();
             }
 
             @Override
-            public void floorRoomHeight(String sectionKey, MKWorkspaceFloorRoomKind kind, int index, int value) {
+            public void floorRoomHeight(String sectionKey, MKFloorRoomKind kind, int index, int value) {
                 floorEditor(editor, stackId, sectionKey).roomHeight(kind, index, value);
                 screen.flagNeedSetup();
             }
 
             @Override
-            public void addRoomProfile(String sectionKey, MKWorkspaceFloorRoomKind kind) {
+            public void addRoomProfile(String sectionKey, MKFloorRoomKind kind) {
                 floorEditor(editor, stackId, sectionKey).addRoomProfile(kind);
                 screen.flagNeedSetup();
             }
 
             @Override
-            public void removeRoomProfile(String sectionKey, MKWorkspaceFloorRoomKind kind, int index) {
+            public void removeRoomProfile(String sectionKey, MKFloorRoomKind kind, int index) {
                 floorEditor(editor, stackId, sectionKey).removeRoomProfile(kind, index);
                 screen.flagNeedSetup();
             }
 
             @Override
-            public int floorRoomVariantCount(String sectionKey, MKWorkspaceFloorRoomKind kind, int index) {
+            public int floorRoomVariantCount(String sectionKey, MKFloorRoomKind kind, int index) {
                 String baseName = floorRoomVariantBaseName(editor, stackId, sectionKey, kind, index);
                 if (baseName.isBlank()) {
                     return 0;
@@ -1421,13 +1421,13 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             @Override
-            public boolean floorRoomVariantsExpanded(String sectionKey, MKWorkspaceFloorRoomKind kind, int index) {
+            public boolean floorRoomVariantsExpanded(String sectionKey, MKFloorRoomKind kind, int index) {
                 return editor.viewState.floorRoomVariantDrawers.getOrDefault(
                         floorRoomVariantDrawerKey(stackId, sectionKey, kind, index), false);
             }
 
             @Override
-            public void toggleFloorRoomVariants(String sectionKey, MKWorkspaceFloorRoomKind kind, int index) {
+            public void toggleFloorRoomVariants(String sectionKey, MKFloorRoomKind kind, int index) {
                 String key = floorRoomVariantDrawerKey(stackId, sectionKey, kind, index);
                 boolean expanded = !editor.viewState.floorRoomVariantDrawers.getOrDefault(key, false);
                 editor.viewState.floorRoomVariantDrawers.put(key, expanded);
@@ -1435,7 +1435,7 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             @Override
-            public void addFloorRoomVariant(String sectionKey, MKWorkspaceFloorRoomKind kind, int index) {
+            public void addFloorRoomVariant(String sectionKey, MKFloorRoomKind kind, int index) {
                 String baseName = floorRoomVariantBaseName(editor, stackId, sectionKey, kind, index);
                 if (!baseName.isBlank()) {
                     PacketDistributor.sendToServer(new AddWorkspaceVariantPacket(screen.anchor(), baseName));
@@ -1443,33 +1443,33 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             @Override
-            public void openFloorRoomVariants(String sectionKey, MKWorkspaceFloorRoomKind kind) {
+            public void openFloorRoomVariants(String sectionKey, MKFloorRoomKind kind) {
                 screen.openWorkspaceTopologySlotForPrefix(floorRoomTopologySlot(kind));
             }
 
             @Override
-            public void setRoomMainExitDirection(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
+            public void setRoomMainExitDirection(String sectionKey, MKFloorRoomKind kind, int index,
                                                  Direction direction) {
                 floorEditor(editor, stackId, sectionKey).setRoomMainExitDirection(kind, index, direction);
                 screen.flagNeedSetup();
             }
 
             @Override
-            public void setRoomRandomizeMainExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
+            public void setRoomRandomizeMainExit(String sectionKey, MKFloorRoomKind kind, int index,
                                                  boolean value) {
                 floorEditor(editor, stackId, sectionKey).setRoomRandomizeMainExit(kind, index, value);
                 screen.flagNeedSetup();
             }
 
             @Override
-            public void toggleRoomBranchExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
+            public void toggleRoomBranchExit(String sectionKey, MKFloorRoomKind kind, int index,
                                              Direction direction) {
                 floorEditor(editor, stackId, sectionKey).toggleRoomBranchExit(kind, index, direction);
                 screen.flagNeedSetup();
             }
 
             @Override
-            public void toggleRoomLinkCandidateExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
+            public void toggleRoomLinkCandidateExit(String sectionKey, MKFloorRoomKind kind, int index,
                                                     Direction direction) {
                 floorEditor(editor, stackId, sectionKey).toggleRoomLinkCandidateExit(kind, index, direction);
                 screen.flagNeedSetup();
@@ -1480,10 +1480,10 @@ public class WorkspaceVerticalStackTopologyPanel {
             }
 
             private void updateSelectedRootExit(String sectionKey,
-                                                java.util.function.Function<MKWorkspaceFamilyHorizontalExitDefinition,
-                                                        MKWorkspaceFamilyHorizontalExitDefinition> updater) {
+                                                java.util.function.Function<MKFamilyHorizontalExitDefinition,
+                                                        MKFamilyHorizontalExitDefinition> updater) {
                 OptionalInt familyIndex = familyIndexForSection(editor, stackId, sectionKey);
-                Optional<MKWorkspaceFamilyHorizontalExitDefinition> exit = selectedRootExit(sectionKey);
+                Optional<MKFamilyHorizontalExitDefinition> exit = selectedRootExit(sectionKey);
                 if (familyIndex.isEmpty() || exit.isEmpty()) {
                     return;
                 }
@@ -1494,13 +1494,13 @@ public class WorkspaceVerticalStackTopologyPanel {
         };
     }
 
-    private List<MKWorkspaceFamilyHorizontalExitDefinition> entryExitsWithRequiredSouth(WorkspaceDraftSession editor,
-                                                                                        List<MKWorkspaceFamilyHorizontalExitDefinition> exits) {
-        ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> resolved = new ArrayList<>();
+    private List<MKFamilyHorizontalExitDefinition> entryExitsWithRequiredSouth(WorkspaceDraftSession editor,
+                                                                                        List<MKFamilyHorizontalExitDefinition> exits) {
+        ArrayList<MKFamilyHorizontalExitDefinition> resolved = new ArrayList<>();
         boolean hasRequiredEntry = false;
-        for (MKWorkspaceFamilyHorizontalExitDefinition exit : exits) {
+        for (MKFamilyHorizontalExitDefinition exit : exits) {
             if (exit.direction() == Direction.SOUTH) {
-                if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.INGRESS) {
+                if (exit.pathKind() == MKHorizontalExitPathKind.INGRESS) {
                     resolved.add(exit);
                     hasRequiredEntry = true;
                 }
@@ -1535,20 +1535,20 @@ public class WorkspaceVerticalStackTopologyPanel {
         return OptionalInt.empty();
     }
 
-    private MKWorkspaceFamilyHorizontalExitDefinition requiredEntryExit(WorkspaceDraftSession editor) {
-        return new MKWorkspaceFamilyHorizontalExitDefinition(
+    private MKFamilyHorizontalExitDefinition requiredEntryExit(WorkspaceDraftSession editor) {
+        return new MKFamilyHorizontalExitDefinition(
                 Direction.SOUTH,
-                MKWorkspaceHorizontalExitPathKind.INGRESS,
-                editor.firstCompatibleOpeningProfileId(MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)
+                MKHorizontalExitPathKind.INGRESS,
+                editor.firstCompatibleOpeningProfileId(MKHorizontalExitPathKind.MAIN_EXIT)
                         .orElse("main_opening"),
                 MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION
         );
     }
 
-    private boolean isRequiredVerticalStackExit(String sectionKey, MKWorkspaceFamilyHorizontalExitDefinition exit) {
+    private boolean isRequiredVerticalStackExit(String sectionKey, MKFamilyHorizontalExitDefinition exit) {
         return exit.isVerticalAccess() ||
                 isRequiredEntryExit(sectionKey, exit.direction()) &&
-                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.INGRESS;
+                        exit.pathKind() == MKHorizontalExitPathKind.INGRESS;
     }
 
     private boolean isRequiredEntryExit(String sectionKey, Direction direction) {
@@ -1700,12 +1700,12 @@ public class WorkspaceVerticalStackTopologyPanel {
     }
 
     private String floorRoomVariantBaseName(WorkspaceDraftSession editor, String stackId, String sectionKey,
-                                            MKWorkspaceFloorRoomKind kind, int index) {
-        List<MKWorkspaceFloorRoomProfile> profiles = floorEditor(editor, stackId, sectionKey).roomProfiles(kind);
+                                            MKFloorRoomKind kind, int index) {
+        List<MKFloorRoomProfile> profiles = floorEditor(editor, stackId, sectionKey).roomProfiles(kind);
         if (index < 0 || index >= profiles.size()) {
             return "";
         }
-        MKWorkspaceFloorRoomProfile profile = profiles.get(index);
+        MKFloorRoomProfile profile = profiles.get(index);
         return "floor_plan_" + safeFloorRoomId(stackId) + "_" + safeFloorRoomId(sectionKey) + "_" +
                 kind.getSerializedName() + "_" + safeFloorRoomId(profile.id()) + "_" + index;
     }
@@ -1754,12 +1754,12 @@ public class WorkspaceVerticalStackTopologyPanel {
 
     private String floorHallOpeningProfileId(WorkspaceDraftSession editor, String stackId, String sectionKey,
                                              boolean main) {
-        MKWorkspaceHorizontalExitPathKind pathKind = main ? MKWorkspaceHorizontalExitPathKind.MAIN_EXIT :
-                MKWorkspaceHorizontalExitPathKind.BRANCH;
+        MKHorizontalExitPathKind pathKind = main ? MKHorizontalExitPathKind.MAIN_EXIT :
+                MKHorizontalExitPathKind.BRANCH;
         return familyForSection(editor, stackId, sectionKey)
                 .flatMap(family -> family.horizontalExits().stream()
                         .filter(exit -> exit.pathKind() == pathKind)
-                        .map(MKWorkspaceFamilyHorizontalExitDefinition::openingProfileId)
+                        .map(MKFamilyHorizontalExitDefinition::openingProfileId)
                         .findFirst())
                 .orElse(main ? "main_opening" : "branch_opening");
     }
@@ -1784,12 +1784,12 @@ public class WorkspaceVerticalStackTopologyPanel {
         return stackId + "|" + sectionKey + "|insert";
     }
 
-    private String floorRoomTopologySlot(MKWorkspaceFloorRoomKind kind) {
+    private String floorRoomTopologySlot(MKFloorRoomKind kind) {
         return "tower.floor_plan." + kind.getSerializedName();
     }
 
     private String floorRoomVariantDrawerKey(String stackId, String sectionKey,
-                                             MKWorkspaceFloorRoomKind kind, int index) {
+                                             MKFloorRoomKind kind, int index) {
         return stackId + "|" + sectionKey + "|" + kind.getSerializedName() + "|" + index;
     }
 

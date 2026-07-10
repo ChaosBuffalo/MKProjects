@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Direction;
@@ -25,7 +27,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
             Codec.INT.optionalFieldOf("roomHeight", 0).forGetter(MKWorkspaceRoomFamilyDefinition::roomHeight),
             MKWorkspaceCodecs.HORIZONTAL_EXTRUSION_MODE_CODEC.fieldOf("horizontalExtrusionMode")
                     .forGetter(MKWorkspaceRoomFamilyDefinition::horizontalExtrusionMode),
-            MKWorkspaceFamilyHorizontalExitDefinition.CODEC.listOf().optionalFieldOf("horizontalExits", List.of())
+            MKFamilyHorizontalExitDefinition.CODEC.listOf().optionalFieldOf("horizontalExits", List.of())
                     .forGetter(MKWorkspaceRoomFamilyDefinition::horizontalExits),
             Codec.INT.optionalFieldOf("topVoidMargin", 0).forGetter(MKWorkspaceRoomFamilyDefinition::topVoidMargin),
             Codec.INT.optionalFieldOf("bottomVoidMargin", 0).forGetter(MKWorkspaceRoomFamilyDefinition::bottomVoidMargin),
@@ -53,7 +55,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
     private final int roomLength;
     private final int roomHeight;
     private final MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode;
-    private final List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits;
+    private final List<MKFamilyHorizontalExitDefinition> horizontalExits;
     private final int topVoidMargin;
     private final int bottomVoidMargin;
     private final String sourceTopologySlotId;
@@ -69,7 +71,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                                              String verticalAccessGroupId, boolean supportsVerticalAccess,
                                              int roomWidth, int roomLength, int roomHeight,
                                              MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
-                                             List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
+                                             List<MKFamilyHorizontalExitDefinition> horizontalExits,
                                              int topVoidMargin, int bottomVoidMargin,
                                              String sourceTopologySlotId,
                                              String settingsTopologySlotId,
@@ -86,7 +88,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
         this.horizontalExtrusionMode = horizontalExtrusionMode;
         this.horizontalExits = normalizeFamilyExits(slotMetadata, supportsVerticalAccess, horizontalExits);
         this.supportsVerticalAccess = this.horizontalExits.stream()
-                .anyMatch(MKWorkspaceFamilyHorizontalExitDefinition::isVerticalAccess);
+                .anyMatch(MKFamilyHorizontalExitDefinition::isVerticalAccess);
         this.topVoidMargin = Math.max(0, topVoidMargin);
         this.bottomVoidMargin = Math.max(0, bottomVoidMargin);
         this.sourceTopologySlotId = normalizeInheritedTopologySlotId(sourceTopologySlotId, topologySlotId);
@@ -110,7 +112,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                                                                     int roomLength,
                                                                     int roomHeight,
                                                                     MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
-                                                                    List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
+                                                                    List<MKFamilyHorizontalExitDefinition> horizontalExits,
                                                                     int topVoidMargin,
                                                                     int bottomVoidMargin,
                                                                     @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
@@ -139,7 +141,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                                                                     int roomLength,
                                                                     int roomHeight,
                                                                     MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
-                                                                    List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
+                                                                    List<MKFamilyHorizontalExitDefinition> horizontalExits,
                                                                     int topVoidMargin,
                                                                     int bottomVoidMargin,
                                                                     @Nullable MKWorkspacePaletteOverride paletteOverride) {
@@ -156,7 +158,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                                                                     int roomLength,
                                                                     int roomHeight,
                                                                     MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
-                                                                    List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
+                                                                    List<MKFamilyHorizontalExitDefinition> horizontalExits,
                                                                     int topVoidMargin,
                                                                     int bottomVoidMargin,
                                                                     @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
@@ -178,7 +180,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                                                                     int roomLength,
                                                                     int roomHeight,
                                                                     MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
-                                                                    List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
+                                                                    List<MKFamilyHorizontalExitDefinition> horizontalExits,
                                                                     int topVoidMargin,
                                                                     int bottomVoidMargin,
                                                                     String sourceTopologySlotId,
@@ -202,7 +204,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                                                                      int roomLength,
                                                                      int roomHeight,
                                                                      MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
-                                                                     List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
+                                                                     List<MKFamilyHorizontalExitDefinition> horizontalExits,
                                                                      int topVoidMargin,
                                                                      int bottomVoidMargin,
                                                                      @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
@@ -221,7 +223,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                                                                      int roomLength,
                                                                      int roomHeight,
                                                                      MKWorkspaceHorizontalExtrusionMode horizontalExtrusionMode,
-                                                                     List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits,
+                                                                     List<MKFamilyHorizontalExitDefinition> horizontalExits,
                                                                      int topVoidMargin,
                                                                      int bottomVoidMargin,
                                                                      @Nullable MKWorkspaceFoundationPolicy foundationPolicy,
@@ -242,15 +244,15 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                 paletteOverride);
     }
 
-    private static List<MKWorkspaceFamilyHorizontalExitDefinition> normalizeFamilyExits(
+    private static List<MKFamilyHorizontalExitDefinition> normalizeFamilyExits(
             MKWorkspaceTopologySlotMetadata slotMetadata, boolean supportsVerticalAccess,
-            List<MKWorkspaceFamilyHorizontalExitDefinition> exits) {
-        ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> normalized = new ArrayList<>(exits);
+            List<MKFamilyHorizontalExitDefinition> exits) {
+        ArrayList<MKFamilyHorizontalExitDefinition> normalized = new ArrayList<>(exits);
         boolean hasVerticalExit = normalized.stream()
-                .anyMatch(MKWorkspaceFamilyHorizontalExitDefinition::isVerticalAccess);
+                .anyMatch(MKFamilyHorizontalExitDefinition::isVerticalAccess);
         if (supportsVerticalAccess && !hasVerticalExit) {
             for (Direction direction : defaultVerticalAccessDirections(slotMetadata)) {
-                normalized.add(MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(direction));
+                normalized.add(MKFamilyHorizontalExitDefinition.verticalAccess(direction));
             }
         }
         return List.copyOf(normalized);
@@ -346,31 +348,31 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
             errors.addAll(foundationPolicyOverride.validate("family " + baseName));
         }
         long mainEntryCount = horizontalExits.stream()
-                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY)
+                .filter(exit -> exit.pathKind() == MKHorizontalExitPathKind.MAIN_ENTRY)
                 .count();
         if (mainEntryCount > 1) {
             errors.add("family " + baseName + " can only define one main entry horizontal exit");
         }
         long ingressCount = horizontalExits.stream()
-                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.INGRESS)
+                .filter(exit -> exit.pathKind() == MKHorizontalExitPathKind.INGRESS)
                 .count();
         if (ingressCount > 1) {
             errors.add("family " + baseName + " can only define one ingress horizontal exit");
         }
         long mainExitCount = horizontalExits.stream()
-                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)
+                .filter(exit -> exit.pathKind() == MKHorizontalExitPathKind.MAIN_EXIT)
                 .count();
         if (mainExitCount > 1) {
             errors.add("family " + baseName + " can only define one main exit horizontal exit");
         }
         long mainEndingEntryCount = horizontalExits.stream()
-                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY)
+                .filter(exit -> exit.pathKind() == MKHorizontalExitPathKind.MAIN_ENDING_ENTRY)
                 .count();
         if (mainEndingEntryCount > 1) {
             errors.add("family " + baseName + " can only define one main ending entry horizontal exit");
         }
         long branchCapEntryCount = horizontalExits.stream()
-                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY)
+                .filter(exit -> exit.pathKind() == MKHorizontalExitPathKind.BRANCH_CAP_ENTRY)
                 .count();
         if (branchCapEntryCount > 1) {
             errors.add("family " + baseName + " can only define one branch cap entry horizontal exit");
@@ -382,11 +384,11 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
             errors.add("family " + baseName + " cannot define a branch cap entry and a main path exit");
         }
         if (branchCapEntryCount > 0 && horizontalExits.stream()
-                .anyMatch(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH)) {
+                .anyMatch(exit -> exit.pathKind() == MKHorizontalExitPathKind.BRANCH)) {
             errors.add("family " + baseName + " cannot define a branch cap entry and a branch exit");
         }
         LinkedHashSet<Direction> seenDirections = new LinkedHashSet<>();
-        for (MKWorkspaceFamilyHorizontalExitDefinition exit : horizontalExits) {
+        for (MKFamilyHorizontalExitDefinition exit : horizontalExits) {
             if (!seenDirections.add(exit.direction())) {
                 errors.add("family " + baseName + " cannot define multiple exits on " +
                         exit.direction().getSerializedName());
@@ -395,7 +397,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
                 if (!exit.direction().getAxis().isVertical()) {
                     errors.add("family " + baseName + " vertical access exit direction must be up or down");
                 }
-                if (exit.pathKind() != MKWorkspaceHorizontalExitPathKind.VERTICAL_ACCESS) {
+                if (exit.pathKind() != MKHorizontalExitPathKind.VERTICAL_ACCESS) {
                     errors.add("family " + baseName + " vertical access exit must use vertical_access kind");
                 }
                 continue;
@@ -403,7 +405,7 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
             if (exit.direction().getAxis().isVertical()) {
                 errors.add("family " + baseName + " horizontal exit direction must be cardinal");
             }
-            if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.VERTICAL_ACCESS) {
+            if (exit.pathKind() == MKHorizontalExitPathKind.VERTICAL_ACCESS) {
                 errors.add("family " + baseName + " horizontal exit cannot use vertical_access kind");
             }
             if (exit.openingProfileId().isBlank()) {
@@ -528,19 +530,19 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
         return horizontalExtrusionMode;
     }
 
-    public List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits() {
+    public List<MKFamilyHorizontalExitDefinition> horizontalExits() {
         return horizontalExits;
     }
 
-    public List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalOnlyExits() {
+    public List<MKFamilyHorizontalExitDefinition> horizontalOnlyExits() {
         return horizontalExits.stream()
                 .filter(exit -> !exit.isVerticalAccess())
                 .toList();
     }
 
-    public List<MKWorkspaceFamilyHorizontalExitDefinition> verticalAccessExits() {
+    public List<MKFamilyHorizontalExitDefinition> verticalAccessExits() {
         return horizontalExits.stream()
-                .filter(MKWorkspaceFamilyHorizontalExitDefinition::isVerticalAccess)
+                .filter(MKFamilyHorizontalExitDefinition::isVerticalAccess)
                 .toList();
     }
 
@@ -608,24 +610,24 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
         return paletteOverride;
     }
 
-    public Optional<MKWorkspaceFamilyHorizontalExitDefinition> mainEntry() {
+    public Optional<MKFamilyHorizontalExitDefinition> mainEntry() {
         return horizontalExits.stream()
                 .filter(exit -> !exit.isVerticalAccess())
-                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY)
+                .filter(exit -> exit.pathKind() == MKHorizontalExitPathKind.MAIN_ENTRY)
                 .findFirst();
     }
 
-    public Optional<MKWorkspaceFamilyHorizontalExitDefinition> mainExit() {
+    public Optional<MKFamilyHorizontalExitDefinition> mainExit() {
         return horizontalExits.stream()
                 .filter(exit -> !exit.isVerticalAccess())
-                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)
+                .filter(exit -> exit.pathKind() == MKHorizontalExitPathKind.MAIN_EXIT)
                 .findFirst();
     }
 
-    public Optional<MKWorkspaceFamilyHorizontalExitDefinition> mainEndingEntry() {
+    public Optional<MKFamilyHorizontalExitDefinition> mainEndingEntry() {
         return horizontalExits.stream()
                 .filter(exit -> !exit.isVerticalAccess())
-                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY)
+                .filter(exit -> exit.pathKind() == MKHorizontalExitPathKind.MAIN_ENDING_ENTRY)
                 .findFirst();
     }
 
@@ -633,10 +635,10 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
         return mainEndingEntry().isPresent();
     }
 
-    public Optional<MKWorkspaceFamilyHorizontalExitDefinition> branchCapEntry() {
+    public Optional<MKFamilyHorizontalExitDefinition> branchCapEntry() {
         return horizontalExits.stream()
                 .filter(exit -> !exit.isVerticalAccess())
-                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY)
+                .filter(exit -> exit.pathKind() == MKHorizontalExitPathKind.BRANCH_CAP_ENTRY)
                 .findFirst();
     }
 
@@ -644,10 +646,10 @@ public class MKWorkspaceRoomFamilyDefinition implements MKWorkspacePaletteFamily
         return branchCapEntry().isPresent();
     }
 
-    public List<MKWorkspaceFamilyHorizontalExitDefinition> branchExits() {
+    public List<MKFamilyHorizontalExitDefinition> branchExits() {
         return horizontalExits.stream()
                 .filter(exit -> !exit.isVerticalAccess())
-                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH)
+                .filter(exit -> exit.pathKind() == MKHorizontalExitPathKind.BRANCH)
                 .toList();
     }
 

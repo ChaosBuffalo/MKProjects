@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import java.util.List;
 
 public final class MKWorkspaceTopologyPaletteMerge {
@@ -13,7 +14,7 @@ public final class MKWorkspaceTopologyPaletteMerge {
                         .map(requested -> settings.withPaletteOverride(requested.paletteOverrideOpt()))
                         .orElse(settings))
                 .toList();
-        List<MKWorkspaceFloorTopologySettings> floorSettings = source.floorTopologySettings().stream()
+        List<MKFloorTopologySettings> floorSettings = source.floorTopologySettings().stream()
                 .map(settings -> materialSource.floorTopologySettings(settings.stackId(), settings.floorRole())
                         .map(requested -> settings.withPaletteOverride(requested.paletteOverride()))
                         .orElse(settings))

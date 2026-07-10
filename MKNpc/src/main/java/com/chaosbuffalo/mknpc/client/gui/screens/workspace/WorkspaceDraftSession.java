@@ -7,15 +7,15 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomProfile;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologyInvalidationAnalyzer;
@@ -543,7 +543,7 @@ public class WorkspaceDraftSession {
     }
 
     public int addLinearRunFamily() {
-        String openingProfileId = firstCompatibleOpeningProfileId(MKWorkspaceHorizontalExitPathKind.BRANCH)
+        String openingProfileId = firstCompatibleOpeningProfileId(MKHorizontalExitPathKind.BRANCH)
                 .orElseGet(() -> draft().openingProfiles.isEmpty() ? "branch_opening" : draft().openingProfiles.getFirst().profileId());
         java.util.ArrayList<MKWorkspaceLinearRunFamilyDefinition> updated =
                 new java.util.ArrayList<>(draft().linearRunFamilies);
@@ -658,11 +658,11 @@ public class WorkspaceDraftSession {
                 .toList();
     }
 
-    MKWorkspaceFloorTopologySettings floorTopologySettings(String stackId, String floorRole) {
+    MKFloorTopologySettings floorTopologySettings(String stackId, String floorRole) {
         return draft().topologyProfile.floorTopologySettingsOrDefault(stackId, floorRole);
     }
 
-    void replaceFloorTopologySettings(MKWorkspaceFloorTopologySettings settings) {
+    void replaceFloorTopologySettings(MKFloorTopologySettings settings) {
         draft().topologyProfile = draft().topologyProfile.withFloorTopologySettings(settings);
         topologyGroupForFloorRole(settings.floorRole()).ifPresent(topologyGroupId ->
                 draft().topologyProfile = draft().topologyProfile.withPathSettings(
@@ -733,24 +733,24 @@ public class WorkspaceDraftSession {
         markDirty();
     }
 
-    public void replaceFamilyExit(int familyIndex, int exitIndex, MKWorkspaceFamilyHorizontalExitDefinition updatedExit) {
+    public void replaceFamilyExit(int familyIndex, int exitIndex, MKFamilyHorizontalExitDefinition updatedExit) {
         MKWorkspaceRoomFamilyDefinition family = draft().familyDefinitions.get(familyIndex);
-        java.util.ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
+        java.util.ArrayList<MKFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
         exits.set(exitIndex, updatedExit);
-        if (!updatedExit.isVerticalAccess() && updatedExit.pathKind() != MKWorkspaceHorizontalExitPathKind.BRANCH) {
+        if (!updatedExit.isVerticalAccess() && updatedExit.pathKind() != MKHorizontalExitPathKind.BRANCH) {
             for (int i = 0; i < exits.size(); i++) {
                 if (i == exitIndex) {
                     continue;
                 }
-                MKWorkspaceFamilyHorizontalExitDefinition existingExit = exits.get(i);
+                MKFamilyHorizontalExitDefinition existingExit = exits.get(i);
                 if (existingExit.isVerticalAccess()) {
                     continue;
                 }
                 if (existingExit.pathKind() == updatedExit.pathKind()) {
-                    exits.set(i, new MKWorkspaceFamilyHorizontalExitDefinition(
+                    exits.set(i, new MKFamilyHorizontalExitDefinition(
                             existingExit.direction(),
-                            MKWorkspaceHorizontalExitPathKind.BRANCH,
-                            ensureCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind.BRANCH,
+                            MKHorizontalExitPathKind.BRANCH,
+                            ensureCompatibleOpeningProfile(MKHorizontalExitPathKind.BRANCH,
                                     existingExit.openingProfileId()),
                             existingExit.connectionMode(),
                             existingExit.sideOffset(),
@@ -769,10 +769,10 @@ public class WorkspaceDraftSession {
 
     public void updateFamilyExitOffsets(int familyIndex, int exitIndex, Integer sideOffset, Integer verticalOffset) {
         MKWorkspaceRoomFamilyDefinition family = draft().familyDefinitions.get(familyIndex);
-        MKWorkspaceFamilyHorizontalExitDefinition currentExit = family.horizontalExits().get(exitIndex);
+        MKFamilyHorizontalExitDefinition currentExit = family.horizontalExits().get(exitIndex);
         int nextSideOffset = sideOffset == null ? currentExit.sideOffset() : sideOffset;
         int nextVerticalOffset = verticalOffset == null ? currentExit.verticalOffset() : verticalOffset;
-        replaceFamilyExit(familyIndex, exitIndex, new MKWorkspaceFamilyHorizontalExitDefinition(
+        replaceFamilyExit(familyIndex, exitIndex, new MKFamilyHorizontalExitDefinition(
                 currentExit.direction(),
                 currentExit.pathKind(),
                 currentExit.openingProfileId(),
@@ -785,7 +785,7 @@ public class WorkspaceDraftSession {
 
     public void removeFamilyExit(int familyIndex, int exitIndex) {
         MKWorkspaceRoomFamilyDefinition family = draft().familyDefinitions.get(familyIndex);
-        java.util.ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
+        java.util.ArrayList<MKFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
         exits.remove(exitIndex);
         replaceFamilyDefinition(familyIndex, MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                 family.baseName(), family.slotMetadata(), family.verticalAccessGroupId(), family.supportsVerticalAccess(),
@@ -796,9 +796,9 @@ public class WorkspaceDraftSession {
 
     public int addFamilyExitAtDirection(int familyIndex, Direction direction) {
         MKWorkspaceRoomFamilyDefinition family = draft().familyDefinitions.get(familyIndex);
-        java.util.ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
+        java.util.ArrayList<MKFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
         if (direction.getAxis().isVertical()) {
-            exits.add(MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(direction));
+            exits.add(MKFamilyHorizontalExitDefinition.verticalAccess(direction));
             replaceFamilyDefinition(familyIndex, MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                     family.baseName(), family.slotMetadata(), family.verticalAccessGroupId(), family.supportsVerticalAccess(),
                     family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(), exits,
@@ -806,11 +806,11 @@ public class WorkspaceDraftSession {
             ));
             return exits.size() - 1;
         }
-        MKWorkspaceHorizontalExitPathKind pathKind = !family.mainExit().isPresent() ?
-                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT :
-                !family.mainEntry().isPresent() ? MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY :
-                        MKWorkspaceHorizontalExitPathKind.BRANCH;
-        exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(
+        MKHorizontalExitPathKind pathKind = !family.mainExit().isPresent() ?
+                MKHorizontalExitPathKind.MAIN_EXIT :
+                !family.mainEntry().isPresent() ? MKHorizontalExitPathKind.MAIN_ENTRY :
+                        MKHorizontalExitPathKind.BRANCH;
+        exits.add(new MKFamilyHorizontalExitDefinition(
                 direction,
                 pathKind,
                 firstCompatibleOpeningProfileId(pathKind)
@@ -829,9 +829,9 @@ public class WorkspaceDraftSession {
             return -1;
         }
         MKWorkspaceRoomFamilyDefinition family = draft().familyDefinitions.get(familyIndex);
-        java.util.ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
-        MKWorkspaceHorizontalExitPathKind pathKind = MKWorkspaceHorizontalExitPathKind.BRANCH;
-        exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(
+        java.util.ArrayList<MKFamilyHorizontalExitDefinition> exits = new java.util.ArrayList<>(family.horizontalExits());
+        MKHorizontalExitPathKind pathKind = MKHorizontalExitPathKind.BRANCH;
+        exits.add(new MKFamilyHorizontalExitDefinition(
                 direction,
                 pathKind,
                 firstCompatibleOpeningProfileId(pathKind)
@@ -846,7 +846,7 @@ public class WorkspaceDraftSession {
     }
 
     public int findFamilyExitIndexByDirection(int familyIndex, Direction direction) {
-        List<MKWorkspaceFamilyHorizontalExitDefinition> exits = draft().familyDefinitions.get(familyIndex).horizontalExits();
+        List<MKFamilyHorizontalExitDefinition> exits = draft().familyDefinitions.get(familyIndex).horizontalExits();
         for (int i = 0; i < exits.size(); i++) {
             if (exits.get(i).direction() == direction) {
                 return i;
@@ -950,9 +950,9 @@ public class WorkspaceDraftSession {
     private List<MKWorkspaceInvalidationReport> floorTopologyReports(MKStructureWorkspace existing,
                                                                      MKStructureWorkspace requested) {
         List<MKWorkspaceInvalidationReport> reports = new ArrayList<>();
-        for (MKWorkspaceFloorTopologySettings requestedSettings :
+        for (MKFloorTopologySettings requestedSettings :
                 requested.topologyProfile().floorTopologySettings()) {
-            MKWorkspaceFloorTopologySettings previousSettings = existing.topologyProfile()
+            MKFloorTopologySettings previousSettings = existing.topologyProfile()
                     .floorTopologySettings(requestedSettings.stackId(), requestedSettings.floorRole())
                     .orElseGet(() -> existing.topologyProfile().floorTopologySettingsOrDefault(
                             requestedSettings.stackId(), requestedSettings.floorRole()));
@@ -973,7 +973,7 @@ public class WorkspaceDraftSession {
                                 layer == MKWorkspaceGeneratedLayer.RUNTIME_METADATA);
     }
 
-    private MKWorkspacePlannerId floorPlannerId(MKWorkspaceFloorTopologySettings settings) {
+    private MKWorkspacePlannerId floorPlannerId(MKFloorTopologySettings settings) {
         return MKWorkspacePlannerId.of(settings.stackId())
                 .child("floor")
                 .child(settings.floorRole())
@@ -1092,14 +1092,14 @@ public class WorkspaceDraftSession {
 
     private int deriveDoorwayWidth() {
         return getOpeningProfile("main_opening")
-                .or(() -> firstCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind.MAIN_EXIT))
+                .or(() -> firstCompatibleOpeningProfile(MKHorizontalExitPathKind.MAIN_EXIT))
                 .map(MKHorizontalOpeningProfile::openingWidth)
                 .orElse(screen.workspace() != null ? screen.workspace().dimensions().doorwayWidth() : 3);
     }
 
     private int deriveDoorwayHeight() {
         return getOpeningProfile("main_opening")
-                .or(() -> firstCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind.MAIN_EXIT))
+                .or(() -> firstCompatibleOpeningProfile(MKHorizontalExitPathKind.MAIN_EXIT))
                 .map(MKHorizontalOpeningProfile::openingHeight)
                 .orElse(screen.workspace() != null ? screen.workspace().dimensions().doorwayHeight() : 3);
     }
@@ -1241,8 +1241,8 @@ public class WorkspaceDraftSession {
                 family.horizontalExtrusionMode(),
                 family.horizontalExits().stream()
                         .map(exit -> exit.isVerticalAccess() ?
-                                MKWorkspaceFamilyHorizontalExitDefinition.verticalAccess(exit.direction()) :
-                                new MKWorkspaceFamilyHorizontalExitDefinition(
+                                MKFamilyHorizontalExitDefinition.verticalAccess(exit.direction()) :
+                                new MKFamilyHorizontalExitDefinition(
                                         exit.direction(),
                                         exit.pathKind(),
                                         exit.openingProfileId(),
@@ -1400,12 +1400,12 @@ public class WorkspaceDraftSession {
                 .orElse(family.roomHeight());
     }
 
-    private List<MKWorkspaceFamilyHorizontalExitDefinition> defaultHorizontalExitsForNewFamily() {
-        String openingProfileId = firstCompatibleOpeningProfileId(MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)
+    private List<MKFamilyHorizontalExitDefinition> defaultHorizontalExitsForNewFamily() {
+        String openingProfileId = firstCompatibleOpeningProfileId(MKHorizontalExitPathKind.MAIN_EXIT)
                 .orElseGet(() -> draft().openingProfiles.isEmpty() ? "opening_1" : draft().openingProfiles.getFirst().profileId());
-        return List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
+        return List.of(new MKFamilyHorizontalExitDefinition(
                 Direction.SOUTH,
-                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                MKHorizontalExitPathKind.MAIN_EXIT,
                 openingProfileId
         ));
     }
@@ -1462,7 +1462,7 @@ public class WorkspaceDraftSession {
         MKWorkspaceTopologySlotMetadata slotMetadata = topologySlotMetadata(slot);
         boolean supportsVerticalAccess = topologySlotSupportsVerticalAccess(slot);
         String verticalAccessGroupId = verticalStackIdForTopologySlot(slot.slotId()).orElse(slot.slotId());
-        List<MKWorkspaceFamilyHorizontalExitDefinition> exits =
+        List<MKFamilyHorizontalExitDefinition> exits =
                 verticalStackIdForTopologySlot(slot.slotId()).isPresent() ? List.of() : defaultHorizontalExitsForNewFamily();
         return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                 nextUniqueFamilyBaseName(),
@@ -1512,22 +1512,22 @@ public class WorkspaceDraftSession {
                 role.terminal());
     }
 
-    public Optional<String> firstCompatibleOpeningProfileId(MKWorkspaceHorizontalExitPathKind pathKind) {
+    public Optional<String> firstCompatibleOpeningProfileId(MKHorizontalExitPathKind pathKind) {
         return firstCompatibleOpeningProfile(pathKind).map(MKHorizontalOpeningProfile::profileId);
     }
 
-    private Optional<MKHorizontalOpeningProfile> firstCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind pathKind) {
+    private Optional<MKHorizontalOpeningProfile> firstCompatibleOpeningProfile(MKHorizontalExitPathKind pathKind) {
         return draft().openingProfiles.stream()
                 .filter(profile -> isCompatibleOpeningProfile(pathKind, profile))
                 .findFirst();
     }
 
-    public String ensureCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind pathKind, String currentProfileId) {
+    public String ensureCompatibleOpeningProfile(MKHorizontalExitPathKind pathKind, String currentProfileId) {
         return isCompatibleOpeningProfile(pathKind, currentProfileId) ? currentProfileId :
                 firstCompatibleOpeningProfileId(pathKind).orElse(currentProfileId);
     }
 
-    public String nextOpeningProfileId(MKWorkspaceHorizontalExitPathKind pathKind, String currentProfileId,
+    public String nextOpeningProfileId(MKHorizontalExitPathKind pathKind, String currentProfileId,
                                        boolean reverse) {
         List<String> compatibleProfiles = draft().openingProfiles.stream()
                 .map(MKHorizontalOpeningProfile::profileId)
@@ -1536,7 +1536,7 @@ public class WorkspaceDraftSession {
         return cycleValue(compatibleProfiles, currentProfileId, reverse, currentProfileId);
     }
 
-    public boolean isCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind pathKind, String profileId) {
+    public boolean isCompatibleOpeningProfile(MKHorizontalExitPathKind pathKind, String profileId) {
         return draft().openingProfiles.stream()
                 .filter(profile -> profile.profileId().equals(profileId))
                 .findFirst()
@@ -1544,9 +1544,9 @@ public class WorkspaceDraftSession {
                 .orElse(false);
     }
 
-    private boolean isCompatibleOpeningProfile(MKWorkspaceHorizontalExitPathKind pathKind,
+    private boolean isCompatibleOpeningProfile(MKHorizontalExitPathKind pathKind,
                                                MKHorizontalOpeningProfile profile) {
-        if (pathKind == MKWorkspaceHorizontalExitPathKind.INGRESS) {
+        if (pathKind == MKHorizontalExitPathKind.INGRESS) {
             return profile.allowOnMainPath();
         }
         return pathKind.usesMainPath() ? profile.allowOnMainPath() : profile.allowOnBranchPath();

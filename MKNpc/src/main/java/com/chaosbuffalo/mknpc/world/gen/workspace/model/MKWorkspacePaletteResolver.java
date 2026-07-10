@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomProfile;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import java.util.Optional;
 
 public final class MKWorkspacePaletteResolver {
@@ -27,11 +29,11 @@ public final class MKWorkspacePaletteResolver {
                                                            String floorRole) {
         MKWorkspaceMaterialPalette stackPalette = resolveVerticalStack(workspace, stackId);
         MKWorkspaceMaterialPalette floorGroupPalette = workspace.topologyProfile()
-                .plannerScopePaletteOverride(MKWorkspaceFloorTopologySettings.key(stackId, floorRole))
+                .plannerScopePaletteOverride(MKFloorTopologySettings.key(stackId, floorRole))
                 .map(override -> override.resolve(stackPalette))
                 .orElse(stackPalette);
         return workspace.topologyProfile().floorTopologySettings(stackId, floorRole)
-                .flatMap(MKWorkspaceFloorTopologySettings::paletteOverride)
+                .flatMap(MKFloorTopologySettings::paletteOverride)
                 .map(override -> override.resolve(floorGroupPalette))
                 .orElse(floorGroupPalette);
     }
@@ -123,14 +125,14 @@ public final class MKWorkspacePaletteResolver {
         return Optional.empty();
     }
 
-    private Optional<MKWorkspaceFloorRoomProfile> floorRoomProfile(MKWorkspaceFloorTopologySettings settings,
+    private Optional<MKFloorRoomProfile> floorRoomProfile(MKFloorTopologySettings settings,
                                                                    String profileId, String roomKind) {
         return floorRoomProfiles(settings, roomKind).stream()
                 .filter(profile -> profile.id().equals(profileId))
                 .findFirst();
     }
 
-    private java.util.List<MKWorkspaceFloorRoomProfile> floorRoomProfiles(MKWorkspaceFloorTopologySettings settings,
+    private java.util.List<MKFloorRoomProfile> floorRoomProfiles(MKFloorTopologySettings settings,
                                                                           String roomKind) {
         return switch (roomKind) {
             case "main_room" -> settings.mainRoomProfiles();

@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import net.minecraft.core.BlockPos;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +31,7 @@ class MKStructureWorkspaceInsertFamilyValidationTest {
     private MKStructureWorkspace workspaceWithFloorInsertFamily(String familyId,
                                                                List<MKWorkspaceInsertFamilyDefinition> insertFamilies) {
         MKStructureWorkspace base = MKStructureWorkspace.createDraft(BlockPos.ZERO);
-        MKWorkspaceFloorTopologySettings floorSettings = base.topologyProfile().floorTopologySettings().getFirst()
+        MKFloorTopologySettings floorSettings = base.topologyProfile().floorTopologySettings().getFirst()
                 .withInsertFamily(Optional.of(familyId));
         MKWorkspaceTopologyProfile topologyProfile = base.topologyProfile().withFloorTopologySettings(floorSettings);
         return new MKStructureWorkspace(

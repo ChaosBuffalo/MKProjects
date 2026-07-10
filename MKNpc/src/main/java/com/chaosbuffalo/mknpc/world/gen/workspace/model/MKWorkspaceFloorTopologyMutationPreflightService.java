@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 public class MKWorkspaceFloorTopologyMutationPreflightService {
     private final MKWorkspaceFloorTopologyInvalidationAnalyzer invalidationAnalyzer;
     private final MKWorkspaceLayerStateService layerStateService;
@@ -17,8 +18,8 @@ public class MKWorkspaceFloorTopologyMutationPreflightService {
 
     public MKWorkspaceMutationPreflight preflight(MKStructureWorkspace workspace,
                                                   MKWorkspacePlannerId floorPlannerId,
-                                                  MKWorkspaceFloorTopologySettings previous,
-                                                  MKWorkspaceFloorTopologySettings updated,
+                                                  MKFloorTopologySettings previous,
+                                                  MKFloorTopologySettings updated,
                                                   long nowEpochMillis) {
         MKWorkspaceInvalidationReport report = invalidationAnalyzer.analyze(floorPlannerId, previous, updated);
         MKStructureWorkspace workspaceWithLayerStates = layerStateService.ensureLayerStates(workspace, nowEpochMillis);

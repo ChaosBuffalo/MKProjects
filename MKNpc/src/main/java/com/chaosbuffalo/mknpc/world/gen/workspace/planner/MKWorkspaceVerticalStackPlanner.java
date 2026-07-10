@@ -5,12 +5,12 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceResolvedFamilySettings;
@@ -318,12 +318,12 @@ public class MKWorkspaceVerticalStackPlanner {
                 .filter(connector -> !connector.facing().getAxis().isVertical() ||
                         family.hasVerticalAccess(connector.facing()))
                 .toList());
-        for (MKWorkspaceFamilyHorizontalExitDefinition exit : family.horizontalOnlyExits()) {
+        for (MKFamilyHorizontalExitDefinition exit : family.horizontalOnlyExits()) {
             ResolvedOpeningProfile opening = resolveOpeningProfile(workspace, exit.openingProfileId())
                     .orElseThrow(() -> new IllegalStateException("missing opening profile " + exit.openingProfileId() +
                             " for family " + family.baseName()));
             int lateralOffset = toLateralOffset(exit.direction(), exit.sideOffset());
-            if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.INGRESS) {
+            if (exit.pathKind() == MKHorizontalExitPathKind.INGRESS) {
                 connectors.add(MKPlannedConnector.openingOnly(MKConnectorRole.MAIN_BACK, exit.direction(),
                         opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset(),
                         exit.horizontalExtrusionModeOverride()));
@@ -337,14 +337,14 @@ public class MKWorkspaceVerticalStackPlanner {
                 case INGRESS, LINK_CANDIDATE, VERTICAL_ACCESS -> throw new IllegalStateException("unsupported horizontal connector kind " +
                         exit.pathKind().getSerializedName());
             };
-            if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY) {
+            if (exit.pathKind() == MKHorizontalExitPathKind.MAIN_ENDING_ENTRY) {
                 connectors.add(new MKPlannedConnector(role, exit.direction(),
                         opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset(),
                         EMPTY_POOL, mainEndingPoolName(slotMetadata.topologyGroupId()),
                         exit.horizontalExtrusionModeOverride()));
                 continue;
             }
-            if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY) {
+            if (exit.pathKind() == MKHorizontalExitPathKind.BRANCH_CAP_ENTRY) {
                 connectors.add(new MKPlannedConnector(role, exit.direction(),
                         opening.openingWidth(), opening.openingHeight(), lateralOffset, exit.verticalOffset(),
                         EMPTY_POOL, branchCapPoolName(opening.profileId()),
@@ -357,7 +357,7 @@ public class MKWorkspaceVerticalStackPlanner {
                         exit.horizontalExtrusionModeOverride()));
                 continue;
             }
-            Optional<MKWorkspaceFloorTopologySettings> floorSettings =
+            Optional<MKFloorTopologySettings> floorSettings =
                     floorTopologySettingsForFamily(workspace, family, exit.pathKind());
             boolean floorDirectMain = floorSettings
                     .map(settings -> exit.pathKind().usesMainPath() && !settings.mainHallwaysEnabled())
@@ -424,11 +424,11 @@ public class MKWorkspaceVerticalStackPlanner {
                 .map(profile -> new ResolvedOpeningProfile(profile.profileId(), profile.openingWidth(), profile.openingHeight()));
     }
 
-    private Optional<MKWorkspaceFloorTopologySettings> floorTopologySettingsForFamily(
+    private Optional<MKFloorTopologySettings> floorTopologySettingsForFamily(
             MKStructureWorkspace workspace,
             MKWorkspaceRoomFamilyDefinition family,
-            MKWorkspaceHorizontalExitPathKind pathKind) {
-        if (!pathKind.usesMainPath() && pathKind != MKWorkspaceHorizontalExitPathKind.BRANCH) {
+            MKHorizontalExitPathKind pathKind) {
+        if (!pathKind.usesMainPath() && pathKind != MKHorizontalExitPathKind.BRANCH) {
             return Optional.empty();
         }
         Optional<MKWorkspaceVerticalStackSlot> slot = MKWorkspaceVerticalStackSlot.fromTopologySlotId(

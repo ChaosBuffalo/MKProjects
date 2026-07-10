@@ -1,5 +1,9 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKFloorTopologyPlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceVerticalStackPlanner;
@@ -169,10 +173,10 @@ class MKWorkspacePaletteResolverTest {
         MKWorkspaceVerticalStackSettings stackSettings = MKTowerWorkspacePlanner.defaultTopologyProfile()
                 .verticalStackSettingsOrDefault("tower.primary")
                 .withPaletteOverride(java.util.Optional.of(stackOverride));
-        MKWorkspaceFloorTopologySettings floorSettings = MKWorkspaceFloorTopologySettings
+        MKFloorTopologySettings floorSettings = MKFloorTopologySettings
                 .defaults(stackSettings, MKWorkspaceVerticalStackSlot.MAIN_FLOOR.suffix())
                 .withPaletteOverride(java.util.Optional.of(floorOverride));
-        floorSettings = floorSettings.withRoomProfile(MKWorkspaceFloorRoomKind.MAIN_ROOM, 0,
+        floorSettings = floorSettings.withRoomProfile(MKFloorRoomKind.MAIN_ROOM, 0,
                 floorSettings.mainRoomProfiles().getFirst().withPaletteOverride(java.util.Optional.of(roomOverride)));
         MKWorkspaceTopologyProfile topologyProfile = MKTowerWorkspacePlanner.defaultTopologyProfile()
                 .withVerticalStackSettings(stackSettings)
@@ -186,9 +190,9 @@ class MKWorkspacePaletteResolverTest {
                 0,
                 0,
                 MKWorkspaceHorizontalExtrusionMode.FULL_BODY,
-                List.of(new MKWorkspaceFamilyHorizontalExitDefinition(
+                List.of(new MKFamilyHorizontalExitDefinition(
                         Direction.NORTH,
-                        MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                        MKHorizontalExitPathKind.MAIN_EXIT,
                         "main_opening",
                         MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
                 )),

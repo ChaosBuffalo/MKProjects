@@ -1,13 +1,13 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorLinkGenerationMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomProfile;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorLinkGenerationMode;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomGeometry;
@@ -51,7 +51,7 @@ public final class FloorPlanDraftEditor {
     }
 
     public String topologyGroupId() {
-        return MKWorkspaceFloorTopologySettings.key(stackId, floorRole);
+        return MKFloorTopologySettings.key(stackId, floorRole);
     }
 
     public int minMainPathPieces() {
@@ -78,11 +78,11 @@ public final class FloorPlanDraftEditor {
         replace(settings().withMaxBranchPiecesBeforeCap(value));
     }
 
-    public MKWorkspaceHallwayLeadInMode hallwayLeadInMode() {
+    public MKHallwayLeadInMode hallwayLeadInMode() {
         return settings().hallwayLeadInMode();
     }
 
-    public void hallwayLeadInMode(MKWorkspaceHallwayLeadInMode value) {
+    public void hallwayLeadInMode(MKHallwayLeadInMode value) {
         replace(settings().withHallwayLeadInMode(value));
     }
 
@@ -166,11 +166,11 @@ public final class FloorPlanDraftEditor {
         replace(settings().withMaxLinkLength(value));
     }
 
-    public MKWorkspaceFloorLinkGenerationMode linkGenerationMode() {
+    public MKFloorLinkGenerationMode linkGenerationMode() {
         return settings().linkGenerationMode();
     }
 
-    public void linkGenerationMode(MKWorkspaceFloorLinkGenerationMode value) {
+    public void linkGenerationMode(MKFloorLinkGenerationMode value) {
         replace(settings().withLinkGenerationMode(value));
     }
 
@@ -224,7 +224,7 @@ public final class FloorPlanDraftEditor {
     }
 
     public void insertDepth(int value) {
-        MKWorkspaceFloorTopologySettings updated = settings().withInsertDepth(value);
+        MKFloorTopologySettings updated = settings().withInsertDepth(value);
         if (updated.insertFamily().isPresent()) {
             ensureLinkInsertFamily(value);
             updated = updated.withInsertFamily(Optional.of(linkInsertFamilyId()));
@@ -260,7 +260,7 @@ public final class FloorPlanDraftEditor {
         session.ensureFloorLinkInsertFamily(linkInsertFamilyId(), linkInsertWidth(), linkInsertHeight(), depth);
     }
 
-    private MKWorkspaceFloorTopologySettings withLinkInsertFamilyIfEnabled(MKWorkspaceFloorTopologySettings updated) {
+    private MKFloorTopologySettings withLinkInsertFamilyIfEnabled(MKFloorTopologySettings updated) {
         if (updated.insertFamily().isEmpty()) {
             return updated;
         }
@@ -281,7 +281,7 @@ public final class FloorPlanDraftEditor {
     }
 
     private Optional<MKHorizontalOpeningProfile> linkOpeningProfile() {
-        return session.firstCompatibleOpeningProfileId(MKWorkspaceHorizontalExitPathKind.BRANCH)
+        return session.firstCompatibleOpeningProfileId(MKHorizontalExitPathKind.BRANCH)
                 .flatMap(session::getOpeningProfile);
     }
 
@@ -302,7 +302,7 @@ public final class FloorPlanDraftEditor {
     public long previewSeed() {
         return lockedLayoutSeed()
                 .orElseGet(() -> session.viewState.floorTopologyPreviewSeeds.computeIfAbsent(
-                        MKWorkspaceFloorTopologySettings.key(stackId, floorRole),
+                        MKFloorTopologySettings.key(stackId, floorRole),
                         key -> (long) key.hashCode()));
     }
 
@@ -310,7 +310,7 @@ public final class FloorPlanDraftEditor {
         if (lockedLayoutSeed().isPresent()) {
             return;
         }
-        String key = MKWorkspaceFloorTopologySettings.key(stackId, floorRole);
+        String key = MKFloorTopologySettings.key(stackId, floorRole);
         long current = previewSeed();
         session.viewState.floorTopologyPreviewSeeds.put(key,
                 current * 6364136223846793005L + 1442695040888963407L);
@@ -322,7 +322,7 @@ public final class FloorPlanDraftEditor {
 
     public void lockLayoutSeed() {
         long seed = session.viewState.floorTopologyPreviewSeeds.computeIfAbsent(
-                MKWorkspaceFloorTopologySettings.key(stackId, floorRole), key -> (long) key.hashCode());
+                MKFloorTopologySettings.key(stackId, floorRole), key -> (long) key.hashCode());
         replace(settings().withLockedLayoutSeed(Optional.of(seed)));
     }
 
@@ -330,43 +330,43 @@ public final class FloorPlanDraftEditor {
         replace(settings().withLockedLayoutSeed(Optional.empty()));
     }
 
-    public int roomWidth(MKWorkspaceFloorRoomKind kind) {
+    public int roomWidth(MKFloorRoomKind kind) {
         return roomProfile(kind).width();
     }
 
-    public void roomWidth(MKWorkspaceFloorRoomKind kind, int value) {
+    public void roomWidth(MKFloorRoomKind kind, int value) {
         roomWidth(kind, 0, value);
     }
 
-    public void roomWidth(MKWorkspaceFloorRoomKind kind, int index, int value) {
-        MKWorkspaceFloorRoomProfile profile = roomProfile(kind, index).withWidth(value);
+    public void roomWidth(MKFloorRoomKind kind, int index, int value) {
+        MKFloorRoomProfile profile = roomProfile(kind, index).withWidth(value);
         replace(settings().withRoomProfile(kind, index, profile));
     }
 
-    public int roomLength(MKWorkspaceFloorRoomKind kind) {
+    public int roomLength(MKFloorRoomKind kind) {
         return roomProfile(kind).length();
     }
 
-    public void roomLength(MKWorkspaceFloorRoomKind kind, int value) {
+    public void roomLength(MKFloorRoomKind kind, int value) {
         roomLength(kind, 0, value);
     }
 
-    public void roomLength(MKWorkspaceFloorRoomKind kind, int index, int value) {
-        MKWorkspaceFloorRoomProfile profile = roomProfile(kind, index).withLength(value);
+    public void roomLength(MKFloorRoomKind kind, int index, int value) {
+        MKFloorRoomProfile profile = roomProfile(kind, index).withLength(value);
         replace(settings().withRoomProfile(kind, index, profile));
     }
 
-    public int roomHeight(MKWorkspaceFloorRoomKind kind) {
+    public int roomHeight(MKFloorRoomKind kind) {
         return roomProfile(kind).height();
     }
 
-    public void roomHeight(MKWorkspaceFloorRoomKind kind, int value) {
+    public void roomHeight(MKFloorRoomKind kind, int value) {
         roomHeight(kind, 0, value);
     }
 
-    public void roomHeight(MKWorkspaceFloorRoomKind kind, int index, int value) {
+    public void roomHeight(MKFloorRoomKind kind, int index, int value) {
         int clamped = clamp(value, MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT, roomHeightMax());
-        MKWorkspaceFloorRoomProfile profile = roomProfile(kind, index).withHeight(clamped);
+        MKFloorRoomProfile profile = roomProfile(kind, index).withHeight(clamped);
         replace(settings().withRoomProfile(kind, index, profile));
     }
 
@@ -382,19 +382,19 @@ public final class FloorPlanDraftEditor {
         };
     }
 
-    public List<MKWorkspaceFloorRoomProfile> roomProfiles(MKWorkspaceFloorRoomKind kind) {
-        List<MKWorkspaceFloorRoomProfile> profiles = roomProfilesForKind(settings(), kind);
+    public List<MKFloorRoomProfile> roomProfiles(MKFloorRoomKind kind) {
+        List<MKFloorRoomProfile> profiles = roomProfilesForKind(settings(), kind);
         if (!profiles.isEmpty()) {
             return profiles;
         }
         return List.of(defaultRoomProfile(kind));
     }
 
-    public void addRoomProfile(MKWorkspaceFloorRoomKind kind) {
-        List<MKWorkspaceFloorRoomProfile> profiles = roomProfiles(kind);
+    public void addRoomProfile(MKFloorRoomKind kind) {
+        List<MKFloorRoomProfile> profiles = roomProfiles(kind);
         int nextIndex = profiles.size();
-        MKWorkspaceFloorRoomProfile source = profiles.getLast();
-        MKWorkspaceFloorRoomProfile added = MKWorkspaceFloorRoomProfile.defaults(
+        MKFloorRoomProfile source = profiles.getLast();
+        MKFloorRoomProfile added = MKFloorRoomProfile.defaults(
                 kind,
                 source.width(),
                 source.length(),
@@ -405,111 +405,111 @@ public final class FloorPlanDraftEditor {
         replace(settings().withAddedRoomProfile(kind, added));
     }
 
-    public void removeRoomProfile(MKWorkspaceFloorRoomKind kind, int index) {
+    public void removeRoomProfile(MKFloorRoomKind kind, int index) {
         replace(settings().withRemovedRoomProfile(kind, index));
     }
 
-    public void setRoomMainExitDirection(MKWorkspaceFloorRoomKind kind, int index, Direction direction) {
-        MKWorkspaceFloorRoomProfile profile = roomProfile(kind, index);
+    public void setRoomMainExitDirection(MKFloorRoomKind kind, int index, Direction direction) {
+        MKFloorRoomProfile profile = roomProfile(kind, index);
         if (!profile.mainExitDirection(direction)) {
             return;
         }
-        ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new ArrayList<>();
-        for (MKWorkspaceFamilyHorizontalExitDefinition exit : profile.horizontalExits()) {
-            if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT ||
+        ArrayList<MKFamilyHorizontalExitDefinition> exits = new ArrayList<>();
+        for (MKFamilyHorizontalExitDefinition exit : profile.horizontalExits()) {
+            if (exit.pathKind() == MKHorizontalExitPathKind.MAIN_EXIT ||
                     exit.direction() == direction) {
                 continue;
             }
             exits.add(exit);
         }
-        exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(
+        exits.add(new MKFamilyHorizontalExitDefinition(
                 direction,
-                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
-                MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID,
+                MKHorizontalExitPathKind.MAIN_EXIT,
+                MKFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID,
                 MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
         ));
         replace(settings().withRoomProfile(kind, index, profile.withHorizontalExits(exits)));
     }
 
-    public void toggleRoomBranchExit(MKWorkspaceFloorRoomKind kind, int index, Direction direction) {
-        MKWorkspaceFloorRoomProfile profile = roomProfile(kind, index);
+    public void toggleRoomBranchExit(MKFloorRoomKind kind, int index, Direction direction) {
+        MKFloorRoomProfile profile = roomProfile(kind, index);
         if (!profile.optionalBranchExitDirection(direction)) {
             return;
         }
-        ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new ArrayList<>(profile.horizontalExits());
-        Optional<MKWorkspaceFamilyHorizontalExitDefinition> existing = exits.stream()
+        ArrayList<MKFamilyHorizontalExitDefinition> exits = new ArrayList<>(profile.horizontalExits());
+        Optional<MKFamilyHorizontalExitDefinition> existing = exits.stream()
                 .filter(exit -> exit.direction() == direction)
                 .findFirst();
         if (existing.isPresent()) {
             exits.remove(existing.get());
         } else {
-            exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(
+            exits.add(new MKFamilyHorizontalExitDefinition(
                     direction,
-                    MKWorkspaceHorizontalExitPathKind.BRANCH,
-                    MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID,
+                    MKHorizontalExitPathKind.BRANCH,
+                    MKFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID,
                     MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
             ));
         }
         replace(settings().withRoomProfile(kind, index, profile.withHorizontalExits(exits)));
     }
 
-    public void toggleRoomLinkCandidateExit(MKWorkspaceFloorRoomKind kind, int index, Direction direction) {
-        MKWorkspaceFloorRoomProfile profile = roomProfile(kind, index);
+    public void toggleRoomLinkCandidateExit(MKFloorRoomKind kind, int index, Direction direction) {
+        MKFloorRoomProfile profile = roomProfile(kind, index);
         if (!profile.linkCandidateExitDirection(direction)) {
             return;
         }
-        ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new ArrayList<>(profile.horizontalExits());
-        Optional<MKWorkspaceFamilyHorizontalExitDefinition> existing = exits.stream()
+        ArrayList<MKFamilyHorizontalExitDefinition> exits = new ArrayList<>(profile.horizontalExits());
+        Optional<MKFamilyHorizontalExitDefinition> existing = exits.stream()
                 .filter(exit -> exit.direction() == direction &&
-                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE)
+                        exit.pathKind() == MKHorizontalExitPathKind.LINK_CANDIDATE)
                 .findFirst();
         if (existing.isPresent()) {
             exits.remove(existing.get());
         } else {
             exits.removeIf(exit -> exit.direction() == direction);
-            exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(
+            exits.add(new MKFamilyHorizontalExitDefinition(
                     direction,
-                    MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE,
-                    MKWorkspaceFloorRoomProfile.INHERITED_LINK_OPENING_PROFILE_ID,
+                    MKHorizontalExitPathKind.LINK_CANDIDATE,
+                    MKFloorRoomProfile.INHERITED_LINK_OPENING_PROFILE_ID,
                     MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
             ));
         }
         replace(settings().withRoomProfile(kind, index, profile.withHorizontalExits(exits)));
     }
 
-    public void setRoomRandomizeMainExit(MKWorkspaceFloorRoomKind kind, int index, boolean value) {
-        MKWorkspaceFloorRoomProfile profile = roomProfile(kind, index);
+    public void setRoomRandomizeMainExit(MKFloorRoomKind kind, int index, boolean value) {
+        MKFloorRoomProfile profile = roomProfile(kind, index);
         replace(settings().withRoomProfile(kind, index, profile.withRandomizeMainExit(value)));
     }
 
-    private MKWorkspaceFloorTopologySettings settings() {
+    private MKFloorTopologySettings settings() {
         return session.floorTopologySettings(stackId, floorRole);
     }
 
-    private void replace(MKWorkspaceFloorTopologySettings settings) {
+    private void replace(MKFloorTopologySettings settings) {
         session.replaceFloorTopologySettings(settings);
     }
 
-    private MKWorkspaceFloorRoomProfile roomProfile(MKWorkspaceFloorRoomKind kind) {
+    private MKFloorRoomProfile roomProfile(MKFloorRoomKind kind) {
         return roomProfile(kind, 0);
     }
 
-    private MKWorkspaceFloorRoomProfile roomProfile(MKWorkspaceFloorRoomKind kind, int index) {
-        List<MKWorkspaceFloorRoomProfile> profiles = roomProfilesForKind(settings(), kind);
+    private MKFloorRoomProfile roomProfile(MKFloorRoomKind kind, int index) {
+        List<MKFloorRoomProfile> profiles = roomProfilesForKind(settings(), kind);
         if (index >= 0 && index < profiles.size()) {
             return profiles.get(index);
         }
         return defaultRoomProfile(kind);
     }
 
-    private MKWorkspaceFloorRoomProfile defaultRoomProfile(MKWorkspaceFloorRoomKind kind) {
+    private MKFloorRoomProfile defaultRoomProfile(MKFloorRoomKind kind) {
         MKWorkspaceVerticalStackSettings stackSettings = session.verticalStackSettings(stackId);
-        return MKWorkspaceFloorRoomProfile.defaults(kind, stackSettings.width(), stackSettings.length(),
+        return MKFloorRoomProfile.defaults(kind, stackSettings.width(), stackSettings.length(),
                 roomHeightMax());
     }
 
-    private List<MKWorkspaceFloorRoomProfile> roomProfilesForKind(MKWorkspaceFloorTopologySettings settings,
-                                                                  MKWorkspaceFloorRoomKind kind) {
+    private List<MKFloorRoomProfile> roomProfilesForKind(MKFloorTopologySettings settings,
+                                                                  MKFloorRoomKind kind) {
         return switch (kind) {
             case MAIN_ROOM -> settings.mainRoomProfiles();
             case BRANCH_ROOM -> settings.branchRoomProfiles();

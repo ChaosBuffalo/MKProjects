@@ -1,5 +1,8 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.model;
+package com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout;
 
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomGeometry;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Direction;
@@ -10,40 +13,40 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public record MKWorkspaceFloorRoomProfile(
+public record MKFloorRoomProfile(
         String id,
         String label,
-        MKWorkspaceFloorRoomKind kind,
+        MKFloorRoomKind kind,
         int width,
         int length,
         int height,
         int weight,
         Optional<MKWorkspacePaletteOverride> paletteOverride,
         boolean randomizeMainExit,
-        List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits
+        List<MKFamilyHorizontalExitDefinition> horizontalExits
 ) {
     public static final String INHERITED_MAIN_OPENING_PROFILE_ID = "__inherited_main__";
     public static final String INHERITED_BRANCH_OPENING_PROFILE_ID = "__inherited_branch__";
     public static final String INHERITED_LINK_OPENING_PROFILE_ID = "__inherited_link__";
 
-    public static final Codec<MKWorkspaceFloorRoomProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.STRING.fieldOf("id").forGetter(MKWorkspaceFloorRoomProfile::id),
-            Codec.STRING.optionalFieldOf("label", "").forGetter(MKWorkspaceFloorRoomProfile::label),
-            MKWorkspaceFloorRoomKind.CODEC.fieldOf("kind").forGetter(MKWorkspaceFloorRoomProfile::kind),
-            Codec.INT.optionalFieldOf("width", 7).forGetter(MKWorkspaceFloorRoomProfile::width),
-            Codec.INT.optionalFieldOf("length", 7).forGetter(MKWorkspaceFloorRoomProfile::length),
-            Codec.INT.optionalFieldOf("height", 7).forGetter(MKWorkspaceFloorRoomProfile::height),
-            Codec.INT.optionalFieldOf("weight", 1).forGetter(MKWorkspaceFloorRoomProfile::weight),
+    public static final Codec<MKFloorRoomProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.STRING.fieldOf("id").forGetter(MKFloorRoomProfile::id),
+            Codec.STRING.optionalFieldOf("label", "").forGetter(MKFloorRoomProfile::label),
+            MKFloorRoomKind.CODEC.fieldOf("kind").forGetter(MKFloorRoomProfile::kind),
+            Codec.INT.optionalFieldOf("width", 7).forGetter(MKFloorRoomProfile::width),
+            Codec.INT.optionalFieldOf("length", 7).forGetter(MKFloorRoomProfile::length),
+            Codec.INT.optionalFieldOf("height", 7).forGetter(MKFloorRoomProfile::height),
+            Codec.INT.optionalFieldOf("weight", 1).forGetter(MKFloorRoomProfile::weight),
             MKWorkspacePaletteOverride.CODEC.optionalFieldOf("palette_override")
-                    .forGetter(MKWorkspaceFloorRoomProfile::paletteOverride),
+                    .forGetter(MKFloorRoomProfile::paletteOverride),
             Codec.BOOL.optionalFieldOf("randomize_main_exit", false)
-                    .forGetter(MKWorkspaceFloorRoomProfile::randomizeMainExit),
-            MKWorkspaceFamilyHorizontalExitDefinition.CODEC.listOf()
+                    .forGetter(MKFloorRoomProfile::randomizeMainExit),
+            MKFamilyHorizontalExitDefinition.CODEC.listOf()
                     .optionalFieldOf("horizontal_exits", List.of())
-                    .forGetter(MKWorkspaceFloorRoomProfile::horizontalExits)
-    ).apply(instance, MKWorkspaceFloorRoomProfile::new));
+                    .forGetter(MKFloorRoomProfile::horizontalExits)
+    ).apply(instance, MKFloorRoomProfile::new));
 
-    public MKWorkspaceFloorRoomProfile {
+    public MKFloorRoomProfile {
         id = id == null || id.isBlank() ? kind.getSerializedName() : id;
         label = label == null || label.isBlank() ? defaultLabel(kind) : label;
         width = oddAtLeast(3, width);
@@ -51,25 +54,25 @@ public record MKWorkspaceFloorRoomProfile(
         height = Math.max(MKWorkspaceRoomGeometry.MIN_ROOM_HEIGHT, height);
         weight = Math.max(1, weight);
         paletteOverride = paletteOverride == null ? Optional.empty() : paletteOverride;
-        randomizeMainExit = kind == MKWorkspaceFloorRoomKind.MAIN_ROOM && randomizeMainExit;
+        randomizeMainExit = kind == MKFloorRoomKind.MAIN_ROOM && randomizeMainExit;
         horizontalExits = normalizeExits(kind, horizontalExits);
     }
 
-    public MKWorkspaceFloorRoomProfile(String id,
+    public MKFloorRoomProfile(String id,
                                        String label,
-                                       MKWorkspaceFloorRoomKind kind,
+                                       MKFloorRoomKind kind,
                                        int width,
                                        int length,
                                        int height,
                                        int weight,
                                        Optional<MKWorkspacePaletteOverride> paletteOverride,
-                                       List<MKWorkspaceFamilyHorizontalExitDefinition> horizontalExits) {
+                                       List<MKFamilyHorizontalExitDefinition> horizontalExits) {
         this(id, label, kind, width, length, height, weight, paletteOverride, false, horizontalExits);
     }
 
-    public MKWorkspaceFloorRoomProfile(String id,
+    public MKFloorRoomProfile(String id,
                                        String label,
-                                       MKWorkspaceFloorRoomKind kind,
+                                       MKFloorRoomKind kind,
                                        int width,
                                        int length,
                                        int height,
@@ -78,9 +81,9 @@ public record MKWorkspaceFloorRoomProfile(
         this(id, label, kind, width, length, height, weight, paletteOverride, false, List.of());
     }
 
-    public static MKWorkspaceFloorRoomProfile defaults(MKWorkspaceFloorRoomKind kind,
+    public static MKFloorRoomProfile defaults(MKFloorRoomKind kind,
                                                        int width, int length, int height) {
-        return new MKWorkspaceFloorRoomProfile(
+        return new MKFloorRoomProfile(
                 kind.getSerializedName(),
                 defaultLabel(kind),
                 kind,
@@ -94,38 +97,38 @@ public record MKWorkspaceFloorRoomProfile(
         );
     }
 
-    public MKWorkspaceFloorRoomProfile withWidth(int value) {
-        return new MKWorkspaceFloorRoomProfile(id, label, kind, value, length, height, weight, paletteOverride,
+    public MKFloorRoomProfile withWidth(int value) {
+        return new MKFloorRoomProfile(id, label, kind, value, length, height, weight, paletteOverride,
                 randomizeMainExit, horizontalExits);
     }
 
-    public MKWorkspaceFloorRoomProfile withLength(int value) {
-        return new MKWorkspaceFloorRoomProfile(id, label, kind, width, value, height, weight, paletteOverride,
+    public MKFloorRoomProfile withLength(int value) {
+        return new MKFloorRoomProfile(id, label, kind, width, value, height, weight, paletteOverride,
                 randomizeMainExit, horizontalExits);
     }
 
-    public MKWorkspaceFloorRoomProfile withHeight(int value) {
-        return new MKWorkspaceFloorRoomProfile(id, label, kind, width, length, value, weight, paletteOverride,
+    public MKFloorRoomProfile withHeight(int value) {
+        return new MKFloorRoomProfile(id, label, kind, width, length, value, weight, paletteOverride,
                 randomizeMainExit, horizontalExits);
     }
 
-    public MKWorkspaceFloorRoomProfile withIdentity(String id, String label) {
-        return new MKWorkspaceFloorRoomProfile(id, label, kind, width, length, height, weight, paletteOverride,
+    public MKFloorRoomProfile withIdentity(String id, String label) {
+        return new MKFloorRoomProfile(id, label, kind, width, length, height, weight, paletteOverride,
                 randomizeMainExit, horizontalExits);
     }
 
-    public MKWorkspaceFloorRoomProfile withHorizontalExits(List<MKWorkspaceFamilyHorizontalExitDefinition> exits) {
-        return new MKWorkspaceFloorRoomProfile(id, label, kind, width, length, height, weight, paletteOverride,
+    public MKFloorRoomProfile withHorizontalExits(List<MKFamilyHorizontalExitDefinition> exits) {
+        return new MKFloorRoomProfile(id, label, kind, width, length, height, weight, paletteOverride,
                 randomizeMainExit, exits);
     }
 
-    public MKWorkspaceFloorRoomProfile withRandomizeMainExit(boolean value) {
-        return new MKWorkspaceFloorRoomProfile(id, label, kind, width, length, height, weight, paletteOverride,
+    public MKFloorRoomProfile withRandomizeMainExit(boolean value) {
+        return new MKFloorRoomProfile(id, label, kind, width, length, height, weight, paletteOverride,
                 value, horizontalExits);
     }
 
-    public MKWorkspaceFloorRoomProfile withPaletteOverride(Optional<MKWorkspacePaletteOverride> value) {
-        return new MKWorkspaceFloorRoomProfile(id, label, kind, width, length, height, weight,
+    public MKFloorRoomProfile withPaletteOverride(Optional<MKWorkspacePaletteOverride> value) {
+        return new MKFloorRoomProfile(id, label, kind, width, length, height, weight,
                 value == null ? Optional.empty() : value, randomizeMainExit, horizontalExits);
     }
 
@@ -140,13 +143,13 @@ public record MKWorkspaceFloorRoomProfile(
         return direction.getAxis().isHorizontal() &&
                 allowsOptionalBranchExits(kind) &&
                 !requiredExitDirection(direction) &&
-                (kind != MKWorkspaceFloorRoomKind.MAIN_ROOM || mainExitDirection().orElse(null) != direction);
+                (kind != MKFloorRoomKind.MAIN_ROOM || mainExitDirection().orElse(null) != direction);
     }
 
     public boolean linkCandidateExitDirection(Direction direction) {
         return direction.getAxis().isHorizontal() &&
                 !requiredExitDirection(direction) &&
-                (kind != MKWorkspaceFloorRoomKind.MAIN_ROOM || mainExitDirection().orElse(null) != direction);
+                (kind != MKFloorRoomKind.MAIN_ROOM || mainExitDirection().orElse(null) != direction);
     }
 
     public boolean mainExitDirection(Direction direction) {
@@ -160,13 +163,13 @@ public record MKWorkspaceFloorRoomProfile(
             return Optional.empty();
         }
         return horizontalExits.stream()
-                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)
-                .map(MKWorkspaceFamilyHorizontalExitDefinition::direction)
+                .filter(exit -> exit.pathKind() == MKHorizontalExitPathKind.MAIN_EXIT)
+                .map(MKFamilyHorizontalExitDefinition::direction)
                 .findFirst();
     }
 
     public List<Direction> randomizedMainExitCandidates() {
-        if (!randomizeMainExit || kind != MKWorkspaceFloorRoomKind.MAIN_ROOM) {
+        if (!randomizeMainExit || kind != MKFloorRoomKind.MAIN_ROOM) {
             return mainExitDirection()
                     .map(List::of)
                     .orElse(List.of());
@@ -174,8 +177,8 @@ public record MKWorkspaceFloorRoomProfile(
         ArrayList<Direction> directions = new ArrayList<>();
         for (Direction direction : List.of(Direction.NORTH, Direction.EAST, Direction.WEST)) {
             boolean enabled = horizontalExits.stream().anyMatch(exit -> exit.direction() == direction &&
-                    (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT ||
-                            exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH));
+                    (exit.pathKind() == MKHorizontalExitPathKind.MAIN_EXIT ||
+                            exit.pathKind() == MKHorizontalExitPathKind.BRANCH));
             if (enabled) {
                 directions.add(direction);
             }
@@ -183,21 +186,21 @@ public record MKWorkspaceFloorRoomProfile(
         return List.copyOf(directions);
     }
 
-    public MKWorkspaceFloorRoomProfile withResolvedRandomMainExit(Direction direction) {
-        if (!randomizeMainExit || kind != MKWorkspaceFloorRoomKind.MAIN_ROOM || !mainExitDirection(direction)) {
+    public MKFloorRoomProfile withResolvedRandomMainExit(Direction direction) {
+        if (!randomizeMainExit || kind != MKFloorRoomKind.MAIN_ROOM || !mainExitDirection(direction)) {
             return this;
         }
-        ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> exits = new ArrayList<>();
-        for (MKWorkspaceFamilyHorizontalExitDefinition exit : horizontalExits) {
-            if (exit.pathKind() != MKWorkspaceHorizontalExitPathKind.MAIN_EXIT &&
-                    exit.pathKind() != MKWorkspaceHorizontalExitPathKind.BRANCH &&
-                    exit.pathKind() != MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE) {
+        ArrayList<MKFamilyHorizontalExitDefinition> exits = new ArrayList<>();
+        for (MKFamilyHorizontalExitDefinition exit : horizontalExits) {
+            if (exit.pathKind() != MKHorizontalExitPathKind.MAIN_EXIT &&
+                    exit.pathKind() != MKHorizontalExitPathKind.BRANCH &&
+                    exit.pathKind() != MKHorizontalExitPathKind.LINK_CANDIDATE) {
                 exits.add(exit);
             }
         }
-        exits.add(new MKWorkspaceFamilyHorizontalExitDefinition(
+        exits.add(new MKFamilyHorizontalExitDefinition(
                 direction,
-                MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                MKHorizontalExitPathKind.MAIN_EXIT,
                 INHERITED_MAIN_OPENING_PROFILE_ID,
                 MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
         ));
@@ -206,20 +209,20 @@ public record MKWorkspaceFloorRoomProfile(
                 exits.add(optionalBranchExit(candidate));
             }
         }
-        for (MKWorkspaceFamilyHorizontalExitDefinition exit : horizontalExits) {
-            if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE) {
+        for (MKFamilyHorizontalExitDefinition exit : horizontalExits) {
+            if (exit.pathKind() == MKHorizontalExitPathKind.LINK_CANDIDATE) {
                 exits.add(linkCandidateExit(exit.direction()));
             }
         }
-        return new MKWorkspaceFloorRoomProfile(id, label, kind, width, length, height, weight, paletteOverride,
+        return new MKFloorRoomProfile(id, label, kind, width, length, height, weight, paletteOverride,
                 false, exits);
     }
 
     public boolean terminalBranchRoom() {
-        return kind == MKWorkspaceFloorRoomKind.BRANCH_CAP;
+        return kind == MKFloorRoomKind.BRANCH_CAP;
     }
 
-    private static String defaultLabel(MKWorkspaceFloorRoomKind kind) {
+    private static String defaultLabel(MKFloorRoomKind kind) {
         return switch (kind) {
             case MAIN_ROOM -> "Main Room";
             case BRANCH_ROOM -> "Branch Room";
@@ -229,9 +232,9 @@ public record MKWorkspaceFloorRoomProfile(
         };
     }
 
-    private static List<MKWorkspaceFamilyHorizontalExitDefinition> defaultHorizontalExits(
-            MKWorkspaceFloorRoomKind kind) {
-        if (kind != MKWorkspaceFloorRoomKind.BRANCH_CAP) {
+    private static List<MKFamilyHorizontalExitDefinition> defaultHorizontalExits(
+            MKFloorRoomKind kind) {
+        if (kind != MKFloorRoomKind.BRANCH_CAP) {
             return List.of();
         }
         return List.of(
@@ -241,29 +244,29 @@ public record MKWorkspaceFloorRoomProfile(
         );
     }
 
-    private static List<MKWorkspaceFamilyHorizontalExitDefinition> normalizeExits(
-            MKWorkspaceFloorRoomKind kind,
-            List<MKWorkspaceFamilyHorizontalExitDefinition> exits) {
-        Map<Direction, MKWorkspaceFamilyHorizontalExitDefinition> byDirection = new EnumMap<>(Direction.class);
-        Map<Direction, MKWorkspaceFamilyHorizontalExitDefinition> linkByDirection = new EnumMap<>(Direction.class);
+    private static List<MKFamilyHorizontalExitDefinition> normalizeExits(
+            MKFloorRoomKind kind,
+            List<MKFamilyHorizontalExitDefinition> exits) {
+        Map<Direction, MKFamilyHorizontalExitDefinition> byDirection = new EnumMap<>(Direction.class);
+        Map<Direction, MKFamilyHorizontalExitDefinition> linkByDirection = new EnumMap<>(Direction.class);
         Direction mainExitDirection = Direction.NORTH;
         if (exits != null) {
-            for (MKWorkspaceFamilyHorizontalExitDefinition exit : exits) {
+            for (MKFamilyHorizontalExitDefinition exit : exits) {
                 if (exit == null || exit.direction().getAxis().isVertical()) {
                     continue;
                 }
                 if (kind.hasMainExit() &&
-                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT &&
+                        exit.pathKind() == MKHorizontalExitPathKind.MAIN_EXIT &&
                         validMainExitDirection(kind, exit.direction())) {
                     mainExitDirection = exit.direction();
                 }
                 if (!requiredDirection(kind, exit.direction()) &&
                         allowsOptionalBranchExits(kind) &&
-                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH) {
+                        exit.pathKind() == MKHorizontalExitPathKind.BRANCH) {
                     byDirection.put(exit.direction(), optionalBranchExit(exit.direction()));
                 }
                 if (!requiredDirection(kind, exit.direction()) &&
-                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE) {
+                        exit.pathKind() == MKHorizontalExitPathKind.LINK_CANDIDATE) {
                     linkByDirection.put(exit.direction(), linkCandidateExit(exit.direction()));
                 }
             }
@@ -273,26 +276,26 @@ public record MKWorkspaceFloorRoomProfile(
             linkByDirection.remove(mainExitDirection);
         }
         byDirection.keySet().forEach(linkByDirection::remove);
-        ArrayList<MKWorkspaceFamilyHorizontalExitDefinition> resolved = new ArrayList<>();
+        ArrayList<MKFamilyHorizontalExitDefinition> resolved = new ArrayList<>();
         if (kind.usesMainPath()) {
-            resolved.add(new MKWorkspaceFamilyHorizontalExitDefinition(
+            resolved.add(new MKFamilyHorizontalExitDefinition(
                     Direction.SOUTH,
                     kind.isMainPathEnding() ?
-                            MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY :
-                            MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY,
+                            MKHorizontalExitPathKind.MAIN_ENDING_ENTRY :
+                            MKHorizontalExitPathKind.MAIN_ENTRY,
                     INHERITED_MAIN_OPENING_PROFILE_ID,
                     MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
             ));
             if (kind.hasMainExit()) {
-                resolved.add(new MKWorkspaceFamilyHorizontalExitDefinition(
+                resolved.add(new MKFamilyHorizontalExitDefinition(
                         mainExitDirection,
-                        MKWorkspaceHorizontalExitPathKind.MAIN_EXIT,
+                        MKHorizontalExitPathKind.MAIN_EXIT,
                         INHERITED_MAIN_OPENING_PROFILE_ID,
                         MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
                 ));
             }
         } else {
-            resolved.add(kind == MKWorkspaceFloorRoomKind.BRANCH_CAP ?
+            resolved.add(kind == MKFloorRoomKind.BRANCH_CAP ?
                     branchCapEntry(Direction.SOUTH) : optionalBranchExit(Direction.SOUTH));
         }
         for (Direction direction : List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)) {
@@ -308,46 +311,46 @@ public record MKWorkspaceFloorRoomProfile(
         return List.copyOf(resolved);
     }
 
-    private static boolean requiredDirection(MKWorkspaceFloorRoomKind kind, Direction direction) {
+    private static boolean requiredDirection(MKFloorRoomKind kind, Direction direction) {
         return switch (kind) {
             case MAIN_ROOM, MAIN_CAP_APPROACH, MAIN_CAP -> direction == Direction.SOUTH;
             case BRANCH_ROOM, BRANCH_CAP -> direction == Direction.SOUTH;
         };
     }
 
-    private static boolean validMainExitDirection(MKWorkspaceFloorRoomKind kind, Direction direction) {
+    private static boolean validMainExitDirection(MKFloorRoomKind kind, Direction direction) {
         return kind.hasMainExit() &&
                 direction.getAxis().isHorizontal() &&
                 direction != Direction.SOUTH;
     }
 
-    private static boolean allowsOptionalBranchExits(MKWorkspaceFloorRoomKind kind) {
-        return kind != MKWorkspaceFloorRoomKind.BRANCH_CAP &&
-                kind != MKWorkspaceFloorRoomKind.MAIN_CAP;
+    private static boolean allowsOptionalBranchExits(MKFloorRoomKind kind) {
+        return kind != MKFloorRoomKind.BRANCH_CAP &&
+                kind != MKFloorRoomKind.MAIN_CAP;
     }
 
-    private static MKWorkspaceFamilyHorizontalExitDefinition optionalBranchExit(Direction direction) {
-        return new MKWorkspaceFamilyHorizontalExitDefinition(
+    private static MKFamilyHorizontalExitDefinition optionalBranchExit(Direction direction) {
+        return new MKFamilyHorizontalExitDefinition(
                 direction,
-                MKWorkspaceHorizontalExitPathKind.BRANCH,
+                MKHorizontalExitPathKind.BRANCH,
                 INHERITED_BRANCH_OPENING_PROFILE_ID,
                 MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
         );
     }
 
-    private static MKWorkspaceFamilyHorizontalExitDefinition branchCapEntry(Direction direction) {
-        return new MKWorkspaceFamilyHorizontalExitDefinition(
+    private static MKFamilyHorizontalExitDefinition branchCapEntry(Direction direction) {
+        return new MKFamilyHorizontalExitDefinition(
                 direction,
-                MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY,
+                MKHorizontalExitPathKind.BRANCH_CAP_ENTRY,
                 INHERITED_BRANCH_OPENING_PROFILE_ID,
                 MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
         );
     }
 
-    private static MKWorkspaceFamilyHorizontalExitDefinition linkCandidateExit(Direction direction) {
-        return new MKWorkspaceFamilyHorizontalExitDefinition(
+    private static MKFamilyHorizontalExitDefinition linkCandidateExit(Direction direction) {
+        return new MKFamilyHorizontalExitDefinition(
                 direction,
-                MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE,
+                MKHorizontalExitPathKind.LINK_CANDIDATE,
                 INHERITED_LINK_OPENING_PROFILE_ID,
                 MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN
         );

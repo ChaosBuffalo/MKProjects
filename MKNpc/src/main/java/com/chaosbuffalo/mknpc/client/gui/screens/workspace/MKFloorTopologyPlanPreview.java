@@ -1,13 +1,13 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorLinkGenerationMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKFloorLayoutSolver;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorLinkGenerationMode;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomProfile;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorLayoutSolver;
 import com.chaosbuffalo.mkwidgets.client.gui.instructions.HoveringTextInstruction;
 import com.chaosbuffalo.mkwidgets.client.gui.math.Vec2i;
 import com.chaosbuffalo.mkwidgets.client.gui.screens.IMKScreen;
@@ -125,18 +125,18 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
 
     private static int roomSectionsHeight(Controls controls, String sectionKey) {
         int sectionHeaders = 4 + (controls.floorMainCapApproachEnabled(sectionKey) ? 1 : 0);
-        int roomHeight = roomProfilesHeight(controls, sectionKey, MKWorkspaceFloorRoomKind.MAIN_ROOM) +
-                roomProfilesHeight(controls, sectionKey, MKWorkspaceFloorRoomKind.BRANCH_ROOM) +
-                roomProfilesHeight(controls, sectionKey, MKWorkspaceFloorRoomKind.BRANCH_CAP) +
-                roomProfilesHeight(controls, sectionKey, MKWorkspaceFloorRoomKind.MAIN_CAP);
+        int roomHeight = roomProfilesHeight(controls, sectionKey, MKFloorRoomKind.MAIN_ROOM) +
+                roomProfilesHeight(controls, sectionKey, MKFloorRoomKind.BRANCH_ROOM) +
+                roomProfilesHeight(controls, sectionKey, MKFloorRoomKind.BRANCH_CAP) +
+                roomProfilesHeight(controls, sectionKey, MKFloorRoomKind.MAIN_CAP);
         if (controls.floorMainCapApproachEnabled(sectionKey)) {
-            roomHeight += roomProfilesHeight(controls, sectionKey, MKWorkspaceFloorRoomKind.MAIN_CAP_APPROACH);
+            roomHeight += roomProfilesHeight(controls, sectionKey, MKFloorRoomKind.MAIN_CAP_APPROACH);
         }
         return (ROOM_SECTION_HEADER * sectionHeaders) + roomHeight;
     }
 
-    private static int roomProfilesHeight(Controls controls, String sectionKey, MKWorkspaceFloorRoomKind kind) {
-        List<MKWorkspaceFloorRoomProfile> profiles = controls.roomProfiles(sectionKey, kind);
+    private static int roomProfilesHeight(Controls controls, String sectionKey, MKFloorRoomKind kind) {
+        List<MKFloorRoomProfile> profiles = controls.roomProfiles(sectionKey, kind);
         int height = 0;
         for (int index = 0; index < Math.max(1, profiles.size()); index++) {
             height += roomProfileHeight(controls, sectionKey, kind, index);
@@ -144,7 +144,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         return height;
     }
 
-    private static int roomProfileHeight(Controls controls, String sectionKey, MKWorkspaceFloorRoomKind kind,
+    private static int roomProfileHeight(Controls controls, String sectionKey, MKFloorRoomKind kind,
                                          int index) {
         return ROOM_PROFILE_BODY_HEIGHT + (controls.floorRoomVariantsExpanded(sectionKey, kind, index) ?
                 ROOM_VARIANTS_EXPANDED_HEIGHT : ROOM_VARIANTS_COLLAPSED_HEIGHT);
@@ -165,12 +165,12 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 ROOT_VARIANTS_EXPANDED_HEIGHT : ROOT_VARIANTS_COLLAPSED_HEIGHT);
         if (hasRootPathExits(controls, sectionKey)) {
             if (controls.floorMainHallwaysEnabled(sectionKey) &&
-                    hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)) {
+                    hasRootPathKind(controls, sectionKey, MKHorizontalExitPathKind.MAIN_EXIT)) {
                 height += controls.floorHallVariantsExpanded(sectionKey, true) ?
                         HALL_VARIANTS_EXPANDED_HEIGHT : HALL_VARIANTS_COLLAPSED_HEIGHT;
             }
             if (controls.floorBranchHallwaysEnabled(sectionKey) &&
-                    hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.BRANCH)) {
+                    hasRootPathKind(controls, sectionKey, MKHorizontalExitPathKind.BRANCH)) {
                 height += controls.floorHallVariantsExpanded(sectionKey, false) ?
                         HALL_VARIANTS_EXPANDED_HEIGHT : HALL_VARIANTS_COLLAPSED_HEIGHT;
             }
@@ -179,11 +179,11 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     }
 
     private static boolean hasRootPathExits(Controls controls, String sectionKey) {
-        return hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.MAIN_EXIT) ||
-                hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.BRANCH);
+        return hasRootPathKind(controls, sectionKey, MKHorizontalExitPathKind.MAIN_EXIT) ||
+                hasRootPathKind(controls, sectionKey, MKHorizontalExitPathKind.BRANCH);
     }
 
-    private static boolean hasRootPathKind(Controls controls, String sectionKey, MKWorkspaceHorizontalExitPathKind kind) {
+    private static boolean hasRootPathKind(Controls controls, String sectionKey, MKHorizontalExitPathKind kind) {
         return controls.rootExits(sectionKey).stream()
                 .anyMatch(exit -> exit.direction().getAxis().isHorizontal() && exit.pathKind() == kind);
     }
@@ -208,7 +208,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             if (hasRootPathExits(controls, sectionKey)) {
                 drawPathControls(graphics, mc, x + 8, cursorY, width - 16, mouseX, mouseY);
                 cursorY += pathControlsHeight(controls, sectionKey);
-                for (MKWorkspaceFloorRoomKind kind : roomKindsForUi()) {
+                for (MKFloorRoomKind kind : roomKindsForUi()) {
                     cursorY = drawRoomSection(graphics, mc, x + 8, cursorY, width - 16, kind, mouseX, mouseY);
                 }
             }
@@ -338,13 +338,13 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         drawSlider(graphics, mc, "Max Main", controls.floorMaxMainPathPieces(sectionKey), 0, 10,
                 x, y + 72, width, mouseX, mouseY, "floorMaxMain");
         drawSlider(graphics, mc, "Branches", controls.floorMaxBranchPiecesBeforeCap(sectionKey), 0,
-                MKWorkspaceFloorTopologySettings.MAX_BRANCH_PIECES_BEFORE_CAP,
+                MKFloorTopologySettings.MAX_BRANCH_PIECES_BEFORE_CAP,
                 x, y + 94, width, mouseX, mouseY, "floorBranchCap");
         drawSlider(graphics, mc, "Sprawl", Math.round(controls.floorSprawl(sectionKey) * 100.0f), 0, 100,
                 x, y + 116, width, mouseX, mouseY, "floorSprawl");
-        if (controls.floorHallwayLeadInMode(sectionKey) == MKWorkspaceHallwayLeadInMode.MANUAL) {
+        if (controls.floorHallwayLeadInMode(sectionKey) == MKHallwayLeadInMode.MANUAL) {
             drawSlider(graphics, mc, "Lead In", controls.floorManualHallwayLeadInPieces(sectionKey), 0,
-                    MKWorkspaceFloorTopologySettings.MAX_MANUAL_HALLWAY_LEAD_IN_PIECES,
+                    MKFloorTopologySettings.MAX_MANUAL_HALLWAY_LEAD_IN_PIECES,
                     x, y + 138, width, mouseX, mouseY, "floorLeadIn");
         }
         int linkY = y + 164;
@@ -354,13 +354,13 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         drawSlider(graphics, mc, "Density", Math.round(controls.floorLinkDensity(sectionKey) * 100.0f), 0, 100,
                 x, linkY + 24, width, mouseX, mouseY, "floorLinkDensity");
         drawSlider(graphics, mc, "Max Links", controls.floorMaxLinksPerFloor(sectionKey), 0,
-                MKWorkspaceFloorTopologySettings.MAX_LINKS_PER_FLOOR,
+                MKFloorTopologySettings.MAX_LINKS_PER_FLOOR,
                 x, linkY + 46, width, mouseX, mouseY, "floorMaxLinks");
         drawSlider(graphics, mc, "Per Room", controls.floorMaxLinksPerRoom(sectionKey), 0,
-                MKWorkspaceFloorTopologySettings.MAX_LINKS_PER_ROOM,
+                MKFloorTopologySettings.MAX_LINKS_PER_ROOM,
                 x, linkY + 68, width, mouseX, mouseY, "floorMaxLinksPerRoom");
         drawSlider(graphics, mc, "Length", controls.floorMaxLinkLength(sectionKey), 0,
-                MKWorkspaceFloorTopologySettings.MAX_LINK_LENGTH,
+                MKFloorTopologySettings.MAX_LINK_LENGTH,
                 x, linkY + 90, width, mouseX, mouseY, "floorMaxLinkLength");
         ButtonBounds linkMode = linkModeBounds(x, linkY, width);
         graphics.fill(linkMode.x(), linkMode.y(), linkMode.x() + linkMode.width(),
@@ -374,7 +374,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         drawSlider(graphics, mc, "Decay", Math.round(controls.floorLinkDecay(sectionKey) * 100.0f), 0, 100,
                 x, linkY + 136, width, mouseX, mouseY, "floorLinkDecay");
         drawSlider(graphics, mc, "Endpoint", controls.floorEndpointIntactRadius(sectionKey), 0,
-                MKWorkspaceFloorTopologySettings.MAX_ENDPOINT_INTACT_RADIUS,
+                MKFloorTopologySettings.MAX_ENDPOINT_INTACT_RADIUS,
                 x, linkY + 158, width, mouseX, mouseY, "floorEndpointIntact");
         drawSlider(graphics, mc, "Mid Decay", Math.round(controls.floorMiddleDecayBonus(sectionKey) * 100.0f),
                 0, 100, x, linkY + 180, width, mouseX, mouseY, "floorMiddleDecay");
@@ -382,10 +382,10 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 controls.floorLinkInsertsEnabled(sectionKey), mouseX, mouseY);
         if (controls.floorLinkInsertsEnabled(sectionKey)) {
             drawSlider(graphics, mc, "Depth", controls.floorInsertDepth(sectionKey), 1,
-                    MKWorkspaceFloorTopologySettings.MAX_INSERT_DEPTH,
+                    MKFloorTopologySettings.MAX_INSERT_DEPTH,
                     x, linkY + 226, width, mouseX, mouseY, "floorInsertDepth");
             drawSlider(graphics, mc, "Spacing", controls.floorInsertSpacing(sectionKey), 0,
-                    MKWorkspaceFloorTopologySettings.MAX_INSERT_SPACING,
+                    MKFloorTopologySettings.MAX_INSERT_SPACING,
                     x, linkY + 248, width, mouseX, mouseY, "floorInsertSpacing");
             drawSlider(graphics, mc, "Chance", Math.round(controls.floorInsertProbability(sectionKey) * 100.0f),
                     0, 100, x, linkY + 270, width, mouseX, mouseY, "floorInsertProbability");
@@ -401,7 +401,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         ButtonBounds mask = rootExitMaskBounds(x, y);
         drawRootExitMask(graphics, mc, mask, mouseX, mouseY);
         int editorX = mask.x() + mask.width() + 10;
-        Optional<MKWorkspaceFamilyHorizontalExitDefinition> selected = controls.selectedRootExit(sectionKey)
+        Optional<MKFamilyHorizontalExitDefinition> selected = controls.selectedRootExit(sectionKey)
                 .filter(exit -> exit.direction().getAxis().isHorizontal());
         if (selected.isEmpty()) {
             graphics.drawString(mc.font, "Left: select", editorX, mask.y() + 6, MUTED_TEXT, false);
@@ -410,7 +410,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             drawHallVariantsDrawers(graphics, mc, x, y, width, mouseX, mouseY);
             return;
         }
-        MKWorkspaceFamilyHorizontalExitDefinition exit = selected.get();
+        MKFamilyHorizontalExitDefinition exit = selected.get();
         boolean required = controls.rootExitRequired(sectionKey, exit.direction());
         graphics.drawString(mc.font, required ? "Required" : "Editable", editorX, mask.y() + 6,
                 required ? EXIT_REQUIRED : SELECTED_OUTLINE, false);
@@ -454,12 +454,12 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                                          int mouseX, int mouseY) {
         int offset = ROOT_EXIT_CONTROLS_BODY_HEIGHT + rootVariantsHeight();
         if (controls.floorMainHallwaysEnabled(sectionKey) &&
-                hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)) {
+                hasRootPathKind(controls, sectionKey, MKHorizontalExitPathKind.MAIN_EXIT)) {
             drawHallVariantsDrawer(graphics, mc, x, y, width, offset, true, mouseX, mouseY);
             offset += hallVariantsHeight(true);
         }
         if (controls.floorBranchHallwaysEnabled(sectionKey) &&
-                hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.BRANCH)) {
+                hasRootPathKind(controls, sectionKey, MKHorizontalExitPathKind.BRANCH)) {
             drawHallVariantsDrawer(graphics, mc, x, y, width, offset, false, mouseX, mouseY);
         }
     }
@@ -529,7 +529,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
 
     private void drawRootExitArm(GuiGraphics graphics, Direction direction, int roomLeft, int roomTop,
                                  int roomRight, int roomBottom, int centerX, int centerY, int mouseX, int mouseY) {
-        Optional<MKWorkspaceFamilyHorizontalExitDefinition> exit = rootExitForDirection(direction);
+        Optional<MKFamilyHorizontalExitDefinition> exit = rootExitForDirection(direction);
         boolean selected = controls.selectedRootExit(sectionKey)
                 .map(value -> value.direction() == direction)
                 .orElse(false);
@@ -558,7 +558,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     private void drawRootExitLabel(GuiGraphics graphics, Minecraft mc, Direction direction, int x, int y) {
         String label = direction.getName().substring(0, 1).toUpperCase();
         int color = MUTED_TEXT;
-        Optional<MKWorkspaceFamilyHorizontalExitDefinition> exit = rootExitForDirection(direction);
+        Optional<MKFamilyHorizontalExitDefinition> exit = rootExitForDirection(direction);
         if (exit.isPresent()) {
             label += switch (exit.get().pathKind()) {
                 case INGRESS -> "G";
@@ -576,14 +576,14 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     }
 
     private int drawRoomSection(GuiGraphics graphics, Minecraft mc, int x, int y, int width,
-                                MKWorkspaceFloorRoomKind kind, int mouseX, int mouseY) {
+                                MKFloorRoomKind kind, int mouseX, int mouseY) {
         String label = roomSectionLabel(kind);
         int color = roomSectionColor(kind);
         graphics.drawString(mc.font, label, x, y + 4, color, false);
         ButtonBounds add = roomAddButton(x, y, width, kind);
         drawButton(graphics, mc, add, "Add", mouseX, mouseY, false);
         int cursorY = y + ROOM_SECTION_HEADER;
-        List<MKWorkspaceFloorRoomProfile> profiles = controls.roomProfiles(sectionKey, kind);
+        List<MKFloorRoomProfile> profiles = controls.roomProfiles(sectionKey, kind);
         for (int index = 0; index < profiles.size(); index++) {
             cursorY = drawRoomProfile(graphics, mc, x, cursorY, width, kind, index, profiles.get(index),
                     mouseX, mouseY);
@@ -592,7 +592,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     }
 
     private int drawRoomProfile(GuiGraphics graphics, Minecraft mc, int x, int y, int width,
-                                MKWorkspaceFloorRoomKind kind, int index, MKWorkspaceFloorRoomProfile profile,
+                                MKFloorRoomKind kind, int index, MKFloorRoomProfile profile,
                                 int mouseX, int mouseY) {
         int rowHeight = roomProfileHeight(controls, sectionKey, kind, index);
         graphics.fill(x, y, x + width, y + rowHeight - 8, 0x33000000);
@@ -610,7 +610,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         drawSlider(graphics, mc, "H", profile.height(), controls.floorRoomHeightMin(sectionKey),
                 controls.floorRoomHeightMax(sectionKey),
                 x + 5, y + 64, sliderWidth, mouseX, mouseY, roomSliderId(kind, index, "height"));
-        if (kind == MKWorkspaceFloorRoomKind.MAIN_ROOM) {
+        if (kind == MKFloorRoomKind.MAIN_ROOM) {
             drawCheckbox(graphics, mc, roomRandomizeMainExitButton(x, y), "Randomize Main Exit",
                     profile.randomizeMainExit(), mouseX, mouseY);
         }
@@ -620,7 +620,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     }
 
     private void drawRoomVariantsDrawer(GuiGraphics graphics, Minecraft mc, int x, int y, int width,
-                                        MKWorkspaceFloorRoomKind kind, int index, int mouseX, int mouseY) {
+                                        MKFloorRoomKind kind, int index, int mouseX, int mouseY) {
         boolean expanded = controls.floorRoomVariantsExpanded(sectionKey, kind, index);
         int variantCount = controls.floorRoomVariantCount(sectionKey, kind, index);
         ButtonBounds toggle = roomVariantsToggleButton(x, y, width, kind, index);
@@ -639,7 +639,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 x + 5, drawerY + 26, variantCount == 0 ? MUTED_TEXT : TEXT, false);
     }
 
-    private void drawRoomExitMask(GuiGraphics graphics, Minecraft mc, MKWorkspaceFloorRoomProfile profile,
+    private void drawRoomExitMask(GuiGraphics graphics, Minecraft mc, MKFloorRoomProfile profile,
                                   int x, int y, int mouseX, int mouseY) {
         graphics.fill(x, y, x + MASK_SIZE, y + MASK_SIZE, 0xFF1B1B1F);
         drawOutline(graphics, x, y, MASK_SIZE, y + MASK_SIZE, CONTROL_ACTIVE);
@@ -662,7 +662,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         drawRoomExitLabel(graphics, mc, profile, Direction.WEST, roomLeft - MASK_ARM, centerY - 4);
     }
 
-    private void drawRoomExitArm(GuiGraphics graphics, MKWorkspaceFloorRoomProfile profile, Direction direction,
+    private void drawRoomExitArm(GuiGraphics graphics, MKFloorRoomProfile profile, Direction direction,
                                  int roomLeft, int roomTop, int roomRight, int roomBottom, int centerX, int centerY,
                                  int mouseX, int mouseY) {
         int color = profile.horizontalExits().stream().anyMatch(exit -> exit.direction() == direction) ?
@@ -687,9 +687,9 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         }
     }
 
-    private void drawRoomExitLabel(GuiGraphics graphics, Minecraft mc, MKWorkspaceFloorRoomProfile profile,
+    private void drawRoomExitLabel(GuiGraphics graphics, Minecraft mc, MKFloorRoomProfile profile,
                                    Direction direction, int x, int y) {
-        Optional<MKWorkspaceFamilyHorizontalExitDefinition> exit = profile.horizontalExits().stream()
+        Optional<MKFamilyHorizontalExitDefinition> exit = profile.horizontalExits().stream()
                 .filter(candidate -> candidate.direction() == direction)
                 .findFirst();
         String label = direction.getName().substring(0, 1).toUpperCase();
@@ -720,11 +720,11 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 controls.previewSeed(sectionKey));
     }
 
-    private MKWorkspaceFloorTopologySettings previewSettings() {
+    private MKFloorTopologySettings previewSettings() {
         int padding = controls.layoutFootprintPadding();
         int leadIn = controls.effectiveHallwayLeadInPieces(sectionKey);
         int hallwayWidth = Math.max(3, 3 + padding);
-        return new MKWorkspaceFloorTopologySettings(
+        return new MKFloorTopologySettings(
                 stackId,
                 sectionKey,
                 controls.floorMinMainPathPieces(sectionKey),
@@ -743,11 +743,11 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 controls.floorMaxLinkLength(sectionKey),
                 controls.lockedLayoutSeed(sectionKey),
                 Optional.empty(),
-                controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.MAIN_ROOM),
-                controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.BRANCH_ROOM),
-                controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.BRANCH_CAP),
-                controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.MAIN_CAP_APPROACH),
-                controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.MAIN_CAP)
+                controls.roomProfiles(sectionKey, MKFloorRoomKind.MAIN_ROOM),
+                controls.roomProfiles(sectionKey, MKFloorRoomKind.BRANCH_ROOM),
+                controls.roomProfiles(sectionKey, MKFloorRoomKind.BRANCH_CAP),
+                controls.roomProfiles(sectionKey, MKFloorRoomKind.MAIN_CAP_APPROACH),
+                controls.roomProfiles(sectionKey, MKFloorRoomKind.MAIN_CAP)
         ).withPhysicalFootprintPadding(padding)
                 .withLayoutHallwayFootprints(leadIn + padding, hallwayWidth, leadIn + padding, hallwayWidth);
     }
@@ -765,30 +765,30 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         LogicalRect cursor = start;
         ArrayList<RoomStep> roomSteps = new ArrayList<>();
         if (main) {
-            List<MKWorkspaceFloorRoomProfile> mainProfiles = controls.roomProfiles(sectionKey,
-                    MKWorkspaceFloorRoomKind.MAIN_ROOM);
+            List<MKFloorRoomProfile> mainProfiles = controls.roomProfiles(sectionKey,
+                    MKFloorRoomKind.MAIN_ROOM);
             int roomCount = Math.max(0, controls.floorMaxMainPathPieces(sectionKey));
             for (int i = 0; i < roomCount; i++) {
                 roomSteps.add(new RoomStep(mainProfiles.get(i % mainProfiles.size()), "M" + (i + 1), FLOOR_ROOM,
                         "main room " + (i + 1) + " of max " + roomCount, true));
             }
             if (controls.floorMainCapApproachEnabled(sectionKey)) {
-                MKWorkspaceFloorRoomProfile approach = controls.roomProfiles(sectionKey,
-                        MKWorkspaceFloorRoomKind.MAIN_CAP_APPROACH).getFirst();
+                MKFloorRoomProfile approach = controls.roomProfiles(sectionKey,
+                        MKFloorRoomKind.MAIN_CAP_APPROACH).getFirst();
                 roomSteps.add(new RoomStep(approach, "Approach", FLOOR_MAIN_CAP, "main cap approach", false));
             }
-            MKWorkspaceFloorRoomProfile cap = controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.MAIN_CAP)
+            MKFloorRoomProfile cap = controls.roomProfiles(sectionKey, MKFloorRoomKind.MAIN_CAP)
                     .getFirst();
             roomSteps.add(new RoomStep(cap, "Main Cap", FLOOR_MAIN_CAP, "terminal main cap", false));
         } else {
-            List<MKWorkspaceFloorRoomProfile> branchProfiles = controls.roomProfiles(sectionKey,
-                    MKWorkspaceFloorRoomKind.BRANCH_ROOM);
+            List<MKFloorRoomProfile> branchProfiles = controls.roomProfiles(sectionKey,
+                    MKFloorRoomKind.BRANCH_ROOM);
             int roomCount = Math.max(0, controls.floorMaxBranchPiecesBeforeCap(sectionKey));
             for (int i = 0; i < roomCount; i++) {
                 roomSteps.add(new RoomStep(branchProfiles.get(i % branchProfiles.size()), "B" + (i + 1), FLOOR_ROOM,
                         "branch room " + (i + 1) + " of max " + roomCount, true));
             }
-            MKWorkspaceFloorRoomProfile branchCap = controls.roomProfiles(sectionKey, MKWorkspaceFloorRoomKind.BRANCH_CAP)
+            MKFloorRoomProfile branchCap = controls.roomProfiles(sectionKey, MKFloorRoomKind.BRANCH_CAP)
                     .getFirst();
             roomSteps.add(new RoomStep(branchCap, "Branch Cap", FLOOR_CAP, "terminal branch cap", false));
         }
@@ -806,8 +806,8 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
 
     private LogicalRect appendHallway(List<LogicalSegment> segments, LogicalRect cursor, Direction direction,
                                       int hallwayLength, boolean main, boolean leadIn) {
-        MKWorkspaceFloorRoomProfile reference = controls.roomProfiles(sectionKey,
-                main ? MKWorkspaceFloorRoomKind.MAIN_ROOM : MKWorkspaceFloorRoomKind.BRANCH_ROOM).getFirst();
+        MKFloorRoomProfile reference = controls.roomProfiles(sectionKey,
+                main ? MKFloorRoomKind.MAIN_ROOM : MKFloorRoomKind.BRANCH_ROOM).getFirst();
         int hallwayMinor = main ? Math.max(3, Math.min(7, reference.width() / 2)) :
                 Math.max(3, Math.min(5, reference.width() / 2));
         LogicalRect rect = rectAfter(cursor, direction, hallwayLength, hallwayMinor);
@@ -830,12 +830,12 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     }
 
     private void addBranchesFromRoom(List<LogicalSegment> segments, LogicalRect room, Direction pathDirection,
-                                     MKWorkspaceFloorRoomProfile profile, int branchDepth) {
+                                     MKFloorRoomProfile profile, int branchDepth) {
         if (branchDepth >= 1) {
             return;
         }
-        for (MKWorkspaceFamilyHorizontalExitDefinition exit : profile.horizontalExits()) {
-            if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH &&
+        for (MKFamilyHorizontalExitDefinition exit : profile.horizontalExits()) {
+            if (exit.pathKind() == MKHorizontalExitPathKind.BRANCH &&
                     exit.direction() != Direction.SOUTH) {
                 Direction branchDirection = rotateRoomExit(exit.direction(), pathDirection);
                 addLogicalPath(segments, room, branchDirection, false, branchDepth + 1);
@@ -1016,7 +1016,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             controls.cycleFloorHallwayLeadInMode(sectionKey, WorkspaceTopologyUiSupport.isReverseClick(mouseButton));
             return true;
         }
-        if (controls.floorHallwayLeadInMode(sectionKey) == MKWorkspaceHallwayLeadInMode.MANUAL &&
+        if (controls.floorHallwayLeadInMode(sectionKey) == MKHallwayLeadInMode.MANUAL &&
                 isInSlider(mouseX, mouseY, sliderBounds(x, y + 138, width, "floorLeadIn"))) {
             draggingSlider = "floorLeadIn";
             applySliderValue(mouseX);
@@ -1114,7 +1114,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         if (handleHallVariantPress(x, y, getWidth() - 16, mouseX, mouseY)) {
             return true;
         }
-        Optional<MKWorkspaceFamilyHorizontalExitDefinition> selected = controls.selectedRootExit(sectionKey)
+        Optional<MKFamilyHorizontalExitDefinition> selected = controls.selectedRootExit(sectionKey)
                 .filter(exit -> exit.direction().getAxis().isHorizontal());
         if (selected.isEmpty()) {
             return false;
@@ -1153,14 +1153,14 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         }
         int offset = ROOT_EXIT_CONTROLS_BODY_HEIGHT + rootVariantsHeight();
         if (controls.floorMainHallwaysEnabled(sectionKey) &&
-                hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)) {
+                hasRootPathKind(controls, sectionKey, MKHorizontalExitPathKind.MAIN_EXIT)) {
             if (handleHallVariantPress(x, y, width, offset, true, mouseX, mouseY)) {
                 return true;
             }
             offset += hallVariantsHeight(true);
         }
         if (controls.floorBranchHallwaysEnabled(sectionKey) &&
-                hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.BRANCH)) {
+                hasRootPathKind(controls, sectionKey, MKHorizontalExitPathKind.BRANCH)) {
             return handleHallVariantPress(x, y, width, offset, false, mouseX, mouseY);
         }
         return false;
@@ -1205,7 +1205,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
 
     private boolean handleRoomPress(double mouseX, double mouseY, int mouseButton) {
         int cursorY = roomStartY(getX(), getY(), getWidth());
-        for (MKWorkspaceFloorRoomKind kind : roomKindsForUi()) {
+        for (MKFloorRoomKind kind : roomKindsForUi()) {
             int x = getX() + 8;
             int width = getWidth() - 16;
             if (isInRect(mouseX, mouseY, roomAddButton(x, cursorY, width, kind))) {
@@ -1213,7 +1213,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 return true;
             }
             cursorY += ROOM_SECTION_HEADER;
-            List<MKWorkspaceFloorRoomProfile> profiles = controls.roomProfiles(sectionKey, kind);
+            List<MKFloorRoomProfile> profiles = controls.roomProfiles(sectionKey, kind);
             for (int index = 0; index < profiles.size(); index++) {
                 if (handleRoomProfilePress(x, cursorY, width, kind, index, profiles.get(index), mouseX, mouseY,
                         mouseButton)) {
@@ -1225,8 +1225,8 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         return false;
     }
 
-    private boolean handleRoomProfilePress(int x, int y, int width, MKWorkspaceFloorRoomKind kind, int index,
-                                           MKWorkspaceFloorRoomProfile profile, double mouseX, double mouseY,
+    private boolean handleRoomProfilePress(int x, int y, int width, MKFloorRoomKind kind, int index,
+                                           MKFloorRoomProfile profile, double mouseX, double mouseY,
                                            int mouseButton) {
         if (isInRect(mouseX, mouseY, roomVariantsToggleButton(x, y, width, kind, index))) {
             controls.toggleFloorRoomVariants(sectionKey, kind, index);
@@ -1261,7 +1261,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 return true;
             }
         }
-        if (kind == MKWorkspaceFloorRoomKind.MAIN_ROOM &&
+        if (kind == MKFloorRoomKind.MAIN_ROOM &&
                 isInRect(mouseX, mouseY, roomRandomizeMainExitButton(x, y))) {
             controls.setRoomRandomizeMainExit(sectionKey, kind, index, !profile.randomizeMainExit());
             return true;
@@ -1312,43 +1312,43 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             controls.floorMaxMainPathPieces(sectionKey, sliderValue(mouseX, bounds, 0, 10));
         } else if ("floorBranchCap".equals(draggingSlider)) {
             controls.floorMaxBranchPiecesBeforeCap(sectionKey, sliderValue(mouseX, bounds, 0,
-                    MKWorkspaceFloorTopologySettings.MAX_BRANCH_PIECES_BEFORE_CAP));
+                    MKFloorTopologySettings.MAX_BRANCH_PIECES_BEFORE_CAP));
         } else if ("floorSprawl".equals(draggingSlider)) {
             controls.floorSprawl(sectionKey, sliderValue(mouseX, bounds, 0, 100) / 100.0f);
         } else if ("floorLeadIn".equals(draggingSlider)) {
             controls.floorManualHallwayLeadInPieces(sectionKey, sliderValue(mouseX, bounds, 0,
-                    MKWorkspaceFloorTopologySettings.MAX_MANUAL_HALLWAY_LEAD_IN_PIECES));
+                    MKFloorTopologySettings.MAX_MANUAL_HALLWAY_LEAD_IN_PIECES));
         } else if ("floorLinkDensity".equals(draggingSlider)) {
             controls.floorLinkDensity(sectionKey, sliderValue(mouseX, bounds, 0, 100) / 100.0f);
         } else if ("floorMaxLinks".equals(draggingSlider)) {
             controls.floorMaxLinksPerFloor(sectionKey, sliderValue(mouseX, bounds, 0,
-                    MKWorkspaceFloorTopologySettings.MAX_LINKS_PER_FLOOR));
+                    MKFloorTopologySettings.MAX_LINKS_PER_FLOOR));
         } else if ("floorMaxLinksPerRoom".equals(draggingSlider)) {
             controls.floorMaxLinksPerRoom(sectionKey, sliderValue(mouseX, bounds, 0,
-                    MKWorkspaceFloorTopologySettings.MAX_LINKS_PER_ROOM));
+                    MKFloorTopologySettings.MAX_LINKS_PER_ROOM));
         } else if ("floorMaxLinkLength".equals(draggingSlider)) {
             controls.floorMaxLinkLength(sectionKey, sliderValue(mouseX, bounds, 0,
-                    MKWorkspaceFloorTopologySettings.MAX_LINK_LENGTH));
+                    MKFloorTopologySettings.MAX_LINK_LENGTH));
         } else if ("floorLinkDecay".equals(draggingSlider)) {
             controls.floorLinkDecay(sectionKey, sliderValue(mouseX, bounds, 0, 100) / 100.0f);
         } else if ("floorEndpointIntact".equals(draggingSlider)) {
             controls.floorEndpointIntactRadius(sectionKey, sliderValue(mouseX, bounds, 0,
-                    MKWorkspaceFloorTopologySettings.MAX_ENDPOINT_INTACT_RADIUS));
+                    MKFloorTopologySettings.MAX_ENDPOINT_INTACT_RADIUS));
         } else if ("floorMiddleDecay".equals(draggingSlider)) {
             controls.floorMiddleDecayBonus(sectionKey, sliderValue(mouseX, bounds, 0, 100) / 100.0f);
         } else if ("floorInsertDepth".equals(draggingSlider)) {
             controls.floorInsertDepth(sectionKey, sliderValue(mouseX, bounds, 1,
-                    MKWorkspaceFloorTopologySettings.MAX_INSERT_DEPTH));
+                    MKFloorTopologySettings.MAX_INSERT_DEPTH));
         } else if ("floorInsertSpacing".equals(draggingSlider)) {
             controls.floorInsertSpacing(sectionKey, sliderValue(mouseX, bounds, 0,
-                    MKWorkspaceFloorTopologySettings.MAX_INSERT_SPACING));
+                    MKFloorTopologySettings.MAX_INSERT_SPACING));
         } else if ("floorInsertProbability".equals(draggingSlider)) {
             controls.floorInsertProbability(sectionKey, sliderValue(mouseX, bounds, 0, 100) / 100.0f);
         } else if ("floorInsertMaxDecay".equals(draggingSlider)) {
             controls.floorInsertMaxDecay(sectionKey, sliderValue(mouseX, bounds, 0, 100) / 100.0f);
         } else if (draggingSlider.startsWith("room:")) {
             String[] parts = draggingSlider.split(":");
-            MKWorkspaceFloorRoomKind kind = roomKindFromSlider(parts[1]);
+            MKFloorRoomKind kind = roomKindFromSlider(parts[1]);
             int index = Integer.parseInt(parts[2]);
             String field = parts[3];
             if ("width".equals(field)) {
@@ -1412,11 +1412,11 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         int cursorY = roomStartY(x, y, width);
         int roomX = x + 8;
         int roomWidth = width - 16;
-        for (MKWorkspaceFloorRoomKind kind : roomKindsForUi()) {
+        for (MKFloorRoomKind kind : roomKindsForUi()) {
             cursorY += ROOM_SECTION_HEADER;
-            List<MKWorkspaceFloorRoomProfile> profiles = controls.roomProfiles(sectionKey, kind);
+            List<MKFloorRoomProfile> profiles = controls.roomProfiles(sectionKey, kind);
             for (int index = 0; index < profiles.size(); index++) {
-                if (kind == MKWorkspaceFloorRoomKind.MAIN_ROOM &&
+                if (kind == MKFloorRoomKind.MAIN_ROOM &&
                         isInRect(mouseX, mouseY, roomRandomizeMainExitButton(roomX, cursorY))) {
                     return Optional.of("Randomize Main Exit\nRuntime may choose any enabled outgoing main or branch " +
                             "direction as this room's main path exit");
@@ -1424,7 +1424,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
                 Direction direction = hitRoomExitDirection(roomX + roomWidth - MASK_SIZE - 8, cursorY + 22,
                         mouseX, mouseY);
                 if (direction != null) {
-                    MKWorkspaceFloorRoomProfile profile = profiles.get(index);
+                    MKFloorRoomProfile profile = profiles.get(index);
                     if (profile.requiredExitDirection(direction)) {
                         return Optional.of(formatDirection(direction) + "\nRequired " +
                                 requiredExitLabel(profile, direction));
@@ -1468,7 +1468,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
     private Optional<String> hoveredHallVariantTooltip(int x, int y, int width, int mouseX, int mouseY) {
         int offset = ROOT_EXIT_CONTROLS_BODY_HEIGHT + rootVariantsHeight();
         if (controls.floorMainHallwaysEnabled(sectionKey) &&
-                hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)) {
+                hasRootPathKind(controls, sectionKey, MKHorizontalExitPathKind.MAIN_EXIT)) {
             Optional<String> tooltip = hoveredHallVariantTooltip(x, y, width, offset, true, mouseX, mouseY);
             if (tooltip.isPresent()) {
                 return tooltip;
@@ -1476,7 +1476,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             offset += hallVariantsHeight(true);
         }
         if (controls.floorBranchHallwaysEnabled(sectionKey) &&
-                hasRootPathKind(controls, sectionKey, MKWorkspaceHorizontalExitPathKind.BRANCH)) {
+                hasRootPathKind(controls, sectionKey, MKHorizontalExitPathKind.BRANCH)) {
             return hoveredHallVariantTooltip(x, y, width, offset, false, mouseX, mouseY);
         }
         return Optional.empty();
@@ -1500,7 +1500,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         return Optional.empty();
     }
 
-    private String requiredExitLabel(MKWorkspaceFloorRoomProfile profile, Direction direction) {
+    private String requiredExitLabel(MKFloorRoomProfile profile, Direction direction) {
         return profile.horizontalExits().stream()
                 .filter(exit -> exit.direction() == direction)
                 .findFirst()
@@ -1570,11 +1570,11 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
             return null;
         }
         String[] parts = id.split(":");
-        MKWorkspaceFloorRoomKind targetKind = roomKindFromSlider(parts[1]);
+        MKFloorRoomKind targetKind = roomKindFromSlider(parts[1]);
         int targetIndex = Integer.parseInt(parts[2]);
         String field = parts[3];
         int cursorY = roomStartY(getX(), getY(), getWidth());
-        for (MKWorkspaceFloorRoomKind kind : roomKindsForUi()) {
+        for (MKFloorRoomKind kind : roomKindsForUi()) {
             cursorY += ROOM_SECTION_HEADER;
             int count = controls.roomProfiles(sectionKey, kind).size();
             if (kind == targetKind) {
@@ -1596,7 +1596,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         return null;
     }
 
-    private boolean currentMainExitDirection(MKWorkspaceFloorRoomProfile profile, Direction direction) {
+    private boolean currentMainExitDirection(MKFloorRoomProfile profile, Direction direction) {
         return profile.mainExitDirection()
                 .map(direction::equals)
                 .orElse(false);
@@ -1645,11 +1645,11 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         return new ButtonBounds(preview.x() + preview.width() - 56, preview.y() + 5, 50, 16);
     }
 
-    private ButtonBounds roomAddButton(int x, int y, int width, MKWorkspaceFloorRoomKind kind) {
+    private ButtonBounds roomAddButton(int x, int y, int width, MKFloorRoomKind kind) {
         return new ButtonBounds(x + width - 46, y + 2, 46, 16);
     }
 
-    private ButtonBounds roomRemoveButton(int x, int y, int width, MKWorkspaceFloorRoomKind kind, int index) {
+    private ButtonBounds roomRemoveButton(int x, int y, int width, MKFloorRoomKind kind, int index) {
         return new ButtonBounds(x + width - 58, y + 4, 54, 16);
     }
 
@@ -1657,16 +1657,16 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         return new ButtonBounds(x + 5, y + 86, 150, 16);
     }
 
-    private ButtonBounds roomVariantsToggleButton(int x, int y, int width, MKWorkspaceFloorRoomKind kind, int index) {
+    private ButtonBounds roomVariantsToggleButton(int x, int y, int width, MKFloorRoomKind kind, int index) {
         return new ButtonBounds(x + 5, y + ROOM_VARIANTS_DRAWER_OFFSET, Math.min(118, width - 10), 18);
     }
 
-    private ButtonBounds roomVariantAddButton(int x, int y, int width, MKWorkspaceFloorRoomKind kind, int index) {
+    private ButtonBounds roomVariantAddButton(int x, int y, int width, MKFloorRoomKind kind, int index) {
         int buttonY = y + ROOM_VARIANTS_DRAWER_OFFSET + 22;
         return new ButtonBounds(x + 5, buttonY, Math.min(96, Math.max(72, (width - 15) / 2)), 18);
     }
 
-    private ButtonBounds roomVariantOpenButton(int x, int y, int width, MKWorkspaceFloorRoomKind kind, int index) {
+    private ButtonBounds roomVariantOpenButton(int x, int y, int width, MKFloorRoomKind kind, int index) {
         ButtonBounds add = roomVariantAddButton(x, y, width, kind, index);
         return new ButtonBounds(add.x() + add.width() + 5, add.y(),
                 Math.min(96, Math.max(72, width - add.width() - 15)), 18);
@@ -1765,7 +1765,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         graphics.drawString(mc.font, fit(label, bounds.width() - 18), bounds.x() + 16, bounds.y() + 4, TEXT, false);
     }
 
-    private Optional<MKWorkspaceFamilyHorizontalExitDefinition> rootExitForDirection(Direction direction) {
+    private Optional<MKFamilyHorizontalExitDefinition> rootExitForDirection(Direction direction) {
         return controls.rootExits(sectionKey).stream()
                 .filter(exit -> exit.direction() == direction)
                 .findFirst();
@@ -1797,19 +1797,19 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         return null;
     }
 
-    private List<MKWorkspaceFloorRoomKind> roomKindsForUi() {
-        ArrayList<MKWorkspaceFloorRoomKind> kinds = new ArrayList<>();
-        kinds.add(MKWorkspaceFloorRoomKind.MAIN_ROOM);
-        kinds.add(MKWorkspaceFloorRoomKind.BRANCH_ROOM);
-        kinds.add(MKWorkspaceFloorRoomKind.BRANCH_CAP);
+    private List<MKFloorRoomKind> roomKindsForUi() {
+        ArrayList<MKFloorRoomKind> kinds = new ArrayList<>();
+        kinds.add(MKFloorRoomKind.MAIN_ROOM);
+        kinds.add(MKFloorRoomKind.BRANCH_ROOM);
+        kinds.add(MKFloorRoomKind.BRANCH_CAP);
         if (controls.floorMainCapApproachEnabled(sectionKey)) {
-            kinds.add(MKWorkspaceFloorRoomKind.MAIN_CAP_APPROACH);
+            kinds.add(MKFloorRoomKind.MAIN_CAP_APPROACH);
         }
-        kinds.add(MKWorkspaceFloorRoomKind.MAIN_CAP);
+        kinds.add(MKFloorRoomKind.MAIN_CAP);
         return List.copyOf(kinds);
     }
 
-    private String roomSectionLabel(MKWorkspaceFloorRoomKind kind) {
+    private String roomSectionLabel(MKFloorRoomKind kind) {
         return switch (kind) {
             case MAIN_ROOM -> "Main Rooms";
             case BRANCH_ROOM -> "Branch Rooms";
@@ -1819,7 +1819,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         };
     }
 
-    private int roomSectionColor(MKWorkspaceFloorRoomKind kind) {
+    private int roomSectionColor(MKFloorRoomKind kind) {
         return switch (kind) {
             case MAIN_ROOM -> FLOOR_MAIN;
             case BRANCH_ROOM, BRANCH_CAP -> FLOOR_BRANCH;
@@ -1827,20 +1827,20 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         };
     }
 
-    private MKWorkspaceFloorRoomKind roomKindFromSlider(String value) {
-        for (MKWorkspaceFloorRoomKind kind : MKWorkspaceFloorRoomKind.values()) {
+    private MKFloorRoomKind roomKindFromSlider(String value) {
+        for (MKFloorRoomKind kind : MKFloorRoomKind.values()) {
             if (kind.getSerializedName().equals(value)) {
                 return kind;
             }
         }
-        return MKWorkspaceFloorRoomKind.MAIN_ROOM;
+        return MKFloorRoomKind.MAIN_ROOM;
     }
 
-    private int verticalMajor(MKWorkspaceFloorRoomProfile profile, Direction direction) {
+    private int verticalMajor(MKFloorRoomProfile profile, Direction direction) {
         return direction == Direction.NORTH || direction == Direction.SOUTH ? profile.length() : profile.width();
     }
 
-    private int verticalMinor(MKWorkspaceFloorRoomProfile profile, Direction direction) {
+    private int verticalMinor(MKFloorRoomProfile profile, Direction direction) {
         return direction == Direction.NORTH || direction == Direction.SOUTH ? profile.width() : profile.length();
     }
 
@@ -1890,7 +1890,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         };
     }
 
-    private String roomSliderId(MKWorkspaceFloorRoomKind kind, int index, String field) {
+    private String roomSliderId(MKFloorRoomKind kind, int index, String field) {
         return "room:" + kind.getSerializedName() + ":" + index + ":" +
                 field;
     }
@@ -2070,9 +2070,9 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
 
         int stackLength(String sectionKey);
 
-        List<MKWorkspaceFamilyHorizontalExitDefinition> rootExits(String sectionKey);
+        List<MKFamilyHorizontalExitDefinition> rootExits(String sectionKey);
 
-        Optional<MKWorkspaceFamilyHorizontalExitDefinition> selectedRootExit(String sectionKey);
+        Optional<MKFamilyHorizontalExitDefinition> selectedRootExit(String sectionKey);
 
         boolean rootExitRequired(String sectionKey, Direction direction);
 
@@ -2140,7 +2140,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
 
         void floorMaxBranchPiecesBeforeCap(String sectionKey, int value);
 
-        MKWorkspaceHallwayLeadInMode floorHallwayLeadInMode(String sectionKey);
+        MKHallwayLeadInMode floorHallwayLeadInMode(String sectionKey);
 
         void cycleFloorHallwayLeadInMode(String sectionKey, boolean reverse);
 
@@ -2184,7 +2184,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
 
         void floorMaxLinkLength(String sectionKey, int value);
 
-        MKWorkspaceFloorLinkGenerationMode floorLinkGenerationMode(String sectionKey);
+        MKFloorLinkGenerationMode floorLinkGenerationMode(String sectionKey);
 
         void cycleFloorLinkGenerationMode(String sectionKey, boolean reverse);
 
@@ -2250,7 +2250,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         int recommendedHallwayLeadInPieces(String sectionKey);
 
         default int effectiveHallwayLeadInPieces(String sectionKey) {
-            return floorHallwayLeadInMode(sectionKey) == MKWorkspaceHallwayLeadInMode.MANUAL ?
+            return floorHallwayLeadInMode(sectionKey) == MKHallwayLeadInMode.MANUAL ?
                     floorManualHallwayLeadInPieces(sectionKey) :
                     recommendedHallwayLeadInPieces(sectionKey);
         }
@@ -2263,43 +2263,43 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
 
         int floorRoomHeightMax(String sectionKey);
 
-        List<MKWorkspaceFloorRoomProfile> roomProfiles(String sectionKey, MKWorkspaceFloorRoomKind kind);
+        List<MKFloorRoomProfile> roomProfiles(String sectionKey, MKFloorRoomKind kind);
 
-        void floorRoomWidth(String sectionKey, MKWorkspaceFloorRoomKind kind, int index, int value);
+        void floorRoomWidth(String sectionKey, MKFloorRoomKind kind, int index, int value);
 
-        void floorRoomLength(String sectionKey, MKWorkspaceFloorRoomKind kind, int index, int value);
+        void floorRoomLength(String sectionKey, MKFloorRoomKind kind, int index, int value);
 
-        void floorRoomHeight(String sectionKey, MKWorkspaceFloorRoomKind kind, int index, int value);
+        void floorRoomHeight(String sectionKey, MKFloorRoomKind kind, int index, int value);
 
-        void addRoomProfile(String sectionKey, MKWorkspaceFloorRoomKind kind);
+        void addRoomProfile(String sectionKey, MKFloorRoomKind kind);
 
-        void removeRoomProfile(String sectionKey, MKWorkspaceFloorRoomKind kind, int index);
+        void removeRoomProfile(String sectionKey, MKFloorRoomKind kind, int index);
 
-        default int floorRoomVariantCount(String sectionKey, MKWorkspaceFloorRoomKind kind, int index) {
+        default int floorRoomVariantCount(String sectionKey, MKFloorRoomKind kind, int index) {
             return 0;
         }
 
-        default boolean floorRoomVariantsExpanded(String sectionKey, MKWorkspaceFloorRoomKind kind, int index) {
+        default boolean floorRoomVariantsExpanded(String sectionKey, MKFloorRoomKind kind, int index) {
             return false;
         }
 
-        default void toggleFloorRoomVariants(String sectionKey, MKWorkspaceFloorRoomKind kind, int index) {
+        default void toggleFloorRoomVariants(String sectionKey, MKFloorRoomKind kind, int index) {
         }
 
-        default void addFloorRoomVariant(String sectionKey, MKWorkspaceFloorRoomKind kind, int index) {
+        default void addFloorRoomVariant(String sectionKey, MKFloorRoomKind kind, int index) {
         }
 
-        default void openFloorRoomVariants(String sectionKey, MKWorkspaceFloorRoomKind kind) {
+        default void openFloorRoomVariants(String sectionKey, MKFloorRoomKind kind) {
         }
 
-        void setRoomMainExitDirection(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
+        void setRoomMainExitDirection(String sectionKey, MKFloorRoomKind kind, int index,
                                       Direction direction);
 
-        void setRoomRandomizeMainExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index, boolean value);
+        void setRoomRandomizeMainExit(String sectionKey, MKFloorRoomKind kind, int index, boolean value);
 
-        void toggleRoomBranchExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index, Direction direction);
+        void toggleRoomBranchExit(String sectionKey, MKFloorRoomKind kind, int index, Direction direction);
 
-        void toggleRoomLinkCandidateExit(String sectionKey, MKWorkspaceFloorRoomKind kind, int index,
+        void toggleRoomLinkCandidateExit(String sectionKey, MKFloorRoomKind kind, int index,
                                          Direction direction);
     }
 
@@ -2350,7 +2350,7 @@ public class MKFloorTopologyPlanPreview extends MKWidget {
         }
     }
 
-    private record RoomStep(MKWorkspaceFloorRoomProfile profile, String label, int color, String tooltip,
+    private record RoomStep(MKFloorRoomProfile profile, String label, int color, String tooltip,
                             boolean allowBranches) {
     }
 }

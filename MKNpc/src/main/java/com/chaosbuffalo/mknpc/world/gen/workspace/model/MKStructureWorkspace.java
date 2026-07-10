@@ -1,5 +1,8 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -326,7 +329,7 @@ public class MKStructureWorkspace {
         }
         for (MKWorkspaceRoomFamilyDefinition familyDefinition : familyDefinitions) {
             MKWorkspaceResolvedFamilySettings resolvedFamily = resolveFamilySettings(familyDefinition);
-            for (MKWorkspaceFamilyHorizontalExitDefinition exit : familyDefinition.horizontalExits()) {
+            for (MKFamilyHorizontalExitDefinition exit : familyDefinition.horizontalExits()) {
                 if (exit.isVerticalAccess()) {
                     continue;
                 }
@@ -337,26 +340,26 @@ public class MKStructureWorkspace {
                     continue;
                 }
                 if ((exit.pathKind().usesMainPath() ||
-                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.INGRESS) &&
+                        exit.pathKind() == MKHorizontalExitPathKind.INGRESS) &&
                         !openingProfile.allowOnMainPath()) {
                     errors.add("family " + familyDefinition.baseName() + " cannot use opening profile " +
                             exit.openingProfileId() + " for a main-path exit because it is not main-path compatible");
                 }
-                if ((exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH ||
-                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY) &&
+                if ((exit.pathKind() == MKHorizontalExitPathKind.BRANCH ||
+                        exit.pathKind() == MKHorizontalExitPathKind.BRANCH_CAP_ENTRY) &&
                         !openingProfile.allowOnBranchPath()) {
                     errors.add("family " + familyDefinition.baseName() + " cannot use opening profile " +
                             exit.openingProfileId() + " for a branch exit because it is not branch-path compatible");
                 }
-                if ((exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY ||
-                        exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY) &&
+                if ((exit.pathKind() == MKHorizontalExitPathKind.MAIN_ENDING_ENTRY ||
+                        exit.pathKind() == MKHorizontalExitPathKind.BRANCH_CAP_ENTRY) &&
                         exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION) {
                     errors.add("family " + familyDefinition.baseName() + " " +
                             exit.pathKind().getSerializedName() + " must place a connector");
                 }
                 if (exit.connectionMode() == MKWorkspaceHorizontalExitConnectionMode.LINEAR_RUN &&
-                        exit.pathKind() != MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY &&
-                        exit.pathKind() != MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY) {
+                        exit.pathKind() != MKHorizontalExitPathKind.MAIN_ENDING_ENTRY &&
+                        exit.pathKind() != MKHorizontalExitPathKind.BRANCH_CAP_ENTRY) {
                     boolean hasCompatibleLinearRun = linearRunFamilies.stream().anyMatch(linearRun ->
                             linearRun.openingProfileId().equals(exit.openingProfileId()) &&
                                     (exit.pathKind().usesMainPath() ? linearRun.allowOnMainPath() : linearRun.allowOnBranchPath()));
@@ -419,7 +422,7 @@ public class MKStructureWorkspace {
                 errors.add("insert family id must be unique: " + insertFamily.familyId());
             }
         }
-        for (MKWorkspaceFloorTopologySettings floorSettings : topologyProfile.floorTopologySettings()) {
+        for (MKFloorTopologySettings floorSettings : topologyProfile.floorTopologySettings()) {
             floorSettings.insertFamily()
                     .filter(familyId -> !insertFamilyIds.contains(familyId))
                     .ifPresent(familyId -> errors.add("floor topology " + floorSettings.key() +

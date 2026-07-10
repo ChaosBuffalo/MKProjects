@@ -6,13 +6,13 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomProfile;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHallwayLeadInMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
@@ -82,7 +82,7 @@ public class MKFloorTopologyPlanner {
                 continue;
             }
             FloorOpeningContext context = contextOpt.get();
-            MKWorkspaceFloorTopologySettings settings = workspace.topologyProfile()
+            MKFloorTopologySettings settings = workspace.topologyProfile()
                     .floorTopologySettingsOrDefault(context.stackId(), context.floorRole());
             for (int i = 0; i < settings.mainRoomProfiles().size(); i++) {
                 pieces.add(createRoomPiece(workspace, settings, context, settings.mainRoomProfiles().get(i), i));
@@ -142,7 +142,7 @@ public class MKFloorTopologyPlanner {
     }
 
     private List<MKPlannedPiece> createFloorLinearRunPieces(MKStructureWorkspace workspace,
-                                                            MKWorkspaceFloorTopologySettings settings,
+                                                            MKFloorTopologySettings settings,
                                                             FloorOpeningContext context) {
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
         if (settings.mainHallwaysEnabled()) {
@@ -157,7 +157,7 @@ public class MKFloorTopologyPlanner {
     }
 
     private List<MKPlannedPiece> createFloorLinearRunPieces(MKStructureWorkspace workspace,
-                                                            MKWorkspaceFloorTopologySettings settings,
+                                                            MKFloorTopologySettings settings,
                                                             FloorOpeningContext context,
                                                             ResolvedOpeningProfile opening,
                                                             PathPoolKind pathKind) {
@@ -232,7 +232,7 @@ public class MKFloorTopologyPlanner {
     }
 
     private List<MKWorkspaceLinearRunFamilyDefinition> floorLinearRuns(MKStructureWorkspace workspace,
-                                                                       MKWorkspaceFloorTopologySettings settings,
+                                                                       MKFloorTopologySettings settings,
                                                                        FloorOpeningContext context,
                                                                        ResolvedOpeningProfile opening,
                                                                        PathPoolKind pathKind) {
@@ -257,7 +257,7 @@ public class MKFloorTopologyPlanner {
     }
 
     private MKWorkspaceLinearRunFamilyDefinition fallbackFloorLinearRun(MKStructureWorkspace workspace,
-                                                                        MKWorkspaceFloorTopologySettings settings,
+                                                                        MKFloorTopologySettings settings,
                                                                         FloorOpeningContext context,
                                                                         ResolvedOpeningProfile opening,
                                                                         PathPoolKind pathKind) {
@@ -281,9 +281,9 @@ public class MKFloorTopologyPlanner {
     }
 
     private int effectiveHallwayLeadInPieces(MKStructureWorkspace workspace,
-                                             MKWorkspaceFloorTopologySettings settings,
+                                             MKFloorTopologySettings settings,
                                              FloorOpeningContext context) {
-        if (settings.hallwayLeadInMode() == MKWorkspaceHallwayLeadInMode.MANUAL) {
+        if (settings.hallwayLeadInMode() == MKHallwayLeadInMode.MANUAL) {
             return Math.max(1, settings.manualHallwayLeadInPieces());
         }
         return Math.max(1, Math.ceilDiv(Math.max(
@@ -311,12 +311,12 @@ public class MKFloorTopologyPlanner {
             return Optional.empty();
         }
         Optional<ResolvedOpeningProfile> mainOpening = rootFamily.horizontalOnlyExits().stream()
-                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT)
+                .filter(exit -> exit.pathKind() == MKHorizontalExitPathKind.MAIN_EXIT)
                 .map(exit -> resolveOpening(workspace, exit.openingProfileId()))
                 .flatMap(Optional::stream)
                 .findFirst();
         Optional<ResolvedOpeningProfile> branchOpening = rootFamily.horizontalOnlyExits().stream()
-                .filter(exit -> exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH)
+                .filter(exit -> exit.pathKind() == MKHorizontalExitPathKind.BRANCH)
                 .map(exit -> resolveOpening(workspace, exit.openingProfileId()))
                 .flatMap(Optional::stream)
                 .findFirst();
@@ -338,15 +338,15 @@ public class MKFloorTopologyPlanner {
 
     private boolean hasFloorTopologyExit(MKWorkspaceRoomFamilyDefinition rootFamily) {
         return rootFamily.horizontalOnlyExits().stream()
-                .map(MKWorkspaceFamilyHorizontalExitDefinition::pathKind)
-                .anyMatch(pathKind -> pathKind == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT ||
-                        pathKind == MKWorkspaceHorizontalExitPathKind.BRANCH);
+                .map(MKFamilyHorizontalExitDefinition::pathKind)
+                .anyMatch(pathKind -> pathKind == MKHorizontalExitPathKind.MAIN_EXIT ||
+                        pathKind == MKHorizontalExitPathKind.BRANCH);
     }
 
     private MKPlannedPiece createRoomPiece(MKStructureWorkspace workspace,
-                                           MKWorkspaceFloorTopologySettings settings,
+                                           MKFloorTopologySettings settings,
                                            FloorOpeningContext context,
-                                           MKWorkspaceFloorRoomProfile profile,
+                                           MKFloorRoomProfile profile,
                                            int index) {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>();
         String pieceName = pieceName(context, profile, index);
@@ -389,11 +389,11 @@ public class MKFloorTopologyPlanner {
         );
     }
 
-    private MKWorkspaceRuntimePieceInfo runtimeInfoFor(FloorOpeningContext context, MKWorkspaceFloorRoomProfile profile) {
+    private MKWorkspaceRuntimePieceInfo runtimeInfoFor(FloorOpeningContext context, MKFloorRoomProfile profile) {
         boolean branchPath = profile.kind().isBranchPath();
         boolean branchCap = profile.kind().isBranchCap();
         boolean mainPathEnding = profile.kind().isMainPathEnding();
-        boolean terminal = branchCap || profile.kind() == MKWorkspaceFloorRoomKind.MAIN_CAP;
+        boolean terminal = branchCap || profile.kind() == MKFloorRoomKind.MAIN_CAP;
         return new MKWorkspaceRuntimePieceInfo(
                 false,
                 branchPath ? MKJigsawPieceRole.BRANCH : MKJigsawPieceRole.ROOM,
@@ -410,11 +410,11 @@ public class MKFloorTopologyPlanner {
     }
 
     private List<MKPlannedConnector> connectorsForProfile(MKStructureWorkspace workspace,
-                                                          MKWorkspaceFloorTopologySettings settings,
-                                                          MKWorkspaceFloorRoomProfile profile,
+                                                          MKFloorTopologySettings settings,
+                                                          MKFloorRoomProfile profile,
                                                           FloorOpeningContext context) {
         ArrayList<MKPlannedConnector> connectors = new ArrayList<>();
-        for (MKWorkspaceFamilyHorizontalExitDefinition exit : profile.horizontalExits()) {
+        for (MKFamilyHorizontalExitDefinition exit : profile.horizontalExits()) {
             ResolvedOpeningProfile opening = resolveInheritedOpening(exit, context);
             MKConnectorRole role = connectorRole(exit.pathKind());
             String targetPool = targetPoolFor(workspace, exit, opening.profileId(), profile, context, settings);
@@ -433,21 +433,21 @@ public class MKFloorTopologyPlanner {
         return List.copyOf(connectors);
     }
 
-    private ResolvedOpeningProfile resolveInheritedOpening(MKWorkspaceFamilyHorizontalExitDefinition exit,
+    private ResolvedOpeningProfile resolveInheritedOpening(MKFamilyHorizontalExitDefinition exit,
                                                            FloorOpeningContext context) {
-        if (MKWorkspaceFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID.equals(exit.openingProfileId())) {
+        if (MKFloorRoomProfile.INHERITED_BRANCH_OPENING_PROFILE_ID.equals(exit.openingProfileId())) {
             return context.branchOpening();
         }
-        if (MKWorkspaceFloorRoomProfile.INHERITED_LINK_OPENING_PROFILE_ID.equals(exit.openingProfileId())) {
+        if (MKFloorRoomProfile.INHERITED_LINK_OPENING_PROFILE_ID.equals(exit.openingProfileId())) {
             return context.branchOpening();
         }
-        if (MKWorkspaceFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID.equals(exit.openingProfileId())) {
+        if (MKFloorRoomProfile.INHERITED_MAIN_OPENING_PROFILE_ID.equals(exit.openingProfileId())) {
             return context.mainOpening();
         }
         return context.mainOpening();
     }
 
-    private MKConnectorRole connectorRole(MKWorkspaceHorizontalExitPathKind pathKind) {
+    private MKConnectorRole connectorRole(MKHorizontalExitPathKind pathKind) {
         return switch (pathKind) {
             case MAIN_ENTRY, MAIN_ENDING_ENTRY -> MKConnectorRole.MAIN_FORWARD;
             case MAIN_EXIT -> MKConnectorRole.MAIN_BACK;
@@ -458,23 +458,23 @@ public class MKFloorTopologyPlanner {
         };
     }
 
-    private String targetPoolFor(MKStructureWorkspace workspace, MKWorkspaceFamilyHorizontalExitDefinition exit,
+    private String targetPoolFor(MKStructureWorkspace workspace, MKFamilyHorizontalExitDefinition exit,
                                  String openingProfileId,
-                                 MKWorkspaceFloorRoomProfile profile, FloorOpeningContext context,
-                                 MKWorkspaceFloorTopologySettings settings) {
-        if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_EXIT) {
+                                 MKFloorRoomProfile profile, FloorOpeningContext context,
+                                 MKFloorTopologySettings settings) {
+        if (exit.pathKind() == MKHorizontalExitPathKind.MAIN_EXIT) {
             return settings.mainHallwaysEnabled() && hasCompatibleLinearRun(workspace, openingProfileId, PathPoolKind.MAIN) ?
                     floorLinearRunPoolName(context.topologyGroupId(), openingProfileId, PathPoolKind.MAIN) :
                     floorRoomPoolName(context.topologyGroupId(), openingProfileId, PathPoolKind.MAIN);
         }
-        if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH &&
+        if (exit.pathKind() == MKHorizontalExitPathKind.BRANCH &&
                 !profile.kind().isBranchCap() &&
                 exit.direction() != Direction.SOUTH) {
             return settings.branchHallwaysEnabled() && hasCompatibleLinearRun(workspace, openingProfileId, PathPoolKind.BRANCH) ?
                     floorLinearRunPoolName(context.topologyGroupId(), openingProfileId, PathPoolKind.BRANCH) :
                     floorRoomPoolName(context.topologyGroupId(), openingProfileId, PathPoolKind.BRANCH);
         }
-        if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE) {
+        if (exit.pathKind() == MKHorizontalExitPathKind.LINK_CANDIDATE) {
             return EMPTY_POOL;
         }
         return EMPTY_POOL;
@@ -488,19 +488,19 @@ public class MKFloorTopologyPlanner {
                                 linearRun.allowOnBranchPath()));
     }
 
-    private String incomingPoolFor(MKWorkspaceFamilyHorizontalExitDefinition exit, String openingProfileId,
-                                   MKWorkspaceFloorRoomProfile profile, FloorOpeningContext context,
-                                   MKWorkspaceFloorTopologySettings settings) {
-        if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENTRY ||
-                exit.pathKind() == MKWorkspaceHorizontalExitPathKind.MAIN_ENDING_ENTRY) {
+    private String incomingPoolFor(MKFamilyHorizontalExitDefinition exit, String openingProfileId,
+                                   MKFloorRoomProfile profile, FloorOpeningContext context,
+                                   MKFloorTopologySettings settings) {
+        if (exit.pathKind() == MKHorizontalExitPathKind.MAIN_ENTRY ||
+                exit.pathKind() == MKHorizontalExitPathKind.MAIN_ENDING_ENTRY) {
             return floorRoomPoolName(context.topologyGroupId(), openingProfileId, PathPoolKind.MAIN);
         }
-        if ((exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH ||
-                exit.pathKind() == MKWorkspaceHorizontalExitPathKind.BRANCH_CAP_ENTRY) &&
+        if ((exit.pathKind() == MKHorizontalExitPathKind.BRANCH ||
+                exit.pathKind() == MKHorizontalExitPathKind.BRANCH_CAP_ENTRY) &&
                 exit.direction() == Direction.SOUTH) {
             return floorRoomPoolName(context.topologyGroupId(), openingProfileId, PathPoolKind.BRANCH);
         }
-        if (exit.pathKind() == MKWorkspaceHorizontalExitPathKind.LINK_CANDIDATE) {
+        if (exit.pathKind() == MKHorizontalExitPathKind.LINK_CANDIDATE) {
             return null;
         }
         return null;
@@ -576,13 +576,13 @@ public class MKFloorTopologyPlanner {
                 pathKind.serializedName + "/" + openingProfileId;
     }
 
-    private String pieceName(FloorOpeningContext context, MKWorkspaceFloorRoomProfile profile, int index) {
+    private String pieceName(FloorOpeningContext context, MKFloorRoomProfile profile, int index) {
         return "floor_plan_" + safeId(context.stackId()) + "_" + safeId(context.floorRole()) + "_" +
                 profile.kind().getSerializedName() + "_" + safeId(profile.id()) + "_" + index;
     }
 
     private static String floorTopologyGroupId(String stackId, String floorRole) {
-        return MKWorkspaceFloorTopologySettings.key(stackId, floorRole);
+        return MKFloorTopologySettings.key(stackId, floorRole);
     }
 
     private static String safeId(String value) {

@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -58,8 +59,8 @@ public final class MKWorkspaceCodecs {
     public static final Codec<MKWorkspaceStairRiseType> STAIR_RISE_TYPE_CODEC = Codec.STRING.xmap(
             MKWorkspaceStairRiseType::fromSerializedName, MKWorkspaceStairRiseType::getSerializedName
     );
-    public static final Codec<MKWorkspaceHorizontalExitPathKind> HORIZONTAL_EXIT_PATH_KIND_CODEC = Codec.STRING.xmap(
-            MKWorkspaceHorizontalExitPathKind::fromSerializedName, MKWorkspaceHorizontalExitPathKind::getSerializedName
+    public static final Codec<MKHorizontalExitPathKind> HORIZONTAL_EXIT_PATH_KIND_CODEC = Codec.STRING.xmap(
+            MKHorizontalExitPathKind::fromSerializedName, MKHorizontalExitPathKind::getSerializedName
     );
     public static final Codec<MKWorkspaceHorizontalExitConnectionMode> HORIZONTAL_EXIT_CONNECTION_MODE_CODEC = Codec.STRING.xmap(
             MKWorkspaceHorizontalExitConnectionMode::fromSerializedName,

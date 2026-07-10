@@ -5,11 +5,11 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
@@ -488,7 +488,7 @@ public record MKWorkspaceExportManifest(
 
     public record ExportFamilyHorizontalExit(
             String direction,
-            MKWorkspaceHorizontalExitPathKind pathKind,
+            MKHorizontalExitPathKind pathKind,
             String openingProfileId,
             MKWorkspaceHorizontalExitConnectionMode connectionMode,
             int sideOffset,
@@ -496,8 +496,8 @@ public record MKWorkspaceExportManifest(
     ) {
         public static final Codec<ExportFamilyHorizontalExit> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("direction").forGetter(ExportFamilyHorizontalExit::direction),
-                Codec.STRING.xmap(MKWorkspaceHorizontalExitPathKind::fromSerializedName,
-                        MKWorkspaceHorizontalExitPathKind::getSerializedName)
+                Codec.STRING.xmap(MKHorizontalExitPathKind::fromSerializedName,
+                        MKHorizontalExitPathKind::getSerializedName)
                         .fieldOf("path_kind").forGetter(ExportFamilyHorizontalExit::pathKind),
                 Codec.STRING.optionalFieldOf("opening_profile_id", "").forGetter(ExportFamilyHorizontalExit::openingProfileId),
                 horizontalExitConnectionModeCodec().optionalFieldOf("connection_mode",
@@ -507,7 +507,7 @@ public record MKWorkspaceExportManifest(
                 Codec.INT.optionalFieldOf("vertical_offset", 0).forGetter(ExportFamilyHorizontalExit::verticalOffset)
         ).apply(instance, ExportFamilyHorizontalExit::new));
 
-        public static ExportFamilyHorizontalExit from(MKWorkspaceFamilyHorizontalExitDefinition exit) {
+        public static ExportFamilyHorizontalExit from(MKFamilyHorizontalExitDefinition exit) {
             return new ExportFamilyHorizontalExit(
                     exit.direction().getSerializedName(),
                     exit.pathKind(),
@@ -912,9 +912,9 @@ public record MKWorkspaceExportManifest(
             if (topologyGroup.isEmpty()) {
                 return Optional.empty();
             }
-            MKWorkspaceHorizontalExitPathKind pathKind = connector.role() == MKConnectorRole.MAIN_BACK ?
-                    MKWorkspaceHorizontalExitPathKind.MAIN_EXIT :
-                    MKWorkspaceHorizontalExitPathKind.BRANCH;
+            MKHorizontalExitPathKind pathKind = connector.role() == MKConnectorRole.MAIN_BACK ?
+                    MKHorizontalExitPathKind.MAIN_EXIT :
+                    MKHorizontalExitPathKind.BRANCH;
             return Optional.of(new MKJigsawPieceMetadata.FloorRootExit(
                     topologyGroup.orElseThrow(),
                     connector.facing(),

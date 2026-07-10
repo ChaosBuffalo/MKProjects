@@ -4,7 +4,7 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFloorRoomKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import net.minecraft.core.BlockPos;
@@ -70,7 +70,7 @@ class MKFloorMaskVariantExporterTest {
         tags.put("tower_piece_kind", "floor_plan_room");
         tags.put("workspace_piece_kind", pieceKind);
         tags.put("workspace_base_name", baseName);
-        tags.put("workspace_floor_room_kind", MKWorkspaceFloorRoomKind.BRANCH_CAP.getSerializedName());
+        tags.put("workspace_floor_room_kind", MKFloorRoomKind.BRANCH_CAP.getSerializedName());
         return new MKWorkspacePieceDefinition(
                 UUID.randomUUID(),
                 UUID.randomUUID(),

@@ -14,9 +14,9 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
@@ -92,8 +92,8 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                 MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("entry", MKWorkspaceVerticalStackSlot.ENTRY,
                         PRIMARY_STACK_ID, true, 0, 0, 0,
                         MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
-                        List.of(new MKWorkspaceFamilyHorizontalExitDefinition(Direction.SOUTH,
-                                MKWorkspaceHorizontalExitPathKind.INGRESS, "main_opening",
+                        List.of(new MKFamilyHorizontalExitDefinition(Direction.SOUTH,
+                                MKHorizontalExitPathKind.INGRESS, "main_opening",
                                 MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION)),
                         0, 0, null, null),
                 MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("floor_main", MKWorkspaceVerticalStackSlot.MAIN_FLOOR,
