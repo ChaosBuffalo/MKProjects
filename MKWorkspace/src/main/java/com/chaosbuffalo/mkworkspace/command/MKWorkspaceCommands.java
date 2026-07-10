@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.command;
+package com.chaosbuffalo.mkworkspace.command;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.MKStructureWorkspaceService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;

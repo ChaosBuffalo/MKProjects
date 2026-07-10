@@ -2,9 +2,13 @@ package com.chaosbuffalo.mkworkspace;
 
 import com.chaosbuffalo.mkworkspace.init.MKWorkspaceBlockEntityTypes;
 import com.chaosbuffalo.mkworkspace.init.MKWorkspaceBlocks;
+import com.chaosbuffalo.mkworkspace.command.MKWorkspaceCommands;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,5 +20,11 @@ public class MKWorkspace {
     public MKWorkspace(IEventBus modEventBus, ModContainer modContainer) {
         MKWorkspaceBlocks.register(modEventBus);
         MKWorkspaceBlockEntityTypes.register(modEventBus);
+        NeoForge.EVENT_BUS.register(this);
+    }
+
+    @SubscribeEvent
+    public void onRegisterCommands(RegisterCommandsEvent event) {
+        event.getDispatcher().register(MKWorkspaceCommands.register());
     }
 }
