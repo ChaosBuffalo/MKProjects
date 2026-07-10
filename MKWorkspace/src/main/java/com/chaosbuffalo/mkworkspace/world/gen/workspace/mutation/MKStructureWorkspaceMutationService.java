@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.mutation;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace.mutation;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
