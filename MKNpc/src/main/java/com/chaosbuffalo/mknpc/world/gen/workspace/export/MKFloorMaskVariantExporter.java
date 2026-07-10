@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 public final class MKFloorMaskVariantExporter {
     public static final String FLOOR_MASK_TAG = MKFloorMaskPools.FLOOR_MASK_TAG;
-    public static final String FLOOR_MASK_WEIGHT_TAG = "workspace_floor_mask_weight";
+    public static final String FLOOR_MASK_WEIGHT_TAG = MKFloorMaskPools.FLOOR_MASK_WEIGHT_TAG;
     public static final String FLOOR_RANDOMIZE_MAIN_EXIT_TAG = "workspace_floor_randomize_main_exit";
     public static final String FLOOR_SELECTED_MAIN_EXIT_TAG = "workspace_floor_selected_main_exit";
     public static final String CLOSED_CONNECTOR_COUNT_TAG = "workspace_floor_closed_connector_count";
