@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.block_entities;
 
 import com.chaosbuffalo.mknpc.init.MKNpcBlockEntityTypes;
+import com.chaosbuffalo.mknpc.world.gen.workspace.MKWorkspaceAnchor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -10,7 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public class MKWorkspaceDevBlockEntity extends BlockEntity {
+public class MKWorkspaceDevBlockEntity extends BlockEntity implements MKWorkspaceAnchor {
     @Nullable
     private UUID workspaceId;
 
@@ -19,10 +20,12 @@ public class MKWorkspaceDevBlockEntity extends BlockEntity {
     }
 
     @Nullable
+    @Override
     public UUID getWorkspaceId() {
         return workspaceId;
     }
 
+    @Override
     public void setWorkspaceId(@Nullable UUID workspaceId) {
         this.workspaceId = workspaceId;
         setChanged();

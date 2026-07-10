@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.mutation;
 
-import com.chaosbuffalo.mknpc.block_entities.MKWorkspaceDevBlockEntity;
+import com.chaosbuffalo.mknpc.world.gen.workspace.MKWorkspaceAnchor;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestWriter;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
@@ -176,8 +176,8 @@ public class MKWorkspaceIdentityRenameService {
 
     private void syncBlockEntity(ServerLevel level, MKStructureWorkspace workspace) {
         BlockEntity blockEntity = level.getBlockEntity(workspace.anchor());
-        if (blockEntity instanceof MKWorkspaceDevBlockEntity workspaceDevBlockEntity) {
-            workspaceDevBlockEntity.setWorkspaceId(workspace.id());
+        if (blockEntity instanceof MKWorkspaceAnchor workspaceAnchor) {
+            workspaceAnchor.setWorkspaceId(workspace.id());
         }
     }
 }

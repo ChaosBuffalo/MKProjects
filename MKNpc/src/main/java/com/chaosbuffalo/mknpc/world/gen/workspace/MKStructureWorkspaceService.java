@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace;
 
-import com.chaosbuffalo.mknpc.block_entities.MKWorkspaceDevBlockEntity;
 import com.chaosbuffalo.mknpc.network.packets.OpenWorkspaceScreenPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
@@ -1033,8 +1032,8 @@ public class MKStructureWorkspaceService {
 
     private void syncBlockEntity(ServerLevel level, BlockPos anchor, java.util.UUID workspaceId) {
         BlockEntity blockEntity = level.getBlockEntity(anchor);
-        if (blockEntity instanceof MKWorkspaceDevBlockEntity workspaceDevBlockEntity) {
-            workspaceDevBlockEntity.setWorkspaceId(workspaceId);
+        if (blockEntity instanceof MKWorkspaceAnchor workspaceAnchor) {
+            workspaceAnchor.setWorkspaceId(workspaceId);
         }
     }
 
