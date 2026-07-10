@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.export;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace.export;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import net.minecraft.server.MinecraftServer;

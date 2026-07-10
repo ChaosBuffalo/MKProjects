@@ -9,11 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-final class MKFloorConnectorPatch {
+public final class MKFloorConnectorPatch {
     private MKFloorConnectorPatch() {
     }
 
-    static List<BlockPos> closedConnectorPatchPositions(MKWorkspacePieceDefinition piece) {
+    public static List<BlockPos> closedConnectorPatchPositions(MKWorkspacePieceDefinition piece) {
         int count = parseInt(piece.tags().get(MKFloorMaskVariantExporter.CLOSED_CONNECTOR_COUNT_TAG), 0);
         if (count <= 0) {
             return List.of();
@@ -57,7 +57,7 @@ final class MKFloorConnectorPatch {
         return List.copyOf(positions);
     }
 
-    static int closureDepth(MKWorkspacePieceDefinition piece, MKWorkspaceConnectorDefinition connector) {
+    public static int closureDepth(MKWorkspacePieceDefinition piece, MKWorkspaceConnectorDefinition connector) {
         Direction facing = connector.facing();
         if (facing == null || !facing.getAxis().isHorizontal()) {
             return 1;
