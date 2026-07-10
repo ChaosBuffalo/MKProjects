@@ -9,7 +9,7 @@ import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorLinkGene
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKInsertFamilyPools;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorLayoutSolver;
 import com.mojang.serialization.Codec;
@@ -780,7 +780,7 @@ public class MKJigsawStructure extends MKStructure {
             return;
         }
         String familyId = candidate.settings().insertFamily().orElseThrow();
-        ResourceLocation poolId = MKWorkspaceInsertFamilyDefinition.poolId(workspaceId.get().namespace(),
+        ResourceLocation poolId = MKInsertFamilyPools.poolId(workspaceId.get().namespace(),
                 workspaceId.get().structureName(), familyId);
         Registry<StructureTemplatePool> pools = level.registryAccess().registryOrThrow(Registries.TEMPLATE_POOL);
         Optional<StructureTemplatePool> poolOpt = pools.getOptional(ResourceKey.create(Registries.TEMPLATE_POOL,

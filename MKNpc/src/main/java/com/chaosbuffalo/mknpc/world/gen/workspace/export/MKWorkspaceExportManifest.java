@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorMaskPools;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKInsertFamilyPools;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
@@ -642,7 +643,7 @@ public record MKWorkspaceExportManifest(
         }
 
         public ResourceLocation poolId(MKWorkspaceExportManifest manifest) {
-            return MKWorkspaceInsertFamilyDefinition.poolId(manifest.namespace(), manifest.structureName(), familyId);
+            return MKInsertFamilyPools.poolId(manifest.namespace(), manifest.structureName(), familyId);
         }
     }
 
@@ -1447,14 +1448,14 @@ public record MKWorkspaceExportManifest(
         for (MKWorkspaceInsertFamilyDefinition insertFamily : workspace.insertFamilies()) {
             LinkedHashSet<String> childBaseNames = pieces.stream()
                     .filter(piece -> !"template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance")))
-                    .filter(piece -> insertFamily.familyId().equals(piece.tags().get(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID)))
+                    .filter(piece -> insertFamily.familyId().equals(piece.tags().get(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID)))
                     .filter(piece -> insertFamily.kind().getSerializedName().equals(piece.tags()
-                            .getOrDefault(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_KIND,
+                            .getOrDefault(MKInsertFamilyPools.TAG_INSERT_FAMILY_KIND,
                                     insertFamily.kind().getSerializedName())))
                     .map(piece -> piece.tags().getOrDefault("workspace_base_name", piece.pieceName()))
                     .collect(Collectors.toCollection(LinkedHashSet::new));
             if (!childBaseNames.isEmpty()) {
-                childrenByPool.put(MKWorkspaceInsertFamilyDefinition.poolId(workspace.namespace(),
+                childrenByPool.put(MKInsertFamilyPools.poolId(workspace.namespace(),
                         workspace.structureName(), insertFamily.familyId()), childBaseNames);
             }
         }
@@ -1466,9 +1467,9 @@ public record MKWorkspaceExportManifest(
             LinkedHashSet<String> childBaseNames = manifest.pieces().stream()
                     .filter(piece -> !"template".equals(piece.workspacePieceKind()))
                     .filter(piece -> insertFamily.familyId().equals(piece.tags()
-                            .get(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID)))
+                            .get(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID)))
                     .filter(piece -> insertFamily.kind().getSerializedName().equals(piece.tags()
-                            .getOrDefault(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_KIND,
+                            .getOrDefault(MKInsertFamilyPools.TAG_INSERT_FAMILY_KIND,
                                     insertFamily.kind().getSerializedName())))
                     .map(ExportPiece::baseName)
                     .collect(Collectors.toCollection(LinkedHashSet::new));

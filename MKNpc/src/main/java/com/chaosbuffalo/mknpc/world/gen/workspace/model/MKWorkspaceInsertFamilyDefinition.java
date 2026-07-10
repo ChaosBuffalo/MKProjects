@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKInsertFamilyPools;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
@@ -15,8 +16,8 @@ public record MKWorkspaceInsertFamilyDefinition(
         int height,
         int depth
 ) {
-    public static final String TAG_INSERT_FAMILY_ID = "workspace_insert_family_id";
-    public static final String TAG_INSERT_FAMILY_KIND = "workspace_insert_family_kind";
+    public static final String TAG_INSERT_FAMILY_ID = MKInsertFamilyPools.TAG_INSERT_FAMILY_ID;
+    public static final String TAG_INSERT_FAMILY_KIND = MKInsertFamilyPools.TAG_INSERT_FAMILY_KIND;
 
     public static final Codec<MKWorkspaceInsertFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("familyId").forGetter(MKWorkspaceInsertFamilyDefinition::familyId),
@@ -42,8 +43,7 @@ public record MKWorkspaceInsertFamilyDefinition(
     }
 
     public static ResourceLocation poolId(String namespace, String structureName, String familyId) {
-        return ResourceLocation.fromNamespaceAndPath(namespace,
-                structureName + "/insert_families/" + familyId);
+        return MKInsertFamilyPools.poolId(namespace, structureName, familyId);
     }
 
     public List<String> validate() {
