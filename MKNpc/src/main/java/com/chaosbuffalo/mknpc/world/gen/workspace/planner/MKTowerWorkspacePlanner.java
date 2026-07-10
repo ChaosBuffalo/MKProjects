@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.world.gen.workspace.planner;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKTowerWorkspaceDefaults;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
@@ -26,7 +27,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStack
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -35,10 +35,10 @@ import java.util.Map;
 import java.util.Set;
 
 public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
-    public static final ResourceLocation PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "tower");
+    public static final ResourceLocation PLANNER_ID = MKTowerWorkspaceDefaults.PLANNER_ID;
     private static final String EMPTY_POOL = "minecraft:empty";
     private static final String LINEAR_RUN_POOL_PREFIX = "linear_runs";
-    public static final String PRIMARY_STACK_ID = "tower.primary";
+    public static final String PRIMARY_STACK_ID = MKTowerWorkspaceDefaults.PRIMARY_STACK_ID;
     private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
     private final MKWorkspaceVerticalStackPlanner verticalStackPlanner = new MKWorkspaceVerticalStackPlanner(PRIMARY_STACK_ID);
     private final MKFloorTopologyPlanner floorTopologyPlanner = new MKFloorTopologyPlanner();
@@ -63,19 +63,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     }
 
     public static MKWorkspaceTopologyProfile defaultTopologyProfile() {
-        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
-        return new MKWorkspaceTopologyProfile(PLANNER_ID,
-                List.of(new MKWorkspaceVerticalStackSettings("tower.primary",
-                        MKWorkspaceVerticalStackFloorCounts.DEFAULT_MAIN_FLOORS,
-                        MKWorkspaceVerticalStackFloorCounts.DEFAULT_BASEMENT_FLOORS,
-                        dimensions.roomHeight(), dimensions.roomWidth(), dimensions.roomLength(),
-                        MKWorkspaceVerticalStackFloorCounts.DEFAULT_TOP_CAP_APPROACH_ENABLED,
-                        MKWorkspaceVerticalStackFloorCounts.DEFAULT_BASEMENT_ENTRY_ENABLED,
-                        MKWorkspaceVerticalStackFloorCounts.DEFAULT_BASEMENT_CAP_APPROACH_ENABLED)),
-                List.of(),
-                MKWorkspaceTopologyPathSettings.defaults(),
-                List.of(),
-                TerrainAdjustment.BEARD_THIN);
+        return MKTowerWorkspaceDefaults.topologyProfile();
     }
 
     @Override
@@ -84,40 +72,11 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
     }
 
     public static List<MKWorkspaceRoomFamilyDefinition> defaultRoomFamilyDefinitions() {
-        return defaultRoomFamilyDefinitions(MKWorkspaceDimensions.defaultDimensions());
+        return MKTowerWorkspaceDefaults.roomFamilyDefinitions();
     }
 
     public static List<MKWorkspaceRoomFamilyDefinition> defaultRoomFamilyDefinitions(MKWorkspaceDimensions dimensions) {
-        return List.of(
-                MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("entry", MKWorkspaceVerticalStackSlot.ENTRY,
-                        PRIMARY_STACK_ID, true, 0, 0, 0,
-                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION,
-                        List.of(new MKFamilyHorizontalExitDefinition(Direction.SOUTH,
-                                MKHorizontalExitPathKind.INGRESS, "main_opening",
-                                MKWorkspaceHorizontalExitConnectionMode.NO_CONNECTION)),
-                        0, 0, null, null),
-                MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("floor_main", MKWorkspaceVerticalStackSlot.MAIN_FLOOR,
-                        PRIMARY_STACK_ID, true, 0, 0, 0,
-                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0, null, null),
-                MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("top_cap_approach",
-                        MKWorkspaceVerticalStackSlot.TOP_CAP_APPROACH, PRIMARY_STACK_ID, true, 0, 0, 0,
-                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0, null, null),
-                MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("top_cap", MKWorkspaceVerticalStackSlot.TOP_CAP,
-                        PRIMARY_STACK_ID, true, 0, 0, 0,
-                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0, null, null),
-                MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("basement_entry",
-                        MKWorkspaceVerticalStackSlot.BASEMENT_ENTRY, PRIMARY_STACK_ID, true, 0, 0, 0,
-                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0, null, null),
-                MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("basement_main",
-                        MKWorkspaceVerticalStackSlot.BASEMENT_FLOOR, PRIMARY_STACK_ID, true, 0, 0, 0,
-                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0, null, null),
-                MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("basement_cap_approach",
-                        MKWorkspaceVerticalStackSlot.BASEMENT_CAP_APPROACH, PRIMARY_STACK_ID, true, 0, 0, 0,
-                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0, null, null),
-                MKWorkspaceRoomFamilyDefinition.forVerticalStackSlot("basement_cap",
-                        MKWorkspaceVerticalStackSlot.BASEMENT_CAP, PRIMARY_STACK_ID, true, 0, 0, 0,
-                        MKWorkspaceHorizontalExtrusionMode.NO_EXTRUSION, List.of(), 0, 0, null, null)
-        );
+        return MKTowerWorkspaceDefaults.roomFamilyDefinitions(dimensions);
     }
 
     @Override
@@ -127,38 +86,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
 
     public static List<MKWorkspaceLinearRunFamilyDefinition> defaultLinearRunFamilyDefinitions(
             MKWorkspaceDimensions dimensions, MKWorkspaceMaterialPalette palette) {
-        return List.of(
-                new MKWorkspaceLinearRunFamilyDefinition(
-                        "main",
-                        MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR,
-                        "main_opening",
-                        5,
-                        dimensions.doorwayWidth(),
-                        dimensions.doorwayHeight(),
-                        0,
-                        true,
-                        false,
-                        MKWorkspaceLinearRunProjection.RIGID,
-                        List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
-                        MKWorkspaceFoundationPolicy.none(),
-                        null
-                ),
-                new MKWorkspaceLinearRunFamilyDefinition(
-                        "branch",
-                        MKWorkspaceLinearRunKind.ENCLOSED_CORRIDOR,
-                        "branch_opening",
-                        5,
-                        dimensions.doorwayWidth(),
-                        dimensions.doorwayHeight(),
-                        0,
-                        false,
-                        true,
-                        MKWorkspaceLinearRunProjection.RIGID,
-                        List.of(MKWorkspaceLinearRunPieceShape.STRAIGHT),
-                        MKWorkspaceFoundationPolicy.none(),
-                        null
-                )
-        );
+        return MKTowerWorkspaceDefaults.linearRunFamilyDefinitions(dimensions, palette);
     }
 
     @Override
