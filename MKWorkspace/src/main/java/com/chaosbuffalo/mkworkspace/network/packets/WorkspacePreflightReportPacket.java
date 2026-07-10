@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkworkspace.network.packets;
 
 import com.chaosbuffalo.mkworkspace.MKWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceCodecs;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceCodecs;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceMutationPreflight;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;

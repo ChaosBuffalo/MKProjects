@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.planner;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 
 import java.util.List;
 

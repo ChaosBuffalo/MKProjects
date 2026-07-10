@@ -91,6 +91,12 @@ versionRange = "[${targeting_api_version},)"
 ordering = "AFTER"
 side = "BOTH"
 [[dependencies."${mod_id}"]]
+modId = "mkworkspaceruntime"
+mandatory = true
+versionRange = "[0,)"
+ordering = "AFTER"
+side = "BOTH"
+[[dependencies."${mod_id}"]]
 modId = "mkwidgets"
 mandatory = true
 versionRange = "[${mk_widgets_version},)"

@@ -1,11 +1,11 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.planner;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKHorizontalOpeningProfile;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWalledKeepCourtyardSettings;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWalledKeepPlannerSettings;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
@@ -218,12 +218,12 @@ public class MKWalledKeepSizingCalculator {
 
     private MKWorkspaceLinearRunFamilyDefinition fallbackWallFamily(MKStructureWorkspace workspace) {
         return new MKWorkspaceLinearRunFamilyDefinition("keep_wall_segment", PERIMETER_ROOT_SLOT,
-                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunKind.DEFENSIVE_WALL,
+                com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunKind.DEFENSIVE_WALL,
                 "branch_opening", MKWalledKeepWorkspacePlanner.DEFAULT_WALL_SEGMENT_LENGTH,
                 3, 7, 0, false, true,
-                com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunProjection.RIGID,
-                java.util.List.of(com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape.STRAIGHT),
-                0, com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy.none(), null);
+                com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunProjection.RIGID,
+                java.util.List.of(com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape.STRAIGHT),
+                0, com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceFoundationPolicy.none(), null);
     }
 
     private Optional<MKWorkspaceLinearRunFamilyDefinition> entryApproachFamily(MKStructureWorkspace workspace) {

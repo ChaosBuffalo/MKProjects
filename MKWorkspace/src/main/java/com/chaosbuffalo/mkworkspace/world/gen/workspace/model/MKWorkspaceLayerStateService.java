@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.model;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.*;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.*;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;

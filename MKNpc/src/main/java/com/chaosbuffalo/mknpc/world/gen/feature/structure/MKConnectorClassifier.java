@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKConnectorRole;
+
 import net.minecraft.data.worldgen.Pools;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;

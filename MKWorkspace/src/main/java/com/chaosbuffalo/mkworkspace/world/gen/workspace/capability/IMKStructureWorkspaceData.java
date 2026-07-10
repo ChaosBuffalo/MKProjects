@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.capability;
 
 import com.chaosbuffalo.mkworkspace.init.MKWorkspaceAttachments;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;

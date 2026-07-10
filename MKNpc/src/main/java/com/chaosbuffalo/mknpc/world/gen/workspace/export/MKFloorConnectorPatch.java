@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.export;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 

@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.planner;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKVerticalAccessPlacement;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 
 public record MKWorkspaceVerticalStackDefinition(
         String stackId,

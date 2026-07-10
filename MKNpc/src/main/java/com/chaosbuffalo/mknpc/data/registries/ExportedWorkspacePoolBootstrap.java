@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.data.registries;
 
 import com.chaosbuffalo.mknpc.data.providers.MKWorkspaceExportManifestLoader;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSinglePoolElement;
-import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorMaskPools;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorMaskPools;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;

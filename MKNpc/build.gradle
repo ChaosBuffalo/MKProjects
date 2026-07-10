@@ -14,7 +14,8 @@ project.ext.dependentProjects = [
         project(":MKCore"),
         project(":MKChat"),
         project(":MKFaction"),
-        project(":MKWeapons")
+        project(":MKWeapons"),
+        project(":MKWorkspaceRuntime")
 ]
 
 apply from: '../common.gradle'

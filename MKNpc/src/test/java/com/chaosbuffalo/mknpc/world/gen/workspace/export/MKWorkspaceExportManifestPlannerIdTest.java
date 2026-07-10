@@ -1,13 +1,18 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace.export;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinitionPlannerIdTest;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -17,7 +22,7 @@ class MKWorkspaceExportManifestPlannerIdTest {
         MKWorkspacePlannerId plannerId = MKWorkspacePlannerId.of(
                 "keep.main.tower.center.floor.basement_01.floor_plan.room.main_00");
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
-        MKWorkspacePieceDefinition piece = MKWorkspacePieceDefinitionPlannerIdTest.piece(plannerId);
+        MKWorkspacePieceDefinition piece = piece(plannerId);
 
         MKWorkspaceExportManifest.ExportPiece exportPiece = MKWorkspaceExportManifest.ExportPiece.from(workspace, piece);
         JsonElement encoded = MKWorkspaceExportManifest.ExportPiece.CODEC.encodeStart(JsonOps.INSTANCE, exportPiece)
@@ -29,5 +34,27 @@ class MKWorkspaceExportManifestPlannerIdTest {
         assertEquals(plannerId.value(), exportPiece.plannerId());
         assertEquals(plannerId.value(), encoded.getAsJsonObject().get("planner_id").getAsString());
         assertEquals(plannerId.value(), decoded.plannerId());
+    }
+
+    private static MKWorkspacePieceDefinition piece(MKWorkspacePlannerId plannerId) {
+        return new MKWorkspacePieceDefinition(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "main_00",
+                "keep.main.floor_plan.room",
+                plannerId,
+                1,
+                MKWorkspaceDimensions.defaultDimensions(),
+                1,
+                List.of(),
+                BlockPos.ZERO,
+                new BoundingBox(0, 0, 0, 1, 1, 1),
+                new BoundingBox(0, 0, 0, 1, 1, 1),
+                BlockPos.ZERO,
+                BlockPos.ZERO,
+                List.of(),
+                List.of(),
+                Map.of()
+        );
     }
 }

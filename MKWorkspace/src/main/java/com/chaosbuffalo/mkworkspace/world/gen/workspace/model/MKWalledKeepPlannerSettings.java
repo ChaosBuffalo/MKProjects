@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.model;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceCodecs;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerSettingsEntry;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceCodecs;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePlannerSettingsEntry;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;

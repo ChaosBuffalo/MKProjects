@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.planner;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePlannerId;
 
 import java.util.List;
 import java.util.Map;

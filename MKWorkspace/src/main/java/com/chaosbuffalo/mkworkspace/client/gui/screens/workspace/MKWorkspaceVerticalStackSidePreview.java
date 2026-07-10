@@ -1,11 +1,11 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
-import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
-import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
-import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
-import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
-import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorRoomKind;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorTopologySettings;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspaceVerticalStackSizingReport;
 import com.chaosbuffalo.mkwidgets.client.gui.instructions.HoveringTextInstruction;
 import com.chaosbuffalo.mkwidgets.client.gui.math.Vec2i;
@@ -1608,7 +1608,7 @@ public class MKWorkspaceVerticalStackSidePreview extends MKWidget {
         return WorkspaceTopologyUiSupport.formatTopologyLabel(direction.getSerializedName());
     }
 
-    private String formatPathKind(com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind pathKind) {
+    private String formatPathKind(com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHorizontalExitPathKind pathKind) {
         return WorkspaceTopologyUiSupport.formatTopologyLabel(pathKind.getSerializedName());
     }
 

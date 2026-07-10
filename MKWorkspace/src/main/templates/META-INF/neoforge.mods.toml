@@ -24,6 +24,13 @@ ordering="AFTER"
 side="BOTH"
 
 [[dependencies.${mod_id}]]
+modId="mkworkspaceruntime"
+type="required"
+versionRange="[0,)"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
 modId="mknpc"
 type="required"
 versionRange="[${mk_npc_version},)"

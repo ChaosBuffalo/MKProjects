@@ -1,5 +1,8 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKConnectorRole;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKJigsawPieceRole;
+
 import net.minecraft.util.RandomSource;
 import net.minecraft.resources.ResourceLocation;
 

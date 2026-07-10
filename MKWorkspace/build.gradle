@@ -9,6 +9,7 @@ plugins {
 version = "${minecraft_version}-${mk_workspace_version}"
 project.ext.mod_version = mk_workspace_version
 project.ext.dependentProjects = [
+        project(":MKWorkspaceRuntime"),
         project(":MKNpc"),
         project(":MKWidgets")
 ]

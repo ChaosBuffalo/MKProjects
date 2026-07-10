@@ -1,15 +1,15 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.stairs;
 
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKResolvedVerticalAccessProfile;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKResolvedVerticalAccessProfile;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceMaterialPalette;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePaletteResolver;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairMode;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessProfile;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKVerticalAccessProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -562,12 +562,12 @@ public class MKWorkspaceStairBuilder {
                                                            MKWorkspaceStairMode resolvedMode) {
         if (resolvedMode == MKWorkspaceStairMode.STAIR_STAIRS) {
             return stairConfig.withAuthoringConfig(new MKWorkspaceStairAuthoringConfig(MKWorkspaceStairMode.RUN_PROFILE,
-                    com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType.STAIR,
+                    com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairRiseType.STAIR,
                     stairConfig.stairWidth()));
         }
         if (resolvedMode == MKWorkspaceStairMode.SLAB_STAIRS) {
             return stairConfig.withAuthoringConfig(new MKWorkspaceStairAuthoringConfig(MKWorkspaceStairMode.RUN_PROFILE,
-                    com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType.SLAB,
+                    com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairRiseType.SLAB,
                     stairConfig.stairWidth()));
         }
         return stairConfig;

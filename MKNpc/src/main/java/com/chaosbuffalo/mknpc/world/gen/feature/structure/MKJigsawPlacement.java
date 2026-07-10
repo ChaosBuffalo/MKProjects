@@ -1,14 +1,16 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
-import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKConnectorRole;
+
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
-import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
-import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorMaskPools;
-import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
-import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
-import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
-import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorLayoutSolver;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorMaskPools;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorRoomKind;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorTopologySettings;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorLayoutSolver;
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
@@ -989,7 +991,7 @@ public class MKJigsawPlacement {
         private int effectiveHallwayLeadInPieces(MKFloorTopologySettings settings, int rootWidth,
                                                  int rootLength) {
             if (settings.hallwayLeadInMode() ==
-                    com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode.MANUAL) {
+                    com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHallwayLeadInMode.MANUAL) {
                 return Math.max(1, settings.manualHallwayLeadInPieces());
             }
             return Math.max(1, Math.ceilDiv(Math.max(rootWidth, rootLength), 8));
