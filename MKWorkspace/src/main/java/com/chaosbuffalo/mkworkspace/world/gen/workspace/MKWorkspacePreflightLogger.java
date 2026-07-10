@@ -1,6 +1,6 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace;
 
-import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mkworkspace.MKWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInvalidationReport;
@@ -20,7 +20,7 @@ public class MKWorkspacePreflightLogger {
                                   MKWorkspaceMutationPreflight preflight,
                                   List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
         for (String line : describeConfirmEffects(phase, player, requested, preflight, acceptedRemaps)) {
-            MKNpc.LOGGER.info(line);
+            MKWorkspace.LOGGER.info(line);
         }
     }
 

@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
