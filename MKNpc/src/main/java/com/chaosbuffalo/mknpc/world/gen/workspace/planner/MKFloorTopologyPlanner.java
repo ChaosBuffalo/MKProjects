@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorMaskPools;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomProfile;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologyPoolNames;
@@ -28,7 +29,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceI
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
-import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKFloorMaskVariantExporter;
 import net.minecraft.core.Direction;
 
 import java.util.ArrayList;
@@ -363,7 +363,7 @@ public class MKFloorTopologyPlanner {
         MKWorkspaceStableSlotIdentity.apply(tags, "floor_room",
                 "floor." + context.stackId() + "." + context.floorRole() + "." +
                         profile.kind().getSerializedName() + "." + profile.id());
-        tags.put(MKFloorMaskVariantExporter.FLOOR_RANDOMIZE_MAIN_EXIT_TAG,
+        tags.put(MKFloorMaskPools.FLOOR_RANDOMIZE_MAIN_EXIT_TAG,
                 Boolean.toString(profile.randomizeMainExit()));
         tags.put("workspace_topology_group", context.topologyGroupId());
         tags.put("workspace_floor_min_main_path_pieces", Integer.toString(settings.minMainPathPieces()));
