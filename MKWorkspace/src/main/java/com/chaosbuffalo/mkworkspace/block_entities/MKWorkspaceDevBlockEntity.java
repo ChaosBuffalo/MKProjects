@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkworkspace.block_entities;
 
 import com.chaosbuffalo.mkworkspace.init.MKWorkspaceBlockEntityTypes;
-import com.chaosbuffalo.mknpc.world.gen.workspace.MKWorkspaceAnchor;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKWorkspaceAnchor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;

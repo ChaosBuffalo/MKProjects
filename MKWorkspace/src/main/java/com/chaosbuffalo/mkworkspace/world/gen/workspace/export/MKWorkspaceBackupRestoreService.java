@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.export;
 
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKStructureWorkspaceImportService;
-import com.chaosbuffalo.mknpc.world.gen.workspace.MKWorkspaceAnchor;
-import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKWorkspaceAnchor;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;

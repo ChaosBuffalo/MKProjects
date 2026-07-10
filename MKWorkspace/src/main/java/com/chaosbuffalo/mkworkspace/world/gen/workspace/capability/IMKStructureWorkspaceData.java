@@ -1,6 +1,6 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.capability;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace.capability;
 
-import com.chaosbuffalo.mknpc.init.MKNpcAttachments;
+import com.chaosbuffalo.mkworkspace.init.MKWorkspaceAttachments;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -26,7 +26,7 @@ public interface IMKStructureWorkspaceData extends INBTSerializable<CompoundTag>
     void deleteWorkspace(UUID id);
 
     static IMKStructureWorkspaceData get(ServerLevel level) {
-        return level.getData(MKNpcAttachments.STRUCTURE_WORKSPACE_DATA);
+        return level.getData(MKWorkspaceAttachments.STRUCTURE_WORKSPACE_DATA);
     }
 
     static IMKStructureWorkspaceData get(Level level) {

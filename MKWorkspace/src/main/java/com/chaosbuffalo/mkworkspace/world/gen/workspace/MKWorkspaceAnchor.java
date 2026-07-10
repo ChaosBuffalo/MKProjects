@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace;
 
 import javax.annotation.Nullable;
 import java.util.UUID;

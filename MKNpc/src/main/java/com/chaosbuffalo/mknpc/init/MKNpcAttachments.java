@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.MKServerPlayerData;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.*;
-import com.chaosbuffalo.mknpc.world.gen.workspace.capability.MKStructureWorkspaceDataHandler;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -51,15 +50,6 @@ public class MKNpcAttachments {
                     return new WorldNpcDataHandler(level);
                 }
                 throw new IllegalArgumentException("Cannot attach world npc data to non level holder " + holder);
-            }).build()
-    );
-
-    public static final DeferredHolder<AttachmentType<?>, AttachmentType<MKStructureWorkspaceDataHandler>> STRUCTURE_WORKSPACE_DATA = ATTACHMENT_TYPES.register(
-            "structure_workspace_data", () -> AttachmentType.serializable(holder -> {
-                if (holder instanceof Level level) {
-                    return new MKStructureWorkspaceDataHandler(level);
-                }
-                throw new IllegalArgumentException("Cannot attach structure workspace data to non level holder " + holder);
             }).build()
     );
 

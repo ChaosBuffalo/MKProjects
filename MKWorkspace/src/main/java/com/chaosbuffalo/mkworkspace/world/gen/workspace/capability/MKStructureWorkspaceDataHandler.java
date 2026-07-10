@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.capability;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace.capability;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import net.minecraft.core.BlockPos;
