@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mknpc.network.packets.SwapWorkspaceBlockPacket;
+import com.chaosbuffalo.mkworkspace.network.packets.SwapWorkspaceBlockPacket;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;

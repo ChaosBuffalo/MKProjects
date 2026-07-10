@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantsForAllPacket;
-import com.chaosbuffalo.mknpc.network.packets.GenerateAllWorkspaceStairsPacket;
+import com.chaosbuffalo.mkworkspace.network.packets.AddWorkspaceVariantsForAllPacket;
+import com.chaosbuffalo.mkworkspace.network.packets.GenerateAllWorkspaceStairsPacket;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;

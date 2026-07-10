@@ -1,9 +1,9 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantPacket;
-import com.chaosbuffalo.mknpc.network.packets.ClearWorkspaceStairsPacket;
-import com.chaosbuffalo.mknpc.network.packets.GenerateWorkspaceStairsPacket;
+import com.chaosbuffalo.mkworkspace.network.packets.AddWorkspaceVariantPacket;
+import com.chaosbuffalo.mkworkspace.network.packets.ClearWorkspaceStairsPacket;
+import com.chaosbuffalo.mkworkspace.network.packets.GenerateWorkspaceStairsPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;

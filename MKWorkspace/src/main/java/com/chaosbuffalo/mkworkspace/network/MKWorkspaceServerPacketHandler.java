@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkworkspace.network;
 
 import com.chaosbuffalo.mknpc.network.packets.MKWorkspaceServerPackets;
-import com.chaosbuffalo.mknpc.network.packets.OpenWorkspaceScreenPacket;
+import com.chaosbuffalo.mkworkspace.network.packets.OpenWorkspaceScreenPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;

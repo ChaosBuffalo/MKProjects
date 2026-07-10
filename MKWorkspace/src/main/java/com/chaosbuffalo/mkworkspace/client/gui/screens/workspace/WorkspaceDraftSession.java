@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mknpc.network.packets.CreateWorkspacePacket;
-import com.chaosbuffalo.mknpc.network.packets.RequestWorkspacePreflightPacket;
+import com.chaosbuffalo.mkworkspace.network.packets.CreateWorkspacePacket;
+import com.chaosbuffalo.mkworkspace.network.packets.RequestWorkspacePreflightPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;

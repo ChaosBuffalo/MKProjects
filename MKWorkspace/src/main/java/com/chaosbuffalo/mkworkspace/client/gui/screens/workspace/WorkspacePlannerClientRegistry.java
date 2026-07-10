@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
-import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mkworkspace.MKWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import net.minecraft.network.chat.Component;
@@ -36,7 +36,7 @@ public final class WorkspacePlannerClientRegistry {
     public static void register(PlannerClientDefinition definition) {
         ResourceLocation plannerId = definition.getPlannerId();
         if (DEFINITIONS.containsKey(plannerId)) {
-            MKNpc.LOGGER.warn("Ignoring duplicate workspace planner client registration for {}", plannerId);
+            MKWorkspace.LOGGER.warn("Ignoring duplicate workspace planner client registration for {}", plannerId);
             return;
         }
         DEFINITIONS.put(plannerId, definition);

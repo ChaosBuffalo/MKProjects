@@ -2,7 +2,7 @@ package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKIntegerSlider;
-import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantPacket;
+import com.chaosbuffalo.mkworkspace.network.packets.AddWorkspaceVariantPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;

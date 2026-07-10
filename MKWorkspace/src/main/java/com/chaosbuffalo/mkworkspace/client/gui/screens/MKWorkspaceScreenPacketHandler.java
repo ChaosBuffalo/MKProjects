@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mknpc.network.packets.MKWorkspaceClientPackets;
-import com.chaosbuffalo.mknpc.network.packets.RequestWorkspacePieceChunkPacket;
+import com.chaosbuffalo.mkworkspace.network.packets.MKWorkspaceClientPackets;
+import com.chaosbuffalo.mkworkspace.network.packets.RequestWorkspacePieceChunkPacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;

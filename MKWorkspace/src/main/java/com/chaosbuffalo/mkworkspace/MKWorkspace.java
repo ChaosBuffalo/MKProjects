@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkworkspace.init.MKWorkspaceBlockEntityTypes;
 import com.chaosbuffalo.mkworkspace.init.MKWorkspaceBlocks;
 import com.chaosbuffalo.mkworkspace.command.MKWorkspaceCommands;
 import com.chaosbuffalo.mkworkspace.network.MKWorkspaceServerPacketHandler;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -28,5 +29,9 @@ public class MKWorkspace {
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(MKWorkspaceCommands.register());
+    }
+
+    public static ResourceLocation id(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
 }

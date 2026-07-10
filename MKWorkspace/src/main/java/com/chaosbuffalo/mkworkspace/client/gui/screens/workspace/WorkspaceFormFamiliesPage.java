@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mknpc.network.packets.TeleportToWorkspacePiecePacket;
+import com.chaosbuffalo.mkworkspace.network.packets.TeleportToWorkspacePiecePacket;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
