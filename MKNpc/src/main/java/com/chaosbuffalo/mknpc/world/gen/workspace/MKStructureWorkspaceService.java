@@ -655,11 +655,33 @@ public class MKStructureWorkspaceService {
             return Optional.empty();
         }
 
-        List<String> basePieceNames = basePieceNamesWithoutPhysicalVariants(workspace);
+        return addWorkspaceVariantsForBaseNames(level, anchor, data, workspace,
+                physicalTemplateBasePieceNames(workspace));
+    }
+
+    public Optional<MKStructureWorkspace> addMissingWorkspaceVariantsForAll(ServerLevel level, BlockPos anchor) {
+        IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
+        Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
+        if (workspaceOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        MKStructureWorkspace workspace = workspaceOpt.get();
+        if (workspace.pieces().isEmpty()) {
+            return Optional.empty();
+        }
+
+        return addWorkspaceVariantsForBaseNames(level, anchor, data, workspace,
+                basePieceNamesWithoutPhysicalVariants(workspace));
+    }
+
+    private Optional<MKStructureWorkspace> addWorkspaceVariantsForBaseNames(ServerLevel level, BlockPos anchor,
+                                                                           IMKStructureWorkspaceData data,
+                                                                           MKStructureWorkspace workspace,
+                                                                           List<String> basePieceNames) {
         if (basePieceNames.isEmpty()) {
             return Optional.of(workspace);
         }
-
         List<MKPlannedPiece> canonicalPieces = plannerRegistry.plannerFor(workspace).createCanonicalPieces(workspace);
         Map<String, MKPlannedPiece> canonicalByBaseName = canonicalPieces.stream()
                 .collect(Collectors.toMap(MKPlannedPiece::pieceName, piece -> piece));
@@ -714,6 +736,15 @@ public class MKStructureWorkspaceService {
         data.updateWorkspace(updated);
         syncBlockEntity(level, anchor, updated.id());
         return Optional.of(updated);
+    }
+
+    List<String> physicalTemplateBasePieceNames(MKStructureWorkspace workspace) {
+        return workspace.pieces().stream()
+                .filter(piece -> piece.variantIndex() == 0)
+                .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
+                .map(this::getBaseName)
+                .distinct()
+                .toList();
     }
 
     List<String> basePieceNamesWithoutPhysicalVariants(MKStructureWorkspace workspace) {

@@ -219,7 +219,7 @@ class MKStructureWorkspaceServicePreflightTest {
     }
 
     @Test
-    void allVariantUtilityTargetsOnlyPhysicalTemplatesWithoutVariants() {
+    void variantUtilitiesTargetPhysicalTemplatesWithDistinctMissingBehavior() {
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO)
                 .withPieces(List.of(
                         variantAwarePiece("room_without_variant_template", "room_without_variant", 0,
@@ -232,6 +232,8 @@ class MKStructureWorkspaceServicePreflightTest {
                         reuseAwarePiece("derived_hidden_template", "derived_hidden", false)
                 ));
 
+        assertEquals(List.of("room_without_variant", "room_with_variant", "rotated_authoring"),
+                service.physicalTemplateBasePieceNames(workspace));
         assertEquals(List.of("room_without_variant", "rotated_authoring"),
                 service.basePieceNamesWithoutPhysicalVariants(workspace));
     }

@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
+import com.chaosbuffalo.mknpc.network.packets.AddMissingWorkspaceVariantsPacket;
 import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantsForAllPacket;
 import com.chaosbuffalo.mknpc.network.packets.GenerateAllWorkspaceStairsPacket;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
@@ -61,11 +62,19 @@ public class WorkspaceUtilitiesPage extends WorkspacePageBase {
             });
         }
 
-        MKButton addCopyForAll = new MKButton(Component.literal("Add Missing Variants"), 180, 20);
+        MKButton addCopyForAll = new MKButton(Component.literal("Add Variant For All"), 180, 20);
         content.addWidget(addCopyForAll);
         content.addConstraintToWidget(new CenterXConstraint(), addCopyForAll);
         addCopyForAll.setPressedCallback((button, mouseButton) -> {
             PacketDistributor.sendToServer(new AddWorkspaceVariantsForAllPacket(screen.anchor()));
+            return true;
+        });
+
+        MKButton addMissingVariants = new MKButton(Component.literal("Add Missing Variants"), 180, 20);
+        content.addWidget(addMissingVariants);
+        content.addConstraintToWidget(new CenterXConstraint(), addMissingVariants);
+        addMissingVariants.setPressedCallback((button, mouseButton) -> {
+            PacketDistributor.sendToServer(new AddMissingWorkspaceVariantsPacket(screen.anchor()));
             return true;
         });
 

@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.network;
 
 
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.network.packets.AddMissingWorkspaceVariantsPacket;
 import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantPacket;
 import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantsForAllPacket;
 import com.chaosbuffalo.mknpc.network.packets.ClearWorkspaceStairsPacket;
@@ -123,6 +124,11 @@ public class PacketHandler {
                 AddWorkspaceVariantsForAllPacket.TYPE,
                 AddWorkspaceVariantsForAllPacket.STREAM_CODEC,
                 AddWorkspaceVariantsForAllPacket::handle
+        );
+        registrar.playToServer(
+                AddMissingWorkspaceVariantsPacket.TYPE,
+                AddMissingWorkspaceVariantsPacket.STREAM_CODEC,
+                AddMissingWorkspaceVariantsPacket::handle
         );
         registrar.playToServer(
                 ExportWorkspacePiecesPacket.TYPE,
