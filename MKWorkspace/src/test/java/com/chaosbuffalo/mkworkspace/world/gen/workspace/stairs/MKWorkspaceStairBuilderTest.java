@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.stairs;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace.stairs;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;

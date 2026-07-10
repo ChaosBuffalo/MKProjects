@@ -61,8 +61,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanne
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingCalculator;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepSizingReport;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
-import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
-import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceScaffoldBuilder;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold.MKWorkspaceScaffoldBuilder;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.core.BlockPos;

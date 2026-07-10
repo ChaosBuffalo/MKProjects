@@ -39,9 +39,9 @@ import com.chaosbuffalo.mkworkspace.world.gen.workspace.mutation.MKWorkspaceMarg
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.mutation.MKWorkspacePieceRelayoutService;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.mutation.MKStructureWorkspaceMutationService;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.mutation.MKWorkspaceTemplateBindingDiffService;
-import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
-import com.chaosbuffalo.mknpc.world.gen.workspace.scaffold.MKWorkspaceScaffoldBuilder;
-import com.chaosbuffalo.mknpc.world.gen.workspace.stairs.MKWorkspaceStairBuilder;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold.MKWorkspaceScaffoldBuilder;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.stairs.MKWorkspaceStairBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
