@@ -2,12 +2,12 @@ package com.chaosbuffalo.mkworkspace.world.gen.workspace;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInvalidationReport;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceInvalidationReport;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceMutationPreflight;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationSafety;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRelayoutImpact;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceRelayoutImpact;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
 import net.minecraft.core.BlockPos;
 import org.junit.jupiter.api.Test;
 

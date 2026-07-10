@@ -1,6 +1,7 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.model;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace.model;
 
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

@@ -1,5 +1,9 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.model;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayerState;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationSafety;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;

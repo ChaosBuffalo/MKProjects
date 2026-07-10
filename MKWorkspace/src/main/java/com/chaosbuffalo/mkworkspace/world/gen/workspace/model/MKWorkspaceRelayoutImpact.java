@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.model;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace.model;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

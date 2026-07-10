@@ -13,7 +13,7 @@ import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspacePalette
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceTopologyPaletteMerge;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
@@ -21,12 +21,12 @@ import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceFloorTo
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayerState;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceInvalidationReport;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLayerStateService;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceInvalidationReport;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceLayerStateService;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceMutationPreflight;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationSafety;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRelayoutImpact;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceRelayoutImpact;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportArchiveWriter;

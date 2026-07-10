@@ -1,5 +1,8 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.model;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationSafety;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorLinkGenerationMode;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
