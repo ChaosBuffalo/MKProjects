@@ -1,16 +1,13 @@
 package com.chaosbuffalo.mknpc.network.packets;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public class OpenWorkspaceScreenPacket implements CustomPacketPayload {
@@ -99,16 +96,7 @@ public class OpenWorkspaceScreenPacket implements CustomPacketPayload {
 
     public static void handle(OpenWorkspaceScreenPacket packet, IPayloadContext context) {
         MKStructureWorkspace workspace = packet.workspaceTag != null ? MKStructureWorkspace.fromTag(packet.workspaceTag) : null;
-        if (Minecraft.getInstance().screen instanceof MKWorkspaceScreen current) {
-            Minecraft.getInstance().setScreen(current.copyWithWorkspace(workspace, packet.importManifestIds,
-                    packet.backupManifestFiles, packet.totalPieces, packet.nextPieceOffset, packet.pieceRevision));
-        } else {
-            Minecraft.getInstance().setScreen(new MKWorkspaceScreen(packet.anchor, workspace, packet.importManifestIds,
-                    packet.backupManifestFiles, packet.totalPieces, packet.nextPieceOffset, packet.pieceRevision));
-        }
-        if (workspace != null && packet.nextPieceOffset < packet.totalPieces) {
-            PacketDistributor.sendToServer(new RequestWorkspacePieceChunkPacket(packet.anchor, packet.pieceRevision,
-                    packet.nextPieceOffset));
-        }
+        MKWorkspaceClientPackets.openWorkspaceScreen(packet.anchor, workspace, packet.importManifestIds,
+                packet.backupManifestFiles, packet.totalPieces, packet.nextPieceOffset, packet.pieceRevision);
     }
 }

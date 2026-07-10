@@ -1,10 +1,8 @@
 package com.chaosbuffalo.mknpc.network.packets;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceCodecs;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationPreflight;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -52,9 +50,6 @@ public class WorkspacePreflightReportPacket implements CustomPacketPayload {
     public static void handle(WorkspacePreflightReportPacket packet, IPayloadContext context) {
         MKWorkspaceMutationPreflight preflight = MKWorkspaceCodecs.parseNbt(
                 MKWorkspaceMutationPreflight.CODEC, packet.preflightTag, "workspace mutation preflight");
-        if (Minecraft.getInstance().screen instanceof MKWorkspaceScreen current &&
-                current.anchor().equals(packet.anchor)) {
-            Minecraft.getInstance().setScreen(current.copyWithPreflight(preflight));
-        }
+        MKWorkspaceClientPackets.applyPreflight(packet.anchor, preflight);
     }
 }

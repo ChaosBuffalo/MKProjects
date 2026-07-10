@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.init.CoreParticles;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
+import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreenPacketHandler;
 import com.chaosbuffalo.mknpc.client.gui.screens.QuestPage;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
@@ -31,6 +32,10 @@ public class NpcClientEventHandler {
     private static final KeyMapping questMenuBind = new KeyMapping("key.hud.questmenu",
             InputConstants.KEY_K, "key.mknpc.category");
     private static int ticks = -1;
+
+    static {
+        MKWorkspaceScreenPacketHandler.register();
+    }
 
     @EventBusSubscriber(modid = MKNpc.MODID, value = Dist.CLIENT)
     public static class ModEvents {

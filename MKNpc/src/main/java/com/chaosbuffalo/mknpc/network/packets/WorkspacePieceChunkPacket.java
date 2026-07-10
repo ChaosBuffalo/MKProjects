@@ -1,16 +1,13 @@
 package com.chaosbuffalo.mknpc.network.packets;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.List;
@@ -63,15 +60,7 @@ public class WorkspacePieceChunkPacket implements CustomPacketPayload {
 
     public static void handle(WorkspacePieceChunkPacket packet, IPayloadContext context) {
         List<MKWorkspacePieceDefinition> pieces = MKWorkspacePacketPayloads.parsePieceListTag(packet.piecesTag);
-        if (Minecraft.getInstance().screen instanceof MKWorkspaceScreen current &&
-                current.anchor().equals(packet.anchor)) {
-            MKWorkspaceScreen updated = current.copyWithWorkspacePieceChunk(pieces, packet.totalPieces,
-                    packet.nextPieceOffset, packet.pieceRevision);
-            Minecraft.getInstance().setScreen(updated);
-            if (packet.nextPieceOffset < packet.totalPieces) {
-                PacketDistributor.sendToServer(new RequestWorkspacePieceChunkPacket(packet.anchor,
-                        packet.pieceRevision, packet.nextPieceOffset));
-            }
-        }
+        MKWorkspaceClientPackets.applyPieceChunk(packet.anchor, pieces, packet.totalPieces, packet.nextPieceOffset,
+                packet.pieceRevision);
     }
 }
