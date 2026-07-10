@@ -6,8 +6,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDef
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepCourtyardSettings;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWalledKeepPlannerSettings;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWalledKeepCourtyardSettings;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWalledKeepPlannerSettings;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.model;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace.model;
 
 public final class MKWorkspaceVoidMarginTags {
     public static final String TOP_VOID_MARGIN_TAG = "workspace_top_void_margin";

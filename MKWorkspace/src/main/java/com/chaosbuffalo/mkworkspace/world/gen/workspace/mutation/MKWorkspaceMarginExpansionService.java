@@ -9,8 +9,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefi
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
