@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mkworkspace;
 
+import com.chaosbuffalo.mkworkspace.init.MKWorkspaceBlockEntityTypes;
+import com.chaosbuffalo.mkworkspace.init.MKWorkspaceBlocks;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -12,5 +14,7 @@ public class MKWorkspace {
     public static final String MODID = "mkworkspace";
 
     public MKWorkspace(IEventBus modEventBus, ModContainer modContainer) {
+        MKWorkspaceBlocks.register(modEventBus);
+        MKWorkspaceBlockEntityTypes.register(modEventBus);
     }
 }

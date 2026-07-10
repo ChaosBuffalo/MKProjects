@@ -1,6 +1,6 @@
-package com.chaosbuffalo.mknpc.block_entities;
+package com.chaosbuffalo.mkworkspace.block_entities;
 
-import com.chaosbuffalo.mknpc.init.MKNpcBlockEntityTypes;
+import com.chaosbuffalo.mkworkspace.init.MKWorkspaceBlockEntityTypes;
 import com.chaosbuffalo.mknpc.world.gen.workspace.MKWorkspaceAnchor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -16,7 +16,7 @@ public class MKWorkspaceDevBlockEntity extends BlockEntity implements MKWorkspac
     private UUID workspaceId;
 
     public MKWorkspaceDevBlockEntity(BlockPos blockPos, BlockState blockState) {
-        super(MKNpcBlockEntityTypes.MK_WORKSPACE_DEV_BLOCK_ENTITY_TYPE.get(), blockPos, blockState);
+        super(MKWorkspaceBlockEntityTypes.MK_WORKSPACE_DEV_BLOCK_ENTITY_TYPE.get(), blockPos, blockState);
     }
 
     @Nullable

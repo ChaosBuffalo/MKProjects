@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "mknpc:block/mk_workspace_dev"
+    "all": "mkworkspace:block/mk_workspace_dev"
   }
 }

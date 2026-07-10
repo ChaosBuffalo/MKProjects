@@ -3,7 +3,6 @@ package com.chaosbuffalo.mknpc.init;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.blocks.MKPoiBlock;
 import com.chaosbuffalo.mknpc.blocks.MKSpawnerBlock;
-import com.chaosbuffalo.mknpc.blocks.MKWorkspaceDevBlock;
 import com.chaosbuffalo.mknpc.items.FirstUseBlockItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.BlockItem;
@@ -35,12 +34,6 @@ public class MKNpcBlocks {
                     .isViewBlocking((BlockState state, BlockGetter reader, BlockPos pos) -> false)));
     public static final DeferredItem<BlockItem> MK_POI_ITEM = ITEMS.register("mk_poi",
             () -> new BlockItem(MK_POI_BLOCK.get(), new Item.Properties()));
-    public static final DeferredBlock<MKWorkspaceDevBlock> MK_WORKSPACE_DEV_BLOCK = BLOCKS.register("mk_workspace_dev",
-            () -> new MKWorkspaceDevBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL)
-                    .strength(2.0f).noOcclusion()));
-    public static final DeferredItem<BlockItem> MK_WORKSPACE_DEV_ITEM = ITEMS.register("mk_workspace_dev",
-            () -> new BlockItem(MK_WORKSPACE_DEV_BLOCK.get(), new Item.Properties()));
-
     public static void register(IEventBus modBus) {
         BLOCKS.register(modBus);
         ITEMS.register(modBus);

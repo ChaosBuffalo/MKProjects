@@ -1,7 +1,6 @@
-package com.chaosbuffalo.mknpc.blocks;
+package com.chaosbuffalo.mkworkspace.blocks;
 
-import com.chaosbuffalo.mknpc.block_entities.MKWorkspaceDevBlockEntity;
-import com.chaosbuffalo.mknpc.init.MKNpcBlockEntityTypes;
+import com.chaosbuffalo.mkworkspace.block_entities.MKWorkspaceDevBlockEntity;
 import com.chaosbuffalo.mknpc.world.gen.workspace.MKStructureWorkspaceService;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;

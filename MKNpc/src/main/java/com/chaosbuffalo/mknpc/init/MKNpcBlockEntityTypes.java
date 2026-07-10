@@ -3,7 +3,6 @@ package com.chaosbuffalo.mknpc.init;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.block_entities.MKPoiBlockEntity;
 import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
-import com.chaosbuffalo.mknpc.block_entities.MKWorkspaceDevBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
@@ -21,11 +20,6 @@ public class MKNpcBlockEntityTypes {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MKPoiBlockEntity>> MK_POI_BLOCK_ENTITY_TYPE =
             TILES.register("mk_poi", () ->
                     BlockEntityType.Builder.of(MKPoiBlockEntity::new, MKNpcBlocks.MK_POI_BLOCK.get())
-                            .build(null));
-
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MKWorkspaceDevBlockEntity>> MK_WORKSPACE_DEV_BLOCK_ENTITY_TYPE =
-            TILES.register("mk_workspace_dev", () ->
-                    BlockEntityType.Builder.of(MKWorkspaceDevBlockEntity::new, MKNpcBlocks.MK_WORKSPACE_DEV_BLOCK.get())
                             .build(null));
 
     public static void register(IEventBus modBus) {
