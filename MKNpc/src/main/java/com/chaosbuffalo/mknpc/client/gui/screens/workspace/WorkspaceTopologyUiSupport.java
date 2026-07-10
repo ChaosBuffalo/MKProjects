@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mknpc.client.gui.widgets.MKIntegerSlider;
+import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKIntegerSlider;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;

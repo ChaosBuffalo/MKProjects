@@ -1,6 +1,5 @@
-package com.chaosbuffalo.mknpc.client.gui.widgets;
+package com.chaosbuffalo.mkwidgets.client.gui.widgets;
 
-import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
