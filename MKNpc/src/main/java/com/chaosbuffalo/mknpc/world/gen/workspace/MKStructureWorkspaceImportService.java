@@ -429,8 +429,8 @@ public class MKStructureWorkspaceImportService {
         );
     }
 
-    static Map<String, String> migrateImportedRuntimeTags(MKStructureWorkspace workspace,
-                                                          Map<String, String> sourceTags) {
+    public static Map<String, String> migrateImportedRuntimeTags(MKStructureWorkspace workspace,
+                                                                 Map<String, String> sourceTags) {
         return MKWorkspacePlannerRegistry.shared()
                 .plannerFor(workspace)
                 .migrateImportedRuntimeTags(workspace, sourceTags);

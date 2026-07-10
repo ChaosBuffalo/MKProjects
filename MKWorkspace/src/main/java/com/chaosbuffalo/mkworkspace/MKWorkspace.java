@@ -3,7 +3,6 @@ package com.chaosbuffalo.mkworkspace;
 import com.chaosbuffalo.mkworkspace.init.MKWorkspaceBlockEntityTypes;
 import com.chaosbuffalo.mkworkspace.init.MKWorkspaceBlocks;
 import com.chaosbuffalo.mkworkspace.command.MKWorkspaceCommands;
-import com.chaosbuffalo.mkworkspace.network.MKWorkspaceServerPacketHandler;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -22,7 +21,6 @@ public class MKWorkspace {
     public MKWorkspace(IEventBus modEventBus, ModContainer modContainer) {
         MKWorkspaceBlocks.register(modEventBus);
         MKWorkspaceBlockEntityTypes.register(modEventBus);
-        MKWorkspaceServerPacketHandler.register();
         NeoForge.EVENT_BUS.register(this);
     }
 

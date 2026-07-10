@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkworkspace.network.packets;
 
 import com.chaosbuffalo.mkworkspace.MKWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.MKStructureWorkspaceService;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKStructureWorkspaceService;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
