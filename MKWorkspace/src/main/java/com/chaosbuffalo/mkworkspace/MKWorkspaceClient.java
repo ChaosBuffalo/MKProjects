@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkworkspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreenPacketHandler;
+import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePlannerClientRegistry;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -14,6 +15,9 @@ public class MKWorkspaceClient {
     }
 
     private void clientSetup(final FMLClientSetupEvent event) {
-        MKWorkspaceScreenPacketHandler.register();
+        event.enqueueWork(() -> {
+            MKWorkspaceScreenPacketHandler.register();
+            WorkspacePlannerClientRegistry.registerBuiltIns();
+        });
     }
 }
