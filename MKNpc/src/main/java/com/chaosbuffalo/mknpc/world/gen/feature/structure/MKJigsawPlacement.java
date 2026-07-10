@@ -3,8 +3,8 @@ package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
-import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKFloorMaskVariantExporter;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorMaskPools;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
@@ -827,7 +827,7 @@ public class MKJigsawPlacement {
         }
 
         private void addMaskedPool(List<ResourceLocation> pools, ResourceLocation basePool, String mask) {
-            pools.add(MKFloorMaskVariantExporter.maskPool(basePool,
+            pools.add(MKFloorMaskPools.maskPool(basePool,
                     mask == null || mask.isBlank() ? "none" : mask));
             pools.add(basePool);
         }
@@ -1156,7 +1156,7 @@ public class MKJigsawPlacement {
                     .orElse(random);
             List<ResourceKey<StructureTemplatePool>> selectedPools = chooseFloorMasks(sprawl, availableMasks, maskRandom).stream()
                     .map(mask -> ResourceKey.create(Registries.TEMPLATE_POOL,
-                            MKFloorMaskVariantExporter.maskPool(basePoolKey.location(), mask)))
+                            MKFloorMaskPools.maskPool(basePoolKey.location(), mask)))
                     .map(aliasLookup::lookup)
                     .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
             selectedPools.add(basePoolKey);
@@ -1165,7 +1165,7 @@ public class MKJigsawPlacement {
 
         private boolean floorMaskPoolAvailable(ResourceLocation basePool, String mask, PoolAliasLookup aliasLookup) {
             ResourceKey<StructureTemplatePool> key = ResourceKey.create(Registries.TEMPLATE_POOL,
-                    MKFloorMaskVariantExporter.maskPool(basePool, mask));
+                    MKFloorMaskPools.maskPool(basePool, mask));
             return pools.getOptional(aliasLookup.lookup(key))
                     .filter(pool -> pool.size() > 0)
                     .isPresent();

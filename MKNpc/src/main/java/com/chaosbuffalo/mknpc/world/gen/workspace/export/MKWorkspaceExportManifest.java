@@ -6,6 +6,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomFamilyDef
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorMaskPools;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExitConnectionMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
@@ -841,7 +842,7 @@ public record MKWorkspaceExportManifest(
                     Boolean.parseBoolean(tags.getOrDefault("workspace_vertical_stack_top_cap_approach_enabled", "true")),
                     Boolean.parseBoolean(tags.getOrDefault("workspace_vertical_stack_basement_entry_enabled", "true")),
                     Boolean.parseBoolean(tags.getOrDefault("workspace_vertical_stack_basement_cap_approach_enabled", "false")),
-                    tags.getOrDefault(MKFloorMaskVariantExporter.FLOOR_MASK_TAG, ""),
+                    tags.getOrDefault(MKFloorMaskPools.FLOOR_MASK_TAG, ""),
                     foundationPolicy,
                     paletteBlock(tags, MKWorkspacePaletteTags.FLOOR_BLOCK_TAG,
                             MKWorkspaceMaterialPalette.defaultPalette().floorBlock()),
@@ -876,7 +877,7 @@ public record MKWorkspaceExportManifest(
                     topCapApproachEnabled,
                     basementEntryEnabled,
                     basementCapApproachEnabled,
-                    piece.tags().getOrDefault(MKFloorMaskVariantExporter.FLOOR_MASK_TAG, floorExitMask),
+                    piece.tags().getOrDefault(MKFloorMaskPools.FLOOR_MASK_TAG, floorExitMask),
                     foundationPolicy,
                     paletteBlock(piece.tags(), MKWorkspacePaletteTags.FLOOR_BLOCK_TAG, floorBlock),
                     paletteBlock(piece.tags(), MKWorkspacePaletteTags.WALL_BLOCK_TAG, wallBlock),
@@ -1481,11 +1482,11 @@ public record MKWorkspaceExportManifest(
                                               ResourceLocation basePool,
                                               String baseName,
                                               Map<String, String> tags) {
-        String mask = tags.get(MKFloorMaskVariantExporter.FLOOR_MASK_TAG);
+        String mask = tags.get(MKFloorMaskPools.FLOOR_MASK_TAG);
         if (mask == null || mask.isBlank()) {
             return;
         }
-        childrenByPool.computeIfAbsent(MKFloorMaskVariantExporter.maskPool(basePool, mask),
+        childrenByPool.computeIfAbsent(MKFloorMaskPools.maskPool(basePool, mask),
                         key -> new LinkedHashSet<>())
                 .add(baseName);
     }
