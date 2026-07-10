@@ -58,6 +58,10 @@ public record MKWorkspaceTopologyProfile(
         terrainAdjustment = terrainAdjustment == null ? TerrainAdjustment.BEARD_THIN : terrainAdjustment;
     }
 
+    public static MKWorkspaceTopologyProfile defaults() {
+        return new MKWorkspaceTopologyProfile(DEFAULT_PLANNER_ID, List.of(), TerrainAdjustment.BEARD_THIN);
+    }
+
     private static List<MKWorkspacePlannerSettingsEntry> entriesFrom(
             ResourceLocation ownerPlannerId,
             List<MKWorkspacePlannerScopeSettings> plannerScopeSettings,
