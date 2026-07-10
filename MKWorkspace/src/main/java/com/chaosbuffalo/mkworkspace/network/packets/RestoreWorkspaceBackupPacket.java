@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkworkspace.network.packets;
 import com.chaosbuffalo.mkworkspace.MKWorkspace;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKStructureWorkspaceService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
-import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupRestoreService;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.export.MKWorkspaceBackupRestoreService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;

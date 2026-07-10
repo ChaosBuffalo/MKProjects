@@ -1,6 +1,9 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.export;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace.export;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportArchiveWriter;
+import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
+import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportPathResolver;
 import net.minecraft.server.level.ServerLevel;
 
 import java.io.IOException;

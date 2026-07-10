@@ -2,8 +2,8 @@ package com.chaosbuffalo.mkworkspace.command;
 
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKStructureWorkspaceService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
-import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupManifestDiscovery;
-import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceBackupRestoreService;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.export.MKWorkspaceBackupManifestDiscovery;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.export.MKWorkspaceBackupRestoreService;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.mutation.MKWorkspacePieceRelayoutService;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.mutation.MKStructureWorkspaceMutationService;

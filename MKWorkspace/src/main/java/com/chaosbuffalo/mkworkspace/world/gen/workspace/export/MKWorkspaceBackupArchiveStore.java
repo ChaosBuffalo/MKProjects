@@ -1,7 +1,8 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.export;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace.export;
 
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.core.BlockPos;
