@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mknpc.network.packets.AddMissingWorkspaceVariantsPacket;
 import com.chaosbuffalo.mknpc.network.packets.AddWorkspaceVariantsForAllPacket;
 import com.chaosbuffalo.mknpc.network.packets.GenerateAllWorkspaceStairsPacket;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
@@ -74,7 +73,8 @@ public class WorkspaceUtilitiesPage extends WorkspacePageBase {
         content.addWidget(addMissingVariants);
         content.addConstraintToWidget(new CenterXConstraint(), addMissingVariants);
         addMissingVariants.setPressedCallback((button, mouseButton) -> {
-            PacketDistributor.sendToServer(new AddMissingWorkspaceVariantsPacket(screen.anchor()));
+            PacketDistributor.sendToServer(new AddWorkspaceVariantsForAllPacket(screen.anchor(),
+                    AddWorkspaceVariantsForAllPacket.Mode.MISSING_ONLY));
             return true;
         });
 
