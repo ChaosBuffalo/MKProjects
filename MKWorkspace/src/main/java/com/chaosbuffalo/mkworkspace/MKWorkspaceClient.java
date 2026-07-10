@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkworkspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreenPacketHandler;
-import com.chaosbuffalo.mknpc.client.gui.screens.workspace.WorkspacePlannerClientRegistry;
+import com.chaosbuffalo.mkworkspace.client.gui.screens.workspace.WorkspacePlannerClientRegistry;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
