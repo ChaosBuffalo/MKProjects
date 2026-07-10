@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -45,8 +46,14 @@ public final class MKFloorMaskVariantExporter {
         for (MKWorkspacePieceDefinition piece : workspace.pieces()) {
             if (isFloorAuthoringTemplate(piece)) {
                 String baseName = piece.tags().getOrDefault("workspace_base_name", piece.pieceName());
-                for (MKWorkspacePieceDefinition runtimeSource :
-                        runtimeSourcesByBaseName.getOrDefault(baseName, List.of())) {
+                List<MKWorkspacePieceDefinition> runtimeSources = runtimeSourcesByBaseName.get(baseName);
+                if ((runtimeSources == null || runtimeSources.isEmpty()) && hasRuntimePieceInfo(piece)) {
+                    runtimeSources = List.of(piece);
+                }
+                if (runtimeSources == null) {
+                    continue;
+                }
+                for (MKWorkspacePieceDefinition runtimeSource : runtimeSources) {
                     pieces.addAll(createMaskVariants(workspace, runtimeSource));
                 }
             }
@@ -63,6 +70,10 @@ public final class MKFloorMaskVariantExporter {
         return "floor_plan_room".equals(piece.tags().get("tower_piece_kind")) &&
                 !"template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance")) &&
                 !MKWorkspaceTemplateReuseTags.isDerived(piece.tags());
+    }
+
+    private static boolean hasRuntimePieceInfo(MKWorkspacePieceDefinition piece) {
+        return MKWorkspaceRuntimePieceInfo.fromTags(piece.tags()).isPresent();
     }
 
     private static List<MKWorkspacePieceDefinition> createMaskVariants(MKStructureWorkspace workspace,

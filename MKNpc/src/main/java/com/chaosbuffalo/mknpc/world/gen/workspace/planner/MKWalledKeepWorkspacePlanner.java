@@ -757,7 +757,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
         verticalStackPlanner.createRoomPieces(workspace, stackDefinition, stackFamilies).stream()
                 .map(piece -> withRoomLayoutConnectors(workspace, piece, slots, opening))
-                .map(piece -> withCornerEntryConnectorTargets(piece, slots.perimeterPlan()))
+                .map(piece -> withCornerEntryConnectorTargets(piece, slots.perimeterPlan(), opening))
                 .map(piece -> uniqueCorner ? piece : withSharedCornerTemplateReuse(piece, stackId))
                 .forEach(pieces::add);
     }
@@ -888,23 +888,39 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         );
     }
 
-    private MKPlannedPiece withCornerEntryConnectorTargets(MKPlannedPiece piece, PerimeterPlan perimeterPlan) {
+    private MKPlannedPiece withCornerEntryConnectorTargets(MKPlannedPiece piece, PerimeterPlan perimeterPlan,
+                                                           ResolvedOpeningProfile opening) {
         String topologySlotId = piece.tags().getOrDefault("workspace_topology_slot_id", "");
         Optional<CornerEntryConnection> connection = cornerEntryConnection(topologySlotId, perimeterPlan);
         if (connection.isEmpty()) {
             return piece;
         }
         CornerEntryConnection entryConnection = connection.get();
-        List<MKPlannedConnector> connectors = piece.connectors().stream()
+        ArrayList<MKPlannedConnector> connectors = new ArrayList<>(piece.connectors().stream()
                 .map(connector -> retargetCornerEntryConnector(connector, entryConnection))
-                .toList();
+                .toList());
+        String incomingPool = slotPool(entryConnection.cornerSlotId());
+        boolean hasIncomingSlotConnector = connectors.stream()
+                .anyMatch(connector -> incomingPool.equals(connector.incomingPoolName()));
+        if (!hasIncomingSlotConnector) {
+            connectors.add(new MKPlannedConnector(
+                    MKConnectorRole.BRANCH,
+                    entryConnection.incomingFacing(),
+                    opening.openingWidth(),
+                    opening.openingHeight(),
+                    0,
+                    0,
+                    EMPTY_POOL,
+                    incomingPool,
+                    MKWorkspaceHorizontalExtrusionMode.FULL_FACE));
+        }
         return new MKPlannedPiece(
                 piece.roleId(),
                 piece.pieceName(),
                 piece.interiorWidth(),
                 piece.interiorLength(),
                 piece.interiorHeight(),
-                connectors,
+                List.copyOf(connectors),
                 piece.tags(),
                 piece.plannerId()
         );
@@ -1716,7 +1732,53 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
             default -> {
             }
         }
+        addBareCornerSlotMembershipConnectors(connectors, topologySlotId, slots, opening);
         return List.copyOf(connectors);
+    }
+
+    private void addBareCornerSlotMembershipConnectors(ArrayList<MKPlannedConnector> connectors,
+                                                       String topologySlotId,
+                                                       SlotAvailability slots,
+                                                       ResolvedOpeningProfile opening) {
+        for (String cornerSlotId : bareCornerRuntimeSlots(topologySlotId, slots)) {
+            String incomingPool = slotPool(cornerSlotId);
+            boolean hasIncomingSlotConnector = connectors.stream()
+                    .anyMatch(connector -> incomingPool.equals(connector.incomingPoolName()));
+            if (hasIncomingSlotConnector) {
+                continue;
+            }
+            connectors.add(new MKPlannedConnector(
+                    MKConnectorRole.BRANCH,
+                    cornerIncomingFacing(cornerSlotId),
+                    opening.openingWidth(),
+                    opening.openingHeight(),
+                    0,
+                    0,
+                    EMPTY_POOL,
+                    incomingPool,
+                    MKWorkspaceHorizontalExtrusionMode.FULL_FACE));
+        }
+    }
+
+    private List<String> bareCornerRuntimeSlots(String topologySlotId, SlotAvailability slots) {
+        if ("keep.corner.shared".equals(topologySlotId)) {
+            return CONCRETE_CORNER_SLOTS.stream()
+                    .filter(slots.sharedCornerSlots()::contains)
+                    .toList();
+        }
+        if (CONCRETE_CORNER_SLOTS.contains(topologySlotId) && slots.availableSlots().contains(topologySlotId)) {
+            return List.of(topologySlotId);
+        }
+        return List.of();
+    }
+
+    private Direction cornerIncomingFacing(String cornerSlotId) {
+        return switch (cornerSlotId) {
+            case "keep.corner.north_west", "keep.corner.north_east" -> Direction.SOUTH;
+            case "keep.corner.south_east" -> Direction.WEST;
+            case "keep.corner.south_west" -> Direction.EAST;
+            default -> throw new IllegalStateException("unsupported corner slot " + cornerSlotId);
+        };
     }
 
     private List<MKPlannedConnector> linearRunLayoutConnectors(MKStructureWorkspace workspace,
