@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.workspace;
 
-import com.chaosbuffalo.mknpc.network.packets.OpenWorkspaceScreenPacket;
+import com.chaosbuffalo.mknpc.network.packets.MKWorkspaceServerPackets;
 import com.chaosbuffalo.mknpc.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
@@ -984,8 +984,8 @@ public class MKStructureWorkspaceService {
     public void openWorkspaceScreen(ServerPlayer player, BlockPos anchor) {
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(player.serverLevel());
         MKStructureWorkspace workspace = data.getWorkspaceByAnchor(anchor).orElse(null);
-        player.connection.send(new OpenWorkspaceScreenPacket(anchor, workspace,
-                importService.discoverManifestIds(), discoverBackupFileNames(player, workspace)));
+        MKWorkspaceServerPackets.openWorkspaceScreen(player, anchor, workspace,
+                importService.discoverManifestIds(), discoverBackupFileNames(player, workspace));
     }
 
     private List<String> discoverBackupFileNames(ServerPlayer player, MKStructureWorkspace workspace) {
