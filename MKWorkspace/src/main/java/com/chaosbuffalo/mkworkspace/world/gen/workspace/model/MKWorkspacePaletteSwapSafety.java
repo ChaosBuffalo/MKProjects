@@ -1,5 +1,6 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.model;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.LinkedHashMap;

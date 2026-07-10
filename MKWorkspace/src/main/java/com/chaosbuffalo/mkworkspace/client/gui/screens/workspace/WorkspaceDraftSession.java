@@ -29,7 +29,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMaterialPalet
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceMutationSafety;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteOverride;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteResolver;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePaletteSwapSafety;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspacePaletteSwapSafety;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceRoomGeometry;
@@ -37,7 +37,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairAuthorin
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
-import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPaletteMerge;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceTopologyPaletteMerge;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerScopeSettings;

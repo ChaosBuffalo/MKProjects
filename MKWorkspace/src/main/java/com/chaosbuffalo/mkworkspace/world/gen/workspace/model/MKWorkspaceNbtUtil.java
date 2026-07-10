@@ -1,5 +1,6 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.model;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace.model;
 
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceCodecs;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;

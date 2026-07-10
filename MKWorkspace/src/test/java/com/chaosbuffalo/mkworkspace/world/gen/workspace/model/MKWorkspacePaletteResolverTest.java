@@ -1,9 +1,10 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.model;
+package com.chaosbuffalo.mkworkspace.world.gen.workspace.model;
 
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
+import com.chaosbuffalo.mknpc.world.gen.workspace.model.*;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKFloorTopologyPlanner;
 import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceVerticalStackPlanner;
