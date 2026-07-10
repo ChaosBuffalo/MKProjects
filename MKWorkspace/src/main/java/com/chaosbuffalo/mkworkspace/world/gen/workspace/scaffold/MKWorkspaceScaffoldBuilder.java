@@ -11,8 +11,8 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefiniti
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedConnector;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedPiece;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.FrontAndTop;

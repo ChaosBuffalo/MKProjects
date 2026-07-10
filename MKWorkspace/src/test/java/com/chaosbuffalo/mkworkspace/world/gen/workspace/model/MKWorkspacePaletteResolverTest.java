@@ -5,11 +5,11 @@ import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.*;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKFloorTopologyPlanner;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspaceVerticalStackPlanner;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKTowerWorkspacePlanner;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedPiece;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKFloorTopologyPlanner;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspaceVerticalStackPlanner;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKTowerWorkspacePlanner;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;

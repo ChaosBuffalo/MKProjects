@@ -4,7 +4,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
 
 import java.util.ArrayList;

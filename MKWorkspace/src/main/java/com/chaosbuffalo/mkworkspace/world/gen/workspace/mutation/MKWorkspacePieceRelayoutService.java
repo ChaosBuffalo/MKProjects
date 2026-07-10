@@ -13,8 +13,8 @@ import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceRelayou
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedConnector;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold.MKWorkspaceScaffoldBuilder;
 import net.minecraft.core.BlockPos;

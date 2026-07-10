@@ -23,9 +23,9 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTemplateReuse
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedConnector;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKPlannedPiece;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedConnector;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedPiece;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold.MKWorkspaceScaffoldBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
