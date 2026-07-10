@@ -11,9 +11,9 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKVerticalProgressionM
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomProfile;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologyPoolNames;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
-import com.chaosbuffalo.mknpc.world.gen.workspace.planner.MKFloorTopologyPlanner;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
@@ -136,8 +136,8 @@ public class NpcStructures {
             MKFloorTopologySettings physicalSettings = physicalFloorTopologySettings(manifest, settings);
             String topologyGroupId = floorTopologyGroupId(settings.stackId(), settings.floorRole());
             String endingPool = settings.mainCapApproachEnabled() ?
-                    MKFloorTopologyPlanner.mainCapApproachPoolName(topologyGroupId) :
-                    MKFloorTopologyPlanner.mainCapPoolName(topologyGroupId);
+                    MKFloorTopologyPoolNames.mainCapApproachPoolName(topologyGroupId) :
+                    MKFloorTopologyPoolNames.mainCapPoolName(topologyGroupId);
             int horizontalPadding = horizontalPadding(manifest);
             int rootWidth = manifest.settings().topologyProfile()
                     .verticalStackSettingsOrDefault(settings.stackId()).width() + horizontalPadding;

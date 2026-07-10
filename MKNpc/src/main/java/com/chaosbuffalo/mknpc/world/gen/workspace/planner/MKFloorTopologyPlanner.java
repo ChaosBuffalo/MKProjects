@@ -9,6 +9,7 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStack
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomKind;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorRoomProfile;
+import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologyPoolNames;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
@@ -29,7 +30,6 @@ import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceTopologySlotM
 import com.chaosbuffalo.mknpc.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKFloorMaskVariantExporter;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -529,28 +529,24 @@ public class MKFloorTopologyPlanner {
     }
 
     public static String mainCapApproachPoolName(String topologyGroupId) {
-        return MAIN_CAP_APPROACH_POOL_PREFIX + "/" + topologyGroupId;
+        return MKFloorTopologyPoolNames.mainCapApproachPoolName(topologyGroupId);
     }
 
     public static String mainCapPoolName(String topologyGroupId) {
-        return MAIN_CAP_POOL_PREFIX + "/" + topologyGroupId;
+        return MKFloorTopologyPoolNames.mainCapPoolName(topologyGroupId);
     }
 
     public static String floorLinearRunPoolName(String topologyGroupId, String openingProfileId, boolean mainPath) {
-        return floorLinearRunPoolName(topologyGroupId, openingProfileId,
-                mainPath ? PathPoolKind.MAIN : PathPoolKind.BRANCH);
+        return MKFloorTopologyPoolNames.floorLinearRunPoolName(topologyGroupId, openingProfileId, mainPath);
     }
 
     public static String floorRoomPoolName(String topologyGroupId, String openingProfileId, boolean mainPath) {
-        return floorRoomPoolName(topologyGroupId, openingProfileId,
-                mainPath ? PathPoolKind.MAIN : PathPoolKind.BRANCH);
+        return MKFloorTopologyPoolNames.floorRoomPoolName(topologyGroupId, openingProfileId, mainPath);
     }
 
     public static String floorRoomMaskPoolName(String topologyGroupId, String openingProfileId, boolean mainPath,
                                                String maskName) {
-        ResourceLocation basePool = ResourceLocation.fromNamespaceAndPath("mknpc",
-                floorRoomPoolName(topologyGroupId, openingProfileId, mainPath));
-        return MKFloorMaskVariantExporter.maskPool(basePool, maskName).getPath();
+        return MKFloorTopologyPoolNames.floorRoomMaskPoolName(topologyGroupId, openingProfileId, mainPath, maskName);
     }
 
     public static String floorTopologyGroupIdFor(String stackId, String floorRole) {
@@ -558,11 +554,11 @@ public class MKFloorTopologyPlanner {
     }
 
     public static String directMainRoomPoolName(String openingProfileId) {
-        return ROOM_POOL_PREFIX + "/" + PathPoolKind.MAIN.serializedName + "/" + openingProfileId;
+        return MKFloorTopologyPoolNames.directMainRoomPoolName(openingProfileId);
     }
 
     public static String directBranchRoomPoolName(String openingProfileId) {
-        return ROOM_POOL_PREFIX + "/" + PathPoolKind.BRANCH.serializedName + "/" + openingProfileId;
+        return MKFloorTopologyPoolNames.directBranchRoomPoolName(openingProfileId);
     }
 
     private static String floorLinearRunPoolName(String topologyGroupId, String openingProfileId,
