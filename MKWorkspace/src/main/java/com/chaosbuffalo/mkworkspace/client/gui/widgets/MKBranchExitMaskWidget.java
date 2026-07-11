@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.client.gui.widgets;
+package com.chaosbuffalo.mkworkspace.client.gui.widgets;
 
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
