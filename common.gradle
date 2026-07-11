@@ -18,9 +18,8 @@ repositories {
         url = "https://maven.blamejared.com/"
     }
     maven {
-        // new host for curios
-        name = "OctoStudios"
-        url = uri("https://maven.octo-studios.com/releases")
+        name = "Curios"
+        url = uri("https://maven.theillusivec4.top/")
     }
     maven { url = "https://api.modrinth.com/maven" }
 }
