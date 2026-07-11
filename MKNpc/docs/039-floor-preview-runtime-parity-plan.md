@@ -180,8 +180,7 @@ Changes that add footprint descriptors or closure/link endpoint metadata will re
 
 ## Related Documents
 
-- `floor-topology-planner-design.md`
-- `floor-plan-link-pass-design.md`
-- `floor-exit-mask-variant-authoring-plan.md`
-- `walled-keep-courtyard-export-cropping-plan.md`
-
+- `032-floor-topology-planner-design.md`
+- `035-floor-plan-link-pass-design.md`
+- `031-floor-exit-mask-variant-authoring-plan.md`
+- `030-walled-keep-courtyard-export-cropping-plan.md`
