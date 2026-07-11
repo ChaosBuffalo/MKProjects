@@ -7,9 +7,10 @@ Split the structure Workspace editor out of `MKNpc` into a new `MKWorkspace` mod
 After the split:
 
 - `MKNpc` remains the runtime gameplay module.
+- `MKWorkspaceRuntime` owns shared runtime workspace metadata, floor layout solving, and codecs used by both runtime gameplay and authoring tools.
 - `MKWorkspace` becomes an optional authoring and data-generation module that depends on `MKNpc`.
 - `MKWidgets` owns reusable UI controls that are useful outside the workspace editor.
-- Procedural runtime floor layout remains in `MKNpc` because gameplay worldgen still solves layouts procedurally.
+- Procedural runtime floor layout remains available to gameplay through `MKWorkspaceRuntime`, because gameplay worldgen still solves layouts procedurally.
 - Generated datapack resources remain consumable by `MKNpc` without requiring `MKWorkspace` in player installs.
 
 ## Agreed Direction
@@ -17,8 +18,10 @@ After the split:
 The dependency direction should be:
 
 ```text
-MKWorkspace -> MKNpc -> MKWidgets
+MKWorkspace -> MKNpc -> MKWorkspaceRuntime
+MKNpc -> MKWorkspaceRuntime
 MKWorkspace -> MKWidgets
+MKNpc -> MKWidgets
 ```
 
 `MKNpc` should not depend on `MKWorkspace`. This keeps the editor optional.
@@ -61,7 +64,7 @@ New or expanded editor-only areas to move with `MKWorkspace`:
 - workspace variant utility modes in `AddWorkspaceVariantsForAllPacket`
 - tests covering stable slot identity, preflight logging, chunk/compact packet behavior, and relayout impact reporting
 
-These additions strengthen the authoring/editor side of the split. They should move as part of `MKWorkspace`; they do not change the decision that `MKFloorLayoutSolver` remains in `MKNpc`.
+These additions strengthen the authoring/editor side of the split. They should move as part of `MKWorkspace`; they do not belong in `MKNpc` runtime.
 
 ## Module Ownership
 
@@ -82,9 +85,24 @@ Keep:
 - generated worldgen JSON used by runtime gameplay
 - generated template pools and structure definitions
 - runtime-only model types needed by structure codecs or placement
-- `MKFloorLayoutSolver`
 
-`MKFloorLayoutSolver` must stay in `MKNpc` because runtime worldgen currently uses it to solve procedural floor layouts from exported topology settings, root exits, and seed. This is gameplay behavior, not just authoring.
+`MKNpc` uses `MKWorkspaceRuntime` for shared runtime workspace metadata and procedural floor solving. It should not own editor workflow code or authoring planners directly.
+
+### Keep In MKWorkspaceRuntime
+
+`MKWorkspaceRuntime` owns runtime-safe workspace data and procedural layout APIs that must be shared by gameplay runtime and optional authoring tools.
+
+Keep:
+
+- `MKFloorLayoutSolver`
+- floor topology settings used by `MKDungeonTopologyGroupRule`
+- floor room profile/kind used by `MKFloorLayoutSolver`
+- horizontal exit path kind
+- family horizontal exit definition
+- passive workspace model/codecs required by generated metadata
+- compact runtime manifest DTO/codecs for `mk_workspace_exports`
+
+`MKWorkspaceRuntime` must not depend on `MKNpc` or `MKWorkspace`.
 
 ### Move To MKWorkspace
 
@@ -130,13 +148,13 @@ The planner split should be based on when the code runs.
 
 ### Runtime Planner Code
 
-Keep in `MKNpc`:
+Keep in `MKWorkspaceRuntime`:
 
 - `MKFloorLayoutSolver`
 - its result records/enums, unless extracted with it
 - minimal model/settings types required by runtime floor solving
 
-This solver is used during live worldgen to choose floor routes, branch paths, link halls, and layout extents. Since layouts remain procedural, it cannot move to `MKWorkspace` without replacing it with another runtime solver or fully materialized generated layouts.
+This solver is used during live worldgen to choose floor routes, branch paths, link halls, and layout extents. Since layouts remain procedural, it belongs in `MKWorkspaceRuntime` so `MKNpc` can run gameplay worldgen without depending on editor code while `MKWorkspace` can share the same runtime behavior.
 
 ### Data-Generation Planner Code
 
@@ -165,12 +183,13 @@ These are needed to produce canonical authoring templates and datapack resources
 
 This is intentional, not an intermediate compromise. The metadata gives `MKWorkspace` a way to rehydrate an editable workspace from structures that are already present in a runtime Minecraft install. A user should be able to add `MKWorkspace` to an existing mod list and recover workspace authoring state for any installed structure that ships `data/<namespace>/mk_workspace_exports/*.json`.
 
-`MKNpc` should therefore keep:
+`MKWorkspaceRuntime` should therefore keep:
 
 - a compact runtime manifest codec/DTO for `mk_workspace_exports`
-- passive resource loading for installed runtime manifests
 - validation needed to consume runtime structure metadata safely
-- no dependency on authoring planners, editor services, workspace saved state, or `MKWorkspace`
+- no dependency on authoring planners, editor services, workspace saved state, `MKNpc`, or `MKWorkspace`
+
+`MKNpc` may keep runtime resource discovery or registration glue if needed, but it should use the passive DTO/codecs from `MKWorkspaceRuntime`.
 
 `MKWorkspace` should use that runtime manifest metadata for:
 
@@ -232,14 +251,14 @@ Acceptance:
 - Existing workspace UI behavior is unchanged.
 - `MKWidgets` does not depend on `MKNpc`.
 
-### Phase 3: Isolate Runtime Model Types In MKNpc
+### Phase 3: Isolate Runtime Model Types In MKWorkspaceRuntime
 
 Create a clear runtime package for types used by live structure placement and generated runtime data.
 
-Candidate package:
+Runtime package:
 
 ```text
-com.chaosbuffalo.mknpc.world.gen.structure.runtime.layout
+com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout
 ```
 
 Move or rename runtime-owned workspace floor topology model types gradually. Retained runtime layout types include:
@@ -271,6 +290,10 @@ They belong with `MKWorkspace` authoring workflow unless a later pass finds a ru
 
 Avoid moving editor-only fields into the runtime package. If a current model type mixes runtime and authoring concerns, split it.
 
+Status:
+
+- Completed by introducing `MKWorkspaceRuntime` and moving runtime model/layout classes there.
+
 Acceptance:
 
 - `world/gen/feature/structure` no longer imports broad `world.gen.workspace` packages except possibly during a temporary migration.
@@ -285,10 +308,10 @@ Separate manifest responsibilities:
 
 Recommended split:
 
-- `MKNpc`: compact runtime export manifest DTO/codecs used to load generated runtime metadata and support later workspace rehydration.
-- `MKNpc`: passive resource loader for `data/<namespace>/mk_workspace_exports/*.json`.
+- `MKWorkspaceRuntime`: compact runtime export manifest DTO/codecs used to load generated runtime metadata and support later workspace rehydration.
+- `MKWorkspaceRuntime` or thin runtime glue in `MKNpc`: passive resource loader for `data/<namespace>/mk_workspace_exports/*.json`.
 - `MKWorkspace`: full workspace snapshot/export/archive writer that knows about `MKStructureWorkspace`, planned pieces, backups, import, and editor state.
-- `MKWorkspace`: rehydration service that consumes the runtime manifest DTOs exposed by `MKNpc`.
+- `MKWorkspace`: rehydration service that consumes the runtime manifest DTOs exposed by `MKWorkspaceRuntime` or runtime discovery glue.
 
 Acceptance:
 
@@ -330,7 +353,7 @@ Move canonical template planners and authoring schema types:
 - sizing reports/calculators
 - topology schemas used by editor/catalog generation
 
-Keep only `MKFloorLayoutSolver` and its runtime input/output model in `MKNpc`.
+Keep only `MKFloorLayoutSolver` and its runtime input/output model in `MKWorkspaceRuntime`.
 
 If data-generation code still needs planner-specific runtime path filtering, replace the current planner dependency with a small data-gen policy interface inside `MKWorkspace`.
 
@@ -422,6 +445,7 @@ Guardrail:
 
 - `MKNpc` must not have a Gradle dependency on `MKWorkspace`.
 - `MKNpc/src/main/java` must not import `com.chaosbuffalo.mkworkspace`.
+- `MKWorkspaceRuntime/src/main/java` must not import `com.chaosbuffalo.mknpc` or `com.chaosbuffalo.mkworkspace`.
 
 ### Manifest Code Pulls Authoring Planners Back Into MKNpc
 
@@ -434,7 +458,7 @@ Guardrail:
 
 ### Runtime Floor Layout Needs More Than Expected
 
-`MKFloorLayoutSolver` uses several floor topology model types. Those types need to be runtime-safe and decoupled from workspace authoring state.
+`MKFloorLayoutSolver` uses several floor topology model types. Those types need to stay runtime-safe and decoupled from workspace authoring state inside `MKWorkspaceRuntime`.
 
 Guardrail:
 
@@ -486,8 +510,8 @@ For dependency hygiene:
 
 1. Add empty `MKWorkspace` module.
 2. Move generic widgets to `MKWidgets`.
-3. Extract and rename runtime floor topology model used by `MKFloorLayoutSolver` into `world/gen/structure/runtime/layout`.
-4. Make runtime manifest loading passive and planner-free in `MKNpc`.
+3. Add `MKWorkspaceRuntime` and extract runtime floor topology/model classes used by `MKFloorLayoutSolver`.
+4. Make runtime manifest loading passive and planner-free in `MKWorkspaceRuntime`.
 5. Move data-gen manifest builders to `MKWorkspace`.
 6. Move authoring planners to `MKWorkspace`.
 7. Move workspace backend authoring services to `MKWorkspace`.
@@ -500,13 +524,14 @@ For dependency hygiene:
 - Generated resources belong to the module that generates and packages them. `MKWorkspace` can generate resources for `MKNpc`, but the build should move or publish those resources explicitly rather than having runtime code depend on editor modules.
 - Existing developer worlds do not need migration support for the workspace dev block. The block can move from `mknpc:mk_workspace_dev` to `mkworkspace:mk_workspace_dev`.
 - Runtime floor topology classes should drop the `MKWorkspace` prefix while they are extracted.
-- Runtime floor layout classes should live under `world/gen/structure/runtime/layout`.
+- Runtime floor layout classes should live under `MKWorkspaceRuntime` in `world/gen/structure/runtime/layout`.
 
 ## Acceptance Criteria
 
 - A player can install `MKNpc` without loading workspace editor UI, workspace authoring commands, workspace dev blocks, workspace packets, or authoring planners.
 - A builder/developer can install `MKNpc` plus `MKWorkspace` and retain the full workspace editor and data-generation workflow.
-- Procedural runtime floor layout remains in `MKNpc` and behaves the same.
+- Procedural runtime floor layout remains available to `MKNpc` through `MKWorkspaceRuntime` and behaves the same.
 - Generated runtime structures and datapacks still load without `MKWorkspace`.
 - `mk_workspace_exports` metadata remains shipped runtime data and can be used by `MKWorkspace` to rehydrate installed structures.
 - Shared widgets are available from `MKWidgets` for other modules.
+- `MKWorkspaceRuntime` has no dependency on `MKNpc` or `MKWorkspace`.
