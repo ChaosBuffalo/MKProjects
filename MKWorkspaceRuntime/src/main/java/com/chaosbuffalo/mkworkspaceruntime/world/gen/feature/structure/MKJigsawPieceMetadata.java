@@ -1,6 +1,4 @@
-package com.chaosbuffalo.mknpc.world.gen.feature.structure;
-
-import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKJigsawPieceRole;
+package com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure;
 
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceMaterialPalette;

@@ -1,8 +1,10 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.export;
 
+import com.chaosbuffalo.mkworkspace.MKWorkspace;
+
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
 import net.minecraft.server.MinecraftServer;
 
 import java.nio.file.Files;
@@ -33,7 +35,7 @@ public class MKWorkspaceBackupManifestDiscovery {
                     .sorted((left, right) -> right.lastModified().compareTo(left.lastModified()))
                     .toList();
         } catch (Exception e) {
-            MKNpc.LOGGER.warn("Failed to scan workspace backup manifests under {}", backupDir, e);
+            MKWorkspace.LOGGER.warn("Failed to scan workspace backup manifests under {}", backupDir, e);
             return List.of();
         }
     }
@@ -60,7 +62,7 @@ public class MKWorkspaceBackupManifestDiscovery {
     private Optional<MKWorkspaceExportManifest> readManifest(Path path) {
         Optional<MKWorkspaceExportManifest> manifest = archiveStore.readManifest(path);
         if (manifest.isEmpty()) {
-            MKNpc.LOGGER.warn("Failed to load workspace backup manifest {}", path);
+            MKWorkspace.LOGGER.warn("Failed to load workspace backup manifest {}", path);
         }
         return manifest;
     }
@@ -69,7 +71,7 @@ public class MKWorkspaceBackupManifestDiscovery {
         boolean matches = manifest.namespace().equals(workspace.namespace()) &&
                 manifest.structureName().equals(workspace.structureName());
         if (!matches) {
-            MKNpc.LOGGER.warn("Skipping workspace backup manifest {} because it describes {}:{} instead of {}:{}",
+            MKWorkspace.LOGGER.warn("Skipping workspace backup manifest {} because it describes {}:{} instead of {}:{}",
                     path, manifest.namespace(), manifest.structureName(), workspace.namespace(), workspace.structureName());
         }
         return matches;

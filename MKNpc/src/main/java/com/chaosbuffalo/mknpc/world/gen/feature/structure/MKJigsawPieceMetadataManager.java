@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKJigsawPieceMetadata;
+
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

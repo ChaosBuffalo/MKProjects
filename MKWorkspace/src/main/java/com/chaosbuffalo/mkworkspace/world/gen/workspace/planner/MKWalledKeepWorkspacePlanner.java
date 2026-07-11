@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.planner;
 
+import com.chaosbuffalo.mkworkspace.MKWorkspace;
+
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKJigsawPieceRole;
@@ -1430,7 +1432,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
             String reason = "walled keep courtyard disabled: requested socket size " + requestedSocketSize +
                     " but available interior socket span is " + socketMax + " (horizontal free span " +
                     freeHorizontal + ", vertical free span " + freeVertical + ")";
-            MKNpc.LOGGER.warn(reason);
+            MKWorkspace.LOGGER.warn(reason);
             return CourtyardPlan.disabled(reason, freeHorizontal, freeVertical, requestedSocketSize);
         }
         ArrayList<CourtyardSocket> sockets = new ArrayList<>();

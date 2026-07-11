@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace;
 
-import com.chaosbuffalo.mknpc.data.providers.MKWorkspaceExportManifestLoader;
-import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifestLoader;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
 import net.minecraft.resources.ResourceLocation;
 
 import java.nio.file.Path;

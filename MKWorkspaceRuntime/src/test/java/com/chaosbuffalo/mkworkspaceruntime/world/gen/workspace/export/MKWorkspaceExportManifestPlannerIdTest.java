@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.world.gen.workspace.export;
+package com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export;
 
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;

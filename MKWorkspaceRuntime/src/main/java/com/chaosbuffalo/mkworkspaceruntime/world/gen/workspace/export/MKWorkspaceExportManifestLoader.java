@@ -1,7 +1,6 @@
-package com.chaosbuffalo.mknpc.data.providers;
+package com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export;
 
-import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
+import com.chaosbuffalo.mkworkspaceruntime.MKWorkspaceRuntime;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.resources.ResourceLocation;
@@ -42,7 +41,7 @@ public class MKWorkspaceExportManifestLoader {
                     .sorted((left, right) -> left.manifest().structureName().compareToIgnoreCase(right.manifest().structureName()))
                     .toList();
         } catch (IOException e) {
-            MKNpc.LOGGER.warn("Failed to scan workspace export manifests under {}", manifestDir, e);
+            MKWorkspaceRuntime.LOGGER.warn("Failed to scan workspace export manifests under {}", manifestDir, e);
             return List.of();
         }
     }
@@ -87,18 +86,18 @@ public class MKWorkspaceExportManifestLoader {
                     .getOrThrow()
                     .withNormalizedRuntimeHints();
             if (!manifest.namespace().equals(expectedNamespace)) {
-                MKNpc.LOGGER.warn("Skipping workspace export manifest {} because namespace {} did not match expected {}",
+                MKWorkspaceRuntime.LOGGER.warn("Skipping workspace export manifest {} because namespace {} did not match expected {}",
                         path, manifest.namespace(), expectedNamespace);
                 return java.util.Optional.empty();
             }
             if (!path.getFileName().toString().equals(manifest.structureName() + ".json")) {
-                MKNpc.LOGGER.warn("Skipping workspace export manifest {} because file name did not match structure name {}",
+                MKWorkspaceRuntime.LOGGER.warn("Skipping workspace export manifest {} because file name did not match structure name {}",
                         path, manifest.structureName());
                 return java.util.Optional.empty();
             }
             return java.util.Optional.of(new LoadedManifest(path, manifest));
         } catch (Exception e) {
-            MKNpc.LOGGER.warn("Failed to load workspace export manifest {}", path, e);
+            MKWorkspaceRuntime.LOGGER.warn("Failed to load workspace export manifest {}", path, e);
             return java.util.Optional.empty();
         }
     }

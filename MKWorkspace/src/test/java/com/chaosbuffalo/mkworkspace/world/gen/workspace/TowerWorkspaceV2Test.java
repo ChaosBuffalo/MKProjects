@@ -7,10 +7,10 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonConnectorSett
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonLayoutController;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonLayoutSettings;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonPieceState;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceMetadata;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKJigsawPieceMetadata;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKVerticalProgressionMode;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKStructureWorkspaceImportService;
-import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;

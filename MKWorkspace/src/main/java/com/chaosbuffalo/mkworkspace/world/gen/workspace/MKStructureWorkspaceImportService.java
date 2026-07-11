@@ -1,10 +1,12 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace;
 
+import com.chaosbuffalo.mkworkspace.MKWorkspace;
+
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.data.providers.MKWorkspaceExportManifestLoader;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifestLoader;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.capability.IMKStructureWorkspaceData;
-import com.chaosbuffalo.mknpc.world.gen.workspace.export.MKWorkspaceExportManifest;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
@@ -145,7 +147,7 @@ public class MKStructureWorkspaceImportService {
         for (MKPlannedPiece plannedPiece : plannedPieces) {
             MKWorkspaceExportManifest.ExportPiece exported = exportedByName.get(plannedPiece.pieceName());
             if (exported == null) {
-                MKNpc.LOGGER.warn("Workspace manifest {} is missing exported piece data for planned piece {}",
+                MKWorkspace.LOGGER.warn("Workspace manifest {} is missing exported piece data for planned piece {}",
                         manifestId, plannedPiece.pieceName());
                 return Optional.empty();
             }
@@ -155,7 +157,7 @@ public class MKStructureWorkspaceImportService {
             ResourceLocation structureId = ResourceLocation.parse(exported.structureId());
             Optional<StructureTemplate> templateOpt = level.getStructureManager().get(structureId);
             if (templateOpt.isEmpty()) {
-                MKNpc.LOGGER.warn("Workspace manifest {} references missing structure template {} for piece {}",
+                MKWorkspace.LOGGER.warn("Workspace manifest {} references missing structure template {} for piece {}",
                         manifestId, structureId, plannedPiece.pieceName());
                 return Optional.empty();
             }
