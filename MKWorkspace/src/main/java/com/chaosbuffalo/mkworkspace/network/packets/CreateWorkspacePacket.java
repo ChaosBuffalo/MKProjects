@@ -29,6 +29,7 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
 
     private final CompoundTag workspaceTag;
     private final boolean generateAfterCreate;
+    private final boolean fullRegenerate;
     private final List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps;
 
     public CreateWorkspacePacket(MKStructureWorkspace workspace) {
@@ -41,8 +42,15 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
 
     public CreateWorkspacePacket(MKStructureWorkspace workspace, boolean generateAfterCreate,
                                  List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
+        this(workspace, generateAfterCreate, false, acceptedRemaps);
+    }
+
+    public CreateWorkspacePacket(MKStructureWorkspace workspace, boolean generateAfterCreate,
+                                 boolean fullRegenerate,
+                                 List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
         this.workspaceTag = MKWorkspacePacketPayloads.editableWorkspaceTag(workspace);
         this.generateAfterCreate = generateAfterCreate;
+        this.fullRegenerate = fullRegenerate;
         this.acceptedRemaps = List.copyOf(acceptedRemaps);
     }
 
@@ -53,6 +61,7 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
         }
         this.workspaceTag = tag;
         this.generateAfterCreate = buffer.readBoolean();
+        this.fullRegenerate = buffer.readBoolean();
         this.acceptedRemaps = readAcceptedRemaps(buffer);
     }
 
@@ -65,6 +74,7 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
         int startIndex = buffer.writerIndex();
         buffer.writeNbt(workspaceTag);
         buffer.writeBoolean(generateAfterCreate);
+        buffer.writeBoolean(fullRegenerate);
         writeAcceptedRemaps(buffer, acceptedRemaps);
         MKWorkspacePacketPayloads.warnIfLarge("create_workspace", buffer.writerIndex() - startIndex);
     }
@@ -82,7 +92,7 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
         }
         Optional<MKStructureWorkspace> existingOpt = IMKStructureWorkspaceData.get(player.serverLevel())
                 .getWorkspaceByAnchor(workspace.anchor());
-        if (existingOpt.isPresent()) {
+        if (existingOpt.isPresent() && !packet.fullRegenerate) {
             var preflight = service.preflightWorkspaceUpdate(existingOpt.get(), workspace, System.currentTimeMillis(),
                     packet.acceptedRemaps);
             new MKWorkspacePreflightLogger().logConfirmEffects("apply", player, workspace, preflight,
@@ -95,6 +105,13 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
                                 lockedLayers.getFirst().getSerializedName());
                 return;
             }
+        }
+        if (packet.fullRegenerate) {
+            service.fullRegenerateWorkspace(player.serverLevel(), workspace)
+                    .ifPresentOrElse(created -> service.openWorkspaceScreen(player, created.anchor()),
+                            () -> MKWorkspaceValidationMessages.displayFailure(player,
+                                    "Workspace regeneration failed."));
+            return;
         }
         service.createOrUpdateWorkspace(player.serverLevel(), workspace, packet.acceptedRemaps)
                 .ifPresentOrElse(created -> {

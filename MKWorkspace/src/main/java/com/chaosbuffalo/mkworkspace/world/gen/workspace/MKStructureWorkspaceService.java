@@ -548,6 +548,45 @@ public class MKStructureWorkspaceService {
         return Optional.of(updated);
     }
 
+    public Optional<MKStructureWorkspace> fullRegenerateWorkspace(ServerLevel level, MKStructureWorkspace requested) {
+        if (!validateWorkspace(requested).isEmpty()) {
+            return Optional.empty();
+        }
+        IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
+        Optional<MKStructureWorkspace> existingOpt = data.getWorkspaceByAnchor(requested.anchor());
+        long now = System.currentTimeMillis();
+
+        MKStructureWorkspace workspaceForBuild;
+        if (existingOpt.isPresent()) {
+            MKStructureWorkspace existing = existingOpt.get();
+            if (!existing.pieces().isEmpty()) {
+                writeBackupBeforeMutation(level, existing, "full-regenerate", "full workspace regeneration");
+            }
+            workspaceForBuild = workspaceForUpdate(existing, requested, existing.pieces(), now, List.of());
+        } else {
+            workspaceForBuild = requested;
+        }
+
+        List<MKPlannedPiece> templates = plannerRegistry.plannerFor(workspaceForBuild).createCanonicalPieces(workspaceForBuild).stream()
+                .map(this::toTemplatePiece)
+                .toList();
+        List<MKWorkspacePieceDefinition> generatedPieces = scaffoldBuilder.build(level, workspaceForBuild, templates);
+        MKStructureWorkspace updated = workspaceForBuild.withPieces(generatedPieces).withLayerStates(List.of());
+        updated = layerStateService.refreshLayers(
+                layerStateService.ensureLayerStates(updated, now),
+                java.util.Arrays.asList(MKWorkspaceGeneratedLayer.values()),
+                settingsComparisonTag(updated, updated.id(), updated.previewMargin()).hashCode(),
+                now);
+
+        if (existingOpt.isPresent()) {
+            data.updateWorkspace(updated);
+        } else {
+            data.createWorkspace(updated);
+        }
+        syncBlockEntity(level, requested.anchor(), updated.id());
+        return Optional.of(updated);
+    }
+
     public Optional<MKStructureWorkspace> regenerateHallwayRouting(ServerLevel level, MKStructureWorkspace requested) {
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> existingOpt = data.getWorkspaceByAnchor(requested.anchor());

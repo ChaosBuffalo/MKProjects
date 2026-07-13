@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mkworkspace.network.packets.CreateWorkspacePacket;
-import com.chaosbuffalo.mkworkspace.network.packets.RequestWorkspacePreflightPacket;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
@@ -184,22 +183,18 @@ public class WorkspaceDraftSession {
     }
 
     public void submit() {
-        if (!dirty() && screen.workspace() != null) {
-            return;
-        }
         snapDraftVerticalAccess();
         MKStructureWorkspace draft = buildWorkspaceDraft();
-        if (requiresDestructiveRegenerateConfirmation(draft)) {
+        if (requiresRegenerateConfirmation()) {
             screen.pushState("generate_confirm");
-            PacketDistributor.sendToServer(new RequestWorkspacePreflightPacket(draft, acceptedRemaps));
             screen.flagNeedSetup();
             return;
         }
-        send(draft);
+        sendFullRegenerate(draft);
     }
 
     public void send() {
-        send(buildWorkspaceDraft());
+        sendFullRegenerate(buildWorkspaceDraft());
     }
 
     public String namespace() {
@@ -867,18 +862,15 @@ public class WorkspaceDraftSession {
         return -1;
     }
 
-    private void send(MKStructureWorkspace draft) {
-        PacketDistributor.sendToServer(new CreateWorkspacePacket(draft, true, acceptedRemaps));
+    private void sendFullRegenerate(MKStructureWorkspace draft) {
+        PacketDistributor.sendToServer(new CreateWorkspacePacket(draft, true, true, List.of()));
         clearDirty();
         acceptedRemaps = List.of();
     }
 
-    private boolean requiresDestructiveRegenerateConfirmation(MKStructureWorkspace draft) {
+    private boolean requiresRegenerateConfirmation() {
         MKStructureWorkspace workspace = screen.workspace();
-        if (workspace == null || workspace.pieces().isEmpty()) {
-            return false;
-        }
-        return !canApplySafeLiveMutation(workspace, draft);
+        return workspace != null && !workspace.pieces().isEmpty();
     }
 
     private boolean canApplySafeLiveMutation(MKStructureWorkspace existing, MKStructureWorkspace requested) {

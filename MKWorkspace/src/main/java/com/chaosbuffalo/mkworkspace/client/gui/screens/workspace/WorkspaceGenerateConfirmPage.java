@@ -1,8 +1,6 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceInvalidationReport;
-import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceMutationPreflight;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
@@ -22,9 +20,9 @@ public class WorkspaceGenerateConfirmPage extends WorkspacePageBase {
     public MKLayout build(MKWorkspaceScreen screen) {
         MKLayout root = createPanel(screen);
 
-        addTitle(screen, root, Component.literal("Confirm Workspace Update"));
+        addTitle(screen, root, Component.literal("Confirm Workspace Regenerate"));
         addHeaderText(screen, root, Component.literal(
-                "This change may rebuild workspace scaffold. Matching authored templates are preserved when possible; unmatched or affected pieces may be cleared and rebuilt."));
+                "This will reset the workspace to its default generated state using the current settings."));
         MKText workspaceId = addHeaderText(screen, root, Component.literal(screen.draftSession().workspaceId()));
 
         int scrollTop = screen.scrollTopAfterHeader(root, workspaceId);
@@ -36,13 +34,15 @@ public class WorkspaceGenerateConfirmPage extends WorkspacePageBase {
         root.addWidget(scrollView);
 
         MKStackLayoutVertical content = createContentStack(screen);
-        addPreflightDetails(screen, content, screen.preflight());
+        addText(screen, content, "Existing authored pieces, variants, generated stairs, and runtime metadata will be cleared.");
+        addText(screen, content, "No paths, remaps, variants, or manual workspace edits will be preserved.");
+        addText(screen, content, "A backup is written before the reset when an existing generated workspace is present.");
         finishScrollContent(screen, scrollView, content);
 
-        MKButton confirm = addBottomButton(screen, root, Component.literal("Apply Workspace Update"), 200, 1);
+        MKButton confirm = addBottomButton(screen, root, Component.literal("Regenerate Workspace"), 200, 1);
         confirm.setPressedCallback((button, mouseButton) -> {
             button.setEnabled(false);
-            button.buttonText = Component.literal("Applying...");
+            button.buttonText = Component.literal("Regenerating...");
             screen.draftSession().send();
             return true;
         });
@@ -53,34 +53,5 @@ public class WorkspaceGenerateConfirmPage extends WorkspacePageBase {
             return true;
         });
         return root;
-    }
-
-    private void addPreflightDetails(MKWorkspaceScreen screen, MKStackLayoutVertical content,
-                                     MKWorkspaceMutationPreflight preflight) {
-        if (preflight == null) {
-            addText(screen, content, "Loading impact report...");
-            return;
-        }
-        MKWorkspaceInvalidationReport report = preflight.report();
-        addText(screen, content, report.summary());
-        addText(screen, content, "Safety " + report.safety().getSerializedName() +
-                " - operation " + report.recommendedOperation());
-        if (!report.invalidatedLayers().isEmpty()) {
-            addText(screen, content, "Invalidates: " + report.invalidatedLayers().stream()
-                    .map(layer -> layer.getSerializedName())
-                    .reduce((left, right) -> left + ", " + right)
-                    .orElse(""));
-        }
-        addRelayoutImpactReport(screen, content, report);
-        if (report.relayoutImpacts().isEmpty()) {
-            addText(screen, content, "No physical authored template relayout impacts were reported.");
-        }
-        if (!report.remapSuggestions().isEmpty()) {
-            addText(screen, content, "Remap suggestions: " + report.remapSuggestions().size() +
-                    " - accepted " + screen.draftSession().acceptedRemapCount());
-        }
-        for (String warning : report.warnings()) {
-            addText(screen, content, "Warning: " + warning);
-        }
     }
 }
