@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.stairs;
 
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKConnectorRole;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKResolvedVerticalAccessProfile;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
@@ -138,6 +139,46 @@ class MKWorkspaceStairBuilderTest {
 
         assertEquals(7, geometry.interiorMaxY() - geometry.interiorMinY() + 1);
         assertEquals(5, builder.getProfileInteriorHeight(piece));
+    }
+
+    @Test
+    void stairProfileUsesWorkspaceVerticalShellMarginWhenPieceMetadataIsLegacy() {
+        MKStructureWorkspace workspace = workspaceWithVerticalShellMargin(2);
+        MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
+        MKWorkspacePieceDefinition piece = verticalPiece("tower.primary.main_floor",
+                Map.of(MKWorkspaceVerticalAccessTags.ENABLED_TAG, "true"),
+                List.of(verticalConnector(Direction.UP), verticalConnector(Direction.DOWN)),
+                1,
+                new BoundingBox(0, 0, 0, 10, 8, 10));
+        MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry = builder.getGenerationGeometry(workspace, piece);
+
+        int effectiveVerticalShellMargin = builder.getEffectiveVerticalShellMargin(workspace, piece);
+        MKResolvedVerticalAccessProfile resolved = MKResolvedVerticalAccessProfile.resolve(
+                MKWorkspaceStairAuthoringConfig.defaultConfig(),
+                geometry.width(),
+                geometry.length(),
+                builder.getProfileInteriorHeight(piece),
+                effectiveVerticalShellMargin
+        ).orElseThrow();
+
+        assertEquals(2, effectiveVerticalShellMargin);
+        assertEquals(18, resolvedHalfBlockRise(resolved));
+    }
+
+    @Test
+    void bottomCapEditableRangeUsesWorkspaceVerticalShellMarginWhenPieceMetadataIsLegacy() {
+        MKStructureWorkspace workspace = workspaceWithVerticalShellMargin(3);
+        MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
+        MKWorkspacePieceDefinition bottomCap = verticalCapPiece(Direction.UP,
+                MKWorkspaceVerticalAccessTags.BOTTOM_CAP_TAG,
+                new BoundingBox(0, 0, 0, 10, 10, 10),
+                Map.of(),
+                1);
+        MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry = builder.getGenerationGeometry(workspace, bottomCap);
+        int effectiveVerticalShellMargin = builder.getEffectiveVerticalShellMargin(workspace, bottomCap);
+
+        assertEquals(3, effectiveVerticalShellMargin);
+        assertEquals(3, builder.getEditableMinY(bottomCap, geometry, effectiveVerticalShellMargin));
     }
 
     @Test
@@ -286,8 +327,13 @@ class MKWorkspaceStairBuilderTest {
 
     private MKWorkspacePieceDefinition verticalPiece(String roleId, Map<String, String> tags,
                                                      List<MKWorkspaceConnectorDefinition> connectors) {
+        return verticalPiece(roleId, tags, connectors, 1, new BoundingBox(0, 0, 0, 10, 6, 10));
+    }
+
+    private MKWorkspacePieceDefinition verticalPiece(String roleId, Map<String, String> tags,
+                                                     List<MKWorkspaceConnectorDefinition> connectors,
+                                                     int verticalShellMargin, BoundingBox bounds) {
         UUID workspaceId = UUID.randomUUID();
-        BoundingBox bounds = new BoundingBox(0, 0, 0, 10, 6, 10);
         return new MKWorkspacePieceDefinition(
                 UUID.randomUUID(),
                 workspaceId,
@@ -296,6 +342,7 @@ class MKWorkspaceStairBuilderTest {
                 0,
                 new MKWorkspaceDimensions(9, 9, 5, 5, 5, 3, 3, 3),
                 1,
+                verticalShellMargin,
                 connectors,
                 BlockPos.ZERO,
                 bounds,
@@ -366,6 +413,40 @@ class MKWorkspaceStairBuilderTest {
                 empty,
                 empty
         );
+    }
+
+    private static MKStructureWorkspace workspaceWithVerticalShellMargin(int verticalShellMargin) {
+        MKStructureWorkspace draft = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        return new MKStructureWorkspace(
+                draft.id(),
+                draft.anchor(),
+                draft.namespace(),
+                draft.structureName(),
+                draft.topologyProfile(),
+                draft.dimensions(),
+                draft.palette(),
+                draft.stairConfig(),
+                draft.verticalAccessPlacement(),
+                draft.shellMargin(),
+                verticalShellMargin,
+                draft.exteriorAirMargin(),
+                draft.previewMargin(),
+                draft.verticalAccessSpec(),
+                draft.familyDefinitions(),
+                draft.openingProfiles(),
+                draft.linearRunFamilies(),
+                draft.insertFamilies(),
+                draft.createdAt(),
+                draft.updatedAt(),
+                draft.pieces(),
+                draft.layerStates()
+        );
+    }
+
+    private static int resolvedHalfBlockRise(MKResolvedVerticalAccessProfile profile) {
+        return profile.risePattern().stream()
+                .mapToInt(kind -> kind == MKResolvedVerticalAccessProfile.RiseStepKind.STAIR ? 2 : 1)
+                .sum();
     }
 
 }
