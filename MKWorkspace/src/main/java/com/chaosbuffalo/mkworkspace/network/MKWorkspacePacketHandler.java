@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkworkspace.network.packets.DeleteWorkspacePacket;
 import com.chaosbuffalo.mkworkspace.network.packets.ExportWorkspacePiecesPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.GenerateAllWorkspaceStairsPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.GenerateWorkspacePacket;
+import com.chaosbuffalo.mkworkspace.network.packets.GenerateWorkspaceSamplePreviewPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.GenerateWorkspaceStairsPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.LoadWorkspaceFromManifestPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.OpenWorkspaceScreenPacket;
@@ -71,6 +72,11 @@ public class MKWorkspacePacketHandler {
                 GenerateWorkspacePacket.TYPE,
                 GenerateWorkspacePacket.STREAM_CODEC,
                 GenerateWorkspacePacket::handle
+        );
+        registrar.playToServer(
+                GenerateWorkspaceSamplePreviewPacket.TYPE,
+                GenerateWorkspaceSamplePreviewPacket.STREAM_CODEC,
+                GenerateWorkspaceSamplePreviewPacket::handle
         );
         registrar.playToServer(
                 GenerateAllWorkspaceStairsPacket.TYPE,

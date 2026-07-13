@@ -3,6 +3,8 @@ package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mkworkspace.network.packets.AddWorkspaceVariantsForAllPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.GenerateAllWorkspaceStairsPacket;
+import com.chaosbuffalo.mkworkspace.network.packets.GenerateWorkspaceSamplePreviewPacket;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceSamplePreviewState;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
@@ -78,6 +80,35 @@ public class WorkspaceUtilitiesPage extends WorkspacePageBase {
             return true;
         });
 
+        boolean[] lockSeed = new boolean[]{
+                screen.samplePreviewState()
+                        .map(MKWorkspaceSamplePreviewState::seedLocked)
+                        .orElse(false)
+        };
+        MKButton lockSampleSeed = new MKButton(sampleSeedText(lockSeed[0]), 180, 20);
+        content.addWidget(lockSampleSeed);
+        content.addConstraintToWidget(new CenterXConstraint(), lockSampleSeed);
+        lockSampleSeed.setPressedCallback((button, mouseButton) -> {
+            lockSeed[0] = !lockSeed[0];
+            button.buttonText = sampleSeedText(lockSeed[0]);
+            return true;
+        });
+
+        MKButton generateSample = new MKButton(Component.literal("Generate Sample Preview"), 180, 20);
+        content.addWidget(generateSample);
+        content.addConstraintToWidget(new CenterXConstraint(), generateSample);
+        generateSample.setPressedCallback((button, mouseButton) -> {
+            PacketDistributor.sendToServer(new GenerateWorkspaceSamplePreviewPacket(screen.anchor(), lockSeed[0]));
+            return true;
+        });
+
+        screen.samplePreviewState().ifPresent(state -> addText(screen, content,
+                "Last sample preview: " + state.placedPieceCount() + " piece(s), seed " + state.seed() +
+                        (state.seedLocked() ? " (locked)" : "") +
+                        (state.templateFallbackCount() > 0
+                                ? ", " + state.templateFallbackCount() + " template fallback(s)"
+                                : "")));
+
         MKButton deleteWorkspace = new MKButton(Component.literal("Delete Workspace"), 180, 20);
         content.addWidget(deleteWorkspace);
         content.addConstraintToWidget(new CenterXConstraint(), deleteWorkspace);
@@ -91,5 +122,9 @@ public class WorkspaceUtilitiesPage extends WorkspacePageBase {
 
         addBackButton(screen, root, "workspace");
         return root;
+    }
+
+    private Component sampleSeedText(boolean locked) {
+        return Component.literal("Lock Seed: " + (locked ? "On" : "Off"));
     }
 }
