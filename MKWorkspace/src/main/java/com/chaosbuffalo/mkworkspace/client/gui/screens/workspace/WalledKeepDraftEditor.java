@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWalledKeepCourtyardSettings;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
@@ -137,6 +138,33 @@ public final class WalledKeepDraftEditor {
 
     public void rampartAccessEnabled(boolean value) {
         plannerSettings(plannerSettings().withRampartAccessEnabled(value));
+    }
+
+    public int rampartAccessOpeningHeight() {
+        return session.getOpeningProfile("branch_opening")
+                .or(() -> session.openingProfiles().stream().findFirst())
+                .map(MKHorizontalOpeningProfile::openingHeight)
+                .orElse(3);
+    }
+
+    public int requiredRampartAccessEntryHeight() {
+        return wallHeight() + rampartAccessOpeningHeight();
+    }
+
+    public boolean rampartAccessNeedsEntryHeightFix() {
+        return rampartAccessEnabled() && activeCornerStackIds().stream()
+                .map(session::verticalStackSettings)
+                .anyMatch(settings -> settings.entryHeight() < requiredRampartAccessEntryHeight());
+    }
+
+    public void fixRampartAccessEntryHeights() {
+        int requiredHeight = requiredRampartAccessEntryHeight();
+        for (String stackId : activeCornerStackIds()) {
+            MKWorkspaceVerticalStackSettings settings = session.verticalStackSettings(stackId);
+            if (settings.entryHeight() < requiredHeight) {
+                session.replaceVerticalStackSettings(settings.withEntryHeight(requiredHeight));
+            }
+        }
     }
 
     public int wallHeight() {
@@ -327,6 +355,20 @@ public final class WalledKeepDraftEditor {
             session.ensureRoomFamiliesForVerticalStack(updated, cornerSlot);
         }
         session.draft().familyDefinitions = List.copyOf(updated);
+    }
+
+    private List<String> activeCornerStackIds() {
+        ArrayList<String> stackIds = new ArrayList<>();
+        MKWalledKeepPlannerSettings settings = plannerSettings();
+        if (settings.anySharedCornerTower()) {
+            stackIds.add("keep.corner.shared");
+        }
+        for (String cornerSlot : KEEP_CORNER_STACK_IDS) {
+            if (settings.uniqueCornerTower(cornerSlot)) {
+                stackIds.add(cornerSlot);
+            }
+        }
+        return List.copyOf(stackIds);
     }
 
     private void copyVerticalStackSettingsIfMissing(List<MKWorkspaceVerticalStackSettings> settings, String targetId,

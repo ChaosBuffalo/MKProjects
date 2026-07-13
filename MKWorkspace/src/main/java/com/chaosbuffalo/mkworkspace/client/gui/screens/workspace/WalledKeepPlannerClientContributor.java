@@ -256,6 +256,19 @@ public class WalledKeepPlannerClientContributor implements WorkspacePlannerClien
         });
         WorkspaceTopologyUiSupport.addRow(screen, content,
                 screen.makeWhiteText(Component.literal("Rampart Access")), rampartAccessButton);
+        if (keepEditor.rampartAccessNeedsEntryHeightFix()) {
+            WorkspaceTopologyUiSupport.addText(screen, content, Component.literal(
+                    "Rampart access needs corner entry height " + keepEditor.requiredRampartAccessEntryHeight() +
+                            " to fit the opening."));
+            MKButton fixRampartAccessButton = new MKButton(Component.literal("Fix"), 180, 20);
+            fixRampartAccessButton.setPressedCallback((button, mouseButton) -> {
+                keepEditor.fixRampartAccessEntryHeights();
+                screen.flagNeedSetup();
+                return true;
+            });
+            WorkspaceTopologyUiSupport.addRow(screen, content,
+                    screen.makeWhiteText(Component.literal("Corner Entry Height")), fixRampartAccessButton);
+        }
 
         MKIntegerSlider wallTopVoidSlider = new MKIntegerSlider("Margin", 180, 20, 0,
                 Math.max(0, keepEditor.wallHeight() - 1), 1,
