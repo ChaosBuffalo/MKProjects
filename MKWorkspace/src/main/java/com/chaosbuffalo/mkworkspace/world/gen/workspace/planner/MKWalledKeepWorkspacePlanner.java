@@ -52,6 +52,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
     private static final String EMPTY_POOL = "minecraft:empty";
     private static final String PERIMETER_ROOT_SLOT = "keep.perimeter";
     private static final String ENTRY_APPROACH_SLOT = "keep.entry_approach.main";
+    private static final String GATEHOUSE_SLOT = "keep.gate.main";
     private static final String WALKWAY_WEST_ROOT_SLOT = "keep.walkway.west";
     private static final String WALKWAY_EAST_ROOT_SLOT = "keep.walkway.east";
     private static final String COURTYARD_SLOT_PREFIX = "keep.courtyard.";
@@ -139,7 +140,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
             "keep.walkway.south",
             WALKWAY_WEST_ROOT_SLOT,
             ENTRY_APPROACH_SLOT,
-            "keep.gate.main"
+            GATEHOUSE_SLOT
     );
     private final MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
     private final MKWorkspaceVerticalStackPlanner verticalStackPlanner = new MKWorkspaceVerticalStackPlanner();
@@ -1096,6 +1097,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
 
     private MKPlannedPiece createRoomPiece(MKStructureWorkspace workspace, MKWorkspaceRoomFamilyDefinition family,
                                            SlotAvailability slots) {
+        family = effectiveRoomFamilyForGeneration(workspace, family);
         MKWorkspaceResolvedFamilySettings resolvedFamily = workspace.resolveFamilySettings(family);
         int shaftSize = resolvedFamily.verticalAccessSpec().shaftSize();
         ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
@@ -1121,6 +1123,43 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                 resolvedFamily.roomHeight(),
                 connectors,
                 buildRoomTags(workspace, family)
+        );
+    }
+
+    private MKWorkspaceRoomFamilyDefinition effectiveRoomFamilyForGeneration(MKStructureWorkspace workspace,
+                                                                             MKWorkspaceRoomFamilyDefinition family) {
+        if (!family.topologySlotId().equals(GATEHOUSE_SLOT)) {
+            return family;
+        }
+        return workspace.linearRunFamilies().stream()
+                .filter(MKWalledKeepWorkspacePlanner::isPerimeterRunFamily)
+                .findFirst()
+                .map(perimeter -> gatehouseFamilyForPerimeter(family, perimeter))
+                .orElse(family);
+    }
+
+    private MKWorkspaceRoomFamilyDefinition gatehouseFamilyForPerimeter(MKWorkspaceRoomFamilyDefinition family,
+                                                                        MKWorkspaceLinearRunFamilyDefinition perimeter) {
+        int wallHeight = Math.max(1, perimeter.interiorHeight() + Math.abs(perimeter.slopeDelta()));
+        int topVoidMargin = Math.min(Math.max(0, perimeter.topVoidMargin()), Math.max(0, wallHeight - 1));
+        int bottomVoidMargin = Math.min(Math.max(0, family.bottomVoidMargin()),
+                Math.max(0, wallHeight - topVoidMargin - 1));
+        return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
+                family.baseName(),
+                family.slotMetadata(),
+                family.verticalAccessGroupId(),
+                family.supportsVerticalAccess(),
+                perimeter.length(),
+                perimeter.interiorWidth(),
+                wallHeight,
+                family.horizontalExtrusionMode(),
+                family.horizontalExits(),
+                topVoidMargin,
+                bottomVoidMargin,
+                family.sourceTopologySlotId(),
+                family.settingsTopologySlotId(),
+                family.foundationPolicyOverride(),
+                family.paletteOverride()
         );
     }
 

@@ -956,7 +956,7 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
-    void walledKeepGatehouseRoomCarriesVoidMarginTags() {
+    void walledKeepGatehouseRoomDerivesVoidMarginTagsFromPerimeterWall() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         List<MKWorkspaceRoomFamilyDefinition> families =
                 MKWalledKeepWorkspacePlanner.defaultRoomFamilyDefinitions(dimensions).stream()
@@ -968,20 +968,25 @@ class TowerWorkspaceV2Test {
                                         family.supportsVerticalAccess(),
                                         family.roomWidth(),
                                         family.roomLength(),
-                                        9,
+                                        family.roomHeight(),
                                         family.horizontalExtrusionMode(),
                                         family.horizontalExits(),
-                                        2,
+                                        0,
                                         1,
                                         family.foundationPolicyOverride(),
                                         family.paletteOverride()) :
                                 family)
                         .toList();
+        List<MKWorkspaceLinearRunFamilyDefinition> linearRuns =
+                MKWalledKeepWorkspacePlanner.defaultLinearRunFamilyDefinitions(dimensions, workspacePalette()).stream()
+                        .map(linearRun -> linearRun.topologySlotId().equals("keep.perimeter") ?
+                                copyLinearRunWithTopVoidMargin(linearRun, 2) : linearRun)
+                        .toList();
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(
                 baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
                 MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false),
                 families,
-                MKWalledKeepWorkspacePlanner.defaultLinearRunFamilyDefinitions(dimensions, workspacePalette())
+                linearRuns
         );
 
         assertEquals(List.of(), workspace.validate());
@@ -990,9 +995,34 @@ class TowerWorkspaceV2Test {
                 .findFirst()
                 .orElseThrow();
 
-        assertEquals(9, gatehouse.interiorHeight());
+        assertEquals(7, gatehouse.interiorHeight());
         assertEquals("2", gatehouse.tags().get(MKWorkspaceVoidMarginTags.TOP_VOID_MARGIN_TAG));
         assertEquals("1", gatehouse.tags().get(MKWorkspaceVoidMarginTags.BOTTOM_VOID_MARGIN_TAG));
+    }
+
+    @Test
+    void walledKeepGatehouseRoomDerivesHeightFromPerimeterWall() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        List<MKWorkspaceLinearRunFamilyDefinition> linearRuns =
+                MKWalledKeepWorkspacePlanner.defaultLinearRunFamilyDefinitions(dimensions, workspacePalette()).stream()
+                        .map(linearRun -> linearRun.topologySlotId().equals("keep.perimeter") ?
+                                copyLinearRunWithHeightAndTopVoidMargin(linearRun, 11, 3) : linearRun)
+                        .toList();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false),
+                MKWalledKeepWorkspacePlanner.defaultRoomFamilyDefinitions(dimensions),
+                linearRuns
+        );
+
+        assertEquals(List.of(), workspace.validate());
+        MKPlannedPiece gatehouse = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.pieceName().equals("keep_gate_main"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(11, gatehouse.interiorHeight());
+        assertEquals("3", gatehouse.tags().get(MKWorkspaceVoidMarginTags.TOP_VOID_MARGIN_TAG));
     }
 
     @Test
@@ -4594,6 +4624,11 @@ class TowerWorkspaceV2Test {
 
     private static MKWorkspaceLinearRunFamilyDefinition copyLinearRunWithTopVoidMargin(
             MKWorkspaceLinearRunFamilyDefinition linearRun, int topVoidMargin) {
+        return copyLinearRunWithHeightAndTopVoidMargin(linearRun, linearRun.interiorHeight(), topVoidMargin);
+    }
+
+    private static MKWorkspaceLinearRunFamilyDefinition copyLinearRunWithHeightAndTopVoidMargin(
+            MKWorkspaceLinearRunFamilyDefinition linearRun, int interiorHeight, int topVoidMargin) {
         return new MKWorkspaceLinearRunFamilyDefinition(
                 linearRun.linearRunId(),
                 linearRun.topologySlotId(),
@@ -4601,7 +4636,7 @@ class TowerWorkspaceV2Test {
                 linearRun.openingProfileId(),
                 linearRun.length(),
                 linearRun.interiorWidth(),
-                linearRun.interiorHeight(),
+                interiorHeight,
                 linearRun.slopeDelta(),
                 linearRun.allowOnMainPath(),
                 linearRun.allowOnBranchPath(),
