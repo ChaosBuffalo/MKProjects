@@ -247,6 +247,16 @@ public class WalledKeepPlannerClientContributor implements WorkspacePlannerClien
         WorkspaceTopologyUiSupport.addRow(screen, content, screen.makeWhiteText(Component.literal("Wall Height")),
                 wallHeightSlider);
 
+        MKButton rampartAccessButton = new MKButton(
+                Component.literal(keepEditor.rampartAccessEnabled() ? "Enabled" : "Disabled"), 180, 20);
+        rampartAccessButton.setPressedCallback((button, mouseButton) -> {
+            keepEditor.rampartAccessEnabled(!keepEditor.rampartAccessEnabled());
+            screen.flagNeedSetup();
+            return true;
+        });
+        WorkspaceTopologyUiSupport.addRow(screen, content,
+                screen.makeWhiteText(Component.literal("Rampart Access")), rampartAccessButton);
+
         MKIntegerSlider wallTopVoidSlider = new MKIntegerSlider("Margin", 180, 20, 0,
                 Math.max(0, keepEditor.wallHeight() - 1), 1,
                 keepEditor.wallTopVoidMargin(), value -> {

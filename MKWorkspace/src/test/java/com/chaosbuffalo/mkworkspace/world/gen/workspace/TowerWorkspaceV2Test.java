@@ -857,6 +857,98 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void walledKeepRampartAccessAddsElevatedOpeningOnlyCornerEntryConnectors() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceTopologyProfile topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false);
+        topologyProfile = MKWalledKeepPlannerSettings.from(topologyProfile)
+                .withRampartAccessEnabled(true)
+                .applyTo(topologyProfile)
+                .withVerticalStackSettings(topologyProfile.verticalStackSettings("keep.corner.shared")
+                        .orElseThrow()
+                        .withEntryHeight(11));
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                topologyProfile,
+                MKWalledKeepWorkspacePlanner.defaultRoomFamilyDefinitions(dimensions),
+                MKWalledKeepWorkspacePlanner.defaultLinearRunFamilyDefinitions(dimensions, workspacePalette())
+        );
+
+        assertEquals(List.of(), workspace.validate());
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+        MKPlannedPiece sharedCorner = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_corner_north_west_entry"))
+                .findFirst()
+                .orElseThrow();
+
+        List<MKPlannedConnector> rampartOpenings = sharedCorner.connectors().stream()
+                .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
+                .filter(connector -> !connector.placesJigsaw())
+                .filter(connector -> connector.verticalOffset() == 7)
+                .toList();
+
+        assertEquals(4, sharedCorner.connectors().stream()
+                .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
+                .count());
+        assertEquals(2, rampartOpenings.size());
+        assertTrue(rampartOpenings.stream().anyMatch(connector -> connector.facing() == Direction.SOUTH));
+        assertTrue(rampartOpenings.stream().anyMatch(connector -> connector.facing() == Direction.EAST));
+        assertTrue(rampartOpenings.stream().allMatch(connector ->
+                connector.openingWidth() == 3 &&
+                        connector.openingHeight() == 3 &&
+                        connector.lateralOffset() == 0 &&
+                        connector.targetPoolName() == null &&
+                        connector.incomingPoolName() == null &&
+                        connector.horizontalExtrusionModeOverride() == MKWorkspaceHorizontalExtrusionMode.FULL_FACE));
+
+        MKPlannedConnector sharedCornerIncoming = sharedCorner.connectors().stream()
+                .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
+                .filter(connector -> connector.facing() == Direction.SOUTH)
+                .filter(MKPlannedConnector::placesJigsaw)
+                .findFirst()
+                .orElseThrow();
+        assertEquals("minecraft:empty", sharedCornerIncoming.targetPoolName());
+        assertEquals("keep_slots/keep/corner/north_west", sharedCornerIncoming.incomingPoolName());
+        MKPlannedConnector sharedCornerWallTarget = sharedCorner.connectors().stream()
+                .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
+                .filter(connector -> connector.facing() == Direction.EAST)
+                .filter(MKPlannedConnector::placesJigsaw)
+                .findFirst()
+                .orElseThrow();
+        assertEquals("keep_slots/keep/perimeter/north_west/0", sharedCornerWallTarget.targetPoolName());
+        assertNull(sharedCornerWallTarget.incomingPoolName());
+    }
+
+    @Test
+    void walledKeepRampartAccessSkipsCornerEntryConnectorsWhenEntryIsTooShort() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceTopologyProfile topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false);
+        topologyProfile = MKWalledKeepPlannerSettings.from(topologyProfile)
+                .withRampartAccessEnabled(true)
+                .applyTo(topologyProfile);
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                topologyProfile,
+                MKWalledKeepWorkspacePlanner.defaultRoomFamilyDefinitions(dimensions),
+                MKWalledKeepWorkspacePlanner.defaultLinearRunFamilyDefinitions(dimensions, workspacePalette())
+        );
+
+        assertEquals(List.of(), workspace.validate());
+        List<MKPlannedPiece> pieces = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace);
+        MKPlannedPiece sharedCorner = pieces.stream()
+                .filter(piece -> piece.pieceName().equals("keep_corner_north_west_entry"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(7, sharedCorner.interiorHeight());
+        assertEquals(2, sharedCorner.connectors().stream()
+                .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
+                .count());
+        assertFalse(sharedCorner.connectors().stream()
+                .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
+                .anyMatch(connector -> !connector.placesJigsaw() && connector.verticalOffset() == 7));
+    }
+
+    @Test
     void walledKeepPlannerCreatesCourtyardSocketsAndCompactContentTemplates() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKStructureWorkspace workspace = withTopologyAndLinearRuns(

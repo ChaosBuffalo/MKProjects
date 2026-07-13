@@ -131,6 +131,14 @@ public final class WalledKeepDraftEditor {
         session.markDirty();
     }
 
+    public boolean rampartAccessEnabled() {
+        return plannerSettings().rampartAccessEnabled();
+    }
+
+    public void rampartAccessEnabled(boolean value) {
+        plannerSettings(plannerSettings().withRampartAccessEnabled(value));
+    }
+
     public int wallHeight() {
         return session.draft().linearRunFamilies.stream()
                 .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))

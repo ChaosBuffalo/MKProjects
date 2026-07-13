@@ -12,7 +12,8 @@ public record MKWalledKeepPlannerSettings(
         boolean uniqueNorthEastCornerTower,
         boolean uniqueSouthEastCornerTower,
         boolean uniqueSouthWestCornerTower,
-        MKWalledKeepCourtyardSettings courtyardSettings
+        MKWalledKeepCourtyardSettings courtyardSettings,
+        boolean rampartAccessEnabled
 ) {
     public static final ResourceLocation PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "walled_keep");
     public static final String SCOPE_ID = "keep";
@@ -27,7 +28,9 @@ public record MKWalledKeepPlannerSettings(
                     .forGetter(MKWalledKeepPlannerSettings::uniqueSouthWestCornerTower),
             MKWalledKeepCourtyardSettings.CODEC.optionalFieldOf("courtyard_settings",
                             MKWalledKeepCourtyardSettings.defaults())
-                    .forGetter(MKWalledKeepPlannerSettings::courtyardSettings)
+                    .forGetter(MKWalledKeepPlannerSettings::courtyardSettings),
+            Codec.BOOL.optionalFieldOf("rampart_access_enabled", false)
+                    .forGetter(MKWalledKeepPlannerSettings::rampartAccessEnabled)
     ).apply(instance, MKWalledKeepPlannerSettings::new));
 
     public MKWalledKeepPlannerSettings {
@@ -41,7 +44,7 @@ public record MKWalledKeepPlannerSettings(
     public static MKWalledKeepPlannerSettings cornerModes(boolean northWest, boolean northEast,
                                                           boolean southEast, boolean southWest) {
         return new MKWalledKeepPlannerSettings(northWest, northEast, southEast, southWest,
-                MKWalledKeepCourtyardSettings.defaults());
+                MKWalledKeepCourtyardSettings.defaults(), false);
     }
 
     public static MKWalledKeepPlannerSettings from(MKWorkspaceTopologyProfile profile) {
@@ -72,7 +75,8 @@ public record MKWalledKeepPlannerSettings(
 
     public MKWalledKeepPlannerSettings withCornerModes(boolean northWest, boolean northEast,
                                                        boolean southEast, boolean southWest) {
-        return new MKWalledKeepPlannerSettings(northWest, northEast, southEast, southWest, courtyardSettings);
+        return new MKWalledKeepPlannerSettings(northWest, northEast, southEast, southWest, courtyardSettings,
+                rampartAccessEnabled);
     }
 
     public MKWalledKeepPlannerSettings withCornerMode(String topologySlotId, boolean value) {
@@ -92,7 +96,13 @@ public record MKWalledKeepPlannerSettings(
     public MKWalledKeepPlannerSettings withCourtyardSettings(MKWalledKeepCourtyardSettings updatedSettings) {
         return new MKWalledKeepPlannerSettings(uniqueNorthWestCornerTower, uniqueNorthEastCornerTower,
                 uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
-                updatedSettings == null ? MKWalledKeepCourtyardSettings.defaults() : updatedSettings);
+                updatedSettings == null ? MKWalledKeepCourtyardSettings.defaults() : updatedSettings,
+                rampartAccessEnabled);
+    }
+
+    public MKWalledKeepPlannerSettings withRampartAccessEnabled(boolean enabled) {
+        return new MKWalledKeepPlannerSettings(uniqueNorthWestCornerTower, uniqueNorthEastCornerTower,
+                uniqueSouthEastCornerTower, uniqueSouthWestCornerTower, courtyardSettings, enabled);
     }
 
     public MKWorkspaceTopologyProfile applyTo(MKWorkspaceTopologyProfile profile) {

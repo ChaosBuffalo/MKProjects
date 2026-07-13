@@ -759,7 +759,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         ResolvedOpeningProfile opening = defaultOpeningProfile(workspace);
         verticalStackPlanner.createRoomPieces(workspace, stackDefinition, stackFamilies).stream()
                 .map(piece -> withRoomLayoutConnectors(workspace, piece, slots, opening))
-                .map(piece -> withCornerEntryConnectorTargets(piece, slots.perimeterPlan(), opening))
+                .map(piece -> withCornerEntryConnectorTargets(workspace, piece, slots.perimeterPlan(), opening))
                 .map(piece -> uniqueCorner ? piece : withSharedCornerTemplateReuse(piece, stackId))
                 .forEach(pieces::add);
     }
@@ -890,7 +890,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         );
     }
 
-    private MKPlannedPiece withCornerEntryConnectorTargets(MKPlannedPiece piece, PerimeterPlan perimeterPlan,
+    private MKPlannedPiece withCornerEntryConnectorTargets(MKStructureWorkspace workspace, MKPlannedPiece piece,
+                                                           PerimeterPlan perimeterPlan,
                                                            ResolvedOpeningProfile opening) {
         String topologySlotId = piece.tags().getOrDefault("workspace_topology_slot_id", "");
         Optional<CornerEntryConnection> connection = cornerEntryConnection(topologySlotId, perimeterPlan);
@@ -916,6 +917,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                     incomingPool,
                     MKWorkspaceHorizontalExtrusionMode.FULL_FACE));
         }
+        addRampartAccessOpenings(workspace, piece, entryConnection, connectors);
         return new MKPlannedPiece(
                 piece.roleId(),
                 piece.pieceName(),
@@ -926,6 +928,37 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                 piece.tags(),
                 piece.plannerId()
         );
+    }
+
+    private void addRampartAccessOpenings(MKStructureWorkspace workspace, MKPlannedPiece piece,
+                                           CornerEntryConnection connection,
+                                           List<MKPlannedConnector> connectors) {
+        if (!keepSettings(workspace).rampartAccessEnabled()) {
+            return;
+        }
+        ResolvedOpeningProfile rampartOpening = resolveOpeningProfile(workspace, "branch_opening")
+                .orElseGet(() -> defaultOpeningProfile(workspace));
+        int rampartBottom = wallHeight(workspace);
+        if (rampartBottom + rampartOpening.openingHeight() > piece.interiorHeight()) {
+            return;
+        }
+        for (Direction facing : rampartAccessFacings(connection)) {
+            connectors.add(MKPlannedConnector.openingOnly(MKConnectorRole.BRANCH, facing,
+                    rampartOpening.openingWidth(), rampartOpening.openingHeight(), 0, rampartBottom,
+                    MKWorkspaceHorizontalExtrusionMode.FULL_FACE));
+        }
+    }
+
+    private List<Direction> rampartAccessFacings(CornerEntryConnection connection) {
+        return List.of(connection.incomingFacing(), connection.wallTargetFacing());
+    }
+
+    private int wallHeight(MKStructureWorkspace workspace) {
+        return workspace.linearRunFamilies().stream()
+                .filter(linearRun -> isPerimeterRunFamily(linearRun))
+                .findFirst()
+                .map(MKWorkspaceLinearRunFamilyDefinition::interiorHeight)
+                .orElse(7);
     }
 
     private MKPlannedConnector retargetCornerEntryConnector(MKPlannedConnector connector,
