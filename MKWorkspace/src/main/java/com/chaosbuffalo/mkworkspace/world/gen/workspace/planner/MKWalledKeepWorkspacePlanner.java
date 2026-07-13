@@ -938,7 +938,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         }
         ResolvedOpeningProfile rampartOpening = resolveOpeningProfile(workspace, "branch_opening")
                 .orElseGet(() -> defaultOpeningProfile(workspace));
-        int rampartBottom = wallHeight(workspace);
+        int rampartBottom = rampartAccessBottom(workspace);
         if (rampartBottom + rampartOpening.openingHeight() > piece.interiorHeight()) {
             return;
         }
@@ -953,12 +953,18 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         return List.of(connection.incomingFacing(), connection.wallTargetFacing());
     }
 
-    private int wallHeight(MKStructureWorkspace workspace) {
+    private int rampartAccessBottom(MKStructureWorkspace workspace) {
         return workspace.linearRunFamilies().stream()
                 .filter(linearRun -> isPerimeterRunFamily(linearRun))
                 .findFirst()
-                .map(MKWorkspaceLinearRunFamilyDefinition::interiorHeight)
+                .map(this::rampartAccessBottom)
                 .orElse(7);
+    }
+
+    private int rampartAccessBottom(MKWorkspaceLinearRunFamilyDefinition linearRun) {
+        int height = Math.max(0, linearRun.interiorHeight());
+        int topVoidMargin = Math.min(Math.max(0, linearRun.topVoidMargin()), Math.max(0, height - 1));
+        return height - topVoidMargin;
     }
 
     private MKPlannedConnector retargetCornerEntryConnector(MKPlannedConnector connector,

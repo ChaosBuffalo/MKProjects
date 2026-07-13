@@ -1384,7 +1384,7 @@ public class MKStructureWorkspaceService {
     }
 
     private List<MKPlannedConnector> rampartAccessOpenings(MKStructureWorkspace workspace, MKPlannedPiece piece) {
-        int rampartBottom = wallHeight(workspace);
+        int rampartBottom = rampartAccessBottom(workspace);
         return piece.connectors().stream()
                 .filter(connector -> !connector.placesJigsaw())
                 .filter(connector -> !connector.facing().getAxis().isVertical())
@@ -1392,12 +1392,18 @@ public class MKStructureWorkspaceService {
                 .toList();
     }
 
-    private int wallHeight(MKStructureWorkspace workspace) {
+    private int rampartAccessBottom(MKStructureWorkspace workspace) {
         return workspace.linearRunFamilies().stream()
                 .filter(this::isPerimeterRunFamily)
                 .findFirst()
-                .map(MKWorkspaceLinearRunFamilyDefinition::interiorHeight)
+                .map(this::rampartAccessBottom)
                 .orElse(7);
+    }
+
+    private int rampartAccessBottom(MKWorkspaceLinearRunFamilyDefinition linearRun) {
+        int height = Math.max(0, linearRun.interiorHeight());
+        int topVoidMargin = Math.min(Math.max(0, linearRun.topVoidMargin()), Math.max(0, height - 1));
+        return height - topVoidMargin;
     }
 
     private boolean isPerimeterRunFamily(MKWorkspaceLinearRunFamilyDefinition linearRun) {

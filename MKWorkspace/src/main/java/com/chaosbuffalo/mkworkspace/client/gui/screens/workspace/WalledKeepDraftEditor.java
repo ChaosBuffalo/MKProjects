@@ -148,7 +148,7 @@ public final class WalledKeepDraftEditor {
     }
 
     public int requiredRampartAccessEntryHeight() {
-        return wallHeight() + rampartAccessOpeningHeight();
+        return rampartAccessBottom() + rampartAccessOpeningHeight();
     }
 
     public boolean rampartAccessNeedsEntryHeightFix() {
@@ -173,6 +173,20 @@ public final class WalledKeepDraftEditor {
                 .findFirst()
                 .map(MKWorkspaceLinearRunFamilyDefinition::interiorHeight)
                 .orElse(7);
+    }
+
+    public int rampartAccessBottom() {
+        return session.draft().linearRunFamilies.stream()
+                .filter(linearRun -> isPerimeterTopologySlot(linearRun.topologySlotId()))
+                .findFirst()
+                .map(this::rampartAccessBottom)
+                .orElse(7);
+    }
+
+    private int rampartAccessBottom(MKWorkspaceLinearRunFamilyDefinition linearRun) {
+        int height = Math.max(0, linearRun.interiorHeight());
+        int topVoidMargin = Math.min(Math.max(0, linearRun.topVoidMargin()), Math.max(0, height - 1));
+        return height - topVoidMargin;
     }
 
     public void wallHeight(int value) {

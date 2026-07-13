@@ -919,6 +919,45 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void walledKeepRampartAccessAccountsForWallTopVoidMargin() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceTopologyProfile topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false);
+        topologyProfile = MKWalledKeepPlannerSettings.from(topologyProfile)
+                .withRampartAccessEnabled(true)
+                .applyTo(topologyProfile)
+                .withVerticalStackSettings(topologyProfile.verticalStackSettings("keep.corner.shared")
+                        .orElseThrow()
+                        .withEntryHeight(8));
+        List<MKWorkspaceLinearRunFamilyDefinition> linearRuns =
+                MKWalledKeepWorkspacePlanner.defaultLinearRunFamilyDefinitions(dimensions, workspacePalette()).stream()
+                        .map(linearRun -> linearRun.topologySlotId().equals("keep.perimeter") ?
+                                copyLinearRunWithTopVoidMargin(linearRun, 2) : linearRun)
+                        .toList();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                topologyProfile,
+                MKWalledKeepWorkspacePlanner.defaultRoomFamilyDefinitions(dimensions),
+                linearRuns
+        );
+
+        assertEquals(List.of(), workspace.validate());
+        MKPlannedPiece sharedCorner = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.pieceName().equals("keep_corner_north_west_entry"))
+                .findFirst()
+                .orElseThrow();
+        List<MKPlannedConnector> rampartOpenings = sharedCorner.connectors().stream()
+                .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
+                .filter(connector -> !connector.placesJigsaw())
+                .filter(connector -> connector.verticalOffset() == 5)
+                .toList();
+
+        assertEquals(8, sharedCorner.interiorHeight());
+        assertEquals(2, rampartOpenings.size());
+        assertFalse(sharedCorner.connectors().stream()
+                .anyMatch(connector -> !connector.placesJigsaw() && connector.verticalOffset() == 7));
+    }
+
+    @Test
     void walledKeepRampartAccessSkipsCornerEntryConnectorsWhenEntryIsTooShort() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceTopologyProfile topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false);
@@ -4406,6 +4445,27 @@ class TowerWorkspaceV2Test {
                 linearRun.projection(),
                 linearRun.supportedShapes(),
                 linearRun.topVoidMargin(),
+                linearRun.foundationPolicy(),
+                linearRun.paletteOverride()
+        );
+    }
+
+    private static MKWorkspaceLinearRunFamilyDefinition copyLinearRunWithTopVoidMargin(
+            MKWorkspaceLinearRunFamilyDefinition linearRun, int topVoidMargin) {
+        return new MKWorkspaceLinearRunFamilyDefinition(
+                linearRun.linearRunId(),
+                linearRun.topologySlotId(),
+                linearRun.kind(),
+                linearRun.openingProfileId(),
+                linearRun.length(),
+                linearRun.interiorWidth(),
+                linearRun.interiorHeight(),
+                linearRun.slopeDelta(),
+                linearRun.allowOnMainPath(),
+                linearRun.allowOnBranchPath(),
+                linearRun.projection(),
+                linearRun.supportedShapes(),
+                topVoidMargin,
                 linearRun.foundationPolicy(),
                 linearRun.paletteOverride()
         );
