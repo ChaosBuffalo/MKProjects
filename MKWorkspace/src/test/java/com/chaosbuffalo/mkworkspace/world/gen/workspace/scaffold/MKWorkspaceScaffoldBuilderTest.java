@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedConnector;
@@ -154,6 +155,34 @@ class MKWorkspaceScaffoldBuilderTest {
         assertEquals(52, clearBounds.maxZ());
     }
 
+    @Test
+    void verticalJigsawsAlignToExteriorShellFaceWithThickVerticalShellMargin() {
+        MKWorkspaceScaffoldBuilder builder = new MKWorkspaceScaffoldBuilder();
+        MKStructureWorkspace workspace = workspaceWithVerticalShellMargin(3);
+        MKWorkspacePieceDefinition sourcePiece = piece("source", new BoundingBox(10, 70, 20, 20, 80, 30));
+        MKPlannedPiece plannedPiece = new MKPlannedPiece(
+                "test.vertical_access",
+                "vertical_access",
+                7,
+                7,
+                5,
+                List.of(
+                        new MKPlannedConnector(MKConnectorRole.CONNECT_UP, Direction.UP, 3, 3,
+                                "minecraft:empty", "minecraft:empty"),
+                        new MKPlannedConnector(MKConnectorRole.CONNECT_DOWN, Direction.DOWN, 3, 3,
+                                "minecraft:empty", "minecraft:empty")
+                ),
+                Map.of("tower_piece_kind", "room")
+        );
+
+        MKWorkspacePieceDefinition generated = builder.createDerivedLogicalPiece(workspace, plannedPiece, sourcePiece);
+
+        MKWorkspaceConnectorDefinition up = connector(generated, Direction.UP);
+        MKWorkspaceConnectorDefinition down = connector(generated, Direction.DOWN);
+        assertEquals(10, up.relativePos().getY());
+        assertEquals(0, down.relativePos().getY());
+    }
+
     private static MKPlannedPiece linearRun(String kind) {
         return new MKPlannedPiece(
                 "test.linear_run." + kind,
@@ -254,5 +283,40 @@ class MKWorkspaceScaffoldBuilderTest {
                 List.of(),
                 Map.of()
         );
+    }
+
+    private static MKStructureWorkspace workspaceWithVerticalShellMargin(int verticalShellMargin) {
+        MKStructureWorkspace draft = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        return new MKStructureWorkspace(
+                draft.id(),
+                draft.anchor(),
+                draft.namespace(),
+                draft.structureName(),
+                draft.topologyProfile(),
+                draft.dimensions(),
+                draft.palette(),
+                draft.stairConfig(),
+                draft.verticalAccessPlacement(),
+                draft.shellMargin(),
+                verticalShellMargin,
+                draft.exteriorAirMargin(),
+                draft.previewMargin(),
+                draft.verticalAccessSpec(),
+                draft.familyDefinitions(),
+                draft.openingProfiles(),
+                draft.linearRunFamilies(),
+                draft.insertFamilies(),
+                draft.createdAt(),
+                draft.updatedAt(),
+                draft.pieces(),
+                draft.layerStates()
+        );
+    }
+
+    private static MKWorkspaceConnectorDefinition connector(MKWorkspacePieceDefinition piece, Direction facing) {
+        return piece.connectors().stream()
+                .filter(connector -> connector.facing() == facing)
+                .findFirst()
+                .orElseThrow();
     }
 }

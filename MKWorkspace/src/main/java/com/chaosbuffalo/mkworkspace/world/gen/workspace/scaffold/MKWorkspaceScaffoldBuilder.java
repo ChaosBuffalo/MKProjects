@@ -1159,13 +1159,9 @@ public class MKWorkspaceScaffoldBuilder {
         } else if (facing == Direction.EAST) {
             return new BlockPos(exportBounds.maxX(), openingBaseY, interiorCenterZ);
         } else if (facing == Direction.UP) {
-            return new BlockPos(interiorCenterX,
-                    geometryOrigin.getY() + geometryHeight - Math.max(1, verticalShellThickness),
-                    interiorCenterZ);
+            return new BlockPos(interiorCenterX, geometryOrigin.getY() + geometryHeight - 1, interiorCenterZ);
         }
-        return new BlockPos(interiorCenterX,
-                geometryOrigin.getY() + Math.max(0, verticalShellThickness - 1),
-                interiorCenterZ);
+        return new BlockPos(interiorCenterX, geometryOrigin.getY(), interiorCenterZ);
     }
 
     private ResourceLocation getJigsawName(MKStructureWorkspace workspace, MKPlannedConnector connector,
