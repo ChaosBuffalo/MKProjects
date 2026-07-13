@@ -20,6 +20,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWalledKeepPlannerSettings;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyProfile;
@@ -267,6 +268,34 @@ class MKStructureWorkspaceServicePreflightTest {
                         impact.stableSlotKey().contains("floor.keep.center.main_floor.main_room.extra_main_room")),
                 () -> "expected added main-floor main room in relayout impacts: " +
                         preflight.report().relayoutImpacts());
+        assertFalse(preflight.report().warnings().stream()
+                .anyMatch(warning -> warning.contains("full regeneration will clear")));
+    }
+
+    @Test
+    void walledKeepRampartAccessOnlyPreflightPatchesCornerEntryScaffold() {
+        MKWalledKeepWorkspacePlanner planner = new MKWalledKeepWorkspacePlanner();
+        MKStructureWorkspace existing = walledKeepWorkspace(planner);
+        MKWorkspaceTopologyProfile tallEntryProfile = existing.topologyProfile()
+                .withVerticalStackSettings(existing.topologyProfile().verticalStackSettings("keep.corner.shared")
+                        .orElseThrow()
+                        .withEntryHeight(11));
+        existing = withTopologyProfile(existing, tallEntryProfile);
+        existing = existing.withPieces(planner.createCanonicalPieces(existing).stream()
+                .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
+                .map(MKStructureWorkspaceServicePreflightTest::plannedTemplatePiece)
+                .toList());
+        MKWorkspaceTopologyProfile rampartProfile = MKWalledKeepPlannerSettings.from(existing.topologyProfile())
+                .withRampartAccessEnabled(true)
+                .applyTo(existing.topologyProfile());
+        MKStructureWorkspace requested = withTopologyProfile(existing, rampartProfile);
+
+        MKWorkspaceMutationPreflight preflight = service.preflightWorkspaceUpdate(existing, requested, 123L);
+
+        assertEquals("patch_rampart_access_openings", preflight.report().recommendedOperation());
+        assertEquals(MKWorkspaceMutationSafety.SAFE_BLOCK_SUBSTITUTION, preflight.report().safety());
+        assertTrue(preflight.report().invalidatedLayers().contains(MKWorkspaceGeneratedLayer.SCAFFOLD_BLOCKS));
+        assertFalse(preflight.report().invalidatedLayers().contains(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS));
         assertFalse(preflight.report().warnings().stream()
                 .anyMatch(warning -> warning.contains("full regeneration will clear")));
     }

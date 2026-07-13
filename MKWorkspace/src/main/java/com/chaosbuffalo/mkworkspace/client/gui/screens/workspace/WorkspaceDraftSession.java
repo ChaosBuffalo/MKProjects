@@ -21,6 +21,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceFloorTopologyInvalidationAnalyzer;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceInvalidationReport;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWalledKeepPlannerSettings;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
@@ -874,6 +875,7 @@ public class WorkspaceDraftSession {
                 canSwapPaletteOnly(existing, requested) ||
                 canRenameIdentityOnly(existing, requested) ||
                 canExpandMarginsOnly(existing, requested) ||
+                canApplyRampartAccessPatch(existing, requested) ||
                 canRefreshLinkRenderingOnly(existing, requested);
     }
 
@@ -937,6 +939,23 @@ public class WorkspaceDraftSession {
                 .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin(),
                         requested.palette(), requested.namespace(), requested.structureName(),
                         requested.shellMargin(), requested.exteriorAirMargin()));
+    }
+
+    private boolean canApplyRampartAccessPatch(MKStructureWorkspace existing, MKStructureWorkspace requested) {
+        if (!MKWalledKeepPlannerSettings.PLANNER_ID.equals(existing.topologyProfile().plannerId()) ||
+                !MKWalledKeepPlannerSettings.PLANNER_ID.equals(requested.topologyProfile().plannerId())) {
+            return false;
+        }
+        MKWalledKeepPlannerSettings existingSettings = MKWalledKeepPlannerSettings.from(existing.topologyProfile());
+        MKWalledKeepPlannerSettings requestedSettings = MKWalledKeepPlannerSettings.from(requested.topologyProfile());
+        if (existingSettings.rampartAccessEnabled() || !requestedSettings.rampartAccessEnabled()) {
+            return false;
+        }
+        MKWorkspaceTopologyProfile normalizedProfile = requestedSettings.withRampartAccessEnabled(false)
+                .applyTo(requested.topologyProfile());
+        MKStructureWorkspace normalizedRequested = withTopologyProfile(requested, normalizedProfile);
+        return settingsComparisonTag(existing, existing.id(), existing.previewMargin())
+                .equals(settingsComparisonTag(normalizedRequested, existing.id(), requested.previewMargin()));
     }
 
     private boolean canRefreshLinkRenderingOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
@@ -1023,6 +1042,33 @@ public class WorkspaceDraftSession {
                 List.of(),
                 List.of()
         ).toTag();
+    }
+
+    private MKStructureWorkspace withTopologyProfile(MKStructureWorkspace workspace,
+                                                     MKWorkspaceTopologyProfile topologyProfile) {
+        return new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                topologyProfile,
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.linearRunFamilies(),
+                workspace.insertFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces(),
+                workspace.layerStates()
+        );
     }
 
     private MKStructureWorkspace withMaterialSettings(MKStructureWorkspace source, MKStructureWorkspace materialSource) {

@@ -154,6 +154,34 @@ public class MKWorkspaceScaffoldBuilder {
         return Map.copyOf(generated);
     }
 
+    public void carveOpeningOnlyConnectors(ServerLevel level, MKStructureWorkspace workspace,
+                                           MKWorkspacePieceDefinition existingPiece, MKPlannedPiece targetPiece,
+                                           List<MKPlannedConnector> openingOnlyConnectors) {
+        if (openingOnlyConnectors.isEmpty()) {
+            return;
+        }
+        PieceBuildContext context = createBuildContext(workspace, targetPiece, placementFromSource(existingPiece));
+        int effectiveShellMargin = getShellMargin(targetPiece, workspace.shellMargin());
+        int verticalShellThickness = getVerticalShellThickness(targetPiece);
+        BlockState floorState = resolvePaletteState(workspace, targetPiece, MKWorkspacePaletteTags.FLOOR_BLOCK_TAG,
+                workspace.palette().floorBlock(), Blocks.SMOOTH_STONE.defaultBlockState());
+        BlockState wallState = resolvePaletteState(workspace, targetPiece, MKWorkspacePaletteTags.WALL_BLOCK_TAG,
+                workspace.palette().wallBlock(), Blocks.STONE_BRICKS.defaultBlockState());
+        BlockState ceilingState = resolvePaletteState(workspace, targetPiece, MKWorkspacePaletteTags.CEILING_BLOCK_TAG,
+                workspace.palette().ceilingBlock(), Blocks.SMOOTH_STONE.defaultBlockState());
+        for (MKPlannedConnector connector : openingOnlyConnectors) {
+            extendHorizontalConnectorShell(level, context.exportBounds(), context.geometryOrigin(), targetPiece,
+                    connector, effectiveShellMargin, verticalShellThickness, context.geometryBounds().getXSpan(),
+                    context.geometryBounds().getZSpan(), context.geometryBounds().getYSpan(), floorState, wallState,
+                    ceilingState);
+        }
+        for (MKPlannedConnector connector : openingOnlyConnectors) {
+            carveConnectorOpening(level, context.exportBounds(), context.geometryOrigin(), targetPiece, connector,
+                    effectiveShellMargin, verticalShellThickness, context.geometryBounds().getXSpan(),
+                    context.geometryBounds().getZSpan(), context.geometryBounds().getYSpan());
+        }
+    }
+
     public MKWorkspacePieceDefinition cloneFromTemplate(ServerLevel level, MKStructureWorkspace workspace,
                                                         MKWorkspacePieceDefinition templatePiece, MKPlannedPiece targetPiece,
                                                         List<MKPlannedPiece> layoutPieces) {

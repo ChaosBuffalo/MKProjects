@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePaletteResolver;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspacePaletteSwapSafety;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWalledKeepPlannerSettings;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
@@ -21,12 +22,14 @@ import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceFloorTo
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceGeneratedLayerState;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceInvalidationReport;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceLayerStateService;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceMutationPreflight;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceMutationSafety;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceRelayoutImpact;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.export.MKWorkspaceExportArchiveWriter;
@@ -163,6 +166,9 @@ public class MKStructureWorkspaceService {
             if (canRefreshLinkRenderingOnly(existing, workspace)) {
                 return refreshLinkRenderingMetadata(level, existing, workspace);
             }
+            if (canApplyRampartAccessPatch(existing, workspace)) {
+                return patchRampartAccessOpenings(level, existing, workspace);
+            }
             if (canApplyCatalogRelayout(existing, workspace, acceptedRemaps)) {
                 return relayoutCatalogPreservingPieces(level, existing, workspace, acceptedRemaps);
             }
@@ -240,6 +246,13 @@ public class MKStructureWorkspaceService {
                 .isPresent();
     }
 
+    public boolean canApplyRampartAccessPatch(ServerLevel level, MKStructureWorkspace requested) {
+        return IMKStructureWorkspaceData.get(level)
+                .getWorkspaceByAnchor(requested.anchor())
+                .filter(existing -> canApplyRampartAccessPatch(existing, requested))
+                .isPresent();
+    }
+
     public boolean canApplyCatalogRelayout(ServerLevel level, MKStructureWorkspace requested) {
         return canApplyCatalogRelayout(level, requested, List.of());
     }
@@ -278,6 +291,10 @@ public class MKStructureWorkspaceService {
                                                                  List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
         List<MKWorkspaceInvalidationReport> floorReports = floorTopologyReports(existing, requested, nowEpochMillis);
         MKWorkspaceInvalidationReport floorReport = mergeReports(floorReports);
+        Optional<MKWorkspaceInvalidationReport> rampartAccessReport = rampartAccessPatchReport(existing, requested);
+        if (rampartAccessReport.isPresent()) {
+            return preflightForReport(existing, rampartAccessReport.get(), nowEpochMillis);
+        }
         if (canConsiderCatalogRelayout(floorReport)) {
             Optional<MKWorkspacePieceRelayoutService.CatalogRelayoutSummary> catalogSummary =
                     catalogRelayoutSummary(existing, requested, nowEpochMillis, acceptedRemaps);
@@ -1139,6 +1156,10 @@ public class MKStructureWorkspaceService {
         return piece.tags().getOrDefault(MKWorkspaceGridLayout.TAG_BASE_NAME, piece.pieceName());
     }
 
+    private String getBaseName(MKPlannedPiece piece) {
+        return piece.tags().getOrDefault(MKWorkspaceGridLayout.TAG_BASE_NAME, piece.pieceName());
+    }
+
     private boolean canRelayoutPreviewMarginOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
         if (existing.pieces().isEmpty() || existing.previewMargin() == requested.previewMargin()) {
             return false;
@@ -1246,6 +1267,144 @@ public class MKStructureWorkspaceService {
         return Optional.of(updated);
     }
 
+    private boolean canApplyRampartAccessPatch(MKStructureWorkspace existing, MKStructureWorkspace requested) {
+        if (!MKWalledKeepPlannerSettings.PLANNER_ID.equals(existing.topologyProfile().plannerId()) ||
+                !MKWalledKeepPlannerSettings.PLANNER_ID.equals(requested.topologyProfile().plannerId()) ||
+                existing.pieces().isEmpty()) {
+            return false;
+        }
+        MKWalledKeepPlannerSettings existingSettings = MKWalledKeepPlannerSettings.from(existing.topologyProfile());
+        MKWalledKeepPlannerSettings requestedSettings = MKWalledKeepPlannerSettings.from(requested.topologyProfile());
+        if (existingSettings.rampartAccessEnabled() || !requestedSettings.rampartAccessEnabled()) {
+            return false;
+        }
+        MKWorkspaceTopologyProfile normalizedRequestedProfile = requestedSettings.withRampartAccessEnabled(false)
+                .applyTo(requested.topologyProfile());
+        MKStructureWorkspace normalizedRequested = withTopologyProfile(requested, normalizedRequestedProfile);
+        if (!settingsComparisonTag(existing, existing.id(), existing.previewMargin())
+                .equals(settingsComparisonTag(normalizedRequested, existing.id(), requested.previewMargin()))) {
+            return false;
+        }
+        return !rampartAccessPatchTargets(requested).isEmpty();
+    }
+
+    private Optional<MKWorkspaceInvalidationReport> rampartAccessPatchReport(MKStructureWorkspace existing,
+                                                                             MKStructureWorkspace requested) {
+        if (!canApplyRampartAccessPatch(existing, requested)) {
+            return Optional.empty();
+        }
+        List<MKPlannedPiece> targets = rampartAccessPatchTargets(requested);
+        List<MKWorkspaceRelayoutImpact> impacts = targets.stream()
+                .map(piece -> new MKWorkspaceRelayoutImpact(
+                        "scaffold_patch",
+                        piece.pieceName(),
+                        getBaseName(piece),
+                        0,
+                        piece.plannerId().toString(),
+                        stableSlotKey(piece.tags()),
+                        "rampart access openings will be carved into the existing corner entry scaffold"
+                ))
+                .toList();
+        return Optional.of(new MKWorkspaceInvalidationReport(
+                List.of(
+                        MKWorkspaceGeneratedLayer.SCAFFOLD_BLOCKS,
+                        MKWorkspaceGeneratedLayer.SIDECAR_BLOCKS,
+                        MKWorkspaceGeneratedLayer.RUNTIME_METADATA
+                ),
+                targets.stream().map(MKPlannedPiece::plannerId).toList(),
+                List.of(),
+                List.of(),
+                MKWorkspaceMutationSafety.SAFE_BLOCK_SUBSTITUTION,
+                "Rampart access can be applied by carving openings into existing corner entry scaffold.",
+                "patch_rampart_access_openings",
+                List.of("Corner entry authored blocks are preserved except for the new rampart access openings."),
+                List.of(),
+                impacts
+        ));
+    }
+
+    private Optional<MKStructureWorkspace> patchRampartAccessOpenings(ServerLevel level,
+                                                                      MKStructureWorkspace existing,
+                                                                      MKStructureWorkspace requested) {
+        if (!canApplyRampartAccessPatch(existing, requested)) {
+            return Optional.empty();
+        }
+        long nowEpochMillis = System.currentTimeMillis();
+        MKStructureWorkspace updated = workspaceForUpdate(existing, requested, existing.pieces(), nowEpochMillis);
+        return Optional.of(applyRampartAccessOpenings(level, updated, requested, nowEpochMillis));
+    }
+
+    private MKStructureWorkspace applyRampartAccessOpenings(ServerLevel level,
+                                                            MKStructureWorkspace workspaceWithPieces,
+                                                            MKStructureWorkspace requested,
+                                                            long nowEpochMillis) {
+        List<MKPlannedPiece> targets = rampartAccessPatchTargets(requested);
+        if (targets.isEmpty()) {
+            return workspaceWithPieces;
+        }
+        Map<String, MKWorkspacePieceDefinition> existingByBaseName = workspaceWithPieces.pieces().stream()
+                .filter(piece -> piece.variantIndex() == 0)
+                .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
+                .collect(Collectors.toMap(piece -> getBaseName(piece), piece -> piece, (first, ignored) -> first));
+        boolean patched = false;
+        for (MKPlannedPiece target : targets) {
+            MKWorkspacePieceDefinition existingPiece = existingByBaseName.get(getBaseName(target));
+            if (existingPiece == null) {
+                continue;
+            }
+            List<MKPlannedConnector> openings = rampartAccessOpenings(requested, target);
+            scaffoldBuilder.carveOpeningOnlyConnectors(level, requested, existingPiece, target, openings);
+            patched = true;
+        }
+        if (!patched) {
+            return workspaceWithPieces;
+        }
+        MKStructureWorkspace refreshed = layerStateService.refreshLayers(
+                layerStateService.ensureLayerStates(workspaceWithPieces, nowEpochMillis),
+                List.of(
+                        MKWorkspaceGeneratedLayer.SCAFFOLD_BLOCKS,
+                        MKWorkspaceGeneratedLayer.SIDECAR_BLOCKS,
+                        MKWorkspaceGeneratedLayer.RUNTIME_METADATA
+                ),
+                settingsComparisonTag(requested, workspaceWithPieces.id(), requested.previewMargin()).hashCode(),
+                nowEpochMillis);
+        IMKStructureWorkspaceData.get(level).updateWorkspace(refreshed);
+        syncBlockEntity(level, refreshed.anchor(), refreshed.id());
+        return refreshed;
+    }
+
+    private List<MKPlannedPiece> rampartAccessPatchTargets(MKStructureWorkspace workspace) {
+        if (!MKWalledKeepPlannerSettings.from(workspace.topologyProfile()).rampartAccessEnabled()) {
+            return List.of();
+        }
+        return plannerRegistry.plannerFor(workspace).createCanonicalPieces(workspace).stream()
+                .map(this::toTemplatePiece)
+                .filter(piece -> !rampartAccessOpenings(workspace, piece).isEmpty())
+                .toList();
+    }
+
+    private List<MKPlannedConnector> rampartAccessOpenings(MKStructureWorkspace workspace, MKPlannedPiece piece) {
+        int rampartBottom = wallHeight(workspace);
+        return piece.connectors().stream()
+                .filter(connector -> !connector.placesJigsaw())
+                .filter(connector -> !connector.facing().getAxis().isVertical())
+                .filter(connector -> connector.verticalOffset() == rampartBottom)
+                .toList();
+    }
+
+    private int wallHeight(MKStructureWorkspace workspace) {
+        return workspace.linearRunFamilies().stream()
+                .filter(this::isPerimeterRunFamily)
+                .findFirst()
+                .map(MKWorkspaceLinearRunFamilyDefinition::interiorHeight)
+                .orElse(7);
+    }
+
+    private boolean isPerimeterRunFamily(MKWorkspaceLinearRunFamilyDefinition linearRun) {
+        return linearRun.topologySlotId().equals(MKWalledKeepPlannerSettings.SCOPE_ID + ".perimeter") ||
+                linearRun.topologySlotId().startsWith(MKWalledKeepPlannerSettings.SCOPE_ID + ".perimeter.");
+    }
+
     private boolean canApplyCatalogRelayout(MKStructureWorkspace existing, MKStructureWorkspace requested,
                                             List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
         if (existing.pieces().isEmpty() || !canCatalogRelayoutSharePhysicalSettings(existing, requested)) {
@@ -1337,7 +1496,8 @@ public class MKStructureWorkspaceService {
         try {
             return relayoutService.relayoutCatalog(level, existing, targetWorkspace, targets.targetPieces(),
                             targets.layoutPieces(), acceptedRemaps)
-                    .map(MKWorkspacePieceRelayoutService.RelayoutResult::workspace);
+                    .map(MKWorkspacePieceRelayoutService.RelayoutResult::workspace)
+                    .map(updated -> applyRampartAccessOpenings(level, updated, requested, nowEpochMillis));
         } catch (IOException e) {
             throw new IllegalStateException("Failed to write workspace backup before catalog relayout", e);
         }
@@ -1519,6 +1679,33 @@ public class MKStructureWorkspaceService {
                                             List<MKWorkspacePieceDefinition> pieces,
                                             long nowEpochMillis) {
         return workspaceForUpdate(existing, requested, pieces, nowEpochMillis, existing.layerStates());
+    }
+
+    private MKStructureWorkspace withTopologyProfile(MKStructureWorkspace workspace,
+                                                     MKWorkspaceTopologyProfile topologyProfile) {
+        return new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                topologyProfile,
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.linearRunFamilies(),
+                workspace.insertFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces(),
+                workspace.layerStates()
+        );
     }
 
     MKStructureWorkspace workspaceForUpdate(MKStructureWorkspace existing, MKStructureWorkspace requested,
