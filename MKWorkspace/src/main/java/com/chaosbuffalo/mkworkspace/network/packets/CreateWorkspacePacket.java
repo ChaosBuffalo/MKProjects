@@ -96,21 +96,9 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
                 return;
             }
         }
-        boolean nonDestructivePreviewRelayout = service.canApplyPreviewMarginRelayout(player.serverLevel(), workspace);
-        boolean nonDestructivePaletteSwap = service.canApplyPaletteSwap(player.serverLevel(), workspace);
-        boolean nonDestructiveIdentityRename = service.canApplyIdentityRename(player.serverLevel(), workspace);
-        boolean nonDestructiveMarginExpansion = service.canApplyMarginExpansion(player.serverLevel(), workspace);
-        boolean nonDestructiveHallwayRegeneration = service.canApplyHallwayRoutingRegeneration(player.serverLevel(), workspace);
-        boolean nonDestructiveLinkRenderingRefresh = service.canApplyLinkRenderingRefresh(player.serverLevel(), workspace);
-        boolean nonDestructiveRampartAccessPatch = service.canApplyRampartAccessPatch(player.serverLevel(), workspace);
-        boolean nonDestructiveCatalogRelayout = service.canApplyCatalogRelayout(player.serverLevel(), workspace,
-                packet.acceptedRemaps);
         service.createOrUpdateWorkspace(player.serverLevel(), workspace, packet.acceptedRemaps)
                 .ifPresentOrElse(created -> {
-                    if (packet.generateAfterCreate && !nonDestructivePreviewRelayout && !nonDestructivePaletteSwap &&
-                            !nonDestructiveIdentityRename && !nonDestructiveMarginExpansion &&
-                            !nonDestructiveHallwayRegeneration && !nonDestructiveLinkRenderingRefresh &&
-                            !nonDestructiveRampartAccessPatch && !nonDestructiveCatalogRelayout &&
+                    if (packet.generateAfterCreate &&
                             service.generateWorkspace(player.serverLevel(), created.anchor()).isEmpty()) {
                         MKWorkspaceValidationMessages.displayFailure(player, "Workspace generation failed.");
                         return;
