@@ -1091,6 +1091,7 @@ public class MKStructureWorkspaceService {
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(player.serverLevel());
         MKStructureWorkspace workspace = data.getWorkspaceByAnchor(anchor).orElse(null);
         player.connection.send(new OpenWorkspaceScreenPacket(anchor, workspace,
+                workspace == null ? null : data.getSamplePreviewState(workspace.id()).orElse(null),
                 importService.discoverManifestIds(), discoverBackupFileNames(player, workspace)));
     }
 

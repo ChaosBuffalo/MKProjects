@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkworkspace.network.packets.MKWorkspaceClientPackets;
 import com.chaosbuffalo.mkworkspace.network.packets.RequestWorkspacePieceChunkPacket;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceMutationPreflight;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceSamplePreviewState;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -26,13 +27,14 @@ public final class MKWorkspaceScreenPacketHandler implements MKWorkspaceClientPa
     @Override
     public void openWorkspaceScreen(BlockPos anchor, @Nullable MKStructureWorkspace workspace,
                                     List<String> importManifestIds, List<String> backupManifestFiles,
+                                    @Nullable MKWorkspaceSamplePreviewState samplePreviewState,
                                     int totalPieces, int nextPieceOffset, long pieceRevision) {
         if (Minecraft.getInstance().screen instanceof MKWorkspaceScreen current) {
             Minecraft.getInstance().setScreen(current.copyWithWorkspace(workspace, importManifestIds,
-                    backupManifestFiles, totalPieces, nextPieceOffset, pieceRevision));
+                    backupManifestFiles, samplePreviewState, totalPieces, nextPieceOffset, pieceRevision));
         } else {
             Minecraft.getInstance().setScreen(new MKWorkspaceScreen(anchor, workspace, importManifestIds,
-                    backupManifestFiles, totalPieces, nextPieceOffset, pieceRevision));
+                    backupManifestFiles, samplePreviewState, totalPieces, nextPieceOffset, pieceRevision));
         }
         requestNextPieceChunk(anchor, workspace, totalPieces, nextPieceOffset, pieceRevision);
     }

@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkworkspace.network.packets;
 import com.chaosbuffalo.mkworkspace.MKWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceMutationPreflight;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceSamplePreviewState;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import net.minecraft.core.BlockPos;
 
@@ -21,12 +22,13 @@ public final class MKWorkspaceClientPackets {
 
     public static void openWorkspaceScreen(BlockPos anchor, @Nullable MKStructureWorkspace workspace,
                                            List<String> importManifestIds, List<String> backupManifestFiles,
+                                           @Nullable MKWorkspaceSamplePreviewState samplePreviewState,
                                            int totalPieces, int nextPieceOffset, long pieceRevision) {
         if (handler == null) {
             MKWorkspace.LOGGER.warn("Received workspace screen payload before a client handler was registered.");
             return;
         }
-        handler.openWorkspaceScreen(anchor, workspace, importManifestIds, backupManifestFiles,
+        handler.openWorkspaceScreen(anchor, workspace, importManifestIds, backupManifestFiles, samplePreviewState,
                 totalPieces, nextPieceOffset, pieceRevision);
     }
 
@@ -50,6 +52,7 @@ public final class MKWorkspaceClientPackets {
     public interface Handler {
         void openWorkspaceScreen(BlockPos anchor, @Nullable MKStructureWorkspace workspace,
                                  List<String> importManifestIds, List<String> backupManifestFiles,
+                                 @Nullable MKWorkspaceSamplePreviewState samplePreviewState,
                                  int totalPieces, int nextPieceOffset, long pieceRevision);
 
         void applyPieceChunk(BlockPos anchor, List<MKWorkspacePieceDefinition> pieces,

@@ -32,6 +32,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePaletteOverride;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceMutationPreflight;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceSamplePreviewState;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairRiseType;
@@ -81,6 +82,7 @@ public class MKWorkspaceScreen extends MKScreen {
     private final net.minecraft.core.BlockPos anchor;
     private final MKStructureWorkspace workspace;
     private final MKWorkspaceMutationPreflight preflight;
+    private final MKWorkspaceSamplePreviewState samplePreviewState;
     private final List<String> importManifestIds;
     private final List<String> backupManifestFiles;
     private final int totalWorkspacePieces;
@@ -146,15 +148,18 @@ public class MKWorkspaceScreen extends MKScreen {
     public MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace,
                              List<String> importManifestIds, List<String> backupManifestFiles) {
         this(anchor, workspace, importManifestIds, backupManifestFiles,
+                null,
                 workspace == null ? 0 : workspace.pieces().size(),
                 workspace == null ? 0 : workspace.pieces().size(), 0L);
     }
 
     public MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace,
                              List<String> importManifestIds, List<String> backupManifestFiles,
+                             MKWorkspaceSamplePreviewState samplePreviewState,
                              int totalWorkspacePieces, int nextPieceOffset, long pieceRevision) {
         this(anchor, workspace, importManifestIds, backupManifestFiles, List.of(), null, null, null, null,
-                -1, -1, -1, -1, -1, null, null, totalWorkspacePieces, nextPieceOffset, pieceRevision);
+                -1, -1, -1, -1, -1, null, null, samplePreviewState, totalWorkspacePieces, nextPieceOffset,
+                pieceRevision);
     }
 
     private MKWorkspaceScreen(net.minecraft.core.BlockPos anchor, MKStructureWorkspace workspace, List<String> importManifestIds,
@@ -171,6 +176,7 @@ public class MKWorkspaceScreen extends MKScreen {
                               int selectedInsertFamilyIndex,
                               MKWorkspaceStairAuthoringConfig detailStairConfig,
                               MKWorkspaceMutationPreflight preflight,
+                              MKWorkspaceSamplePreviewState samplePreviewState,
                               int totalWorkspacePieces,
                               int nextPieceOffset,
                               long pieceRevision) {
@@ -178,6 +184,7 @@ public class MKWorkspaceScreen extends MKScreen {
         this.anchor = anchor;
         this.workspace = workspace;
         this.preflight = preflight;
+        this.samplePreviewState = samplePreviewState;
         this.importManifestIds = List.copyOf(importManifestIds);
         this.backupManifestFiles = List.copyOf(backupManifestFiles);
         this.totalWorkspacePieces = Math.max(totalWorkspacePieces, workspace == null ? 0 : workspace.pieces().size());
@@ -207,6 +214,15 @@ public class MKWorkspaceScreen extends MKScreen {
     public MKWorkspaceScreen copyWithWorkspace(MKStructureWorkspace updatedWorkspace, List<String> updatedImportManifestIds,
                                                List<String> updatedBackupManifestFiles, int updatedTotalPieces,
                                                int updatedNextPieceOffset, long updatedPieceRevision) {
+        return copyWithWorkspace(updatedWorkspace, updatedImportManifestIds, updatedBackupManifestFiles,
+                samplePreviewState, updatedTotalPieces, updatedNextPieceOffset, updatedPieceRevision);
+    }
+
+    public MKWorkspaceScreen copyWithWorkspace(MKStructureWorkspace updatedWorkspace, List<String> updatedImportManifestIds,
+                                               List<String> updatedBackupManifestFiles,
+                                               MKWorkspaceSamplePreviewState updatedSamplePreviewState,
+                                               int updatedTotalPieces,
+                                               int updatedNextPieceOffset, long updatedPieceRevision) {
         List<String> refreshStates = getInitialStatesForRefresh(updatedWorkspace, false);
         MKWorkspaceScreen copy = new MKWorkspaceScreen(anchor, updatedWorkspace, updatedImportManifestIds, updatedBackupManifestFiles,
                 refreshStates,
@@ -215,7 +231,8 @@ public class MKWorkspaceScreen extends MKScreen {
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
                 draftSession.selectedLinearRunIndex(),
                 draftSession.selectedInsertFamilyIndex(),
-                detailStairConfig, null, updatedTotalPieces, updatedNextPieceOffset, updatedPieceRevision);
+                detailStairConfig, null, updatedSamplePreviewState, updatedTotalPieces, updatedNextPieceOffset,
+                updatedPieceRevision);
         copy.copyClientViewStateFrom(this, restoresCurrentPage(refreshStates));
         return copy;
     }
@@ -229,7 +246,8 @@ public class MKWorkspaceScreen extends MKScreen {
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
                 draftSession.selectedLinearRunIndex(),
                 draftSession.selectedInsertFamilyIndex(),
-                detailStairConfig, updatedPreflight, totalWorkspacePieces, nextPieceOffset, pieceRevision);
+                detailStairConfig, updatedPreflight, samplePreviewState, totalWorkspacePieces, nextPieceOffset,
+                pieceRevision);
         copy.copyClientViewStateFrom(this, restoresCurrentPage(refreshStates));
         return copy;
     }
@@ -318,6 +336,10 @@ public class MKWorkspaceScreen extends MKScreen {
 
     public MKStructureWorkspace workspace() {
         return workspace;
+    }
+
+    public Optional<MKWorkspaceSamplePreviewState> samplePreviewState() {
+        return Optional.ofNullable(samplePreviewState);
     }
 
     public int totalWorkspacePieces() {
