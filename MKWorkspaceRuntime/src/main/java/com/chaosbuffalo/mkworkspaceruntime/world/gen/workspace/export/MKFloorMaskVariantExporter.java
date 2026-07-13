@@ -190,6 +190,7 @@ public final class MKFloorMaskVariantExporter {
         if (selectedMainExit != null) {
             tags.put(FLOOR_SELECTED_MAIN_EXIT_TAG, selectedMainExit.getSerializedName());
         }
+        tags.keySet().removeIf(key -> key.startsWith("generated_stair_") || key.startsWith("resolved_"));
         addClosedConnectorTags(tags, sourcePiece, closedOptional);
         return new MKWorkspacePieceDefinition(
                 UUID.nameUUIDFromBytes((workspace.id() + ":" + pieceName).getBytes(StandardCharsets.UTF_8)),
@@ -205,7 +206,7 @@ public final class MKFloorMaskVariantExporter {
                 sourcePiece.structureBlockPos(),
                 sourcePiece.signPos(),
                 sourcePiece.markerPositions(),
-                sourcePiece.generatedStairPositions(),
+                List.of(),
                 tags
         );
     }

@@ -23,6 +23,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MK
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceGeneratedLayerState;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceInvalidationReport;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceLayerStateService;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceMutationPreflight;
@@ -619,6 +620,7 @@ public class MKStructureWorkspaceService {
         if (sourcePieceName != null && !sourcePieceName.isBlank()) {
             sourcePiece = workspace.pieces().stream()
                     .filter(piece -> sourcePieceName.equals(piece.pieceName()))
+                    .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
                     .findFirst()
                     .orElse(null);
             if (sourcePiece == null) {
@@ -636,11 +638,7 @@ public class MKStructureWorkspaceService {
             return Optional.empty();
         }
 
-        int nextVariantIndex = workspace.pieces().stream()
-                .filter(piece -> targetBasePieceName.equals(getBaseName(piece)))
-                .mapToInt(MKWorkspacePieceDefinition::variantIndex)
-                .max()
-                .orElse(0) + 1;
+        int nextVariantIndex = nextPhysicalVariantIndex(workspace, targetBasePieceName);
 
         MKPlannedPiece variantPiece = toVariantPiece(basePiece, nextVariantIndex);
         List<MKPlannedPiece> layoutPieces = physicalVariantLayoutPieces(workspace, canonicalPieces, canonicalByBaseName,
@@ -714,11 +712,7 @@ public class MKStructureWorkspaceService {
             if (basePiece == null) {
                 return Optional.empty();
             }
-            int nextVariantIndex = workspace.pieces().stream()
-                    .filter(piece -> basePieceName.equals(getBaseName(piece)))
-                    .mapToInt(MKWorkspacePieceDefinition::variantIndex)
-                    .max()
-                    .orElse(0) + 1;
+            int nextVariantIndex = nextPhysicalVariantIndex(workspace, basePieceName);
             if (rowVariantIndex == null) {
                 rowVariantIndex = nextVariantIndex;
             } else if (rowVariantIndex != nextVariantIndex) {
@@ -801,6 +795,15 @@ public class MKStructureWorkspaceService {
         return List.copyOf(layoutPieces);
     }
 
+    private int nextPhysicalVariantIndex(MKStructureWorkspace workspace, String basePieceName) {
+        return workspace.pieces().stream()
+                .filter(piece -> basePieceName.equals(getBaseName(piece)))
+                .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
+                .mapToInt(MKWorkspacePieceDefinition::variantIndex)
+                .max()
+                .orElse(0) + 1;
+    }
+
     public Optional<MKWorkspaceExportResult> exportWorkspacePieces(ServerLevel level, BlockPos anchor) {
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
@@ -842,11 +845,12 @@ public class MKStructureWorkspaceService {
         }
 
         MKStructureWorkspace workspace = workspaceOpt.get();
-        if (workspace.pieces().stream().anyMatch(piece -> pieceName.equals(piece.pieceName()))) {
+        if (workspace.pieces().stream().anyMatch(piece -> pieceName.equals(piece.pieceName()) &&
+                shouldGenerateWorkspaceStairs(piece))) {
             writeBackupBeforeMutation(level, workspace, "generate-stairs", "stair generation");
         }
         List<MKWorkspacePieceDefinition> updatedPieces = workspace.pieces().stream()
-                .map(piece -> pieceName.equals(piece.pieceName()) ?
+                .map(piece -> pieceName.equals(piece.pieceName()) && shouldGenerateWorkspaceStairs(piece) ?
                         stairBuilder.generateForPiece(level, workspace, piece, stairConfigOverride) : piece)
                 .toList();
         MKStructureWorkspace updated = workspace.withPieces(updatedPieces);
@@ -863,12 +867,21 @@ public class MKStructureWorkspaceService {
         }
 
         MKStructureWorkspace workspace = workspaceOpt.get();
-        if (workspace.pieces().stream().anyMatch(piece -> MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags()))) {
+        if (workspace.pieces().stream().anyMatch(piece -> shouldGenerateWorkspaceStairs(piece) ||
+                hasDerivedGeneratedStairState(piece))) {
             writeBackupBeforeMutation(level, workspace, "generate-all-stairs", "stair generation");
         }
         List<MKWorkspacePieceDefinition> updatedPieces = workspace.pieces().stream()
-                .map(piece -> MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags()) ?
-                        stairBuilder.generateForPiece(level, workspace, piece) : piece)
+                .map(piece -> {
+                    if (shouldGenerateWorkspaceStairs(piece)) {
+                        return stairBuilder.generateForPiece(level, workspace, piece);
+                    }
+                    if (hasDerivedGeneratedStairState(piece)) {
+                        clearDerivedGeneratedStairBlocksOutsidePhysicalPieces(level, workspace, piece);
+                        return clearGeneratedStairState(piece);
+                    }
+                    return piece;
+                })
                 .toList();
         MKStructureWorkspace updated = workspace.withPieces(updatedPieces);
         data.updateWorkspace(updated);
@@ -894,6 +907,40 @@ public class MKStructureWorkspaceService {
         data.updateWorkspace(updated);
         syncBlockEntity(level, anchor, updated.id());
         return Optional.of(updated);
+    }
+
+    private boolean shouldGenerateWorkspaceStairs(MKWorkspacePieceDefinition piece) {
+        return MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags()) &&
+                usesPhysicalWorkspaceCell(piece.tags());
+    }
+
+    private boolean hasDerivedGeneratedStairState(MKWorkspacePieceDefinition piece) {
+        return MKWorkspaceTemplateReuseTags.isDerived(piece.tags()) &&
+                (!piece.generatedStairPositions().isEmpty() ||
+                        !"none".equals(piece.tags().getOrDefault("generated_stair_mode", "none")));
+    }
+
+    private MKWorkspacePieceDefinition clearGeneratedStairState(MKWorkspacePieceDefinition piece) {
+        Map<String, String> tags = new java.util.LinkedHashMap<>(piece.tags());
+        tags.put("generated_stair_mode", MKWorkspaceStairMode.NONE.getSerializedName());
+        tags.put("generated_stair_revision", Long.toString(System.currentTimeMillis()));
+        tags.keySet().removeIf(key -> key.startsWith("resolved_"));
+        return piece.withGeneratedStairs(List.of(), tags);
+    }
+
+    private void clearDerivedGeneratedStairBlocksOutsidePhysicalPieces(ServerLevel level, MKStructureWorkspace workspace,
+                                                                       MKWorkspacePieceDefinition derivedPiece) {
+        for (BlockPos pos : derivedPiece.generatedStairPositions()) {
+            if (!isInsidePhysicalPieceBounds(workspace, pos)) {
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            }
+        }
+    }
+
+    private boolean isInsidePhysicalPieceBounds(MKStructureWorkspace workspace, BlockPos pos) {
+        return workspace.pieces().stream()
+                .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
+                .anyMatch(piece -> piece.previewBounds().isInside(pos) || piece.exportBounds().isInside(pos));
     }
 
     public boolean teleportToWorkspacePiece(ServerPlayer player, BlockPos anchor, UUID pieceId) {
@@ -1129,6 +1176,7 @@ public class MKStructureWorkspaceService {
         }
         MKWorkspacePieceDefinition baseTemplate = workspace.pieces().stream()
                 .filter(piece -> piece.variantIndex() == 0 && targetBaseName.equals(getBaseName(piece)))
+                .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
                 .findFirst()
                 .orElse(null);
         if (baseTemplate == null) {
@@ -1141,6 +1189,7 @@ public class MKStructureWorkspaceService {
         MKWorkspacePieceDefinition sameVariantSource = workspace.pieces().stream()
                 .filter(piece -> piece.variantIndex() == targetVariantIndex)
                 .filter(piece -> sourceId.equals(getBaseName(piece)))
+                .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
                 .findFirst()
                 .orElse(null);
         if (sameVariantSource != null) {
@@ -1149,6 +1198,7 @@ public class MKStructureWorkspaceService {
         return workspace.pieces().stream()
                 .filter(piece -> piece.variantIndex() == 0)
                 .filter(piece -> sourceId.equals(getBaseName(piece)))
+                .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
                 .findFirst()
                 .orElse(null);
     }

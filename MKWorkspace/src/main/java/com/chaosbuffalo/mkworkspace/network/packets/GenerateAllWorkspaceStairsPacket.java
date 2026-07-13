@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkworkspace.network.packets;
 import com.chaosbuffalo.mkworkspace.MKWorkspace;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKStructureWorkspaceService;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairMode;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -49,6 +50,7 @@ public class GenerateAllWorkspaceStairsPacket implements CustomPacketPayload {
                 .ifPresent(updated -> {
                     List<String> unresolvedPieces = updated.pieces().stream()
                             .filter(piece -> MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags()))
+                            .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
                             .filter(piece -> MKWorkspaceStairMode.NONE.getSerializedName()
                                     .equals(piece.tags().get("generated_stair_mode")))
                             .map(piece -> piece.pieceName() + " [" + piece.roleId() + "]")

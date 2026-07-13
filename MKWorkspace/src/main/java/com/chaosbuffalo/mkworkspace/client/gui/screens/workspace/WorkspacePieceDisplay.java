@@ -98,7 +98,8 @@ public final class WorkspacePieceDisplay {
     }
 
     public static boolean supportsStairGeneration(MKWorkspacePieceDefinition piece) {
-        return MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags());
+        return MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags()) &&
+                !MKWorkspaceTemplateReuseTags.isDerived(piece.tags());
     }
 
     public static boolean hasGeneratedStairs(MKWorkspacePieceDefinition piece) {

@@ -52,6 +52,28 @@ class MKFloorMaskVariantExporterTest {
         assertFalse(hasPiece(exportPieces, "floor_branch_cap_template_mask_none"));
     }
 
+    @Test
+    void runtimeMaskVariantsDoNotCopyGeneratedStairState() {
+        MKWorkspacePieceDefinition authoredVariant = floorVariant("floor_branch_cap_1", "floor_branch_cap", 1,
+                List.of(new BlockPos(2, 3, 2)), Map.of(
+                "generated_stair_mode", "stair_stairs",
+                "generated_stair_revision", "123",
+                "resolved_pattern", "[1, 1, 1]"
+        ));
+        MKStructureWorkspace workspace = workspaceWithPieces(List.of(
+                floorTemplate("floor_branch_cap_template", "floor_branch_cap"),
+                authoredVariant
+        ));
+
+        List<MKWorkspacePieceDefinition> exportPieces = MKFloorMaskVariantExporter.exportPieces(workspace, true);
+
+        MKWorkspacePieceDefinition runtimeMask = piece(exportPieces, "floor_branch_cap_1_mask_none");
+        assertTrue(runtimeMask.generatedStairPositions().isEmpty());
+        assertFalse(runtimeMask.tags().containsKey("generated_stair_mode"));
+        assertFalse(runtimeMask.tags().containsKey("generated_stair_revision"));
+        assertFalse(runtimeMask.tags().containsKey("resolved_pattern"));
+    }
+
     private static MKStructureWorkspace workspaceWithPieces(List<MKWorkspacePieceDefinition> pieces) {
         return MKStructureWorkspace.createDraft(BlockPos.ZERO).withPieces(pieces);
     }
@@ -64,13 +86,26 @@ class MKFloorMaskVariantExporterTest {
         return piece(pieceName, baseName, variantIndex, "instance");
     }
 
+    private static MKWorkspacePieceDefinition floorVariant(String pieceName, String baseName, int variantIndex,
+                                                           List<BlockPos> generatedStairs,
+                                                           Map<String, String> extraTags) {
+        return piece(pieceName, baseName, variantIndex, "instance", generatedStairs, extraTags);
+    }
+
     private static MKWorkspacePieceDefinition piece(String pieceName, String baseName, int variantIndex,
                                                    String pieceKind) {
+        return piece(pieceName, baseName, variantIndex, pieceKind, List.of(), Map.of());
+    }
+
+    private static MKWorkspacePieceDefinition piece(String pieceName, String baseName, int variantIndex,
+                                                   String pieceKind, List<BlockPos> generatedStairs,
+                                                   Map<String, String> extraTags) {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>();
         tags.put("tower_piece_kind", "floor_plan_room");
         tags.put("workspace_piece_kind", pieceKind);
         tags.put("workspace_base_name", baseName);
         tags.put("workspace_floor_room_kind", MKFloorRoomKind.BRANCH_CAP.getSerializedName());
+        tags.putAll(extraTags);
         return new MKWorkspacePieceDefinition(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
@@ -86,7 +121,7 @@ class MKFloorMaskVariantExporterTest {
                 BlockPos.ZERO,
                 BlockPos.ZERO,
                 List.of(),
-                List.of(),
+                generatedStairs,
                 tags
         );
     }
