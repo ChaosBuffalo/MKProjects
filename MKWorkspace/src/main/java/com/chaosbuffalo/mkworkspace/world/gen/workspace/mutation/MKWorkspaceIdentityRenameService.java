@@ -86,8 +86,6 @@ public class MKWorkspaceIdentityRenameService {
                 piece.roleId(),
                 piece.variantIndex(),
                 piece.effectiveDimensions(),
-                piece.shellMargin(),
-                piece.verticalShellMargin(),
                 connectors,
                 piece.worldOrigin(),
                 piece.exportBounds(),

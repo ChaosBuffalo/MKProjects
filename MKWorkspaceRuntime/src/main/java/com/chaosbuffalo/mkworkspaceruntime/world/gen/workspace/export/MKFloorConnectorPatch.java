@@ -71,11 +71,10 @@ public final class MKFloorConnectorPatch {
         if (span <= 0 || roomSpan <= 0) {
             return 1;
         }
-        int shellMargin = Math.max(0, piece.shellMargin());
-        int exteriorMargin = Math.max(0, (span - roomSpan - (2 * shellMargin)) / 2);
+        int horizontalPadding = Math.max(0, (span - roomSpan) / 2);
         int innerShellPlane = switch (facing) {
-            case WEST, NORTH -> exteriorMargin + Math.max(0, shellMargin - 1);
-            case EAST, SOUTH -> span - exteriorMargin - shellMargin;
+            case WEST, NORTH -> Math.max(0, horizontalPadding - 1);
+            case EAST, SOUTH -> span - horizontalPadding;
             default -> 0;
         };
         int connectorCoord = facing.getAxis() == Direction.Axis.X ?

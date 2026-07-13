@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.stairs;
 
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceGeometry;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKResolvedVerticalAccessProfile;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceMaterialPalette;
@@ -471,7 +472,7 @@ public class MKWorkspaceStairBuilder {
     }
 
     private void clearGenerated(ServerLevel level, MKWorkspacePieceDefinition piece) {
-        clearGenerated(level, piece, Blocks.STONE_BRICKS.defaultBlockState(), Math.max(0, piece.verticalShellMargin()));
+        clearGenerated(level, piece, Blocks.STONE_BRICKS.defaultBlockState(), inferVerticalShellMargin(piece));
     }
 
     private void clearGenerated(ServerLevel level, MKWorkspacePieceDefinition piece, BlockState protectedBottomState,
@@ -498,7 +499,7 @@ public class MKWorkspaceStairBuilder {
 
     int getEditableMinY(MKWorkspacePieceDefinition piece,
                         MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry) {
-        return getEditableMinY(piece, geometry, Math.max(0, piece.verticalShellMargin()));
+        return getEditableMinY(piece, geometry, inferVerticalShellMargin(piece));
     }
 
     int getEditableMinY(MKWorkspacePieceDefinition piece,
@@ -515,11 +516,11 @@ public class MKWorkspaceStairBuilder {
     }
 
     int getEffectiveVerticalShellMargin(MKStructureWorkspace workspace, MKWorkspacePieceDefinition piece) {
-        int pieceMargin = Math.max(0, piece.verticalShellMargin());
-        if (pieceMargin == 0) {
-            return 0;
-        }
-        return Math.max(pieceMargin, Math.max(0, workspace.verticalShellMargin()));
+        return MKWorkspacePieceGeometry.effectiveVerticalShellMargin(workspace, piece);
+    }
+
+    private int inferVerticalShellMargin(MKWorkspacePieceDefinition piece) {
+        return Math.max(0, (piece.exportBounds().getYSpan() - piece.effectiveDimensions().roomHeight()) / 2);
     }
 
     private boolean isProtectedBottomShell(MKWorkspacePieceDefinition piece, BlockPos pos, int verticalShellMargin) {

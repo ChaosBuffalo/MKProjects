@@ -114,9 +114,7 @@ public class MKWorkspaceMarginExpansionService {
             BlockPos contentDelta = getInteriorOrigin(context.exportOrigin(), targetWorkspace.exteriorAirMargin(),
                     context.shellMargin(), context.verticalShellThickness(), getBottomVoidMargin(plannedPiece),
                     isEmptyScaffold(original))
-                    .subtract(getInteriorOrigin(original.worldOrigin(), originalExteriorMargin(original),
-                            original.shellMargin(), original.verticalShellMargin(), getBottomVoidMargin(original),
-                            isEmptyScaffold(original)));
+                    .subtract(originalInteriorOrigin(original));
             if (isEmptyScaffold(original)) {
                 contentDelta = context.exportOrigin().subtract(original.worldOrigin());
             }
@@ -126,9 +124,28 @@ public class MKWorkspaceMarginExpansionService {
         return expansions;
     }
 
-    private int originalExteriorMargin(MKWorkspacePieceDefinition piece) {
+    private BlockPos originalInteriorOrigin(MKWorkspacePieceDefinition piece) {
+        if (isEmptyScaffold(piece)) {
+            return piece.worldOrigin();
+        }
+        int horizontalPadding = originalHorizontalPadding(piece);
+        int bottomVoidMargin = getBottomVoidMargin(piece);
+        int verticalShellThickness = originalVerticalShellThickness(piece, bottomVoidMargin);
+        return piece.worldOrigin().offset(horizontalPadding, bottomVoidMargin + verticalShellThickness,
+                horizontalPadding);
+    }
+
+    private int originalHorizontalPadding(MKWorkspacePieceDefinition piece) {
         return isEmptyScaffold(piece) ? 0 : Math.max(0,
-                (piece.exportBounds().getXSpan() - piece.effectiveDimensions().roomWidth() - (2 * piece.shellMargin())) / 2);
+                (piece.exportBounds().getXSpan() - piece.effectiveDimensions().roomWidth()) / 2);
+    }
+
+    private int originalVerticalShellThickness(MKWorkspacePieceDefinition piece, int bottomVoidMargin) {
+        if (isEmptyScaffold(piece)) {
+            return 0;
+        }
+        int contentHeight = piece.effectiveDimensions().roomHeight() + bottomVoidMargin + getTopVoidMargin(piece);
+        return Math.max(0, (piece.exportBounds().getYSpan() - contentHeight) / 2);
     }
 
     private BlockPos getInteriorOrigin(BlockPos exportOrigin, int exteriorMargin, int shellMargin,
@@ -328,10 +345,10 @@ public class MKWorkspaceMarginExpansionService {
     }
 
     private void carveConnectorOpenings(ServerLevel level, MKWorkspacePieceDefinition piece) {
-        int exteriorMargin = originalExteriorMargin(piece);
-        int interiorMinX = piece.worldOrigin().getX() + exteriorMargin + piece.shellMargin();
+        int horizontalPadding = originalHorizontalPadding(piece);
+        int interiorMinX = piece.worldOrigin().getX() + horizontalPadding;
         int interiorMaxX = interiorMinX + piece.effectiveDimensions().roomWidth() - 1;
-        int interiorMinZ = piece.worldOrigin().getZ() + exteriorMargin + piece.shellMargin();
+        int interiorMinZ = piece.worldOrigin().getZ() + horizontalPadding;
         int interiorMaxZ = interiorMinZ + piece.effectiveDimensions().roomLength() - 1;
         for (MKWorkspaceConnectorDefinition connector : piece.connectors()) {
             BlockPos pos = piece.worldOrigin().offset(connector.relativePos());
@@ -587,6 +604,14 @@ public class MKWorkspaceMarginExpansionService {
     }
 
     private int getTopVoidMargin(MKPlannedPiece piece) {
+        if (MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags()) &&
+                !MKWorkspaceVerticalAccessTags.isTopCap(piece.tags())) {
+            return 0;
+        }
+        return Math.max(0, parseIntTag(piece.tags(), MKWorkspaceVoidMarginTags.TOP_VOID_MARGIN_TAG, 0));
+    }
+
+    private int getTopVoidMargin(MKWorkspacePieceDefinition piece) {
         if (MKWorkspaceVerticalAccessTags.supportsVerticalAccess(piece.tags()) &&
                 !MKWorkspaceVerticalAccessTags.isTopCap(piece.tags())) {
             return 0;

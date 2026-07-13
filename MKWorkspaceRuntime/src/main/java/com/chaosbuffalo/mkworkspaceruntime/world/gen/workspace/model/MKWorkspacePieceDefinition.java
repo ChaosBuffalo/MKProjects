@@ -29,8 +29,6 @@ public class MKWorkspacePieceDefinition {
     private final MKWorkspacePlannerId plannerId;
     private final int variantIndex;
     private final MKWorkspaceDimensions effectiveDimensions;
-    private final int shellMargin;
-    private final int verticalShellMargin;
     private final List<MKWorkspaceConnectorDefinition> connectors;
     private final BlockPos worldOrigin;
     private final BoundingBox exportBounds;
@@ -58,14 +56,14 @@ public class MKWorkspacePieceDefinition {
     }
 
     private record SerializedGeometry(MKWorkspaceDimensions effectiveDimensions,
-                                      int shellMargin,
-                                      int verticalShellMargin,
+                                      Optional<Integer> legacyShellMargin,
+                                      Optional<Integer> legacyVerticalShellMargin,
                                       List<MKWorkspaceConnectorDefinition> connectors) {
         private static final Codec<SerializedGeometry> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 MKWorkspaceDimensions.CODEC.fieldOf("effectiveDimensions")
                         .forGetter(SerializedGeometry::effectiveDimensions),
-                Codec.INT.fieldOf("shellMargin").forGetter(SerializedGeometry::shellMargin),
-                Codec.INT.optionalFieldOf("verticalShellMargin", 1).forGetter(SerializedGeometry::verticalShellMargin),
+                Codec.INT.optionalFieldOf("shellMargin").forGetter(SerializedGeometry::legacyShellMargin),
+                Codec.INT.optionalFieldOf("verticalShellMargin").forGetter(SerializedGeometry::legacyVerticalShellMargin),
                 MKWorkspaceConnectorDefinition.CODEC.listOf().optionalFieldOf("connectors", List.of())
                         .forGetter(SerializedGeometry::connectors)
         ).apply(instance, SerializedGeometry::new));
@@ -113,8 +111,6 @@ public class MKWorkspacePieceDefinition {
                 identity.plannerId().orElse(null),
                 identity.variantIndex(),
                 geometry.effectiveDimensions(),
-                geometry.shellMargin(),
-                geometry.verticalShellMargin(),
                 geometry.connectors(),
                 placement.worldOrigin(),
                 placement.exportBounds(),
@@ -132,7 +128,7 @@ public class MKWorkspacePieceDefinition {
     }
 
     private SerializedGeometry serializedGeometry() {
-        return new SerializedGeometry(effectiveDimensions, shellMargin, verticalShellMargin, connectors);
+        return new SerializedGeometry(effectiveDimensions, Optional.empty(), Optional.empty(), connectors);
     }
 
     private SerializedPlacement serializedPlacement() {
@@ -149,8 +145,8 @@ public class MKWorkspacePieceDefinition {
                                       BoundingBox exportBounds, BoundingBox previewBounds, BlockPos structureBlockPos,
                                       BlockPos signPos, List<BlockPos> markerPositions,
                                       List<BlockPos> generatedStairPositions, Map<String, String> tags) {
-        this(pieceId, workspaceId, pieceName, roleId, MKWorkspacePlannerId.of(roleId).child(pieceName), variantIndex,
-                effectiveDimensions, shellMargin, 1, connectors, worldOrigin, exportBounds, previewBounds,
+        this(pieceId, workspaceId, pieceName, roleId, MKWorkspacePlannerId.of(roleId).child(pieceName),
+                variantIndex, effectiveDimensions, connectors, worldOrigin, exportBounds, previewBounds,
                 structureBlockPos, signPos, markerPositions, generatedStairPositions, tags);
     }
 
@@ -161,9 +157,9 @@ public class MKWorkspacePieceDefinition {
                                       BoundingBox exportBounds, BoundingBox previewBounds, BlockPos structureBlockPos,
                                       BlockPos signPos, List<BlockPos> markerPositions,
                                       List<BlockPos> generatedStairPositions, Map<String, String> tags) {
-        this(pieceId, workspaceId, pieceName, roleId, MKWorkspacePlannerId.of(roleId).child(pieceName), variantIndex,
-                effectiveDimensions, shellMargin, verticalShellMargin, connectors, worldOrigin, exportBounds,
-                previewBounds, structureBlockPos, signPos, markerPositions, generatedStairPositions, tags);
+        this(pieceId, workspaceId, pieceName, roleId, MKWorkspacePlannerId.of(roleId).child(pieceName),
+                variantIndex, effectiveDimensions, connectors, worldOrigin, exportBounds, previewBounds,
+                structureBlockPos, signPos, markerPositions, generatedStairPositions, tags);
     }
 
     public MKWorkspacePieceDefinition(UUID pieceId, UUID workspaceId, String pieceName, String roleId,
@@ -173,8 +169,8 @@ public class MKWorkspacePieceDefinition {
                                       BoundingBox exportBounds, BoundingBox previewBounds, BlockPos structureBlockPos,
                                       BlockPos signPos, List<BlockPos> markerPositions,
                                       List<BlockPos> generatedStairPositions, Map<String, String> tags) {
-        this(pieceId, workspaceId, pieceName, roleId, plannerId, variantIndex, effectiveDimensions, shellMargin, 1,
-                connectors, worldOrigin, exportBounds, previewBounds, structureBlockPos, signPos, markerPositions,
+        this(pieceId, workspaceId, pieceName, roleId, plannerId, variantIndex, effectiveDimensions, connectors,
+                worldOrigin, exportBounds, previewBounds, structureBlockPos, signPos, markerPositions,
                 generatedStairPositions, tags);
     }
 
@@ -186,6 +182,29 @@ public class MKWorkspacePieceDefinition {
                                       BoundingBox exportBounds, BoundingBox previewBounds, BlockPos structureBlockPos,
                                       BlockPos signPos, List<BlockPos> markerPositions,
                                       List<BlockPos> generatedStairPositions, Map<String, String> tags) {
+        this(pieceId, workspaceId, pieceName, roleId, plannerId, variantIndex, effectiveDimensions, connectors,
+                worldOrigin, exportBounds, previewBounds, structureBlockPos, signPos, markerPositions,
+                generatedStairPositions, tags);
+    }
+
+    public MKWorkspacePieceDefinition(UUID pieceId, UUID workspaceId, String pieceName, String roleId,
+                                      int variantIndex, MKWorkspaceDimensions effectiveDimensions,
+                                      List<MKWorkspaceConnectorDefinition> connectors, BlockPos worldOrigin,
+                                      BoundingBox exportBounds, BoundingBox previewBounds, BlockPos structureBlockPos,
+                                      BlockPos signPos, List<BlockPos> markerPositions,
+                                      List<BlockPos> generatedStairPositions, Map<String, String> tags) {
+        this(pieceId, workspaceId, pieceName, roleId, MKWorkspacePlannerId.of(roleId).child(pieceName), variantIndex,
+                effectiveDimensions, connectors, worldOrigin, exportBounds, previewBounds, structureBlockPos, signPos,
+                markerPositions, generatedStairPositions, tags);
+    }
+
+    public MKWorkspacePieceDefinition(UUID pieceId, UUID workspaceId, String pieceName, String roleId,
+                                      MKWorkspacePlannerId plannerId,
+                                      int variantIndex, MKWorkspaceDimensions effectiveDimensions,
+                                      List<MKWorkspaceConnectorDefinition> connectors, BlockPos worldOrigin,
+                                      BoundingBox exportBounds, BoundingBox previewBounds, BlockPos structureBlockPos,
+                                      BlockPos signPos, List<BlockPos> markerPositions,
+                                      List<BlockPos> generatedStairPositions, Map<String, String> tags) {
         this.pieceId = pieceId;
         this.workspaceId = workspaceId;
         this.pieceName = pieceName;
@@ -193,8 +212,6 @@ public class MKWorkspacePieceDefinition {
         this.plannerId = resolvePlannerId(pieceName, roleId, plannerId, tags);
         this.variantIndex = variantIndex;
         this.effectiveDimensions = effectiveDimensions;
-        this.shellMargin = shellMargin;
-        this.verticalShellMargin = verticalShellMargin;
         this.connectors = List.copyOf(connectors);
         this.worldOrigin = worldOrigin;
         this.exportBounds = exportBounds;
@@ -242,14 +259,6 @@ public class MKWorkspacePieceDefinition {
         return effectiveDimensions;
     }
 
-    public int shellMargin() {
-        return shellMargin;
-    }
-
-    public int verticalShellMargin() {
-        return verticalShellMargin;
-    }
-
     public List<MKWorkspaceConnectorDefinition> connectors() {
         return connectors;
     }
@@ -288,8 +297,8 @@ public class MKWorkspacePieceDefinition {
 
     public MKWorkspacePieceDefinition withGeneratedStairs(List<BlockPos> newGeneratedStairPositions, Map<String, String> newTags) {
         return new MKWorkspacePieceDefinition(pieceId, workspaceId, pieceName, roleId, plannerId, variantIndex,
-                effectiveDimensions, shellMargin, verticalShellMargin, connectors, worldOrigin, exportBounds,
-                previewBounds, structureBlockPos, signPos, markerPositions, newGeneratedStairPositions, newTags);
+                effectiveDimensions, connectors, worldOrigin, exportBounds, previewBounds, structureBlockPos,
+                signPos, markerPositions, newGeneratedStairPositions, newTags);
     }
 
     private static MKWorkspacePlannerId resolvePlannerId(String pieceName, String roleId, MKWorkspacePlannerId plannerId,

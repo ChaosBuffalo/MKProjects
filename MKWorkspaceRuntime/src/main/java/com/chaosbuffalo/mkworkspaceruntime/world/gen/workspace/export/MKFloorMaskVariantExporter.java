@@ -198,8 +198,6 @@ public final class MKFloorMaskVariantExporter {
                 sourcePiece.roleId(),
                 sourcePiece.variantIndex(),
                 sourcePiece.effectiveDimensions(),
-                sourcePiece.shellMargin(),
-                sourcePiece.verticalShellMargin(),
                 activeConnectors,
                 sourcePiece.worldOrigin(),
                 sourcePiece.exportBounds(),

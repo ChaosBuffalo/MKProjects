@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkworkspace.world.gen.workspace.stairs;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKVerticalAccessPlacement;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceGeometry;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import net.minecraft.core.BlockPos;
@@ -26,8 +27,8 @@ public class MKWorkspaceVerticalAccessGeometry {
     }
 
     public static ShaftGeometry forPiece(MKStructureWorkspace workspace, MKWorkspacePieceDefinition piece) {
-        int shellMargin = piece.shellMargin();
-        int exteriorAirMargin = workspace.exteriorAirMargin();
+        int shellMargin = MKWorkspacePieceGeometry.effectiveShellMargin(workspace, piece);
+        int exteriorAirMargin = MKWorkspacePieceGeometry.effectiveExteriorAirMargin(workspace, piece);
         int interiorWidth = piece.effectiveDimensions().roomWidth();
         int interiorLength = piece.effectiveDimensions().roomLength();
         int interiorMinX = piece.worldOrigin().getX() + exteriorAirMargin + shellMargin;

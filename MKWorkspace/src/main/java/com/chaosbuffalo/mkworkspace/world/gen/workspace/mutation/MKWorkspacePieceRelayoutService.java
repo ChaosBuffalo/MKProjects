@@ -583,8 +583,6 @@ public class MKWorkspacePieceRelayoutService {
                 targetPiece.plannerId(),
                 original.variantIndex(),
                 targetDimensions(targetPiece, original.effectiveDimensions()),
-                original.shellMargin(),
-                original.verticalShellMargin(),
                 original.connectors(),
                 original.worldOrigin().offset(delta),
                 shift(original.exportBounds(), delta),
@@ -599,8 +597,9 @@ public class MKWorkspacePieceRelayoutService {
 
     private boolean canPreserveAuthoredBlocks(MKWorkspacePieceDefinition existingPiece, MKPlannedPiece targetPiece,
                                               MKStructureWorkspace targetWorkspace) {
-        return existingPiece.shellMargin() == targetWorkspace.shellMargin() &&
-                existingPiece.verticalShellMargin() == targetWorkspace.verticalShellMargin() &&
+        return targetExportWidth(targetWorkspace, targetPiece) == existingPiece.exportBounds().getXSpan() &&
+                targetExportLength(targetWorkspace, targetPiece) == existingPiece.exportBounds().getZSpan() &&
+                targetExportHeight(targetWorkspace, targetPiece) == existingPiece.exportBounds().getYSpan() &&
                 existingPiece.effectiveDimensions().roomWidth() == targetPiece.interiorWidth() &&
                 existingPiece.effectiveDimensions().roomLength() == targetPiece.interiorLength() &&
                 existingPiece.effectiveDimensions().roomHeight() == targetPiece.interiorHeight() &&
@@ -611,16 +610,45 @@ public class MKWorkspacePieceRelayoutService {
     private boolean canExpandPreservingAuthoredBlocks(MKWorkspacePieceDefinition existingPiece,
                                                       MKPlannedPiece targetPiece,
                                                       MKStructureWorkspace targetWorkspace) {
-        return existingPiece.shellMargin() == targetWorkspace.shellMargin() &&
-                existingPiece.verticalShellMargin() == targetWorkspace.verticalShellMargin() &&
+        int targetExportWidth = targetExportWidth(targetWorkspace, targetPiece);
+        int targetExportLength = targetExportLength(targetWorkspace, targetPiece);
+        int targetExportHeight = targetExportHeight(targetWorkspace, targetPiece);
+        return targetExportWidth >= existingPiece.exportBounds().getXSpan() &&
+                targetExportLength >= existingPiece.exportBounds().getZSpan() &&
+                targetExportHeight >= existingPiece.exportBounds().getYSpan() &&
                 targetPiece.interiorWidth() >= existingPiece.effectiveDimensions().roomWidth() &&
                 targetPiece.interiorLength() >= existingPiece.effectiveDimensions().roomLength() &&
                 targetPiece.interiorHeight() >= existingPiece.effectiveDimensions().roomHeight() &&
-                (targetPiece.interiorWidth() > existingPiece.effectiveDimensions().roomWidth() ||
+                (targetExportWidth > existingPiece.exportBounds().getXSpan() ||
+                        targetExportLength > existingPiece.exportBounds().getZSpan() ||
+                        targetExportHeight > existingPiece.exportBounds().getYSpan() ||
+                        targetPiece.interiorWidth() > existingPiece.effectiveDimensions().roomWidth() ||
                         targetPiece.interiorLength() > existingPiece.effectiveDimensions().roomLength() ||
                         targetPiece.interiorHeight() > existingPiece.effectiveDimensions().roomHeight()) &&
                 Objects.equals(connectorSignatures(existingPiece),
                         connectorSignatures(targetWorkspace, targetPiece));
+    }
+
+    private int targetExportWidth(MKStructureWorkspace workspace, MKPlannedPiece piece) {
+        int horizontalPadding = isExactBoundsScaffold(piece) ? 0 :
+                workspace.shellMargin() + workspace.exteriorAirMargin();
+        return piece.interiorWidth() + (2 * horizontalPadding);
+    }
+
+    private int targetExportLength(MKStructureWorkspace workspace, MKPlannedPiece piece) {
+        int horizontalPadding = isExactBoundsScaffold(piece) ? 0 :
+                workspace.shellMargin() + workspace.exteriorAirMargin();
+        return piece.interiorLength() + (2 * horizontalPadding);
+    }
+
+    private int targetExportHeight(MKStructureWorkspace workspace, MKPlannedPiece piece) {
+        int verticalShellMargin = isExactBoundsScaffold(piece) ? 0 : workspace.verticalShellMargin();
+        return piece.interiorHeight() + (2 * verticalShellMargin);
+    }
+
+    private boolean isExactBoundsScaffold(MKPlannedPiece piece) {
+        String towerPieceKind = piece.tags().get("tower_piece_kind");
+        return "embedded_stair".equals(towerPieceKind) || "floor_link_insert".equals(towerPieceKind);
     }
 
     private List<ConnectorSignature> connectorSignatures(MKWorkspacePieceDefinition piece) {
@@ -750,8 +778,6 @@ public class MKWorkspacePieceRelayoutService {
                 generated.plannerId(),
                 generated.variantIndex(),
                 generated.effectiveDimensions(),
-                generated.shellMargin(),
-                generated.verticalShellMargin(),
                 generated.connectors(),
                 generated.worldOrigin(),
                 generated.exportBounds(),
@@ -966,8 +992,6 @@ public class MKWorkspacePieceRelayoutService {
                 original.roleId(),
                 original.variantIndex(),
                 original.effectiveDimensions(),
-                original.shellMargin(),
-                original.verticalShellMargin(),
                 original.connectors(),
                 original.worldOrigin().offset(delta),
                 shift(original.exportBounds(), delta),

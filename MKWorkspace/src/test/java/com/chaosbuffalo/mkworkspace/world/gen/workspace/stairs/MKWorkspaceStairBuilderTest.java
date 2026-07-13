@@ -55,18 +55,20 @@ class MKWorkspaceStairBuilderTest {
 
         assertEquals(0, geometry.interiorMinY());
         assertEquals(6, geometry.interiorMaxY());
-        assertEquals(1, builder.getEditableMinY(bottomCap, geometry));
+        assertEquals(1, builder.getEditableMinY(bottomCap, geometry,
+                builder.getEffectiveVerticalShellMargin(workspace, bottomCap)));
     }
 
     @Test
     void bottomCapClipsEditsAboveConfiguredBottomShell() {
-        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        MKStructureWorkspace workspace = workspaceWithVerticalShellMargin(3);
         MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
         MKWorkspacePieceDefinition bottomCap = verticalCapPiece(Direction.UP,
                 MKWorkspaceVerticalAccessTags.BOTTOM_CAP_TAG, 3);
         MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry = builder.getGenerationGeometry(workspace, bottomCap);
 
-        assertEquals(3, builder.getEditableMinY(bottomCap, geometry));
+        assertEquals(3, builder.getEditableMinY(bottomCap, geometry,
+                builder.getEffectiveVerticalShellMargin(workspace, bottomCap)));
     }
 
     @Test
@@ -81,7 +83,8 @@ class MKWorkspaceStairBuilderTest {
 
         assertEquals(0, geometry.interiorMinY());
         assertEquals(6, geometry.interiorMaxY());
-        assertEquals(1, builder.getEditableMinY(topOnly, geometry));
+        assertEquals(1, builder.getEditableMinY(topOnly, geometry,
+                builder.getEffectiveVerticalShellMargin(workspace, topOnly)));
     }
 
     @Test
@@ -96,7 +99,8 @@ class MKWorkspaceStairBuilderTest {
 
         assertEquals(0, geometry.interiorMinY());
         assertEquals(0, geometry.interiorMaxY());
-        assertEquals(0, builder.getEditableMinY(bottomOnly, geometry));
+        assertEquals(0, builder.getEditableMinY(bottomOnly, geometry,
+                builder.getEffectiveVerticalShellMargin(workspace, bottomOnly)));
     }
 
     @Test
@@ -112,7 +116,8 @@ class MKWorkspaceStairBuilderTest {
 
         assertEquals(0, geometry.interiorMinY());
         assertEquals(8, geometry.interiorMaxY());
-        assertEquals(1, builder.getEditableMinY(bottomCap, geometry));
+        assertEquals(1, builder.getEditableMinY(bottomCap, geometry,
+                builder.getEffectiveVerticalShellMargin(workspace, bottomCap)));
     }
 
     @Test

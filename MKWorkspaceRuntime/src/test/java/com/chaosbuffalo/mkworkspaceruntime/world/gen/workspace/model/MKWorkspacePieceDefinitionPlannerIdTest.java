@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.junit.jupiter.api.Test;
 
@@ -9,6 +10,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class MKWorkspacePieceDefinitionPlannerIdTest {
     @Test
@@ -49,7 +51,7 @@ public class MKWorkspacePieceDefinitionPlannerIdTest {
     }
 
     @Test
-    void verticalShellMarginRoundTrips() {
+    void legacyPieceMarginsAreReadableButNotRewritten() {
         MKWorkspacePlannerId plannerId = MKWorkspacePlannerId.of("keep.main.room");
         MKWorkspacePieceDefinition piece = new MKWorkspacePieceDefinition(
                 UUID.randomUUID(),
@@ -71,18 +73,26 @@ public class MKWorkspacePieceDefinitionPlannerIdTest {
                 List.of(),
                 Map.of()
         );
+        CompoundTag tag = piece.toTag();
+        CompoundTag geometry = tag.getCompound("geometry");
+        geometry.putInt("shellMargin", 2);
+        geometry.putInt("verticalShellMargin", 3);
 
-        MKWorkspacePieceDefinition decoded = MKWorkspacePieceDefinition.fromTag(piece.toTag());
+        MKWorkspacePieceDefinition decoded = MKWorkspacePieceDefinition.fromTag(tag);
+        CompoundTag rewrittenGeometry = decoded.toTag().getCompound("geometry");
 
-        assertEquals(2, decoded.shellMargin());
-        assertEquals(3, decoded.verticalShellMargin());
+        assertEquals(plannerId, decoded.plannerId());
+        assertFalse(rewrittenGeometry.contains("shellMargin"));
+        assertFalse(rewrittenGeometry.contains("verticalShellMargin"));
     }
 
     @Test
-    void legacyConstructorDefaultsVerticalShellMarginToOne() {
+    void newPieceSerializationOmitsLegacyMarginFields() {
         MKWorkspacePieceDefinition decoded = MKWorkspacePieceDefinition.fromTag(piece(MKWorkspacePlannerId.of("keep.main")).toTag());
+        CompoundTag geometry = decoded.toTag().getCompound("geometry");
 
-        assertEquals(1, decoded.verticalShellMargin());
+        assertFalse(geometry.contains("shellMargin"));
+        assertFalse(geometry.contains("verticalShellMargin"));
     }
 
     public static MKWorkspacePieceDefinition piece(MKWorkspacePlannerId plannerId) {

@@ -493,7 +493,6 @@ class MKFloorConnectorPatchTest {
                 source.roleId(),
                 1,
                 source.effectiveDimensions(),
-                source.shellMargin(),
                 source.connectors(),
                 source.worldOrigin(),
                 source.exportBounds(),
