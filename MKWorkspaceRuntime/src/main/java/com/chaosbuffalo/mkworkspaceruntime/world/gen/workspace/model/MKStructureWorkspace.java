@@ -40,6 +40,7 @@ public class MKStructureWorkspace {
     private final List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies;
     private final List<MKWorkspaceInsertFamilyDefinition> insertFamilies;
     private final int shellMargin;
+    private final int verticalShellMargin;
     private final int exteriorAirMargin;
     private final int previewMargin;
     private final long createdAt;
@@ -59,8 +60,8 @@ public class MKStructureWorkspace {
                                 List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
                                 long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces) {
         this(id, anchor, namespace, structureName, MKTowerWorkspaceDefaults.topologyProfile(), dimensions, palette,
-                stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
-                familyDefinitions, openingProfiles, linearRunFamilies,
+                stairConfig, verticalAccessPlacement, shellMargin, 1, exteriorAirMargin, previewMargin,
+                verticalAccessSpec, familyDefinitions, openingProfiles, linearRunFamilies,
                 createdAt, updatedAt, pieces, List.of());
     }
 
@@ -77,7 +78,7 @@ public class MKStructureWorkspace {
                                 List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
                                 long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces) {
         this(id, anchor, namespace, structureName, topologyProfile, dimensions, palette, stairConfig,
-                verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
+                verticalAccessPlacement, shellMargin, 1, exteriorAirMargin, previewMargin, verticalAccessSpec,
                 familyDefinitions, openingProfiles, linearRunFamilies, createdAt, updatedAt, pieces, List.of());
     }
 
@@ -95,7 +96,7 @@ public class MKStructureWorkspace {
                                 long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces,
                                 List<MKWorkspaceGeneratedLayerState> layerStates) {
         this(id, anchor, namespace, structureName, topologyProfile, dimensions, palette, stairConfig,
-                verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
+                verticalAccessPlacement, shellMargin, 1, exteriorAirMargin, previewMargin, verticalAccessSpec,
                 familyDefinitions, openingProfiles, linearRunFamilies, List.of(), createdAt, updatedAt, pieces,
                 layerStates);
     }
@@ -106,6 +107,47 @@ public class MKStructureWorkspace {
                                 MKWorkspaceMaterialPalette palette, MKWorkspaceStairAuthoringConfig stairConfig,
                                 MKVerticalAccessPlacement verticalAccessPlacement,
                                 int shellMargin, int exteriorAirMargin,
+                                int previewMargin,
+                                MKWorkspaceVerticalAccessSpec verticalAccessSpec,
+                                List<MKWorkspaceRoomFamilyDefinition> familyDefinitions,
+                                List<MKHorizontalOpeningProfile> openingProfiles,
+                                List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
+                                List<MKWorkspaceInsertFamilyDefinition> insertFamilies,
+                                long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces,
+                                List<MKWorkspaceGeneratedLayerState> layerStates) {
+        this(id, anchor, namespace, structureName, topologyProfile, dimensions, palette, stairConfig,
+                verticalAccessPlacement, shellMargin, 1, exteriorAirMargin, previewMargin, verticalAccessSpec,
+                familyDefinitions, openingProfiles, linearRunFamilies, insertFamilies, createdAt, updatedAt, pieces,
+                layerStates);
+    }
+
+    public MKStructureWorkspace(UUID id, BlockPos anchor, String namespace, String structureName,
+                                MKWorkspaceTopologyProfile topologyProfile,
+                                MKWorkspaceDimensions dimensions,
+                                MKWorkspaceMaterialPalette palette, MKWorkspaceStairAuthoringConfig stairConfig,
+                                MKVerticalAccessPlacement verticalAccessPlacement,
+                                int shellMargin, int verticalShellMargin,
+                                int exteriorAirMargin,
+                                int previewMargin,
+                                MKWorkspaceVerticalAccessSpec verticalAccessSpec,
+                                List<MKWorkspaceRoomFamilyDefinition> familyDefinitions,
+                                List<MKHorizontalOpeningProfile> openingProfiles,
+                                List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies,
+                                long createdAt, long updatedAt, List<MKWorkspacePieceDefinition> pieces,
+                                List<MKWorkspaceGeneratedLayerState> layerStates) {
+        this(id, anchor, namespace, structureName, topologyProfile, dimensions, palette, stairConfig,
+                verticalAccessPlacement, shellMargin, verticalShellMargin, exteriorAirMargin, previewMargin,
+                verticalAccessSpec, familyDefinitions, openingProfiles, linearRunFamilies, List.of(), createdAt,
+                updatedAt, pieces, layerStates);
+    }
+
+    public MKStructureWorkspace(UUID id, BlockPos anchor, String namespace, String structureName,
+                                MKWorkspaceTopologyProfile topologyProfile,
+                                MKWorkspaceDimensions dimensions,
+                                MKWorkspaceMaterialPalette palette, MKWorkspaceStairAuthoringConfig stairConfig,
+                                MKVerticalAccessPlacement verticalAccessPlacement,
+                                int shellMargin, int verticalShellMargin,
+                                int exteriorAirMargin,
                                 int previewMargin,
                                 MKWorkspaceVerticalAccessSpec verticalAccessSpec,
                                 List<MKWorkspaceRoomFamilyDefinition> familyDefinitions,
@@ -129,6 +171,7 @@ public class MKStructureWorkspace {
         this.linearRunFamilies = List.copyOf(linearRunFamilies);
         this.insertFamilies = List.copyOf(insertFamilies == null ? List.of() : insertFamilies);
         this.shellMargin = shellMargin;
+        this.verticalShellMargin = verticalShellMargin;
         this.exteriorAirMargin = exteriorAirMargin;
         this.previewMargin = previewMargin;
         this.createdAt = createdAt;
@@ -191,6 +234,7 @@ public class MKStructureWorkspace {
                 core.stairConfig(),
                 core.verticalAccessPlacement(),
                 core.shellMargin(),
+                core.verticalShellMargin(),
                 core.exteriorAirMargin(),
                 core.previewMargin(),
                 resolvedVerticalAccessSpec,
@@ -213,6 +257,7 @@ public class MKStructureWorkspace {
                 stairConfig,
                 verticalAccessPlacement,
                 shellMargin,
+                verticalShellMargin,
                 exteriorAirMargin,
                 previewMargin,
                 verticalAccessSpec
@@ -239,6 +284,7 @@ public class MKStructureWorkspace {
             MKWorkspaceStairAuthoringConfig stairConfig,
             MKVerticalAccessPlacement verticalAccessPlacement,
             int shellMargin,
+            int verticalShellMargin,
             int exteriorAirMargin,
             int previewMargin,
             MKWorkspaceVerticalAccessSpec verticalAccessSpec
@@ -254,6 +300,7 @@ public class MKStructureWorkspace {
                 MKWorkspaceCodecs.VERTICAL_ACCESS_PLACEMENT_CODEC.optionalFieldOf("verticalAccessPlacement", MKVerticalAccessPlacement.CENTER)
                         .forGetter(SerializedWorkspaceCore::verticalAccessPlacement),
                 Codec.INT.optionalFieldOf("shellMargin", 1).forGetter(SerializedWorkspaceCore::shellMargin),
+                Codec.INT.optionalFieldOf("verticalShellMargin", 1).forGetter(SerializedWorkspaceCore::verticalShellMargin),
                 Codec.INT.optionalFieldOf("exteriorAirMargin", 2).forGetter(SerializedWorkspaceCore::exteriorAirMargin),
                 Codec.INT.optionalFieldOf("previewMargin", 2).forGetter(SerializedWorkspaceCore::previewMargin),
                 MKWorkspaceVerticalAccessSpec.CODEC.fieldOf("verticalAccessSpec")
@@ -435,6 +482,9 @@ public class MKStructureWorkspace {
         if (shellMargin < 1) {
             errors.add("shell margin must be at least 1");
         }
+        if (verticalShellMargin < 1) {
+            errors.add("vertical shell margin must be at least 1");
+        }
         if (exteriorAirMargin < 0) {
             errors.add("exterior air margin must be at least 0");
         }
@@ -510,15 +560,15 @@ public class MKStructureWorkspace {
 
     public MKStructureWorkspace withPieces(List<MKWorkspacePieceDefinition> newPieces) {
         return new MKStructureWorkspace(id, anchor, namespace, structureName, topologyProfile, dimensions, palette,
-                stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
-                familyDefinitions, openingProfiles, linearRunFamilies, insertFamilies,
+                stairConfig, verticalAccessPlacement, shellMargin, verticalShellMargin, exteriorAirMargin,
+                previewMargin, verticalAccessSpec, familyDefinitions, openingProfiles, linearRunFamilies, insertFamilies,
                 createdAt, System.currentTimeMillis(), newPieces, layerStates);
     }
 
     public MKStructureWorkspace withLayerStates(List<MKWorkspaceGeneratedLayerState> newLayerStates) {
         return new MKStructureWorkspace(id, anchor, namespace, structureName, topologyProfile, dimensions, palette,
-                stairConfig, verticalAccessPlacement, shellMargin, exteriorAirMargin, previewMargin, verticalAccessSpec,
-                familyDefinitions, openingProfiles, linearRunFamilies, insertFamilies,
+                stairConfig, verticalAccessPlacement, shellMargin, verticalShellMargin, exteriorAirMargin,
+                previewMargin, verticalAccessSpec, familyDefinitions, openingProfiles, linearRunFamilies, insertFamilies,
                 createdAt, System.currentTimeMillis(), pieces, newLayerStates);
     }
 
@@ -601,6 +651,10 @@ public class MKStructureWorkspace {
 
     public int shellMargin() {
         return shellMargin;
+    }
+
+    public int verticalShellMargin() {
+        return verticalShellMargin;
     }
 
     public int exteriorAirMargin() {

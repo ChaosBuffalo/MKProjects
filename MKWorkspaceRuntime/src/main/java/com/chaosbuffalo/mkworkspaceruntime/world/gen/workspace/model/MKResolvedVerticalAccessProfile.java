@@ -36,6 +36,13 @@ public record MKResolvedVerticalAccessProfile(
     public static Optional<MKResolvedVerticalAccessProfile> resolve(MKWorkspaceStairAuthoringConfig config,
                                                                     int shaftWidth, int shaftLength,
                                                                     int interiorHeight) {
+        return resolve(config, shaftWidth, shaftLength, interiorHeight, 1);
+    }
+
+    public static Optional<MKResolvedVerticalAccessProfile> resolve(MKWorkspaceStairAuthoringConfig config,
+                                                                    int shaftWidth, int shaftLength,
+                                                                    int interiorHeight,
+                                                                    int verticalShellMargin) {
         MKWorkspaceStairMode mode = MKVerticalAccessProfile.normalizeMode(config.mode());
         if (mode == MKWorkspaceStairMode.LADDER || mode == MKWorkspaceStairMode.NONE) {
             return Optional.of(new MKResolvedVerticalAccessProfile(
@@ -58,7 +65,7 @@ public record MKResolvedVerticalAccessProfile(
         int pathWidth = Math.max(1, shaftWidth - (2 * (stairWidth - 1)));
         int pathLength = Math.max(1, shaftLength - (2 * (stairWidth - 1)));
         int cycleLength = MKVerticalAccessProfile.getPerimeterStepCount(pathWidth, pathLength);
-        int traversalHeight = interiorHeight + MKVerticalAccessProfile.ROOM_VERTICAL_SHELL_LAYERS;
+        int traversalHeight = interiorHeight + (2 * Math.max(0, verticalShellMargin));
         MKWorkspaceStairRiseType strategy = config.riseType();
 
         List<MKResolvedVerticalAccessProfile> candidates = new ArrayList<>();

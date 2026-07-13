@@ -95,8 +95,8 @@ public class MKWorkspaceScaffoldBuilder {
                 .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
                 .toList();
         List<MKWorkspaceGridLayout.Placement> placements = gridLayout.assignPlacements(workspace.anchor(), authoringPieces,
-                workspace.shellMargin(), workspace.exteriorAirMargin(), workspace.previewMargin(), GRID_COLUMNS,
-                CELL_PADDING);
+                workspace.shellMargin(), workspace.verticalShellMargin(), workspace.exteriorAirMargin(),
+                workspace.previewMargin(), GRID_COLUMNS, CELL_PADDING);
         clearWorkspaceArea(level, workspace, placements);
         Map<String, MKWorkspacePieceDefinition> authoringByBaseName = new HashMap<>();
         Map<MKPlannedPiece, MKWorkspacePieceDefinition> generatedByPlan = new HashMap<>();
@@ -121,8 +121,8 @@ public class MKWorkspaceScaffoldBuilder {
     public MKWorkspacePieceDefinition buildSingle(ServerLevel level, MKStructureWorkspace workspace, MKPlannedPiece piece,
                                                   List<MKPlannedPiece> layoutPieces) {
         List<MKWorkspaceGridLayout.Placement> placements = gridLayout.assignPlacements(workspace.anchor(), layoutPieces,
-                workspace.shellMargin(), workspace.exteriorAirMargin(), workspace.previewMargin(), GRID_COLUMNS,
-                CELL_PADDING);
+                workspace.shellMargin(), workspace.verticalShellMargin(), workspace.exteriorAirMargin(),
+                workspace.previewMargin(), GRID_COLUMNS, CELL_PADDING);
         int index = layoutPieces.indexOf(piece);
         if (index < 0) {
             throw new IllegalArgumentException("piece is not present in layout list");
@@ -137,8 +137,8 @@ public class MKWorkspaceScaffoldBuilder {
             return Map.of();
         }
         List<MKWorkspaceGridLayout.Placement> placements = gridLayout.assignPlacements(workspace.anchor(), layoutPieces,
-                workspace.shellMargin(), workspace.exteriorAirMargin(), workspace.previewMargin(), GRID_COLUMNS,
-                CELL_PADDING);
+                workspace.shellMargin(), workspace.verticalShellMargin(), workspace.exteriorAirMargin(),
+                workspace.previewMargin(), GRID_COLUMNS, CELL_PADDING);
         BoundingBox clearBounds = layoutClearBoundsForPieces(workspace, layoutPieces, pieces);
         if (clearBounds != null) {
             clearWorkspaceHeightBounds(level, clearBounds);
@@ -162,7 +162,7 @@ public class MKWorkspaceScaffoldBuilder {
         }
         PieceBuildContext context = createBuildContext(workspace, targetPiece, placementFromSource(existingPiece));
         int effectiveShellMargin = getShellMargin(targetPiece, workspace.shellMargin());
-        int verticalShellThickness = getVerticalShellThickness(targetPiece);
+        int verticalShellThickness = getVerticalShellMargin(targetPiece, workspace.verticalShellMargin());
         BlockState floorState = resolvePaletteState(workspace, targetPiece, MKWorkspacePaletteTags.FLOOR_BLOCK_TAG,
                 workspace.palette().floorBlock(), Blocks.SMOOTH_STONE.defaultBlockState());
         BlockState wallState = resolvePaletteState(workspace, targetPiece, MKWorkspacePaletteTags.WALL_BLOCK_TAG,
@@ -189,8 +189,8 @@ public class MKWorkspaceScaffoldBuilder {
             return createDerivedLogicalPiece(workspace, targetPiece, templatePiece);
         }
         List<MKWorkspaceGridLayout.Placement> placements = gridLayout.assignPlacements(workspace.anchor(), layoutPieces,
-                workspace.shellMargin(), workspace.exteriorAirMargin(), workspace.previewMargin(), GRID_COLUMNS,
-                CELL_PADDING);
+                workspace.shellMargin(), workspace.verticalShellMargin(), workspace.exteriorAirMargin(),
+                workspace.previewMargin(), GRID_COLUMNS, CELL_PADDING);
         int index = layoutPieces.indexOf(targetPiece);
         if (index < 0) {
             throw new IllegalArgumentException("piece is not present in layout list");
@@ -300,8 +300,8 @@ public class MKWorkspaceScaffoldBuilder {
     BoundingBox layoutClearBoundsForPieces(MKStructureWorkspace workspace, List<MKPlannedPiece> layoutPieces,
                                            List<MKPlannedPiece> piecesToClear) {
         List<MKWorkspaceGridLayout.Placement> placements = gridLayout.assignPlacements(workspace.anchor(), layoutPieces,
-                workspace.shellMargin(), workspace.exteriorAirMargin(), workspace.previewMargin(), GRID_COLUMNS,
-                CELL_PADDING);
+                workspace.shellMargin(), workspace.verticalShellMargin(), workspace.exteriorAirMargin(),
+                workspace.previewMargin(), GRID_COLUMNS, CELL_PADDING);
         BoundingBox bounds = null;
         for (MKPlannedPiece piece : piecesToClear) {
             int index = layoutPieces.indexOf(piece);
@@ -318,7 +318,7 @@ public class MKWorkspaceScaffoldBuilder {
                                                   MKWorkspaceGridLayout.Placement placement, boolean clearBeforeBuild) {
         PieceBuildContext context = createBuildContext(workspace, plannedPiece, placement);
         int effectiveShellMargin = getShellMargin(plannedPiece, workspace.shellMargin());
-        int verticalShellThickness = getVerticalShellThickness(plannedPiece);
+        int verticalShellThickness = getVerticalShellMargin(plannedPiece, workspace.verticalShellMargin());
 
         BlockState floorState = resolvePaletteState(workspace, plannedPiece, MKWorkspacePaletteTags.FLOOR_BLOCK_TAG,
                 workspace.palette().floorBlock(), Blocks.SMOOTH_STONE.defaultBlockState());
@@ -404,6 +404,7 @@ public class MKWorkspaceScaffoldBuilder {
                 getVariantIndex(plannedPiece),
                 effectiveDimensions,
                 getShellMargin(plannedPiece, workspace.shellMargin()),
+                getVerticalShellMargin(plannedPiece, workspace.verticalShellMargin()),
                 connectors,
                 context.exportOrigin(),
                 context.exportBounds(),
@@ -445,7 +446,7 @@ public class MKWorkspaceScaffoldBuilder {
                                                                          PieceBuildContext context) {
         List<MKWorkspaceConnectorDefinition> connectors = new ArrayList<>();
         int shellMargin = getShellMargin(targetPiece, workspace.shellMargin());
-        int verticalShellThickness = getVerticalShellThickness(targetPiece);
+        int verticalShellThickness = getVerticalShellMargin(targetPiece, workspace.verticalShellMargin());
         for (MKPlannedConnector plannedConnector : targetPiece.connectors()) {
             MKWorkspaceConnectorDefinition connector = createLogicalConnector(workspace, targetPiece, plannedConnector,
                     context.exportOrigin(), context.exportBounds(), context.geometryOrigin(), shellMargin,
@@ -516,7 +517,7 @@ public class MKWorkspaceScaffoldBuilder {
     private PieceBuildContext createBuildContext(MKStructureWorkspace workspace, MKPlannedPiece plannedPiece,
                                                  MKWorkspaceGridLayout.Placement placement) {
         int shellMargin = getShellMargin(plannedPiece, workspace.shellMargin());
-        int verticalShellThickness = getVerticalShellThickness(plannedPiece);
+        int verticalShellThickness = getVerticalShellMargin(plannedPiece, workspace.verticalShellMargin());
         boolean exactBoundsScaffold = isExactBoundsScaffold(plannedPiece);
         int exteriorAirMargin = exactBoundsScaffold ? 0 : workspace.exteriorAirMargin();
         int topVoidMargin = exactBoundsScaffold ? 0 : getTopVoidMargin(plannedPiece);
@@ -738,8 +739,8 @@ public class MKWorkspaceScaffoldBuilder {
         return isExactBoundsScaffold(piece) ? 0 : shellMargin;
     }
 
-    private int getVerticalShellThickness(MKPlannedPiece piece) {
-        return isExactBoundsScaffold(piece) ? 0 : 1;
+    private int getVerticalShellMargin(MKPlannedPiece piece, int verticalShellMargin) {
+        return isExactBoundsScaffold(piece) ? 0 : verticalShellMargin;
     }
 
     private int getVariantIndex(MKPlannedPiece piece) {

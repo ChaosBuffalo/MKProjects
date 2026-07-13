@@ -386,6 +386,7 @@ public class MKWorkspacePieceRelayoutService {
                 targetWorkspace.anchor(),
                 layoutPieces,
                 targetWorkspace.shellMargin(),
+                targetWorkspace.verticalShellMargin(),
                 targetWorkspace.exteriorAirMargin(),
                 targetWorkspace.previewMargin(),
                 MKWorkspaceScaffoldBuilder.GRID_COLUMNS,
@@ -583,6 +584,7 @@ public class MKWorkspacePieceRelayoutService {
                 original.variantIndex(),
                 targetDimensions(targetPiece, original.effectiveDimensions()),
                 original.shellMargin(),
+                original.verticalShellMargin(),
                 original.connectors(),
                 original.worldOrigin().offset(delta),
                 shift(original.exportBounds(), delta),
@@ -598,6 +600,7 @@ public class MKWorkspacePieceRelayoutService {
     private boolean canPreserveAuthoredBlocks(MKWorkspacePieceDefinition existingPiece, MKPlannedPiece targetPiece,
                                               MKStructureWorkspace targetWorkspace) {
         return existingPiece.shellMargin() == targetWorkspace.shellMargin() &&
+                existingPiece.verticalShellMargin() == targetWorkspace.verticalShellMargin() &&
                 existingPiece.effectiveDimensions().roomWidth() == targetPiece.interiorWidth() &&
                 existingPiece.effectiveDimensions().roomLength() == targetPiece.interiorLength() &&
                 existingPiece.effectiveDimensions().roomHeight() == targetPiece.interiorHeight() &&
@@ -609,6 +612,7 @@ public class MKWorkspacePieceRelayoutService {
                                                       MKPlannedPiece targetPiece,
                                                       MKStructureWorkspace targetWorkspace) {
         return existingPiece.shellMargin() == targetWorkspace.shellMargin() &&
+                existingPiece.verticalShellMargin() == targetWorkspace.verticalShellMargin() &&
                 targetPiece.interiorWidth() >= existingPiece.effectiveDimensions().roomWidth() &&
                 targetPiece.interiorLength() >= existingPiece.effectiveDimensions().roomLength() &&
                 targetPiece.interiorHeight() >= existingPiece.effectiveDimensions().roomHeight() &&
@@ -747,6 +751,7 @@ public class MKWorkspacePieceRelayoutService {
                 generated.variantIndex(),
                 generated.effectiveDimensions(),
                 generated.shellMargin(),
+                generated.verticalShellMargin(),
                 generated.connectors(),
                 generated.worldOrigin(),
                 generated.exportBounds(),
@@ -934,6 +939,7 @@ public class MKWorkspacePieceRelayoutService {
                 targetWorkspace.anchor(),
                 plannedPieces,
                 targetWorkspace.shellMargin(),
+                targetWorkspace.verticalShellMargin(),
                 targetWorkspace.exteriorAirMargin(),
                 targetWorkspace.previewMargin(),
                 MKWorkspaceScaffoldBuilder.GRID_COLUMNS,
@@ -961,6 +967,7 @@ public class MKWorkspacePieceRelayoutService {
                 original.variantIndex(),
                 original.effectiveDimensions(),
                 original.shellMargin(),
+                original.verticalShellMargin(),
                 original.connectors(),
                 original.worldOrigin().offset(delta),
                 shift(original.exportBounds(), delta),
@@ -1117,6 +1124,7 @@ public class MKWorkspacePieceRelayoutService {
                 workspace.stairConfig(),
                 workspace.verticalAccessPlacement(),
                 workspace.shellMargin(),
+                workspace.verticalShellMargin(),
                 workspace.exteriorAirMargin(),
                 previewMargin,
                 workspace.verticalAccessSpec(),

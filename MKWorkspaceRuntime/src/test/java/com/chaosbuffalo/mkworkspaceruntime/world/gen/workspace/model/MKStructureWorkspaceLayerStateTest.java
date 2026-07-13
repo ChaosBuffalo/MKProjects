@@ -41,4 +41,39 @@ class MKStructureWorkspaceLayerStateTest {
 
         assertEquals(List.of(state), updated.layerStates());
     }
+
+    @Test
+    void verticalShellMarginRoundTripsAndSurvivesWithPieces() {
+        MKStructureWorkspace base = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        MKStructureWorkspace workspace = new MKStructureWorkspace(
+                base.id(),
+                base.anchor(),
+                base.namespace(),
+                base.structureName(),
+                base.topologyProfile(),
+                base.dimensions(),
+                base.palette(),
+                base.stairConfig(),
+                base.verticalAccessPlacement(),
+                base.shellMargin(),
+                3,
+                base.exteriorAirMargin(),
+                base.previewMargin(),
+                base.verticalAccessSpec(),
+                base.familyDefinitions(),
+                base.openingProfiles(),
+                base.linearRunFamilies(),
+                base.insertFamilies(),
+                base.createdAt(),
+                base.updatedAt(),
+                base.pieces(),
+                base.layerStates()
+        );
+
+        MKStructureWorkspace decoded = MKStructureWorkspace.fromTag(workspace.toTag());
+        MKStructureWorkspace updated = decoded.withPieces(List.of());
+
+        assertEquals(3, decoded.verticalShellMargin());
+        assertEquals(3, updated.verticalShellMargin());
+    }
 }

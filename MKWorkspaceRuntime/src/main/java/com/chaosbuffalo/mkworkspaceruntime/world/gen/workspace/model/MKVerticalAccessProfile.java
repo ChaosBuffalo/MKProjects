@@ -24,7 +24,14 @@ public record MKVerticalAccessProfile(MKWorkspaceStairMode mode, MKWorkspaceStai
 
     public static MKVerticalAccessProfile forTemplateReuse(MKWorkspaceStairAuthoringConfig config, int shaftWidth,
                                                            int shaftLength, int interiorHeight) {
-        return MKResolvedVerticalAccessProfile.resolve(config, shaftWidth, shaftLength, interiorHeight)
+        return forTemplateReuse(config, shaftWidth, shaftLength, interiorHeight, 1);
+    }
+
+    public static MKVerticalAccessProfile forTemplateReuse(MKWorkspaceStairAuthoringConfig config, int shaftWidth,
+                                                           int shaftLength, int interiorHeight,
+                                                           int verticalShellMargin) {
+        return MKResolvedVerticalAccessProfile.resolve(config, shaftWidth, shaftLength, interiorHeight,
+                        verticalShellMargin)
                 .map(MKResolvedVerticalAccessProfile::asUniformProfile)
                 .orElseGet(() -> new MKVerticalAccessProfile(normalizeMode(config.mode()), config.riseType(), 1, 2,
                         0, Math.max(1, config.stairWidth())));
@@ -140,8 +147,17 @@ public record MKVerticalAccessProfile(MKWorkspaceStairMode mode, MKWorkspaceStai
         return getBoundaryCompatibilityForInteriorHeight(interiorHeight).isUsable();
     }
 
+    public boolean isReusableInteriorHeight(int interiorHeight, int verticalShellMargin) {
+        return getBoundaryCompatibilityForInteriorHeight(interiorHeight, verticalShellMargin).isUsable();
+    }
+
     public BoundaryCompatibility getBoundaryCompatibilityForInteriorHeight(int interiorHeight) {
         return getBoundaryCompatibilityForHeight(getTraversalHeightForInterior(interiorHeight));
+    }
+
+    public BoundaryCompatibility getBoundaryCompatibilityForInteriorHeight(int interiorHeight,
+                                                                           int verticalShellMargin) {
+        return getBoundaryCompatibilityForHeight(getTraversalHeightForInterior(interiorHeight, verticalShellMargin));
     }
 
     public int getPathStepsForHeight(int fullBlockHeight) {
@@ -154,12 +170,20 @@ public record MKVerticalAccessProfile(MKWorkspaceStairMode mode, MKWorkspaceStai
         return getPathStepsForHeight(getTraversalHeightForInterior(interiorHeight));
     }
 
+    public int getPathStepsForInteriorHeight(int interiorHeight, int verticalShellMargin) {
+        return getPathStepsForHeight(getTraversalHeightForInterior(interiorHeight, verticalShellMargin));
+    }
+
     public int getPhaseForHeight(int fullBlockHeight) {
         return Math.floorMod(getPathStepsForHeight(fullBlockHeight), cycleLength);
     }
 
     public int getPhaseForInteriorHeight(int interiorHeight) {
         return getPhaseForHeight(getTraversalHeightForInterior(interiorHeight));
+    }
+
+    public int getPhaseForInteriorHeight(int interiorHeight, int verticalShellMargin) {
+        return getPhaseForHeight(getTraversalHeightForInterior(interiorHeight, verticalShellMargin));
     }
 
     public boolean isPhaseAligned(int referenceHeight, int candidateHeight) {
@@ -170,8 +194,18 @@ public record MKVerticalAccessProfile(MKWorkspaceStairMode mode, MKWorkspaceStai
         return getPhaseForInteriorHeight(referenceInteriorHeight) == getPhaseForInteriorHeight(candidateInteriorHeight);
     }
 
+    public boolean isInteriorPhaseAligned(int referenceInteriorHeight, int candidateInteriorHeight,
+                                          int verticalShellMargin) {
+        return getPhaseForInteriorHeight(referenceInteriorHeight, verticalShellMargin) ==
+                getPhaseForInteriorHeight(candidateInteriorHeight, verticalShellMargin);
+    }
+
     public int getTraversalHeightForInterior(int interiorHeight) {
         return interiorHeight + ROOM_VERTICAL_SHELL_LAYERS;
+    }
+
+    public int getTraversalHeightForInterior(int interiorHeight, int verticalShellMargin) {
+        return interiorHeight + (2 * Math.max(0, verticalShellMargin));
     }
 }
 

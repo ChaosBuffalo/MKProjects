@@ -957,14 +957,15 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         return workspace.linearRunFamilies().stream()
                 .filter(linearRun -> isPerimeterRunFamily(linearRun))
                 .findFirst()
-                .map(this::rampartAccessBottom)
+                .map(linearRun -> rampartAccessBottom(workspace, linearRun))
                 .orElse(7);
     }
 
-    private int rampartAccessBottom(MKWorkspaceLinearRunFamilyDefinition linearRun) {
+    private int rampartAccessBottom(MKStructureWorkspace workspace, MKWorkspaceLinearRunFamilyDefinition linearRun) {
         int height = Math.max(0, linearRun.interiorHeight());
-        int topVoidMargin = Math.min(Math.max(0, linearRun.topVoidMargin()), Math.max(0, height - 1));
-        return height - topVoidMargin;
+        int verticalShellMargin = Math.max(0, workspace.verticalShellMargin());
+        int topVoidMargin = Math.max(0, linearRun.topVoidMargin());
+        return Math.max(0, height + verticalShellMargin - topVoidMargin);
     }
 
     private MKPlannedConnector retargetCornerEntryConnector(MKPlannedConnector connector,

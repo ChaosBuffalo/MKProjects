@@ -183,6 +183,7 @@ public class MKStructureWorkspaceService {
                     workspace.stairConfig(),
                     workspace.verticalAccessPlacement(),
                     workspace.shellMargin(),
+                    workspace.verticalShellMargin(),
                     workspace.exteriorAirMargin(),
                     workspace.previewMargin(),
                     workspace.verticalAccessSpec(),
@@ -1222,10 +1223,11 @@ public class MKStructureWorkspaceService {
             return false;
         }
         return settingsComparisonTag(existing, existing.id(), existing.previewMargin(), existing.palette(),
-                existing.namespace(), existing.structureName(), requested.shellMargin(), requested.exteriorAirMargin())
+                existing.namespace(), existing.structureName(), requested.shellMargin(), existing.verticalShellMargin(),
+                requested.exteriorAirMargin())
                 .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin(),
                         requested.palette(), requested.namespace(), requested.structureName(),
-                        requested.shellMargin(), requested.exteriorAirMargin()));
+                        requested.shellMargin(), requested.verticalShellMargin(), requested.exteriorAirMargin()));
     }
 
     private boolean canRegenerateHallwayRoutingOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
@@ -1396,14 +1398,15 @@ public class MKStructureWorkspaceService {
         return workspace.linearRunFamilies().stream()
                 .filter(this::isPerimeterRunFamily)
                 .findFirst()
-                .map(this::rampartAccessBottom)
+                .map(linearRun -> rampartAccessBottom(workspace, linearRun))
                 .orElse(7);
     }
 
-    private int rampartAccessBottom(MKWorkspaceLinearRunFamilyDefinition linearRun) {
+    private int rampartAccessBottom(MKStructureWorkspace workspace, MKWorkspaceLinearRunFamilyDefinition linearRun) {
         int height = Math.max(0, linearRun.interiorHeight());
-        int topVoidMargin = Math.min(Math.max(0, linearRun.topVoidMargin()), Math.max(0, height - 1));
-        return height - topVoidMargin;
+        int verticalShellMargin = Math.max(0, workspace.verticalShellMargin());
+        int topVoidMargin = Math.max(0, linearRun.topVoidMargin());
+        return Math.max(0, height + verticalShellMargin - topVoidMargin);
     }
 
     private boolean isPerimeterRunFamily(MKWorkspaceLinearRunFamilyDefinition linearRun) {
@@ -1552,6 +1555,8 @@ public class MKStructureWorkspaceService {
         addMismatchReason(reasons, "vertical access placement", existing.verticalAccessPlacement(),
                 requested.verticalAccessPlacement());
         addMismatchReason(reasons, "shell margin", existing.shellMargin(), requested.shellMargin());
+        addMismatchReason(reasons, "vertical shell margin", existing.verticalShellMargin(),
+                requested.verticalShellMargin());
         addMismatchReason(reasons, "exterior air margin", existing.exteriorAirMargin(),
                 requested.exteriorAirMargin());
         addMismatchReason(reasons, "preview margin", existing.previewMargin(), requested.previewMargin());
@@ -1648,14 +1653,15 @@ public class MKStructureWorkspaceService {
                                                                 com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceMaterialPalette palette,
                                                                 String namespace, String structureName) {
         return settingsComparisonTag(workspace, id, previewMargin, palette, namespace, structureName,
-                workspace.shellMargin(), workspace.exteriorAirMargin());
+                workspace.shellMargin(), workspace.verticalShellMargin(), workspace.exteriorAirMargin());
     }
 
     private net.minecraft.nbt.CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, java.util.UUID id,
                                                                 int previewMargin,
                                                                 com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceMaterialPalette palette,
                                                                 String namespace, String structureName,
-                                                                int shellMargin, int exteriorAirMargin) {
+                                                                int shellMargin, int verticalShellMargin,
+                                                                int exteriorAirMargin) {
         return new MKStructureWorkspace(
                 id,
                 workspace.anchor(),
@@ -1667,6 +1673,7 @@ public class MKStructureWorkspaceService {
                 alignStairMaterials(workspace.stairConfig(), palette),
                 workspace.verticalAccessPlacement(),
                 shellMargin,
+                verticalShellMargin,
                 exteriorAirMargin,
                 previewMargin,
                 alignVerticalAccessMaterials(workspace.verticalAccessSpec(), palette),
@@ -1700,6 +1707,7 @@ public class MKStructureWorkspaceService {
                 workspace.stairConfig(),
                 workspace.verticalAccessPlacement(),
                 workspace.shellMargin(),
+                workspace.verticalShellMargin(),
                 workspace.exteriorAirMargin(),
                 workspace.previewMargin(),
                 workspace.verticalAccessSpec(),
@@ -1729,6 +1737,7 @@ public class MKStructureWorkspaceService {
                 requested.stairConfig(),
                 requested.verticalAccessPlacement(),
                 requested.shellMargin(),
+                requested.verticalShellMargin(),
                 requested.exteriorAirMargin(),
                 requested.previewMargin(),
                 requested.verticalAccessSpec(),
@@ -1756,6 +1765,7 @@ public class MKStructureWorkspaceService {
                 alignStairMaterials(source.stairConfig(), materialSource.palette()),
                 source.verticalAccessPlacement(),
                 source.shellMargin(),
+                source.verticalShellMargin(),
                 source.exteriorAirMargin(),
                 source.previewMargin(),
                 alignVerticalAccessMaterials(source.verticalAccessSpec(), materialSource.palette()),

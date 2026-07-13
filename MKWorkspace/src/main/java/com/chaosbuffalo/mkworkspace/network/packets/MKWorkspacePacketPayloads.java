@@ -125,6 +125,7 @@ final class MKWorkspacePacketPayloads {
                 workspace.stairConfig(),
                 workspace.verticalAccessPlacement(),
                 workspace.shellMargin(),
+                workspace.verticalShellMargin(),
                 workspace.exteriorAirMargin(),
                 workspace.previewMargin(),
                 workspace.verticalAccessSpec(),

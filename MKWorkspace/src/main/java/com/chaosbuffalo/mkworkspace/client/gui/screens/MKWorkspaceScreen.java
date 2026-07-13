@@ -1303,6 +1303,7 @@ public class MKWorkspaceScreen extends MKScreen {
                 source.stairConfig(),
                 source.verticalAccessPlacement(),
                 source.shellMargin(),
+                source.verticalShellMargin(),
                 source.exteriorAirMargin(),
                 source.previewMargin(),
                 source.verticalAccessSpec(),

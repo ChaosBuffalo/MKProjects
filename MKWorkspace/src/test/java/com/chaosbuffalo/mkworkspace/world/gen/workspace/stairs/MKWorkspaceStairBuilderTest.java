@@ -58,6 +58,17 @@ class MKWorkspaceStairBuilderTest {
     }
 
     @Test
+    void bottomCapClipsEditsAboveConfiguredBottomShell() {
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
+        MKWorkspacePieceDefinition bottomCap = verticalCapPiece(Direction.UP,
+                MKWorkspaceVerticalAccessTags.BOTTOM_CAP_TAG, 3);
+        MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry = builder.getGenerationGeometry(workspace, bottomCap);
+
+        assertEquals(3, builder.getEditableMinY(bottomCap, geometry));
+    }
+
+    @Test
     void pieceWithoutDownExitClipsEditsAboveBottomShell() {
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
         MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
@@ -301,8 +312,19 @@ class MKWorkspaceStairBuilderTest {
         return verticalCapPiece(connectorFacing, capTag, new BoundingBox(0, 0, 0, 10, 6, 10), Map.of());
     }
 
+    private MKWorkspacePieceDefinition verticalCapPiece(Direction connectorFacing, String capTag,
+                                                        int verticalShellMargin) {
+        return verticalCapPiece(connectorFacing, capTag, new BoundingBox(0, 0, 0, 10, 10, 10), Map.of(),
+                verticalShellMargin);
+    }
+
     private MKWorkspacePieceDefinition verticalCapPiece(Direction connectorFacing, String capTag, BoundingBox bounds,
                                                         Map<String, String> extraTags) {
+        return verticalCapPiece(connectorFacing, capTag, bounds, extraTags, 1);
+    }
+
+    private MKWorkspacePieceDefinition verticalCapPiece(Direction connectorFacing, String capTag, BoundingBox bounds,
+                                                        Map<String, String> extraTags, int verticalShellMargin) {
         UUID workspaceId = UUID.randomUUID();
         Map<String, String> tags = new LinkedHashMap<>();
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, "true");
@@ -316,6 +338,7 @@ class MKWorkspaceStairBuilderTest {
                 0,
                 MKWorkspaceDimensions.defaultDimensions(),
                 1,
+                verticalShellMargin,
                 List.of(verticalConnector(connectorFacing)),
                 BlockPos.ZERO,
                 bounds,

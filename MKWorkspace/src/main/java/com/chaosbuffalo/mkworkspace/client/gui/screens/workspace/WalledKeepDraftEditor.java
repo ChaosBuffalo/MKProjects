@@ -185,8 +185,9 @@ public final class WalledKeepDraftEditor {
 
     private int rampartAccessBottom(MKWorkspaceLinearRunFamilyDefinition linearRun) {
         int height = Math.max(0, linearRun.interiorHeight());
-        int topVoidMargin = Math.min(Math.max(0, linearRun.topVoidMargin()), Math.max(0, height - 1));
-        return height - topVoidMargin;
+        int verticalShellMargin = Math.max(0, session.verticalShellMargin());
+        int topVoidMargin = Math.max(0, linearRun.topVoidMargin());
+        return Math.max(0, height + verticalShellMargin - topVoidMargin);
     }
 
     public void wallHeight(int value) {

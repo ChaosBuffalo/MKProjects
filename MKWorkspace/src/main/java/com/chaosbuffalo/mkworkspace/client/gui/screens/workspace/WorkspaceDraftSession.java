@@ -107,6 +107,7 @@ public class WorkspaceDraftSession {
         draft.palette = workspace != null ? workspace.palette() : MKWorkspaceMaterialPalette.defaultPalette();
         draft.verticalAccessPlacement = workspace != null ? workspace.verticalAccessSpec().placement() : MKVerticalAccessPlacement.CENTER;
         draft.shellMargin = workspace != null ? workspace.shellMargin() : 1;
+        draft.verticalShellMargin = workspace != null ? workspace.verticalShellMargin() : 1;
         draft.exteriorAirMargin = workspace != null ? workspace.exteriorAirMargin() : 2;
         draft.previewMargin = workspace != null ? workspace.previewMargin() : 2;
         draft.familyDefinitions = List.copyOf(workspace != null ? workspace.familyDefinitions() :
@@ -225,6 +226,15 @@ public class WorkspaceDraftSession {
 
     public void shellMargin(int value) {
         draft().shellMargin = value;
+        markDirty();
+    }
+
+    public int verticalShellMargin() {
+        return draft().verticalShellMargin;
+    }
+
+    public void verticalShellMargin(int value) {
+        draft().verticalShellMargin = value;
         markDirty();
     }
 
@@ -635,6 +645,7 @@ public class WorkspaceDraftSession {
                 stairConfig,
                 draft().verticalAccessPlacement,
                 draft().shellMargin,
+                draft().verticalShellMargin,
                 draft().exteriorAirMargin,
                 draft().previewMargin,
                 verticalAccessSpec,
@@ -652,7 +663,7 @@ public class WorkspaceDraftSession {
     public void snapDraftVerticalAccess() {
         int[] footprint = getDraftVerticalAccessFootprint();
         draft().shaftSize = MKWorkspaceDimensions.snapToNearestUsableShaftSize(makeStairConfig(),
-                footprint[0], footprint[1], draft().shaftSize, 3);
+                footprint[0], footprint[1], draft().shaftSize, 3, draft().verticalShellMargin);
         draft().stairWidth = MKWorkspaceDimensions.snapToNearestAllowedStairWidth(draft().shaftSize, draft().stairWidth);
         draft().familyDefinitions = draft().familyDefinitions.stream()
                 .map(this::normalizeFamilyDefinition)
@@ -935,10 +946,11 @@ public class WorkspaceDraftSession {
             return false;
         }
         return settingsComparisonTag(existing, existing.id(), existing.previewMargin(), existing.palette(),
-                existing.namespace(), existing.structureName(), requested.shellMargin(), requested.exteriorAirMargin())
+                existing.namespace(), existing.structureName(), requested.shellMargin(), existing.verticalShellMargin(),
+                requested.exteriorAirMargin())
                 .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin(),
                         requested.palette(), requested.namespace(), requested.structureName(),
-                        requested.shellMargin(), requested.exteriorAirMargin()));
+                        requested.shellMargin(), requested.verticalShellMargin(), requested.exteriorAirMargin()));
     }
 
     private boolean canApplyRampartAccessPatch(MKStructureWorkspace existing, MKStructureWorkspace requested) {
@@ -1013,12 +1025,13 @@ public class WorkspaceDraftSession {
                                               MKWorkspaceMaterialPalette palette, String namespace,
                                               String structureName) {
         return settingsComparisonTag(workspace, id, previewMargin, palette, namespace, structureName,
-                workspace.shellMargin(), workspace.exteriorAirMargin());
+                workspace.shellMargin(), workspace.verticalShellMargin(), workspace.exteriorAirMargin());
     }
 
     private CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, UUID id, int previewMargin,
                                               MKWorkspaceMaterialPalette palette, String namespace,
-                                              String structureName, int shellMargin, int exteriorAirMargin) {
+                                              String structureName, int shellMargin, int verticalShellMargin,
+                                              int exteriorAirMargin) {
         return new MKStructureWorkspace(
                 id,
                 workspace.anchor(),
@@ -1030,6 +1043,7 @@ public class WorkspaceDraftSession {
                 alignStairMaterials(workspace.stairConfig(), palette),
                 workspace.verticalAccessPlacement(),
                 shellMargin,
+                verticalShellMargin,
                 exteriorAirMargin,
                 previewMargin,
                 alignVerticalAccessMaterials(workspace.verticalAccessSpec(), palette),
@@ -1057,6 +1071,7 @@ public class WorkspaceDraftSession {
                 workspace.stairConfig(),
                 workspace.verticalAccessPlacement(),
                 workspace.shellMargin(),
+                workspace.verticalShellMargin(),
                 workspace.exteriorAirMargin(),
                 workspace.previewMargin(),
                 workspace.verticalAccessSpec(),
@@ -1084,6 +1099,7 @@ public class WorkspaceDraftSession {
                 alignStairMaterials(source.stairConfig(), materialSource.palette()),
                 source.verticalAccessPlacement(),
                 source.shellMargin(),
+                source.verticalShellMargin(),
                 source.exteriorAirMargin(),
                 source.previewMargin(),
                 alignVerticalAccessMaterials(source.verticalAccessSpec(), materialSource.palette()),
@@ -1748,6 +1764,7 @@ public class WorkspaceDraftSession {
         copy.shaftSize = draft.shaftSize;
         copy.verticalAccessPlacement = draft.verticalAccessPlacement;
         copy.shellMargin = draft.shellMargin;
+        copy.verticalShellMargin = draft.verticalShellMargin;
         copy.exteriorAirMargin = draft.exteriorAirMargin;
         copy.previewMargin = draft.previewMargin;
         copy.stairMode = draft.stairMode;
@@ -1768,6 +1785,7 @@ public class WorkspaceDraftSession {
         public int shaftSize;
         public MKVerticalAccessPlacement verticalAccessPlacement;
         public int shellMargin;
+        public int verticalShellMargin;
         public int exteriorAirMargin;
         public int previewMargin;
         public MKWorkspaceStairMode stairMode;

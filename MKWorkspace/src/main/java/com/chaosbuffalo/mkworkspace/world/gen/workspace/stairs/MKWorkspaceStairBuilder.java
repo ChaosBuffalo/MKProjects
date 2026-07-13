@@ -63,7 +63,8 @@ public class MKWorkspaceStairBuilder {
         }
         MaterializedStairConfig resolvedConfig = normalizeConfigForMode(effectiveStairConfig, resolvedMode);
         int interiorHeight = getProfileInteriorHeight(piece);
-        return MKResolvedVerticalAccessProfile.resolve(resolvedConfig.authoringConfig(), geometry.width(), geometry.length(), interiorHeight)
+        return MKResolvedVerticalAccessProfile.resolve(resolvedConfig.authoringConfig(), geometry.width(),
+                        geometry.length(), interiorHeight, piece.verticalShellMargin())
                 .map(resolvedProfile -> switch (resolvedProfile.riseStrategy()) {
                     case SLAB -> generateSlabSpiral(level, workspace, piece, geometry, effectiveStairConfig,
                             resolvedProfile.asUniformProfile(), resolvedProfile);
@@ -106,7 +107,8 @@ public class MKWorkspaceStairBuilder {
         clearShaftFootprint(level, geometry, geometry.interiorMinY());
         MaterializedStairConfig resolvedConfig = normalizeConfigForMode(stairConfig, resolvedMode);
         MKResolvedVerticalAccessProfile resolvedProfile = MKResolvedVerticalAccessProfile.resolve(resolvedConfig.authoringConfig(),
-                geometry.width(), geometry.length(), getProfileInteriorHeight(piece)).orElse(null);
+                geometry.width(), geometry.length(), getProfileInteriorHeight(piece), piece.verticalShellMargin())
+                .orElse(null);
         int stairWidth = resolvedProfile != null ? resolvedProfile.stairWidth() : Math.max(1, resolvedConfig.stairWidth());
         int flatRunLength = resolvedProfile != null ? resolvedProfile.flatRunLength() : 0;
         BoundingBox centerlineBounds = getCenterlineBounds(geometry.shaftBounds(), stairWidth);
@@ -488,7 +490,7 @@ public class MKWorkspaceStairBuilder {
     int getEditableMinY(MKWorkspacePieceDefinition piece,
                         MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry) {
         if (isTerminalBottom(piece)) {
-            return Math.min(geometry.interiorMaxY(), geometry.interiorMinY() + 1);
+            return Math.min(geometry.interiorMaxY(), geometry.interiorMinY() + piece.verticalShellMargin());
         }
         return geometry.interiorMinY();
     }
@@ -498,7 +500,7 @@ public class MKWorkspaceStairBuilder {
     }
 
     private boolean isProtectedBottomShell(MKWorkspacePieceDefinition piece, BlockPos pos) {
-        return isTerminalBottom(piece) && pos.getY() <= piece.exportBounds().minY();
+        return isTerminalBottom(piece) && pos.getY() < piece.exportBounds().minY() + piece.verticalShellMargin();
     }
 
     private void clipBelowMinY(Map<BlockPos, BlockState> planned, LinkedHashSet<BlockPos> generated, int editableMinY) {

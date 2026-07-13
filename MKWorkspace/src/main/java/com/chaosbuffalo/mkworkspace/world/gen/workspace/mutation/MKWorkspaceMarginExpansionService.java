@@ -100,6 +100,7 @@ public class MKWorkspaceMarginExpansionService {
                 targetWorkspace.anchor(),
                 plannedPieces,
                 targetWorkspace.shellMargin(),
+                targetWorkspace.verticalShellMargin(),
                 targetWorkspace.exteriorAirMargin(),
                 targetWorkspace.previewMargin(),
                 MKWorkspaceScaffoldBuilder.GRID_COLUMNS,
@@ -114,7 +115,7 @@ public class MKWorkspaceMarginExpansionService {
                     context.shellMargin(), context.verticalShellThickness(), getBottomVoidMargin(plannedPiece),
                     isEmptyScaffold(original))
                     .subtract(getInteriorOrigin(original.worldOrigin(), originalExteriorMargin(original),
-                            original.shellMargin(), context.verticalShellThickness(), getBottomVoidMargin(original),
+                            original.shellMargin(), original.verticalShellMargin(), getBottomVoidMargin(original),
                             isEmptyScaffold(original)));
             if (isEmptyScaffold(original)) {
                 contentDelta = context.exportOrigin().subtract(original.worldOrigin());
@@ -152,6 +153,7 @@ public class MKWorkspaceMarginExpansionService {
                 original.variantIndex(),
                 original.effectiveDimensions(),
                 context.shellMargin(),
+                context.verticalShellThickness(),
                 connectors,
                 context.exportOrigin(),
                 context.exportBounds(),
@@ -453,7 +455,7 @@ public class MKWorkspaceMarginExpansionService {
                                        MKWorkspaceGridLayout.Placement placement, BoundingBox previewBounds,
                                        BlockPos exportOrigin) {
         int shellMargin = getShellMargin(piece, workspace.shellMargin());
-        int verticalShellThickness = getVerticalShellThickness(piece);
+        int verticalShellThickness = getVerticalShellMargin(piece, workspace.verticalShellMargin());
         boolean emptyScaffold = isEmptyScaffold(piece);
         int exteriorAirMargin = emptyScaffold ? 0 : workspace.exteriorAirMargin();
         int topVoidMargin = emptyScaffold ? 0 : getTopVoidMargin(piece);
@@ -570,8 +572,8 @@ public class MKWorkspaceMarginExpansionService {
         return isEmptyScaffold(piece) ? 0 : shellMargin;
     }
 
-    private int getVerticalShellThickness(MKPlannedPiece piece) {
-        return isEmptyScaffold(piece) ? 0 : 1;
+    private int getVerticalShellMargin(MKPlannedPiece piece, int verticalShellMargin) {
+        return isEmptyScaffold(piece) ? 0 : verticalShellMargin;
     }
 
     private boolean isEmptyScaffold(MKPlannedPiece piece) {
@@ -628,6 +630,7 @@ public class MKWorkspaceMarginExpansionService {
                 workspace.stairConfig(),
                 workspace.verticalAccessPlacement(),
                 shellMargin,
+                workspace.verticalShellMargin(),
                 exteriorAirMargin,
                 workspace.previewMargin(),
                 workspace.verticalAccessSpec(),

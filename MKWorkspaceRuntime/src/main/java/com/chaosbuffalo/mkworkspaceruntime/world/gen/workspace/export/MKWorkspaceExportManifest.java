@@ -118,6 +118,7 @@ public record MKWorkspaceExportManifest(
                 new ExportWorkspaceSettings(
                         ExportBlockPos.from(workspace.anchor()),
                         workspace.shellMargin(),
+                        workspace.verticalShellMargin(),
                         workspace.exteriorAirMargin(),
                         workspace.previewMargin(),
                         workspace.verticalAccessPlacement(),
@@ -348,6 +349,7 @@ public record MKWorkspaceExportManifest(
     public record ExportWorkspaceSettings(
             ExportBlockPos anchor,
             int shellMargin,
+            int verticalShellMargin,
             int exteriorAirMargin,
             int previewMargin,
             MKVerticalAccessPlacement verticalAccessPlacement,
@@ -364,6 +366,7 @@ public record MKWorkspaceExportManifest(
         public static final Codec<ExportWorkspaceSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ExportBlockPos.CODEC.fieldOf("anchor").forGetter(ExportWorkspaceSettings::anchor),
                 Codec.INT.fieldOf("shell_margin").forGetter(ExportWorkspaceSettings::shellMargin),
+                Codec.INT.optionalFieldOf("vertical_shell_margin", 1).forGetter(ExportWorkspaceSettings::verticalShellMargin),
                 Codec.INT.fieldOf("exterior_air_margin").forGetter(ExportWorkspaceSettings::exteriorAirMargin),
                 Codec.INT.fieldOf("preview_margin").forGetter(ExportWorkspaceSettings::previewMargin),
                 verticalAccessPlacementCodec().fieldOf("vertical_access_placement").forGetter(ExportWorkspaceSettings::verticalAccessPlacement),
@@ -389,7 +392,7 @@ public record MKWorkspaceExportManifest(
                                        List<ExportFamilyDefinition> familyDefinitions,
                                        List<ExportOpeningProfile> openingProfiles,
                                        List<ExportLinearRunFamily> linearRunFamilies) {
-            this(anchor, shellMargin, exteriorAirMargin, previewMargin, verticalAccessPlacement, dimensions,
+            this(anchor, shellMargin, 1, exteriorAirMargin, previewMargin, verticalAccessPlacement, dimensions,
                     palette, stairConfig, verticalAccessSpec, topologyProfile, familyDefinitions, openingProfiles,
                     linearRunFamilies, List.of());
         }
@@ -1251,6 +1254,7 @@ public record MKWorkspaceExportManifest(
             String workspacePieceKind,
             String structureId,
             int shellMargin,
+            int verticalShellMargin,
             ExportDimensions effectiveDimensions,
             ExportPiecePlacement placement,
             List<ExportPositionRef> markerPositions,
@@ -1270,6 +1274,7 @@ public record MKWorkspaceExportManifest(
                 Codec.STRING.fieldOf("workspace_piece_kind").forGetter(ExportPiece::workspacePieceKind),
                 Codec.STRING.fieldOf("structure_id").forGetter(ExportPiece::structureId),
                 Codec.INT.fieldOf("shell_margin").forGetter(ExportPiece::shellMargin),
+                Codec.INT.optionalFieldOf("vertical_shell_margin", 1).forGetter(ExportPiece::verticalShellMargin),
                 ExportDimensions.CODEC.fieldOf("effective_dimensions").forGetter(ExportPiece::effectiveDimensions),
                 ExportPiecePlacement.CODEC.fieldOf("placement").forGetter(ExportPiece::placement),
                 ExportPositionRef.CODEC.listOf().fieldOf("marker_positions").forGetter(ExportPiece::markerPositions),
@@ -1293,6 +1298,7 @@ public record MKWorkspaceExportManifest(
                     piece.tags().getOrDefault("workspace_piece_kind", "instance"),
                     workspace.namespace() + ":" + workspace.structureName() + "/" + piece.pieceName(),
                     piece.shellMargin(),
+                    piece.verticalShellMargin(),
                     ExportDimensions.from(piece.effectiveDimensions()),
                     new ExportPiecePlacement(
                             ExportBlockPos.from(piece.worldOrigin()),

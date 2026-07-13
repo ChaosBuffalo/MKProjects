@@ -19,12 +19,19 @@ public class MKWorkspaceGridLayout {
 
     public List<Placement> assignPlacements(BlockPos anchor, List<MKPlannedPiece> pieces, int shellMargin,
                                             int exteriorAirMargin, int previewMargin, int columns, int cellPadding) {
+        return assignPlacements(anchor, pieces, shellMargin, 1, exteriorAirMargin, previewMargin, columns,
+                cellPadding);
+    }
+
+    public List<Placement> assignPlacements(BlockPos anchor, List<MKPlannedPiece> pieces, int shellMargin,
+                                            int verticalShellMargin, int exteriorAirMargin, int previewMargin,
+                                            int columns, int cellPadding) {
         Map<String, Integer> columnWidths = new LinkedHashMap<>();
         int maxPreviewLength = 0;
         int maxPreviewHeight = 0;
         for (MKPlannedPiece piece : pieces) {
             int exportLength = getExportLength(piece, shellMargin, exteriorAirMargin);
-            int exportHeight = getExportHeight(piece, shellMargin);
+            int exportHeight = getExportHeight(piece, verticalShellMargin);
             int previewWidth = getExportWidth(piece, shellMargin, exteriorAirMargin) + (2 * previewMargin);
             int previewLength = exportLength + (2 * previewMargin);
             int previewHeight = exportHeight;
@@ -48,7 +55,7 @@ public class MKWorkspaceGridLayout {
             int row = getVariantIndex(piece);
             int previewWidth = getExportWidth(piece, shellMargin, exteriorAirMargin) + (2 * previewMargin);
             int previewLength = getExportLength(piece, shellMargin, exteriorAirMargin) + (2 * previewMargin);
-            int previewHeight = getExportHeight(piece, shellMargin);
+            int previewHeight = getExportHeight(piece, verticalShellMargin);
             BlockPos previewOrigin = start.offset(columnOrigins.getOrDefault(baseName, 0), 0, row * strideZ);
             BoundingBox previewBounds = new BoundingBox(
                     previewOrigin.getX(),
@@ -87,16 +94,16 @@ public class MKWorkspaceGridLayout {
         return piece.interiorLength() + (2 * effectiveShellMargin) + (2 * margin);
     }
 
-    private int getExportHeight(MKPlannedPiece piece, int shellMargin) {
-        return piece.interiorHeight() + (2 * getVerticalShellThickness(piece));
+    private int getExportHeight(MKPlannedPiece piece, int verticalShellMargin) {
+        return piece.interiorHeight() + (2 * getVerticalShellMargin(piece, verticalShellMargin));
     }
 
     private int getShellMargin(MKPlannedPiece piece, int shellMargin) {
         return isExactBoundsScaffold(piece) ? 0 : shellMargin;
     }
 
-    private int getVerticalShellThickness(MKPlannedPiece piece) {
-        return isExactBoundsScaffold(piece) ? 0 : 1;
+    private int getVerticalShellMargin(MKPlannedPiece piece, int verticalShellMargin) {
+        return isExactBoundsScaffold(piece) ? 0 : verticalShellMargin;
     }
 
     private boolean isExactBoundsScaffold(MKPlannedPiece piece) {

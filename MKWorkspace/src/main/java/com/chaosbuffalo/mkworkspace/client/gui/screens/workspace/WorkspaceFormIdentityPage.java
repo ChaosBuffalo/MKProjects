@@ -47,6 +47,10 @@ public class WorkspaceFormIdentityPage extends WorkspacePageBase {
                 Integer.toString(editor.shellMargin()));
         shellMarginField.setTextChangeCallback((field, text) ->
                 editor.shellMargin(parseInt(text, editor.shellMargin())));
+        MKTextFieldWidget verticalShellMarginField = makeField(screen, "Vertical Shell Margin",
+                Integer.toString(editor.verticalShellMargin()));
+        verticalShellMarginField.setTextChangeCallback((field, text) ->
+                editor.verticalShellMargin(parseInt(text, editor.verticalShellMargin())));
         MKTextFieldWidget exteriorAirMarginField = makeField(screen, "Exterior Air Margin",
                 Integer.toString(editor.exteriorAirMargin()));
         exteriorAirMarginField.setTextChangeCallback((field, text) ->
@@ -69,6 +73,7 @@ public class WorkspaceFormIdentityPage extends WorkspacePageBase {
         addRow(screen, content, "mknpc.workspace.field.structure_name", structureNameField);
         addRow(screen, content, "Topology Profile", topologyButton);
         addRow(screen, content, "mknpc.workspace.field.shell_margin", shellMarginField);
+        addRow(screen, content, "Vertical Shell Margin", verticalShellMarginField);
         addRow(screen, content, "mknpc.workspace.field.exterior_air_margin", exteriorAirMarginField);
         addRow(screen, content, "mknpc.workspace.field.preview_margin", previewMarginField);
         addDefaultPaletteControls(screen, content, editor);

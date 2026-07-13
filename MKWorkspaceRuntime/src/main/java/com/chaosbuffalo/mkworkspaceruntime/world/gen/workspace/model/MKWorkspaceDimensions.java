@@ -125,13 +125,19 @@ public class MKWorkspaceDimensions {
 
     public static int snapToNearestUsableShaftSize(MKWorkspaceStairAuthoringConfig stairConfig, int roomWidth,
                                                    int roomLength, int requestedSize, int minimumHeight) {
+        return snapToNearestUsableShaftSize(stairConfig, roomWidth, roomLength, requestedSize, minimumHeight, 1);
+    }
+
+    public static int snapToNearestUsableShaftSize(MKWorkspaceStairAuthoringConfig stairConfig, int roomWidth,
+                                                   int roomLength, int requestedSize, int minimumHeight,
+                                                   int verticalShellMargin) {
         List<Integer> allowed = getAllowedShaftSizes(roomWidth, roomLength);
         int snapped = snapToNearestAllowedShaftSize(roomWidth, roomLength, requestedSize);
-        if (hasReusableBandHeight(stairConfig, snapped, minimumHeight)) {
+        if (hasReusableBandHeight(stairConfig, snapped, minimumHeight, verticalShellMargin)) {
             return snapped;
         }
         return allowed.stream()
-                .filter(size -> hasReusableBandHeight(stairConfig, size, minimumHeight))
+                .filter(size -> hasReusableBandHeight(stairConfig, size, minimumHeight, verticalShellMargin))
                 .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedSize)))
                 .orElse(snapped);
     }
@@ -147,6 +153,11 @@ public class MKWorkspaceDimensions {
 
     public static List<Integer> getAllowedTowerHeights(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
                                                        int minimumHeight, int count) {
+        return getAllowedTowerHeights(stairConfig, shaftWidth, minimumHeight, count, 1);
+    }
+
+    public static List<Integer> getAllowedTowerHeights(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
+                                                       int minimumHeight, int count, int verticalShellMargin) {
         MKWorkspaceStairMode mode = MKVerticalAccessProfile.normalizeMode(stairConfig.mode());
         if (mode == MKWorkspaceStairMode.LADDER || mode == MKWorkspaceStairMode.NONE) {
             return MKVerticalAccessProfile.getAllowedHeights(MKWorkspaceStairMode.LADDER, shaftWidth, minimumHeight, count);
@@ -155,7 +166,8 @@ public class MKWorkspaceDimensions {
         int candidate = Math.max(1, minimumHeight);
         int maxCandidate = Math.max(candidate + 255, candidate + (count * 64));
         while (values.size() < count && candidate <= maxCandidate) {
-            if (MKResolvedVerticalAccessProfile.resolve(stairConfig, shaftWidth, shaftWidth, candidate).isPresent()) {
+            if (MKResolvedVerticalAccessProfile.resolve(stairConfig, shaftWidth, shaftWidth, candidate,
+                    verticalShellMargin).isPresent()) {
                 values.add(candidate);
             }
             candidate++;
@@ -177,7 +189,14 @@ public class MKWorkspaceDimensions {
 
     public static int snapToNearestAllowedTowerHeight(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
                                                       int requestedHeight, int minimumHeight, int count) {
-        List<Integer> allowedHeights = getAllowedTowerHeights(stairConfig, shaftWidth, minimumHeight, count);
+        return snapToNearestAllowedTowerHeight(stairConfig, shaftWidth, requestedHeight, minimumHeight, count, 1);
+    }
+
+    public static int snapToNearestAllowedTowerHeight(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
+                                                      int requestedHeight, int minimumHeight, int count,
+                                                      int verticalShellMargin) {
+        List<Integer> allowedHeights = getAllowedTowerHeights(stairConfig, shaftWidth, minimumHeight, count,
+                verticalShellMargin);
         return allowedHeights.stream()
                 .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedHeight)))
                 .orElse(Math.max(minimumHeight, Math.min(MAX_BAND_HEIGHT_EXCLUSIVE - 1, requestedHeight)));
@@ -185,10 +204,18 @@ public class MKWorkspaceDimensions {
 
     public static List<Integer> getAllowedEntranceHeights(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
                                                           int referenceRoomHeight, int minimumHeight, int count) {
-        List<Integer> allowedHeights = getAllowedTowerHeights(stairConfig, shaftWidth, minimumHeight, Math.max(count * 3, count));
+        return getAllowedEntranceHeights(stairConfig, shaftWidth, referenceRoomHeight, minimumHeight, count, 1);
+    }
+
+    public static List<Integer> getAllowedEntranceHeights(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
+                                                          int referenceRoomHeight, int minimumHeight, int count,
+                                                          int verticalShellMargin) {
+        List<Integer> allowedHeights = getAllowedTowerHeights(stairConfig, shaftWidth, minimumHeight,
+                Math.max(count * 3, count), verticalShellMargin);
         List<Integer> aligned = new java.util.ArrayList<>();
         for (int height : allowedHeights) {
-            if (MKResolvedVerticalAccessProfile.resolve(stairConfig, shaftWidth, shaftWidth, height).isPresent()) {
+            if (MKResolvedVerticalAccessProfile.resolve(stairConfig, shaftWidth, shaftWidth, height,
+                    verticalShellMargin).isPresent()) {
                 aligned.add(height);
                 if (aligned.size() >= count) {
                     break;
@@ -196,24 +223,39 @@ public class MKWorkspaceDimensions {
             }
         }
         if (aligned.isEmpty()) {
-            aligned.add(snapToNearestAllowedTowerHeight(stairConfig, shaftWidth, referenceRoomHeight, minimumHeight, count));
+            aligned.add(snapToNearestAllowedTowerHeight(stairConfig, shaftWidth, referenceRoomHeight, minimumHeight,
+                    count, verticalShellMargin));
         }
         return aligned;
     }
 
     public static List<Integer> getAllowedBandHeights(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
                                                       int referenceRoomHeight, int minimumHeight, int count) {
-        BandHeightCacheKey key = BandHeightCacheKey.from(stairConfig, shaftWidth, minimumHeight);
+        return getAllowedBandHeights(stairConfig, shaftWidth, referenceRoomHeight, minimumHeight, count, 1);
+    }
+
+    public static List<Integer> getAllowedBandHeights(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
+                                                      int referenceRoomHeight, int minimumHeight, int count,
+                                                      int verticalShellMargin) {
+        BandHeightCacheKey key = BandHeightCacheKey.from(stairConfig, shaftWidth, minimumHeight, verticalShellMargin);
         List<Integer> allowedHeights = ALLOWED_BAND_HEIGHT_CACHE.computeIfAbsent(key,
-                ignored -> computeAllowedBandHeights(stairConfig, key.shaftWidth(), key.minimumHeight()));
+                ignored -> computeAllowedBandHeights(stairConfig, key.shaftWidth(), key.minimumHeight(),
+                        key.verticalShellMargin()));
         return allowedHeights;
     }
 
     public static int snapToNearestAllowedEntranceHeight(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
                                                          int referenceRoomHeight, int requestedHeight, int minimumHeight,
                                                          int count) {
+        return snapToNearestAllowedEntranceHeight(stairConfig, shaftWidth, referenceRoomHeight, requestedHeight,
+                minimumHeight, count, 1);
+    }
+
+    public static int snapToNearestAllowedEntranceHeight(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
+                                                         int referenceRoomHeight, int requestedHeight, int minimumHeight,
+                                                         int count, int verticalShellMargin) {
         List<Integer> allowedHeights = getAllowedEntranceHeights(stairConfig, shaftWidth, referenceRoomHeight, minimumHeight,
-                count);
+                count, verticalShellMargin);
         return allowedHeights.stream()
                 .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedHeight)))
                 .orElse(Math.max(minimumHeight, Math.min(MAX_BAND_HEIGHT_EXCLUSIVE - 1, requestedHeight)));
@@ -222,8 +264,15 @@ public class MKWorkspaceDimensions {
     public static int snapToNearestAllowedBandHeight(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
                                                      int referenceRoomHeight, int requestedHeight, int minimumHeight,
                                                      int count) {
+        return snapToNearestAllowedBandHeight(stairConfig, shaftWidth, referenceRoomHeight, requestedHeight,
+                minimumHeight, count, 1);
+    }
+
+    public static int snapToNearestAllowedBandHeight(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
+                                                     int referenceRoomHeight, int requestedHeight, int minimumHeight,
+                                                     int count, int verticalShellMargin) {
         List<Integer> allowedHeights = getAllowedBandHeights(stairConfig, shaftWidth, referenceRoomHeight,
-                minimumHeight, count);
+                minimumHeight, count, verticalShellMargin);
         return allowedHeights.stream()
                 .min(java.util.Comparator.comparingInt(value -> Math.abs(value - requestedHeight)))
                 .orElse(Math.max(minimumHeight, Math.min(MAX_BAND_HEIGHT_EXCLUSIVE - 1, requestedHeight)));
@@ -255,10 +304,12 @@ public class MKWorkspaceDimensions {
     }
 
     private static List<Integer> computeAllowedBandHeights(MKWorkspaceStairAuthoringConfig stairConfig,
-                                                           int shaftWidth, int minimumHeight) {
+                                                           int shaftWidth, int minimumHeight,
+                                                           int verticalShellMargin) {
         List<Integer> aligned = new java.util.ArrayList<>();
         for (int height = minimumHeight; height < MAX_BAND_HEIGHT_EXCLUSIVE; height++) {
-            if (MKResolvedVerticalAccessProfile.resolve(stairConfig, shaftWidth, shaftWidth, height).isPresent()) {
+            if (MKResolvedVerticalAccessProfile.resolve(stairConfig, shaftWidth, shaftWidth, height,
+                    verticalShellMargin).isPresent()) {
                 aligned.add(height);
             }
         }
@@ -267,6 +318,11 @@ public class MKWorkspaceDimensions {
 
     private static boolean hasReusableBandHeight(MKWorkspaceStairAuthoringConfig stairConfig, int shaftSize,
                                                  int minimumHeight) {
+        return hasReusableBandHeight(stairConfig, shaftSize, minimumHeight, 1);
+    }
+
+    private static boolean hasReusableBandHeight(MKWorkspaceStairAuthoringConfig stairConfig, int shaftSize,
+                                                 int minimumHeight, int verticalShellMargin) {
         int stairWidth = snapToNearestAllowedStairWidth(shaftSize, stairConfig.stairWidth());
         MKWorkspaceStairAuthoringConfig config = new MKWorkspaceStairAuthoringConfig(
                 stairConfig.mode(),
@@ -274,19 +330,25 @@ public class MKWorkspaceDimensions {
                 stairWidth
         );
         return !getAllowedBandHeights(config, shaftSize, minimumHeight, minimumHeight,
-                MAX_BAND_HEIGHT_EXCLUSIVE).isEmpty();
+                MAX_BAND_HEIGHT_EXCLUSIVE, verticalShellMargin).isEmpty();
     }
 
     private record BandHeightCacheKey(MKWorkspaceStairMode mode, MKWorkspaceStairRiseType riseType, int stairWidth,
-                                      int shaftWidth, int minimumHeight) {
+                                      int shaftWidth, int minimumHeight, int verticalShellMargin) {
         private static BandHeightCacheKey from(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
                                                int minimumHeight) {
+            return from(stairConfig, shaftWidth, minimumHeight, 1);
+        }
+
+        private static BandHeightCacheKey from(MKWorkspaceStairAuthoringConfig stairConfig, int shaftWidth,
+                                               int minimumHeight, int verticalShellMargin) {
             return new BandHeightCacheKey(
                     MKVerticalAccessProfile.normalizeMode(stairConfig.mode()),
                     stairConfig.riseType(),
                     Math.max(1, stairConfig.stairWidth()),
                     Math.max(1, shaftWidth),
-                    Math.max(1, minimumHeight)
+                    Math.max(1, minimumHeight),
+                    Math.max(0, verticalShellMargin)
             );
         }
     }

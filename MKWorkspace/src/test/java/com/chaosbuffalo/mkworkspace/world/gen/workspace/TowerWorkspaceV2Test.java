@@ -883,7 +883,7 @@ class TowerWorkspaceV2Test {
         List<MKPlannedConnector> rampartOpenings = sharedCorner.connectors().stream()
                 .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
                 .filter(connector -> !connector.placesJigsaw())
-                .filter(connector -> connector.verticalOffset() == 7)
+                .filter(connector -> connector.verticalOffset() == 8)
                 .toList();
 
         assertEquals(4, sharedCorner.connectors().stream()
@@ -923,11 +923,11 @@ class TowerWorkspaceV2Test {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceTopologyProfile topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false);
         topologyProfile = MKWalledKeepPlannerSettings.from(topologyProfile)
-                .withRampartAccessEnabled(true)
-                .applyTo(topologyProfile)
+                        .withRampartAccessEnabled(true)
+                        .applyTo(topologyProfile)
                 .withVerticalStackSettings(topologyProfile.verticalStackSettings("keep.corner.shared")
                         .orElseThrow()
-                        .withEntryHeight(8));
+                        .withEntryHeight(9));
         List<MKWorkspaceLinearRunFamilyDefinition> linearRuns =
                 MKWalledKeepWorkspacePlanner.defaultLinearRunFamilyDefinitions(dimensions, workspacePalette()).stream()
                         .map(linearRun -> linearRun.topologySlotId().equals("keep.perimeter") ?
@@ -948,10 +948,10 @@ class TowerWorkspaceV2Test {
         List<MKPlannedConnector> rampartOpenings = sharedCorner.connectors().stream()
                 .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
                 .filter(connector -> !connector.placesJigsaw())
-                .filter(connector -> connector.verticalOffset() == 5)
+                .filter(connector -> connector.verticalOffset() == 6)
                 .toList();
 
-        assertEquals(8, sharedCorner.interiorHeight());
+        assertEquals(9, sharedCorner.interiorHeight());
         assertEquals(2, rampartOpenings.size());
         assertFalse(sharedCorner.connectors().stream()
                 .anyMatch(connector -> !connector.placesJigsaw() && connector.verticalOffset() == 7));
