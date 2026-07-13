@@ -956,6 +956,46 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void walledKeepGatehouseRoomCarriesVoidMarginTags() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        List<MKWorkspaceRoomFamilyDefinition> families =
+                MKWalledKeepWorkspacePlanner.defaultRoomFamilyDefinitions(dimensions).stream()
+                        .map(family -> family.topologySlotId().equals("keep.gate.main") ?
+                                MKWorkspaceRoomFamilyDefinition.forTopologySlot(
+                                        family.baseName(),
+                                        family.slotMetadata(),
+                                        family.verticalAccessGroupId(),
+                                        family.supportsVerticalAccess(),
+                                        family.roomWidth(),
+                                        family.roomLength(),
+                                        9,
+                                        family.horizontalExtrusionMode(),
+                                        family.horizontalExits(),
+                                        2,
+                                        1,
+                                        family.foundationPolicyOverride(),
+                                        family.paletteOverride()) :
+                                family)
+                        .toList();
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()),
+                MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false),
+                families,
+                MKWalledKeepWorkspacePlanner.defaultLinearRunFamilyDefinitions(dimensions, workspacePalette())
+        );
+
+        assertEquals(List.of(), workspace.validate());
+        MKPlannedPiece gatehouse = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.pieceName().equals("keep_gate_main"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(9, gatehouse.interiorHeight());
+        assertEquals("2", gatehouse.tags().get(MKWorkspaceVoidMarginTags.TOP_VOID_MARGIN_TAG));
+        assertEquals("1", gatehouse.tags().get(MKWorkspaceVoidMarginTags.BOTTOM_VOID_MARGIN_TAG));
+    }
+
+    @Test
     void walledKeepRampartAccessAccountsForWallTopVoidMargin() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceTopologyProfile topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false);

@@ -214,6 +214,7 @@ public final class WalledKeepDraftEditor {
                                 Math.min(linearRun.topVoidMargin(), Math.max(0, height - 1))) :
                         linearRun)
                 .toList();
+        syncGatehouseWallGeometry();
         session.markDirty();
     }
 
@@ -232,7 +233,7 @@ public final class WalledKeepDraftEditor {
                         copyLinearRunWithLengthAndInteriorWidth(linearRun, span, linearRun.interiorWidth()) :
                         linearRun)
                 .toList();
-        syncGatehouseWallDimensions(span, wallPassageWidth());
+        syncGatehouseWallGeometry();
         session.markDirty();
     }
 
@@ -251,7 +252,7 @@ public final class WalledKeepDraftEditor {
                         copyLinearRunWithLengthAndInteriorWidth(linearRun, linearRun.length(), passageWidth) :
                         linearRun)
                 .toList();
-        syncGatehouseWallDimensions(wallUnitSpan(), passageWidth);
+        syncGatehouseWallGeometry();
         session.markDirty();
     }
 
@@ -288,6 +289,7 @@ public final class WalledKeepDraftEditor {
                                 linearRun.interiorHeight(), Math.min(margin, Math.max(0, linearRun.interiorHeight() - 1))) :
                         linearRun)
                 .toList();
+        syncGatehouseWallGeometry();
         session.markDirty();
     }
 
@@ -322,7 +324,7 @@ public final class WalledKeepDraftEditor {
             }
         }
         session.draft().linearRunFamilies = List.copyOf(updated);
-        syncGatehouseWallDimensions(wallUnitSpan(), wallPassageWidth());
+        syncGatehouseWallGeometry();
         session.markDirty();
     }
 
@@ -330,11 +332,16 @@ public final class WalledKeepDraftEditor {
         return topologySlotId.equals("keep.perimeter") || topologySlotId.startsWith("keep.perimeter.");
     }
 
-    private void syncGatehouseWallDimensions(int wallUnitSpan, int wallPassageWidth) {
+    private void syncGatehouseWallGeometry() {
+        int wallUnitSpan = wallUnitSpan();
+        int wallPassageWidth = wallPassageWidth();
+        int wallHeight = wallHeight();
+        int wallTopVoidMargin = Math.min(wallTopVoidMargin(), Math.max(0, wallHeight - 1));
         session.draft().familyDefinitions = session.draft().familyDefinitions.stream()
                 .map(family -> family.topologySlotId().equals("keep.gate.main") ?
-                        session.normalizeFamilyDefinition(copyFamilyWithGeometry(family, wallUnitSpan, wallPassageWidth,
-                                family.roomHeight())) :
+                        session.normalizeFamilyDefinition(copyFamilyWithGeometryAndVoidMargins(family,
+                                wallUnitSpan, wallPassageWidth, wallHeight, wallTopVoidMargin,
+                                family.bottomVoidMargin())) :
                         family)
                 .toList();
     }
@@ -434,6 +441,13 @@ public final class WalledKeepDraftEditor {
 
     private MKWorkspaceRoomFamilyDefinition copyFamilyWithGeometry(MKWorkspaceRoomFamilyDefinition family,
                                                                     int roomWidth, int roomLength, int roomHeight) {
+        return copyFamilyWithGeometryAndVoidMargins(family, roomWidth, roomLength, roomHeight,
+                family.topVoidMargin(), family.bottomVoidMargin());
+    }
+
+    private MKWorkspaceRoomFamilyDefinition copyFamilyWithGeometryAndVoidMargins(
+            MKWorkspaceRoomFamilyDefinition family, int roomWidth, int roomLength, int roomHeight,
+            int topVoidMargin, int bottomVoidMargin) {
         return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                 family.baseName(),
                 family.slotMetadata(),
@@ -444,8 +458,8 @@ public final class WalledKeepDraftEditor {
                 roomHeight,
                 family.horizontalExtrusionMode(),
                 family.horizontalExits(),
-                family.topVoidMargin(),
-                family.bottomVoidMargin(),
+                topVoidMargin,
+                bottomVoidMargin,
                 family.foundationPolicyOverride(),
                 family.paletteOverride()
         );

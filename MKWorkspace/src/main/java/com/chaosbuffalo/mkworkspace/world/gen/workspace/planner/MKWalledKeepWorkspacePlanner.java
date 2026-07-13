@@ -2049,6 +2049,14 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         tags.put("workspace_topology_group", resolvedFamily.slotMetadata().topologyGroupId());
         MKWorkspaceStableSlotIdentity.apply(tags, "keep_room", family.topologySlotId());
         applyFoundationTags(resolvedFamily.foundationPolicy(), tags);
+        if (resolvedFamily.topVoidMargin() > 0) {
+            tags.put(MKWorkspaceVoidMarginTags.TOP_VOID_MARGIN_TAG,
+                    Integer.toString(resolvedFamily.topVoidMargin()));
+        }
+        if (resolvedFamily.bottomVoidMargin() > 0) {
+            tags.put(MKWorkspaceVoidMarginTags.BOTTOM_VOID_MARGIN_TAG,
+                    Integer.toString(resolvedFamily.bottomVoidMargin()));
+        }
         tags.put(MKWorkspaceVerticalAccessTags.ENABLED_TAG, Boolean.toString(family.supportsVerticalAccess()));
         if (family.supportsVerticalAccess()) {
             tags.put("workspace_vertical_access_group_id", family.verticalAccessGroupId());
