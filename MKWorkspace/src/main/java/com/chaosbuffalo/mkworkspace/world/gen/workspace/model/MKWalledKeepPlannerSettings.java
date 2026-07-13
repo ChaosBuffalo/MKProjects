@@ -13,10 +13,12 @@ public record MKWalledKeepPlannerSettings(
         boolean uniqueSouthEastCornerTower,
         boolean uniqueSouthWestCornerTower,
         MKWalledKeepCourtyardSettings courtyardSettings,
-        boolean rampartAccessEnabled
+        boolean rampartAccessEnabled,
+        String rampartAccessOpeningProfileId
 ) {
     public static final ResourceLocation PLANNER_ID = ResourceLocation.fromNamespaceAndPath("mknpc", "walled_keep");
     public static final String SCOPE_ID = "keep";
+    public static final String DEFAULT_RAMPART_ACCESS_OPENING_PROFILE_ID = "branch_opening";
     public static final Codec<MKWalledKeepPlannerSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.BOOL.optionalFieldOf("unique_north_west_corner_tower", false)
                     .forGetter(MKWalledKeepPlannerSettings::uniqueNorthWestCornerTower),
@@ -30,11 +32,17 @@ public record MKWalledKeepPlannerSettings(
                             MKWalledKeepCourtyardSettings.defaults())
                     .forGetter(MKWalledKeepPlannerSettings::courtyardSettings),
             Codec.BOOL.optionalFieldOf("rampart_access_enabled", false)
-                    .forGetter(MKWalledKeepPlannerSettings::rampartAccessEnabled)
+                    .forGetter(MKWalledKeepPlannerSettings::rampartAccessEnabled),
+            Codec.STRING.optionalFieldOf("rampart_access_opening_profile_id",
+                            DEFAULT_RAMPART_ACCESS_OPENING_PROFILE_ID)
+                    .forGetter(MKWalledKeepPlannerSettings::rampartAccessOpeningProfileId)
     ).apply(instance, MKWalledKeepPlannerSettings::new));
 
     public MKWalledKeepPlannerSettings {
         courtyardSettings = courtyardSettings == null ? MKWalledKeepCourtyardSettings.defaults() : courtyardSettings;
+        rampartAccessOpeningProfileId = rampartAccessOpeningProfileId == null ||
+                rampartAccessOpeningProfileId.isBlank() ?
+                DEFAULT_RAMPART_ACCESS_OPENING_PROFILE_ID : rampartAccessOpeningProfileId;
     }
 
     public static MKWalledKeepPlannerSettings defaults() {
@@ -44,7 +52,7 @@ public record MKWalledKeepPlannerSettings(
     public static MKWalledKeepPlannerSettings cornerModes(boolean northWest, boolean northEast,
                                                           boolean southEast, boolean southWest) {
         return new MKWalledKeepPlannerSettings(northWest, northEast, southEast, southWest,
-                MKWalledKeepCourtyardSettings.defaults(), false);
+                MKWalledKeepCourtyardSettings.defaults(), false, DEFAULT_RAMPART_ACCESS_OPENING_PROFILE_ID);
     }
 
     public static MKWalledKeepPlannerSettings from(MKWorkspaceTopologyProfile profile) {
@@ -76,7 +84,7 @@ public record MKWalledKeepPlannerSettings(
     public MKWalledKeepPlannerSettings withCornerModes(boolean northWest, boolean northEast,
                                                        boolean southEast, boolean southWest) {
         return new MKWalledKeepPlannerSettings(northWest, northEast, southEast, southWest, courtyardSettings,
-                rampartAccessEnabled);
+                rampartAccessEnabled, rampartAccessOpeningProfileId);
     }
 
     public MKWalledKeepPlannerSettings withCornerMode(String topologySlotId, boolean value) {
@@ -97,12 +105,19 @@ public record MKWalledKeepPlannerSettings(
         return new MKWalledKeepPlannerSettings(uniqueNorthWestCornerTower, uniqueNorthEastCornerTower,
                 uniqueSouthEastCornerTower, uniqueSouthWestCornerTower,
                 updatedSettings == null ? MKWalledKeepCourtyardSettings.defaults() : updatedSettings,
-                rampartAccessEnabled);
+                rampartAccessEnabled, rampartAccessOpeningProfileId);
     }
 
     public MKWalledKeepPlannerSettings withRampartAccessEnabled(boolean enabled) {
         return new MKWalledKeepPlannerSettings(uniqueNorthWestCornerTower, uniqueNorthEastCornerTower,
-                uniqueSouthEastCornerTower, uniqueSouthWestCornerTower, courtyardSettings, enabled);
+                uniqueSouthEastCornerTower, uniqueSouthWestCornerTower, courtyardSettings, enabled,
+                rampartAccessOpeningProfileId);
+    }
+
+    public MKWalledKeepPlannerSettings withRampartAccessOpeningProfileId(String openingProfileId) {
+        return new MKWalledKeepPlannerSettings(uniqueNorthWestCornerTower, uniqueNorthEastCornerTower,
+                uniqueSouthEastCornerTower, uniqueSouthWestCornerTower, courtyardSettings, rampartAccessEnabled,
+                openingProfileId);
     }
 
     public MKWorkspaceTopologyProfile applyTo(MKWorkspaceTopologyProfile profile) {

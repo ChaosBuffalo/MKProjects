@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWalledKeepPlannerSettings;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
@@ -140,8 +141,22 @@ public final class WalledKeepDraftEditor {
         plannerSettings(plannerSettings().withRampartAccessEnabled(value));
     }
 
+    public String rampartAccessOpeningProfileId() {
+        return session.ensureCompatibleOpeningProfile(MKHorizontalExitPathKind.BRANCH,
+                plannerSettings().rampartAccessOpeningProfileId());
+    }
+
+    public void rampartAccessOpeningProfileId(String profileId) {
+        plannerSettings(plannerSettings().withRampartAccessOpeningProfileId(
+                session.ensureCompatibleOpeningProfile(MKHorizontalExitPathKind.BRANCH, profileId)));
+    }
+
+    public String nextRampartAccessOpeningProfileId(boolean reverse) {
+        return session.nextOpeningProfileId(MKHorizontalExitPathKind.BRANCH, rampartAccessOpeningProfileId(), reverse);
+    }
+
     public int rampartAccessOpeningHeight() {
-        return session.getOpeningProfile("branch_opening")
+        return session.getOpeningProfile(rampartAccessOpeningProfileId())
                 .or(() -> session.openingProfiles().stream().findFirst())
                 .map(MKHorizontalOpeningProfile::openingHeight)
                 .orElse(3);

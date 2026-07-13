@@ -919,6 +919,43 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void walledKeepRampartAccessUsesConfiguredOpeningProfile() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceTopologyProfile topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false);
+        topologyProfile = MKWalledKeepPlannerSettings.from(topologyProfile)
+                .withRampartAccessEnabled(true)
+                .withRampartAccessOpeningProfileId("rampart_opening")
+                .applyTo(topologyProfile)
+                .withVerticalStackSettings(topologyProfile.verticalStackSettings("keep.corner.shared")
+                        .orElseThrow()
+                        .withEntryHeight(12));
+        List<MKHorizontalOpeningProfile> openingProfiles = new java.util.ArrayList<>(
+                MKHorizontalOpeningProfile.createDefaults(dimensions));
+        openingProfiles.add(new MKHorizontalOpeningProfile("rampart_opening", 5, 4, false, true));
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                baseWorkspace(openingProfiles, List.of()),
+                topologyProfile,
+                MKWalledKeepWorkspacePlanner.defaultRoomFamilyDefinitions(dimensions),
+                MKWalledKeepWorkspacePlanner.defaultLinearRunFamilyDefinitions(dimensions, workspacePalette())
+        );
+
+        assertEquals(List.of(), workspace.validate());
+        MKPlannedPiece sharedCorner = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.pieceName().equals("keep_corner_north_west_entry"))
+                .findFirst()
+                .orElseThrow();
+        List<MKPlannedConnector> rampartOpenings = sharedCorner.connectors().stream()
+                .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
+                .filter(connector -> !connector.placesJigsaw())
+                .filter(connector -> connector.verticalOffset() == 8)
+                .toList();
+
+        assertEquals(2, rampartOpenings.size());
+        assertTrue(rampartOpenings.stream().allMatch(connector ->
+                connector.openingWidth() == 5 && connector.openingHeight() == 4));
+    }
+
+    @Test
     void walledKeepRampartAccessAccountsForWallTopVoidMargin() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceTopologyProfile topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false);

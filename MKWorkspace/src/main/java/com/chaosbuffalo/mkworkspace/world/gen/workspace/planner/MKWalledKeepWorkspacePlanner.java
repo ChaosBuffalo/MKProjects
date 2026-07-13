@@ -936,7 +936,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         if (!keepSettings(workspace).rampartAccessEnabled()) {
             return;
         }
-        ResolvedOpeningProfile rampartOpening = resolveOpeningProfile(workspace, "branch_opening")
+        ResolvedOpeningProfile rampartOpening = resolveOpeningProfile(workspace,
+                keepSettings(workspace).rampartAccessOpeningProfileId())
                 .orElseGet(() -> defaultOpeningProfile(workspace));
         int rampartBottom = rampartAccessBottom(workspace);
         if (requiredRampartAccessEntryHeight(workspace, rampartBottom, rampartOpening.openingHeight()) >
