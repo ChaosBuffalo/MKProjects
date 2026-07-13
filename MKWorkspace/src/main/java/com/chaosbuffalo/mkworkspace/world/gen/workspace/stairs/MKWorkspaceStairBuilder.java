@@ -516,7 +516,11 @@ public class MKWorkspaceStairBuilder {
     }
 
     int getEffectiveVerticalShellMargin(MKStructureWorkspace workspace, MKWorkspacePieceDefinition piece) {
-        return MKWorkspacePieceGeometry.effectiveVerticalShellMargin(workspace, piece);
+        int workspaceMargin = MKWorkspacePieceGeometry.effectiveVerticalShellMargin(workspace, piece);
+        if (isTerminalBottom(piece)) {
+            return workspaceMargin;
+        }
+        return Math.max(workspaceMargin, inferVerticalShellMargin(piece));
     }
 
     private int inferVerticalShellMargin(MKWorkspacePieceDefinition piece) {

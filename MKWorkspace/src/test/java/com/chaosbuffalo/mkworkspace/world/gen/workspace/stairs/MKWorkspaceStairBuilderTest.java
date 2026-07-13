@@ -171,6 +171,30 @@ class MKWorkspaceStairBuilderTest {
     }
 
     @Test
+    void stairProfileInfersVerticalShellMarginFromGeneratedPieceBounds() {
+        MKStructureWorkspace workspace = workspaceWithVerticalShellMargin(1);
+        MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
+        MKWorkspacePieceDefinition piece = verticalPiece("tower.primary.main_floor",
+                Map.of(MKWorkspaceVerticalAccessTags.ENABLED_TAG, "true"),
+                List.of(verticalConnector(Direction.UP), verticalConnector(Direction.DOWN)),
+                1,
+                new BoundingBox(0, 0, 0, 10, 8, 10));
+        MKWorkspaceVerticalAccessGeometry.ShaftGeometry geometry = builder.getGenerationGeometry(workspace, piece);
+
+        int effectiveVerticalShellMargin = builder.getEffectiveVerticalShellMargin(workspace, piece);
+        MKResolvedVerticalAccessProfile resolved = MKResolvedVerticalAccessProfile.resolve(
+                MKWorkspaceStairAuthoringConfig.defaultConfig(),
+                geometry.width(),
+                geometry.length(),
+                builder.getProfileInteriorHeight(piece),
+                effectiveVerticalShellMargin
+        ).orElseThrow();
+
+        assertEquals(2, effectiveVerticalShellMargin);
+        assertEquals(18, resolvedHalfBlockRise(resolved));
+    }
+
+    @Test
     void bottomCapEditableRangeUsesWorkspaceVerticalShellMarginWhenPieceMetadataIsLegacy() {
         MKStructureWorkspace workspace = workspaceWithVerticalShellMargin(3);
         MKWorkspaceStairBuilder builder = new MKWorkspaceStairBuilder();
