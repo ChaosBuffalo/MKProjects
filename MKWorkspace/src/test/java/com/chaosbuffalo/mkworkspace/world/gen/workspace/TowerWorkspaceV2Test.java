@@ -958,6 +958,37 @@ class TowerWorkspaceV2Test {
     }
 
     @Test
+    void walledKeepRampartAccessAccountsForVerticalShellMarginWhenCheckingEntryHeight() {
+        MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
+        MKWorkspaceTopologyProfile topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false);
+        topologyProfile = MKWalledKeepPlannerSettings.from(topologyProfile)
+                .withRampartAccessEnabled(true)
+                .applyTo(topologyProfile)
+                .withVerticalStackSettings(topologyProfile.verticalStackSettings("keep.corner.shared")
+                        .orElseThrow()
+                        .withEntryHeight(12));
+        MKStructureWorkspace workspace = withTopologyAndLinearRuns(
+                withVerticalShellMargin(baseWorkspace(MKHorizontalOpeningProfile.createDefaults(dimensions), List.of()), 2),
+                topologyProfile,
+                MKWalledKeepWorkspacePlanner.defaultRoomFamilyDefinitions(dimensions),
+                MKWalledKeepWorkspacePlanner.defaultLinearRunFamilyDefinitions(dimensions, workspacePalette())
+        );
+
+        assertEquals(List.of(), workspace.validate());
+        MKPlannedPiece sharedCorner = new MKWalledKeepWorkspacePlanner().createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.pieceName().equals("keep_corner_north_west_entry"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(12, sharedCorner.interiorHeight());
+        assertEquals(2, sharedCorner.connectors().stream()
+                .filter(connector -> connector.role() == MKConnectorRole.BRANCH)
+                .count());
+        assertFalse(sharedCorner.connectors().stream()
+                .anyMatch(connector -> !connector.placesJigsaw() && connector.verticalOffset() == 9));
+    }
+
+    @Test
     void walledKeepRampartAccessSkipsCornerEntryConnectorsWhenEntryIsTooShort() {
         MKWorkspaceDimensions dimensions = MKWorkspaceDimensions.defaultDimensions();
         MKWorkspaceTopologyProfile topologyProfile = MKWalledKeepWorkspacePlanner.defaultTopologyProfile(false);
@@ -4392,15 +4423,46 @@ class TowerWorkspaceV2Test {
                 workspace.stairConfig(),
                 workspace.verticalAccessPlacement(),
                 workspace.shellMargin(),
+                workspace.verticalShellMargin(),
                 workspace.exteriorAirMargin(),
                 workspace.previewMargin(),
                 workspace.verticalAccessSpec(),
                 familyDefinitions.isEmpty() ? workspace.familyDefinitions() : familyDefinitions,
                 workspace.openingProfiles(),
                 linearRunFamilies,
+                workspace.insertFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
-                workspace.pieces()
+                workspace.pieces(),
+                workspace.layerStates()
+        );
+    }
+
+    private static MKStructureWorkspace withVerticalShellMargin(MKStructureWorkspace workspace,
+                                                                int verticalShellMargin) {
+        return new MKStructureWorkspace(
+                workspace.id(),
+                workspace.anchor(),
+                workspace.namespace(),
+                workspace.structureName(),
+                workspace.topologyProfile(),
+                workspace.dimensions(),
+                workspace.palette(),
+                workspace.stairConfig(),
+                workspace.verticalAccessPlacement(),
+                workspace.shellMargin(),
+                verticalShellMargin,
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                workspace.verticalAccessSpec(),
+                workspace.familyDefinitions(),
+                workspace.openingProfiles(),
+                workspace.linearRunFamilies(),
+                workspace.insertFamilies(),
+                workspace.createdAt(),
+                workspace.updatedAt(),
+                workspace.pieces(),
+                workspace.layerStates()
         );
     }
 
@@ -4417,15 +4479,18 @@ class TowerWorkspaceV2Test {
                 workspace.stairConfig(),
                 workspace.verticalAccessPlacement(),
                 workspace.shellMargin(),
+                workspace.verticalShellMargin(),
                 workspace.exteriorAirMargin(),
                 workspace.previewMargin(),
                 workspace.verticalAccessSpec(),
                 workspace.familyDefinitions(),
                 workspace.openingProfiles(),
                 workspace.linearRunFamilies(),
+                workspace.insertFamilies(),
                 workspace.createdAt(),
                 workspace.updatedAt(),
-                workspace.pieces()
+                workspace.pieces(),
+                workspace.layerStates()
         );
     }
 

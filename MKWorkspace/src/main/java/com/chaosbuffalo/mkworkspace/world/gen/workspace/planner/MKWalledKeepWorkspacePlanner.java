@@ -939,7 +939,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         ResolvedOpeningProfile rampartOpening = resolveOpeningProfile(workspace, "branch_opening")
                 .orElseGet(() -> defaultOpeningProfile(workspace));
         int rampartBottom = rampartAccessBottom(workspace);
-        if (rampartBottom + rampartOpening.openingHeight() > piece.interiorHeight()) {
+        if (requiredRampartAccessEntryHeight(workspace, rampartBottom, rampartOpening.openingHeight()) >
+                piece.interiorHeight()) {
             return;
         }
         for (Direction facing : rampartAccessFacings(connection)) {
@@ -951,6 +952,12 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
 
     private List<Direction> rampartAccessFacings(CornerEntryConnection connection) {
         return List.of(connection.incomingFacing(), connection.wallTargetFacing());
+    }
+
+    private int requiredRampartAccessEntryHeight(MKStructureWorkspace workspace, int rampartBottom,
+                                                 int openingHeight) {
+        int verticalShellMargin = Math.max(0, workspace.verticalShellMargin());
+        return Math.max(1, verticalShellMargin + rampartBottom - 1 + openingHeight);
     }
 
     private int rampartAccessBottom(MKStructureWorkspace workspace) {

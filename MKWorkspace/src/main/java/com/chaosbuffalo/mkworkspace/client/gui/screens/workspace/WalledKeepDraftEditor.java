@@ -148,7 +148,8 @@ public final class WalledKeepDraftEditor {
     }
 
     public int requiredRampartAccessEntryHeight() {
-        return rampartAccessBottom() + rampartAccessOpeningHeight();
+        int verticalShellMargin = Math.max(0, session.verticalShellMargin());
+        return Math.max(1, verticalShellMargin + rampartAccessBottom() - 1 + rampartAccessOpeningHeight());
     }
 
     public boolean rampartAccessNeedsEntryHeightFix() {
