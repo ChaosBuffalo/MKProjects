@@ -37,6 +37,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -662,6 +663,7 @@ public class MKWorkspacePieceRelayoutService {
                         connector.verticalOffset(),
                         connector.targetPool().toString(),
                         connector.incomingPool().toString()))
+                .sorted(CONNECTOR_SIGNATURE_ORDER)
                 .toList();
     }
 
@@ -677,8 +679,19 @@ public class MKWorkspacePieceRelayoutService {
                         connector.verticalOffset(),
                         resolveTargetPool(workspace, piece, connector.targetPoolName()),
                         resolveIncomingPool(workspace, connector.incomingPoolName())))
+                .sorted(CONNECTOR_SIGNATURE_ORDER)
                 .toList();
     }
+
+    private static final Comparator<ConnectorSignature> CONNECTOR_SIGNATURE_ORDER = Comparator
+            .comparing((ConnectorSignature signature) -> signature.role().name())
+            .thenComparing(signature -> signature.facing().name())
+            .thenComparingInt(ConnectorSignature::openingWidth)
+            .thenComparingInt(ConnectorSignature::openingHeight)
+            .thenComparingInt(ConnectorSignature::lateralOffset)
+            .thenComparingInt(ConnectorSignature::verticalOffset)
+            .thenComparing(ConnectorSignature::targetPool)
+            .thenComparing(ConnectorSignature::incomingPool);
 
     private String resolveTargetPool(MKStructureWorkspace workspace, MKPlannedPiece piece, String poolName) {
         String resolvedPoolName = poolName == null ? baseName(piece) : poolName;

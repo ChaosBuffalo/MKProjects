@@ -204,6 +204,51 @@ class MKWorkspacePieceRelayoutServiceTest {
         assertEquals(0, summary.rebuildRequiredCount());
     }
 
+    @Test
+    void catalogSummaryRebuildsOnlyFloorRoomWithEditedExits() {
+        MKStructureWorkspace draft = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        ResourceLocation mainPool = ResourceLocation.fromNamespaceAndPath(draft.namespace(),
+                draft.structureName() + "/floor_plan/keep/rooms/main/main_opening");
+        ResourceLocation branchPool = ResourceLocation.fromNamespaceAndPath(draft.namespace(),
+                draft.structureName() + "/floor_plan/keep/rooms/branch/branch_opening");
+        ResourceLocation emptyPool = ResourceLocation.parse("minecraft:empty");
+        MKWorkspaceConnectorDefinition mainExit = connector(MKConnectorRole.MAIN_BACK, Direction.NORTH,
+                5, 4, 0, 0, mainPool, emptyPool);
+        MKWorkspaceConnectorDefinition branchExit = connector(MKConnectorRole.BRANCH, Direction.EAST,
+                3, 4, 0, 0, branchPool, emptyPool);
+        MKWorkspaceConnectorDefinition addedBranchExit = connector(MKConnectorRole.BRANCH, Direction.WEST,
+                3, 4, 0, 0, branchPool, emptyPool);
+        MKWorkspacePieceDefinition editedRoom = piece("main_room_template", "main_room",
+                plannerId("main_room"), 9, 9, 7, List.of(mainExit, branchExit), floorRoomTags("main_room"));
+        MKWorkspacePieceDefinition unchangedRoom = piece("branch_room_template", "branch_room",
+                plannerId("branch_room"), 9, 9, 7, List.of(mainExit, branchExit), floorRoomTags("branch_room"));
+        MKStructureWorkspace existing = draft.withPieces(List.of(editedRoom, unchangedRoom));
+        List<MKPlannedPiece> targetPieces = List.of(
+                planned("main_room_template", "main_room", editedRoom.plannerId(), 9, 9, 7,
+                        List.of(
+                                plannedConnector(mainExit, "floor_plan/keep/rooms/main/main_opening"),
+                                plannedConnector(branchExit, "floor_plan/keep/rooms/branch/branch_opening"),
+                                plannedConnector(addedBranchExit, "floor_plan/keep/rooms/branch/branch_opening")
+                        ), floorRoomTags("main_room")),
+                planned("branch_room_template", "branch_room", unchangedRoom.plannerId(), 9, 9, 7,
+                        List.of(
+                                plannedConnector(branchExit, "floor_plan/keep/rooms/branch/branch_opening"),
+                                plannedConnector(mainExit, "floor_plan/keep/rooms/main/main_opening")
+                        ), floorRoomTags("branch_room"))
+        );
+
+        MKWorkspacePieceRelayoutService.CatalogRelayoutSummary summary = service
+                .summarizeCatalogRelayout(existing, existing, targetPieces, targetPieces)
+                .orElseThrow();
+
+        assertEquals(1, summary.preservedCount());
+        assertEquals(1, summary.rebuildRequiredCount());
+        assertEquals(0, summary.newCount());
+        assertEquals(0, summary.removedCount());
+        assertEquals(1, countImpacts(summary, "rebuild"));
+        assertEquals(1, countPreservedWorkImpacts(summary));
+    }
+
     private static long countImpacts(MKWorkspacePieceRelayoutService.CatalogRelayoutSummary summary, String outcome) {
         return summary.impacts().stream()
                 .filter(impact -> outcome.equals(impact.outcome()))
@@ -288,6 +333,21 @@ class MKWorkspacePieceRelayoutServiceTest {
         );
     }
 
+    private static MKPlannedConnector plannedConnector(MKWorkspaceConnectorDefinition connector, String targetPool) {
+        String incomingPool = connector.incomingPool().equals(ResourceLocation.parse("minecraft:empty")) ?
+                null : connector.incomingPool().toString();
+        return new MKPlannedConnector(
+                connector.role(),
+                connector.facing(),
+                connector.openingWidth(),
+                connector.openingHeight(),
+                connector.lateralOffset(),
+                connector.verticalOffset(),
+                targetPool,
+                incomingPool
+        );
+    }
+
     private static MKWorkspacePlannerId plannerId(String baseName) {
         return MKWorkspacePlannerId.of("floor").child("plan").child("room").child(baseName);
     }
@@ -301,12 +361,20 @@ class MKWorkspacePieceRelayoutServiceTest {
     }
 
     private static Map<String, String> floorRoomTags(boolean includeProfileId) {
-        LinkedHashMap<String, String> tags = new LinkedHashMap<>(tags("main_room"));
+        return floorRoomTags("main_room", includeProfileId);
+    }
+
+    private static Map<String, String> floorRoomTags(String roomKind) {
+        return floorRoomTags(roomKind, true);
+    }
+
+    private static Map<String, String> floorRoomTags(String roomKind, boolean includeProfileId) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>(tags(roomKind));
         tags.put("workspace_floor_topology_stack_id", "tower.primary");
         tags.put("workspace_floor_topology_floor_role", "main_floor");
-        tags.put("workspace_floor_room_kind", "main_room");
+        tags.put("workspace_floor_room_kind", roomKind);
         if (includeProfileId) {
-            tags.put("workspace_floor_room_profile_id", "main_room");
+            tags.put("workspace_floor_room_profile_id", roomKind);
         }
         return Map.copyOf(tags);
     }
