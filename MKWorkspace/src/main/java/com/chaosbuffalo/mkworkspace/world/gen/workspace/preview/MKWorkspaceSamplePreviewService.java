@@ -22,6 +22,8 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MK
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
@@ -567,6 +569,11 @@ public class MKWorkspaceSamplePreviewService {
         }
     }
 
+    private record PreviewRuntimeHints(String startBaseName,
+                                       List<MKWorkspaceExportManifest.ExportRuntimeTemplateGroup> templateGroups,
+                                       List<MKWorkspaceExportManifest.ExportRuntimePool> pools) {
+    }
+
     private static final class RuntimePreviewContextBuilder {
         private RuntimePreviewContextBuilder() {
         }
@@ -574,12 +581,8 @@ public class MKWorkspaceSamplePreviewService {
         static Optional<RuntimePreviewContext> from(MKStructureWorkspace workspace, List<String> errors) {
             MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 4,
                     Instant.now().toString());
-            List<String> validationErrors = manifest.validateRuntimeStructureExport();
-            if (!validationErrors.isEmpty()) {
-                errors.addAll(validationErrors);
-                return Optional.empty();
-            }
-            Optional<PreviewPool> pool = buildPool(workspace, manifest, errors);
+            PreviewRuntimeHints previewHints = buildPreviewRuntimeHints(workspace, manifest);
+            Optional<PreviewPool> pool = buildPool(workspace, previewHints, errors);
             if (pool.isEmpty()) {
                 return Optional.empty();
             }
@@ -595,11 +598,11 @@ public class MKWorkspaceSamplePreviewService {
         }
 
         private static Optional<PreviewPool> buildPool(MKStructureWorkspace workspace,
-                                                       MKWorkspaceExportManifest manifest,
+                                                       PreviewRuntimeHints previewHints,
                                                        List<String> errors) {
             Map<String, MKWorkspaceExportManifest.ExportRuntimeTemplateGroup> templateGroupByBase =
                     new LinkedHashMap<>();
-            for (MKWorkspaceExportManifest.ExportRuntimeTemplateGroup group : manifest.runtimeHints().templateGroups()) {
+            for (MKWorkspaceExportManifest.ExportRuntimeTemplateGroup group : previewHints.templateGroups()) {
                 templateGroupByBase.put(group.baseName(), group);
             }
             Map<String, List<MKWorkspacePieceDefinition>> piecesByBase = new LinkedHashMap<>();
@@ -643,17 +646,116 @@ public class MKWorkspaceSamplePreviewService {
             HashMap<ResourceLocation, List<PreviewCandidate>> candidatesByPool = new HashMap<>();
             ResourceLocation startPool = ResourceLocation.fromNamespaceAndPath(workspace.namespace(),
                     workspace.structureName() + "/start");
-            candidatesByPool.put(startPool, candidatesByBaseName.getOrDefault(manifest.runtimeHints().startBaseName(),
+            candidatesByPool.put(startPool, candidatesByBaseName.getOrDefault(previewHints.startBaseName(),
                     List.of()));
-            for (MKWorkspaceExportManifest.ExportRuntimePool pool : manifest.runtimeHints().pools()) {
+            for (MKWorkspaceExportManifest.ExportRuntimePool pool : previewHints.pools()) {
                 ArrayList<PreviewCandidate> poolCandidates = new ArrayList<>();
                 for (String childBaseName : pool.childBaseNames()) {
                     poolCandidates.addAll(candidatesByBaseName.getOrDefault(childBaseName, List.of()));
                 }
                 candidatesByPool.put(pool.poolId(), List.copyOf(poolCandidates));
             }
-            return Optional.of(new PreviewPool(manifest.runtimeHints().startBaseName(), List.copyOf(candidates),
+            return Optional.of(new PreviewPool(previewHints.startBaseName(), List.copyOf(candidates),
                     immutableListMap(candidatesByBaseName), immutableListMap(candidatesByPool)));
+        }
+
+        private static PreviewRuntimeHints buildPreviewRuntimeHints(MKStructureWorkspace workspace,
+                                                                    MKWorkspaceExportManifest manifest) {
+            ArrayList<MKWorkspaceExportManifest.ExportRuntimeTemplateGroup> templateGroups = new ArrayList<>();
+            for (MKWorkspaceExportManifest.ExportTemplateGroup templateGroup : manifest.templateGroups()) {
+                previewRuntimeTemplateGroup(workspace, templateGroup).ifPresent(templateGroups::add);
+            }
+            return new PreviewRuntimeHints(findPreviewStartBaseName(workspace.pieces()), templateGroups,
+                    buildPreviewRuntimePools(workspace));
+        }
+
+        private static Optional<MKWorkspaceExportManifest.ExportRuntimeTemplateGroup> previewRuntimeTemplateGroup(
+                MKStructureWorkspace workspace,
+                MKWorkspaceExportManifest.ExportTemplateGroup templateGroup) {
+            Optional<MKWorkspacePieceDefinition> metadataPiece = workspace.pieces().stream()
+                    .filter(piece -> templateGroup.baseName().equals(baseName(piece)))
+                    .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
+                    .filter(piece -> piece.variantIndex() > 0)
+                    .findFirst()
+                    .or(() -> workspace.pieces().stream()
+                            .filter(piece -> templateGroup.baseName().equals(baseName(piece)))
+                            .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
+                            .filter(piece -> piece.variantIndex() == 0)
+                            .findFirst());
+            Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = metadataPiece
+                    .map(MKWorkspacePieceDefinition::tags)
+                    .flatMap(MKWorkspaceRuntimePieceInfo::fromTags);
+            if (metadataPiece.isEmpty() || runtimeInfo.isEmpty()) {
+                return Optional.empty();
+            }
+            MKWorkspacePieceDefinition piece = metadataPiece.orElseThrow();
+            return Optional.of(new MKWorkspaceExportManifest.ExportRuntimeTemplateGroup(
+                    templateGroup.baseName(),
+                    templateGroup.roleId(),
+                    MKWorkspaceExportManifest.ExportRuntimePieceMetadata.from(runtimeInfo.orElseThrow(), piece,
+                            foundationPolicyForPiece(workspace, piece))
+            ));
+        }
+
+        private static String findPreviewStartBaseName(List<MKWorkspacePieceDefinition> pieces) {
+            return pieces.stream()
+                    .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
+                    .filter(piece -> MKWorkspaceRuntimePieceInfo.fromTags(piece.tags())
+                            .map(MKWorkspaceRuntimePieceInfo::start)
+                            .orElse(false))
+                    .map(MKWorkspaceSamplePreviewService::baseName)
+                    .findFirst()
+                    .orElse("");
+        }
+
+        private static List<MKWorkspaceExportManifest.ExportRuntimePool> buildPreviewRuntimePools(
+                MKStructureWorkspace workspace) {
+            LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool = new LinkedHashMap<>();
+            for (MKWorkspacePieceDefinition piece : workspace.pieces()) {
+                if (MKWorkspaceTemplateReuseTags.isDerived(piece.tags())) {
+                    continue;
+                }
+                Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = MKWorkspaceRuntimePieceInfo.fromTags(piece.tags());
+                if (runtimeInfo.isEmpty()) {
+                    continue;
+                }
+                String baseName = baseName(piece);
+                for (MKWorkspaceConnectorDefinition connector : piece.connectors()) {
+                    if (connector.incomingPool().equals(EMPTY_POOL)) {
+                        continue;
+                    }
+                    childrenByPool.computeIfAbsent(connector.incomingPool(), ignored -> new LinkedHashSet<>())
+                            .add(baseName);
+                }
+            }
+            return childrenByPool.entrySet().stream()
+                    .map(entry -> new MKWorkspaceExportManifest.ExportRuntimePool(
+                            entry.getKey().getPath(),
+                            entry.getKey(),
+                            List.copyOf(entry.getValue())
+                    ))
+                    .toList();
+        }
+
+        private static MKWorkspaceFoundationPolicy foundationPolicyForPiece(MKStructureWorkspace workspace,
+                                                                            MKWorkspacePieceDefinition piece) {
+            String linearRunId = piece.tags().get("workspace_linear_run_family_id");
+            if (linearRunId != null && !linearRunId.isBlank()) {
+                return workspace.linearRunFamilies().stream()
+                        .filter(family -> family.linearRunId().equals(linearRunId))
+                        .findFirst()
+                        .map(MKWorkspaceLinearRunFamilyDefinition::foundationPolicy)
+                        .orElse(MKWorkspaceFoundationPolicy.none());
+            }
+            String familyId = piece.tags().get("workspace_family_id");
+            if (familyId != null && !familyId.isBlank()) {
+                return workspace.familyDefinitions().stream()
+                        .filter(family -> family.baseName().equals(familyId))
+                        .findFirst()
+                        .map(family -> workspace.resolveFamilySettings(family).foundationPolicy())
+                        .orElse(MKWorkspaceFoundationPolicy.none());
+            }
+            return MKWorkspaceFoundationPolicy.none();
         }
 
         private static ResourceLocation templateId(MKStructureWorkspace workspace, MKWorkspacePieceDefinition piece) {
