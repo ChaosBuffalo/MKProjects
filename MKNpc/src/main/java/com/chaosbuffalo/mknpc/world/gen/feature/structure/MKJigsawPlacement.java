@@ -66,6 +66,14 @@ public class MKJigsawPlacement {
     static final Logger LOGGER = LogUtils.getLogger();
     private static final List<String> FLOOR_MASKS = List.of("none", "n", "e", "w", "en", "nw", "ew", "enw");
 
+    @FunctionalInterface
+    public interface PoolLookup {
+        Optional<? extends Holder<StructureTemplatePool>> getHolder(ResourceKey<StructureTemplatePool> poolKey);
+    }
+
+    public record PreviewPlan(BlockPos center, List<PoolElementStructurePiece> pieces) {
+    }
+
     public static Optional<Structure.GenerationStub> addPieces(
             Structure.GenerationContext context,
             Holder<StructureTemplatePool> startPool,
@@ -86,9 +94,10 @@ public class MKJigsawPlacement {
         LevelHeightAccessor levelHeightAccessor = context.heightAccessor();
         WorldgenRandom random = context.random();
         Registry<StructureTemplatePool> registry = registryAccess.registryOrThrow(Registries.TEMPLATE_POOL);
+        PoolLookup poolLookup = registry::getHolder;
         Rotation rotation = Rotation.getRandom(random);
         StructureTemplatePool startTemplatePool = startPool.unwrapKey()
-                .flatMap(key -> registry.getOptional(aliasLookup.lookup(key)))
+                .flatMap(key -> poolLookup.getHolder(aliasLookup.lookup(key)).map(Holder::value))
                 .orElse(startPool.value());
         StructurePoolElement startElement = startTemplatePool.getRandomTemplate(random);
         if (startElement == EmptyPoolElement.INSTANCE) {
@@ -161,12 +170,110 @@ public class MKJigsawPlacement {
                         );
                         VoxelShape free = Shapes.join(Shapes.create(aabb), Shapes.create(AABB.of(startPiece.getBoundingBox())), BooleanOp.ONLY_FIRST);
                         addPieces(context.randomState(), maxDepth, useExpansionHack, chunkGenerator, structureTemplateManager,
-                                levelHeightAccessor, random, registry, startPiece, pieces, free, aliasLookup, liquidSettings,
+                                levelHeightAccessor, random, poolLookup, startPiece, pieces, free, aliasLookup, liquidSettings,
                                 layoutSettings, layoutController, rootState, maxDistanceFromCenter);
                         pieces.forEach(builder::addPiece);
                     }
                 }
         ));
+    }
+
+    public static Optional<PreviewPlan> planPreviewPieces(
+            StructureTemplateManager structureTemplateManager,
+            LevelHeightAccessor levelHeightAccessor,
+            ChunkGenerator chunkGenerator,
+            RandomState randomState,
+            RandomSource random,
+            Holder<StructureTemplatePool> startPool,
+            Optional<ResourceLocation> startJigsawName,
+            int maxDepth,
+            BlockPos pos,
+            boolean useExpansionHack,
+            Optional<Heightmap.Types> projectStartToHeightmap,
+            int maxDistanceFromCenter,
+            PoolAliasLookup aliasLookup,
+            DimensionPadding dimensionPadding,
+            LiquidSettings liquidSettings,
+            MKDungeonLayoutSettings layoutSettings,
+            PoolLookup poolLookup
+    ) {
+        Rotation rotation = Rotation.getRandom(random);
+        StructureTemplatePool startTemplatePool = startPool.unwrapKey()
+                .flatMap(key -> poolLookup.getHolder(aliasLookup.lookup(key)).map(Holder::value))
+                .orElse(startPool.value());
+        StructurePoolElement startElement = startTemplatePool.getRandomTemplate(random);
+        if (startElement == EmptyPoolElement.INSTANCE) {
+            return Optional.empty();
+        }
+
+        BlockPos startJigsawPos = pos;
+        if (startJigsawName.isPresent()) {
+            List<StructureTemplate.StructureBlockInfo> list = startElement.getShuffledJigsawBlocks(
+                    structureTemplateManager, pos, rotation, random);
+            Optional<BlockPos> found = list.stream()
+                    .filter(info -> startJigsawName.get().equals(ResourceLocation.tryParse(
+                            Objects.requireNonNull(info.nbt(), () -> info + " nbt was null").getString("name"))))
+                    .map(StructureTemplate.StructureBlockInfo::pos)
+                    .findFirst();
+            if (found.isEmpty()) {
+                return Optional.empty();
+            }
+            startJigsawPos = found.orElseThrow();
+        }
+
+        Vec3i offset = startJigsawPos.subtract(pos);
+        BlockPos piecePos = pos.subtract(offset);
+        PoolElementStructurePiece startPiece = new PoolElementStructurePiece(
+                structureTemplateManager,
+                startElement,
+                piecePos,
+                startElement.getGroundLevelDelta(),
+                rotation,
+                startElement.getBoundingBox(structureTemplateManager, piecePos, rotation),
+                liquidSettings
+        );
+        BoundingBox boundingBox = startPiece.getBoundingBox();
+        int centerX = (boundingBox.maxX() + boundingBox.minX()) / 2;
+        int centerZ = (boundingBox.maxZ() + boundingBox.minZ()) / 2;
+        int startY;
+        if (projectStartToHeightmap.isPresent()) {
+            startY = pos.getY() + chunkGenerator.getFirstFreeHeight(centerX, centerZ,
+                    projectStartToHeightmap.get(), levelHeightAccessor, randomState);
+        } else {
+            startY = piecePos.getY();
+        }
+
+        int pieceMinY = boundingBox.minY() + startPiece.getGroundLevelDelta();
+        startPiece.move(0, startY - pieceMinY, 0);
+        int centerY = startY + offset.getY();
+        MKDungeonLayoutController layoutController = new MKDungeonLayoutController(layoutSettings);
+        int targetFloors = layoutController.chooseTargetFloors(random);
+        MKDungeonPieceState baseRootState = new MKDungeonPieceState(0, 0, 1, 0, true, targetFloors);
+        Optional<ResourceLocation> startTemplateId = getTemplateId(startElement);
+        MKDungeonPieceState rootState = startTemplateId
+                .flatMap(MKJigsawPieceMetadataManager::get)
+                .map(metadata -> layoutController.initialStateForStart(baseRootState, metadata, random))
+                .orElse(baseRootState);
+        List<PoolElementStructurePiece> pieces = Lists.newArrayList();
+        pieces.add(startPiece);
+        if (maxDepth > 0) {
+            AABB aabb = new AABB(
+                    (double) (centerX - maxDistanceFromCenter),
+                    (double) Math.max(centerY - maxDistanceFromCenter,
+                            levelHeightAccessor.getMinBuildHeight() + dimensionPadding.bottom()),
+                    (double) (centerZ - maxDistanceFromCenter),
+                    (double) (centerX + maxDistanceFromCenter + 1),
+                    (double) Math.min(centerY + maxDistanceFromCenter + 1,
+                            levelHeightAccessor.getMaxBuildHeight() - dimensionPadding.top()),
+                    (double) (centerZ + maxDistanceFromCenter + 1)
+            );
+            VoxelShape free = Shapes.join(Shapes.create(aabb), Shapes.create(AABB.of(startPiece.getBoundingBox())),
+                    BooleanOp.ONLY_FIRST);
+            addPieces(randomState, maxDepth, useExpansionHack, chunkGenerator, structureTemplateManager,
+                    levelHeightAccessor, random, poolLookup, startPiece, pieces, free, aliasLookup, liquidSettings,
+                    layoutSettings, layoutController, rootState, maxDistanceFromCenter);
+        }
+        return Optional.of(new PreviewPlan(new BlockPos(centerX, centerY, centerZ), List.copyOf(pieces)));
     }
 
     private static Optional<BlockPos> getRandomNamedJigsaw(
@@ -195,7 +302,7 @@ public class MKJigsawPlacement {
             StructureTemplateManager structureTemplateManager,
             LevelHeightAccessor level,
             RandomSource random,
-            Registry<StructureTemplatePool> pools,
+            PoolLookup pools,
             PoolElementStructurePiece startPiece,
             List<PoolElementStructurePiece> pieces,
             VoxelShape free,
@@ -219,7 +326,7 @@ public class MKJigsawPlacement {
     }
 
     static final class Placer {
-        private final Registry<StructureTemplatePool> pools;
+        private final PoolLookup pools;
         private final int maxDepth;
         private final int maxDistanceFromCenter;
         private final ChunkGenerator chunkGenerator;
@@ -232,7 +339,7 @@ public class MKJigsawPlacement {
         final SequencedPriorityIterator<MKPieceState> placing = new SequencedPriorityIterator<>();
 
         Placer(
-                Registry<StructureTemplatePool> pools,
+                PoolLookup pools,
                 int maxDepth,
                 int maxDistanceFromCenter,
                 ChunkGenerator chunkGenerator,
@@ -1137,7 +1244,8 @@ public class MKJigsawPlacement {
             }
             ResourceKey<StructureTemplatePool> poolKey = ResourceKey.create(Registries.TEMPLATE_POOL, endingPool.get());
             ResourceKey<StructureTemplatePool> resolvedPoolKey = aliasLookup.lookup(poolKey);
-            pools.getOptional(resolvedPoolKey)
+            pools.getHolder(resolvedPoolKey)
+                    .map(Holder::value)
                     .ifPresent(pool -> candidates.addAll(pool.getShuffledTemplates(this.random)));
         }
 
@@ -1170,7 +1278,8 @@ public class MKJigsawPlacement {
         private boolean floorMaskPoolAvailable(ResourceLocation basePool, String mask, PoolAliasLookup aliasLookup) {
             ResourceKey<StructureTemplatePool> key = ResourceKey.create(Registries.TEMPLATE_POOL,
                     MKFloorMaskPools.maskPool(basePool, mask));
-            return pools.getOptional(aliasLookup.lookup(key))
+            return pools.getHolder(aliasLookup.lookup(key))
+                    .map(Holder::value)
                     .filter(pool -> pool.size() > 0)
                     .isPresent();
         }
@@ -1185,7 +1294,8 @@ public class MKJigsawPlacement {
             Optional<StructureTemplatePool> poolOpt = branchCapPoolFor(targetPoolKey)
                     .map(pool -> ResourceKey.create(Registries.TEMPLATE_POOL, pool))
                     .map(aliasLookup::lookup)
-                    .flatMap(pools::getOptional)
+                    .flatMap(pools::getHolder)
+                    .map(Holder::value)
                     .filter(pool -> pool.size() > 0);
             poolOpt.ifPresent(pool -> candidates.addAll(pool.getShuffledTemplates(this.random)));
             return poolOpt.isPresent();
@@ -1352,7 +1462,7 @@ public class MKJigsawPlacement {
 
     private static Optional<ResourceLocation> getTemplateId(StructurePoolElement element) {
         if (element instanceof MKSinglePoolElement mkSinglePoolElement) {
-            return mkSinglePoolElement.getPieceEither().left();
+            return mkSinglePoolElement.getTemplateId();
         }
         return Optional.empty();
     }

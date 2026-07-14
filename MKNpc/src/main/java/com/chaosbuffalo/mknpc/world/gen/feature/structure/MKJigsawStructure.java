@@ -1290,7 +1290,7 @@ public class MKJigsawStructure extends MKStructure {
 
     private Optional<ResourceLocation> getTemplateId(StructurePoolElement element) {
         if (element instanceof MKSinglePoolElement mkSinglePoolElement) {
-            return mkSinglePoolElement.getPieceEither().left();
+            return mkSinglePoolElement.getTemplateId();
         }
         return Optional.empty();
     }

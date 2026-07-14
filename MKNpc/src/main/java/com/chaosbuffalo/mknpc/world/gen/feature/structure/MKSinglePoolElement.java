@@ -42,6 +42,7 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKPoolEle
 
     // TODO: see if this is still needed now that overrideLiquidSettingsCodec exists
     private final boolean bWaterlogBlocks;
+    private final Optional<ResourceLocation> templateIdOverride;
 
     protected MKSinglePoolElement(Either<ResourceLocation, StructureTemplate> template,
                                   Holder<StructureProcessorList> processors,
@@ -50,6 +51,18 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKPoolEle
                                   Boolean waterlogBlocks) {
         super(template, processors, projection, overrideLiquidSettings);
         bWaterlogBlocks = waterlogBlocks;
+        templateIdOverride = template.left();
+    }
+
+    private MKSinglePoolElement(ResourceLocation templateId,
+                                StructureTemplate template,
+                                Holder<StructureProcessorList> processors,
+                                StructureTemplatePool.Projection projection,
+                                Optional<LiquidSettings> overrideLiquidSettings,
+                                Boolean waterlogBlocks) {
+        super(Either.right(template), processors, projection, overrideLiquidSettings);
+        bWaterlogBlocks = waterlogBlocks;
+        templateIdOverride = Optional.of(templateId);
     }
 
     @Override
@@ -66,6 +79,9 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKPoolEle
         return template;
     }
 
+    public Optional<ResourceLocation> getTemplateId() {
+        return templateIdOverride;
+    }
 
     private StructureTemplate getTemplate(StructureTemplateManager pStructureTemplateManager) {
         return this.template.map(pStructureTemplateManager::getOrCreate, Function.identity());
@@ -91,6 +107,13 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKPoolEle
     public static Function<StructureTemplatePool.Projection, StructurePoolElement> forTemplate(ResourceLocation pieceName, boolean doWaterlog) {
         LiquidSettings liquidSettings = doWaterlog ? LiquidSettings.APPLY_WATERLOGGING : LiquidSettings.IGNORE_WATERLOGGING;
         return (placementBehaviour) -> new MKSinglePoolElement(Either.left(pieceName), EMPTY, placementBehaviour, Optional.of(liquidSettings), doWaterlog);
+    }
+
+    public static Function<StructureTemplatePool.Projection, StructurePoolElement> forTemplate(
+            ResourceLocation pieceName, StructureTemplate template, boolean doWaterlog) {
+        LiquidSettings liquidSettings = doWaterlog ? LiquidSettings.APPLY_WATERLOGGING : LiquidSettings.IGNORE_WATERLOGGING;
+        return (placementBehaviour) -> new MKSinglePoolElement(pieceName, template, EMPTY, placementBehaviour,
+                Optional.of(liquidSettings), doWaterlog);
     }
 
     @Override
