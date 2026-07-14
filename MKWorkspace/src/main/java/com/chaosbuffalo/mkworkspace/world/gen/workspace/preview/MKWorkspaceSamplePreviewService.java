@@ -25,13 +25,18 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorMaskPools;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.FrontAndTop;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.Pools;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -39,6 +44,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.JigsawBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -57,13 +63,11 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 
 public class MKWorkspaceSamplePreviewService {
@@ -91,6 +95,9 @@ public class MKWorkspaceSamplePreviewService {
                                     boolean templateFallback,
                                     ResourceLocation templateId,
                                     MKJigsawPieceMetadata metadata) {
+    }
+
+    private record TemplateBlock(BlockPos pos, BlockState state, @Nullable CompoundTag nbt) {
     }
 
     private record RuntimePreviewContext(PreviewPool pool,
@@ -171,18 +178,17 @@ public class MKWorkspaceSamplePreviewService {
             plan.pieces().forEach(piece -> piece.move(0, yOffset, 0));
             finalBounds = unionPieceBounds(plan.pieces());
         }
-        BoundingBox previewBounds = samplePreviewBounds(sampleCenter, finalBounds, runtime.maxDistanceFromCenter());
-        BoundingBox clearBounds = expand(previewBounds, CLEAR_MARGIN);
+        BoundingBox placementBounds = expand(finalBounds, CLEAR_MARGIN);
         BoundingBox authoringBounds = authoringBounds(workspace);
         if (authoringBounds == null) {
             errors.add("workspace has no authoring bounds");
             return Optional.empty();
         }
-        if (intersects(clearBounds, expand(authoringBounds, CLEAR_MARGIN))) {
+        if (intersects(placementBounds, expand(authoringBounds, CLEAR_MARGIN))) {
             errors.add("computed sample bounds overlap the workspace authoring area");
             return Optional.empty();
         }
-        if (clearBounds.minY() < level.getMinBuildHeight() || clearBounds.maxY() >= level.getMaxBuildHeight()) {
+        if (placementBounds.minY() < level.getMinBuildHeight() || placementBounds.maxY() >= level.getMaxBuildHeight()) {
             errors.add("computed sample bounds are outside the world build height");
             return Optional.empty();
         }
@@ -190,7 +196,7 @@ public class MKWorkspaceSamplePreviewService {
         if (previousState.isPresent() && !clearPreviousPreview(level, previousState.get(), authoringBounds, errors)) {
             return Optional.empty();
         }
-        clearBounds(level, clearBounds);
+        clearBounds(level, placementBounds);
 
         int fallbackCount = 0;
         for (PoolElementStructurePiece placedPiece : plan.pieces()) {
@@ -207,12 +213,12 @@ public class MKWorkspaceSamplePreviewService {
         }
         ArrayList<StructurePiece> structurePieces = new ArrayList<>(plan.pieces());
         runAfterPlace(level, workspace, runtime, new PiecesContainer(structurePieces),
-                clearBounds, random, dynamicPools.metadataOverrides());
+                placementBounds, random, dynamicPools.metadataOverrides());
 
         BlockPos origin = new BlockPos(finalBounds.minX(), finalBounds.minY(), finalBounds.minZ());
         MKWorkspaceSamplePreviewState state = new MKWorkspaceSamplePreviewState(
                 origin,
-                previewBounds,
+                finalBounds,
                 seed,
                 lockSeed,
                 System.currentTimeMillis(),
@@ -220,7 +226,7 @@ public class MKWorkspaceSamplePreviewService {
                 fallbackCount
         );
         data.setSamplePreviewState(workspace.id(), state);
-        return Optional.of(new MKWorkspaceSamplePreviewResult(origin, previewBounds, seed, lockSeed, plan.pieces().size(),
+        return Optional.of(new MKWorkspaceSamplePreviewResult(origin, finalBounds, seed, lockSeed, plan.pieces().size(),
                 fallbackCount, List.copyOf(warnings)));
     }
 
@@ -275,43 +281,99 @@ public class MKWorkspaceSamplePreviewService {
         BoundingBox bounds = piece.exportBounds();
         template.fillFromWorld(level, new BlockPos(bounds.minX(), bounds.minY(), bounds.minZ()),
                 new Vec3i(bounds.getXSpan(), bounds.getYSpan(), bounds.getZSpan()), false, null);
-        removeInactiveJigsaws(level, template, piece);
+        overlayConnectorJigsaws(level, template, piece);
         return template;
     }
 
-    private void removeInactiveJigsaws(ServerLevel level, StructureTemplate template,
-                                       MKWorkspacePieceDefinition piece) {
-        Set<BlockPos> activeConnectorPositions = new HashSet<>();
-        for (MKWorkspaceConnectorDefinition connector : piece.connectors()) {
-            activeConnectorPositions.add(connector.relativePos());
-        }
+    private void overlayConnectorJigsaws(ServerLevel level, StructureTemplate template,
+                                         MKWorkspacePieceDefinition piece) {
+        HolderGetter<Block> blockGetter = level.registryAccess().lookupOrThrow(Registries.BLOCK);
         CompoundTag tag = template.save(new CompoundTag());
-        ListTag blocks = tag.getList("blocks", 10);
-        ListTag filtered = new ListTag();
+        List<BlockState> palette = readPalette(blockGetter, tag);
+        LinkedHashMap<BlockPos, TemplateBlock> blocksByPos = new LinkedHashMap<>();
+        ListTag blocks = tag.getList("blocks", Tag.TAG_COMPOUND);
         for (int i = 0; i < blocks.size(); i++) {
             CompoundTag block = blocks.getCompound(i);
-            if (!inactiveJigsaw(block, activeConnectorPositions)) {
-                filtered.add(block);
+            BlockPos pos = readBlockPos(block.getList("pos", Tag.TAG_INT));
+            BlockState state = palette.get(block.getInt("state"));
+            if (state.is(Blocks.JIGSAW)) {
+                continue;
             }
+            CompoundTag blockNbt = block.contains("nbt", Tag.TAG_COMPOUND) ? block.getCompound("nbt").copy() : null;
+            blocksByPos.put(pos, new TemplateBlock(pos, state, blockNbt));
         }
-        if (filtered.size() == blocks.size()) {
-            return;
+
+        for (MKWorkspaceConnectorDefinition connector : piece.connectors()) {
+            BlockPos pos = connector.relativePos();
+            BlockState state = Blocks.JIGSAW.defaultBlockState()
+                    .setValue(JigsawBlock.ORIENTATION, jigsawOrientation(connector.facing()));
+            CompoundTag jigsawNbt = new CompoundTag();
+            jigsawNbt.putString("id", "minecraft:jigsaw");
+            jigsawNbt.putString("name", connector.jigsawName().toString());
+            jigsawNbt.putString("target", connector.jigsawTarget().toString());
+            jigsawNbt.putString("pool", connector.targetPool().toString());
+            jigsawNbt.putString("final_state", "minecraft:air");
+            jigsawNbt.putString("joint", "aligned");
+            jigsawNbt.putInt("x", pos.getX());
+            jigsawNbt.putInt("y", pos.getY());
+            jigsawNbt.putInt("z", pos.getZ());
+            blocksByPos.put(pos, new TemplateBlock(pos, state, jigsawNbt));
         }
-        tag.put("blocks", filtered);
-        template.load(level.registryAccess().lookupOrThrow(Registries.BLOCK), tag);
+
+        writePaletteAndBlocks(tag, List.copyOf(blocksByPos.values()));
+        template.load(blockGetter, tag);
     }
 
-    private boolean inactiveJigsaw(CompoundTag block, Set<BlockPos> activeConnectorPositions) {
-        if (!block.contains("nbt")) {
-            return false;
+    private List<BlockState> readPalette(HolderGetter<Block> blockGetter, CompoundTag tag) {
+        ListTag paletteTag = tag.contains("palette", Tag.TAG_LIST) ?
+                tag.getList("palette", Tag.TAG_COMPOUND) :
+                tag.getList("palettes", Tag.TAG_LIST).getList(0);
+        ArrayList<BlockState> palette = new ArrayList<>();
+        for (int i = 0; i < paletteTag.size(); i++) {
+            palette.add(NbtUtils.readBlockState(blockGetter, paletteTag.getCompound(i)));
         }
-        CompoundTag nbt = block.getCompound("nbt");
-        if (!"minecraft:jigsaw".equals(nbt.getString("id"))) {
-            return false;
+        return palette;
+    }
+
+    private void writePaletteAndBlocks(CompoundTag tag, List<TemplateBlock> blocks) {
+        LinkedHashMap<BlockState, Integer> paletteIndexes = new LinkedHashMap<>();
+        ListTag blockList = new ListTag();
+        for (TemplateBlock block : blocks) {
+            int stateId = paletteIndexes.computeIfAbsent(block.state(), ignored -> paletteIndexes.size());
+            CompoundTag blockTag = new CompoundTag();
+            blockTag.put("pos", intList(block.pos().getX(), block.pos().getY(), block.pos().getZ()));
+            blockTag.putInt("state", stateId);
+            if (block.nbt() != null) {
+                blockTag.put("nbt", block.nbt());
+            }
+            blockList.add(blockTag);
         }
-        ListTag pos = block.getList("pos", 3);
-        BlockPos relativePos = new BlockPos(pos.getInt(0), pos.getInt(1), pos.getInt(2));
-        return !activeConnectorPositions.contains(relativePos);
+        ListTag paletteTag = new ListTag();
+        for (BlockState state : paletteIndexes.keySet()) {
+            paletteTag.add(NbtUtils.writeBlockState(state));
+        }
+        tag.remove("palettes");
+        tag.put("blocks", blockList);
+        tag.put("palette", paletteTag);
+    }
+
+    private BlockPos readBlockPos(ListTag list) {
+        return new BlockPos(list.getInt(0), list.getInt(1), list.getInt(2));
+    }
+
+    private ListTag intList(int x, int y, int z) {
+        ListTag list = new ListTag();
+        list.add(IntTag.valueOf(x));
+        list.add(IntTag.valueOf(y));
+        list.add(IntTag.valueOf(z));
+        return list;
+    }
+
+    private FrontAndTop jigsawOrientation(net.minecraft.core.Direction facing) {
+        if (facing == net.minecraft.core.Direction.UP || facing == net.minecraft.core.Direction.DOWN) {
+            return FrontAndTop.fromFrontAndTop(facing, net.minecraft.core.Direction.NORTH);
+        }
+        return FrontAndTop.fromFrontAndTop(facing, net.minecraft.core.Direction.UP);
     }
 
     private StructureTemplatePool rigidPool(Holder<StructureTemplatePool> emptyPool,
@@ -430,19 +492,29 @@ public class MKWorkspaceSamplePreviewService {
         MKJigsawPieceMetadataManager.MetadataOverrideSnapshot snapshot =
                 MKJigsawPieceMetadataManager.installTemporaryPreviewOverrides(metadataOverrides);
         try {
-            BlockPos origin = new BlockPos(placementBounds.minX(), placementBounds.minY(), placementBounds.minZ());
-            MKJigsawStructure.runPreviewAfterPlace(
-                    level,
-                    level.structureManager(),
-                    level.getChunkSource().getGenerator(),
-                    random,
-                    placementBounds,
-                    new ChunkPos(origin),
-                    pieces,
-                    runtime.layoutSettings(),
-                    runtime.maxDistanceFromCenter(),
-                    ResourceLocation.fromNamespaceAndPath(workspace.namespace(), workspace.structureName() + "/start")
-            );
+            ResourceLocation startPoolId = ResourceLocation.fromNamespaceAndPath(workspace.namespace(),
+                    workspace.structureName() + "/start");
+            int minChunkX = Math.floorDiv(placementBounds.minX(), 16);
+            int maxChunkX = Math.floorDiv(placementBounds.maxX(), 16);
+            int minChunkZ = Math.floorDiv(placementBounds.minZ(), 16);
+            int maxChunkZ = Math.floorDiv(placementBounds.maxZ(), 16);
+            for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
+                for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
+                    ChunkPos chunkPos = new ChunkPos(chunkX, chunkZ);
+                    MKJigsawStructure.runPreviewAfterPlace(
+                            level,
+                            level.structureManager(),
+                            level.getChunkSource().getGenerator(),
+                            random,
+                            chunkBounds(placementBounds, chunkPos),
+                            chunkPos,
+                            pieces,
+                            runtime.layoutSettings(),
+                            runtime.maxDistanceFromCenter(),
+                            startPoolId
+                    );
+                }
+            }
         } finally {
             MKJigsawPieceMetadataManager.restoreTemporaryPreviewOverrides(snapshot);
         }
@@ -484,15 +556,14 @@ public class MKWorkspaceSamplePreviewService {
         return new BlockPos(anchor.getX() - distance, anchor.getY(), anchor.getZ() - distance);
     }
 
-    private BoundingBox samplePreviewBounds(BlockPos sampleCenter, BoundingBox pieceBounds,
-                                            int maxDistanceFromCenter) {
+    private BoundingBox chunkBounds(BoundingBox placementBounds, ChunkPos chunkPos) {
         return new BoundingBox(
-                sampleCenter.getX() - maxDistanceFromCenter,
-                pieceBounds.minY(),
-                sampleCenter.getZ() - maxDistanceFromCenter,
-                sampleCenter.getX() + maxDistanceFromCenter,
-                pieceBounds.maxY(),
-                sampleCenter.getZ() + maxDistanceFromCenter
+                Math.max(placementBounds.minX(), chunkPos.getMinBlockX()),
+                placementBounds.minY(),
+                Math.max(placementBounds.minZ(), chunkPos.getMinBlockZ()),
+                Math.min(placementBounds.maxX(), chunkPos.getMaxBlockX()),
+                placementBounds.maxY(),
+                Math.min(placementBounds.maxZ(), chunkPos.getMaxBlockZ())
         );
     }
 
