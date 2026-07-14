@@ -70,6 +70,8 @@ public class MKWorkspaceSamplePreviewService {
     private static final int SAMPLE_GAP = 16;
     private static final int CLEAR_MARGIN = 2;
     private static final int RUNTIME_SPREAD_RESERVE = 128;
+    private static final int SAMPLE_VERTICAL_LIFT = 48;
+    private static final int SAMPLE_CLEAR_VERTICAL_MARGIN = 64;
     private static final int MAX_DEPTH = 24;
     private static final BlockIgnoreProcessor PREVIEW_PLACE_IGNORE = new BlockIgnoreProcessor(
             List.of(Blocks.STRUCTURE_VOID, Blocks.JIGSAW, Blocks.STRUCTURE_BLOCK)
@@ -135,7 +137,7 @@ public class MKWorkspaceSamplePreviewService {
         }
 
         List<String> warnings = new ArrayList<>();
-        BlockPos sampleCenter = sampleCenter(workspace.anchor(), runtime.maxDistanceFromCenter());
+        BlockPos sampleCenter = sampleCenter(level, workspace.anchor(), runtime.maxDistanceFromCenter());
         MKJigsawPieceMetadataManager.MetadataOverrideSnapshot metadataSnapshot =
                 MKJigsawPieceMetadataManager.installTemporaryPreviewOverrides(dynamicPools.metadataOverrides());
         MKJigsawPlacement.PreviewPlan plan;
@@ -173,16 +175,19 @@ public class MKWorkspaceSamplePreviewService {
             finalBounds = unionPieceBounds(plan.pieces());
         }
         BoundingBox placementBounds = expand(finalBounds, CLEAR_MARGIN);
+        BoundingBox previewClearBounds = expand(previewFootprintBounds(level, sampleCenter, finalBounds,
+                runtime.maxDistanceFromCenter()), CLEAR_MARGIN);
         BoundingBox authoringBounds = authoringBounds(workspace);
         if (authoringBounds == null) {
             errors.add("workspace has no authoring bounds");
             return Optional.empty();
         }
-        if (intersects(placementBounds, expand(authoringBounds, CLEAR_MARGIN))) {
+        if (intersects(previewClearBounds, expand(authoringBounds, CLEAR_MARGIN))) {
             errors.add("computed sample bounds overlap the workspace authoring area");
             return Optional.empty();
         }
-        if (placementBounds.minY() < level.getMinBuildHeight() || placementBounds.maxY() >= level.getMaxBuildHeight()) {
+        if (placementBounds.minY() < level.getMinBuildHeight() ||
+                placementBounds.maxY() >= level.getMaxBuildHeight()) {
             errors.add("computed sample bounds are outside the world build height");
             return Optional.empty();
         }
@@ -190,7 +195,7 @@ public class MKWorkspaceSamplePreviewService {
         if (previousState.isPresent() && !clearPreviousPreview(level, previousState.get(), authoringBounds, errors)) {
             return Optional.empty();
         }
-        clearBounds(level, placementBounds);
+        clearBounds(level, previewClearBounds);
 
         int fallbackCount = 0;
         for (PoolElementStructurePiece placedPiece : plan.pieces()) {
@@ -217,7 +222,7 @@ public class MKWorkspaceSamplePreviewService {
         BlockPos origin = new BlockPos(finalBounds.minX(), finalBounds.minY(), finalBounds.minZ());
         MKWorkspaceSamplePreviewState state = new MKWorkspaceSamplePreviewState(
                 origin,
-                finalBounds,
+                previewClearBounds,
                 seed,
                 lockSeed,
                 System.currentTimeMillis(),
@@ -225,7 +230,7 @@ public class MKWorkspaceSamplePreviewService {
                 fallbackCount
         );
         data.setSamplePreviewState(workspace.id(), state);
-        return Optional.of(new MKWorkspaceSamplePreviewResult(origin, finalBounds, seed, lockSeed, plan.pieces().size(),
+        return Optional.of(new MKWorkspaceSamplePreviewResult(origin, previewClearBounds, seed, lockSeed, plan.pieces().size(),
                 fallbackCount, List.copyOf(warnings)));
     }
 
@@ -327,7 +332,7 @@ public class MKWorkspaceSamplePreviewService {
                                          MKWorkspaceSamplePreviewState previousState,
                                          BoundingBox authoringBounds,
                                          List<String> errors) {
-        BoundingBox clearBounds = expand(previousState.bounds(), CLEAR_MARGIN);
+        BoundingBox clearBounds = legacyPreviousPreviewClearBounds(level, previousState.bounds());
         if (intersects(clearBounds, expand(authoringBounds, CLEAR_MARGIN))) {
             errors.add("stored sample preview bounds overlap the workspace authoring area; refusing to clear");
             return false;
@@ -411,9 +416,11 @@ public class MKWorkspaceSamplePreviewService {
         return bounds;
     }
 
-    private BlockPos sampleCenter(BlockPos anchor, int maxDistanceFromCenter) {
+    private BlockPos sampleCenter(ServerLevel level, BlockPos anchor, int maxDistanceFromCenter) {
         int distance = Math.max(RUNTIME_SPREAD_RESERVE, maxDistanceFromCenter) + SAMPLE_GAP;
-        return new BlockPos(anchor.getX() - distance, anchor.getY(), anchor.getZ() - distance);
+        int y = Math.max(anchor.getY() + SAMPLE_VERTICAL_LIFT,
+                level.getMinBuildHeight() + SAMPLE_VERTICAL_LIFT);
+        return new BlockPos(anchor.getX() - distance, y, anchor.getZ() - distance);
     }
 
     private BoundingBox chunkBounds(BoundingBox placementBounds, ChunkPos chunkPos) {
@@ -424,6 +431,35 @@ public class MKWorkspaceSamplePreviewService {
                 Math.min(placementBounds.maxX(), chunkPos.getMaxBlockX()),
                 placementBounds.maxY(),
                 Math.min(placementBounds.maxZ(), chunkPos.getMaxBlockZ())
+        );
+    }
+
+    private BoundingBox previewFootprintBounds(ServerLevel level, BlockPos sampleCenter, BoundingBox pieceBounds,
+                                               int maxDistanceFromCenter) {
+        return new BoundingBox(
+                sampleCenter.getX() - maxDistanceFromCenter,
+                Math.max(level.getMinBuildHeight(), pieceBounds.minY() - SAMPLE_CLEAR_VERTICAL_MARGIN),
+                sampleCenter.getZ() - maxDistanceFromCenter,
+                sampleCenter.getX() + maxDistanceFromCenter,
+                Math.min(level.getMaxBuildHeight() - 1, pieceBounds.maxY() + SAMPLE_CLEAR_VERTICAL_MARGIN),
+                sampleCenter.getZ() + maxDistanceFromCenter
+        );
+    }
+
+    private BoundingBox legacyPreviousPreviewClearBounds(ServerLevel level, BoundingBox previousBounds) {
+        int radius = Math.max(RUNTIME_SPREAD_RESERVE,
+                Math.max(previousBounds.getXSpan(), previousBounds.getZSpan()) / 2);
+        int centerX = (previousBounds.minX() + previousBounds.maxX()) / 2;
+        int centerZ = (previousBounds.minZ() + previousBounds.maxZ()) / 2;
+        return new BoundingBox(
+                centerX - radius - CLEAR_MARGIN,
+                Math.max(level.getMinBuildHeight(),
+                        previousBounds.minY() - SAMPLE_CLEAR_VERTICAL_MARGIN - CLEAR_MARGIN),
+                centerZ - radius - CLEAR_MARGIN,
+                centerX + radius + CLEAR_MARGIN,
+                Math.min(level.getMaxBuildHeight() - 1,
+                        previousBounds.maxY() + SAMPLE_CLEAR_VERTICAL_MARGIN + CLEAR_MARGIN),
+                centerZ + radius + CLEAR_MARGIN
         );
     }
 
