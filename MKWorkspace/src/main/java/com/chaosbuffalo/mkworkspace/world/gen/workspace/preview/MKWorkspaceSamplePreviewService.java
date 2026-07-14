@@ -96,10 +96,14 @@ public class MKWorkspaceSamplePreviewService {
     }
 
     private record DynamicPreviewPools(Holder<StructureTemplatePool> startPool,
+                                       Holder<StructureTemplatePool> emptyPool,
                                        Map<ResourceKey<StructureTemplatePool>, Holder<StructureTemplatePool>> pools,
                                        Map<ResourceLocation, PreviewCandidate> candidatesByTemplateId,
                                        Map<ResourceLocation, MKJigsawPieceMetadata> metadataOverrides) {
         Optional<? extends Holder<StructureTemplatePool>> getHolder(ResourceKey<StructureTemplatePool> poolKey) {
+            if (Pools.EMPTY.equals(poolKey)) {
+                return Optional.of(emptyPool);
+            }
             return Optional.ofNullable(pools.get(poolKey));
         }
     }
@@ -158,6 +162,11 @@ public class MKWorkspaceSamplePreviewService {
             return Optional.empty();
         }
         BoundingBox finalBounds = unionPieceBounds(plan.pieces());
+        int yOffset = sampleCenter.getY() - finalBounds.minY();
+        if (yOffset != 0) {
+            plan.pieces().forEach(piece -> piece.move(0, yOffset, 0));
+            finalBounds = unionPieceBounds(plan.pieces());
+        }
         BoundingBox authoringBounds = authoringBounds(workspace);
         if (authoringBounds == null) {
             errors.add("workspace has no authoring bounds");
@@ -251,7 +260,7 @@ public class MKWorkspaceSamplePreviewService {
             return Optional.empty();
         }
 
-        return Optional.of(new DynamicPreviewPools(startPool, Map.copyOf(pools),
+        return Optional.of(new DynamicPreviewPools(startPool, emptyPool, Map.copyOf(pools),
                 Map.copyOf(candidatesByTemplateId), Map.copyOf(metadataOverrides)));
     }
 
