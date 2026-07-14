@@ -18,9 +18,10 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MK
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKFloorMaskVariantExporter;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
-import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorMaskPools;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.BlockPos;
@@ -30,6 +31,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.Pools;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -55,11 +57,13 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 
 public class MKWorkspaceSamplePreviewService {
@@ -269,7 +273,43 @@ public class MKWorkspaceSamplePreviewService {
         BoundingBox bounds = piece.exportBounds();
         template.fillFromWorld(level, new BlockPos(bounds.minX(), bounds.minY(), bounds.minZ()),
                 new Vec3i(bounds.getXSpan(), bounds.getYSpan(), bounds.getZSpan()), false, null);
+        removeInactiveJigsaws(level, template, piece);
         return template;
+    }
+
+    private void removeInactiveJigsaws(ServerLevel level, StructureTemplate template,
+                                       MKWorkspacePieceDefinition piece) {
+        Set<BlockPos> activeConnectorPositions = new HashSet<>();
+        for (MKWorkspaceConnectorDefinition connector : piece.connectors()) {
+            activeConnectorPositions.add(connector.relativePos());
+        }
+        CompoundTag tag = template.save(new CompoundTag());
+        ListTag blocks = tag.getList("blocks", 10);
+        ListTag filtered = new ListTag();
+        for (int i = 0; i < blocks.size(); i++) {
+            CompoundTag block = blocks.getCompound(i);
+            if (!inactiveJigsaw(block, activeConnectorPositions)) {
+                filtered.add(block);
+            }
+        }
+        if (filtered.size() == blocks.size()) {
+            return;
+        }
+        tag.put("blocks", filtered);
+        template.load(level.registryAccess().lookupOrThrow(Registries.BLOCK), tag);
+    }
+
+    private boolean inactiveJigsaw(CompoundTag block, Set<BlockPos> activeConnectorPositions) {
+        if (!block.contains("nbt")) {
+            return false;
+        }
+        CompoundTag nbt = block.getCompound("nbt");
+        if (!"minecraft:jigsaw".equals(nbt.getString("id"))) {
+            return false;
+        }
+        ListTag pos = block.getList("pos", 3);
+        BlockPos relativePos = new BlockPos(pos.getInt(0), pos.getInt(1), pos.getInt(2));
+        return !activeConnectorPositions.contains(relativePos);
     }
 
     private StructureTemplatePool rigidPool(Holder<StructureTemplatePool> emptyPool,
@@ -513,11 +553,13 @@ public class MKWorkspaceSamplePreviewService {
         }
 
         static Optional<RuntimePreviewContext> from(MKStructureWorkspace workspace, List<String> errors) {
+            List<MKWorkspacePieceDefinition> previewPieces = MKFloorMaskVariantExporter.exportPieces(workspace,
+                    true);
             MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 4,
                     Instant.now().toString());
             MKWorkspaceExportManifest.ExportRuntimeHints previewHints =
-                    MKWorkspaceExportManifest.ExportRuntimeHints.forWorkspacePreview(workspace);
-            Optional<PreviewPool> pool = buildPool(workspace, previewHints, errors);
+                    MKWorkspaceExportManifest.ExportRuntimeHints.forWorkspacePreview(workspace, previewPieces);
+            Optional<PreviewPool> pool = buildPool(workspace, previewPieces, previewHints, errors);
             if (pool.isEmpty()) {
                 return Optional.empty();
             }
@@ -532,6 +574,7 @@ public class MKWorkspaceSamplePreviewService {
         }
 
         private static Optional<PreviewPool> buildPool(MKStructureWorkspace workspace,
+                                                       List<MKWorkspacePieceDefinition> previewPieces,
                                                        MKWorkspaceExportManifest.ExportRuntimeHints previewHints,
                                                        List<String> errors) {
             Map<String, MKWorkspaceExportManifest.ExportRuntimeTemplateGroup> templateGroupByBase =
@@ -540,8 +583,7 @@ public class MKWorkspaceSamplePreviewService {
                 templateGroupByBase.put(group.baseName(), group);
             }
             Map<String, List<MKWorkspacePieceDefinition>> piecesByBase = new LinkedHashMap<>();
-            workspace.pieces().stream()
-                    .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
+            previewPieces.stream()
                     .forEach(piece -> piecesByBase.computeIfAbsent(baseName(piece), ignored -> new ArrayList<>())
                             .add(piece));
 

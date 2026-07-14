@@ -676,7 +676,11 @@ public record MKWorkspaceExportManifest(
         }
 
         public static ExportRuntimeHints forWorkspacePreview(MKStructureWorkspace workspace) {
-            List<MKWorkspacePieceDefinition> pieces = workspace.pieces();
+            return forWorkspacePreview(workspace, workspace.pieces());
+        }
+
+        public static ExportRuntimeHints forWorkspacePreview(MKStructureWorkspace workspace,
+                                                             List<MKWorkspacePieceDefinition> pieces) {
             List<ExportRuntimeTemplateGroup> templateGroups = buildTemplateGroups(pieces).stream()
                     .map(templateGroup -> ExportRuntimeTemplateGroup.forTemplateGroup(workspace, pieces, templateGroup,
                             true))
