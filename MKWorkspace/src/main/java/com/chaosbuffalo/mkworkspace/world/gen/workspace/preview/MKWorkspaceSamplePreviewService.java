@@ -71,6 +71,7 @@ public class MKWorkspaceSamplePreviewService {
     private static final int CLEAR_MARGIN = 2;
     private static final int RUNTIME_SPREAD_RESERVE = 128;
     private static final int SAMPLE_VERTICAL_LIFT = 48;
+    private static final int SAMPLE_BOTTOM_OFFSET = 4;
     private static final int SAMPLE_CLEAR_VERTICAL_MARGIN = 64;
     private static final int MAX_DEPTH = 24;
     private static final BlockIgnoreProcessor PREVIEW_PLACE_IGNORE = new BlockIgnoreProcessor(
@@ -169,7 +170,7 @@ public class MKWorkspaceSamplePreviewService {
             return Optional.empty();
         }
         BoundingBox finalBounds = unionPieceBounds(plan.pieces());
-        int yOffset = sampleCenter.getY() - finalBounds.minY();
+        int yOffset = sampleBottomY(level, workspace.anchor()) - finalBounds.minY();
         if (yOffset != 0) {
             plan.pieces().forEach(piece -> piece.move(0, yOffset, 0));
             finalBounds = unionPieceBounds(plan.pieces());
@@ -421,6 +422,11 @@ public class MKWorkspaceSamplePreviewService {
         int y = Math.max(anchor.getY() + SAMPLE_VERTICAL_LIFT,
                 level.getMinBuildHeight() + SAMPLE_VERTICAL_LIFT);
         return new BlockPos(anchor.getX() - distance, y, anchor.getZ() - distance);
+    }
+
+    private int sampleBottomY(ServerLevel level, BlockPos anchor) {
+        return Math.max(anchor.getY() + SAMPLE_BOTTOM_OFFSET,
+                level.getMinBuildHeight() + SAMPLE_BOTTOM_OFFSET);
     }
 
     private BoundingBox chunkBounds(BoundingBox placementBounds, ChunkPos chunkPos) {
