@@ -171,16 +171,18 @@ public class MKWorkspaceSamplePreviewService {
             plan.pieces().forEach(piece -> piece.move(0, yOffset, 0));
             finalBounds = unionPieceBounds(plan.pieces());
         }
+        BoundingBox previewBounds = samplePreviewBounds(sampleCenter, finalBounds, runtime.maxDistanceFromCenter());
+        BoundingBox clearBounds = expand(previewBounds, CLEAR_MARGIN);
         BoundingBox authoringBounds = authoringBounds(workspace);
         if (authoringBounds == null) {
             errors.add("workspace has no authoring bounds");
             return Optional.empty();
         }
-        if (intersects(expand(finalBounds, CLEAR_MARGIN), expand(authoringBounds, CLEAR_MARGIN))) {
+        if (intersects(clearBounds, expand(authoringBounds, CLEAR_MARGIN))) {
             errors.add("computed sample bounds overlap the workspace authoring area");
             return Optional.empty();
         }
-        if (finalBounds.minY() < level.getMinBuildHeight() || finalBounds.maxY() >= level.getMaxBuildHeight()) {
+        if (clearBounds.minY() < level.getMinBuildHeight() || clearBounds.maxY() >= level.getMaxBuildHeight()) {
             errors.add("computed sample bounds are outside the world build height");
             return Optional.empty();
         }
@@ -188,7 +190,7 @@ public class MKWorkspaceSamplePreviewService {
         if (previousState.isPresent() && !clearPreviousPreview(level, previousState.get(), authoringBounds, errors)) {
             return Optional.empty();
         }
-        clearBounds(level, expand(finalBounds, CLEAR_MARGIN));
+        clearBounds(level, clearBounds);
 
         int fallbackCount = 0;
         for (PoolElementStructurePiece placedPiece : plan.pieces()) {
@@ -205,12 +207,12 @@ public class MKWorkspaceSamplePreviewService {
         }
         ArrayList<StructurePiece> structurePieces = new ArrayList<>(plan.pieces());
         runAfterPlace(level, workspace, runtime, new PiecesContainer(structurePieces),
-                finalBounds, random, dynamicPools.metadataOverrides());
+                clearBounds, random, dynamicPools.metadataOverrides());
 
         BlockPos origin = new BlockPos(finalBounds.minX(), finalBounds.minY(), finalBounds.minZ());
         MKWorkspaceSamplePreviewState state = new MKWorkspaceSamplePreviewState(
                 origin,
-                finalBounds,
+                previewBounds,
                 seed,
                 lockSeed,
                 System.currentTimeMillis(),
@@ -218,7 +220,7 @@ public class MKWorkspaceSamplePreviewService {
                 fallbackCount
         );
         data.setSamplePreviewState(workspace.id(), state);
-        return Optional.of(new MKWorkspaceSamplePreviewResult(origin, finalBounds, seed, lockSeed, plan.pieces().size(),
+        return Optional.of(new MKWorkspaceSamplePreviewResult(origin, previewBounds, seed, lockSeed, plan.pieces().size(),
                 fallbackCount, List.copyOf(warnings)));
     }
 
@@ -423,18 +425,18 @@ public class MKWorkspaceSamplePreviewService {
     }
 
     private void runAfterPlace(ServerLevel level, MKStructureWorkspace workspace, RuntimePreviewContext runtime,
-                               PiecesContainer pieces, BoundingBox finalBounds, RandomSource random,
+                               PiecesContainer pieces, BoundingBox placementBounds, RandomSource random,
                                Map<ResourceLocation, MKJigsawPieceMetadata> metadataOverrides) {
         MKJigsawPieceMetadataManager.MetadataOverrideSnapshot snapshot =
                 MKJigsawPieceMetadataManager.installTemporaryPreviewOverrides(metadataOverrides);
         try {
-            BlockPos origin = new BlockPos(finalBounds.minX(), finalBounds.minY(), finalBounds.minZ());
+            BlockPos origin = new BlockPos(placementBounds.minX(), placementBounds.minY(), placementBounds.minZ());
             MKJigsawStructure.runPreviewAfterPlace(
                     level,
                     level.structureManager(),
                     level.getChunkSource().getGenerator(),
                     random,
-                    expand(finalBounds, CLEAR_MARGIN),
+                    placementBounds,
                     new ChunkPos(origin),
                     pieces,
                     runtime.layoutSettings(),
@@ -480,6 +482,18 @@ public class MKWorkspaceSamplePreviewService {
     private BlockPos sampleCenter(BlockPos anchor, int maxDistanceFromCenter) {
         int distance = Math.max(RUNTIME_SPREAD_RESERVE, maxDistanceFromCenter) + SAMPLE_GAP;
         return new BlockPos(anchor.getX() - distance, anchor.getY(), anchor.getZ() - distance);
+    }
+
+    private BoundingBox samplePreviewBounds(BlockPos sampleCenter, BoundingBox pieceBounds,
+                                            int maxDistanceFromCenter) {
+        return new BoundingBox(
+                sampleCenter.getX() - maxDistanceFromCenter,
+                pieceBounds.minY(),
+                sampleCenter.getZ() - maxDistanceFromCenter,
+                sampleCenter.getX() + maxDistanceFromCenter,
+                pieceBounds.maxY(),
+                sampleCenter.getZ() + maxDistanceFromCenter
+        );
     }
 
     private BoundingBox expand(BoundingBox bounds, int margin) {

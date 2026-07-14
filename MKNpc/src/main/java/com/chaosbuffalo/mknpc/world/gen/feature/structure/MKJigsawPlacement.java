@@ -440,6 +440,12 @@ public class MKJigsawPlacement {
                     addMainPathEndingCandidates(candidates, dungeonState, connectorInfo, aliasLookup);
                     boolean branchCapsAvailable = addBranchCapCandidates(candidates, connectorInfo, poolKey, aliasLookup);
                     candidates.addAll(fallback.value().getShuffledTemplates(this.random));
+                    if (MKNpc.DEV_LOGGING) {
+                        MKNpc.LOGGER.debug("mk_jigsaw candidates pool={} connector={} count={} depth={} floor={} vertical={} piecesOnFloor={} branchDepth={} mainPath={}",
+                                poolKey.location(), connectorInfo.role().getSerializedName(), candidates.size(),
+                                depth, dungeonState.progressionFloorIndex(), dungeonState.verticalLevelIndex(),
+                                dungeonState.piecesOnFloor(), dungeonState.branchDepth(), dungeonState.onMainPath());
+                    }
 
                     for (StructurePoolElement childElement : candidates) {
                         if (childElement == EmptyPoolElement.INSTANCE) {
@@ -464,8 +470,13 @@ public class MKJigsawPlacement {
                             continue;
                         }
 
+                        boolean childPlaced = false;
+                        boolean sawChildJigsaw = false;
+                        boolean sawAttachableJigsaw = false;
+                        boolean sawCollision = false;
                         for (Rotation childRotation : Rotation.getShuffled(this.random)) {
                             List<StructureTemplate.StructureBlockInfo> childJigsaws = childElement.getShuffledJigsawBlocks(this.structureTemplateManager, BlockPos.ZERO, childRotation, this.random);
+                            sawChildJigsaw |= !childJigsaws.isEmpty();
                             BoundingBox childBoxAtOrigin = childElement.getBoundingBox(this.structureTemplateManager, BlockPos.ZERO, childRotation);
                             int expansionHackHeight;
                             if (useExpansionHack && childBoxAtOrigin.getYSpan() <= 16) {
@@ -489,6 +500,7 @@ public class MKJigsawPlacement {
                                 if (!JigsawBlock.canAttach(parentJigsaw, childJigsaw)) {
                                     continue;
                                 }
+                                sawAttachableJigsaw = true;
 
                                 BlockPos childJigsawPos = childJigsaw.pos();
                                 BlockPos childPiecePos = childAttachPos.subtract(childJigsawPos);
@@ -517,6 +529,7 @@ public class MKJigsawPlacement {
                                 }
 
                                 if (Shapes.joinIsNotEmpty(connectorFree.getValue(), Shapes.create(AABB.of(movedChildBox).deflate(0.25)), BooleanOp.ONLY_SECOND)) {
+                                    sawCollision = true;
                                     continue;
                                 }
 
@@ -549,8 +562,15 @@ public class MKJigsawPlacement {
                                 if (depth + 1 <= this.maxDepth) {
                                     this.placing.add(new MKPieceState(placedChild, connectorFree, depth + 1, childState), placementPriority);
                                 }
+                                childPlaced = true;
                                 continue label134;
                             }
+                        }
+                        if (MKNpc.DEV_LOGGING && !childPlaced) {
+                            String missReason = !sawChildJigsaw ? "no_child_jigsaws" :
+                                    !sawAttachableJigsaw ? "no_attachable_jigsaw" :
+                                            sawCollision ? "collision" : "unknown_no_placement";
+                            logRejection(missReason, connectorInfo, childTemplateId.get(), dungeonState);
                         }
                     }
                 }
