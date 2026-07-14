@@ -20,9 +20,9 @@ public class WorkspaceGenerateConfirmPage extends WorkspacePageBase {
     public MKLayout build(MKWorkspaceScreen screen) {
         MKLayout root = createPanel(screen);
 
-        addTitle(screen, root, Component.literal("Confirm Workspace Regenerate"));
+        addTitle(screen, root, Component.literal("Confirm Workspace Update"));
         addHeaderText(screen, root, Component.literal(
-                "This will reset the workspace to its default generated state using the current settings."));
+                "This will apply the draft settings using the safest available workspace update path."));
         MKText workspaceId = addHeaderText(screen, root, Component.literal(screen.draftSession().workspaceId()));
 
         int scrollTop = screen.scrollTopAfterHeader(root, workspaceId);
@@ -34,15 +34,26 @@ public class WorkspaceGenerateConfirmPage extends WorkspacePageBase {
         root.addWidget(scrollView);
 
         MKStackLayoutVertical content = createContentStack(screen);
-        addText(screen, content, "Existing authored pieces, variants, generated stairs, and runtime metadata will be cleared.");
-        addText(screen, content, "No paths, remaps, variants, or manual workspace edits will be preserved.");
-        addText(screen, content, "A backup is written before the reset when an existing generated workspace is present.");
+        if (screen.preflight() == null) {
+            addText(screen, content, "Impact report is loading. The server will preflight again before applying.");
+        } else {
+            addText(screen, content, screen.preflight().report().summary());
+            addText(screen, content, "Operation: " + screen.preflight().report().recommendedOperation());
+            addText(screen, content, "Safety: " + screen.preflight().report().safety().getSerializedName());
+            for (String warning : screen.preflight().report().warnings()) {
+                addText(screen, content, "Warning: " + warning);
+            }
+            if (!screen.preflight().report().relayoutImpacts().isEmpty()) {
+                addText(screen, content, "Affected templates: " +
+                        screen.preflight().report().relayoutImpacts().size());
+            }
+        }
         finishScrollContent(screen, scrollView, content);
 
-        MKButton confirm = addBottomButton(screen, root, Component.literal("Regenerate Workspace"), 200, 1);
+        MKButton confirm = addBottomButton(screen, root, Component.literal("Apply Workspace Update"), 220, 1);
         confirm.setPressedCallback((button, mouseButton) -> {
             button.setEnabled(false);
-            button.buttonText = Component.literal("Regenerating...");
+            button.buttonText = Component.literal("Applying...");
             screen.draftSession().send();
             return true;
         });

@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mkworkspace.network.packets.CreateWorkspacePacket;
+import com.chaosbuffalo.mkworkspace.network.packets.RequestWorkspacePreflightPacket;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
@@ -186,6 +187,7 @@ public class WorkspaceDraftSession {
         snapDraftVerticalAccess();
         MKStructureWorkspace draft = buildWorkspaceDraft();
         if (requiresRegenerateConfirmation()) {
+            requestPreflight(draft);
             screen.pushState("generate_confirm");
             screen.flagNeedSetup();
             return;
@@ -194,7 +196,7 @@ public class WorkspaceDraftSession {
     }
 
     public void send() {
-        sendFullRegenerate(buildWorkspaceDraft());
+        sendUpdate(buildWorkspaceDraft());
     }
 
     public String namespace() {
@@ -866,6 +868,16 @@ public class WorkspaceDraftSession {
         PacketDistributor.sendToServer(new CreateWorkspacePacket(draft, true, true, List.of()));
         clearDirty();
         acceptedRemaps = List.of();
+    }
+
+    private void sendUpdate(MKStructureWorkspace draft) {
+        PacketDistributor.sendToServer(new CreateWorkspacePacket(draft, false, false, acceptedRemaps));
+        clearDirty();
+        acceptedRemaps = List.of();
+    }
+
+    private void requestPreflight(MKStructureWorkspace draft) {
+        PacketDistributor.sendToServer(new RequestWorkspacePreflightPacket(draft, acceptedRemaps));
     }
 
     private boolean requiresRegenerateConfirmation() {
