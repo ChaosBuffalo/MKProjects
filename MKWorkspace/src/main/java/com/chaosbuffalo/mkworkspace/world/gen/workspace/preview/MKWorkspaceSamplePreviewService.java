@@ -1,16 +1,31 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.preview;
 
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKConnectorInfo;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonConnectorSettings;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonLayoutController;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonLayoutSettings;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonPieceState;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonTopologyGroupRule;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKVerticalProgressionMode;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceSamplePreviewState;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKJigsawPieceMetadata;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorRoomProfile;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorTopologyPoolNames;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorTopologySettings;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -19,23 +34,31 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class MKWorkspaceSamplePreviewService {
     private static final ResourceLocation EMPTY_POOL = ResourceLocation.parse("minecraft:empty");
+    private static final ResourceLocation WALLED_KEEP_PLANNER_ID =
+            ResourceLocation.fromNamespaceAndPath("mknpc", "walled_keep");
+    private static final ResourceLocation TOWER_PLANNER_ID =
+            ResourceLocation.fromNamespaceAndPath("mknpc", "tower");
     private static final int SAMPLE_GAP = 16;
     private static final int CLEAR_MARGIN = 2;
-    private static final int MAX_PIECES = 80;
-    private static final int MAX_DEPTH = 12;
+    private static final int RUNTIME_SPREAD_RESERVE = 128;
+    private static final int MAX_PIECES = 256;
+    private static final int MAX_DEPTH = 24;
 
     public record MKWorkspaceSamplePreviewResult(
             BlockPos origin,
@@ -48,31 +71,49 @@ public class MKWorkspaceSamplePreviewService {
     ) {
     }
 
-    private record PreviewCandidate(MKWorkspacePieceDefinition piece, boolean templateFallback) {
+    private record PreviewCandidate(MKWorkspacePieceDefinition piece,
+                                    boolean templateFallback,
+                                    MKJigsawPieceMetadata metadata) {
     }
 
-    private record PlacedPiece(PreviewCandidate candidate, BlockPos localOrigin, BoundingBox localBounds, int depth) {
+    private record PlacedPiece(PreviewCandidate candidate,
+                               BlockPos localOrigin,
+                               BoundingBox localBounds,
+                               int depth,
+                               MKDungeonPieceState state) {
+    }
+
+    private record RuntimePreviewContext(PreviewPool pool,
+                                         MKDungeonLayoutController layoutController,
+                                         MKDungeonLayoutSettings layoutSettings,
+                                         int maxDepth,
+                                         int maxDistanceFromCenter) {
     }
 
     public Optional<MKWorkspaceSamplePreviewResult> generate(ServerLevel level, MKStructureWorkspace workspace,
                                                             boolean lockSeed, List<String> errors) {
-        PreviewPool pool = PreviewPool.from(workspace);
-        if (pool.candidates().isEmpty()) {
+        RuntimePreviewContext runtime = RuntimePreviewContextBuilder.from(workspace, errors).orElse(null);
+        if (runtime == null) {
+            return Optional.empty();
+        }
+        if (runtime.pool().candidates().isEmpty()) {
             errors.add("workspace has no physical pieces to preview");
             return Optional.empty();
         }
+
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKWorkspaceSamplePreviewState> previousState = data.getSamplePreviewState(workspace.id());
         long seed = resolveSeed(level, previousState, lockSeed);
         RandomSource random = RandomSource.create(seed);
 
-        Optional<PreviewCandidate> start = pool.startCandidate(random);
+        Optional<PreviewCandidate> start = runtime.pool().startCandidate(random);
         if (start.isEmpty()) {
             errors.add("workspace did not define a runtime start piece and no preview start fallback was available");
             return Optional.empty();
         }
 
-        List<PlacedPiece> placed = assemble(pool, start.get(), random);
+        List<String> warnings = new ArrayList<>();
+        List<PlacedPiece> placed = assemble(runtime, start.get(), random, warnings);
         if (placed.isEmpty()) {
             errors.add("preview assembler produced no pieces");
             return Optional.empty();
@@ -83,8 +124,8 @@ public class MKWorkspaceSamplePreviewService {
             errors.add("workspace has no authoring bounds");
             return Optional.empty();
         }
-        BlockPos sampleMin = sampleMinCorner(workspace.anchor(), localBounds);
-        BlockPos offset = sampleMin.subtract(new BlockPos(localBounds.minX(), localBounds.minY(), localBounds.minZ()));
+        BlockPos sampleCenter = sampleCenter(workspace.anchor(), runtime.maxDistanceFromCenter());
+        BlockPos offset = sampleCenter.subtract(center(localBounds));
         BoundingBox finalBounds = move(localBounds, offset);
         if (intersects(expand(finalBounds, CLEAR_MARGIN), expand(authoringBounds, CLEAR_MARGIN))) {
             errors.add("computed sample bounds overlap the workspace authoring area");
@@ -95,8 +136,7 @@ public class MKWorkspaceSamplePreviewService {
             return Optional.empty();
         }
 
-        if (previousState.isPresent() && !clearPreviousPreview(level, workspace, previousState.get(), authoringBounds,
-                errors)) {
+        if (previousState.isPresent() && !clearPreviousPreview(level, previousState.get(), authoringBounds, errors)) {
             return Optional.empty();
         }
         clearBounds(level, expand(finalBounds, CLEAR_MARGIN));
@@ -109,8 +149,9 @@ public class MKWorkspaceSamplePreviewService {
             copyPiece(level, placedPiece.candidate().piece(), placedPiece.localOrigin().offset(offset));
         }
 
+        BlockPos origin = new BlockPos(finalBounds.minX(), finalBounds.minY(), finalBounds.minZ());
         MKWorkspaceSamplePreviewState state = new MKWorkspaceSamplePreviewState(
-                sampleMin,
+                origin,
                 finalBounds,
                 seed,
                 lockSeed,
@@ -119,8 +160,8 @@ public class MKWorkspaceSamplePreviewService {
                 fallbackCount
         );
         data.setSamplePreviewState(workspace.id(), state);
-        return Optional.of(new MKWorkspaceSamplePreviewResult(sampleMin, finalBounds, seed, lockSeed, placed.size(),
-                fallbackCount, List.of()));
+        return Optional.of(new MKWorkspaceSamplePreviewResult(origin, finalBounds, seed, lockSeed, placed.size(),
+                fallbackCount, List.copyOf(warnings)));
     }
 
     private long resolveSeed(ServerLevel level, Optional<MKWorkspaceSamplePreviewState> previousState,
@@ -131,16 +172,21 @@ public class MKWorkspaceSamplePreviewService {
         return level.random.nextLong();
     }
 
-    private List<PlacedPiece> assemble(PreviewPool pool, PreviewCandidate start, RandomSource random) {
+    private List<PlacedPiece> assemble(RuntimePreviewContext runtime, PreviewCandidate start, RandomSource random,
+                                       List<String> warnings) {
         ArrayList<PlacedPiece> placed = new ArrayList<>();
         ArrayDeque<PlacedPiece> pending = new ArrayDeque<>();
-        PlacedPiece startPiece = placeAt(start, BlockPos.ZERO, 0);
+        int targetFloors = runtime.layoutController().chooseTargetFloors(random);
+        MKDungeonPieceState baseRootState = new MKDungeonPieceState(0, 0, 1, 0, true, targetFloors);
+        MKDungeonPieceState rootState = runtime.layoutController()
+                .initialStateForStart(baseRootState, start.metadata(), random);
+        PlacedPiece startPiece = placeAt(start, BlockPos.ZERO, 0, rootState);
         placed.add(startPiece);
         pending.add(startPiece);
 
         while (!pending.isEmpty() && placed.size() < MAX_PIECES) {
             PlacedPiece parent = pending.removeFirst();
-            if (parent.depth() >= MAX_DEPTH) {
+            if (parent.depth() >= runtime.maxDepth()) {
                 continue;
             }
             List<MKWorkspaceConnectorDefinition> connectors = shuffled(parent.candidate().piece().connectors(), random);
@@ -148,17 +194,31 @@ public class MKWorkspaceSamplePreviewService {
                 if (placed.size() >= MAX_PIECES || connector.targetPool().equals(EMPTY_POOL)) {
                     continue;
                 }
-                List<PreviewCandidate> candidates = pool.candidatesForPool(connector.targetPool());
+                MKConnectorInfo connectorInfo = connectorInfo(connector);
+                List<PreviewCandidate> candidates = runtime.pool().candidatesForConnector(parent.state(), connectorInfo,
+                        random, runtime.layoutController());
                 if (candidates.isEmpty()) {
                     continue;
                 }
-                for (PreviewCandidate candidate : shuffled(candidates, random)) {
+                boolean branchCapsAvailable = runtime.pool().branchCapsAvailable(connector.targetPool());
+                for (PreviewCandidate candidate : candidates) {
+                    if (runtime.layoutController()
+                            .getRejectionReason(parent.state(), connectorInfo, candidate.metadata(),
+                                    branchCapsAvailable)
+                            .isPresent()) {
+                        continue;
+                    }
                     Optional<MKWorkspaceConnectorDefinition> incoming = matchingIncoming(candidate.piece(), connector);
                     if (incoming.isEmpty()) {
                         continue;
                     }
                     BlockPos childOrigin = childOrigin(parent.localOrigin(), connector, incoming.get());
-                    PlacedPiece child = placeAt(candidate, childOrigin, parent.depth() + 1);
+                    MKDungeonPieceState childState = runtime.layoutController()
+                            .nextState(parent.state(), connectorInfo, candidate.metadata(), random);
+                    PlacedPiece child = placeAt(candidate, childOrigin, parent.depth() + 1, childState);
+                    if (!withinSpread(child.localBounds(), runtime.maxDistanceFromCenter())) {
+                        continue;
+                    }
                     if (placed.stream().noneMatch(existing -> intersects(existing.localBounds(), child.localBounds()))) {
                         placed.add(child);
                         pending.add(child);
@@ -167,10 +227,23 @@ public class MKWorkspaceSamplePreviewService {
                 }
             }
         }
+        if (placed.size() >= MAX_PIECES) {
+            warnings.add("preview reached the piece limit before all connectors were explored");
+        }
         return List.copyOf(placed);
     }
 
-    private PlacedPiece placeAt(PreviewCandidate candidate, BlockPos localOrigin, int depth) {
+    private MKConnectorInfo connectorInfo(MKWorkspaceConnectorDefinition connector) {
+        return new MKConnectorInfo(
+                connector.jigsawName(),
+                connector.jigsawTarget(),
+                ResourceKey.create(Registries.TEMPLATE_POOL, connector.targetPool()),
+                connector.role()
+        );
+    }
+
+    private PlacedPiece placeAt(PreviewCandidate candidate, BlockPos localOrigin, int depth,
+                                MKDungeonPieceState state) {
         BoundingBox source = candidate.piece().exportBounds();
         BoundingBox localBounds = new BoundingBox(
                 localOrigin.getX(),
@@ -180,7 +253,7 @@ public class MKWorkspaceSamplePreviewService {
                 localOrigin.getY() + source.getYSpan() - 1,
                 localOrigin.getZ() + source.getZSpan() - 1
         );
-        return new PlacedPiece(candidate, localOrigin, localBounds, depth);
+        return new PlacedPiece(candidate, localOrigin, localBounds, depth, state);
     }
 
     private Optional<MKWorkspaceConnectorDefinition> matchingIncoming(MKWorkspacePieceDefinition candidate,
@@ -198,6 +271,11 @@ public class MKWorkspaceSamplePreviewService {
         return childConnectorTarget.subtract(childConnector.relativePos());
     }
 
+    private boolean withinSpread(BoundingBox bounds, int spread) {
+        BlockPos center = center(bounds);
+        return Math.abs(center.getX()) <= spread && Math.abs(center.getZ()) <= spread;
+    }
+
     private <T> List<T> shuffled(List<T> values, RandomSource random) {
         ArrayList<T> copy = new ArrayList<>(values);
         for (int i = copy.size() - 1; i > 0; i--) {
@@ -209,7 +287,7 @@ public class MKWorkspaceSamplePreviewService {
         return copy;
     }
 
-    private boolean clearPreviousPreview(ServerLevel level, MKStructureWorkspace workspace,
+    private boolean clearPreviousPreview(ServerLevel level,
                                          MKWorkspaceSamplePreviewState previousState,
                                          BoundingBox authoringBounds,
                                          List<String> errors) {
@@ -292,12 +370,15 @@ public class MKWorkspaceSamplePreviewService {
         return bounds;
     }
 
-    private BlockPos sampleMinCorner(BlockPos anchor, BoundingBox localBounds) {
-        return new BlockPos(
-                anchor.getX() - SAMPLE_GAP - localBounds.getXSpan(),
-                anchor.getY(),
-                anchor.getZ() - SAMPLE_GAP - localBounds.getZSpan()
-        );
+    private BlockPos sampleCenter(BlockPos anchor, int maxDistanceFromCenter) {
+        int distance = Math.max(RUNTIME_SPREAD_RESERVE, maxDistanceFromCenter) + SAMPLE_GAP;
+        return new BlockPos(anchor.getX() - distance, anchor.getY(), anchor.getZ() - distance);
+    }
+
+    private BlockPos center(BoundingBox bounds) {
+        return new BlockPos((bounds.minX() + bounds.maxX()) / 2,
+                bounds.minY(),
+                (bounds.minZ() + bounds.maxZ()) / 2);
     }
 
     private BoundingBox move(BoundingBox bounds, BlockPos offset) {
@@ -340,60 +421,456 @@ public class MKWorkspaceSamplePreviewService {
         return piece.tags().getOrDefault(MKWorkspaceGridLayout.TAG_BASE_NAME, piece.pieceName());
     }
 
-    private record PreviewPool(List<PreviewCandidate> candidates,
+    private static MKJigsawPieceMetadata jigsawMetadata(
+            MKWorkspaceExportManifest.ExportRuntimePieceMetadata metadata) {
+        return new MKJigsawPieceMetadata(
+                metadata.role(),
+                metadata.progressionDelta(),
+                metadata.verticalLevelDelta(),
+                metadata.allowOnMainPath(),
+                metadata.allowOnBranchPath(),
+                metadata.terminal(),
+                metadata.topCapOnly(),
+                metadata.topologyGroup(),
+                metadata.mainPathEnding(),
+                metadata.branchCap(),
+                metadata.verticalStackId(),
+                metadata.verticalStackSlot(),
+                metadata.minMainFloors(),
+                metadata.maxMainFloors(),
+                metadata.minBasementFloors(),
+                metadata.maxBasementFloors(),
+                metadata.topCapApproachEnabled(),
+                metadata.basementEntryEnabled(),
+                metadata.basementCapApproachEnabled(),
+                metadata.floorExitMask(),
+                metadata.foundationPolicy(),
+                metadata.floorBlock(),
+                metadata.wallBlock(),
+                metadata.ceilingBlock(),
+                metadata.floorLinkCandidates(),
+                metadata.floorClosableOpenings(),
+                metadata.floorRootExits()
+        );
+    }
+
+    private record PreviewPool(String startBaseName,
+                               List<PreviewCandidate> candidates,
+                               Map<String, List<PreviewCandidate>> candidatesByBaseName,
                                Map<ResourceLocation, List<PreviewCandidate>> candidatesByPool) {
-        static PreviewPool from(MKStructureWorkspace workspace) {
-            LinkedHashMap<String, List<MKWorkspacePieceDefinition>> piecesByBase = new LinkedHashMap<>();
+        Optional<PreviewCandidate> startCandidate(RandomSource random) {
+            List<PreviewCandidate> starts = candidatesByBaseName.getOrDefault(startBaseName, List.of());
+            if (!starts.isEmpty()) {
+                return Optional.of(starts.get(random.nextInt(starts.size())));
+            }
+            return candidates.stream()
+                    .filter(candidate -> MKWorkspaceRuntimePieceInfo.fromTags(candidate.piece().tags())
+                            .map(MKWorkspaceRuntimePieceInfo::start)
+                            .orElse(false))
+                    .findFirst()
+                    .or(() -> candidates.stream().findFirst());
+        }
+
+        List<PreviewCandidate> candidatesForConnector(MKDungeonPieceState parentState,
+                                                      MKConnectorInfo connectorInfo,
+                                                      RandomSource random,
+                                                      MKDungeonLayoutController layoutController) {
+            LinkedHashSet<PreviewCandidate> result = new LinkedHashSet<>();
+            layoutController.endingPoolForState(parentState, connectorInfo)
+                    .ifPresent(pool -> result.addAll(candidatesByPool.getOrDefault(pool, List.of())));
+            result.addAll(candidatesByPool.getOrDefault(connectorInfo.targetPool().location(), List.of()));
+            return shuffleDistinct(result, random);
+        }
+
+        boolean branchCapsAvailable(ResourceLocation targetPool) {
+            return branchCapPoolFor(targetPool)
+                    .map(pool -> !candidatesByPool.getOrDefault(pool, List.of()).isEmpty())
+                    .orElse(false);
+        }
+
+        private List<PreviewCandidate> shuffleDistinct(LinkedHashSet<PreviewCandidate> values, RandomSource random) {
+            ArrayList<PreviewCandidate> copy = new ArrayList<>(values);
+            for (int i = copy.size() - 1; i > 0; i--) {
+                int j = random.nextInt(i + 1);
+                PreviewCandidate value = copy.get(i);
+                copy.set(i, copy.get(j));
+                copy.set(j, value);
+            }
+            return List.copyOf(copy);
+        }
+    }
+
+    private static final class RuntimePreviewContextBuilder {
+        private RuntimePreviewContextBuilder() {
+        }
+
+        static Optional<RuntimePreviewContext> from(MKStructureWorkspace workspace, List<String> errors) {
+            MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 4,
+                    Instant.now().toString());
+            List<String> validationErrors = manifest.validateRuntimeStructureExport();
+            if (!validationErrors.isEmpty()) {
+                errors.addAll(validationErrors);
+                return Optional.empty();
+            }
+            Optional<PreviewPool> pool = buildPool(workspace, manifest, errors);
+            if (pool.isEmpty()) {
+                return Optional.empty();
+            }
+            List<MKDungeonTopologyGroupRule> floorRules = floorTopologyRules(manifest);
+            MKDungeonLayoutSettings layoutSettings = layoutSettings(workspace, floorRules);
+            return Optional.of(new RuntimePreviewContext(
+                    pool.orElseThrow(),
+                    new MKDungeonLayoutController(layoutSettings),
+                    layoutSettings,
+                    maxDepth(workspace),
+                    maxDistanceFromCenter(workspace)
+            ));
+        }
+
+        private static Optional<PreviewPool> buildPool(MKStructureWorkspace workspace,
+                                                       MKWorkspaceExportManifest manifest,
+                                                       List<String> errors) {
+            Map<String, MKWorkspaceExportManifest.ExportRuntimeTemplateGroup> templateGroupByBase =
+                    new LinkedHashMap<>();
+            for (MKWorkspaceExportManifest.ExportRuntimeTemplateGroup group : manifest.runtimeHints().templateGroups()) {
+                templateGroupByBase.put(group.baseName(), group);
+            }
+            Map<String, List<MKWorkspacePieceDefinition>> piecesByBase = new LinkedHashMap<>();
             workspace.pieces().stream()
                     .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
                     .forEach(piece -> piecesByBase.computeIfAbsent(baseName(piece), ignored -> new ArrayList<>())
                             .add(piece));
 
             ArrayList<PreviewCandidate> candidates = new ArrayList<>();
+            LinkedHashMap<String, List<PreviewCandidate>> candidatesByBaseName = new LinkedHashMap<>();
             for (Map.Entry<String, List<MKWorkspacePieceDefinition>> entry : piecesByBase.entrySet()) {
+                MKWorkspaceExportManifest.ExportRuntimeTemplateGroup group = templateGroupByBase.get(entry.getKey());
+                if (group == null) {
+                    continue;
+                }
                 List<MKWorkspacePieceDefinition> variants = entry.getValue().stream()
                         .filter(piece -> piece.variantIndex() > 0)
                         .sorted(Comparator.comparingInt(MKWorkspacePieceDefinition::variantIndex))
                         .toList();
-                if (variants.isEmpty()) {
-                    entry.getValue().stream()
-                            .filter(piece -> piece.variantIndex() == 0)
-                            .findFirst()
-                            .ifPresent(piece -> candidates.add(new PreviewCandidate(piece, true)));
-                } else {
-                    variants.forEach(piece -> candidates.add(new PreviewCandidate(piece, false)));
+                List<MKWorkspacePieceDefinition> selected = variants.isEmpty() ?
+                        entry.getValue().stream()
+                                .filter(piece -> piece.variantIndex() == 0)
+                                .findFirst()
+                                .stream()
+                                .toList() :
+                        variants;
+                boolean templateFallback = variants.isEmpty();
+                for (MKWorkspacePieceDefinition piece : selected) {
+                    PreviewCandidate candidate = new PreviewCandidate(piece, templateFallback,
+                            jigsawMetadata(group.pieceMetadata().withPieceDerivedFloorMetadata(piece)));
+                    candidates.add(candidate);
+                    candidatesByBaseName.computeIfAbsent(entry.getKey(), ignored -> new ArrayList<>()).add(candidate);
                 }
+            }
+            if (candidates.isEmpty()) {
+                errors.add("workspace has no runtime preview candidates after applying export runtime hints");
+                return Optional.empty();
             }
 
             HashMap<ResourceLocation, List<PreviewCandidate>> candidatesByPool = new HashMap<>();
-            for (PreviewCandidate candidate : candidates) {
-                ResourceLocation basePool = ResourceLocation.fromNamespaceAndPath(workspace.namespace(),
-                        workspace.structureName() + "/" + baseName(candidate.piece()));
-                candidatesByPool.computeIfAbsent(basePool, ignored -> new ArrayList<>()).add(candidate);
-                for (MKWorkspaceConnectorDefinition connector : candidate.piece().connectors()) {
-                    if (!connector.incomingPool().equals(EMPTY_POOL)) {
-                        candidatesByPool.computeIfAbsent(connector.incomingPool(), ignored -> new ArrayList<>())
-                                .add(candidate);
-                    }
+            ResourceLocation startPool = ResourceLocation.fromNamespaceAndPath(workspace.namespace(),
+                    workspace.structureName() + "/start");
+            candidatesByPool.put(startPool, candidatesByBaseName.getOrDefault(manifest.runtimeHints().startBaseName(),
+                    List.of()));
+            for (MKWorkspaceExportManifest.ExportRuntimePool pool : manifest.runtimeHints().pools()) {
+                ArrayList<PreviewCandidate> poolCandidates = new ArrayList<>();
+                for (String childBaseName : pool.childBaseNames()) {
+                    poolCandidates.addAll(candidatesByBaseName.getOrDefault(childBaseName, List.of()));
                 }
+                candidatesByPool.put(pool.poolId(), List.copyOf(poolCandidates));
             }
-            return new PreviewPool(List.copyOf(candidates), Map.copyOf(candidatesByPool));
+            return Optional.of(new PreviewPool(manifest.runtimeHints().startBaseName(), List.copyOf(candidates),
+                    immutableListMap(candidatesByBaseName), immutableListMap(candidatesByPool)));
         }
 
-        Optional<PreviewCandidate> startCandidate(RandomSource random) {
-            List<PreviewCandidate> starts = candidates.stream()
-                    .filter(candidate -> MKWorkspaceRuntimePieceInfo.fromTags(candidate.piece().tags())
-                            .map(MKWorkspaceRuntimePieceInfo::start)
-                            .orElse(false))
+        private static <K> Map<K, List<PreviewCandidate>> immutableListMap(
+                Map<K, ? extends List<PreviewCandidate>> source) {
+            HashMap<K, List<PreviewCandidate>> result = new HashMap<>();
+            source.forEach((key, value) -> result.put(key, List.copyOf(value)));
+            return Map.copyOf(result);
+        }
+
+        private static MKDungeonLayoutSettings layoutSettings(MKStructureWorkspace workspace,
+                                                              List<MKDungeonTopologyGroupRule> floorRules) {
+            boolean walledKeep = WALLED_KEEP_PLANNER_ID.equals(workspace.topologyProfile().plannerId());
+            int maxBranchDepth = walledKeep ? 64 : Math.max(0, floorRules.stream()
+                    .mapToInt(MKDungeonTopologyGroupRule::maxBranchPiecesBeforeCap)
+                    .max()
+                    .orElse(0));
+            return new MKDungeonLayoutSettings(
+                    walledKeep ? 1 : 3,
+                    walledKeep ? 1 : 3,
+                    1,
+                    walledKeep ? 64 : 2,
+                    maxBranchDepth,
+                    walledKeep,
+                    MKVerticalProgressionMode.MIXED,
+                    true,
+                    false,
+                    floorRules,
+                    new MKDungeonConnectorSettings(
+                            connector("main_forward"),
+                            connector("main_back"),
+                            connector("branch"),
+                            connector("connect_down"),
+                            connector("connect_up"),
+                            connector("boss_forward"),
+                            connector("boss_back")
+                    )
+            );
+        }
+
+        private static int maxDepth(MKStructureWorkspace workspace) {
+            return WALLED_KEEP_PLANNER_ID.equals(workspace.topologyProfile().plannerId()) ? 20 : MAX_DEPTH;
+        }
+
+        private static int maxDistanceFromCenter(MKStructureWorkspace workspace) {
+            return WALLED_KEEP_PLANNER_ID.equals(workspace.topologyProfile().plannerId()) ? 116 :
+                    TOWER_PLANNER_ID.equals(workspace.topologyProfile().plannerId()) ? 96 :
+                            RUNTIME_SPREAD_RESERVE;
+        }
+
+        private static List<MKDungeonTopologyGroupRule> floorTopologyRules(MKWorkspaceExportManifest manifest) {
+            ArrayList<MKDungeonTopologyGroupRule> rules = new ArrayList<>();
+            for (MKFloorTopologySettings settings : manifest.settings().topologyProfile().floorTopologySettings()) {
+                MKFloorTopologySettings physicalSettings = physicalFloorTopologySettings(manifest, settings);
+                String topologyGroupId = floorTopologyGroupId(settings.stackId(), settings.floorRole());
+                String endingPool = settings.mainCapApproachEnabled() ?
+                        MKFloorTopologyPoolNames.mainCapApproachPoolName(topologyGroupId) :
+                        MKFloorTopologyPoolNames.mainCapPoolName(topologyGroupId);
+                int horizontalPadding = horizontalPadding(manifest);
+                int rootWidth = manifest.settings().topologyProfile()
+                        .verticalStackSettingsOrDefault(settings.stackId()).width() + horizontalPadding;
+                int rootLength = manifest.settings().topologyProfile()
+                        .verticalStackSettingsOrDefault(settings.stackId()).length() + horizontalPadding;
+                rules.add(new MKDungeonTopologyGroupRule(
+                        topologyGroupId,
+                        physicalSettings.minMainPathPieces(),
+                        physicalSettings.maxMainPathPieces(),
+                        physicalSettings.maxBranchPiecesBeforeCap(),
+                        physicalSettings.sprawl(),
+                        physicalSettings.linksEnabled(),
+                        physicalSettings.linkDensity(),
+                        physicalSettings.maxLinksPerFloor(),
+                        physicalSettings.maxLinksPerRoom(),
+                        physicalSettings.maxLinkLength(),
+                        physicalSettings.lockedLayoutSeed(),
+                        Optional.of(physicalSettings),
+                        rootWidth,
+                        rootLength,
+                        true,
+                        ResourceLocation.fromNamespaceAndPath(manifest.namespace(),
+                                manifest.structureName() + "/" + endingPool)
+                ));
+            }
+            return List.copyOf(rules);
+        }
+
+        private static MKFloorTopologySettings physicalFloorTopologySettings(
+                MKWorkspaceExportManifest manifest,
+                MKFloorTopologySettings settings) {
+            int horizontalPadding = horizontalPadding(manifest);
+            HallwayFootprint mainHallway = hallwayFootprint(manifest, settings, true, horizontalPadding);
+            HallwayFootprint branchHallway = hallwayFootprint(manifest, settings, false, horizontalPadding);
+            return settings.withRoomProfiles(
+                            physicalRoomProfiles(manifest, settings, settings.mainRoomProfiles(), horizontalPadding),
+                            physicalRoomProfiles(manifest, settings, settings.branchRoomProfiles(), horizontalPadding),
+                            physicalRoomProfiles(manifest, settings, settings.branchCapProfiles(), horizontalPadding),
+                            physicalRoomProfiles(manifest, settings, settings.mainCapApproachProfiles(),
+                                    horizontalPadding),
+                            physicalRoomProfiles(manifest, settings, settings.mainCapProfiles(), horizontalPadding))
+                    .withLayoutHallwayFootprints(mainHallway.length(), mainHallway.width(),
+                            branchHallway.length(), branchHallway.width());
+        }
+
+        private static int horizontalPadding(MKWorkspaceExportManifest manifest) {
+            return 2 * (manifest.settings().shellMargin() + manifest.settings().exteriorAirMargin());
+        }
+
+        private static HallwayFootprint hallwayFootprint(MKWorkspaceExportManifest manifest,
+                                                         MKFloorTopologySettings settings,
+                                                         boolean mainPath,
+                                                         int horizontalPadding) {
+            Optional<HallwayFootprint> exportedFootprint = exportedHallwayFootprint(manifest, settings, mainPath);
+            if (exportedFootprint.isPresent()) {
+                return exportedFootprint.orElseThrow();
+            }
+            String openingProfileId = floorOpeningProfileId(manifest, settings, mainPath)
+                    .orElseGet(() -> firstOpeningProfileId(manifest, mainPath).orElse(""));
+            Optional<MKWorkspaceExportManifest.ExportLinearRunFamily> linearRun = manifest.settings()
+                    .linearRunFamilies()
+                    .stream()
+                    .filter(candidate -> isFloorTopologyLinearRun(candidate, mainPath))
+                    .filter(candidate -> openingProfileId.isBlank() ||
+                            candidate.openingProfileId().equals(openingProfileId))
+                    .findFirst();
+            if (linearRun.isPresent()) {
+                MKWorkspaceExportManifest.ExportLinearRunFamily run = linearRun.orElseThrow();
+                return new HallwayFootprint(
+                        run.length() + horizontalPadding,
+                        Math.max(1, run.interiorWidth() + horizontalPadding)
+                );
+            }
+            int leadIn = settings.hallwayLeadInMode() == MKHallwayLeadInMode.MANUAL ?
+                    Math.max(1, settings.manualHallwayLeadInPieces()) :
+                    Math.max(1, Math.ceilDiv(Math.max(
+                            manifest.settings().topologyProfile()
+                                    .verticalStackSettingsOrDefault(settings.stackId()).width(),
+                            manifest.settings().topologyProfile()
+                                    .verticalStackSettingsOrDefault(settings.stackId()).length()), 8));
+            int openingWidth = openingProfile(manifest, openingProfileId)
+                    .map(MKWorkspaceExportManifest.ExportOpeningProfile::openingWidth)
+                    .orElse(3);
+            return new HallwayFootprint(leadIn + horizontalPadding, openingWidth + horizontalPadding);
+        }
+
+        private static Optional<HallwayFootprint> exportedHallwayFootprint(MKWorkspaceExportManifest manifest,
+                                                                           MKFloorTopologySettings settings,
+                                                                           boolean mainPath) {
+            String pathKind = mainPath ? "main" : "branch";
+            return manifest.pieces().stream()
+                    .filter(piece -> "floor_plan_linear_run".equals(piece.tags().get("tower_piece_kind")))
+                    .filter(piece -> settings.stackId().equals(piece.tags().get("workspace_floor_topology_stack_id")))
+                    .filter(piece -> settings.floorRole().equals(piece.tags()
+                            .get("workspace_floor_topology_floor_role")))
+                    .filter(piece -> pathKind.equals(piece.tags().get("workspace_linear_run_path_kind")))
+                    .filter(RuntimePreviewContextBuilder::baseTemplatePiece)
+                    .map(piece -> new HallwayFootprint(
+                            piece.placement().exportBounds().sizeX(),
+                            piece.placement().exportBounds().sizeZ()))
+                    .findFirst();
+        }
+
+        private static List<MKFloorRoomProfile> physicalRoomProfiles(
+                MKWorkspaceExportManifest manifest,
+                MKFloorTopologySettings settings,
+                List<MKFloorRoomProfile> profiles,
+                int horizontalPadding) {
+            return profiles.stream()
+                    .map(profile -> physicalRoomProfile(manifest, settings, profile, horizontalPadding))
                     .toList();
-            if (!starts.isEmpty()) {
-                return Optional.of(starts.get(random.nextInt(starts.size())));
-            }
-            return candidates.stream().findFirst();
         }
 
-        List<PreviewCandidate> candidatesForPool(ResourceLocation pool) {
-            return candidatesByPool.getOrDefault(pool, List.of());
+        private static MKFloorRoomProfile physicalRoomProfile(MKWorkspaceExportManifest manifest,
+                                                              MKFloorTopologySettings settings,
+                                                              MKFloorRoomProfile profile,
+                                                              int horizontalPadding) {
+            return exportedRoomFootprint(manifest, settings, profile)
+                    .map(footprint -> profile.withWidth(footprint.width()).withLength(footprint.length()))
+                    .orElseGet(() -> profile.withWidth(profile.width() + horizontalPadding)
+                            .withLength(profile.length() + horizontalPadding));
         }
+
+        private static Optional<RoomFootprint> exportedRoomFootprint(MKWorkspaceExportManifest manifest,
+                                                                     MKFloorTopologySettings settings,
+                                                                     MKFloorRoomProfile profile) {
+            return manifest.pieces().stream()
+                    .filter(piece -> "floor_plan_room".equals(piece.tags().get("tower_piece_kind")))
+                    .filter(piece -> settings.stackId().equals(piece.tags().get("workspace_floor_topology_stack_id")))
+                    .filter(piece -> settings.floorRole().equals(piece.tags()
+                            .get("workspace_floor_topology_floor_role")))
+                    .filter(piece -> profile.id().equals(piece.tags().get("workspace_floor_room_profile_id")))
+                    .filter(piece -> profile.kind().getSerializedName()
+                            .equals(piece.tags().get("workspace_floor_room_kind")))
+                    .filter(RuntimePreviewContextBuilder::baseTemplatePiece)
+                    .map(piece -> new RoomFootprint(
+                            piece.placement().exportBounds().sizeX(),
+                            piece.placement().exportBounds().sizeZ()))
+                    .findFirst();
+        }
+
+        private static boolean baseTemplatePiece(MKWorkspaceExportManifest.ExportPiece piece) {
+            return "template".equals(piece.workspacePieceKind()) && piece.pieceName().endsWith("_template");
+        }
+
+        private static boolean isFloorTopologyLinearRun(MKWorkspaceExportManifest.ExportLinearRunFamily linearRun,
+                                                        boolean mainPath) {
+            if (mainPath && !linearRun.allowOnMainPath()) {
+                return false;
+            }
+            if (!mainPath && !linearRun.allowOnBranchPath()) {
+                return false;
+            }
+            return !linearRun.topologySlotId().startsWith("keep.");
+        }
+
+        private static Optional<String> floorOpeningProfileId(MKWorkspaceExportManifest manifest,
+                                                              MKFloorTopologySettings settings,
+                                                              boolean mainPath) {
+            String topologySlotId = settings.stackId() + "." + settings.floorRole();
+            MKHorizontalExitPathKind pathKind = mainPath ?
+                    MKHorizontalExitPathKind.MAIN_EXIT :
+                    MKHorizontalExitPathKind.BRANCH;
+            return manifest.settings().familyDefinitions().stream()
+                    .filter(family -> family.topologySlotId().equals(topologySlotId))
+                    .flatMap(family -> family.horizontalExits().stream())
+                    .filter(exit -> exit.pathKind() == pathKind)
+                    .map(MKWorkspaceExportManifest.ExportFamilyHorizontalExit::openingProfileId)
+                    .filter(id -> !id.isBlank())
+                    .findFirst();
+        }
+
+        private static Optional<String> firstOpeningProfileId(MKWorkspaceExportManifest manifest, boolean mainPath) {
+            return manifest.settings().openingProfiles().stream()
+                    .filter(profile -> mainPath ? profile.allowOnMainPath() : profile.allowOnBranchPath())
+                    .map(MKWorkspaceExportManifest.ExportOpeningProfile::profileId)
+                    .findFirst();
+        }
+
+        private static Optional<MKWorkspaceExportManifest.ExportOpeningProfile> openingProfile(
+                MKWorkspaceExportManifest manifest,
+                String profileId) {
+            return manifest.settings().openingProfiles().stream()
+                    .filter(profile -> profile.profileId().equals(profileId))
+                    .findFirst();
+        }
+
+        private static String floorTopologyGroupId(String stackId, String floorRole) {
+            return stackId + "." + floorRole;
+        }
+
+        private static ResourceLocation connector(String name) {
+            return ResourceLocation.fromNamespaceAndPath("mknpc", name);
+        }
+
+        private record HallwayFootprint(int length, int width) {
+        }
+
+        private record RoomFootprint(int width, int length) {
+        }
+    }
+
+    private static Optional<ResourceLocation> branchCapPoolFor(ResourceLocation targetPool) {
+        String path = targetPool.getPath();
+        Optional<String> openingProfile = branchOpeningProfile(path, "linear_runs/branch/")
+                .or(() -> branchOpeningProfile(path, "rooms/branch/"));
+        if (openingProfile.isEmpty()) {
+            return Optional.empty();
+        }
+        int markerIndex = path.indexOf("linear_runs/branch/");
+        if (markerIndex < 0) {
+            markerIndex = path.indexOf("rooms/branch/");
+        }
+        String prefix = markerIndex <= 0 ? "" : path.substring(0, markerIndex);
+        return Optional.of(ResourceLocation.fromNamespaceAndPath(targetPool.getNamespace(),
+                prefix + "branch_caps/" + openingProfile.get()));
+    }
+
+    private static Optional<String> branchOpeningProfile(String path, String marker) {
+        int markerIndex = path.indexOf(marker);
+        if (markerIndex < 0) {
+            return Optional.empty();
+        }
+        String openingProfile = path.substring(markerIndex + marker.length());
+        int slashIndex = openingProfile.indexOf('/');
+        if (slashIndex >= 0) {
+            openingProfile = openingProfile.substring(0, slashIndex);
+        }
+        return openingProfile.isBlank() ? Optional.empty() : Optional.of(openingProfile);
     }
 }
