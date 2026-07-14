@@ -22,12 +22,11 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MK
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
-import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
-import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
@@ -92,6 +91,7 @@ public class MKWorkspaceSamplePreviewService {
     private record PlacedPiece(PreviewCandidate candidate,
                                BlockPos localOrigin,
                                BoundingBox localBounds,
+                               Rotation rotation,
                                int depth,
                                MKDungeonPieceState state) {
     }
@@ -159,7 +159,8 @@ public class MKWorkspaceSamplePreviewService {
             if (placedPiece.candidate().templateFallback()) {
                 fallbackCount++;
             }
-            copyPiece(level, placedPiece.candidate().piece(), placedPiece.localOrigin().offset(offset));
+            copyPiece(level, placedPiece.candidate().piece(), placedPiece.localOrigin().offset(offset),
+                    placedPiece.rotation());
         }
         runAfterPlace(level, workspace, runtime, placed, offset, finalBounds, random);
 
@@ -194,7 +195,7 @@ public class MKWorkspaceSamplePreviewService {
         MKDungeonPieceState baseRootState = new MKDungeonPieceState(0, 0, 1, 0, true, targetFloors);
         MKDungeonPieceState rootState = runtime.layoutController()
                 .initialStateForStart(baseRootState, start.metadata(), random);
-        PlacedPiece startPiece = placeAt(start, BlockPos.ZERO, 0, rootState);
+        PlacedPiece startPiece = placeAt(start, BlockPos.ZERO, Rotation.NONE, 0, rootState);
         placed.add(startPiece);
         pending.add(startPiece);
 
@@ -215,6 +216,7 @@ public class MKWorkspaceSamplePreviewService {
                     continue;
                 }
                 boolean branchCapsAvailable = runtime.pool().branchCapsAvailable(connector.targetPool());
+                boolean placedChildForConnector = false;
                 for (PreviewCandidate candidate : candidates) {
                     if (runtime.layoutController()
                             .getRejectionReason(parent.state(), connectorInfo, candidate.metadata(),
@@ -222,20 +224,29 @@ public class MKWorkspaceSamplePreviewService {
                             .isPresent()) {
                         continue;
                     }
-                    Optional<MKWorkspaceConnectorDefinition> incoming = matchingIncoming(candidate.piece(), connector);
-                    if (incoming.isEmpty()) {
-                        continue;
+                    for (Rotation childRotation : shuffled(List.of(Rotation.values()), random)) {
+                        Optional<MKWorkspaceConnectorDefinition> incoming = matchingIncoming(candidate.piece(),
+                                connector, parent.rotation(), childRotation);
+                        if (incoming.isEmpty()) {
+                            continue;
+                        }
+                        BlockPos childOrigin = childOrigin(parent, connector, candidate.piece(), childRotation,
+                                incoming.get());
+                        MKDungeonPieceState childState = runtime.layoutController()
+                                .nextState(parent.state(), connectorInfo, candidate.metadata(), random);
+                        PlacedPiece child = placeAt(candidate, childOrigin, childRotation, parent.depth() + 1,
+                                childState);
+                        if (!withinSpread(child.localBounds(), runtime.maxDistanceFromCenter())) {
+                            continue;
+                        }
+                        if (placed.stream().noneMatch(existing -> intersects(existing.localBounds(), child.localBounds()))) {
+                            placed.add(child);
+                            pending.add(child);
+                            placedChildForConnector = true;
+                            break;
+                        }
                     }
-                    BlockPos childOrigin = childOrigin(parent.localOrigin(), connector, incoming.get());
-                    MKDungeonPieceState childState = runtime.layoutController()
-                            .nextState(parent.state(), connectorInfo, candidate.metadata(), random);
-                    PlacedPiece child = placeAt(candidate, childOrigin, parent.depth() + 1, childState);
-                    if (!withinSpread(child.localBounds(), runtime.maxDistanceFromCenter())) {
-                        continue;
-                    }
-                    if (placed.stream().noneMatch(existing -> intersects(existing.localBounds(), child.localBounds()))) {
-                        placed.add(child);
-                        pending.add(child);
+                    if (placedChildForConnector) {
                         break;
                     }
                 }
@@ -256,33 +267,68 @@ public class MKWorkspaceSamplePreviewService {
         );
     }
 
-    private PlacedPiece placeAt(PreviewCandidate candidate, BlockPos localOrigin, int depth,
+    private PlacedPiece placeAt(PreviewCandidate candidate, BlockPos localOrigin, Rotation rotation, int depth,
                                 MKDungeonPieceState state) {
         BoundingBox source = candidate.piece().exportBounds();
+        int xSpan = rotatedXSpan(source, rotation);
+        int zSpan = rotatedZSpan(source, rotation);
         BoundingBox localBounds = new BoundingBox(
                 localOrigin.getX(),
                 localOrigin.getY(),
                 localOrigin.getZ(),
-                localOrigin.getX() + source.getXSpan() - 1,
+                localOrigin.getX() + xSpan - 1,
                 localOrigin.getY() + source.getYSpan() - 1,
-                localOrigin.getZ() + source.getZSpan() - 1
+                localOrigin.getZ() + zSpan - 1
         );
-        return new PlacedPiece(candidate, localOrigin, localBounds, depth, state);
+        return new PlacedPiece(candidate, localOrigin, localBounds, rotation, depth, state);
     }
 
     private Optional<MKWorkspaceConnectorDefinition> matchingIncoming(MKWorkspacePieceDefinition candidate,
-                                                                      MKWorkspaceConnectorDefinition parentConnector) {
+                                                                      MKWorkspaceConnectorDefinition parentConnector,
+                                                                      Rotation parentRotation,
+                                                                      Rotation childRotation) {
+        Direction parentFacing = parentRotation.rotate(parentConnector.facing());
         return candidate.connectors().stream()
-                .filter(connector -> connector.facing() == parentConnector.facing().getOpposite())
+                .filter(connector -> childRotation.rotate(connector.facing()) == parentFacing.getOpposite())
                 .filter(connector -> parentConnector.targetPool().equals(connector.incomingPool()))
                 .findFirst();
     }
 
-    private BlockPos childOrigin(BlockPos parentOrigin, MKWorkspaceConnectorDefinition parentConnector,
+    private BlockPos childOrigin(PlacedPiece parent, MKWorkspaceConnectorDefinition parentConnector,
+                                 MKWorkspacePieceDefinition childPiece, Rotation childRotation,
                                  MKWorkspaceConnectorDefinition childConnector) {
-        BlockPos parentConnectorPos = parentOrigin.offset(parentConnector.relativePos());
-        BlockPos childConnectorTarget = parentConnectorPos.relative(parentConnector.facing());
-        return childConnectorTarget.subtract(childConnector.relativePos());
+        BlockPos parentConnectorPos = parent.localOrigin().offset(rotatedRelative(parentConnector.relativePos(),
+                parent.candidate().piece(), parent.rotation()));
+        Direction parentFacing = parent.rotation().rotate(parentConnector.facing());
+        BlockPos childConnectorTarget = parentConnectorPos.relative(parentFacing);
+        return childConnectorTarget.subtract(rotatedRelative(childConnector.relativePos(), childPiece,
+                childRotation));
+    }
+
+    private BlockPos rotatedRelative(BlockPos relative, MKWorkspacePieceDefinition piece, Rotation rotation) {
+        BoundingBox bounds = piece.exportBounds();
+        int maxX = bounds.getXSpan() - 1;
+        int maxZ = bounds.getZSpan() - 1;
+        return switch (rotation) {
+            case NONE -> relative;
+            case CLOCKWISE_90 -> new BlockPos(maxZ - relative.getZ(), relative.getY(), relative.getX());
+            case CLOCKWISE_180 -> new BlockPos(maxX - relative.getX(), relative.getY(), maxZ - relative.getZ());
+            case COUNTERCLOCKWISE_90 -> new BlockPos(relative.getZ(), relative.getY(), maxX - relative.getX());
+        };
+    }
+
+    private int rotatedXSpan(BoundingBox bounds, Rotation rotation) {
+        return switch (rotation) {
+            case NONE, CLOCKWISE_180 -> bounds.getXSpan();
+            case CLOCKWISE_90, COUNTERCLOCKWISE_90 -> bounds.getZSpan();
+        };
+    }
+
+    private int rotatedZSpan(BoundingBox bounds, Rotation rotation) {
+        return switch (rotation) {
+            case NONE, CLOCKWISE_180 -> bounds.getZSpan();
+            case CLOCKWISE_90, COUNTERCLOCKWISE_90 -> bounds.getXSpan();
+        };
     }
 
     private boolean withinSpread(BoundingBox bounds, int spread) {
@@ -314,22 +360,25 @@ public class MKWorkspaceSamplePreviewService {
         return true;
     }
 
-    private void copyPiece(ServerLevel level, MKWorkspacePieceDefinition sourcePiece, BlockPos destinationOrigin) {
+    private void copyPiece(ServerLevel level, MKWorkspacePieceDefinition sourcePiece, BlockPos destinationOrigin,
+                           Rotation rotation) {
         BoundingBox sourceBounds = sourcePiece.exportBounds();
         for (int x = 0; x < sourceBounds.getXSpan(); x++) {
             for (int y = 0; y < sourceBounds.getYSpan(); y++) {
                 for (int z = 0; z < sourceBounds.getZSpan(); z++) {
                     BlockPos sourcePos = new BlockPos(sourceBounds.minX() + x, sourceBounds.minY() + y,
                             sourceBounds.minZ() + z);
-                    BlockPos destPos = destinationOrigin.offset(x, y, z);
+                    BlockPos destPos = destinationOrigin.offset(rotatedRelative(new BlockPos(x, y, z), sourcePiece,
+                            rotation));
                     BlockState state = level.getBlockState(sourcePos);
                     if (state.is(Blocks.JIGSAW) || state.is(Blocks.STRUCTURE_VOID) ||
                             state.is(Blocks.STRUCTURE_BLOCK)) {
                         level.setBlock(destPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                         continue;
                     }
-                    level.setBlock(destPos, state, Block.UPDATE_ALL);
-                    copyBlockEntity(level, sourcePos, destPos, state);
+                    BlockState rotatedState = state.rotate(rotation);
+                    level.setBlock(destPos, rotatedState, Block.UPDATE_ALL);
+                    copyBlockEntity(level, sourcePos, destPos, rotatedState);
                 }
             }
         }
@@ -400,7 +449,7 @@ public class MKWorkspaceSamplePreviewService {
                     element,
                     pieceOrigin,
                     element.getGroundLevelDelta(),
-                    Rotation.NONE,
+                    placedPiece.rotation(),
                     pieceBounds,
                     LiquidSettings.IGNORE_WATERLOGGING
             ));
@@ -569,11 +618,6 @@ public class MKWorkspaceSamplePreviewService {
         }
     }
 
-    private record PreviewRuntimeHints(String startBaseName,
-                                       List<MKWorkspaceExportManifest.ExportRuntimeTemplateGroup> templateGroups,
-                                       List<MKWorkspaceExportManifest.ExportRuntimePool> pools) {
-    }
-
     private static final class RuntimePreviewContextBuilder {
         private RuntimePreviewContextBuilder() {
         }
@@ -581,7 +625,8 @@ public class MKWorkspaceSamplePreviewService {
         static Optional<RuntimePreviewContext> from(MKStructureWorkspace workspace, List<String> errors) {
             MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 4,
                     Instant.now().toString());
-            PreviewRuntimeHints previewHints = buildPreviewRuntimeHints(workspace, manifest);
+            MKWorkspaceExportManifest.ExportRuntimeHints previewHints =
+                    MKWorkspaceExportManifest.ExportRuntimeHints.forWorkspacePreview(workspace);
             Optional<PreviewPool> pool = buildPool(workspace, previewHints, errors);
             if (pool.isEmpty()) {
                 return Optional.empty();
@@ -598,7 +643,7 @@ public class MKWorkspaceSamplePreviewService {
         }
 
         private static Optional<PreviewPool> buildPool(MKStructureWorkspace workspace,
-                                                       PreviewRuntimeHints previewHints,
+                                                       MKWorkspaceExportManifest.ExportRuntimeHints previewHints,
                                                        List<String> errors) {
             Map<String, MKWorkspaceExportManifest.ExportRuntimeTemplateGroup> templateGroupByBase =
                     new LinkedHashMap<>();
@@ -657,105 +702,6 @@ public class MKWorkspaceSamplePreviewService {
             }
             return Optional.of(new PreviewPool(previewHints.startBaseName(), List.copyOf(candidates),
                     immutableListMap(candidatesByBaseName), immutableListMap(candidatesByPool)));
-        }
-
-        private static PreviewRuntimeHints buildPreviewRuntimeHints(MKStructureWorkspace workspace,
-                                                                    MKWorkspaceExportManifest manifest) {
-            ArrayList<MKWorkspaceExportManifest.ExportRuntimeTemplateGroup> templateGroups = new ArrayList<>();
-            for (MKWorkspaceExportManifest.ExportTemplateGroup templateGroup : manifest.templateGroups()) {
-                previewRuntimeTemplateGroup(workspace, templateGroup).ifPresent(templateGroups::add);
-            }
-            return new PreviewRuntimeHints(findPreviewStartBaseName(workspace.pieces()), templateGroups,
-                    buildPreviewRuntimePools(workspace));
-        }
-
-        private static Optional<MKWorkspaceExportManifest.ExportRuntimeTemplateGroup> previewRuntimeTemplateGroup(
-                MKStructureWorkspace workspace,
-                MKWorkspaceExportManifest.ExportTemplateGroup templateGroup) {
-            Optional<MKWorkspacePieceDefinition> metadataPiece = workspace.pieces().stream()
-                    .filter(piece -> templateGroup.baseName().equals(baseName(piece)))
-                    .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
-                    .filter(piece -> piece.variantIndex() > 0)
-                    .findFirst()
-                    .or(() -> workspace.pieces().stream()
-                            .filter(piece -> templateGroup.baseName().equals(baseName(piece)))
-                            .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
-                            .filter(piece -> piece.variantIndex() == 0)
-                            .findFirst());
-            Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = metadataPiece
-                    .map(MKWorkspacePieceDefinition::tags)
-                    .flatMap(MKWorkspaceRuntimePieceInfo::fromTags);
-            if (metadataPiece.isEmpty() || runtimeInfo.isEmpty()) {
-                return Optional.empty();
-            }
-            MKWorkspacePieceDefinition piece = metadataPiece.orElseThrow();
-            return Optional.of(new MKWorkspaceExportManifest.ExportRuntimeTemplateGroup(
-                    templateGroup.baseName(),
-                    templateGroup.roleId(),
-                    MKWorkspaceExportManifest.ExportRuntimePieceMetadata.from(runtimeInfo.orElseThrow(), piece,
-                            foundationPolicyForPiece(workspace, piece))
-            ));
-        }
-
-        private static String findPreviewStartBaseName(List<MKWorkspacePieceDefinition> pieces) {
-            return pieces.stream()
-                    .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
-                    .filter(piece -> MKWorkspaceRuntimePieceInfo.fromTags(piece.tags())
-                            .map(MKWorkspaceRuntimePieceInfo::start)
-                            .orElse(false))
-                    .map(MKWorkspaceSamplePreviewService::baseName)
-                    .findFirst()
-                    .orElse("");
-        }
-
-        private static List<MKWorkspaceExportManifest.ExportRuntimePool> buildPreviewRuntimePools(
-                MKStructureWorkspace workspace) {
-            LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool = new LinkedHashMap<>();
-            for (MKWorkspacePieceDefinition piece : workspace.pieces()) {
-                if (MKWorkspaceTemplateReuseTags.isDerived(piece.tags())) {
-                    continue;
-                }
-                Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = MKWorkspaceRuntimePieceInfo.fromTags(piece.tags());
-                if (runtimeInfo.isEmpty()) {
-                    continue;
-                }
-                String baseName = baseName(piece);
-                for (MKWorkspaceConnectorDefinition connector : piece.connectors()) {
-                    if (connector.incomingPool().equals(EMPTY_POOL)) {
-                        continue;
-                    }
-                    childrenByPool.computeIfAbsent(connector.incomingPool(), ignored -> new LinkedHashSet<>())
-                            .add(baseName);
-                }
-            }
-            return childrenByPool.entrySet().stream()
-                    .map(entry -> new MKWorkspaceExportManifest.ExportRuntimePool(
-                            entry.getKey().getPath(),
-                            entry.getKey(),
-                            List.copyOf(entry.getValue())
-                    ))
-                    .toList();
-        }
-
-        private static MKWorkspaceFoundationPolicy foundationPolicyForPiece(MKStructureWorkspace workspace,
-                                                                            MKWorkspacePieceDefinition piece) {
-            String linearRunId = piece.tags().get("workspace_linear_run_family_id");
-            if (linearRunId != null && !linearRunId.isBlank()) {
-                return workspace.linearRunFamilies().stream()
-                        .filter(family -> family.linearRunId().equals(linearRunId))
-                        .findFirst()
-                        .map(MKWorkspaceLinearRunFamilyDefinition::foundationPolicy)
-                        .orElse(MKWorkspaceFoundationPolicy.none());
-            }
-            String familyId = piece.tags().get("workspace_family_id");
-            if (familyId != null && !familyId.isBlank()) {
-                return workspace.familyDefinitions().stream()
-                        .filter(family -> family.baseName().equals(familyId))
-                        .findFirst()
-                        .map(family -> workspace.resolveFamilySettings(family).foundationPolicy())
-                        .orElse(MKWorkspaceFoundationPolicy.none());
-            }
-            return MKWorkspaceFoundationPolicy.none();
         }
 
         private static ResourceLocation templateId(MKStructureWorkspace workspace, MKWorkspacePieceDefinition piece) {

@@ -675,6 +675,17 @@ public record MKWorkspaceExportManifest(
             return new ExportRuntimeHints(startBaseName, templateGroups, buildRuntimePools(workspace, pieces));
         }
 
+        public static ExportRuntimeHints forWorkspacePreview(MKStructureWorkspace workspace) {
+            List<MKWorkspacePieceDefinition> pieces = workspace.pieces();
+            List<ExportRuntimeTemplateGroup> templateGroups = buildTemplateGroups(pieces).stream()
+                    .map(templateGroup -> ExportRuntimeTemplateGroup.forTemplateGroup(workspace, pieces, templateGroup,
+                            true))
+                    .flatMap(java.util.Optional::stream)
+                    .toList();
+            return new ExportRuntimeHints(findPreviewStartBaseName(pieces), templateGroups,
+                    buildRuntimePools(workspace, pieces, true));
+        }
+
         public static ExportRuntimeHints forWorkspaceIfValid(MKStructureWorkspace workspace) {
             try {
                 return forWorkspace(workspace);
@@ -715,10 +726,24 @@ public record MKWorkspaceExportManifest(
                 MKStructureWorkspace workspace,
                 List<MKWorkspacePieceDefinition> pieces,
                 ExportTemplateGroup templateGroup) {
+            return forTemplateGroup(workspace, pieces, templateGroup, false);
+        }
+
+        public static java.util.Optional<ExportRuntimeTemplateGroup> forTemplateGroup(
+                MKStructureWorkspace workspace,
+                List<MKWorkspacePieceDefinition> pieces,
+                ExportTemplateGroup templateGroup,
+                boolean allowTemplateFallback) {
             java.util.Optional<MKWorkspacePieceDefinition> runtimePiece = pieces.stream()
                     .filter(piece -> templateGroup.baseName().equals(piece.tags().getOrDefault("workspace_base_name", piece.pieceName())))
                     .filter(piece -> !"template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance")))
-                    .findFirst();
+                    .findFirst()
+                    .or(() -> allowTemplateFallback ? pieces.stream()
+                            .filter(piece -> templateGroup.baseName().equals(piece.tags()
+                                    .getOrDefault("workspace_base_name", piece.pieceName())))
+                            .filter(piece -> "template".equals(piece.tags()
+                                    .getOrDefault("workspace_piece_kind", "instance")))
+                            .findFirst() : Optional.empty());
             java.util.Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = runtimePiece
                     .map(MKWorkspacePieceDefinition::tags)
                     .flatMap(MKWorkspaceRuntimePieceInfo::fromTags);
@@ -1357,12 +1382,29 @@ public record MKWorkspaceExportManifest(
         return startBaseNames.getFirst();
     }
 
+    private static String findPreviewStartBaseName(List<MKWorkspacePieceDefinition> pieces) {
+        return pieces.stream()
+                .filter(piece -> MKWorkspaceRuntimePieceInfo.fromTags(piece.tags())
+                        .map(MKWorkspaceRuntimePieceInfo::start)
+                        .orElse(false))
+                .map(piece -> piece.tags().getOrDefault("workspace_base_name", piece.pieceName()))
+                .findFirst()
+                .orElse("");
+    }
+
     private static List<ExportRuntimePool> buildRuntimePools(MKStructureWorkspace workspace,
                                                              List<MKWorkspacePieceDefinition> pieces) {
+        return buildRuntimePools(workspace, pieces, false);
+    }
+
+    private static List<ExportRuntimePool> buildRuntimePools(MKStructureWorkspace workspace,
+                                                             List<MKWorkspacePieceDefinition> pieces,
+                                                             boolean allowTemplatePieces) {
         LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool = new LinkedHashMap<>();
         ResourceLocation plannerId = workspace.topologyProfile().plannerId();
         for (MKWorkspacePieceDefinition piece : pieces) {
-            if ("template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance"))) {
+            if (!allowTemplatePieces && "template".equals(piece.tags()
+                    .getOrDefault("workspace_piece_kind", "instance"))) {
                 continue;
             }
             String baseName = piece.tags().getOrDefault("workspace_base_name", piece.pieceName());
@@ -1393,7 +1435,7 @@ public record MKWorkspaceExportManifest(
                 addFloorMaskPoolChild(childrenByPool, connector.incomingPool(), baseName, piece.tags());
             }
         }
-        addInsertFamilyPools(workspace, pieces, childrenByPool);
+        addInsertFamilyPools(workspace, pieces, childrenByPool, allowTemplatePieces);
         return childrenByPool.entrySet().stream()
                 .map(entry -> new ExportRuntimePool(
                         derivePoolBaseName(workspace, entry.getKey()),
@@ -1451,9 +1493,17 @@ public record MKWorkspaceExportManifest(
     private static void addInsertFamilyPools(MKStructureWorkspace workspace,
                                              List<MKWorkspacePieceDefinition> pieces,
                                              LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool) {
+        addInsertFamilyPools(workspace, pieces, childrenByPool, false);
+    }
+
+    private static void addInsertFamilyPools(MKStructureWorkspace workspace,
+                                             List<MKWorkspacePieceDefinition> pieces,
+                                             LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool,
+                                             boolean allowTemplatePieces) {
         for (MKWorkspaceInsertFamilyDefinition insertFamily : workspace.insertFamilies()) {
             LinkedHashSet<String> childBaseNames = pieces.stream()
-                    .filter(piece -> !"template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance")))
+                    .filter(piece -> allowTemplatePieces ||
+                            !"template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance")))
                     .filter(piece -> insertFamily.familyId().equals(piece.tags().get(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID)))
                     .filter(piece -> insertFamily.kind().getSerializedName().equals(piece.tags()
                             .getOrDefault(MKInsertFamilyPools.TAG_INSERT_FAMILY_KIND,
