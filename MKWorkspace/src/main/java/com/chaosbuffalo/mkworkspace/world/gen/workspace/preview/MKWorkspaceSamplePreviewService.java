@@ -9,6 +9,7 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSinglePoolElement;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKVerticalProgressionMode;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.capability.IMKStructureWorkspaceData;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.export.MKWorkspaceExportArchiveWriter;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceSamplePreviewState;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKJigsawPieceMetadata;
@@ -20,23 +21,14 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MK
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKFloorMaskVariantExporter;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorMaskPools;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.FrontAndTop;
-import net.minecraft.core.HolderGetter;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
-import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.Pools;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -44,10 +36,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.JigsawBlock;
+import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
@@ -56,7 +46,9 @@ import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasLookup;
 import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure;
+import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 import javax.annotation.Nullable;
@@ -79,6 +71,9 @@ public class MKWorkspaceSamplePreviewService {
     private static final int CLEAR_MARGIN = 2;
     private static final int RUNTIME_SPREAD_RESERVE = 128;
     private static final int MAX_DEPTH = 24;
+    private static final BlockIgnoreProcessor PREVIEW_PLACE_IGNORE = new BlockIgnoreProcessor(
+            List.of(Blocks.STRUCTURE_VOID, Blocks.JIGSAW, Blocks.STRUCTURE_BLOCK)
+    );
 
     public record MKWorkspaceSamplePreviewResult(
             BlockPos origin,
@@ -97,10 +92,8 @@ public class MKWorkspaceSamplePreviewService {
                                     MKJigsawPieceMetadata metadata) {
     }
 
-    private record TemplateBlock(BlockPos pos, BlockState state, @Nullable CompoundTag nbt) {
-    }
-
     private record RuntimePreviewContext(PreviewPool pool,
+                                         List<MKWorkspacePieceDefinition> previewPieces,
                                          MKDungeonLayoutSettings layoutSettings,
                                          int maxDepth,
                                          int maxDistanceFromCenter) {
@@ -109,6 +102,7 @@ public class MKWorkspaceSamplePreviewService {
     private record DynamicPreviewPools(Holder<StructureTemplatePool> startPool,
                                        Holder<StructureTemplatePool> emptyPool,
                                        Map<ResourceKey<StructureTemplatePool>, Holder<StructureTemplatePool>> pools,
+                                       Map<ResourceLocation, StructureTemplate> templatesById,
                                        Map<ResourceLocation, PreviewCandidate> candidatesByTemplateId,
                                        Map<ResourceLocation, MKJigsawPieceMetadata> metadataOverrides) {
         Optional<? extends Holder<StructureTemplatePool>> getHolder(ResourceKey<StructureTemplatePool> poolKey) {
@@ -208,8 +202,13 @@ public class MKWorkspaceSamplePreviewService {
             if (candidate.orElseThrow().templateFallback()) {
                 fallbackCount++;
             }
-            copyPiece(level, candidate.orElseThrow().piece(), placedPiece.getPosition(),
-                    placedPiece.getRotation());
+            StructureTemplate template = dynamicPools.templatesById().get(candidate.orElseThrow().templateId());
+            if (template == null) {
+                warnings.add("preview skipped piece with missing in-memory template id " +
+                        candidate.orElseThrow().templateId());
+                continue;
+            }
+            placePiece(level, template, placedPiece.getPosition(), placedPiece.getRotation(), random);
         }
         ArrayList<StructurePiece> structurePieces = new ArrayList<>(plan.pieces());
         runAfterPlace(level, workspace, runtime, new PiecesContainer(structurePieces),
@@ -247,12 +246,17 @@ public class MKWorkspaceSamplePreviewService {
             return Optional.empty();
         }
 
-        HashMap<ResourceLocation, StructureTemplate> templatesById = new HashMap<>();
+        Map<ResourceLocation, StructureTemplate> templatesById;
+        try {
+            templatesById = new MKWorkspaceExportArchiveWriter().buildStructureTemplates(level, workspace,
+                    runtime.previewPieces());
+        } catch (IllegalStateException ex) {
+            errors.add(ex.getMessage());
+            return Optional.empty();
+        }
         HashMap<ResourceLocation, PreviewCandidate> candidatesByTemplateId = new HashMap<>();
         HashMap<ResourceLocation, MKJigsawPieceMetadata> metadataOverrides = new HashMap<>();
         for (PreviewCandidate candidate : runtime.pool().candidates()) {
-            templatesById.computeIfAbsent(candidate.templateId(), ignored -> captureTemplate(level,
-                    candidate.piece()));
             candidatesByTemplateId.put(candidate.templateId(), candidate);
             metadataOverrides.put(candidate.templateId(), candidate.metadata());
         }
@@ -272,108 +276,8 @@ public class MKWorkspaceSamplePreviewService {
             return Optional.empty();
         }
 
-        return Optional.of(new DynamicPreviewPools(startPool, emptyPool, Map.copyOf(pools),
+        return Optional.of(new DynamicPreviewPools(startPool, emptyPool, Map.copyOf(pools), Map.copyOf(templatesById),
                 Map.copyOf(candidatesByTemplateId), Map.copyOf(metadataOverrides)));
-    }
-
-    private StructureTemplate captureTemplate(ServerLevel level, MKWorkspacePieceDefinition piece) {
-        StructureTemplate template = new StructureTemplate();
-        BoundingBox bounds = piece.exportBounds();
-        template.fillFromWorld(level, new BlockPos(bounds.minX(), bounds.minY(), bounds.minZ()),
-                new Vec3i(bounds.getXSpan(), bounds.getYSpan(), bounds.getZSpan()), false, null);
-        overlayConnectorJigsaws(level, template, piece);
-        return template;
-    }
-
-    private void overlayConnectorJigsaws(ServerLevel level, StructureTemplate template,
-                                         MKWorkspacePieceDefinition piece) {
-        HolderGetter<Block> blockGetter = level.registryAccess().lookupOrThrow(Registries.BLOCK);
-        CompoundTag tag = template.save(new CompoundTag());
-        List<BlockState> palette = readPalette(blockGetter, tag);
-        LinkedHashMap<BlockPos, TemplateBlock> blocksByPos = new LinkedHashMap<>();
-        ListTag blocks = tag.getList("blocks", Tag.TAG_COMPOUND);
-        for (int i = 0; i < blocks.size(); i++) {
-            CompoundTag block = blocks.getCompound(i);
-            BlockPos pos = readBlockPos(block.getList("pos", Tag.TAG_INT));
-            BlockState state = palette.get(block.getInt("state"));
-            if (state.is(Blocks.JIGSAW)) {
-                continue;
-            }
-            CompoundTag blockNbt = block.contains("nbt", Tag.TAG_COMPOUND) ? block.getCompound("nbt").copy() : null;
-            blocksByPos.put(pos, new TemplateBlock(pos, state, blockNbt));
-        }
-
-        for (MKWorkspaceConnectorDefinition connector : piece.connectors()) {
-            BlockPos pos = connector.relativePos();
-            BlockState state = Blocks.JIGSAW.defaultBlockState()
-                    .setValue(JigsawBlock.ORIENTATION, jigsawOrientation(connector.facing()));
-            CompoundTag jigsawNbt = new CompoundTag();
-            jigsawNbt.putString("id", "minecraft:jigsaw");
-            jigsawNbt.putString("name", connector.jigsawName().toString());
-            jigsawNbt.putString("target", connector.jigsawTarget().toString());
-            jigsawNbt.putString("pool", connector.targetPool().toString());
-            jigsawNbt.putString("final_state", "minecraft:air");
-            jigsawNbt.putString("joint", "aligned");
-            jigsawNbt.putInt("x", pos.getX());
-            jigsawNbt.putInt("y", pos.getY());
-            jigsawNbt.putInt("z", pos.getZ());
-            blocksByPos.put(pos, new TemplateBlock(pos, state, jigsawNbt));
-        }
-
-        writePaletteAndBlocks(tag, List.copyOf(blocksByPos.values()));
-        template.load(blockGetter, tag);
-    }
-
-    private List<BlockState> readPalette(HolderGetter<Block> blockGetter, CompoundTag tag) {
-        ListTag paletteTag = tag.contains("palette", Tag.TAG_LIST) ?
-                tag.getList("palette", Tag.TAG_COMPOUND) :
-                tag.getList("palettes", Tag.TAG_LIST).getList(0);
-        ArrayList<BlockState> palette = new ArrayList<>();
-        for (int i = 0; i < paletteTag.size(); i++) {
-            palette.add(NbtUtils.readBlockState(blockGetter, paletteTag.getCompound(i)));
-        }
-        return palette;
-    }
-
-    private void writePaletteAndBlocks(CompoundTag tag, List<TemplateBlock> blocks) {
-        LinkedHashMap<BlockState, Integer> paletteIndexes = new LinkedHashMap<>();
-        ListTag blockList = new ListTag();
-        for (TemplateBlock block : blocks) {
-            int stateId = paletteIndexes.computeIfAbsent(block.state(), ignored -> paletteIndexes.size());
-            CompoundTag blockTag = new CompoundTag();
-            blockTag.put("pos", intList(block.pos().getX(), block.pos().getY(), block.pos().getZ()));
-            blockTag.putInt("state", stateId);
-            if (block.nbt() != null) {
-                blockTag.put("nbt", block.nbt());
-            }
-            blockList.add(blockTag);
-        }
-        ListTag paletteTag = new ListTag();
-        for (BlockState state : paletteIndexes.keySet()) {
-            paletteTag.add(NbtUtils.writeBlockState(state));
-        }
-        tag.remove("palettes");
-        tag.put("blocks", blockList);
-        tag.put("palette", paletteTag);
-    }
-
-    private BlockPos readBlockPos(ListTag list) {
-        return new BlockPos(list.getInt(0), list.getInt(1), list.getInt(2));
-    }
-
-    private ListTag intList(int x, int y, int z) {
-        ListTag list = new ListTag();
-        list.add(IntTag.valueOf(x));
-        list.add(IntTag.valueOf(y));
-        list.add(IntTag.valueOf(z));
-        return list;
-    }
-
-    private FrontAndTop jigsawOrientation(net.minecraft.core.Direction facing) {
-        if (facing == net.minecraft.core.Direction.UP || facing == net.minecraft.core.Direction.DOWN) {
-            return FrontAndTop.fromFrontAndTop(facing, net.minecraft.core.Direction.NORTH);
-        }
-        return FrontAndTop.fromFrontAndTop(facing, net.minecraft.core.Direction.UP);
     }
 
     private StructureTemplatePool rigidPool(Holder<StructureTemplatePool> emptyPool,
@@ -419,18 +323,6 @@ public class MKWorkspaceSamplePreviewService {
         return Optional.empty();
     }
 
-    private BlockPos rotatedRelative(BlockPos relative, MKWorkspacePieceDefinition piece, Rotation rotation) {
-        BoundingBox bounds = piece.exportBounds();
-        int maxX = bounds.getXSpan() - 1;
-        int maxZ = bounds.getZSpan() - 1;
-        return switch (rotation) {
-            case NONE -> relative;
-            case CLOCKWISE_90 -> new BlockPos(maxZ - relative.getZ(), relative.getY(), relative.getX());
-            case CLOCKWISE_180 -> new BlockPos(maxX - relative.getX(), relative.getY(), maxZ - relative.getZ());
-            case COUNTERCLOCKWISE_90 -> new BlockPos(relative.getZ(), relative.getY(), maxX - relative.getX());
-        };
-    }
-
     private boolean clearPreviousPreview(ServerLevel level,
                                          MKWorkspaceSamplePreviewState previousState,
                                          BoundingBox authoringBounds,
@@ -444,46 +336,14 @@ public class MKWorkspaceSamplePreviewService {
         return true;
     }
 
-    private void copyPiece(ServerLevel level, MKWorkspacePieceDefinition sourcePiece, BlockPos destinationOrigin,
-                           Rotation rotation) {
-        BoundingBox sourceBounds = sourcePiece.exportBounds();
-        for (int x = 0; x < sourceBounds.getXSpan(); x++) {
-            for (int y = 0; y < sourceBounds.getYSpan(); y++) {
-                for (int z = 0; z < sourceBounds.getZSpan(); z++) {
-                    BlockPos sourcePos = new BlockPos(sourceBounds.minX() + x, sourceBounds.minY() + y,
-                            sourceBounds.minZ() + z);
-                    BlockPos destPos = destinationOrigin.offset(rotatedRelative(new BlockPos(x, y, z), sourcePiece,
-                            rotation));
-                    BlockState state = level.getBlockState(sourcePos);
-                    if (state.is(Blocks.JIGSAW) || state.is(Blocks.STRUCTURE_VOID) ||
-                            state.is(Blocks.STRUCTURE_BLOCK)) {
-                        level.setBlock(destPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-                        continue;
-                    }
-                    BlockState rotatedState = state.rotate(rotation);
-                    level.setBlock(destPos, rotatedState, Block.UPDATE_ALL);
-                    copyBlockEntity(level, sourcePos, destPos, rotatedState);
-                }
-            }
-        }
-    }
-
-    private void copyBlockEntity(ServerLevel level, BlockPos sourcePos, BlockPos destPos, BlockState state) {
-        BlockEntity sourceEntity = level.getBlockEntity(sourcePos);
-        if (sourceEntity == null) {
-            return;
-        }
-        BlockEntity destEntity = level.getBlockEntity(destPos);
-        if (destEntity == null) {
-            return;
-        }
-        CompoundTag tag = sourceEntity.saveWithFullMetadata(level.registryAccess());
-        tag.putInt("x", destPos.getX());
-        tag.putInt("y", destPos.getY());
-        tag.putInt("z", destPos.getZ());
-        destEntity.loadWithComponents(tag, level.registryAccess());
-        destEntity.setChanged();
-        level.sendBlockUpdated(destPos, state, state, Block.UPDATE_ALL);
+    private void placePiece(ServerLevel level, StructureTemplate template, BlockPos destinationOrigin,
+                            Rotation rotation, RandomSource random) {
+        StructurePlaceSettings settings = new StructurePlaceSettings()
+                .setMirror(Mirror.NONE)
+                .setRotation(rotation)
+                .setLiquidSettings(LiquidSettings.IGNORE_WATERLOGGING);
+        settings.addProcessor(PREVIEW_PLACE_IGNORE);
+        template.placeInWorld(level, destinationOrigin, destinationOrigin, settings, random, Block.UPDATE_ALL);
     }
 
     private void runAfterPlace(ServerLevel level, MKStructureWorkspace workspace, RuntimePreviewContext runtime,
@@ -652,6 +512,7 @@ public class MKWorkspaceSamplePreviewService {
             MKDungeonLayoutSettings layoutSettings = layoutSettings(workspace, floorRules);
             return Optional.of(new RuntimePreviewContext(
                     pool.orElseThrow(),
+                    List.copyOf(previewPieces),
                     layoutSettings,
                     maxDepth(workspace),
                     maxDistanceFromCenter(workspace)

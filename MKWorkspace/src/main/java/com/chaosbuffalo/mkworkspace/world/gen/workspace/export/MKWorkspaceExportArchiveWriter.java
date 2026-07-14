@@ -78,11 +78,27 @@ public class MKWorkspaceExportArchiveWriter {
         Map<String, MKWorkspacePieceDefinition> sourcePieces = sourcePiecesByBaseNameAndVariant(exportPieces);
         for (MKWorkspacePieceDefinition piece : exportPieces) {
             output.putNextEntry(new ZipEntry(structureEntryName(manifest, piece)));
-            output.write(pieceNbtBytes(level, piece, sourcePieces));
+            output.write(compressedBytes(exportPieceTag(level, piece, sourcePieces)));
             output.closeEntry();
             written++;
         }
         return written;
+    }
+
+    public Map<ResourceLocation, StructureTemplate> buildStructureTemplates(ServerLevel level,
+                                                                            MKStructureWorkspace workspace,
+                                                                            List<MKWorkspacePieceDefinition> exportPieces) {
+        Map<String, MKWorkspacePieceDefinition> sourcePieces = sourcePiecesByBaseNameAndVariant(exportPieces);
+        HolderGetter<Block> blockGetter = level.registryAccess().lookupOrThrow(Registries.BLOCK);
+        LinkedHashMap<ResourceLocation, StructureTemplate> templates = new LinkedHashMap<>();
+        for (MKWorkspacePieceDefinition piece : exportPieces) {
+            CompoundTag tag = exportPieceTag(level, piece, sourcePieces);
+            StructureTemplate template = new StructureTemplate();
+            template.load(blockGetter, tag);
+            templates.put(ResourceLocation.fromNamespaceAndPath(workspace.namespace(),
+                    workspace.structureName() + "/" + piece.pieceName()), template);
+        }
+        return Map.copyOf(templates);
     }
 
     private int writePieceMetadata(ZipOutputStream output, MKWorkspaceExportManifest manifest,
@@ -154,26 +170,25 @@ public class MKWorkspaceExportArchiveWriter {
         output.closeEntry();
     }
 
-    private byte[] pieceNbtBytes(ServerLevel level, MKWorkspacePieceDefinition piece,
-                                 Map<String, MKWorkspacePieceDefinition> sourcePieces) throws IOException {
-        CompoundTag tag;
+    private CompoundTag exportPieceTag(ServerLevel level, MKWorkspacePieceDefinition piece,
+                                       Map<String, MKWorkspacePieceDefinition> sourcePieces) {
         if (MKWorkspaceTemplateReuseTags.isDerived(piece.tags())) {
             MKWorkspacePieceDefinition sourcePiece = resolveSourcePiece(piece, sourcePieces);
             if (sourcePiece == null) {
                 throw new IllegalStateException("derived export piece " + piece.pieceName() +
                         " references missing source " + MKWorkspaceTemplateReuseTags.sourceId(piece.tags()));
             }
-            tag = rotatedDerivedPieceTag(level, sourcePiece, piece);
-        } else {
-            tag = pieceNbtTag(level, piece);
+            return rotatedDerivedPieceTag(level, sourcePiece, piece);
         }
-        return compressedBytes(tag);
+        return pieceNbtTag(level, piece);
     }
 
     private CompoundTag pieceNbtTag(ServerLevel level, MKWorkspacePieceDefinition piece) {
         StructureTemplate template = new StructureTemplate();
         template.fillFromWorld(level, boundsMin(piece.exportBounds()), boundsSize(piece.exportBounds()), false, null);
-        return template.save(new CompoundTag());
+        CompoundTag tag = template.save(new CompoundTag());
+        overlayConnectorJigsaws(level.registryAccess().lookupOrThrow(Registries.BLOCK), tag, piece);
+        return tag;
     }
 
     private byte[] compressedBytes(CompoundTag tag) throws IOException {
@@ -244,20 +259,8 @@ public class MKWorkspaceExportArchiveWriter {
             blocksByPos.put(targetPos, new ExportBlock(targetPos, state, blockNbt));
         }
         for (var connector : targetPiece.connectors()) {
-            BlockPos pos = connector.relativePos();
-            BlockState state = Blocks.JIGSAW.defaultBlockState()
-                    .setValue(JigsawBlock.ORIENTATION, getJigsawOrientation(connector.facing()));
-            CompoundTag jigsawNbt = new CompoundTag();
-            jigsawNbt.putString("id", "minecraft:jigsaw");
-            jigsawNbt.putString("name", connector.jigsawName().toString());
-            jigsawNbt.putString("target", connector.jigsawTarget().toString());
-            jigsawNbt.putString("pool", connector.targetPool().toString());
-            jigsawNbt.putString("final_state", "minecraft:air");
-            jigsawNbt.putString("joint", "aligned");
-            jigsawNbt.putInt("x", pos.getX());
-            jigsawNbt.putInt("y", pos.getY());
-            jigsawNbt.putInt("z", pos.getZ());
-            blocksByPos.put(pos, new ExportBlock(pos, state, jigsawNbt));
+            ExportBlock block = connectorJigsawBlock(connector);
+            blocksByPos.put(block.pos(), block);
         }
         patchClosedFloorConnectors(blockGetter, targetPiece, blocksByPos);
         ExportCrop crop = MKWorkspaceTemplateReuseTags.cropsNonStructureVoid(targetPiece.tags()) ?
@@ -269,6 +272,47 @@ public class MKWorkspaceExportArchiveWriter {
         result.remove("palettes");
         writePaletteAndBlocks(result, croppedBlocks);
         return result;
+    }
+
+    private void overlayConnectorJigsaws(HolderGetter<Block> blockGetter, CompoundTag tag,
+                                         MKWorkspacePieceDefinition piece) {
+        List<BlockState> palette = readPalette(blockGetter, tag);
+        LinkedHashMap<BlockPos, ExportBlock> blocksByPos = new LinkedHashMap<>();
+        ListTag blocks = tag.getList("blocks", Tag.TAG_COMPOUND);
+        for (int i = 0; i < blocks.size(); i++) {
+            CompoundTag block = blocks.getCompound(i);
+            BlockPos pos = readBlockPos(block.getList("pos", Tag.TAG_INT));
+            BlockState state = palette.get(block.getInt("state"));
+            if (state.is(Blocks.JIGSAW)) {
+                continue;
+            }
+            CompoundTag blockNbt = block.contains("nbt", Tag.TAG_COMPOUND) ? block.getCompound("nbt").copy() : null;
+            blocksByPos.put(pos, new ExportBlock(pos, state, blockNbt));
+        }
+        for (var connector : piece.connectors()) {
+            ExportBlock block = connectorJigsawBlock(connector);
+            blocksByPos.put(block.pos(), block);
+        }
+        tag.remove("palettes");
+        writePaletteAndBlocks(tag, List.copyOf(blocksByPos.values()));
+    }
+
+    private ExportBlock connectorJigsawBlock(
+            com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition connector) {
+        BlockPos pos = connector.relativePos();
+        BlockState state = Blocks.JIGSAW.defaultBlockState()
+                .setValue(JigsawBlock.ORIENTATION, getJigsawOrientation(connector.facing()));
+        CompoundTag jigsawNbt = new CompoundTag();
+        jigsawNbt.putString("id", "minecraft:jigsaw");
+        jigsawNbt.putString("name", connector.jigsawName().toString());
+        jigsawNbt.putString("target", connector.jigsawTarget().toString());
+        jigsawNbt.putString("pool", connector.targetPool().toString());
+        jigsawNbt.putString("final_state", "minecraft:air");
+        jigsawNbt.putString("joint", "aligned");
+        jigsawNbt.putInt("x", pos.getX());
+        jigsawNbt.putInt("y", pos.getY());
+        jigsawNbt.putInt("z", pos.getZ());
+        return new ExportBlock(pos, state, jigsawNbt);
     }
 
     private void patchClosedFloorConnectors(HolderGetter<Block> blockGetter,
