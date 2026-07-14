@@ -20,6 +20,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -36,7 +37,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
@@ -45,6 +48,7 @@ import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureType;
+import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.DimensionPadding;
@@ -74,6 +78,12 @@ public class MKJigsawStructure extends MKStructure {
     private static final BlockState TEMP_LINK_MARKER_STATE = Blocks.YELLOW_WOOL.defaultBlockState();
     private static final BlockIgnoreProcessor STRUCTURE_VOID_IGNORE =
             new BlockIgnoreProcessor(List.of(Blocks.STRUCTURE_VOID));
+    private static final StructureSettings PREVIEW_STRUCTURE_SETTINGS = new StructureSettings(
+            HolderSet.direct(List.<Holder<Biome>>of()),
+            Map.of(),
+            GenerationStep.Decoration.SURFACE_STRUCTURES,
+            TerrainAdjustment.NONE
+    );
 
     public static final MapCodec<MKJigsawStructure> CODEC = RecordCodecBuilder.<MKJigsawStructure>mapCodec(builder ->
             builder.group(settingsCodec(builder),
@@ -124,6 +134,8 @@ public class MKJigsawStructure extends MKStructure {
 
     private final Holder<StructureTemplatePool> startPool;
     @Nullable
+    private ExportedWorkspaceId previewWorkspaceId;
+    @Nullable
     private final ResourceLocation startJigsawName;
     private final int maxDepth;
     private final HeightProvider startHeight;
@@ -152,6 +164,7 @@ public class MKJigsawStructure extends MKStructure {
                              Optional<BlockState> fillState) {
         super(pSettings, structureNbt);
         this.startPool = templatePool;
+        this.previewWorkspaceId = null;
         this.startJigsawName = startJigsawName;
         this.maxDepth = maxDepth;
         this.startHeight = heightProvider;
@@ -164,6 +177,37 @@ public class MKJigsawStructure extends MKStructure {
         this.dungeonLayout = dungeonLayout;
         this.fillFloor = fillFloor;
         this.fillState = fillState.orElse(null);
+    }
+
+    public static void runPreviewAfterPlace(WorldGenLevel level, StructureManager structureManager,
+                                            ChunkGenerator chunkGenerator, RandomSource random,
+                                            BoundingBox boundingBox, ChunkPos chunkPos, PiecesContainer pieces,
+                                            @Nullable MKDungeonLayoutSettings dungeonLayout,
+                                            int maxDistanceFromCenter,
+                                            ResourceLocation previewStartPoolId) {
+        MKJigsawStructure previewStructure = new MKJigsawStructure(
+                PREVIEW_STRUCTURE_SETTINGS,
+                null,
+                null,
+                0,
+                null,
+                false,
+                null,
+                maxDistanceFromCenter,
+                List.of(),
+                JigsawStructure.DEFAULT_DIMENSION_PADDING,
+                JigsawStructure.DEFAULT_LIQUID_SETTINGS,
+                dungeonLayout,
+                new CompoundTag(),
+                false,
+                Optional.empty()
+        );
+        previewStructure.previewWorkspaceId = previewStartPoolId.getPath().endsWith("/start") ?
+                new ExportedWorkspaceId(previewStartPoolId.getNamespace(),
+                        previewStartPoolId.getPath().substring(0,
+                                previewStartPoolId.getPath().length() - "/start".length())) :
+                new ExportedWorkspaceId(previewStartPoolId.getNamespace(), previewStartPoolId.getPath());
+        previewStructure.afterPlace(level, structureManager, chunkGenerator, random, boundingBox, chunkPos, pieces);
     }
 
     @Override
@@ -847,6 +891,12 @@ public class MKJigsawStructure extends MKStructure {
     }
 
     private Optional<ExportedWorkspaceId> exportedWorkspaceId() {
+        if (previewWorkspaceId != null) {
+            return Optional.of(previewWorkspaceId);
+        }
+        if (startPool == null) {
+            return Optional.empty();
+        }
         return startPool.unwrapKey()
                 .map(key -> key.location())
                 .filter(id -> id.getPath().endsWith("/start"))

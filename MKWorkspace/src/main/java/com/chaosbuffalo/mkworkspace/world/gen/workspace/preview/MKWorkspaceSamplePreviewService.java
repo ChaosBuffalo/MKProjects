@@ -6,6 +6,9 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonLayoutControl
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonLayoutSettings;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonPieceState;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKDungeonTopologyGroupRule;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPieceMetadataManager;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSinglePoolElement;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKVerticalProgressionMode;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceSamplePreviewState;
@@ -29,12 +32,19 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.StructurePiece;
+import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -73,6 +83,7 @@ public class MKWorkspaceSamplePreviewService {
 
     private record PreviewCandidate(MKWorkspacePieceDefinition piece,
                                     boolean templateFallback,
+                                    ResourceLocation templateId,
                                     MKJigsawPieceMetadata metadata) {
     }
 
@@ -148,6 +159,7 @@ public class MKWorkspaceSamplePreviewService {
             }
             copyPiece(level, placedPiece.candidate().piece(), placedPiece.localOrigin().offset(offset));
         }
+        runAfterPlace(level, workspace, runtime, placed, offset, finalBounds, random);
 
         BlockPos origin = new BlockPos(finalBounds.minX(), finalBounds.minY(), finalBounds.minZ());
         MKWorkspaceSamplePreviewState state = new MKWorkspaceSamplePreviewState(
@@ -337,6 +349,61 @@ public class MKWorkspaceSamplePreviewService {
         destEntity.loadWithComponents(tag, level.registryAccess());
         destEntity.setChanged();
         level.sendBlockUpdated(destPos, state, state, Block.UPDATE_ALL);
+    }
+
+    private void runAfterPlace(ServerLevel level, MKStructureWorkspace workspace, RuntimePreviewContext runtime,
+                               List<PlacedPiece> placed, BlockPos offset, BoundingBox finalBounds,
+                               RandomSource random) {
+        Map<ResourceLocation, MKJigsawPieceMetadata> metadataOverrides = previewMetadataOverrides(placed);
+        MKJigsawPieceMetadataManager.MetadataOverrideSnapshot snapshot =
+                MKJigsawPieceMetadataManager.installTemporaryPreviewOverrides(metadataOverrides);
+        try {
+            PiecesContainer pieces = previewPieces(level, placed, offset);
+            BlockPos origin = new BlockPos(finalBounds.minX(), finalBounds.minY(), finalBounds.minZ());
+            MKJigsawStructure.runPreviewAfterPlace(
+                    level,
+                    level.structureManager(),
+                    level.getChunkSource().getGenerator(),
+                    random,
+                    expand(finalBounds, CLEAR_MARGIN),
+                    new ChunkPos(origin),
+                    pieces,
+                    runtime.layoutSettings(),
+                    runtime.maxDistanceFromCenter(),
+                    ResourceLocation.fromNamespaceAndPath(workspace.namespace(), workspace.structureName() + "/start")
+            );
+        } finally {
+            MKJigsawPieceMetadataManager.restoreTemporaryPreviewOverrides(snapshot);
+        }
+    }
+
+    private Map<ResourceLocation, MKJigsawPieceMetadata> previewMetadataOverrides(List<PlacedPiece> placed) {
+        HashMap<ResourceLocation, MKJigsawPieceMetadata> overrides = new HashMap<>();
+        for (PlacedPiece placedPiece : placed) {
+            overrides.put(placedPiece.candidate().templateId(), placedPiece.candidate().metadata());
+        }
+        return Map.copyOf(overrides);
+    }
+
+    private PiecesContainer previewPieces(ServerLevel level, List<PlacedPiece> placed, BlockPos offset) {
+        ArrayList<StructurePiece> pieces = new ArrayList<>();
+        for (PlacedPiece placedPiece : placed) {
+            StructurePoolElement element = MKSinglePoolElement
+                    .forTemplate(placedPiece.candidate().templateId(), false)
+                    .apply(StructureTemplatePool.Projection.RIGID);
+            BlockPos pieceOrigin = placedPiece.localOrigin().offset(offset);
+            BoundingBox pieceBounds = move(placedPiece.localBounds(), offset);
+            pieces.add(new PoolElementStructurePiece(
+                    level.getStructureManager(),
+                    element,
+                    pieceOrigin,
+                    element.getGroundLevelDelta(),
+                    Rotation.NONE,
+                    pieceBounds,
+                    LiquidSettings.IGNORE_WATERLOGGING
+            ));
+        }
+        return new PiecesContainer(pieces);
     }
 
     private void clearBounds(ServerLevel level, BoundingBox bounds) {
@@ -562,6 +629,7 @@ public class MKWorkspaceSamplePreviewService {
                 boolean templateFallback = variants.isEmpty();
                 for (MKWorkspacePieceDefinition piece : selected) {
                     PreviewCandidate candidate = new PreviewCandidate(piece, templateFallback,
+                            templateId(workspace, piece),
                             jigsawMetadata(group.pieceMetadata().withPieceDerivedFloorMetadata(piece)));
                     candidates.add(candidate);
                     candidatesByBaseName.computeIfAbsent(entry.getKey(), ignored -> new ArrayList<>()).add(candidate);
@@ -586,6 +654,11 @@ public class MKWorkspaceSamplePreviewService {
             }
             return Optional.of(new PreviewPool(manifest.runtimeHints().startBaseName(), List.copyOf(candidates),
                     immutableListMap(candidatesByBaseName), immutableListMap(candidatesByPool)));
+        }
+
+        private static ResourceLocation templateId(MKStructureWorkspace workspace, MKWorkspacePieceDefinition piece) {
+            return ResourceLocation.fromNamespaceAndPath(workspace.namespace(),
+                    workspace.structureName() + "/" + piece.pieceName());
         }
 
         private static <K> Map<K, List<PreviewCandidate>> immutableListMap(
