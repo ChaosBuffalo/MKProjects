@@ -91,6 +91,10 @@ public class WorkspaceDraftSession {
         return draft;
     }
 
+    Optional<MKStructureWorkspace> screenWorkspace() {
+        return Optional.ofNullable(screen.workspace());
+    }
+
     public void ensureInitialized() {
         if (draft != null) {
             return;
@@ -1171,6 +1175,11 @@ public class WorkspaceDraftSession {
     }
 
     private MKWorkspaceDimensions legacyDimensionsFromTopologySettings() {
+        if (!plannerAdapter().usesPrimaryDimensionStack()) {
+            return screenWorkspace()
+                    .map(MKStructureWorkspace::dimensions)
+                    .orElseGet(MKWorkspaceDimensions::defaultDimensions);
+        }
         MKWorkspaceVerticalStackSettings primaryStack = primaryDimensionStackSettings();
         return new MKWorkspaceDimensions(
                 primaryStack.width(),
@@ -1199,6 +1208,12 @@ public class WorkspaceDraftSession {
     }
 
     public int[] verticalAccessFootprint() {
+        if (!plannerAdapter().usesPrimaryDimensionStack()) {
+            MKWorkspaceDimensions dimensions = screenWorkspace()
+                    .map(MKStructureWorkspace::dimensions)
+                    .orElseGet(MKWorkspaceDimensions::defaultDimensions);
+            return new int[]{dimensions.roomWidth(), dimensions.roomLength()};
+        }
         MKWorkspaceVerticalStackSettings settings = primaryDimensionStackSettings();
         return new int[]{settings.width(), settings.length()};
     }
@@ -1340,10 +1355,7 @@ public class WorkspaceDraftSession {
     }
 
     private int maxRoomHeightForFamilyNormalization(Optional<String> verticalStackId) {
-        if (verticalStackId.isEmpty()) {
-            return primaryDimensionStackSettings().height();
-        }
-        return verticalStackSettings(verticalStackId.get()).height();
+        return plannerAdapter().maxRoomHeightForFamilyNormalization(this, verticalStackId);
     }
 
     private MKWorkspaceVerticalAccessSpec verticalAccessSpecForFamilyNormalization(Optional<String> verticalStackId) {
@@ -1522,14 +1534,31 @@ public class WorkspaceDraftSession {
     }
 
     MKWorkspaceRoomFamilyDefinition defaultFamilyForTopologySlot(MKWorkspaceSlotSchema slot) {
-        MKWorkspaceVerticalStackSettings settings = verticalStackIdForTopologySlot(slot.slotId())
+        Optional<String> verticalStackId = verticalStackIdForTopologySlot(slot.slotId());
+        MKWorkspaceVerticalStackSettings settings = verticalStackId
                 .map(this::verticalStackSettings)
-                .orElseGet(this::primaryDimensionStackSettings);
+                .orElseGet(() -> {
+                    if (plannerAdapter().usesPrimaryDimensionStack()) {
+                        return primaryDimensionStackSettings();
+                    }
+                    MKWorkspaceDimensions dimensions = screenWorkspace()
+                            .map(MKStructureWorkspace::dimensions)
+                            .orElseGet(MKWorkspaceDimensions::defaultDimensions);
+                    return new MKWorkspaceVerticalStackSettings(
+                            "__workspace_default_family_dimensions",
+                            0,
+                            0,
+                            plannerAdapter().maxRoomHeightForFamilyNormalization(this, Optional.empty()),
+                            dimensions.roomWidth(),
+                            dimensions.roomLength(),
+                            false,
+                            false);
+                });
         MKWorkspaceTopologySlotMetadata slotMetadata = topologySlotMetadata(slot);
         boolean supportsVerticalAccess = topologySlotSupportsVerticalAccess(slot);
-        String verticalAccessGroupId = verticalStackIdForTopologySlot(slot.slotId()).orElse(slot.slotId());
+        String verticalAccessGroupId = verticalStackId.orElse(slot.slotId());
         List<MKFamilyHorizontalExitDefinition> exits =
-                verticalStackIdForTopologySlot(slot.slotId()).isPresent() ? List.of() : defaultHorizontalExitsForNewFamily();
+                verticalStackId.isPresent() ? List.of() : defaultHorizontalExitsForNewFamily();
         return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
                 nextUniqueFamilyBaseName(),
                 slotMetadata,

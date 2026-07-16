@@ -55,6 +55,7 @@ import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWalledKeepCourty
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWalledKeepPlannerSettings;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedPiece;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspaceVerticalStackDefinition;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspaceVerticalStackPlanner;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKTowerWorkspacePlanner;
@@ -4238,7 +4239,7 @@ class TowerWorkspaceV2Test {
                 workspace.pieces()
         );
 
-        List<String> errors = workspace.validate();
+        List<String> errors = MKWorkspacePlannerRegistry.shared().validate(workspace);
         assertTrue(errors.stream().anyMatch(error -> error.contains("main floor count must be one of")));
         assertTrue(errors.stream().anyMatch(error -> error.contains("basement floor count must be one of")));
     }

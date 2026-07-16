@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructure
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceGeometry;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceRelayoutImpact;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
@@ -648,8 +649,7 @@ public class MKWorkspacePieceRelayoutService {
     }
 
     private boolean isExactBoundsScaffold(MKPlannedPiece piece) {
-        String towerPieceKind = piece.tags().get("tower_piece_kind");
-        return "embedded_stair".equals(towerPieceKind) || "floor_link_insert".equals(towerPieceKind);
+        return MKWorkspacePieceGeometry.isExactBoundsScaffold(piece.tags());
     }
 
     private List<ConnectorSignature> connectorSignatures(MKWorkspacePieceDefinition piece) {

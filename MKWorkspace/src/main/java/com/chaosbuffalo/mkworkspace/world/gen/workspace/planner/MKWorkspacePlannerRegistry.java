@@ -75,8 +75,8 @@ public class MKWorkspacePlannerRegistry {
     }
 
     public List<String> validate(MKStructureWorkspace workspace) {
-        ArrayList<String> errors = new ArrayList<>(workspace.validate());
         MKWorkspacePlanner planner = plannerFor(workspace);
+        ArrayList<String> errors = new ArrayList<>(workspace.validate());
         errors.addAll(planner.validateTopology(workspace));
         errors.addAll(validateCanonicalCatalog(workspace, planner));
         return List.copyOf(errors);

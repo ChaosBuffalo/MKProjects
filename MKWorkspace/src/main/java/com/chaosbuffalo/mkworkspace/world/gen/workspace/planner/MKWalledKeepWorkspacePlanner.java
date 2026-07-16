@@ -526,7 +526,9 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
 
     @Override
     public List<String> validateTopology(MKStructureWorkspace workspace) {
-        return keepSettings(workspace).courtyardSettings().validate();
+        ArrayList<String> errors = new ArrayList<>(MKWorkspaceVerticalStackTopologyValidation.validate(workspace));
+        errors.addAll(keepSettings(workspace).courtyardSettings().validate());
+        return List.copyOf(errors);
     }
 
     @Override

@@ -162,6 +162,11 @@ public record MKWorkspaceTopologyProfile(
         return new MKWorkspaceTopologyProfile(plannerId, List.copyOf(byScope.values()), terrainAdjustment);
     }
 
+    public MKWorkspaceTopologyProfile withoutPlannerSettingsEntry(ResourceLocation settingsPlannerId, String scopeId) {
+        return withPlannerSettingsEntry(new MKWorkspacePlannerSettingsEntry(settingsPlannerId, scopeId,
+                new net.minecraft.nbt.CompoundTag()));
+    }
+
     public List<MKWorkspacePlannerScopeSettings> plannerScopeSettings() {
         return plannerSettings.stream()
                 .filter(entry -> entry.paletteOverride().isPresent())

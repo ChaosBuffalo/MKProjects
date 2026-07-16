@@ -22,7 +22,6 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyProfile;
-import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceVerticalStackFloorCounts;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import net.minecraft.core.Direction;
@@ -204,6 +203,11 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
         pieces.addAll(createLinearRunPieces(workspace));
         pieces.addAll(floorTopologyPlanner.createFloorTopologyPieces(workspace, workspace.familyDefinitions()));
         return List.copyOf(pieces);
+    }
+
+    @Override
+    public List<String> validateTopology(MKStructureWorkspace workspace) {
+        return MKWorkspaceVerticalStackTopologyValidation.validate(workspace);
     }
 
     private MKWorkspaceVerticalStackDefinition verticalStackDefinition(MKStructureWorkspace workspace) {

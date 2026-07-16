@@ -338,21 +338,6 @@ public class MKStructureWorkspace {
 
     public List<String> validate() {
         List<String> errors = new ArrayList<>(verticalAccessSpec.validate());
-        for (MKWorkspaceVerticalStackSettings settings : topologyProfile.verticalStackSettings()) {
-            errors.addAll(MKWorkspaceVerticalStackFloorCounts.validate(settings).stream()
-                    .map(error -> "vertical stack " + settings.stackId() + " " + error)
-                    .toList());
-        }
-        for (MKWorkspaceVerticalStackSettings settings : topologyProfile.verticalStackSettings()) {
-            MKWorkspaceVerticalAccessSpec stackSpec = new MKWorkspaceVerticalAccessSpec(
-                    settings.shaftSize(), settings.verticalAccessPlacement(), settings.stairConfig());
-            for (String error : stackSpec.validate()) {
-                errors.add("vertical stack " + settings.stackId() + " " + error);
-            }
-            for (String error : settings.foundationPolicy().validate("vertical stack " + settings.stackId())) {
-                errors.add(error);
-            }
-        }
         for (MKWorkspaceRoomFamilyDefinition familyDefinition : familyDefinitions) {
             Optional<Integer> familyMaxHeight = maxRoomHeightForFamily(familyDefinition);
             if (familyMaxHeight.isEmpty()) {

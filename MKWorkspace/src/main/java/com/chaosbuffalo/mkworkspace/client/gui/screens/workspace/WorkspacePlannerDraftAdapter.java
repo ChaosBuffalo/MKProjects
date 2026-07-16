@@ -14,12 +14,16 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.List;
 import java.util.Optional;
 
-interface WorkspacePlannerDraftAdapter {
+public interface WorkspacePlannerDraftAdapter {
     ResourceLocation plannerId();
 
     MKWorkspaceTopologyProfile profileForSwitch(WorkspaceDraftSession session);
 
     String primaryDimensionStackId();
+
+    default boolean usesPrimaryDimensionStack() {
+        return true;
+    }
 
     void applyDefaultHeight(WorkspaceDraftSession session, int requestedHeight);
 
@@ -42,6 +46,19 @@ interface WorkspacePlannerDraftAdapter {
     default MKWorkspaceVerticalStackSettings defaultVerticalStackSettings(WorkspaceDraftSession session,
                                                                           String stackId) {
         return session.draft().topologyProfile.verticalStackSettingsOrDefault(stackId);
+    }
+
+    default int maxRoomHeightForFamilyNormalization(WorkspaceDraftSession session,
+                                                    Optional<String> verticalStackId) {
+        if (verticalStackId.isPresent()) {
+            return session.verticalStackSettings(verticalStackId.get()).height();
+        }
+        if (usesPrimaryDimensionStack()) {
+            return session.verticalStackSettings(primaryDimensionStackId()).height();
+        }
+        return session.screenWorkspace()
+                .map(workspace -> workspace.dimensions().roomHeight())
+                .orElseGet(() -> MKWorkspaceDimensions.defaultDimensions().roomHeight());
     }
 
     default void syncDraftVerticalAccessFromStack(WorkspaceDraftSession session,

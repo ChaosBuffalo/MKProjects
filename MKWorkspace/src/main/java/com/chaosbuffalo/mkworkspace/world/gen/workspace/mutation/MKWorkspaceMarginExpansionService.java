@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceGeometry;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedConnector;
@@ -594,13 +595,11 @@ public class MKWorkspaceMarginExpansionService {
     }
 
     private boolean isEmptyScaffold(MKPlannedPiece piece) {
-        return "embedded_stair".equals(piece.tags().get("tower_piece_kind")) ||
-                "floor_link_insert".equals(piece.tags().get("tower_piece_kind"));
+        return MKWorkspacePieceGeometry.isExactBoundsScaffold(piece.tags());
     }
 
     private boolean isEmptyScaffold(MKWorkspacePieceDefinition piece) {
-        return "embedded_stair".equals(piece.tags().get("tower_piece_kind")) ||
-                "floor_link_insert".equals(piece.tags().get("tower_piece_kind"));
+        return MKWorkspacePieceGeometry.isExactBoundsScaffold(piece);
     }
 
     private int getTopVoidMargin(MKPlannedPiece piece) {

@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceGeometry;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVoidMarginTags;
@@ -54,6 +55,11 @@ public class MKWorkspaceScaffoldBuilder {
     private static final String CONTENT_CONNECTOR_EDGE_TAG = "workspace_content_connector_edge";
     private static final String CONTENT_WALKWAY_CONTINUATION_LENGTH_TAG =
             "workspace_content_walkway_continuation_length";
+    private static final String FLAT_PLATFORM_KIND_TAG = "workspace_flat_platform_kind";
+    private static final String FLAT_PLATFORM_CORNER_TAG = "workspace_flat_platform_corner";
+    private static final String FLAT_PLATFORM_CENTER_KIND = "center";
+    private static final String FLAT_PLATFORM_SPOKE_KIND = "spoke";
+    private static final String FLAT_PLATFORM_CORNER_CHAMFER_KIND = "corner_chamfer";
     private static final String COURTYARD_PATH_KIND = "courtyard_path";
     private static final String LINEAR_RUN_PIECE_KIND = "linear_run";
     private static final String FLOOR_PLAN_LINEAR_RUN_PIECE_KIND = "floor_plan_linear_run";
@@ -724,15 +730,15 @@ public class MKWorkspaceScaffoldBuilder {
     }
 
     private boolean isEmptyScaffold(MKPlannedPiece piece) {
-        return "embedded_stair".equals(piece.tags().get("tower_piece_kind"));
+        return MKWorkspacePieceGeometry.isEmptyScaffold(piece.tags());
     }
 
     private boolean isExactBoundsScaffold(MKPlannedPiece piece) {
-        return isEmptyScaffold(piece) || isFloorLinkInsert(piece);
+        return MKWorkspacePieceGeometry.isExactBoundsScaffold(piece.tags()) || isFlatPlatform(piece);
     }
 
     private boolean isFloorLinkInsert(MKPlannedPiece piece) {
-        return "floor_link_insert".equals(piece.tags().get("tower_piece_kind"));
+        return MKWorkspacePieceGeometry.isFloorLinkInsert(piece.tags());
     }
 
     private int getShellMargin(MKPlannedPiece piece, int shellMargin) {
@@ -779,6 +785,11 @@ public class MKWorkspaceScaffoldBuilder {
                                        MKPlannedPiece piece, int shellMargin, int verticalShellThickness,
                                        int geometryInteriorHeight, BlockState floorState, BlockState wallState,
                                        BlockState ceilingState) {
+        if (isFlatPlatform(piece)) {
+            placeFlatPlatformTemplate(level, geometryBounds, geometryOrigin, piece, shellMargin,
+                    verticalShellThickness, floorState);
+            return;
+        }
         if (isCourtyardContent(piece)) {
             placeCourtyardContentTemplate(level, geometryBounds, geometryOrigin, piece, shellMargin,
                     verticalShellThickness, floorState);
@@ -813,6 +824,68 @@ public class MKWorkspaceScaffoldBuilder {
                         geometryInteriorHeight, floorState);
             }
         }
+    }
+
+    private boolean isFlatPlatform(MKPlannedPiece piece) {
+        return !piece.tags().getOrDefault(FLAT_PLATFORM_KIND_TAG, "").isBlank();
+    }
+
+    private void placeFlatPlatformTemplate(ServerLevel level, BoundingBox geometryBounds, BlockPos geometryOrigin,
+                                           MKPlannedPiece piece, int shellMargin, int verticalShellThickness,
+                                           BlockState floorState) {
+        BlockState structureVoid = Blocks.STRUCTURE_VOID.defaultBlockState();
+        for (int x = geometryBounds.minX(); x <= geometryBounds.maxX(); x++) {
+            for (int y = geometryBounds.minY(); y <= geometryBounds.maxY(); y++) {
+                for (int z = geometryBounds.minZ(); z <= geometryBounds.maxZ(); z++) {
+                    level.setBlock(new BlockPos(x, y, z), structureVoid, Block.UPDATE_ALL);
+                }
+            }
+        }
+        int floorY = geometryOrigin.getY() + Math.max(0, verticalShellThickness - 1);
+        String kind = piece.tags().getOrDefault(FLAT_PLATFORM_KIND_TAG, "");
+        if (FLAT_PLATFORM_CENTER_KIND.equals(kind) || FLAT_PLATFORM_SPOKE_KIND.equals(kind)) {
+            fillFlatPlatformRect(level, geometryOrigin, piece, shellMargin, floorY, floorState);
+            return;
+        }
+        if (FLAT_PLATFORM_CORNER_CHAMFER_KIND.equals(kind)) {
+            fillFlatPlatformChamfer(level, geometryOrigin, piece, shellMargin, floorY, floorState);
+        }
+    }
+
+    private void fillFlatPlatformRect(ServerLevel level, BlockPos geometryOrigin, MKPlannedPiece piece,
+                                      int shellMargin, int floorY, BlockState floorState) {
+        int minX = geometryOrigin.getX() + shellMargin;
+        int minZ = geometryOrigin.getZ() + shellMargin;
+        for (int x = 0; x < piece.interiorWidth(); x++) {
+            for (int z = 0; z < piece.interiorLength(); z++) {
+                level.setBlock(new BlockPos(minX + x, floorY, minZ + z), floorState, Block.UPDATE_ALL);
+            }
+        }
+    }
+
+    private void fillFlatPlatformChamfer(ServerLevel level, BlockPos geometryOrigin, MKPlannedPiece piece,
+                                         int shellMargin, int floorY, BlockState floorState) {
+        int minX = geometryOrigin.getX() + shellMargin;
+        int minZ = geometryOrigin.getZ() + shellMargin;
+        String corner = piece.tags().getOrDefault(FLAT_PLATFORM_CORNER_TAG, "north_west");
+        for (int x = 0; x < piece.interiorWidth(); x++) {
+            for (int z = 0; z < piece.interiorLength(); z++) {
+                if (isInsideFlatPlatformChamfer(corner, x, z, piece.interiorWidth(), piece.interiorLength())) {
+                    level.setBlock(new BlockPos(minX + x, floorY, minZ + z), floorState, Block.UPDATE_ALL);
+                }
+            }
+        }
+    }
+
+    private boolean isInsideFlatPlatformChamfer(String corner, int x, int z, int width, int length) {
+        int maxX = width - 1;
+        int maxZ = length - 1;
+        return switch (corner) {
+            case "north_east" -> z >= x;
+            case "south_east" -> x + z <= maxX;
+            case "south_west" -> x >= z;
+            default -> x + z >= maxX;
+        };
     }
 
     private boolean isCourtyardContent(MKPlannedPiece piece) {
