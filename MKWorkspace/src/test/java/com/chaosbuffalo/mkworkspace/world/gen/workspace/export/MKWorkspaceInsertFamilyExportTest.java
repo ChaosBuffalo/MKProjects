@@ -1,9 +1,11 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.export;
 
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKJigsawPieceRole;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKStructureWorkspaceImportService;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
@@ -12,6 +14,8 @@ import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.junit.jupiter.api.Test;
@@ -84,6 +88,31 @@ class MKWorkspaceInsertFamilyExportTest {
         assertEquals(List.of(insertFamily), imported.insertFamilies());
     }
 
+    @Test
+    void connectorJigsawFinalStateUsesAuthoredTemplateValueWhenPresent() {
+        MKWorkspaceConnectorDefinition connector = connectorWithFinalState("minecraft:air");
+        CompoundTag authoredJigsaw = new CompoundTag();
+        authoredJigsaw.putString("final_state", "minecraft:lava[level=0]");
+
+        assertEquals("minecraft:lava[level=0]", MKWorkspaceExportArchiveWriter
+                .readAuthoredFinalState(authoredJigsaw)
+                .orElseThrow());
+        assertEquals("minecraft:lava[level=0]", MKWorkspaceExportArchiveWriter
+                .resolveConnectorFinalState(connector, authoredJigsaw.getString("final_state")));
+        assertEquals("minecraft:air", MKWorkspaceExportArchiveWriter.resolveConnectorFinalState(connector, null));
+        assertEquals("minecraft:air", MKWorkspaceExportArchiveWriter.resolveConnectorFinalState(connector, ""));
+    }
+
+    @Test
+    void missingAuthoredJigsawFinalStateIsIgnored() {
+        assertTrue(MKWorkspaceExportArchiveWriter.readAuthoredFinalState(null).isEmpty());
+        assertTrue(MKWorkspaceExportArchiveWriter.readAuthoredFinalState(new CompoundTag()).isEmpty());
+
+        CompoundTag blankJigsaw = new CompoundTag();
+        blankJigsaw.putString("final_state", "");
+        assertTrue(MKWorkspaceExportArchiveWriter.readAuthoredFinalState(blankJigsaw).isEmpty());
+    }
+
     private static MKStructureWorkspace workspaceWithInsertFamily(MKStructureWorkspace draft,
                                                                   MKWorkspaceInsertFamilyDefinition insertFamily,
                                                                   List<MKWorkspacePieceDefinition> pieces) {
@@ -150,6 +179,25 @@ class MKWorkspaceInsertFamilyExportTest {
                 List.of(),
                 List.of(),
                 tags
+        );
+    }
+
+    private static MKWorkspaceConnectorDefinition connectorWithFinalState(String finalState) {
+        return new MKWorkspaceConnectorDefinition(
+                MKConnectorRole.BRANCH,
+                Direction.NORTH,
+                BlockPos.ZERO,
+                1,
+                1,
+                0,
+                0,
+                ResourceLocation.parse("mk:test_name"),
+                ResourceLocation.parse("mk:test_target"),
+                ResourceLocation.parse("minecraft:empty"),
+                ResourceLocation.parse("minecraft:empty"),
+                "north_up",
+                finalState,
+                "aligned"
         );
     }
 }

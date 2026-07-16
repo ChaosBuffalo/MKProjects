@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKFloorCon
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKFloorMaskVariantExporter;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
@@ -45,6 +46,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -240,18 +242,23 @@ public class MKWorkspaceExportArchiveWriter {
         int targetLength = rotation == Rotation.CLOCKWISE_90 || rotation == Rotation.COUNTERCLOCKWISE_90 ?
                 sourceWidth : sourceLength;
         Map<BlockPos, ExportBlock> blocksByPos = new LinkedHashMap<>();
+        Map<BlockPos, String> authoredFinalStatesByPos = new LinkedHashMap<>();
         List<BlockState> sourcePalette = readPalette(blockGetter, sourceTag);
         ListTag sourceBlocks = sourceTag.getList("blocks", Tag.TAG_COMPOUND);
         for (int i = 0; i < sourceBlocks.size(); i++) {
             CompoundTag sourceBlock = sourceBlocks.getCompound(i);
             BlockPos sourcePos = readBlockPos(sourceBlock.getList("pos", Tag.TAG_INT));
             BlockState state = sourcePalette.get(sourceBlock.getInt("state")).rotate(rotation);
-            if (state.is(Blocks.JIGSAW) && !preserveRawInsertJigsaw(sourceBlock, sourcePiece)) {
-                continue;
-            }
             BlockPos targetPos = rotatePos(sourcePos, sourceWidth, sourceLength, rotation);
             CompoundTag blockNbt = sourceBlock.contains("nbt", Tag.TAG_COMPOUND) ?
                     sourceBlock.getCompound("nbt").copy() : null;
+            if (state.is(Blocks.JIGSAW)) {
+                readAuthoredFinalState(blockNbt).ifPresent(finalState ->
+                        authoredFinalStatesByPos.put(targetPos, finalState));
+                if (!preserveRawInsertJigsaw(sourceBlock, sourcePiece)) {
+                    continue;
+                }
+            }
             if (blockNbt != null) {
                 blockNbt.putInt("x", targetPos.getX());
                 blockNbt.putInt("y", targetPos.getY());
@@ -260,7 +267,7 @@ public class MKWorkspaceExportArchiveWriter {
             blocksByPos.put(targetPos, new ExportBlock(targetPos, state, blockNbt));
         }
         for (var connector : targetPiece.connectors()) {
-            ExportBlock block = connectorJigsawBlock(connector);
+            ExportBlock block = connectorJigsawBlock(connector, authoredFinalStatesByPos.get(connector.relativePos()));
             blocksByPos.put(block.pos(), block);
         }
         patchClosedFloorConnectors(blockGetter, targetPiece, blocksByPos);
@@ -279,6 +286,7 @@ public class MKWorkspaceExportArchiveWriter {
                                          MKWorkspacePieceDefinition piece) {
         List<BlockState> palette = readPalette(blockGetter, tag);
         LinkedHashMap<BlockPos, ExportBlock> blocksByPos = new LinkedHashMap<>();
+        Map<BlockPos, String> authoredFinalStatesByPos = new LinkedHashMap<>();
         ListTag blocks = tag.getList("blocks", Tag.TAG_COMPOUND);
         for (int i = 0; i < blocks.size(); i++) {
             CompoundTag block = blocks.getCompound(i);
@@ -286,6 +294,8 @@ public class MKWorkspaceExportArchiveWriter {
             BlockState state = palette.get(block.getInt("state"));
             CompoundTag blockNbt = block.contains("nbt", Tag.TAG_COMPOUND) ? block.getCompound("nbt").copy() : null;
             if (state.is(Blocks.JIGSAW)) {
+                readAuthoredFinalState(blockNbt).ifPresent(finalState ->
+                        authoredFinalStatesByPos.put(pos, finalState));
                 if (preserveRawInsertJigsaw(block, piece)) {
                     blocksByPos.put(pos, new ExportBlock(pos, state, blockNbt));
                 }
@@ -294,7 +304,7 @@ public class MKWorkspaceExportArchiveWriter {
             blocksByPos.put(pos, new ExportBlock(pos, state, blockNbt));
         }
         for (var connector : piece.connectors()) {
-            ExportBlock block = connectorJigsawBlock(connector);
+            ExportBlock block = connectorJigsawBlock(connector, authoredFinalStatesByPos.get(connector.relativePos()));
             blocksByPos.put(block.pos(), block);
         }
         tag.remove("palettes");
@@ -320,8 +330,21 @@ public class MKWorkspaceExportArchiveWriter {
         }
     }
 
-    private ExportBlock connectorJigsawBlock(
-            com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition connector) {
+    static Optional<String> readAuthoredFinalState(CompoundTag blockNbt) {
+        if (blockNbt == null || !blockNbt.contains("final_state", Tag.TAG_STRING)) {
+            return Optional.empty();
+        }
+        String finalState = blockNbt.getString("final_state");
+        return finalState.isBlank() ? Optional.empty() : Optional.of(finalState);
+    }
+
+    static String resolveConnectorFinalState(MKWorkspaceConnectorDefinition connector, String authoredFinalState) {
+        return authoredFinalState == null || authoredFinalState.isBlank() ?
+                connector.jigsawFinalState() :
+                authoredFinalState;
+    }
+
+    private ExportBlock connectorJigsawBlock(MKWorkspaceConnectorDefinition connector, String authoredFinalState) {
         BlockPos pos = connector.relativePos();
         BlockState state = Blocks.JIGSAW.defaultBlockState()
                 .setValue(JigsawBlock.ORIENTATION, getJigsawOrientation(connector));
@@ -330,7 +353,7 @@ public class MKWorkspaceExportArchiveWriter {
         jigsawNbt.putString("name", connector.jigsawName().toString());
         jigsawNbt.putString("target", connector.jigsawTarget().toString());
         jigsawNbt.putString("pool", connector.targetPool().toString());
-        jigsawNbt.putString("final_state", connector.jigsawFinalState());
+        jigsawNbt.putString("final_state", resolveConnectorFinalState(connector, authoredFinalState));
         jigsawNbt.putString("joint", connector.jigsawJoint());
         jigsawNbt.putInt("x", pos.getX());
         jigsawNbt.putInt("y", pos.getY());
@@ -496,8 +519,7 @@ public class MKWorkspaceExportArchiveWriter {
         return list;
     }
 
-    private FrontAndTop getJigsawOrientation(
-            com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition connector) {
+    private FrontAndTop getJigsawOrientation(MKWorkspaceConnectorDefinition connector) {
         if (!connector.jigsawOrientation().isBlank()) {
             for (FrontAndTop orientation : FrontAndTop.values()) {
                 if (orientation.getSerializedName().equals(connector.jigsawOrientation())) {
