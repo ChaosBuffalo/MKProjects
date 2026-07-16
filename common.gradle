@@ -165,6 +165,7 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mk_npc_version: mk_npc_version,
             mk_workspace_runtime_version: mk_workspace_runtime_version,
             mk_workspace_version: mk_workspace_version,
+            mk_workspace_extensions_version: mk_workspace_extensions_version,
             mk_ultra_version: mk_ultra_version
     ]
     if (project.hasProperty("extra_properties")) {

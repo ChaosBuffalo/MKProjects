@@ -47,6 +47,7 @@ import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasLookup;
 import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.JigsawReplacementProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -67,6 +68,8 @@ public class MKWorkspaceSamplePreviewService {
             ResourceLocation.fromNamespaceAndPath("mknpc", "walled_keep");
     private static final ResourceLocation TOWER_PLANNER_ID =
             ResourceLocation.fromNamespaceAndPath("mknpc", "tower");
+    private static final ResourceLocation HUB_SPOKE_PLANNER_ID =
+            ResourceLocation.fromNamespaceAndPath("mkworkspace_extensions", "hub_spoke");
     private static final int SAMPLE_GAP = 16;
     private static final int CLEAR_MARGIN = 2;
     private static final int RUNTIME_SPREAD_RESERVE = 128;
@@ -75,7 +78,7 @@ public class MKWorkspaceSamplePreviewService {
     private static final int SAMPLE_CLEAR_VERTICAL_MARGIN = 64;
     private static final int MAX_DEPTH = 24;
     private static final BlockIgnoreProcessor PREVIEW_PLACE_IGNORE = new BlockIgnoreProcessor(
-            List.of(Blocks.STRUCTURE_VOID, Blocks.JIGSAW, Blocks.STRUCTURE_BLOCK)
+            List.of(Blocks.STRUCTURE_VOID, Blocks.STRUCTURE_BLOCK)
     );
 
     public record MKWorkspaceSamplePreviewResult(
@@ -348,6 +351,7 @@ public class MKWorkspaceSamplePreviewService {
                 .setMirror(Mirror.NONE)
                 .setRotation(rotation)
                 .setLiquidSettings(LiquidSettings.IGNORE_WATERLOGGING);
+        settings.addProcessor(JigsawReplacementProcessor.INSTANCE);
         settings.addProcessor(PREVIEW_PLACE_IGNORE);
         template.placeInWorld(level, destinationOrigin, destinationOrigin, settings, random, Block.UPDATE_ALL);
     }
@@ -637,17 +641,19 @@ public class MKWorkspaceSamplePreviewService {
         private static MKDungeonLayoutSettings layoutSettings(MKStructureWorkspace workspace,
                                                               List<MKDungeonTopologyGroupRule> floorRules) {
             boolean walledKeep = WALLED_KEEP_PLANNER_ID.equals(workspace.topologyProfile().plannerId());
-            int maxBranchDepth = walledKeep ? 64 : Math.max(0, floorRules.stream()
+            boolean hubSpoke = HUB_SPOKE_PLANNER_ID.equals(workspace.topologyProfile().plannerId());
+            boolean flatSingleFloor = walledKeep || hubSpoke;
+            int maxBranchDepth = flatSingleFloor ? 64 : Math.max(0, floorRules.stream()
                     .mapToInt(MKDungeonTopologyGroupRule::maxBranchPiecesBeforeCap)
                     .max()
                     .orElse(0));
             return new MKDungeonLayoutSettings(
-                    walledKeep ? 1 : 3,
-                    walledKeep ? 1 : 3,
+                    flatSingleFloor ? 1 : 3,
+                    flatSingleFloor ? 1 : 3,
                     1,
-                    walledKeep ? 64 : 2,
+                    flatSingleFloor ? 64 : 2,
                     maxBranchDepth,
-                    walledKeep,
+                    flatSingleFloor,
                     MKVerticalProgressionMode.MIXED,
                     true,
                     false,

@@ -1,0 +1,33 @@
+plugins {
+    id 'idea'
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version "${mdg_version}"
+}
+
+
+version = "${minecraft_version}-${mk_workspace_extensions_version}"
+project.ext.mod_version = mk_workspace_extensions_version
+project.ext.dependentProjects = [
+        project(":MKWorkspaceRuntime"),
+        project(":MKWorkspace"),
+        project(":MKWidgets")
+]
+
+apply from: '../common.gradle'
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+sourceSets {
+    test {
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+    }
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
