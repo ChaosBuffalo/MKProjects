@@ -128,6 +128,14 @@ public class HubSpokePlanner implements MKWorkspacePlanner {
                                 "hub_spoke.center", MKWorkspaceSlotSchema.Repeat.FIXED),
                         new MKWorkspaceSlotSchema(SPOKE_SLOT, "hub_spoke.spokes", "spoke",
                                 "hub_spoke.spoke", MKWorkspaceSlotSchema.Repeat.DERIVED),
+                        new MKWorkspaceSlotSchema("hub_spoke.spoke.north", "hub_spoke.spokes", "spoke",
+                                "hub_spoke.spoke", MKWorkspaceSlotSchema.Repeat.DERIVED),
+                        new MKWorkspaceSlotSchema("hub_spoke.spoke.east", "hub_spoke.spokes", "spoke",
+                                "hub_spoke.spoke", MKWorkspaceSlotSchema.Repeat.DERIVED),
+                        new MKWorkspaceSlotSchema("hub_spoke.spoke.south", "hub_spoke.spokes", "spoke",
+                                "hub_spoke.spoke", MKWorkspaceSlotSchema.Repeat.DERIVED),
+                        new MKWorkspaceSlotSchema("hub_spoke.spoke.west", "hub_spoke.spokes", "spoke",
+                                "hub_spoke.spoke", MKWorkspaceSlotSchema.Repeat.DERIVED),
                         new MKWorkspaceSlotSchema(CORNER_SLOT, "hub_spoke.corners", "corner",
                                 "hub_spoke.corner", MKWorkspaceSlotSchema.Repeat.DERIVED),
                         new MKWorkspaceSlotSchema("hub_spoke.corner.north_west", "hub_spoke.corners", "corner",
@@ -315,6 +323,38 @@ public class HubSpokePlanner implements MKWorkspacePlanner {
 
     public static List<String> concreteSpokeSlots() {
         return SPOKES.stream().map(SpokeDefinition::slotId).toList();
+    }
+
+    public static String concreteSpokeSlot(Direction direction) {
+        return SPOKES.stream()
+                .filter(spoke -> spoke.outwardFacing() == direction)
+                .findFirst()
+                .map(SpokeDefinition::slotId)
+                .orElse(SPOKE_SLOT);
+    }
+
+    public static Optional<Direction> concreteSpokeDirection(String topologySlotId) {
+        return SPOKES.stream()
+                .filter(spoke -> spoke.slotId().equals(topologySlotId))
+                .findFirst()
+                .map(SpokeDefinition::outwardFacing);
+    }
+
+    public static List<String> sourceSpokeSlots(HubSpokePlannerSettings settings) {
+        LinkedHashMap<String, String> sourceSlotsByBaseName = new LinkedHashMap<>();
+        Map<Direction, HubSpokePlannerSettings.SpokeTemplate> assignments = settings.templateAssignments();
+        for (SpokeDefinition spoke : SPOKES) {
+            HubSpokePlannerSettings.SpokeTemplate template = assignments.get(spoke.outwardFacing());
+            if (template != null) {
+                sourceSlotsByBaseName.putIfAbsent(template.baseName(), spoke.slotId());
+            }
+        }
+        return List.copyOf(sourceSlotsByBaseName.values());
+    }
+
+    public static boolean usesSharedSpokeSlot(HubSpokePlannerSettings settings) {
+        return settings.spokeTemplates().size() == 1 &&
+                HubSpokePlanner.SPOKE_BASE_NAME.equals(settings.spokeTemplates().getFirst().baseName());
     }
 
     public static List<String> concreteCornerSlots() {

@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
@@ -59,6 +60,7 @@ public class HubSpokeWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapt
         }
         session.draft().topologyProfile = HubSpokePlannerSettings.from(session.draft().topologyProfile)
                 .applyTo(session.draft().topologyProfile);
+        ensureSpokeFamiliesForActiveSlots(session);
         ensureCornerFamiliesForActiveSlots(session);
         session.draft().linearRunFamilies = session.draft().linearRunFamilies.stream()
                 .filter(linearRun -> !linearRun.topologySlotId().startsWith("hub_spoke."))
@@ -68,6 +70,12 @@ public class HubSpokeWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapt
     @Override
     public boolean isActiveTopologySlot(WorkspaceDraftSession session, String topologySlotId) {
         HubSpokePlannerSettings settings = HubSpokePlannerSettings.from(session.draft().topologyProfile);
+        if (HubSpokePlanner.SPOKE_SLOT.equals(topologySlotId)) {
+            return HubSpokePlanner.usesSharedSpokeSlot(settings);
+        }
+        if (HubSpokePlanner.concreteSpokeSlots().contains(topologySlotId)) {
+            return HubSpokePlanner.sourceSpokeSlots(settings).contains(topologySlotId);
+        }
         if (HubSpokePlanner.CORNER_SLOT.equals(topologySlotId)) {
             return settings.anySharedCorner();
         }
@@ -85,6 +93,10 @@ public class HubSpokeWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapt
     @Override
     public List<String> templateBaseNamesForFamily(WorkspaceDraftSession session,
                                                    MKWorkspaceRoomFamilyDefinition family) {
+        if (HubSpokePlanner.SPOKE_SLOT.equals(family.topologySlotId()) &&
+                HubSpokePlanner.SPOKE_BASE_NAME.equals(family.baseName())) {
+            return List.of(family.baseName(), HubSpokePlanner.SPOKE_BASE_NAME + "_north");
+        }
         if (HubSpokePlanner.CORNER_SLOT.equals(family.topologySlotId()) &&
                 HubSpokePlanner.CORNER_BASE_NAME.equals(family.baseName())) {
             return List.of(family.baseName(), HubSpokePlanner.CORNER_BASE_NAME + "_north_west");
@@ -95,6 +107,11 @@ public class HubSpokeWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapt
     @Override
     public Optional<MKWorkspaceRoomFamilyDefinition> sharedFamilySource(WorkspaceDraftSession session,
                                                                         String topologySlotId) {
+        if (HubSpokePlanner.concreteSpokeSlots().contains(topologySlotId)) {
+            return session.draft().familyDefinitions.stream()
+                    .filter(family -> HubSpokePlanner.SPOKE_SLOT.equals(family.topologySlotId()))
+                    .findFirst();
+        }
         if (!HubSpokePlanner.concreteCornerSlots().contains(topologySlotId)) {
             return Optional.empty();
         }
@@ -127,6 +144,53 @@ public class HubSpokeWorkspaceDraftAdapter implements WorkspacePlannerDraftAdapt
                 family.foundationPolicyOverride(),
                 family.paletteOverride()
         );
+    }
+
+    private void ensureSpokeFamiliesForActiveSlots(WorkspaceDraftSession session) {
+        HubSpokePlannerSettings settings = HubSpokePlannerSettings.from(session.draft().topologyProfile);
+        if (HubSpokePlanner.usesSharedSpokeSlot(settings)) {
+            return;
+        }
+        ArrayList<MKWorkspaceRoomFamilyDefinition> updated = new ArrayList<>(session.draft().familyDefinitions);
+        for (String slot : HubSpokePlanner.sourceSpokeSlots(settings)) {
+            HubSpokePlanner.concreteSpokeDirection(slot)
+                    .flatMap(settings::templateFor)
+                    .ifPresent(template -> ensureSpokeFamily(updated, slot, template));
+        }
+        session.draft().familyDefinitions = List.copyOf(updated);
+    }
+
+    private void ensureSpokeFamily(List<MKWorkspaceRoomFamilyDefinition> families, String topologySlotId,
+                                   HubSpokePlannerSettings.SpokeTemplate template) {
+        if (families.stream().anyMatch(family -> topologySlotId.equals(family.topologySlotId()))) {
+            return;
+        }
+        Direction direction = HubSpokePlanner.concreteSpokeDirection(topologySlotId).orElse(Direction.NORTH);
+        MKWorkspaceRoomFamilyDefinition shared = families.stream()
+                .filter(family -> HubSpokePlanner.SPOKE_SLOT.equals(family.topologySlotId()))
+                .findFirst()
+                .orElseGet(() -> HubSpokePlanner.defaultRoomFamilyDefinitions(MKWorkspaceDimensions.defaultDimensions())
+                        .stream()
+                        .filter(family -> HubSpokePlanner.SPOKE_SLOT.equals(family.topologySlotId()))
+                        .findFirst()
+                        .orElseThrow());
+        int width = direction.getAxis() == Direction.Axis.X ? template.length() : shared.roomWidth();
+        int length = direction.getAxis() == Direction.Axis.X ? shared.roomWidth() : template.length();
+        families.add(MKWorkspaceRoomFamilyDefinition.forTopologySlot(
+                template.pieceName(direction),
+                MKWorkspaceTopologySlotMetadata.explicit(topologySlotId, "spoke", "room", false),
+                shared.verticalAccessGroupId(),
+                shared.supportsVerticalAccess(),
+                width,
+                length,
+                template.height(),
+                shared.horizontalExtrusionMode(),
+                shared.horizontalExits(),
+                shared.topVoidMargin(),
+                shared.bottomVoidMargin(),
+                shared.foundationPolicyOverride(),
+                shared.paletteOverride()
+        ));
     }
 
     private void ensureCornerFamiliesForActiveSlots(WorkspaceDraftSession session) {

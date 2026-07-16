@@ -68,6 +68,30 @@ class HubSpokePlannerTest {
     }
 
     @Test
+    void topologySchemaExposesSharedAndConcreteSpokeSlots() {
+        List<String> slots = planner.schema().slots().stream()
+                .map(slot -> slot.slotId())
+                .toList();
+
+        assertTrue(slots.contains(HubSpokePlanner.SPOKE_SLOT));
+        assertTrue(slots.containsAll(HubSpokePlanner.concreteSpokeSlots()));
+    }
+
+    @Test
+    void customSpokeTemplatesExposeOnlySourceSpokeSlots() {
+        HubSpokePlannerSettings settings = new HubSpokePlannerSettings(List.of(
+                new HubSpokePlannerSettings.SpokeTemplate("fire_shrine_tower", "Tower", 15, 30,
+                        List.of(Direction.NORTH, Direction.SOUTH)),
+                new HubSpokePlannerSettings.SpokeTemplate("fire_shrine_platform", "Platform", 15, 30,
+                        List.of(Direction.EAST, Direction.WEST))
+        ));
+
+        assertFalse(HubSpokePlanner.usesSharedSpokeSlot(settings));
+        assertEquals(List.of("hub_spoke.spoke.north", "hub_spoke.spoke.east"),
+                HubSpokePlanner.sourceSpokeSlots(settings));
+    }
+
+    @Test
     void spokeTemplatesCanSplitAuthoringSourcesByDirectionMask() {
         HubSpokePlannerSettings settings = new HubSpokePlannerSettings(List.of(
                 new HubSpokePlannerSettings.SpokeTemplate("hub_spoke_spoke_ns", "North South", 13, 5,

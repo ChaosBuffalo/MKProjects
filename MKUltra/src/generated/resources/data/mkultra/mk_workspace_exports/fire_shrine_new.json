@@ -2671,6 +2671,36 @@
         "supports_vertical_access": false
       },
       {
+        "base_name": "fire_shrine_tower_north",
+        "foundation_policy": {},
+        "horizontal_extrusion_mode": "no_extrusion",
+        "room_height": 30,
+        "room_length": 15,
+        "room_width": 11,
+        "slot_metadata": {
+          "piece_kind": "room",
+          "role_kind": "spoke",
+          "terminal": false,
+          "topology_slot_id": "hub_spoke.spoke.north"
+        },
+        "supports_vertical_access": false
+      },
+      {
+        "base_name": "fire_shrine_platform_east",
+        "foundation_policy": {},
+        "horizontal_extrusion_mode": "no_extrusion",
+        "room_height": 30,
+        "room_length": 11,
+        "room_width": 15,
+        "slot_metadata": {
+          "piece_kind": "room",
+          "role_kind": "spoke",
+          "terminal": false,
+          "topology_slot_id": "hub_spoke.spoke.east"
+        },
+        "supports_vertical_access": false
+      },
+      {
         "base_name": "hub_spoke_corner",
         "foundation_policy": {},
         "horizontal_extrusion_mode": "no_extrusion",
@@ -2889,6 +2919,6 @@
       "role_id": "hub_spoke.corner.shared"
     }
   ],
-  "updated_at": 1784207497793,
+  "updated_at": 1784209440985,
   "workspace_id": "86e5b1e4-53cc-346f-8d51-906a23f5b322"
 }
