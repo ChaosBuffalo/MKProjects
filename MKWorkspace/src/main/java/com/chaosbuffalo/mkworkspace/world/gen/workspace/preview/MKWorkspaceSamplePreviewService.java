@@ -178,9 +178,16 @@ public class MKWorkspaceSamplePreviewService {
             plan.pieces().forEach(piece -> piece.move(0, yOffset, 0));
             finalBounds = unionPieceBounds(plan.pieces());
         }
+        BoundingBox previewFootprintBounds = previewFootprintBounds(level, sampleCenter, finalBounds,
+                runtime.maxDistanceFromCenter());
+        BlockPos anchorBias = MKWorkspaceSamplePreviewPlacement.anchorBiasDelta(finalBounds, previewFootprintBounds,
+                workspace.anchor());
+        if (!anchorBias.equals(BlockPos.ZERO)) {
+            plan.pieces().forEach(piece -> piece.move(anchorBias.getX(), 0, anchorBias.getZ()));
+            finalBounds = unionPieceBounds(plan.pieces());
+        }
         BoundingBox placementBounds = expand(finalBounds, CLEAR_MARGIN);
-        BoundingBox previewClearBounds = expand(previewFootprintBounds(level, sampleCenter, finalBounds,
-                runtime.maxDistanceFromCenter()), CLEAR_MARGIN);
+        BoundingBox previewClearBounds = expand(previewFootprintBounds, CLEAR_MARGIN);
         BoundingBox authoringBounds = authoringBounds(workspace);
         if (authoringBounds == null) {
             errors.add("workspace has no authoring bounds");
