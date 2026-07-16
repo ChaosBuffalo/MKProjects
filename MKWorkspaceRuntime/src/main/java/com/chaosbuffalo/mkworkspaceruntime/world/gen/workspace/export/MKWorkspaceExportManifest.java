@@ -1237,7 +1237,10 @@ public record MKWorkspaceExportManifest(
             ResourceLocation jigsawName,
             ResourceLocation jigsawTarget,
             ResourceLocation targetPool,
-            ResourceLocation incomingPool
+            ResourceLocation incomingPool,
+            String jigsawOrientation,
+            String jigsawFinalState,
+            String jigsawJoint
     ) {
         private static final ResourceLocation DEFAULT_EMPTY_POOL = ResourceLocation.parse("minecraft:empty");
 
@@ -1253,7 +1256,14 @@ public record MKWorkspaceExportManifest(
                 ResourceLocation.CODEC.fieldOf("jigsaw_target").forGetter(ExportConnector::jigsawTarget),
                 ResourceLocation.CODEC.fieldOf("target_pool").forGetter(ExportConnector::targetPool),
                 ResourceLocation.CODEC.optionalFieldOf("incoming_pool", DEFAULT_EMPTY_POOL)
-                        .forGetter(ExportConnector::incomingPool)
+                        .forGetter(ExportConnector::incomingPool),
+                Codec.STRING.optionalFieldOf("jigsaw_orientation", "")
+                        .forGetter(ExportConnector::jigsawOrientation),
+                Codec.STRING.optionalFieldOf("jigsaw_final_state",
+                                MKWorkspaceConnectorDefinition.DEFAULT_JIGSAW_FINAL_STATE)
+                        .forGetter(ExportConnector::jigsawFinalState),
+                Codec.STRING.optionalFieldOf("jigsaw_joint", MKWorkspaceConnectorDefinition.DEFAULT_JIGSAW_JOINT)
+                        .forGetter(ExportConnector::jigsawJoint)
         ).apply(instance, ExportConnector::new));
 
         public static ExportConnector from(MKWorkspaceConnectorDefinition connector) {
@@ -1268,7 +1278,10 @@ public record MKWorkspaceExportManifest(
                     connector.jigsawName(),
                     connector.jigsawTarget(),
                     connector.targetPool(),
-                    connector.incomingPool()
+                    connector.incomingPool(),
+                    connector.jigsawOrientation(),
+                    connector.jigsawFinalState(),
+                    connector.jigsawJoint()
             );
         }
     }

@@ -1,0 +1,2894 @@
+{
+  "created_at": 0,
+  "exported_at": "1970-01-01T00:00:00Z",
+  "namespace": "mkultra",
+  "pieces": [
+    {
+      "base_name": "fire_shrine_platform_contents",
+      "connectors": [
+        {
+          "facing": "down",
+          "incoming_pool": "mkultra:fire_shrine_new/insert_families/fire_shrine_platform_contents",
+          "jigsaw_final_state": "minecraft:red_nether_bricks",
+          "jigsaw_name": "mkultra:attach",
+          "jigsaw_orientation": "down_east",
+          "jigsaw_target": "mkultra:base",
+          "opening_height": 1,
+          "opening_width": 1,
+          "relative_pos": {
+            "x": 4,
+            "y": 0,
+            "z": 3
+          },
+          "role": "link_candidate",
+          "target_pool": "minecraft:empty"
+        }
+      ],
+      "effective_dimensions": {
+        "basement_height": 11,
+        "doorway_height": 2,
+        "doorway_width": 3,
+        "entrance_height": 11,
+        "room_height": 11,
+        "room_length": 9,
+        "room_width": 9,
+        "shaft_width": 3
+      },
+      "generated_stair_positions": [],
+      "marker_positions": [],
+      "piece_id": "f315ac9e-56a7-3a78-ad56-cf494e34a001",
+      "piece_name": "fire_shrine_gazebo",
+      "placement": {
+        "export_bounds": {
+          "max": {
+            "x": 128,
+            "y": 10,
+            "z": 16
+          },
+          "max_offset": {
+            "x": 128,
+            "y": 10,
+            "z": 16
+          },
+          "min": {
+            "x": 120,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 120,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 9,
+          "size_y": 11,
+          "size_z": 9
+        },
+        "preview_bounds": {
+          "max": {
+            "x": 128,
+            "y": 10,
+            "z": 16
+          },
+          "max_offset": {
+            "x": 128,
+            "y": 10,
+            "z": 16
+          },
+          "min": {
+            "x": 120,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 120,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 9,
+          "size_y": 11,
+          "size_z": 9
+        },
+        "sign_offset": {
+          "x": 117,
+          "y": 1,
+          "z": 12
+        },
+        "sign_pos": {
+          "x": 117,
+          "y": 1,
+          "z": 12
+        },
+        "structure_block_offset": {
+          "x": 118,
+          "y": 1,
+          "z": 12
+        },
+        "structure_block_pos": {
+          "x": 118,
+          "y": 1,
+          "z": 12
+        },
+        "world_origin": {
+          "x": 120,
+          "y": 0,
+          "z": 8
+        },
+        "world_origin_offset": {
+          "x": 120,
+          "y": 0,
+          "z": 8
+        }
+      },
+      "planner_id": "hub_spoke.insert.fire_shrine_gazebo",
+      "role_id": "hub_spoke.insert",
+      "structure_id": "mkultra:fire_shrine_new/fire_shrine_gazebo",
+      "tags": {
+        "runtime_allow_on_branch_path": "true",
+        "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "true",
+        "runtime_main_path_ending": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_start": "false",
+        "runtime_terminal": "true",
+        "runtime_top_cap_only": "false",
+        "runtime_topology_group": "hub_spoke",
+        "runtime_vertical_level_delta": "0",
+        "topology_role": "hub_spoke.insert",
+        "tower_piece_kind": "insert",
+        "workspace_base_name": "fire_shrine_platform_contents",
+        "workspace_ceiling_block": "minecraft:smooth_stone",
+        "workspace_floor_block": "minecraft:smooth_stone",
+        "workspace_insert_family_id": "fire_shrine_platform_contents",
+        "workspace_insert_family_kind": "courtyard_socket",
+        "workspace_piece_kind": "instance",
+        "workspace_planner_id": "hub_spoke.insert.fire_shrine_gazebo",
+        "workspace_topology_role_id": "hub_spoke.insert",
+        "workspace_topology_slot_id": "hub_spoke.insert.fire_shrine_platform_contents",
+        "workspace_variant_index": "1",
+        "workspace_wall_block": "minecraft:stone_bricks"
+      },
+      "variant_index": 1,
+      "workspace_piece_kind": "instance"
+    },
+    {
+      "base_name": "fire_shrine_platform_contents",
+      "connectors": [
+        {
+          "facing": "down",
+          "incoming_pool": "mkultra:fire_shrine_new/insert_families/fire_shrine_platform_contents",
+          "jigsaw_final_state": "minecraft:red_nether_bricks",
+          "jigsaw_name": "mkultra:attach",
+          "jigsaw_orientation": "down_east",
+          "jigsaw_target": "mkultra:base",
+          "opening_height": 1,
+          "opening_width": 1,
+          "relative_pos": {
+            "x": 4,
+            "y": 0,
+            "z": 3
+          },
+          "role": "link_candidate",
+          "target_pool": "minecraft:empty"
+        }
+      ],
+      "effective_dimensions": {
+        "basement_height": 11,
+        "doorway_height": 2,
+        "doorway_width": 3,
+        "entrance_height": 11,
+        "room_height": 11,
+        "room_length": 9,
+        "room_width": 9,
+        "shaft_width": 3
+      },
+      "generated_stair_positions": [],
+      "marker_positions": [],
+      "piece_id": "848007eb-d343-3284-913c-cc1d0c1cb56f",
+      "piece_name": "fire_shrine_lava_fountain",
+      "placement": {
+        "export_bounds": {
+          "max": {
+            "x": 143,
+            "y": 10,
+            "z": 16
+          },
+          "max_offset": {
+            "x": 143,
+            "y": 10,
+            "z": 16
+          },
+          "min": {
+            "x": 135,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 135,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 9,
+          "size_y": 11,
+          "size_z": 9
+        },
+        "preview_bounds": {
+          "max": {
+            "x": 143,
+            "y": 10,
+            "z": 16
+          },
+          "max_offset": {
+            "x": 143,
+            "y": 10,
+            "z": 16
+          },
+          "min": {
+            "x": 135,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 135,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 9,
+          "size_y": 11,
+          "size_z": 9
+        },
+        "sign_offset": {
+          "x": 132,
+          "y": 1,
+          "z": 12
+        },
+        "sign_pos": {
+          "x": 132,
+          "y": 1,
+          "z": 12
+        },
+        "structure_block_offset": {
+          "x": 133,
+          "y": 1,
+          "z": 12
+        },
+        "structure_block_pos": {
+          "x": 133,
+          "y": 1,
+          "z": 12
+        },
+        "world_origin": {
+          "x": 135,
+          "y": 0,
+          "z": 8
+        },
+        "world_origin_offset": {
+          "x": 135,
+          "y": 0,
+          "z": 8
+        }
+      },
+      "planner_id": "hub_spoke.insert.fire_shrine_lava_fountain",
+      "role_id": "hub_spoke.insert",
+      "structure_id": "mkultra:fire_shrine_new/fire_shrine_lava_fountain",
+      "tags": {
+        "runtime_allow_on_branch_path": "true",
+        "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "true",
+        "runtime_main_path_ending": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_start": "false",
+        "runtime_terminal": "true",
+        "runtime_top_cap_only": "false",
+        "runtime_topology_group": "hub_spoke",
+        "runtime_vertical_level_delta": "0",
+        "topology_role": "hub_spoke.insert",
+        "tower_piece_kind": "insert",
+        "workspace_base_name": "fire_shrine_platform_contents",
+        "workspace_ceiling_block": "minecraft:smooth_stone",
+        "workspace_floor_block": "minecraft:smooth_stone",
+        "workspace_insert_family_id": "fire_shrine_platform_contents",
+        "workspace_insert_family_kind": "courtyard_socket",
+        "workspace_piece_kind": "instance",
+        "workspace_planner_id": "hub_spoke.insert.fire_shrine_lava_fountain",
+        "workspace_topology_role_id": "hub_spoke.insert",
+        "workspace_topology_slot_id": "hub_spoke.insert.fire_shrine_platform_contents",
+        "workspace_variant_index": "2",
+        "workspace_wall_block": "minecraft:stone_bricks"
+      },
+      "variant_index": 2,
+      "workspace_piece_kind": "instance"
+    },
+    {
+      "base_name": "fire_shrine_pillars",
+      "connectors": [
+        {
+          "facing": "down",
+          "incoming_pool": "mkultra:fire_shrine_new/insert_families/fire_shrine_pillars",
+          "jigsaw_final_state": "minecraft:red_nether_bricks",
+          "jigsaw_name": "mkultra:attach",
+          "jigsaw_orientation": "down_east",
+          "jigsaw_target": "mkultra:base",
+          "opening_height": 1,
+          "opening_width": 1,
+          "relative_pos": {
+            "x": 2,
+            "y": 0,
+            "z": 2
+          },
+          "role": "link_candidate",
+          "target_pool": "minecraft:empty"
+        }
+      ],
+      "effective_dimensions": {
+        "basement_height": 20,
+        "doorway_height": 2,
+        "doorway_width": 3,
+        "entrance_height": 20,
+        "room_height": 20,
+        "room_length": 5,
+        "room_width": 5,
+        "shaft_width": 3
+      },
+      "generated_stair_positions": [],
+      "marker_positions": [],
+      "piece_id": "bcc10c09-9ff4-3417-86ae-78654841227d",
+      "piece_name": "fire_shrine_pillar",
+      "placement": {
+        "export_bounds": {
+          "max": {
+            "x": 165,
+            "y": 19,
+            "z": 12
+          },
+          "max_offset": {
+            "x": 165,
+            "y": 19,
+            "z": 12
+          },
+          "min": {
+            "x": 161,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 161,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 5,
+          "size_y": 20,
+          "size_z": 5
+        },
+        "preview_bounds": {
+          "max": {
+            "x": 165,
+            "y": 19,
+            "z": 12
+          },
+          "max_offset": {
+            "x": 165,
+            "y": 19,
+            "z": 12
+          },
+          "min": {
+            "x": 161,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 161,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 5,
+          "size_y": 20,
+          "size_z": 5
+        },
+        "sign_offset": {
+          "x": 158,
+          "y": 1,
+          "z": 10
+        },
+        "sign_pos": {
+          "x": 158,
+          "y": 1,
+          "z": 10
+        },
+        "structure_block_offset": {
+          "x": 159,
+          "y": 1,
+          "z": 10
+        },
+        "structure_block_pos": {
+          "x": 159,
+          "y": 1,
+          "z": 10
+        },
+        "world_origin": {
+          "x": 161,
+          "y": 0,
+          "z": 8
+        },
+        "world_origin_offset": {
+          "x": 161,
+          "y": 0,
+          "z": 8
+        }
+      },
+      "planner_id": "hub_spoke.insert.fire_shrine_pillar",
+      "role_id": "hub_spoke.insert",
+      "structure_id": "mkultra:fire_shrine_new/fire_shrine_pillar",
+      "tags": {
+        "runtime_allow_on_branch_path": "true",
+        "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "true",
+        "runtime_main_path_ending": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_start": "false",
+        "runtime_terminal": "true",
+        "runtime_top_cap_only": "false",
+        "runtime_topology_group": "hub_spoke",
+        "runtime_vertical_level_delta": "0",
+        "topology_role": "hub_spoke.insert",
+        "tower_piece_kind": "insert",
+        "workspace_base_name": "fire_shrine_pillars",
+        "workspace_ceiling_block": "minecraft:smooth_stone",
+        "workspace_floor_block": "minecraft:smooth_stone",
+        "workspace_insert_family_id": "fire_shrine_pillars",
+        "workspace_insert_family_kind": "courtyard_socket",
+        "workspace_piece_kind": "instance",
+        "workspace_planner_id": "hub_spoke.insert.fire_shrine_pillar",
+        "workspace_topology_role_id": "hub_spoke.insert",
+        "workspace_topology_slot_id": "hub_spoke.insert.fire_shrine_pillars",
+        "workspace_variant_index": "1",
+        "workspace_wall_block": "minecraft:stone_bricks"
+      },
+      "variant_index": 1,
+      "workspace_piece_kind": "instance"
+    },
+    {
+      "base_name": "fire_shrine_pillars",
+      "connectors": [
+        {
+          "facing": "down",
+          "incoming_pool": "mkultra:fire_shrine_new/insert_families/fire_shrine_pillars",
+          "jigsaw_final_state": "minecraft:red_nether_bricks",
+          "jigsaw_name": "mkultra:attach",
+          "jigsaw_orientation": "down_east",
+          "jigsaw_target": "mkultra:base",
+          "opening_height": 1,
+          "opening_width": 1,
+          "relative_pos": {
+            "x": 2,
+            "y": 0,
+            "z": 2
+          },
+          "role": "link_candidate",
+          "target_pool": "minecraft:empty"
+        }
+      ],
+      "effective_dimensions": {
+        "basement_height": 20,
+        "doorway_height": 2,
+        "doorway_width": 3,
+        "entrance_height": 20,
+        "room_height": 20,
+        "room_length": 5,
+        "room_width": 5,
+        "shaft_width": 3
+      },
+      "generated_stair_positions": [],
+      "marker_positions": [],
+      "piece_id": "95fa0127-b206-399c-b91f-46c5531179e6",
+      "piece_name": "fire_shrine_pillars",
+      "placement": {
+        "export_bounds": {
+          "max": {
+            "x": 154,
+            "y": 19,
+            "z": 12
+          },
+          "max_offset": {
+            "x": 154,
+            "y": 19,
+            "z": 12
+          },
+          "min": {
+            "x": 150,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 150,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 5,
+          "size_y": 20,
+          "size_z": 5
+        },
+        "preview_bounds": {
+          "max": {
+            "x": 154,
+            "y": 19,
+            "z": 12
+          },
+          "max_offset": {
+            "x": 154,
+            "y": 19,
+            "z": 12
+          },
+          "min": {
+            "x": 150,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 150,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 5,
+          "size_y": 20,
+          "size_z": 5
+        },
+        "sign_offset": {
+          "x": 147,
+          "y": 1,
+          "z": 10
+        },
+        "sign_pos": {
+          "x": 147,
+          "y": 1,
+          "z": 10
+        },
+        "structure_block_offset": {
+          "x": 148,
+          "y": 1,
+          "z": 10
+        },
+        "structure_block_pos": {
+          "x": 148,
+          "y": 1,
+          "z": 10
+        },
+        "world_origin": {
+          "x": 150,
+          "y": 0,
+          "z": 8
+        },
+        "world_origin_offset": {
+          "x": 150,
+          "y": 0,
+          "z": 8
+        }
+      },
+      "planner_id": "hub_spoke.insert.fire_shrine_pillars",
+      "role_id": "hub_spoke.insert",
+      "structure_id": "mkultra:fire_shrine_new/fire_shrine_pillars",
+      "tags": {
+        "runtime_allow_on_branch_path": "true",
+        "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "true",
+        "runtime_main_path_ending": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_start": "false",
+        "runtime_terminal": "true",
+        "runtime_top_cap_only": "false",
+        "runtime_topology_group": "hub_spoke",
+        "runtime_vertical_level_delta": "0",
+        "topology_role": "hub_spoke.insert",
+        "tower_piece_kind": "insert",
+        "workspace_base_name": "fire_shrine_pillars",
+        "workspace_ceiling_block": "minecraft:smooth_stone",
+        "workspace_floor_block": "minecraft:smooth_stone",
+        "workspace_insert_family_id": "fire_shrine_pillars",
+        "workspace_insert_family_kind": "courtyard_socket",
+        "workspace_piece_kind": "template",
+        "workspace_planner_id": "hub_spoke.insert.fire_shrine_pillars",
+        "workspace_topology_role_id": "hub_spoke.insert",
+        "workspace_topology_slot_id": "hub_spoke.insert.fire_shrine_pillars",
+        "workspace_variant_index": "0",
+        "workspace_wall_block": "minecraft:stone_bricks"
+      },
+      "variant_index": 0,
+      "workspace_piece_kind": "template"
+    },
+    {
+      "base_name": "fire_shrine_platform_contents",
+      "connectors": [
+        {
+          "facing": "down",
+          "incoming_pool": "mkultra:fire_shrine_new/insert_families/fire_shrine_platform_contents",
+          "jigsaw_final_state": "minecraft:red_nether_bricks",
+          "jigsaw_name": "mkultra:attach",
+          "jigsaw_orientation": "down_east",
+          "jigsaw_target": "mkultra:base",
+          "opening_height": 1,
+          "opening_width": 1,
+          "relative_pos": {
+            "x": 4,
+            "y": 0,
+            "z": 3
+          },
+          "role": "link_candidate",
+          "target_pool": "minecraft:empty"
+        }
+      ],
+      "effective_dimensions": {
+        "basement_height": 11,
+        "doorway_height": 2,
+        "doorway_width": 3,
+        "entrance_height": 11,
+        "room_height": 11,
+        "room_length": 9,
+        "room_width": 9,
+        "shaft_width": 3
+      },
+      "generated_stair_positions": [],
+      "marker_positions": [],
+      "piece_id": "8ff82191-2b6d-32c1-9751-6459f96c36b5",
+      "piece_name": "fire_shrine_platform_contents",
+      "placement": {
+        "export_bounds": {
+          "max": {
+            "x": 113,
+            "y": 10,
+            "z": 16
+          },
+          "max_offset": {
+            "x": 113,
+            "y": 10,
+            "z": 16
+          },
+          "min": {
+            "x": 105,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 105,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 9,
+          "size_y": 11,
+          "size_z": 9
+        },
+        "preview_bounds": {
+          "max": {
+            "x": 113,
+            "y": 10,
+            "z": 16
+          },
+          "max_offset": {
+            "x": 113,
+            "y": 10,
+            "z": 16
+          },
+          "min": {
+            "x": 105,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 105,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 9,
+          "size_y": 11,
+          "size_z": 9
+        },
+        "sign_offset": {
+          "x": 102,
+          "y": 1,
+          "z": 12
+        },
+        "sign_pos": {
+          "x": 102,
+          "y": 1,
+          "z": 12
+        },
+        "structure_block_offset": {
+          "x": 103,
+          "y": 1,
+          "z": 12
+        },
+        "structure_block_pos": {
+          "x": 103,
+          "y": 1,
+          "z": 12
+        },
+        "world_origin": {
+          "x": 105,
+          "y": 0,
+          "z": 8
+        },
+        "world_origin_offset": {
+          "x": 105,
+          "y": 0,
+          "z": 8
+        }
+      },
+      "planner_id": "hub_spoke.insert.fire_shrine_platform_contents",
+      "role_id": "hub_spoke.insert",
+      "structure_id": "mkultra:fire_shrine_new/fire_shrine_platform_contents",
+      "tags": {
+        "runtime_allow_on_branch_path": "true",
+        "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "true",
+        "runtime_main_path_ending": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_start": "false",
+        "runtime_terminal": "true",
+        "runtime_top_cap_only": "false",
+        "runtime_topology_group": "hub_spoke",
+        "runtime_vertical_level_delta": "0",
+        "topology_role": "hub_spoke.insert",
+        "tower_piece_kind": "insert",
+        "workspace_base_name": "fire_shrine_platform_contents",
+        "workspace_ceiling_block": "minecraft:smooth_stone",
+        "workspace_floor_block": "minecraft:smooth_stone",
+        "workspace_insert_family_id": "fire_shrine_platform_contents",
+        "workspace_insert_family_kind": "courtyard_socket",
+        "workspace_piece_kind": "template",
+        "workspace_planner_id": "hub_spoke.insert.fire_shrine_platform_contents",
+        "workspace_topology_role_id": "hub_spoke.insert",
+        "workspace_topology_slot_id": "hub_spoke.insert.fire_shrine_platform_contents",
+        "workspace_variant_index": "0",
+        "workspace_wall_block": "minecraft:stone_bricks"
+      },
+      "variant_index": 0,
+      "workspace_piece_kind": "template"
+    },
+    {
+      "base_name": "fire_shrine_platform_east",
+      "connectors": [
+        {
+          "facing": "west",
+          "incoming_pool": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/east",
+          "jigsaw_name": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/east",
+          "jigsaw_target": "mkultra:main_back",
+          "opening_height": 2,
+          "opening_width": 3,
+          "relative_pos": {
+            "x": 0,
+            "y": 1,
+            "z": 5
+          },
+          "role": "main_forward",
+          "target_pool": "minecraft:empty",
+          "vertical_offset": 1
+        },
+        {
+          "facing": "up",
+          "jigsaw_final_state": "minecraft:red_nether_bricks",
+          "jigsaw_name": "mkultra:base",
+          "jigsaw_orientation": "up_north",
+          "jigsaw_target": "mkultra:attach",
+          "opening_height": 1,
+          "opening_width": 1,
+          "relative_pos": {
+            "x": 7,
+            "y": 0,
+            "z": 5
+          },
+          "role": "link_candidate",
+          "target_pool": "mkultra:fire_shrine_new/insert_families/fire_shrine_platform_contents"
+        }
+      ],
+      "effective_dimensions": {
+        "basement_height": 30,
+        "doorway_height": 2,
+        "doorway_width": 3,
+        "entrance_height": 30,
+        "room_height": 30,
+        "room_length": 11,
+        "room_width": 15,
+        "shaft_width": 3
+      },
+      "generated_stair_positions": [],
+      "marker_positions": [],
+      "piece_id": "d15fb42e-dc35-3ab5-8e7f-10c06c3b68eb",
+      "piece_name": "fire_shrine_platform_east",
+      "placement": {
+        "export_bounds": {
+          "max": {
+            "x": 56,
+            "y": 29,
+            "z": 18
+          },
+          "max_offset": {
+            "x": 56,
+            "y": 29,
+            "z": 18
+          },
+          "min": {
+            "x": 42,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 42,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 15,
+          "size_y": 30,
+          "size_z": 11
+        },
+        "preview_bounds": {
+          "max": {
+            "x": 56,
+            "y": 29,
+            "z": 18
+          },
+          "max_offset": {
+            "x": 56,
+            "y": 29,
+            "z": 18
+          },
+          "min": {
+            "x": 42,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 42,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 15,
+          "size_y": 30,
+          "size_z": 11
+        },
+        "sign_offset": {
+          "x": 39,
+          "y": 1,
+          "z": 13
+        },
+        "sign_pos": {
+          "x": 39,
+          "y": 1,
+          "z": 13
+        },
+        "structure_block_offset": {
+          "x": 40,
+          "y": 1,
+          "z": 13
+        },
+        "structure_block_pos": {
+          "x": 40,
+          "y": 1,
+          "z": 13
+        },
+        "world_origin": {
+          "x": 42,
+          "y": 0,
+          "z": 8
+        },
+        "world_origin_offset": {
+          "x": 42,
+          "y": 0,
+          "z": 8
+        }
+      },
+      "planner_id": "hub_spoke.spoke.shared.fire_shrine_platform_east",
+      "role_id": "hub_spoke.spoke.shared",
+      "structure_id": "mkultra:fire_shrine_new/fire_shrine_platform_east",
+      "tags": {
+        "runtime_allow_on_branch_path": "true",
+        "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_main_path_ending": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_start": "false",
+        "runtime_terminal": "false",
+        "runtime_top_cap_only": "false",
+        "runtime_topology_group": "hub_spoke",
+        "runtime_vertical_level_delta": "0",
+        "topology_role": "hub_spoke.spoke.shared",
+        "tower_piece_kind": "room",
+        "workspace_authoring_piece": "true",
+        "workspace_flat_platform_kind": "spoke",
+        "workspace_horizontal_extrusion_mode": "no_extrusion",
+        "workspace_hub_spoke_archetype_slot": "hub_spoke.spoke.shared",
+        "workspace_hub_spoke_concrete_slot": "hub_spoke.spoke.east",
+        "workspace_hub_spoke_direction": "east",
+        "workspace_hub_spoke_layout_preset": "cardinal_with_corner_branches",
+        "workspace_palette_ceiling": "minecraft:smooth_stone",
+        "workspace_palette_floor": "minecraft:smooth_stone",
+        "workspace_palette_ladder": "minecraft:ladder",
+        "workspace_palette_slab": "minecraft:stone_brick_slab",
+        "workspace_palette_stair": "minecraft:stone_brick_stairs",
+        "workspace_palette_wall": "minecraft:stone_bricks",
+        "workspace_piece_kind": "instance",
+        "workspace_planner_id": "hub_spoke.spoke.shared.fire_shrine_platform_east",
+        "workspace_template_kind": "hub_spoke_spoke",
+        "workspace_template_reuse_mode": "rotate_export",
+        "workspace_template_rotation": "none",
+        "workspace_template_slot_id": "fire_shrine_platform",
+        "workspace_template_source_id": "fire_shrine_platform_east",
+        "workspace_topology_role_id": "hub_spoke.spoke.shared",
+        "workspace_topology_slot_id": "hub_spoke.spoke.east"
+      },
+      "variant_index": 0,
+      "workspace_piece_kind": "instance"
+    },
+    {
+      "base_name": "fire_shrine_platform_west",
+      "connectors": [
+        {
+          "facing": "east",
+          "incoming_pool": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/west",
+          "jigsaw_name": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/west",
+          "jigsaw_target": "mkultra:main_back",
+          "opening_height": 2,
+          "opening_width": 3,
+          "relative_pos": {
+            "x": 14,
+            "y": 1,
+            "z": 5
+          },
+          "role": "main_forward",
+          "target_pool": "minecraft:empty",
+          "vertical_offset": 1
+        },
+        {
+          "facing": "up",
+          "jigsaw_final_state": "minecraft:red_nether_bricks",
+          "jigsaw_name": "mkultra:base",
+          "jigsaw_orientation": "up_south",
+          "jigsaw_target": "mkultra:attach",
+          "opening_height": 1,
+          "opening_width": 1,
+          "relative_pos": {
+            "x": 7,
+            "y": 0,
+            "z": 5
+          },
+          "role": "link_candidate",
+          "target_pool": "mkultra:fire_shrine_new/insert_families/fire_shrine_platform_contents"
+        }
+      ],
+      "effective_dimensions": {
+        "basement_height": 30,
+        "doorway_height": 2,
+        "doorway_width": 3,
+        "entrance_height": 30,
+        "room_height": 30,
+        "room_length": 11,
+        "room_width": 15,
+        "shaft_width": 3
+      },
+      "generated_stair_positions": [],
+      "marker_positions": [],
+      "piece_id": "6840a0dd-b1bf-3a34-9a63-5e4ccf0a9860",
+      "piece_name": "fire_shrine_platform_west",
+      "placement": {
+        "export_bounds": {
+          "max": {
+            "x": 56,
+            "y": 29,
+            "z": 18
+          },
+          "max_offset": {
+            "x": 56,
+            "y": 29,
+            "z": 18
+          },
+          "min": {
+            "x": 42,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 42,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 15,
+          "size_y": 30,
+          "size_z": 11
+        },
+        "preview_bounds": {
+          "max": {
+            "x": 56,
+            "y": 29,
+            "z": 18
+          },
+          "max_offset": {
+            "x": 56,
+            "y": 29,
+            "z": 18
+          },
+          "min": {
+            "x": 42,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 42,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 15,
+          "size_y": 30,
+          "size_z": 11
+        },
+        "sign_offset": {
+          "x": 39,
+          "y": 1,
+          "z": 13
+        },
+        "sign_pos": {
+          "x": 39,
+          "y": 1,
+          "z": 13
+        },
+        "structure_block_offset": {
+          "x": 40,
+          "y": 1,
+          "z": 13
+        },
+        "structure_block_pos": {
+          "x": 40,
+          "y": 1,
+          "z": 13
+        },
+        "world_origin": {
+          "x": 42,
+          "y": 0,
+          "z": 8
+        },
+        "world_origin_offset": {
+          "x": 42,
+          "y": 0,
+          "z": 8
+        }
+      },
+      "planner_id": "hub_spoke.spoke.shared.fire_shrine_platform_west",
+      "role_id": "hub_spoke.spoke.shared",
+      "structure_id": "mkultra:fire_shrine_new/fire_shrine_platform_west",
+      "tags": {
+        "runtime_allow_on_branch_path": "true",
+        "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_main_path_ending": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_start": "false",
+        "runtime_terminal": "false",
+        "runtime_top_cap_only": "false",
+        "runtime_topology_group": "hub_spoke",
+        "runtime_vertical_level_delta": "0",
+        "topology_role": "hub_spoke.spoke.shared",
+        "tower_piece_kind": "room",
+        "workspace_authoring_piece": "false",
+        "workspace_flat_platform_kind": "spoke",
+        "workspace_horizontal_extrusion_mode": "no_extrusion",
+        "workspace_hub_spoke_archetype_slot": "hub_spoke.spoke.shared",
+        "workspace_hub_spoke_concrete_slot": "hub_spoke.spoke.west",
+        "workspace_hub_spoke_direction": "west",
+        "workspace_hub_spoke_layout_preset": "cardinal_with_corner_branches",
+        "workspace_palette_ceiling": "minecraft:smooth_stone",
+        "workspace_palette_floor": "minecraft:smooth_stone",
+        "workspace_palette_ladder": "minecraft:ladder",
+        "workspace_palette_slab": "minecraft:stone_brick_slab",
+        "workspace_palette_stair": "minecraft:stone_brick_stairs",
+        "workspace_palette_wall": "minecraft:stone_bricks",
+        "workspace_piece_kind": "instance",
+        "workspace_planner_id": "hub_spoke.spoke.shared.fire_shrine_platform_west",
+        "workspace_template_kind": "hub_spoke_spoke",
+        "workspace_template_reuse_mode": "rotate_export",
+        "workspace_template_rotation": "clockwise_180",
+        "workspace_template_slot_id": "fire_shrine_platform",
+        "workspace_template_source_id": "fire_shrine_platform_east",
+        "workspace_topology_role_id": "hub_spoke.spoke.shared",
+        "workspace_topology_slot_id": "hub_spoke.spoke.west"
+      },
+      "variant_index": 0,
+      "workspace_piece_kind": "instance"
+    },
+    {
+      "base_name": "fire_shrine_tower_north",
+      "connectors": [
+        {
+          "facing": "south",
+          "incoming_pool": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/north",
+          "jigsaw_name": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/north",
+          "jigsaw_target": "mkultra:main_back",
+          "opening_height": 2,
+          "opening_width": 3,
+          "relative_pos": {
+            "x": 5,
+            "y": 1,
+            "z": 14
+          },
+          "role": "main_forward",
+          "target_pool": "minecraft:empty",
+          "vertical_offset": 1
+        },
+        {
+          "facing": "west",
+          "jigsaw_name": "mkultra:branch",
+          "jigsaw_target": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/north_west",
+          "opening_height": 2,
+          "opening_width": 3,
+          "relative_pos": {
+            "x": 0,
+            "y": 1,
+            "z": 7
+          },
+          "role": "branch",
+          "target_pool": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/north_west",
+          "vertical_offset": 1
+        },
+        {
+          "facing": "east",
+          "jigsaw_name": "mkultra:branch",
+          "jigsaw_target": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/north_east",
+          "opening_height": 2,
+          "opening_width": 3,
+          "relative_pos": {
+            "x": 10,
+            "y": 1,
+            "z": 7
+          },
+          "role": "branch",
+          "target_pool": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/north_east",
+          "vertical_offset": 1
+        }
+      ],
+      "effective_dimensions": {
+        "basement_height": 30,
+        "doorway_height": 2,
+        "doorway_width": 3,
+        "entrance_height": 30,
+        "room_height": 30,
+        "room_length": 15,
+        "room_width": 11,
+        "shaft_width": 3
+      },
+      "generated_stair_positions": [],
+      "marker_positions": [],
+      "piece_id": "3b0d8d72-28f1-34ae-8658-17e813e2f51f",
+      "piece_name": "fire_shrine_tower_north",
+      "placement": {
+        "export_bounds": {
+          "max": {
+            "x": 35,
+            "y": 29,
+            "z": 22
+          },
+          "max_offset": {
+            "x": 35,
+            "y": 29,
+            "z": 22
+          },
+          "min": {
+            "x": 25,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 25,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 11,
+          "size_y": 30,
+          "size_z": 15
+        },
+        "preview_bounds": {
+          "max": {
+            "x": 35,
+            "y": 29,
+            "z": 22
+          },
+          "max_offset": {
+            "x": 35,
+            "y": 29,
+            "z": 22
+          },
+          "min": {
+            "x": 25,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 25,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 11,
+          "size_y": 30,
+          "size_z": 15
+        },
+        "sign_offset": {
+          "x": 22,
+          "y": 1,
+          "z": 15
+        },
+        "sign_pos": {
+          "x": 22,
+          "y": 1,
+          "z": 15
+        },
+        "structure_block_offset": {
+          "x": 23,
+          "y": 1,
+          "z": 15
+        },
+        "structure_block_pos": {
+          "x": 23,
+          "y": 1,
+          "z": 15
+        },
+        "world_origin": {
+          "x": 25,
+          "y": 0,
+          "z": 8
+        },
+        "world_origin_offset": {
+          "x": 25,
+          "y": 0,
+          "z": 8
+        }
+      },
+      "planner_id": "hub_spoke.spoke.shared.fire_shrine_tower_north",
+      "role_id": "hub_spoke.spoke.shared",
+      "structure_id": "mkultra:fire_shrine_new/fire_shrine_tower_north",
+      "tags": {
+        "runtime_allow_on_branch_path": "true",
+        "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_main_path_ending": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_start": "false",
+        "runtime_terminal": "false",
+        "runtime_top_cap_only": "false",
+        "runtime_topology_group": "hub_spoke",
+        "runtime_vertical_level_delta": "0",
+        "topology_role": "hub_spoke.spoke.shared",
+        "tower_piece_kind": "room",
+        "workspace_authoring_piece": "true",
+        "workspace_flat_platform_kind": "spoke",
+        "workspace_horizontal_extrusion_mode": "no_extrusion",
+        "workspace_hub_spoke_archetype_slot": "hub_spoke.spoke.shared",
+        "workspace_hub_spoke_concrete_slot": "hub_spoke.spoke.north",
+        "workspace_hub_spoke_direction": "north",
+        "workspace_hub_spoke_layout_preset": "cardinal_with_corner_branches",
+        "workspace_palette_ceiling": "minecraft:smooth_stone",
+        "workspace_palette_floor": "minecraft:smooth_stone",
+        "workspace_palette_ladder": "minecraft:ladder",
+        "workspace_palette_slab": "minecraft:stone_brick_slab",
+        "workspace_palette_stair": "minecraft:stone_brick_stairs",
+        "workspace_palette_wall": "minecraft:stone_bricks",
+        "workspace_piece_kind": "instance",
+        "workspace_planner_id": "hub_spoke.spoke.shared.fire_shrine_tower_north",
+        "workspace_template_kind": "hub_spoke_spoke",
+        "workspace_template_reuse_mode": "rotate_export",
+        "workspace_template_rotation": "none",
+        "workspace_template_slot_id": "fire_shrine_tower",
+        "workspace_template_source_id": "fire_shrine_tower_north",
+        "workspace_topology_role_id": "hub_spoke.spoke.shared",
+        "workspace_topology_slot_id": "hub_spoke.spoke.north"
+      },
+      "variant_index": 0,
+      "workspace_piece_kind": "instance"
+    },
+    {
+      "base_name": "fire_shrine_tower_south",
+      "connectors": [
+        {
+          "facing": "north",
+          "incoming_pool": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/south",
+          "jigsaw_name": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/south",
+          "jigsaw_target": "mkultra:main_back",
+          "opening_height": 2,
+          "opening_width": 3,
+          "relative_pos": {
+            "x": 5,
+            "y": 1,
+            "z": 0
+          },
+          "role": "main_forward",
+          "target_pool": "minecraft:empty",
+          "vertical_offset": 1
+        },
+        {
+          "facing": "west",
+          "jigsaw_name": "mkultra:branch",
+          "jigsaw_target": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/south_west",
+          "opening_height": 2,
+          "opening_width": 3,
+          "relative_pos": {
+            "x": 0,
+            "y": 1,
+            "z": 7
+          },
+          "role": "branch",
+          "target_pool": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/south_west",
+          "vertical_offset": 1
+        },
+        {
+          "facing": "east",
+          "jigsaw_name": "mkultra:branch",
+          "jigsaw_target": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/south_east",
+          "opening_height": 2,
+          "opening_width": 3,
+          "relative_pos": {
+            "x": 10,
+            "y": 1,
+            "z": 7
+          },
+          "role": "branch",
+          "target_pool": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/south_east",
+          "vertical_offset": 1
+        }
+      ],
+      "effective_dimensions": {
+        "basement_height": 30,
+        "doorway_height": 2,
+        "doorway_width": 3,
+        "entrance_height": 30,
+        "room_height": 30,
+        "room_length": 15,
+        "room_width": 11,
+        "shaft_width": 3
+      },
+      "generated_stair_positions": [],
+      "marker_positions": [],
+      "piece_id": "fc935c6c-c461-372b-8f2e-1a8a77baa1f3",
+      "piece_name": "fire_shrine_tower_south",
+      "placement": {
+        "export_bounds": {
+          "max": {
+            "x": 35,
+            "y": 29,
+            "z": 22
+          },
+          "max_offset": {
+            "x": 35,
+            "y": 29,
+            "z": 22
+          },
+          "min": {
+            "x": 25,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 25,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 11,
+          "size_y": 30,
+          "size_z": 15
+        },
+        "preview_bounds": {
+          "max": {
+            "x": 35,
+            "y": 29,
+            "z": 22
+          },
+          "max_offset": {
+            "x": 35,
+            "y": 29,
+            "z": 22
+          },
+          "min": {
+            "x": 25,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 25,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 11,
+          "size_y": 30,
+          "size_z": 15
+        },
+        "sign_offset": {
+          "x": 22,
+          "y": 1,
+          "z": 15
+        },
+        "sign_pos": {
+          "x": 22,
+          "y": 1,
+          "z": 15
+        },
+        "structure_block_offset": {
+          "x": 23,
+          "y": 1,
+          "z": 15
+        },
+        "structure_block_pos": {
+          "x": 23,
+          "y": 1,
+          "z": 15
+        },
+        "world_origin": {
+          "x": 25,
+          "y": 0,
+          "z": 8
+        },
+        "world_origin_offset": {
+          "x": 25,
+          "y": 0,
+          "z": 8
+        }
+      },
+      "planner_id": "hub_spoke.spoke.shared.fire_shrine_tower_south",
+      "role_id": "hub_spoke.spoke.shared",
+      "structure_id": "mkultra:fire_shrine_new/fire_shrine_tower_south",
+      "tags": {
+        "runtime_allow_on_branch_path": "true",
+        "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_main_path_ending": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_start": "false",
+        "runtime_terminal": "false",
+        "runtime_top_cap_only": "false",
+        "runtime_topology_group": "hub_spoke",
+        "runtime_vertical_level_delta": "0",
+        "topology_role": "hub_spoke.spoke.shared",
+        "tower_piece_kind": "room",
+        "workspace_authoring_piece": "false",
+        "workspace_flat_platform_kind": "spoke",
+        "workspace_horizontal_extrusion_mode": "no_extrusion",
+        "workspace_hub_spoke_archetype_slot": "hub_spoke.spoke.shared",
+        "workspace_hub_spoke_concrete_slot": "hub_spoke.spoke.south",
+        "workspace_hub_spoke_direction": "south",
+        "workspace_hub_spoke_layout_preset": "cardinal_with_corner_branches",
+        "workspace_palette_ceiling": "minecraft:smooth_stone",
+        "workspace_palette_floor": "minecraft:smooth_stone",
+        "workspace_palette_ladder": "minecraft:ladder",
+        "workspace_palette_slab": "minecraft:stone_brick_slab",
+        "workspace_palette_stair": "minecraft:stone_brick_stairs",
+        "workspace_palette_wall": "minecraft:stone_bricks",
+        "workspace_piece_kind": "instance",
+        "workspace_planner_id": "hub_spoke.spoke.shared.fire_shrine_tower_south",
+        "workspace_template_kind": "hub_spoke_spoke",
+        "workspace_template_reuse_mode": "rotate_export",
+        "workspace_template_rotation": "clockwise_180",
+        "workspace_template_slot_id": "fire_shrine_tower",
+        "workspace_template_source_id": "fire_shrine_tower_north",
+        "workspace_topology_role_id": "hub_spoke.spoke.shared",
+        "workspace_topology_slot_id": "hub_spoke.spoke.south"
+      },
+      "variant_index": 0,
+      "workspace_piece_kind": "instance"
+    },
+    {
+      "base_name": "hub_spoke_center",
+      "connectors": [
+        {
+          "facing": "north",
+          "jigsaw_name": "mkultra:main_back",
+          "jigsaw_target": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/north",
+          "opening_height": 2,
+          "opening_width": 3,
+          "relative_pos": {
+            "x": 5,
+            "y": 1,
+            "z": 0
+          },
+          "role": "main_back",
+          "target_pool": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/north",
+          "vertical_offset": 1
+        },
+        {
+          "facing": "east",
+          "jigsaw_name": "mkultra:main_back",
+          "jigsaw_target": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/east",
+          "opening_height": 2,
+          "opening_width": 3,
+          "relative_pos": {
+            "x": 10,
+            "y": 1,
+            "z": 5
+          },
+          "role": "main_back",
+          "target_pool": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/east",
+          "vertical_offset": 1
+        },
+        {
+          "facing": "south",
+          "jigsaw_name": "mkultra:main_back",
+          "jigsaw_target": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/south",
+          "opening_height": 2,
+          "opening_width": 3,
+          "relative_pos": {
+            "x": 5,
+            "y": 1,
+            "z": 10
+          },
+          "role": "main_back",
+          "target_pool": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/south",
+          "vertical_offset": 1
+        },
+        {
+          "facing": "west",
+          "jigsaw_name": "mkultra:main_back",
+          "jigsaw_target": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/west",
+          "opening_height": 2,
+          "opening_width": 3,
+          "relative_pos": {
+            "x": 0,
+            "y": 1,
+            "z": 5
+          },
+          "role": "main_back",
+          "target_pool": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/west",
+          "vertical_offset": 1
+        }
+      ],
+      "effective_dimensions": {
+        "basement_height": 30,
+        "doorway_height": 2,
+        "doorway_width": 3,
+        "entrance_height": 30,
+        "room_height": 30,
+        "room_length": 11,
+        "room_width": 11,
+        "shaft_width": 3
+      },
+      "generated_stair_positions": [],
+      "marker_positions": [],
+      "piece_id": "cb505b7d-1b88-335a-b523-d3fbea6743b2",
+      "piece_name": "hub_spoke_center",
+      "placement": {
+        "export_bounds": {
+          "max": {
+            "x": 18,
+            "y": 29,
+            "z": 18
+          },
+          "max_offset": {
+            "x": 18,
+            "y": 29,
+            "z": 18
+          },
+          "min": {
+            "x": 8,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 8,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 11,
+          "size_y": 30,
+          "size_z": 11
+        },
+        "preview_bounds": {
+          "max": {
+            "x": 18,
+            "y": 29,
+            "z": 18
+          },
+          "max_offset": {
+            "x": 18,
+            "y": 29,
+            "z": 18
+          },
+          "min": {
+            "x": 8,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 8,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 11,
+          "size_y": 30,
+          "size_z": 11
+        },
+        "sign_offset": {
+          "x": 5,
+          "y": 1,
+          "z": 13
+        },
+        "sign_pos": {
+          "x": 5,
+          "y": 1,
+          "z": 13
+        },
+        "structure_block_offset": {
+          "x": 6,
+          "y": 1,
+          "z": 13
+        },
+        "structure_block_pos": {
+          "x": 6,
+          "y": 1,
+          "z": 13
+        },
+        "world_origin": {
+          "x": 8,
+          "y": 0,
+          "z": 8
+        },
+        "world_origin_offset": {
+          "x": 8,
+          "y": 0,
+          "z": 8
+        }
+      },
+      "planner_id": "hub_spoke.center.hub_spoke_center",
+      "role_id": "hub_spoke.center",
+      "structure_id": "mkultra:fire_shrine_new/hub_spoke_center",
+      "tags": {
+        "runtime_allow_on_branch_path": "true",
+        "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "false",
+        "runtime_main_path_ending": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_start": "true",
+        "runtime_terminal": "false",
+        "runtime_top_cap_only": "false",
+        "runtime_topology_group": "hub_spoke",
+        "runtime_vertical_level_delta": "0",
+        "topology_role": "hub_spoke.center",
+        "tower_piece_kind": "room",
+        "workspace_flat_platform_kind": "center",
+        "workspace_horizontal_extrusion_mode": "no_extrusion",
+        "workspace_hub_spoke_archetype_slot": "hub_spoke.center",
+        "workspace_hub_spoke_concrete_slot": "hub_spoke.center",
+        "workspace_hub_spoke_direction": "",
+        "workspace_hub_spoke_layout_preset": "cardinal_with_corner_branches",
+        "workspace_palette_ceiling": "minecraft:smooth_stone",
+        "workspace_palette_floor": "minecraft:smooth_stone",
+        "workspace_palette_ladder": "minecraft:ladder",
+        "workspace_palette_slab": "minecraft:stone_brick_slab",
+        "workspace_palette_stair": "minecraft:stone_brick_stairs",
+        "workspace_palette_wall": "minecraft:stone_bricks",
+        "workspace_piece_kind": "instance",
+        "workspace_planner_id": "hub_spoke.center.hub_spoke_center",
+        "workspace_template_kind": "hub_spoke_center",
+        "workspace_template_slot_id": "hub_spoke.center",
+        "workspace_topology_role_id": "hub_spoke.center",
+        "workspace_topology_slot_id": "hub_spoke.center"
+      },
+      "variant_index": 0,
+      "workspace_piece_kind": "instance"
+    },
+    {
+      "base_name": "hub_spoke_corner_north_east",
+      "connectors": [
+        {
+          "facing": "west",
+          "incoming_pool": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/north_east",
+          "jigsaw_name": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/north_east",
+          "jigsaw_target": "mkultra:branch",
+          "opening_height": 2,
+          "opening_width": 3,
+          "relative_pos": {
+            "x": 0,
+            "y": 1,
+            "z": 7
+          },
+          "role": "branch",
+          "target_pool": "minecraft:empty",
+          "vertical_offset": 1
+        },
+        {
+          "facing": "up",
+          "jigsaw_final_state": "minecraft:red_nether_bricks",
+          "jigsaw_name": "mkultra:base",
+          "jigsaw_orientation": "up_west",
+          "jigsaw_target": "mkultra:attach",
+          "opening_height": 1,
+          "opening_width": 1,
+          "relative_pos": {
+            "x": 11,
+            "y": 0,
+            "z": 3
+          },
+          "role": "link_candidate",
+          "target_pool": "mkultra:fire_shrine_new/insert_families/fire_shrine_pillars"
+        }
+      ],
+      "effective_dimensions": {
+        "basement_height": 30,
+        "doorway_height": 2,
+        "doorway_width": 3,
+        "entrance_height": 30,
+        "room_height": 30,
+        "room_length": 15,
+        "room_width": 15,
+        "shaft_width": 3
+      },
+      "generated_stair_positions": [],
+      "marker_positions": [],
+      "piece_id": "3054bca0-2974-3672-a824-e0c6216d92bf",
+      "piece_name": "hub_spoke_corner_north_east",
+      "placement": {
+        "export_bounds": {
+          "max": {
+            "x": 98,
+            "y": 29,
+            "z": 22
+          },
+          "max_offset": {
+            "x": 98,
+            "y": 29,
+            "z": 22
+          },
+          "min": {
+            "x": 84,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 84,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 15,
+          "size_y": 30,
+          "size_z": 15
+        },
+        "preview_bounds": {
+          "max": {
+            "x": 98,
+            "y": 29,
+            "z": 22
+          },
+          "max_offset": {
+            "x": 98,
+            "y": 29,
+            "z": 22
+          },
+          "min": {
+            "x": 84,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 84,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 15,
+          "size_y": 30,
+          "size_z": 15
+        },
+        "sign_offset": {
+          "x": 81,
+          "y": 1,
+          "z": 15
+        },
+        "sign_pos": {
+          "x": 81,
+          "y": 1,
+          "z": 15
+        },
+        "structure_block_offset": {
+          "x": 82,
+          "y": 1,
+          "z": 15
+        },
+        "structure_block_pos": {
+          "x": 82,
+          "y": 1,
+          "z": 15
+        },
+        "world_origin": {
+          "x": 84,
+          "y": 0,
+          "z": 8
+        },
+        "world_origin_offset": {
+          "x": 84,
+          "y": 0,
+          "z": 8
+        }
+      },
+      "planner_id": "hub_spoke.corner.shared.hub_spoke_corner_north_east",
+      "role_id": "hub_spoke.corner.shared",
+      "structure_id": "mkultra:fire_shrine_new/hub_spoke_corner_north_east",
+      "tags": {
+        "runtime_allow_on_branch_path": "true",
+        "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "true",
+        "runtime_main_path_ending": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_start": "false",
+        "runtime_terminal": "true",
+        "runtime_top_cap_only": "false",
+        "runtime_topology_group": "hub_spoke",
+        "runtime_vertical_level_delta": "0",
+        "topology_role": "hub_spoke.corner.shared",
+        "tower_piece_kind": "room",
+        "workspace_authoring_piece": "true",
+        "workspace_flat_platform_corner": "north_east",
+        "workspace_flat_platform_kind": "corner_chamfer",
+        "workspace_horizontal_extrusion_mode": "no_extrusion",
+        "workspace_hub_spoke_archetype_slot": "hub_spoke.corner.shared",
+        "workspace_hub_spoke_concrete_slot": "hub_spoke.corner.north_east",
+        "workspace_hub_spoke_direction": "north_east",
+        "workspace_hub_spoke_layout_preset": "cardinal_with_corner_branches",
+        "workspace_palette_ceiling": "minecraft:smooth_stone",
+        "workspace_palette_floor": "minecraft:smooth_stone",
+        "workspace_palette_ladder": "minecraft:ladder",
+        "workspace_palette_slab": "minecraft:stone_brick_slab",
+        "workspace_palette_stair": "minecraft:stone_brick_stairs",
+        "workspace_palette_wall": "minecraft:stone_bricks",
+        "workspace_piece_kind": "instance",
+        "workspace_planner_id": "hub_spoke.corner.shared.hub_spoke_corner_north_east",
+        "workspace_template_crop_mode": "non_structure_void",
+        "workspace_template_kind": "hub_spoke_corner",
+        "workspace_template_reuse_mode": "rotate_export",
+        "workspace_template_rotation": "none",
+        "workspace_template_slot_id": "hub_spoke.corner.north_east",
+        "workspace_template_source_id": "hub_spoke_corner_north_east",
+        "workspace_topology_role_id": "hub_spoke.corner.shared",
+        "workspace_topology_slot_id": "hub_spoke.corner.north_east"
+      },
+      "variant_index": 0,
+      "workspace_piece_kind": "instance"
+    },
+    {
+      "base_name": "hub_spoke_corner_north_west",
+      "connectors": [
+        {
+          "facing": "east",
+          "incoming_pool": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/north_west",
+          "jigsaw_name": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/north_west",
+          "jigsaw_target": "mkultra:branch",
+          "opening_height": 2,
+          "opening_width": 3,
+          "relative_pos": {
+            "x": 14,
+            "y": 1,
+            "z": 7
+          },
+          "role": "branch",
+          "target_pool": "minecraft:empty",
+          "vertical_offset": 1
+        },
+        {
+          "facing": "up",
+          "jigsaw_final_state": "minecraft:red_nether_bricks",
+          "jigsaw_name": "mkultra:base",
+          "jigsaw_orientation": "up_south",
+          "jigsaw_target": "mkultra:attach",
+          "opening_height": 1,
+          "opening_width": 1,
+          "relative_pos": {
+            "x": 3,
+            "y": 0,
+            "z": 3
+          },
+          "role": "link_candidate",
+          "target_pool": "mkultra:fire_shrine_new/insert_families/fire_shrine_pillars"
+        }
+      ],
+      "effective_dimensions": {
+        "basement_height": 30,
+        "doorway_height": 2,
+        "doorway_width": 3,
+        "entrance_height": 30,
+        "room_height": 30,
+        "room_length": 15,
+        "room_width": 15,
+        "shaft_width": 3
+      },
+      "generated_stair_positions": [],
+      "marker_positions": [],
+      "piece_id": "70c64b1e-b710-3c36-8c1c-2f01d35f8782",
+      "piece_name": "hub_spoke_corner_north_west",
+      "placement": {
+        "export_bounds": {
+          "max": {
+            "x": 77,
+            "y": 29,
+            "z": 22
+          },
+          "max_offset": {
+            "x": 77,
+            "y": 29,
+            "z": 22
+          },
+          "min": {
+            "x": 63,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 63,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 15,
+          "size_y": 30,
+          "size_z": 15
+        },
+        "preview_bounds": {
+          "max": {
+            "x": 77,
+            "y": 29,
+            "z": 22
+          },
+          "max_offset": {
+            "x": 77,
+            "y": 29,
+            "z": 22
+          },
+          "min": {
+            "x": 63,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 63,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 15,
+          "size_y": 30,
+          "size_z": 15
+        },
+        "sign_offset": {
+          "x": 60,
+          "y": 1,
+          "z": 15
+        },
+        "sign_pos": {
+          "x": 60,
+          "y": 1,
+          "z": 15
+        },
+        "structure_block_offset": {
+          "x": 61,
+          "y": 1,
+          "z": 15
+        },
+        "structure_block_pos": {
+          "x": 61,
+          "y": 1,
+          "z": 15
+        },
+        "world_origin": {
+          "x": 63,
+          "y": 0,
+          "z": 8
+        },
+        "world_origin_offset": {
+          "x": 63,
+          "y": 0,
+          "z": 8
+        }
+      },
+      "planner_id": "hub_spoke.corner.shared.hub_spoke_corner_north_west",
+      "role_id": "hub_spoke.corner.shared",
+      "structure_id": "mkultra:fire_shrine_new/hub_spoke_corner_north_west",
+      "tags": {
+        "runtime_allow_on_branch_path": "true",
+        "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "true",
+        "runtime_main_path_ending": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_start": "false",
+        "runtime_terminal": "true",
+        "runtime_top_cap_only": "false",
+        "runtime_topology_group": "hub_spoke",
+        "runtime_vertical_level_delta": "0",
+        "topology_role": "hub_spoke.corner.shared",
+        "tower_piece_kind": "room",
+        "workspace_authoring_piece": "true",
+        "workspace_flat_platform_corner": "north_west",
+        "workspace_flat_platform_kind": "corner_chamfer",
+        "workspace_horizontal_extrusion_mode": "no_extrusion",
+        "workspace_hub_spoke_archetype_slot": "hub_spoke.corner.shared",
+        "workspace_hub_spoke_concrete_slot": "hub_spoke.corner.north_west",
+        "workspace_hub_spoke_direction": "north_west",
+        "workspace_hub_spoke_layout_preset": "cardinal_with_corner_branches",
+        "workspace_palette_ceiling": "minecraft:smooth_stone",
+        "workspace_palette_floor": "minecraft:smooth_stone",
+        "workspace_palette_ladder": "minecraft:ladder",
+        "workspace_palette_slab": "minecraft:stone_brick_slab",
+        "workspace_palette_stair": "minecraft:stone_brick_stairs",
+        "workspace_palette_wall": "minecraft:stone_bricks",
+        "workspace_piece_kind": "instance",
+        "workspace_planner_id": "hub_spoke.corner.shared.hub_spoke_corner_north_west",
+        "workspace_template_crop_mode": "non_structure_void",
+        "workspace_template_kind": "hub_spoke_corner",
+        "workspace_template_reuse_mode": "rotate_export",
+        "workspace_template_rotation": "none",
+        "workspace_template_slot_id": "hub_spoke.corner.north_west",
+        "workspace_template_source_id": "hub_spoke_corner_north_west",
+        "workspace_topology_role_id": "hub_spoke.corner.shared",
+        "workspace_topology_slot_id": "hub_spoke.corner.north_west"
+      },
+      "variant_index": 0,
+      "workspace_piece_kind": "instance"
+    },
+    {
+      "base_name": "hub_spoke_corner_south_east",
+      "connectors": [
+        {
+          "facing": "west",
+          "incoming_pool": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/south_east",
+          "jigsaw_name": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/south_east",
+          "jigsaw_target": "mkultra:branch",
+          "opening_height": 2,
+          "opening_width": 3,
+          "relative_pos": {
+            "x": 0,
+            "y": 1,
+            "z": 7
+          },
+          "role": "branch",
+          "target_pool": "minecraft:empty",
+          "vertical_offset": 1
+        },
+        {
+          "facing": "up",
+          "jigsaw_final_state": "minecraft:red_nether_bricks",
+          "jigsaw_name": "mkultra:base",
+          "jigsaw_orientation": "up_north",
+          "jigsaw_target": "mkultra:attach",
+          "opening_height": 1,
+          "opening_width": 1,
+          "relative_pos": {
+            "x": 11,
+            "y": 0,
+            "z": 11
+          },
+          "role": "link_candidate",
+          "target_pool": "mkultra:fire_shrine_new/insert_families/fire_shrine_pillars"
+        }
+      ],
+      "effective_dimensions": {
+        "basement_height": 30,
+        "doorway_height": 2,
+        "doorway_width": 3,
+        "entrance_height": 30,
+        "room_height": 30,
+        "room_length": 15,
+        "room_width": 15,
+        "shaft_width": 3
+      },
+      "generated_stair_positions": [],
+      "marker_positions": [],
+      "piece_id": "7b578402-e1a3-300c-8b2a-8f90e6d74b73",
+      "piece_name": "hub_spoke_corner_south_east",
+      "placement": {
+        "export_bounds": {
+          "max": {
+            "x": 77,
+            "y": 29,
+            "z": 22
+          },
+          "max_offset": {
+            "x": 77,
+            "y": 29,
+            "z": 22
+          },
+          "min": {
+            "x": 63,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 63,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 15,
+          "size_y": 30,
+          "size_z": 15
+        },
+        "preview_bounds": {
+          "max": {
+            "x": 77,
+            "y": 29,
+            "z": 22
+          },
+          "max_offset": {
+            "x": 77,
+            "y": 29,
+            "z": 22
+          },
+          "min": {
+            "x": 63,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 63,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 15,
+          "size_y": 30,
+          "size_z": 15
+        },
+        "sign_offset": {
+          "x": 60,
+          "y": 1,
+          "z": 15
+        },
+        "sign_pos": {
+          "x": 60,
+          "y": 1,
+          "z": 15
+        },
+        "structure_block_offset": {
+          "x": 61,
+          "y": 1,
+          "z": 15
+        },
+        "structure_block_pos": {
+          "x": 61,
+          "y": 1,
+          "z": 15
+        },
+        "world_origin": {
+          "x": 63,
+          "y": 0,
+          "z": 8
+        },
+        "world_origin_offset": {
+          "x": 63,
+          "y": 0,
+          "z": 8
+        }
+      },
+      "planner_id": "hub_spoke.corner.shared.hub_spoke_corner_south_east",
+      "role_id": "hub_spoke.corner.shared",
+      "structure_id": "mkultra:fire_shrine_new/hub_spoke_corner_south_east",
+      "tags": {
+        "runtime_allow_on_branch_path": "true",
+        "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "true",
+        "runtime_main_path_ending": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_start": "false",
+        "runtime_terminal": "true",
+        "runtime_top_cap_only": "false",
+        "runtime_topology_group": "hub_spoke",
+        "runtime_vertical_level_delta": "0",
+        "topology_role": "hub_spoke.corner.shared",
+        "tower_piece_kind": "room",
+        "workspace_authoring_piece": "false",
+        "workspace_flat_platform_corner": "south_east",
+        "workspace_flat_platform_kind": "corner_chamfer",
+        "workspace_horizontal_extrusion_mode": "no_extrusion",
+        "workspace_hub_spoke_archetype_slot": "hub_spoke.corner.shared",
+        "workspace_hub_spoke_concrete_slot": "hub_spoke.corner.south_east",
+        "workspace_hub_spoke_direction": "south_east",
+        "workspace_hub_spoke_layout_preset": "cardinal_with_corner_branches",
+        "workspace_palette_ceiling": "minecraft:smooth_stone",
+        "workspace_palette_floor": "minecraft:smooth_stone",
+        "workspace_palette_ladder": "minecraft:ladder",
+        "workspace_palette_slab": "minecraft:stone_brick_slab",
+        "workspace_palette_stair": "minecraft:stone_brick_stairs",
+        "workspace_palette_wall": "minecraft:stone_bricks",
+        "workspace_piece_kind": "instance",
+        "workspace_planner_id": "hub_spoke.corner.shared.hub_spoke_corner_south_east",
+        "workspace_template_crop_mode": "non_structure_void",
+        "workspace_template_kind": "hub_spoke_corner",
+        "workspace_template_reuse_mode": "rotate_export",
+        "workspace_template_rotation": "clockwise_180",
+        "workspace_template_slot_id": "hub_spoke.corner.north_west",
+        "workspace_template_source_id": "hub_spoke_corner_north_west",
+        "workspace_topology_role_id": "hub_spoke.corner.shared",
+        "workspace_topology_slot_id": "hub_spoke.corner.south_east"
+      },
+      "variant_index": 0,
+      "workspace_piece_kind": "instance"
+    },
+    {
+      "base_name": "hub_spoke_corner_south_west",
+      "connectors": [
+        {
+          "facing": "east",
+          "incoming_pool": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/south_west",
+          "jigsaw_name": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/south_west",
+          "jigsaw_target": "mkultra:branch",
+          "opening_height": 2,
+          "opening_width": 3,
+          "relative_pos": {
+            "x": 14,
+            "y": 1,
+            "z": 7
+          },
+          "role": "branch",
+          "target_pool": "minecraft:empty",
+          "vertical_offset": 1
+        },
+        {
+          "facing": "up",
+          "jigsaw_final_state": "minecraft:red_nether_bricks",
+          "jigsaw_name": "mkultra:base",
+          "jigsaw_orientation": "up_east",
+          "jigsaw_target": "mkultra:attach",
+          "opening_height": 1,
+          "opening_width": 1,
+          "relative_pos": {
+            "x": 3,
+            "y": 0,
+            "z": 11
+          },
+          "role": "link_candidate",
+          "target_pool": "mkultra:fire_shrine_new/insert_families/fire_shrine_pillars"
+        }
+      ],
+      "effective_dimensions": {
+        "basement_height": 30,
+        "doorway_height": 2,
+        "doorway_width": 3,
+        "entrance_height": 30,
+        "room_height": 30,
+        "room_length": 15,
+        "room_width": 15,
+        "shaft_width": 3
+      },
+      "generated_stair_positions": [],
+      "marker_positions": [],
+      "piece_id": "0bad05e6-13fa-390d-b280-24144ad10717",
+      "piece_name": "hub_spoke_corner_south_west",
+      "placement": {
+        "export_bounds": {
+          "max": {
+            "x": 98,
+            "y": 29,
+            "z": 22
+          },
+          "max_offset": {
+            "x": 98,
+            "y": 29,
+            "z": 22
+          },
+          "min": {
+            "x": 84,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 84,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 15,
+          "size_y": 30,
+          "size_z": 15
+        },
+        "preview_bounds": {
+          "max": {
+            "x": 98,
+            "y": 29,
+            "z": 22
+          },
+          "max_offset": {
+            "x": 98,
+            "y": 29,
+            "z": 22
+          },
+          "min": {
+            "x": 84,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 84,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 15,
+          "size_y": 30,
+          "size_z": 15
+        },
+        "sign_offset": {
+          "x": 81,
+          "y": 1,
+          "z": 15
+        },
+        "sign_pos": {
+          "x": 81,
+          "y": 1,
+          "z": 15
+        },
+        "structure_block_offset": {
+          "x": 82,
+          "y": 1,
+          "z": 15
+        },
+        "structure_block_pos": {
+          "x": 82,
+          "y": 1,
+          "z": 15
+        },
+        "world_origin": {
+          "x": 84,
+          "y": 0,
+          "z": 8
+        },
+        "world_origin_offset": {
+          "x": 84,
+          "y": 0,
+          "z": 8
+        }
+      },
+      "planner_id": "hub_spoke.corner.shared.hub_spoke_corner_south_west",
+      "role_id": "hub_spoke.corner.shared",
+      "structure_id": "mkultra:fire_shrine_new/hub_spoke_corner_south_west",
+      "tags": {
+        "runtime_allow_on_branch_path": "true",
+        "runtime_allow_on_main_path": "true",
+        "runtime_branch_cap": "true",
+        "runtime_main_path_ending": "false",
+        "runtime_piece_role": "room",
+        "runtime_progression_delta": "0",
+        "runtime_start": "false",
+        "runtime_terminal": "true",
+        "runtime_top_cap_only": "false",
+        "runtime_topology_group": "hub_spoke",
+        "runtime_vertical_level_delta": "0",
+        "topology_role": "hub_spoke.corner.shared",
+        "tower_piece_kind": "room",
+        "workspace_authoring_piece": "false",
+        "workspace_flat_platform_corner": "south_west",
+        "workspace_flat_platform_kind": "corner_chamfer",
+        "workspace_horizontal_extrusion_mode": "no_extrusion",
+        "workspace_hub_spoke_archetype_slot": "hub_spoke.corner.shared",
+        "workspace_hub_spoke_concrete_slot": "hub_spoke.corner.south_west",
+        "workspace_hub_spoke_direction": "south_west",
+        "workspace_hub_spoke_layout_preset": "cardinal_with_corner_branches",
+        "workspace_palette_ceiling": "minecraft:smooth_stone",
+        "workspace_palette_floor": "minecraft:smooth_stone",
+        "workspace_palette_ladder": "minecraft:ladder",
+        "workspace_palette_slab": "minecraft:stone_brick_slab",
+        "workspace_palette_stair": "minecraft:stone_brick_stairs",
+        "workspace_palette_wall": "minecraft:stone_bricks",
+        "workspace_piece_kind": "instance",
+        "workspace_planner_id": "hub_spoke.corner.shared.hub_spoke_corner_south_west",
+        "workspace_template_crop_mode": "non_structure_void",
+        "workspace_template_kind": "hub_spoke_corner",
+        "workspace_template_reuse_mode": "rotate_export",
+        "workspace_template_rotation": "clockwise_180",
+        "workspace_template_slot_id": "hub_spoke.corner.north_east",
+        "workspace_template_source_id": "hub_spoke_corner_north_east",
+        "workspace_topology_role_id": "hub_spoke.corner.shared",
+        "workspace_topology_slot_id": "hub_spoke.corner.south_west"
+      },
+      "variant_index": 0,
+      "workspace_piece_kind": "instance"
+    }
+  ],
+  "runtime_hints": {
+    "pools": [
+      {
+        "base_name": "insert_families/fire_shrine_platform_contents",
+        "child_base_names": [
+          "fire_shrine_platform_contents"
+        ],
+        "pool_id": "mkultra:fire_shrine_new/insert_families/fire_shrine_platform_contents"
+      },
+      {
+        "base_name": "insert_families/fire_shrine_pillars",
+        "child_base_names": [
+          "fire_shrine_pillars"
+        ],
+        "pool_id": "mkultra:fire_shrine_new/insert_families/fire_shrine_pillars"
+      },
+      {
+        "base_name": "hub_spoke_slots/hub_spoke/spoke/east",
+        "child_base_names": [
+          "fire_shrine_platform_east"
+        ],
+        "pool_id": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/east"
+      },
+      {
+        "base_name": "hub_spoke_slots/hub_spoke/spoke/west",
+        "child_base_names": [
+          "fire_shrine_platform_west"
+        ],
+        "pool_id": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/west"
+      },
+      {
+        "base_name": "hub_spoke_slots/hub_spoke/spoke/north",
+        "child_base_names": [
+          "fire_shrine_tower_north"
+        ],
+        "pool_id": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/north"
+      },
+      {
+        "base_name": "hub_spoke_slots/hub_spoke/spoke/south",
+        "child_base_names": [
+          "fire_shrine_tower_south"
+        ],
+        "pool_id": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/spoke/south"
+      },
+      {
+        "base_name": "hub_spoke_slots/hub_spoke/corner/north_east",
+        "child_base_names": [
+          "hub_spoke_corner_north_east"
+        ],
+        "pool_id": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/north_east"
+      },
+      {
+        "base_name": "hub_spoke_slots/hub_spoke/corner/north_west",
+        "child_base_names": [
+          "hub_spoke_corner_north_west"
+        ],
+        "pool_id": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/north_west"
+      },
+      {
+        "base_name": "hub_spoke_slots/hub_spoke/corner/south_east",
+        "child_base_names": [
+          "hub_spoke_corner_south_east"
+        ],
+        "pool_id": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/south_east"
+      },
+      {
+        "base_name": "hub_spoke_slots/hub_spoke/corner/south_west",
+        "child_base_names": [
+          "hub_spoke_corner_south_west"
+        ],
+        "pool_id": "mkultra:fire_shrine_new/hub_spoke_slots/hub_spoke/corner/south_west"
+      }
+    ],
+    "start_base_name": "hub_spoke_center",
+    "template_groups": [
+      {
+        "base_name": "fire_shrine_platform_contents",
+        "piece_metadata": {
+          "allow_on_branch_path": true,
+          "allow_on_main_path": true,
+          "branch_cap": true,
+          "progression_delta": 0,
+          "role": "room",
+          "terminal": true,
+          "top_cap_only": false,
+          "topology_group": "hub_spoke",
+          "vertical_level_delta": 0
+        },
+        "role_id": "hub_spoke.insert"
+      },
+      {
+        "base_name": "fire_shrine_pillars",
+        "piece_metadata": {
+          "allow_on_branch_path": true,
+          "allow_on_main_path": true,
+          "branch_cap": true,
+          "progression_delta": 0,
+          "role": "room",
+          "terminal": true,
+          "top_cap_only": false,
+          "topology_group": "hub_spoke",
+          "vertical_level_delta": 0
+        },
+        "role_id": "hub_spoke.insert"
+      },
+      {
+        "base_name": "fire_shrine_platform_east",
+        "piece_metadata": {
+          "allow_on_branch_path": true,
+          "allow_on_main_path": true,
+          "progression_delta": 0,
+          "role": "room",
+          "terminal": false,
+          "top_cap_only": false,
+          "topology_group": "hub_spoke",
+          "vertical_level_delta": 0
+        },
+        "role_id": "hub_spoke.spoke.shared"
+      },
+      {
+        "base_name": "fire_shrine_platform_west",
+        "piece_metadata": {
+          "allow_on_branch_path": true,
+          "allow_on_main_path": true,
+          "progression_delta": 0,
+          "role": "room",
+          "terminal": false,
+          "top_cap_only": false,
+          "topology_group": "hub_spoke",
+          "vertical_level_delta": 0
+        },
+        "role_id": "hub_spoke.spoke.shared"
+      },
+      {
+        "base_name": "fire_shrine_tower_north",
+        "piece_metadata": {
+          "allow_on_branch_path": true,
+          "allow_on_main_path": true,
+          "progression_delta": 0,
+          "role": "room",
+          "terminal": false,
+          "top_cap_only": false,
+          "topology_group": "hub_spoke",
+          "vertical_level_delta": 0
+        },
+        "role_id": "hub_spoke.spoke.shared"
+      },
+      {
+        "base_name": "fire_shrine_tower_south",
+        "piece_metadata": {
+          "allow_on_branch_path": true,
+          "allow_on_main_path": true,
+          "progression_delta": 0,
+          "role": "room",
+          "terminal": false,
+          "top_cap_only": false,
+          "topology_group": "hub_spoke",
+          "vertical_level_delta": 0
+        },
+        "role_id": "hub_spoke.spoke.shared"
+      },
+      {
+        "base_name": "hub_spoke_center",
+        "piece_metadata": {
+          "allow_on_branch_path": true,
+          "allow_on_main_path": true,
+          "progression_delta": 0,
+          "role": "room",
+          "terminal": false,
+          "top_cap_only": false,
+          "topology_group": "hub_spoke",
+          "vertical_level_delta": 0
+        },
+        "role_id": "hub_spoke.center"
+      },
+      {
+        "base_name": "hub_spoke_corner_north_east",
+        "piece_metadata": {
+          "allow_on_branch_path": true,
+          "allow_on_main_path": true,
+          "branch_cap": true,
+          "progression_delta": 0,
+          "role": "room",
+          "terminal": true,
+          "top_cap_only": false,
+          "topology_group": "hub_spoke",
+          "vertical_level_delta": 0
+        },
+        "role_id": "hub_spoke.corner.shared"
+      },
+      {
+        "base_name": "hub_spoke_corner_north_west",
+        "piece_metadata": {
+          "allow_on_branch_path": true,
+          "allow_on_main_path": true,
+          "branch_cap": true,
+          "progression_delta": 0,
+          "role": "room",
+          "terminal": true,
+          "top_cap_only": false,
+          "topology_group": "hub_spoke",
+          "vertical_level_delta": 0
+        },
+        "role_id": "hub_spoke.corner.shared"
+      },
+      {
+        "base_name": "hub_spoke_corner_south_east",
+        "piece_metadata": {
+          "allow_on_branch_path": true,
+          "allow_on_main_path": true,
+          "branch_cap": true,
+          "progression_delta": 0,
+          "role": "room",
+          "terminal": true,
+          "top_cap_only": false,
+          "topology_group": "hub_spoke",
+          "vertical_level_delta": 0
+        },
+        "role_id": "hub_spoke.corner.shared"
+      },
+      {
+        "base_name": "hub_spoke_corner_south_west",
+        "piece_metadata": {
+          "allow_on_branch_path": true,
+          "allow_on_main_path": true,
+          "branch_cap": true,
+          "progression_delta": 0,
+          "role": "room",
+          "terminal": true,
+          "top_cap_only": false,
+          "topology_group": "hub_spoke",
+          "vertical_level_delta": 0
+        },
+        "role_id": "hub_spoke.corner.shared"
+      }
+    ]
+  },
+  "schema_version": 4,
+  "settings": {
+    "anchor": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "dimensions": {
+      "basement_height": 30,
+      "doorway_height": 2,
+      "doorway_width": 3,
+      "entrance_height": 30,
+      "room_height": 30,
+      "room_length": 11,
+      "room_width": 11,
+      "shaft_width": 3
+    },
+    "exterior_air_margin": 0,
+    "family_definitions": [
+      {
+        "base_name": "hub_spoke_center",
+        "foundation_policy": {},
+        "horizontal_extrusion_mode": "no_extrusion",
+        "room_height": 30,
+        "room_length": 11,
+        "room_width": 11,
+        "slot_metadata": {
+          "piece_kind": "room",
+          "role_kind": "hub",
+          "terminal": false,
+          "topology_slot_id": "hub_spoke.center"
+        },
+        "supports_vertical_access": false
+      },
+      {
+        "base_name": "hub_spoke_spoke",
+        "foundation_policy": {},
+        "horizontal_extrusion_mode": "no_extrusion",
+        "room_height": 30,
+        "room_length": 15,
+        "room_width": 11,
+        "slot_metadata": {
+          "piece_kind": "room",
+          "role_kind": "spoke",
+          "terminal": false,
+          "topology_slot_id": "hub_spoke.spoke.shared"
+        },
+        "supports_vertical_access": false
+      },
+      {
+        "base_name": "hub_spoke_corner",
+        "foundation_policy": {},
+        "horizontal_extrusion_mode": "no_extrusion",
+        "room_height": 30,
+        "room_length": 15,
+        "room_width": 15,
+        "slot_metadata": {
+          "piece_kind": "room",
+          "role_kind": "corner",
+          "terminal": true,
+          "topology_slot_id": "hub_spoke.corner.shared"
+        },
+        "supports_vertical_access": false
+      },
+      {
+        "base_name": "hub_spoke_corner_north_west",
+        "foundation_policy": {},
+        "horizontal_extrusion_mode": "no_extrusion",
+        "room_height": 30,
+        "room_length": 15,
+        "room_width": 15,
+        "slot_metadata": {
+          "piece_kind": "room",
+          "role_kind": "corner",
+          "terminal": true,
+          "topology_slot_id": "hub_spoke.corner.north_west"
+        },
+        "supports_vertical_access": false
+      },
+      {
+        "base_name": "hub_spoke_corner_north_east",
+        "foundation_policy": {},
+        "horizontal_extrusion_mode": "no_extrusion",
+        "room_height": 30,
+        "room_length": 15,
+        "room_width": 15,
+        "slot_metadata": {
+          "piece_kind": "room",
+          "role_kind": "corner",
+          "terminal": true,
+          "topology_slot_id": "hub_spoke.corner.north_east"
+        },
+        "supports_vertical_access": false
+      }
+    ],
+    "insert_families": [
+      {
+        "depth": 9,
+        "family_id": "fire_shrine_platform_contents",
+        "height": 11,
+        "kind": "courtyard_socket",
+        "width": 9
+      },
+      {
+        "depth": 5,
+        "family_id": "fire_shrine_pillars",
+        "height": 20,
+        "kind": "courtyard_socket",
+        "width": 5
+      }
+    ],
+    "opening_profiles": [
+      {
+        "allow_on_branch_path": false,
+        "allow_on_main_path": true,
+        "opening_height": 2,
+        "opening_width": 3,
+        "profile_id": "main_opening"
+      },
+      {
+        "allow_on_branch_path": true,
+        "allow_on_main_path": false,
+        "opening_height": 2,
+        "opening_width": 3,
+        "profile_id": "branch_opening"
+      }
+    ],
+    "palette": {
+      "ceiling_block": "minecraft:smooth_stone",
+      "floor_block": "minecraft:smooth_stone",
+      "wall_block": "minecraft:stone_bricks"
+    },
+    "preview_margin": 2,
+    "shell_margin": 1,
+    "stair_config": {
+      "mode": "auto",
+      "rise_type": "mixed",
+      "stair_width": 1
+    },
+    "topology_profile": {
+      "planner_id": "mkworkspace_extensions:hub_spoke",
+      "planner_settings": [
+        {
+          "planner_id": "mkworkspace_extensions:hub_spoke",
+          "scope_id": "hub_spoke",
+          "settings": {
+            "corner_template_mode": "paired",
+            "spoke_templates": [
+              {
+                "base_name": "fire_shrine_tower",
+                "height": 30,
+                "label": "Tower",
+                "length": 15,
+                "valid_directions": [
+                  "north",
+                  "south"
+                ]
+              },
+              {
+                "base_name": "fire_shrine_platform",
+                "height": 30,
+                "label": "Platform",
+                "length": 15,
+                "valid_directions": [
+                  "east",
+                  "west"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "terrain_adjustment": "none"
+    },
+    "vertical_access_placement": "center",
+    "vertical_access_spec": {
+      "placement": "center",
+      "shaft_size": 3,
+      "stair_config": {
+        "mode": "auto",
+        "rise_type": "mixed",
+        "stair_width": 1
+      }
+    }
+  },
+  "structure_name": "fire_shrine_new",
+  "template_groups": [
+    {
+      "base_name": "fire_shrine_platform_contents",
+      "pieces": [
+        "fire_shrine_platform_contents",
+        "fire_shrine_gazebo",
+        "fire_shrine_lava_fountain"
+      ],
+      "role_id": "hub_spoke.insert"
+    },
+    {
+      "base_name": "fire_shrine_pillars",
+      "pieces": [
+        "fire_shrine_pillars",
+        "fire_shrine_pillar"
+      ],
+      "role_id": "hub_spoke.insert"
+    },
+    {
+      "base_name": "fire_shrine_platform_east",
+      "pieces": [
+        "fire_shrine_platform_east"
+      ],
+      "role_id": "hub_spoke.spoke.shared"
+    },
+    {
+      "base_name": "fire_shrine_platform_west",
+      "pieces": [
+        "fire_shrine_platform_west"
+      ],
+      "role_id": "hub_spoke.spoke.shared"
+    },
+    {
+      "base_name": "fire_shrine_tower_north",
+      "pieces": [
+        "fire_shrine_tower_north"
+      ],
+      "role_id": "hub_spoke.spoke.shared"
+    },
+    {
+      "base_name": "fire_shrine_tower_south",
+      "pieces": [
+        "fire_shrine_tower_south"
+      ],
+      "role_id": "hub_spoke.spoke.shared"
+    },
+    {
+      "base_name": "hub_spoke_center",
+      "pieces": [
+        "hub_spoke_center"
+      ],
+      "role_id": "hub_spoke.center"
+    },
+    {
+      "base_name": "hub_spoke_corner_north_east",
+      "pieces": [
+        "hub_spoke_corner_north_east"
+      ],
+      "role_id": "hub_spoke.corner.shared"
+    },
+    {
+      "base_name": "hub_spoke_corner_north_west",
+      "pieces": [
+        "hub_spoke_corner_north_west"
+      ],
+      "role_id": "hub_spoke.corner.shared"
+    },
+    {
+      "base_name": "hub_spoke_corner_south_east",
+      "pieces": [
+        "hub_spoke_corner_south_east"
+      ],
+      "role_id": "hub_spoke.corner.shared"
+    },
+    {
+      "base_name": "hub_spoke_corner_south_west",
+      "pieces": [
+        "hub_spoke_corner_south_west"
+      ],
+      "role_id": "hub_spoke.corner.shared"
+    }
+  ],
+  "updated_at": 1784207497793,
+  "workspace_id": "86e5b1e4-53cc-346f-8d51-906a23f5b322"
+}

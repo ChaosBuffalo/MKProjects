@@ -20,6 +20,10 @@ public class MKWorkspaceImportManifestDiscovery {
         this.namespace = namespace;
     }
 
+    public String namespace() {
+        return namespace;
+    }
+
     public List<ImportCandidate> discoverCandidates() {
         return MKWorkspaceExportManifestLoader.loadAllFromModSource(moduleRoot, namespace).stream()
                 .map(this::toCandidate)

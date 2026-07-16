@@ -10,6 +10,8 @@ import net.minecraft.resources.ResourceLocation;
 
 public class MKWorkspaceConnectorDefinition {
     private static final ResourceLocation EMPTY_POOL = ResourceLocation.parse("minecraft:empty");
+    public static final String DEFAULT_JIGSAW_FINAL_STATE = "minecraft:air";
+    public static final String DEFAULT_JIGSAW_JOINT = "aligned";
     public static final Codec<MKWorkspaceConnectorDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             MKWorkspaceCodecs.CONNECTOR_ROLE_CODEC.fieldOf("role").forGetter(MKWorkspaceConnectorDefinition::role),
             MKWorkspaceCodecs.DIRECTION_CODEC.fieldOf("facing").forGetter(MKWorkspaceConnectorDefinition::facing),
@@ -21,7 +23,12 @@ public class MKWorkspaceConnectorDefinition {
             ResourceLocation.CODEC.fieldOf("jigsawName").forGetter(MKWorkspaceConnectorDefinition::jigsawName),
             ResourceLocation.CODEC.fieldOf("jigsawTarget").forGetter(MKWorkspaceConnectorDefinition::jigsawTarget),
             ResourceLocation.CODEC.fieldOf("targetPool").forGetter(MKWorkspaceConnectorDefinition::targetPool),
-            ResourceLocation.CODEC.optionalFieldOf("incomingPool", EMPTY_POOL).forGetter(MKWorkspaceConnectorDefinition::incomingPool)
+            ResourceLocation.CODEC.optionalFieldOf("incomingPool", EMPTY_POOL).forGetter(MKWorkspaceConnectorDefinition::incomingPool),
+            Codec.STRING.optionalFieldOf("jigsawOrientation", "").forGetter(MKWorkspaceConnectorDefinition::jigsawOrientation),
+            Codec.STRING.optionalFieldOf("jigsawFinalState", DEFAULT_JIGSAW_FINAL_STATE)
+                    .forGetter(MKWorkspaceConnectorDefinition::jigsawFinalState),
+            Codec.STRING.optionalFieldOf("jigsawJoint", DEFAULT_JIGSAW_JOINT)
+                    .forGetter(MKWorkspaceConnectorDefinition::jigsawJoint)
     ).apply(instance, MKWorkspaceConnectorDefinition::new));
 
     private final MKConnectorRole role;
@@ -35,11 +42,23 @@ public class MKWorkspaceConnectorDefinition {
     private final ResourceLocation jigsawTarget;
     private final ResourceLocation targetPool;
     private final ResourceLocation incomingPool;
+    private final String jigsawOrientation;
+    private final String jigsawFinalState;
+    private final String jigsawJoint;
 
     public MKWorkspaceConnectorDefinition(MKConnectorRole role, Direction facing, BlockPos relativePos, int openingWidth,
                                           int openingHeight, int lateralOffset, int verticalOffset,
                                           ResourceLocation jigsawName, ResourceLocation jigsawTarget,
                                           ResourceLocation targetPool, ResourceLocation incomingPool) {
+        this(role, facing, relativePos, openingWidth, openingHeight, lateralOffset, verticalOffset, jigsawName,
+                jigsawTarget, targetPool, incomingPool, "", DEFAULT_JIGSAW_FINAL_STATE, DEFAULT_JIGSAW_JOINT);
+    }
+
+    public MKWorkspaceConnectorDefinition(MKConnectorRole role, Direction facing, BlockPos relativePos, int openingWidth,
+                                          int openingHeight, int lateralOffset, int verticalOffset,
+                                          ResourceLocation jigsawName, ResourceLocation jigsawTarget,
+                                          ResourceLocation targetPool, ResourceLocation incomingPool,
+                                          String jigsawOrientation, String jigsawFinalState, String jigsawJoint) {
         this.role = role;
         this.facing = facing;
         this.relativePos = relativePos;
@@ -51,6 +70,11 @@ public class MKWorkspaceConnectorDefinition {
         this.jigsawTarget = jigsawTarget;
         this.targetPool = targetPool;
         this.incomingPool = incomingPool;
+        this.jigsawOrientation = jigsawOrientation == null ? "" : jigsawOrientation;
+        this.jigsawFinalState = jigsawFinalState == null || jigsawFinalState.isBlank() ?
+                DEFAULT_JIGSAW_FINAL_STATE :
+                jigsawFinalState;
+        this.jigsawJoint = jigsawJoint == null || jigsawJoint.isBlank() ? DEFAULT_JIGSAW_JOINT : jigsawJoint;
     }
 
     public static MKWorkspaceConnectorDefinition fromTag(CompoundTag tag) {
@@ -103,5 +127,17 @@ public class MKWorkspaceConnectorDefinition {
 
     public ResourceLocation incomingPool() {
         return incomingPool;
+    }
+
+    public String jigsawOrientation() {
+        return jigsawOrientation;
+    }
+
+    public String jigsawFinalState() {
+        return jigsawFinalState;
+    }
+
+    public String jigsawJoint() {
+        return jigsawJoint;
     }
 }

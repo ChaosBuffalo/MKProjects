@@ -1,7 +1,8 @@
-// 1.21.1	2025-01-17T13:17:48.4966788	Tags for minecraft:worldgen/structure mod id mkultra
+// 1.21.1	2026-07-14T14:27:03.1461649	Tags for minecraft:worldgen/structure mod id mkultra
 9e04790d933f2b66b579303dc93bd6e35e102bdc data/mkultra/tags/worldgen/structure/decaying_church.json
 90ccf114af4e31654dca8cb674c127f271e261a6 data/mkultra/tags/worldgen/structure/deepslate_obelisk.json
 3a9da0a7d152c614365b0624afa462f09cab778d data/mkultra/tags/worldgen/structure/desert_temple_village.json
+8b170f111c5f53a0368af217b2a7729831ac28c0 data/mkultra/tags/worldgen/structure/fire_shrine.json
 6fa9114a09201c208d0f904d1edba2e18537ec87 data/mkultra/tags/worldgen/structure/hyborean_crypt.json
 edaf9493c7b667b9e5c20d052012a746f3317ce9 data/mkultra/tags/worldgen/structure/intro_castle.json
 d96bdec33076061a69b885f3914920f8b4b22aec data/mkultra/tags/worldgen/structure/necrotide_alter.json

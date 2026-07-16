@@ -10,6 +10,7 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -28,30 +29,34 @@ public class MKWorkspaceExportManifestLoader {
     }
 
     public static List<LoadedManifest> loadAllFromModSource(Path moduleRoot, String namespace) {
-        Path manifestDir = manifestDirectory(moduleRoot, namespace);
-        if (!Files.isDirectory(manifestDir)) {
-            return List.of();
+        ArrayList<LoadedManifest> manifests = new ArrayList<>();
+        for (Path manifestDir : manifestDirectories(moduleRoot, namespace)) {
+            if (!Files.isDirectory(manifestDir)) {
+                continue;
+            }
+            try (Stream<Path> stream = Files.list(manifestDir)) {
+                stream.filter(Files::isRegularFile)
+                        .filter(path -> path.toString().endsWith(".json"))
+                        .map(path -> loadOne(path, namespace))
+                        .flatMap(java.util.Optional::stream)
+                        .forEach(manifests::add);
+            } catch (IOException e) {
+                MKWorkspaceRuntime.LOGGER.warn("Failed to scan workspace export manifests under {}", manifestDir, e);
+            }
         }
-
-        try (Stream<Path> stream = Files.list(manifestDir)) {
-            return stream.filter(Files::isRegularFile)
-                    .filter(path -> path.toString().endsWith(".json"))
-                    .map(path -> loadOne(path, namespace))
-                    .flatMap(java.util.Optional::stream)
-                    .sorted((left, right) -> left.manifest().structureName().compareToIgnoreCase(right.manifest().structureName()))
-                    .toList();
-        } catch (IOException e) {
-            MKWorkspaceRuntime.LOGGER.warn("Failed to scan workspace export manifests under {}", manifestDir, e);
-            return List.of();
-        }
+        return manifests.stream()
+                .sorted((left, right) -> left.manifest().structureName().compareToIgnoreCase(right.manifest().structureName()))
+                .toList();
     }
 
     public static java.util.Optional<LoadedManifest> loadFromModSource(Path moduleRoot, ResourceLocation id) {
-        Path manifestPath = manifestDirectory(moduleRoot, id.getNamespace()).resolve(id.getPath() + ".json");
-        if (!Files.isRegularFile(manifestPath)) {
-            return java.util.Optional.empty();
+        for (Path manifestDir : manifestDirectories(moduleRoot, id.getNamespace())) {
+            Path manifestPath = manifestDir.resolve(id.getPath() + ".json");
+            if (Files.isRegularFile(manifestPath)) {
+                return loadOne(manifestPath, id.getNamespace());
+            }
         }
-        return loadOne(manifestPath, id.getNamespace());
+        return java.util.Optional.empty();
     }
 
     private static List<Path> candidateModuleRoots(Path cwd, String moduleDirectoryName) {
@@ -77,6 +82,14 @@ public class MKWorkspaceExportManifestLoader {
 
     private static Path manifestDirectory(Path moduleRoot, String namespace) {
         return moduleRoot.resolve(Paths.get("src", "main", "resources", "data", namespace, "mk_workspace_exports"));
+    }
+
+    private static List<Path> manifestDirectories(Path moduleRoot, String namespace) {
+        return List.of(
+                manifestDirectory(moduleRoot, namespace),
+                moduleRoot.resolve(Paths.get("src", "generated", "resources", "data", namespace,
+                        "mk_workspace_exports"))
+        );
     }
 
     private static java.util.Optional<LoadedManifest> loadOne(Path path, String expectedNamespace) {

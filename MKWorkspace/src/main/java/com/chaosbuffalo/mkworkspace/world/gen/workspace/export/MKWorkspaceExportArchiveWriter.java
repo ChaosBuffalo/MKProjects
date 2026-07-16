@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.export;
 
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKJigsawPieceMetadata;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKInsertFamilyPools;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKFloorConnectorPatch;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKFloorMaskVariantExporter;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
@@ -245,7 +246,7 @@ public class MKWorkspaceExportArchiveWriter {
             CompoundTag sourceBlock = sourceBlocks.getCompound(i);
             BlockPos sourcePos = readBlockPos(sourceBlock.getList("pos", Tag.TAG_INT));
             BlockState state = sourcePalette.get(sourceBlock.getInt("state")).rotate(rotation);
-            if (state.is(Blocks.JIGSAW)) {
+            if (state.is(Blocks.JIGSAW) && !preserveRawInsertJigsaw(sourceBlock, sourcePiece)) {
                 continue;
             }
             BlockPos targetPos = rotatePos(sourcePos, sourceWidth, sourceLength, rotation);
@@ -283,10 +284,13 @@ public class MKWorkspaceExportArchiveWriter {
             CompoundTag block = blocks.getCompound(i);
             BlockPos pos = readBlockPos(block.getList("pos", Tag.TAG_INT));
             BlockState state = palette.get(block.getInt("state"));
+            CompoundTag blockNbt = block.contains("nbt", Tag.TAG_COMPOUND) ? block.getCompound("nbt").copy() : null;
             if (state.is(Blocks.JIGSAW)) {
+                if (preserveRawInsertJigsaw(block, piece)) {
+                    blocksByPos.put(pos, new ExportBlock(pos, state, blockNbt));
+                }
                 continue;
             }
-            CompoundTag blockNbt = block.contains("nbt", Tag.TAG_COMPOUND) ? block.getCompound("nbt").copy() : null;
             blocksByPos.put(pos, new ExportBlock(pos, state, blockNbt));
         }
         for (var connector : piece.connectors()) {
@@ -297,18 +301,37 @@ public class MKWorkspaceExportArchiveWriter {
         writePaletteAndBlocks(tag, List.copyOf(blocksByPos.values()));
     }
 
+    private boolean preserveRawInsertJigsaw(CompoundTag block, MKWorkspacePieceDefinition piece) {
+        if (!block.contains("nbt", Tag.TAG_COMPOUND)) {
+            return false;
+        }
+        if (piece.tags().containsKey(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID)) {
+            return true;
+        }
+        String pool = block.getCompound("nbt").getString("pool");
+        if (pool.isBlank()) {
+            return false;
+        }
+        try {
+            return ResourceLocation.parse(pool).getPath()
+                    .contains("/" + MKInsertFamilyPools.INSERT_FAMILY_POOL_SEGMENT + "/");
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
     private ExportBlock connectorJigsawBlock(
             com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition connector) {
         BlockPos pos = connector.relativePos();
         BlockState state = Blocks.JIGSAW.defaultBlockState()
-                .setValue(JigsawBlock.ORIENTATION, getJigsawOrientation(connector.facing()));
+                .setValue(JigsawBlock.ORIENTATION, getJigsawOrientation(connector));
         CompoundTag jigsawNbt = new CompoundTag();
         jigsawNbt.putString("id", "minecraft:jigsaw");
         jigsawNbt.putString("name", connector.jigsawName().toString());
         jigsawNbt.putString("target", connector.jigsawTarget().toString());
         jigsawNbt.putString("pool", connector.targetPool().toString());
-        jigsawNbt.putString("final_state", "minecraft:air");
-        jigsawNbt.putString("joint", "aligned");
+        jigsawNbt.putString("final_state", connector.jigsawFinalState());
+        jigsawNbt.putString("joint", connector.jigsawJoint());
         jigsawNbt.putInt("x", pos.getX());
         jigsawNbt.putInt("y", pos.getY());
         jigsawNbt.putInt("z", pos.getZ());
@@ -473,7 +496,16 @@ public class MKWorkspaceExportArchiveWriter {
         return list;
     }
 
-    private FrontAndTop getJigsawOrientation(net.minecraft.core.Direction facing) {
+    private FrontAndTop getJigsawOrientation(
+            com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition connector) {
+        if (!connector.jigsawOrientation().isBlank()) {
+            for (FrontAndTop orientation : FrontAndTop.values()) {
+                if (orientation.getSerializedName().equals(connector.jigsawOrientation())) {
+                    return orientation;
+                }
+            }
+        }
+        net.minecraft.core.Direction facing = connector.facing();
         if (facing == net.minecraft.core.Direction.UP || facing == net.minecraft.core.Direction.DOWN) {
             return FrontAndTop.fromFrontAndTop(facing, net.minecraft.core.Direction.NORTH);
         }

@@ -50,12 +50,12 @@ public class UltraBiomeTagsProvider extends BiomeTagsProvider {
                 .addTag(BiomeTags.HAS_VILLAGE_PLAINS)
                 .addTag(BiomeTags.IS_SAVANNA)
                 .addTag(BiomeTags.IS_FOREST);
-        tag(UltraTags.Biomes.HAS_FIRE_SHRINE);
-//                .addTag(BiomeTags.IS_MOUNTAIN)
-//                .addTag(BiomeTags.IS_SAVANNA)
-//                .addTag(BiomeTags.IS_JUNGLE)
-//                .addTag(BiomeTags.IS_FOREST)
-//                .addTag(BiomeTags.IS_BADLANDS)
-//                .add(Biomes.DESERT);
+        tag(UltraTags.Biomes.HAS_FIRE_SHRINE)
+                .addTag(BiomeTags.IS_MOUNTAIN)
+                .addTag(BiomeTags.IS_SAVANNA)
+                .addTag(BiomeTags.IS_JUNGLE)
+                .addTag(BiomeTags.IS_FOREST)
+                .addTag(BiomeTags.IS_BADLANDS)
+                .add(Biomes.DESERT);
     }
 }

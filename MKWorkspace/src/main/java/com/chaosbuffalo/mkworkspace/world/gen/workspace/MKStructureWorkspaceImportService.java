@@ -71,8 +71,9 @@ public class MKStructureWorkspaceImportService {
         }
     }
 
-    private final MKWorkspaceImportManifestDiscovery discovery = new MKWorkspaceImportManifestDiscovery(
-            MKWorkspaceExportManifestLoader.resolveModuleRoot(MKNpc.MODULE_DIRECTORY_NAME), MKNpc.MODID);
+    private static final String MKULTRA_MODULE_DIRECTORY_NAME = "MKUltra";
+    private static final String MKULTRA_MODID = "mkultra";
+    private final List<MKWorkspaceImportManifestDiscovery> discoveries = createDiscoveries();
     private final MKWorkspaceScaffoldBuilder scaffoldBuilder = new MKWorkspaceScaffoldBuilder();
     private final MKWorkspacePlannerRegistry plannerRegistry = MKWorkspacePlannerRegistry.shared();
 
@@ -88,7 +89,7 @@ public class MKStructureWorkspaceImportService {
             return MKWorkspaceImportOutcome.failed();
         }
 
-        Optional<MKWorkspaceExportManifest> manifestOpt = discovery.loadManifest(manifestId);
+        Optional<MKWorkspaceExportManifest> manifestOpt = loadManifest(manifestId);
         if (manifestOpt.isEmpty()) {
             return MKWorkspaceImportOutcome.failed();
         }
@@ -135,9 +136,36 @@ public class MKStructureWorkspaceImportService {
     }
 
     public List<String> discoverManifestIds() {
-        return discovery.discoverCandidates().stream()
+        return discoveries.stream()
+                .flatMap(discovery -> discovery.discoverCandidates().stream())
                 .map(candidate -> candidate.id().toString())
+                .sorted(String::compareToIgnoreCase)
                 .toList();
+    }
+
+    private Optional<MKWorkspaceExportManifest> loadManifest(ResourceLocation manifestId) {
+        return discoveries.stream()
+                .filter(discovery -> discovery.namespace().equals(manifestId.getNamespace()))
+                .map(discovery -> discovery.loadManifest(manifestId))
+                .flatMap(Optional::stream)
+                .findFirst();
+    }
+
+    private static List<MKWorkspaceImportManifestDiscovery> createDiscoveries() {
+        ArrayList<MKWorkspaceImportManifestDiscovery> result = new ArrayList<>();
+        result.add(new MKWorkspaceImportManifestDiscovery(
+                MKWorkspaceExportManifestLoader.resolveModuleRoot(MKNpc.MODULE_DIRECTORY_NAME), MKNpc.MODID));
+        addOptionalDiscovery(result, MKULTRA_MODULE_DIRECTORY_NAME, MKULTRA_MODID);
+        return List.copyOf(result);
+    }
+
+    private static void addOptionalDiscovery(List<MKWorkspaceImportManifestDiscovery> discoveries,
+                                             String moduleDirectoryName, String namespace) {
+        try {
+            discoveries.add(new MKWorkspaceImportManifestDiscovery(
+                    MKWorkspaceExportManifestLoader.resolveModuleRoot(moduleDirectoryName), namespace));
+        } catch (IllegalStateException ignored) {
+        }
     }
 
     private Optional<Map<String, StructureTemplate>> preflightImport(ServerLevel level, ResourceLocation manifestId,
@@ -400,7 +428,10 @@ public class MKStructureWorkspaceImportService {
                 connector.jigsawName(),
                 connector.jigsawTarget(),
                 connector.targetPool(),
-                connector.incomingPool()
+                connector.incomingPool(),
+                connector.jigsawOrientation(),
+                connector.jigsawFinalState(),
+                connector.jigsawJoint()
         );
     }
 
