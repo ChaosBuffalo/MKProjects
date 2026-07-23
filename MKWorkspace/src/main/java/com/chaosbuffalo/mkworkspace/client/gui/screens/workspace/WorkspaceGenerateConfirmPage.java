@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceInvalidationReport;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
@@ -37,15 +38,25 @@ public class WorkspaceGenerateConfirmPage extends WorkspacePageBase {
         if (screen.preflight() == null) {
             addText(screen, content, "Impact report is loading. The server will preflight again before applying.");
         } else {
-            addText(screen, content, screen.preflight().report().summary());
-            addText(screen, content, "Operation: " + screen.preflight().report().recommendedOperation());
-            addText(screen, content, "Safety: " + screen.preflight().report().safety().getSerializedName());
-            for (String warning : screen.preflight().report().warnings()) {
+            MKWorkspaceInvalidationReport report = screen.preflight().report();
+            if (report.relayoutImpacts().isEmpty()) {
+                addText(screen, content, "These changes will not add, rebuild, remove, move, expand, or patch " +
+                        "physical authored pieces.");
+            } else {
+                addRelayoutImpactReport(screen, content, report);
+            }
+
+            for (String warning : report.warnings()) {
                 addText(screen, content, "Warning: " + warning);
             }
-            if (!screen.preflight().report().relayoutImpacts().isEmpty()) {
-                addText(screen, content, "Affected templates: " +
-                        screen.preflight().report().relayoutImpacts().size());
+            addText(screen, content, "Summary: " + report.summary());
+            addText(screen, content, "Operation: " + report.recommendedOperation());
+            addText(screen, content, "Safety: " + report.safety().getSerializedName());
+            if (!report.invalidatedLayers().isEmpty()) {
+                addText(screen, content, "Invalidates: " + report.invalidatedLayers().stream()
+                        .map(layer -> layer.getSerializedName())
+                        .reduce((left, right) -> left + ", " + right)
+                        .orElse(""));
             }
         }
         finishScrollContent(screen, scrollView, content);

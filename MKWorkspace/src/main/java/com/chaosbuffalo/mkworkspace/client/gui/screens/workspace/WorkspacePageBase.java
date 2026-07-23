@@ -168,23 +168,25 @@ public abstract class WorkspacePageBase {
         if (impacts.isEmpty()) {
             return;
         }
-        long preserved = countImpacts(impacts, "preserved") + countImpacts(impacts, "moved") +
-                countImpacts(impacts, "expanded");
+        long unchanged = countImpacts(impacts, "preserved");
         long moved = countImpacts(impacts, "moved");
         long expanded = countImpacts(impacts, "expanded");
-        long created = countImpacts(impacts, "new");
+        long added = countImpacts(impacts, "new");
         long rebuilt = countImpacts(impacts, "rebuild");
         long removed = countImpacts(impacts, "removed");
-        addText(screen, content, "Template impact: " + impacts.size() + " physical authored slots total - " +
-                preserved + " preserved - " + created + " new - " + rebuilt + " rebuilt - " +
-                removed + " removed.");
-        if (moved > 0 || expanded > 0) {
-            addText(screen, content, "Preserved changes: " + moved + " moved, " + expanded + " expanded.");
-        }
-        addText(screen, content, "Templates and variants:");
-        for (MKWorkspaceRelayoutImpact impact : impacts) {
-            addText(screen, content, formatRelayoutImpact(impact));
-        }
+        long patched = countImpacts(impacts, "scaffold_patch");
+        addText(screen, content, "These changes will add " + added + " pieces, rebuild " + rebuilt +
+                " pieces, remove " + removed + " pieces, move " + moved + " pieces, expand " +
+                expanded + " pieces, patch " + patched + " pieces, and leave " + unchanged +
+                " pieces unchanged.");
+
+        addImpactSection(screen, content, "Added", impacts, "new");
+        addImpactSection(screen, content, "Rebuilt", impacts, "rebuild");
+        addImpactSection(screen, content, "Removed", impacts, "removed");
+        addImpactSection(screen, content, "Moved", impacts, "moved");
+        addImpactSection(screen, content, "Expanded", impacts, "expanded");
+        addImpactSection(screen, content, "Patched", impacts, "scaffold_patch");
+        addImpactSection(screen, content, "Unchanged", impacts, "preserved");
     }
 
     private long countImpacts(List<MKWorkspaceRelayoutImpact> impacts, String outcome) {
@@ -193,17 +195,34 @@ public abstract class WorkspacePageBase {
                 .count();
     }
 
-    private String formatRelayoutImpact(MKWorkspaceRelayoutImpact impact) {
-        String variantLabel = impact.variantIndex() == 0 ? "template" : "variant " + impact.variantIndex();
-        String slot = impact.stableSlotKey().isBlank() ? impact.plannerId() : impact.stableSlotKey();
-        return titleCase(impact.outcome()) + ": " + impact.baseName() + " / " + impact.pieceName() +
-                " (" + variantLabel + ") - " + impact.reason() + " - " + slot;
+    private void addImpactSection(MKWorkspaceScreen screen, MKStackLayoutVertical content, String title,
+                                  List<MKWorkspaceRelayoutImpact> impacts, String outcome) {
+        List<MKWorkspaceRelayoutImpact> matching = impacts.stream()
+                .filter(impact -> outcome.equals(impact.outcome()))
+                .toList();
+        if (matching.isEmpty()) {
+            return;
+        }
+        addText(screen, content, title);
+        int shown = Math.min(10, matching.size());
+        for (int i = 0; i < shown; i++) {
+            addText(screen, content, "- " + formatRelayoutImpact(matching.get(i)));
+        }
+        int hidden = matching.size() - shown;
+        if (hidden > 0) {
+            addText(screen, content, "- and " + hidden + " more");
+        }
     }
 
-    private String titleCase(String value) {
-        if (value == null || value.isBlank()) {
-            return "Unknown";
+    private String formatRelayoutImpact(MKWorkspaceRelayoutImpact impact) {
+        String variantLabel = impact.variantIndex() == 0 ? "template" : "variant " + impact.variantIndex();
+        String pieceLabel = impact.baseName();
+        if (pieceLabel == null || pieceLabel.isBlank()) {
+            pieceLabel = impact.pieceName();
+        } else if (!pieceLabel.equals(impact.pieceName()) && impact.pieceName() != null &&
+                !impact.pieceName().isBlank()) {
+            pieceLabel += " / " + impact.pieceName();
         }
-        return value.substring(0, 1).toUpperCase() + value.substring(1);
+        return pieceLabel + " (" + variantLabel + ") - " + impact.reason();
     }
 }
