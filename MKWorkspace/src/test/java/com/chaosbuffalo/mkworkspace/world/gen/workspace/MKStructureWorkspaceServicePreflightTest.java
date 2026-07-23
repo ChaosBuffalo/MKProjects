@@ -21,6 +21,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWalledKeepPlannerSettings;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyProfile;
@@ -31,6 +32,9 @@ import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspacePlann
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspaceTopologySchema;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWalledKeepWorkspacePlanner;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -38,6 +42,8 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -267,6 +273,37 @@ class MKStructureWorkspaceServicePreflightTest {
                 .anyMatch(impact -> "new".equals(impact.outcome()) &&
                         impact.stableSlotKey().contains("floor.keep.center.main_floor.main_room.extra_main_room")),
                 () -> "expected added main-floor main room in relayout impacts: " +
+                        preflight.report().relayoutImpacts());
+        assertFalse(preflight.report().warnings().stream()
+                .anyMatch(warning -> warning.contains("full regeneration will clear")));
+    }
+
+    @Test
+    void loadedTestKeepAddingMainRoomUsesCatalogRelayoutInsteadOfFullRegenerate() throws Exception {
+        MKWorkspaceExportManifest manifest = loadTestKeepManifest();
+        MKStructureWorkspaceImportService importService = new MKStructureWorkspaceImportService();
+        MKStructureWorkspace imported = importService.workspaceFromManifest(
+                UUID.randomUUID(), BlockPos.ZERO, 123L, manifest);
+        imported = imported.withPieces(importService.pieceDefinitionsFromManifest(imported, manifest));
+        imported = withMainFloorExit(imported);
+        MKFloorTopologySettings floorSettings = imported.topologyProfile()
+                .floorTopologySettingsOrDefault("keep.center", "main_floor");
+        MKFloorRoomProfile added = floorSettings.mainRoomProfiles().getFirst()
+                .withIdentity("extra_main_room", "Extra Main Room");
+        MKFloorTopologySettings updatedFloorSettings = floorSettings.withAddedRoomProfile(
+                MKFloorRoomKind.MAIN_ROOM, added);
+        MKStructureWorkspace requested = withTopologyProfile(imported,
+                imported.topologyProfile().withFloorTopologySettings(updatedFloorSettings));
+
+        MKWorkspaceMutationPreflight preflight = service.preflightWorkspaceUpdate(imported, requested, 123L);
+
+        assertEquals("preserve_catalog_relayout", preflight.report().recommendedOperation(),
+                () -> "warnings=" + preflight.report().warnings() +
+                        " impacts=" + preflight.report().relayoutImpacts());
+        assertTrue(preflight.report().relayoutImpacts().stream()
+                        .anyMatch(impact -> "new".equals(impact.outcome()) &&
+                                impact.stableSlotKey().contains("extra_main_room")),
+                () -> "expected only the added main room to be scaffolded: " +
                         preflight.report().relayoutImpacts());
         assertFalse(preflight.report().warnings().stream()
                 .anyMatch(warning -> warning.contains("full regeneration will clear")));
@@ -592,6 +629,15 @@ class MKStructureWorkspaceServicePreflightTest {
                 List.of(),
                 tags
         );
+    }
+
+    private static MKWorkspaceExportManifest loadTestKeepManifest() throws Exception {
+        Path path = Path.of("../MKNpc/src/main/resources/data/mknpc/mk_workspace_exports/test_keep.json");
+        if (!Files.exists(path)) {
+            path = Path.of("MKNpc/src/main/resources/data/mknpc/mk_workspace_exports/test_keep.json");
+        }
+        JsonElement json = JsonParser.parseString(Files.readString(path));
+        return MKWorkspaceExportManifest.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
     }
 
     private static MKWorkspaceTopologyProfile renamedBaseProfile() {

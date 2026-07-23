@@ -1678,6 +1678,7 @@ public class MKStructureWorkspaceService {
                 .collect(Collectors.toCollection(ArrayList::new));
         targetPieces.addAll(existing.pieces().stream()
                 .filter(piece -> piece.variantIndex() > 0)
+                .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
                 .map(piece -> toExistingVariantPiece(piece, canonicalByBaseName, canonicalByStableSlot))
                 .flatMap(Optional::stream)
                 .toList());
