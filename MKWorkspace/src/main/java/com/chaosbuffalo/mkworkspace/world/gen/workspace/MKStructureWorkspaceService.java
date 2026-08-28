@@ -1028,6 +1028,9 @@ public class MKStructureWorkspaceService {
         int nextVariantIndex = nextPhysicalVariantIndex(workspace, targetBasePieceName);
 
         MKPlannedPiece variantPiece = toVariantPiece(basePiece, nextVariantIndex);
+        if (sourcePiece != null) {
+            variantPiece = bindVariantToSourceFamily(variantPiece, sourcePiece, nextVariantIndex);
+        }
         List<MKPlannedPiece> layoutPieces = physicalVariantLayoutPieces(workspace, canonicalPieces, canonicalByBaseName,
                 List.of(variantPiece));
         MKWorkspaceGridLayout.Placement placement = alignedVariantPlacement(workspace, targetBasePieceName,
@@ -1144,7 +1147,8 @@ public class MKStructureWorkspaceService {
         MKStructureWorkspace workspace = workspaceOpt.get();
         Optional<MKWorkspacePieceDefinition> variantOpt = workspace.pieces().stream()
                 .filter(piece -> piece.pieceId().equals(pieceId))
-                .filter(piece -> piece.variantIndex() > 0)
+                .filter(piece -> MKWorkspaceContentSelectionTags.purpose(piece) ==
+                        MKWorkspaceTemplatePurpose.FAMILY_VARIANT)
                 .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
                 .findFirst();
         if (variantOpt.isEmpty()) {
@@ -1346,7 +1350,8 @@ public class MKStructureWorkspaceService {
         LinkedHashSet<UUID> requestedIds = new LinkedHashSet<>(deletedVariantPieceIds);
         return workspace.pieces().stream()
                 .filter(piece -> requestedIds.contains(piece.pieceId()))
-                .filter(piece -> piece.variantIndex() > 0)
+                .filter(piece -> MKWorkspaceContentSelectionTags.purpose(piece) ==
+                        MKWorkspaceTemplatePurpose.FAMILY_VARIANT)
                 .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
                 .toList();
     }
@@ -1839,6 +1844,23 @@ public class MKStructureWorkspaceService {
                         withWorkspaceTags(basePiece, "instance", piece.variantIndex()), piece.tags()),
                 piece.plannerId()
         );
+    }
+
+    private MKPlannedPiece bindVariantToSourceFamily(MKPlannedPiece variantPiece,
+                                                      MKWorkspacePieceDefinition sourcePiece,
+                                                      int variantIndex) {
+        Map<String, String> tags = MKWorkspaceContentSelectionTags.preserveExplicitMetadata(
+                variantPiece.tags(), sourcePiece.tags());
+        tags = MKWorkspaceContentSelectionTags.applyFamily(tags,
+                MKWorkspaceContentSelectionTags.topologySlotId(sourcePiece),
+                MKWorkspaceContentSelectionTags.familyId(sourcePiece),
+                MKWorkspaceContentSelectionTags.familyWeight(sourcePiece.tags()),
+                MKWorkspaceContentSelectionTags.familyEnabled(sourcePiece.tags()));
+        tags = MKWorkspaceContentSelectionTags.applyTemplate(tags, MKWorkspaceTemplatePurpose.FAMILY_VARIANT,
+                variantPiece.pieceName(), 1, true);
+        return new MKPlannedPiece(variantPiece.roleId(), variantPiece.pieceName(), variantPiece.interiorWidth(),
+                variantPiece.interiorLength(), variantPiece.interiorHeight(), variantPiece.connectors(), tags,
+                variantPiece.plannerId());
     }
 
     private MKPlannedPiece toExistingLayoutPiece(MKWorkspacePieceDefinition piece,

@@ -44,7 +44,8 @@ final class WorkspaceTemplateDetailPane {
 
         boolean stairCategory = WorkspacePieceDisplay.supportsStairGeneration(pieces);
         MKWorkspacePieceDefinition templatePiece = pieces.stream()
-                .filter(piece -> piece.variantIndex() == 0)
+                .filter(piece -> MKWorkspaceContentSelectionTags.purpose(piece) ==
+                        MKWorkspaceTemplatePurpose.FAMILY_CANONICAL)
                 .findFirst()
                 .orElse(pieces.getFirst());
 
@@ -66,7 +67,7 @@ final class WorkspaceTemplateDetailPane {
         content.addWidget(addCopy);
         content.addConstraintToWidget(new CenterXConstraint(), addCopy);
         addCopy.setPressedCallback((button, mouseButton) -> {
-            screen.draftSession().stageVariantAddition(baseName);
+            screen.draftSession().stageVariantAddition(baseName, templatePiece.pieceName());
             screen.flagNeedSetup();
             return true;
         });
@@ -196,7 +197,7 @@ final class WorkspaceTemplateDetailPane {
             });
         }
 
-        if (piece.variantIndex() > 0) {
+        if (purpose.variant()) {
             MKButton deleteVariant = new MKButton(Component.literal("Delete Variant"), 180, screen.buttonHeight());
             content.addWidget(deleteVariant);
             content.addConstraintToWidget(new CenterXConstraint(), deleteVariant);

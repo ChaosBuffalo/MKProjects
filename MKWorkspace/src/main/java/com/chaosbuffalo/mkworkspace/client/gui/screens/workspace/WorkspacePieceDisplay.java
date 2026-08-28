@@ -3,6 +3,8 @@ package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceContentSelectionTags;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplatePurpose;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspacePieceTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
@@ -43,11 +45,15 @@ public final class WorkspacePieceDisplay {
     }
 
     public static boolean isAuthoredTemplatePiece(MKWorkspacePieceDefinition piece) {
-        return !"template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance")) &&
+        return MKWorkspaceContentSelectionTags.purpose(piece).placeable() &&
                 !MKWorkspaceTemplateReuseTags.isDerived(piece.tags());
     }
 
     public static String buildWorkspaceGroupKey(MKWorkspacePieceDefinition piece) {
+        String explicitFamilyId = piece.tags().get(MKWorkspaceContentSelectionTags.FAMILY_ID);
+        if (explicitFamilyId != null && !explicitFamilyId.isBlank()) {
+            return "slot_family:" + MKWorkspaceContentSelectionTags.topologySlotId(piece) + ":" + explicitFamilyId;
+        }
         String linearRunFamilyId = piece.tags().get("workspace_linear_run_family_id");
         if (linearRunFamilyId != null) {
             return "linear_run:" + linearRunFamilyId + ":" +
@@ -75,6 +81,11 @@ public final class WorkspacePieceDisplay {
     }
 
     public static String buildWorkspaceGroupLabel(MKWorkspacePieceDefinition piece) {
+        String explicitFamilyId = piece.tags().get(MKWorkspaceContentSelectionTags.FAMILY_ID);
+        if (explicitFamilyId != null && !explicitFamilyId.isBlank()) {
+            return "Slot / " + formatTopologyLabel(MKWorkspaceContentSelectionTags.topologySlotId(piece)) +
+                    " / Family / " + formatTopologyLabel(explicitFamilyId);
+        }
         String linearRunFamilyId = piece.tags().get("workspace_linear_run_family_id");
         if (linearRunFamilyId != null) {
             return "Linear Run / " + linearRunFamilyId + " / " +
@@ -106,7 +117,12 @@ public final class WorkspacePieceDisplay {
     }
 
     public static String describePiece(MKWorkspacePieceDefinition piece) {
-        String label = piece.variantIndex() == 0 ? "template" : "variant " + piece.variantIndex();
+        String label = switch (MKWorkspaceContentSelectionTags.purpose(piece)) {
+            case FAMILY_CANONICAL -> "canonical";
+            case FAMILY_VARIANT -> "variant " + MKWorkspaceContentSelectionTags.variantId(piece);
+            case SLOT_SCAFFOLD -> "slot scaffold";
+            case DERIVED_DATA_ONLY -> "data-only template";
+        };
         String warning = piece.tags().get(MKWorkspacePieceTags.DISABLED_REASON);
         if (warning != null && !warning.isBlank()) {
             return label + ": " + piece.pieceName() + " | Warning: " + warning;
@@ -115,7 +131,8 @@ public final class WorkspacePieceDisplay {
     }
 
     public static int countVariants(List<MKWorkspacePieceDefinition> pieces) {
-        return (int) pieces.stream().filter(piece -> piece.variantIndex() > 0).count();
+        return (int) pieces.stream().filter(piece ->
+                MKWorkspaceContentSelectionTags.purpose(piece) == MKWorkspaceTemplatePurpose.FAMILY_VARIANT).count();
     }
 
     public static boolean supportsStairGeneration(List<MKWorkspacePieceDefinition> pieces) {
