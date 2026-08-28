@@ -2,7 +2,44 @@
 
 ## Status
 
-Proposed design and implementation plan.
+Implemented as a compatibility-first refactor. Existing workspace codecs and planner-specific definition names remain
+readable, while explicit piece metadata is now authoritative for content selection. The compatibility layer can be
+removed after saved workspaces have naturally been rewritten with explicit metadata or a dedicated bulk migration is
+introduced.
+
+## Implemented Shape
+
+The implementation deliberately uses a runtime-safe metadata header on each physical piece instead of immediately
+replacing every planner-specific definition codec:
+
+```text
+workspace_content_slot_id
+workspace_content_family_id
+workspace_family_weight
+workspace_family_enabled
+workspace_template_purpose
+workspace_content_variant_id
+workspace_variant_weight
+workspace_variant_enabled
+```
+
+`MKWorkspaceContentSelectionTags` is the compatibility boundary. It reads these explicit values first and supplies
+legacy inference only for old workspace data. Planner generation writes explicit values for all new pieces, and
+relayout/regeneration preserves author-owned values instead of regenerating them from planner family names.
+
+`MKWorkspaceContentCandidateResolver` is the single selection implementation. Manifest generation resolves concrete
+weighted candidates once; preview and MKNpc runtime pool registration consume those manifest entries. This provides
+identical canonical fallback, scaffold exclusion, family enablement, variant enablement, and hierarchical weights in
+both paths.
+
+Authoring selection changes use `mkworkspace:content_selection`. Its typed payload supports variant promotion, moving
+a variant between compatible families, family and variant weights, family and variant enablement, and explicit
+template-purpose changes. Each request follows prepare/review/confirm/backup/apply, preserves physical piece identity,
+and reports the affected slot, family, template, old/new values, fallback effects, and invalidated layers.
+
+The current `MKWorkspaceInsertFamilyDefinition` name is retained for save compatibility, but its ID is treated as the
+insert topology slot contract. Independently promoted content families bind to that slot through
+`workspace_content_slot_id`; runtime pools are compiled by slot rather than by content-family identity.
 
 ## Summary
 

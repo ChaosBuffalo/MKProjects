@@ -157,6 +157,13 @@ public record MKWorkspaceExportManifest(
 
     public List<String> validateRuntimeStructureExport() {
         ArrayList<String> errors = new ArrayList<>();
+        MKWorkspaceContentCandidateResolver.Resolution selectionResolution = resolveExportPieces(pieces);
+        selectionResolution.diagnostics().stream()
+                .filter(diagnostic -> diagnostic.contains("multiple topology slots") ||
+                        diagnostic.contains("multiple canonical templates") ||
+                        diagnostic.contains("no placeable canonical or variants"))
+                .forEach(diagnostic -> errors.add("Workspace " + namespace + ":" + structureName + " " +
+                        diagnostic));
         boolean hasResolvedEntries = !runtimeHints.startEntries().isEmpty() ||
                 runtimeHints.pools().stream().anyMatch(pool -> !pool.entries().isEmpty());
         if (hasResolvedEntries) {

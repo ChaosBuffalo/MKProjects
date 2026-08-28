@@ -170,7 +170,8 @@ final class WorkspaceTemplateDetailPane {
             return true;
         });
 
-        MKButton copyVariant = new MKButton(Component.literal("Copy This Variant"), 180, screen.buttonHeight());
+        MKButton copyVariant = new MKButton(Component.literal(purpose.canonical() ?
+                "Create Variant From Canonical" : "Copy This Variant"), 180, screen.buttonHeight());
         content.addWidget(copyVariant);
         content.addConstraintToWidget(new CenterXConstraint(), copyVariant);
         copyVariant.setPressedCallback((button, mouseButton) -> {
@@ -291,6 +292,15 @@ final class WorkspaceTemplateDetailPane {
             content.addConstraintToWidget(new CenterXConstraint(), promote);
             promote.setPressedCallback((button, mouseButton) -> {
                 requestSelection(screen, piece, MKWorkspaceContentSelectionChangePayload.Kind.PROMOTE_VARIANT,
+                        familyId.getText().trim().toLowerCase(java.util.Locale.ROOT), 1, true, purpose);
+                return true;
+            });
+            MKButton move = new MKButton(Component.literal("Move To Existing Family"), 180,
+                    screen.buttonHeight());
+            content.addWidget(move);
+            content.addConstraintToWidget(new CenterXConstraint(), move);
+            move.setPressedCallback((button, mouseButton) -> {
+                requestSelection(screen, piece, MKWorkspaceContentSelectionChangePayload.Kind.MOVE_VARIANT,
                         familyId.getText().trim().toLowerCase(java.util.Locale.ROOT), 1, true, purpose);
                 return true;
             });
