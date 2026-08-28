@@ -15,6 +15,8 @@ import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWalledKeepPlanne
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceContentSelectionTags;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplatePurpose;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceTopologyPaletteMerge;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVariantAddition;
@@ -22,6 +24,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceFloorTopologyMutationPreflightService;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorTopologySettings;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKInsertFamilyPools;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceGeneratedLayerState;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
@@ -1869,6 +1872,20 @@ public class MKStructureWorkspaceService {
         tags.put(MKWorkspaceGridLayout.TAG_BASE_NAME, getBaseName(basePiece));
         tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, Integer.toString(variantIndex));
         tags.put("workspace_piece_kind", pieceKind);
+        MKWorkspaceTemplatePurpose purpose = "template".equals(pieceKind) ?
+                (tags.containsKey(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID) ?
+                        MKWorkspaceTemplatePurpose.SLOT_SCAFFOLD :
+                        MKWorkspaceTemplatePurpose.FAMILY_CANONICAL) :
+                MKWorkspaceTemplatePurpose.FAMILY_VARIANT;
+        String familyId = MKWorkspaceContentSelectionTags.familyId(basePiece.pieceName(), tags);
+        String topologySlotId = MKWorkspaceContentSelectionTags.topologySlotId(basePiece.roleId(), tags);
+        tags.putAll(MKWorkspaceContentSelectionTags.applyFamily(tags, topologySlotId, familyId,
+                MKWorkspaceContentSelectionTags.familyWeight(tags),
+                MKWorkspaceContentSelectionTags.familyEnabled(tags)));
+        tags.putAll(MKWorkspaceContentSelectionTags.applyTemplate(tags, purpose,
+                purpose.variant() ? basePiece.pieceName() + "." + variantIndex : "",
+                MKWorkspaceContentSelectionTags.variantWeight(tags),
+                MKWorkspaceContentSelectionTags.variantEnabled(tags)));
         return tags;
     }
 

@@ -98,7 +98,8 @@ public class MKWorkspaceSamplePreviewService {
     private record PreviewCandidate(MKWorkspacePieceDefinition piece,
                                     boolean templateFallback,
                                     ResourceLocation templateId,
-                                    MKJigsawPieceMetadata metadata) {
+                                    MKJigsawPieceMetadata metadata,
+                                    int weight) {
     }
 
     private record RuntimePreviewContext(PreviewPool pool,
@@ -310,24 +311,12 @@ public class MKWorkspaceSamplePreviewService {
                 continue;
             }
             entries.add(Pair.of(MKSinglePoolElement.forTemplate(candidate.templateId(), template, false),
-                    templateWeight(candidate.piece())));
+                    candidate.weight()));
         }
         if (entries.isEmpty()) {
             entries.add(Pair.of(StructurePoolElement.empty(), 1));
         }
         return new StructureTemplatePool(emptyPool, entries, StructureTemplatePool.Projection.RIGID);
-    }
-
-    private int templateWeight(MKWorkspacePieceDefinition piece) {
-        String weight = piece.tags().get(MKFloorMaskPools.FLOOR_MASK_WEIGHT_TAG);
-        if (weight == null || weight.isBlank()) {
-            return 1;
-        }
-        try {
-            return Math.max(1, Integer.parseInt(weight));
-        } catch (NumberFormatException ignored) {
-            return 1;
-        }
     }
 
     private Optional<PreviewCandidate> previewCandidate(PoolElementStructurePiece piece,
@@ -579,6 +568,10 @@ public class MKWorkspaceSamplePreviewService {
                                                        List<MKWorkspacePieceDefinition> previewPieces,
                                                        MKWorkspaceExportManifest.ExportRuntimeHints previewHints,
                                                        List<String> errors) {
+            if (!previewHints.startEntries().isEmpty() ||
+                    previewHints.pools().stream().anyMatch(pool -> !pool.entries().isEmpty())) {
+                return buildResolvedPool(workspace, previewPieces, previewHints, errors);
+            }
             Map<String, MKWorkspaceExportManifest.ExportRuntimeTemplateGroup> templateGroupByBase =
                     new LinkedHashMap<>();
             for (MKWorkspaceExportManifest.ExportRuntimeTemplateGroup group : previewHints.templateGroups()) {
@@ -622,7 +615,8 @@ public class MKWorkspaceSamplePreviewService {
                 for (MKWorkspacePieceDefinition piece : selected) {
                     PreviewCandidate candidate = new PreviewCandidate(piece, templateFallback,
                             templateId(workspace, piece),
-                            jigsawMetadata(group.pieceMetadata().withPieceDerivedFloorMetadata(piece)));
+                            jigsawMetadata(group.pieceMetadata().withPieceDerivedFloorMetadata(piece)),
+                            legacyTemplateWeight(piece));
                     candidates.add(candidate);
                     candidatesByBaseName.computeIfAbsent(entry.getKey(), ignored -> new ArrayList<>()).add(candidate);
                 }
@@ -653,6 +647,89 @@ public class MKWorkspaceSamplePreviewService {
                 candidatesByPool.put(pool.poolId(), List.copyOf(poolCandidates));
             }
             return Optional.of(new PreviewPool(List.copyOf(candidates), immutableListMap(candidatesByPool)));
+        }
+
+        private static Optional<PreviewPool> buildResolvedPool(
+                MKStructureWorkspace workspace,
+                List<MKWorkspacePieceDefinition> previewPieces,
+                MKWorkspaceExportManifest.ExportRuntimeHints previewHints,
+                List<String> errors) {
+            Map<String, MKWorkspacePieceDefinition> piecesByName = previewPieces.stream()
+                    .collect(java.util.stream.Collectors.toMap(MKWorkspacePieceDefinition::pieceName, piece -> piece,
+                            (first, ignored) -> first, LinkedHashMap::new));
+            Map<String, MKWorkspaceExportManifest.ExportRuntimeTemplateGroup> metadataByBase = previewHints
+                    .templateGroups().stream()
+                    .collect(java.util.stream.Collectors.toMap(
+                            MKWorkspaceExportManifest.ExportRuntimeTemplateGroup::baseName, group -> group,
+                            (first, ignored) -> first, LinkedHashMap::new));
+
+            LinkedHashMap<String, PreviewCandidate> candidatesByPieceName = new LinkedHashMap<>();
+            HashMap<ResourceLocation, List<PreviewCandidate>> candidatesByPool = new HashMap<>();
+            ResourceLocation startPool = ResourceLocation.fromNamespaceAndPath(workspace.namespace(),
+                    workspace.structureName() + "/start");
+            List<PreviewCandidate> startCandidates = previewCandidates(workspace, previewHints.startEntries(),
+                    piecesByName, metadataByBase, candidatesByPieceName, errors);
+            candidatesByPool.put(startPool, startCandidates);
+
+            for (MKWorkspaceExportManifest.ExportRuntimePool pool : previewHints.pools()) {
+                List<PreviewCandidate> poolCandidates = previewCandidates(workspace, pool.entries(), piecesByName,
+                        metadataByBase, candidatesByPieceName, errors);
+                if (poolCandidates.isEmpty()) {
+                    logPreviewEmptyRuntimePool(pool);
+                }
+                candidatesByPool.put(pool.poolId(), poolCandidates);
+            }
+            if (candidatesByPieceName.isEmpty()) {
+                errors.add("workspace has no runtime preview candidates after resolving slots and families");
+                return Optional.empty();
+            }
+            return Optional.of(new PreviewPool(List.copyOf(candidatesByPieceName.values()),
+                    immutableListMap(candidatesByPool)));
+        }
+
+        private static List<PreviewCandidate> previewCandidates(
+                MKStructureWorkspace workspace,
+                List<MKWorkspaceExportManifest.ExportRuntimePoolEntry> entries,
+                Map<String, MKWorkspacePieceDefinition> piecesByName,
+                Map<String, MKWorkspaceExportManifest.ExportRuntimeTemplateGroup> metadataByBase,
+                Map<String, PreviewCandidate> candidatesByPieceName,
+                List<String> errors) {
+            ArrayList<PreviewCandidate> result = new ArrayList<>();
+            for (MKWorkspaceExportManifest.ExportRuntimePoolEntry entry : entries) {
+                MKWorkspacePieceDefinition piece = piecesByName.get(entry.pieceName());
+                if (piece == null) {
+                    errors.add("resolved runtime pool references missing workspace piece " + entry.pieceName());
+                    continue;
+                }
+                MKWorkspaceExportManifest.ExportRuntimeTemplateGroup group = metadataByBase.get(entry.baseName());
+                if (group == null) {
+                    errors.add("resolved runtime pool candidate " + entry.pieceName() +
+                            " has no runtime metadata group for " + entry.baseName());
+                    continue;
+                }
+                PreviewCandidate candidate = new PreviewCandidate(
+                        piece,
+                        entry.canonicalFallback(),
+                        templateId(workspace, piece),
+                        jigsawMetadata(group.pieceMetadata().withPieceDerivedFloorMetadata(piece)),
+                        entry.weight()
+                );
+                result.add(candidate);
+                candidatesByPieceName.putIfAbsent(piece.pieceName(), candidate);
+            }
+            return List.copyOf(result);
+        }
+
+        private static int legacyTemplateWeight(MKWorkspacePieceDefinition piece) {
+            String value = piece.tags().get(MKFloorMaskPools.FLOOR_MASK_WEIGHT_TAG);
+            if (value == null || value.isBlank()) {
+                return 1;
+            }
+            try {
+                return Math.max(1, Integer.parseInt(value));
+            } catch (NumberFormatException ignored) {
+                return 1;
+            }
         }
 
         private static boolean isInsertFamilyAuthoringTemplate(MKWorkspacePieceDefinition piece) {

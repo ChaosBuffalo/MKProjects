@@ -46,16 +46,23 @@ public final class ExportedWorkspacePoolBootstrap {
         Map<String, List<MKWorkspaceExportManifest.ExportPiece>> piecesByBaseName = manifest.pieces().stream()
                 .filter(piece -> !"template".equals(piece.workspacePieceKind()))
                 .collect(Collectors.groupingBy(MKWorkspaceExportManifest.ExportPiece::baseName));
+        Map<String, MKWorkspaceExportManifest.ExportPiece> piecesByName = manifest.pieces().stream()
+                .collect(Collectors.toMap(MKWorkspaceExportManifest.ExportPiece::pieceName, piece -> piece));
 
         register(context,
                 ResourceLocation.fromNamespaceAndPath(manifest.namespace(), manifest.structureName() + "/start"),
-                rigidPool(empty, exportedVariants(manifest,
-                        piecesByBaseName.getOrDefault(manifest.runtimeHints().startBaseName(), List.of()))));
+                rigidPool(empty, manifest.runtimeHints().startEntries().isEmpty() ?
+                        exportedVariants(manifest,
+                                piecesByBaseName.getOrDefault(manifest.runtimeHints().startBaseName(), List.of())) :
+                        exportedEntries(manifest, manifest.runtimeHints().startEntries(), piecesByName)));
 
         for (MKWorkspaceExportManifest.ExportRuntimePool pool : manifest.runtimeHints().pools()) {
-            List<Pair<Function<StructureTemplatePool.Projection, ? extends StructurePoolElement>, Integer>> children = pool.childBaseNames().stream()
-                    .flatMap(childBaseName -> exportedVariants(manifest, piecesByBaseName.getOrDefault(childBaseName, List.of())).stream())
-                    .collect(Collectors.toList());
+            List<Pair<Function<StructureTemplatePool.Projection, ? extends StructurePoolElement>, Integer>> children =
+                    pool.entries().isEmpty() ? pool.childBaseNames().stream()
+                            .flatMap(childBaseName -> exportedVariants(manifest,
+                                    piecesByBaseName.getOrDefault(childBaseName, List.of())).stream())
+                            .collect(Collectors.toList()) :
+                            exportedEntries(manifest, pool.entries(), piecesByName);
             register(context, pool.poolId(), rigidPool(empty, children));
         }
     }
@@ -83,6 +90,24 @@ public final class ExportedWorkspacePoolBootstrap {
         for (MKWorkspaceExportManifest.ExportPiece piece : pieces) {
             builder.add(Pair.of(MKSinglePoolElement.forTemplate(ResourceLocation.parse(piece.structureId()), false),
                     templateWeight(piece)));
+        }
+        return builder.build();
+    }
+
+    private static List<Pair<Function<StructureTemplatePool.Projection, ? extends StructurePoolElement>, Integer>> exportedEntries(
+            MKWorkspaceExportManifest manifest,
+            List<MKWorkspaceExportManifest.ExportRuntimePoolEntry> entries,
+            Map<String, MKWorkspaceExportManifest.ExportPiece> piecesByName) {
+        ImmutableList.Builder<Pair<Function<StructureTemplatePool.Projection, ? extends StructurePoolElement>, Integer>> builder =
+                ImmutableList.builder();
+        for (MKWorkspaceExportManifest.ExportRuntimePoolEntry entry : entries) {
+            MKWorkspaceExportManifest.ExportPiece piece = piecesByName.get(entry.pieceName());
+            if (piece == null) {
+                throw new IllegalStateException("Workspace export " + manifest.namespace() + ":" +
+                        manifest.structureName() + " pool references missing piece " + entry.pieceName());
+            }
+            builder.add(Pair.of(MKSinglePoolElement.forTemplate(ResourceLocation.parse(piece.structureId()), false),
+                    entry.weight()));
         }
         return builder.build();
     }

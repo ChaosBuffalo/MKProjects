@@ -6,10 +6,12 @@ import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKStructureWorkspaceImpo
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceContentSelectionTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplatePurpose;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKTowerWorkspacePlanner;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
@@ -111,6 +113,78 @@ class MKWorkspaceInsertFamilyExportTest {
                 workspace.namespace(), workspace.structureName(), insertFamily.familyId());
         assertFalse(manifest.runtimeHints().pools().stream()
                 .anyMatch(candidate -> candidate.poolId().equals(expectedPool)));
+    }
+
+    @Test
+    void insertSlotUsesFamilyCanonicalUntilVariantsBecomeAvailable() {
+        MKStructureWorkspace draft = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        MKWorkspaceInsertFamilyDefinition insertSlot =
+                MKWorkspaceInsertFamilyDefinition.insertSocket("fire_shrine_platform_contents", 9, 7, 9);
+        MKWorkspacePieceDefinition scaffold = insertAuthoringTemplatePiece(draft, insertSlot);
+        MKWorkspacePieceDefinition gazeboCanonical = insertContentPiece(draft, insertSlot,
+                "gazebo_family", "fire_shrine_gazebo", MKWorkspaceTemplatePurpose.FAMILY_CANONICAL,
+                3, 1, 0);
+        MKWorkspacePieceDefinition fountainCanonical = insertContentPiece(draft, insertSlot,
+                "fountain_family", "fire_shrine_lava_fountain", MKWorkspaceTemplatePurpose.FAMILY_CANONICAL,
+                1, 1, 0);
+        MKStructureWorkspace workspace = workspaceWithInsertFamily(draft, insertSlot,
+                List.of(runtimeStartPiece(draft), scaffold, gazeboCanonical, fountainCanonical));
+
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 5, "test");
+        ResourceLocation poolId = MKWorkspaceInsertFamilyDefinition.poolId(
+                workspace.namespace(), workspace.structureName(), insertSlot.familyId());
+        MKWorkspaceExportManifest.ExportRuntimePool pool = manifest.runtimeHints().pools().stream()
+                .filter(candidate -> candidate.poolId().equals(poolId))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(List.of("fire_shrine_gazebo", "fire_shrine_lava_fountain"), pool.childBaseNames());
+        assertEquals(Map.of("fire_shrine_gazebo", 3, "fire_shrine_lava_fountain", 1),
+                pool.entries().stream().collect(java.util.stream.Collectors.toMap(
+                        MKWorkspaceExportManifest.ExportRuntimePoolEntry::pieceName,
+                        MKWorkspaceExportManifest.ExportRuntimePoolEntry::weight)));
+        assertTrue(pool.entries().stream().allMatch(
+                MKWorkspaceExportManifest.ExportRuntimePoolEntry::canonicalFallback));
+        assertFalse(pool.entries().stream().anyMatch(entry -> entry.pieceName().equals(scaffold.pieceName())));
+    }
+
+    @Test
+    void insertFamilyVariantsReplaceOnlyTheirOwnCanonicalAndKeepHierarchicalWeights() {
+        MKStructureWorkspace draft = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        MKWorkspaceInsertFamilyDefinition insertSlot =
+                MKWorkspaceInsertFamilyDefinition.insertSocket("fire_shrine_platform_contents", 9, 7, 9);
+        MKWorkspacePieceDefinition gazeboCanonical = insertContentPiece(draft, insertSlot,
+                "gazebo_family", "fire_shrine_gazebo", MKWorkspaceTemplatePurpose.FAMILY_CANONICAL,
+                3, 1, 0);
+        MKWorkspacePieceDefinition gazeboQuiet = insertContentPiece(draft, insertSlot,
+                "gazebo_family", "gazebo_quiet", MKWorkspaceTemplatePurpose.FAMILY_VARIANT,
+                3, 1, 1);
+        MKWorkspacePieceDefinition gazeboOccupied = insertContentPiece(draft, insertSlot,
+                "gazebo_family", "gazebo_occupied", MKWorkspaceTemplatePurpose.FAMILY_VARIANT,
+                3, 2, 2);
+        MKWorkspacePieceDefinition fountainCanonical = insertContentPiece(draft, insertSlot,
+                "fountain_family", "fire_shrine_lava_fountain", MKWorkspaceTemplatePurpose.FAMILY_CANONICAL,
+                1, 1, 0);
+        MKStructureWorkspace workspace = workspaceWithInsertFamily(draft, insertSlot,
+                List.of(runtimeStartPiece(draft), gazeboCanonical, gazeboQuiet, gazeboOccupied,
+                        fountainCanonical));
+
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 5, "test");
+        ResourceLocation poolId = MKWorkspaceInsertFamilyDefinition.poolId(
+                workspace.namespace(), workspace.structureName(), insertSlot.familyId());
+        MKWorkspaceExportManifest.ExportRuntimePool pool = manifest.runtimeHints().pools().stream()
+                .filter(candidate -> candidate.poolId().equals(poolId))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(Map.of("gazebo_quiet", 1, "gazebo_occupied", 2, "fire_shrine_lava_fountain", 1),
+                pool.entries().stream().collect(java.util.stream.Collectors.toMap(
+                        MKWorkspaceExportManifest.ExportRuntimePoolEntry::pieceName,
+                        MKWorkspaceExportManifest.ExportRuntimePoolEntry::weight)));
+        assertFalse(pool.entries().stream().anyMatch(entry -> entry.pieceName().equals("fire_shrine_gazebo")));
+        assertTrue(pool.entries().stream()
+                .filter(entry -> entry.pieceName().equals("fire_shrine_lava_fountain"))
+                .allMatch(MKWorkspaceExportManifest.ExportRuntimePoolEntry::canonicalFallback));
     }
 
     @Test
@@ -221,6 +295,28 @@ class MKWorkspaceInsertFamilyExportTest {
         tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_KIND, insertFamily.kind().getSerializedName());
         tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "0");
         return piece(workspace, insertFamily.familyId() + "_template", insertFamily.familyId(), 0, tags);
+    }
+
+    private static MKWorkspacePieceDefinition insertContentPiece(
+            MKStructureWorkspace workspace,
+            MKWorkspaceInsertFamilyDefinition insertSlot,
+            String familyId,
+            String pieceName,
+            MKWorkspaceTemplatePurpose purpose,
+            int familyWeight,
+            int variantWeight,
+            int variantIndex) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>();
+        tags.put("workspace_base_name", pieceName);
+        tags.put("workspace_piece_kind", purpose == MKWorkspaceTemplatePurpose.FAMILY_CANONICAL ?
+                "template" : "instance");
+        tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID, insertSlot.familyId());
+        tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_KIND, insertSlot.kind().getSerializedName());
+        tags.putAll(MKWorkspaceContentSelectionTags.applyFamily(tags, insertSlot.familyId(), familyId,
+                familyWeight, true));
+        tags.putAll(MKWorkspaceContentSelectionTags.applyTemplate(tags, purpose, pieceName,
+                variantWeight, true));
+        return piece(workspace, pieceName, insertSlot.familyId(), variantIndex, tags);
     }
 
     private static MKWorkspacePieceDefinition taggedInsertVariantPieceWithLegacyIdentity(MKStructureWorkspace workspace,

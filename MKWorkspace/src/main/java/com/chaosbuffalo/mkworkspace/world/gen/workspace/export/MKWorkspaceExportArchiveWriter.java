@@ -114,10 +114,17 @@ public class MKWorkspaceExportArchiveWriter {
         for (MKWorkspacePieceDefinition exportPiece : exportPieces) {
             exportPieceByName.put(exportPiece.pieceName(), exportPiece);
         }
+        java.util.Set<String> resolvedRuntimePieceNames = java.util.stream.Stream.concat(
+                        manifest.runtimeHints().startEntries().stream(),
+                        manifest.runtimeHints().pools().stream()
+                                .flatMap(pool -> pool.entries().stream()))
+                .map(MKWorkspaceExportManifest.ExportRuntimePoolEntry::pieceName)
+                .collect(java.util.stream.Collectors.toSet());
 
         int written = 0;
         for (MKWorkspaceExportManifest.ExportPiece piece : manifest.pieces()) {
-            if ("template".equals(piece.workspacePieceKind())) {
+            if ("template".equals(piece.workspacePieceKind()) &&
+                    !resolvedRuntimePieceNames.contains(piece.pieceName())) {
                 continue;
             }
             MKWorkspaceExportManifest.ExportRuntimeTemplateGroup templateGroup = groupByBaseName.get(piece.baseName());

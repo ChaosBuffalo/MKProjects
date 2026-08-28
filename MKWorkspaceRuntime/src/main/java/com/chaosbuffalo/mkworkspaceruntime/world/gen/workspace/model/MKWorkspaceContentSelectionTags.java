@@ -37,10 +37,7 @@ public final class MKWorkspaceContentSelectionTags {
         if (explicit != null) {
             return explicit;
         }
-        if (MKWorkspaceTemplateReuseTags.isDerived(tags)) {
-            return MKWorkspaceTemplatePurpose.DERIVED_DATA_ONLY;
-        }
-        if (variantIndex > 0) {
+        if (variantIndex > 0 || "instance".equals(tags.get(LEGACY_PIECE_KIND))) {
             return MKWorkspaceTemplatePurpose.FAMILY_VARIANT;
         }
         if (tags.containsKey(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID) &&
@@ -58,9 +55,9 @@ public final class MKWorkspaceContentSelectionTags {
         return firstNonBlank(
                 tags.get(FAMILY_ID),
                 tags.get(LEGACY_ROOM_FAMILY_ID),
-                tags.get(LEGACY_LINEAR_RUN_FAMILY_ID),
                 tags.get(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID),
                 tags.get(LEGACY_BASE_NAME),
+                tags.get(LEGACY_LINEAR_RUN_FAMILY_ID),
                 pieceName
         );
     }

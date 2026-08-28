@@ -20,6 +20,8 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunProjection;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceContentCandidateResolver;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceContentSelectionTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePaletteOverride;
@@ -28,6 +30,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplatePurpose;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
@@ -154,6 +157,37 @@ public record MKWorkspaceExportManifest(
 
     public List<String> validateRuntimeStructureExport() {
         ArrayList<String> errors = new ArrayList<>();
+        boolean hasResolvedEntries = !runtimeHints.startEntries().isEmpty() ||
+                runtimeHints.pools().stream().anyMatch(pool -> !pool.entries().isEmpty());
+        if (hasResolvedEntries) {
+            Map<String, ExportPiece> piecesByName = pieces.stream()
+                    .collect(Collectors.toMap(ExportPiece::pieceName, piece -> piece,
+                            (first, ignored) -> first, LinkedHashMap::new));
+            List<ExportRuntimePoolEntry> entries = java.util.stream.Stream.concat(
+                            runtimeHints.startEntries().stream(),
+                            runtimeHints.pools().stream().flatMap(pool -> pool.entries().stream()))
+                    .toList();
+            if (entries.isEmpty()) {
+                errors.add("Workspace " + namespace + ":" + structureName +
+                        " does not define any resolved runtime structure pieces");
+            }
+            if (runtimeHints.startEntries().isEmpty()) {
+                errors.add("Workspace " + namespace + ":" + structureName +
+                        " did not define a resolved runtime start family");
+            }
+            for (ExportRuntimePoolEntry entry : entries) {
+                if (!entry.templatePurpose().placeable()) {
+                    errors.add("Workspace " + namespace + ":" + structureName + " runtime pool references " +
+                            "non-placeable " + entry.templatePurpose().serializedName() + " " + entry.pieceName());
+                }
+                if (!piecesByName.containsKey(entry.pieceName())) {
+                    errors.add("Workspace " + namespace + ":" + structureName +
+                            " runtime pool references missing piece " + entry.pieceName());
+                }
+            }
+            return List.copyOf(errors);
+        }
+
         Map<String, List<ExportPiece>> runtimePiecesByBaseName = pieces.stream()
                 .filter(piece -> !"template".equals(piece.workspacePieceKind()))
                 .collect(Collectors.groupingBy(ExportPiece::baseName, LinkedHashMap::new, Collectors.toList()));
@@ -208,10 +242,13 @@ public record MKWorkspaceExportManifest(
     }
 
     public MKWorkspaceExportManifest withNormalizedRuntimeHints() {
+        MKWorkspaceContentCandidateResolver.Resolution resolution = resolveExportPieces(pieces);
+        List<ExportRuntimePoolEntry> startEntries = findExportStartEntries(pieces, resolution);
         ExportRuntimeHints normalizedHints = new ExportRuntimeHints(
-                normalizedStartBaseName(),
+                startEntries.isEmpty() ? normalizedStartBaseName() : startEntries.getFirst().baseName(),
                 runtimeHints.templateGroups(),
-                buildRuntimePoolsFromExportPieces(this)
+                buildRuntimePoolsFromExportPieces(this, resolution),
+                startEntries
         );
         return new MKWorkspaceExportManifest(
                 schemaVersion,
@@ -672,13 +709,27 @@ public record MKWorkspaceExportManifest(
     public record ExportRuntimeHints(
             String startBaseName,
             List<ExportRuntimeTemplateGroup> templateGroups,
-            List<ExportRuntimePool> pools
+            List<ExportRuntimePool> pools,
+            List<ExportRuntimePoolEntry> startEntries
     ) {
         public static final Codec<ExportRuntimeHints> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("start_base_name").forGetter(ExportRuntimeHints::startBaseName),
                 ExportRuntimeTemplateGroup.CODEC.listOf().fieldOf("template_groups").forGetter(ExportRuntimeHints::templateGroups),
-                ExportRuntimePool.CODEC.listOf().optionalFieldOf("pools", List.of()).forGetter(ExportRuntimeHints::pools)
+                ExportRuntimePool.CODEC.listOf().optionalFieldOf("pools", List.of()).forGetter(ExportRuntimeHints::pools),
+                ExportRuntimePoolEntry.CODEC.listOf().optionalFieldOf("start_entries", List.of())
+                        .forGetter(ExportRuntimeHints::startEntries)
         ).apply(instance, ExportRuntimeHints::new));
+
+        public ExportRuntimeHints(String startBaseName, List<ExportRuntimeTemplateGroup> templateGroups,
+                                  List<ExportRuntimePool> pools) {
+            this(startBaseName, templateGroups, pools, List.of());
+        }
+
+        public ExportRuntimeHints {
+            templateGroups = List.copyOf(templateGroups);
+            pools = List.copyOf(pools);
+            startEntries = List.copyOf(startEntries);
+        }
 
         public static ExportRuntimeHints forWorkspace(MKStructureWorkspace workspace) {
             return forWorkspace(workspace, workspace.pieces());
@@ -686,12 +737,20 @@ public record MKWorkspaceExportManifest(
 
         public static ExportRuntimeHints forWorkspace(MKStructureWorkspace workspace,
                                                       List<MKWorkspacePieceDefinition> pieces) {
+            MKWorkspaceContentCandidateResolver.Resolution resolution =
+                    MKWorkspaceContentCandidateResolver.resolveWorkspacePieces(pieces);
             List<ExportRuntimeTemplateGroup> templateGroups = buildTemplateGroups(pieces).stream()
-                    .map(templateGroup -> ExportRuntimeTemplateGroup.forTemplateGroup(workspace, pieces, templateGroup))
+                    .map(templateGroup -> ExportRuntimeTemplateGroup.forTemplateGroup(
+                            workspace, pieces, templateGroup, resolution))
                     .flatMap(java.util.Optional::stream)
                     .toList();
-            String startBaseName = findStartBaseName(pieces);
-            return new ExportRuntimeHints(startBaseName, templateGroups, buildRuntimePools(workspace, pieces));
+            List<ExportRuntimePoolEntry> startEntries = findStartEntries(pieces, resolution);
+            String startBaseName = startEntries.isEmpty() ? "" : startEntries.getFirst().baseName();
+            if (startEntries.isEmpty()) {
+                throw new IllegalStateException("Workspace did not define a placeable runtime start family");
+            }
+            return new ExportRuntimeHints(startBaseName, templateGroups,
+                    buildRuntimePools(workspace, pieces, resolution), startEntries);
         }
 
         public static ExportRuntimeHints forWorkspacePreview(MKStructureWorkspace workspace) {
@@ -700,13 +759,18 @@ public record MKWorkspaceExportManifest(
 
         public static ExportRuntimeHints forWorkspacePreview(MKStructureWorkspace workspace,
                                                              List<MKWorkspacePieceDefinition> pieces) {
+            MKWorkspaceContentCandidateResolver.Resolution resolution =
+                    MKWorkspaceContentCandidateResolver.resolveWorkspacePieces(pieces);
             List<ExportRuntimeTemplateGroup> templateGroups = buildTemplateGroups(pieces).stream()
-                    .map(templateGroup -> ExportRuntimeTemplateGroup.forTemplateGroup(workspace, pieces, templateGroup,
-                            true))
+                    .map(templateGroup -> ExportRuntimeTemplateGroup.forTemplateGroup(
+                            workspace, pieces, templateGroup, resolution))
                     .flatMap(java.util.Optional::stream)
                     .toList();
-            return new ExportRuntimeHints(findPreviewStartBaseName(pieces), templateGroups,
-                    buildRuntimePools(workspace, pieces, true));
+            List<ExportRuntimePoolEntry> startEntries = findStartEntries(pieces, resolution);
+            String startBaseName = startEntries.isEmpty() ? findPreviewStartBaseName(pieces) :
+                    startEntries.getFirst().baseName();
+            return new ExportRuntimeHints(startBaseName, templateGroups,
+                    buildRuntimePools(workspace, pieces, resolution), startEntries);
         }
 
         public static ExportRuntimeHints forWorkspaceIfValid(MKStructureWorkspace workspace) {
@@ -718,20 +782,69 @@ public record MKWorkspaceExportManifest(
         }
 
         public static ExportRuntimeHints empty() {
-            return new ExportRuntimeHints("", List.of(), List.of());
+            return new ExportRuntimeHints("", List.of(), List.of(), List.of());
         }
     }
 
     public record ExportRuntimePool(
             String baseName,
             ResourceLocation poolId,
-            List<String> childBaseNames
+            List<String> childBaseNames,
+            List<ExportRuntimePoolEntry> entries
     ) {
         public static final Codec<ExportRuntimePool> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("base_name").forGetter(ExportRuntimePool::baseName),
                 ResourceLocation.CODEC.fieldOf("pool_id").forGetter(ExportRuntimePool::poolId),
-                Codec.STRING.listOf().fieldOf("child_base_names").forGetter(ExportRuntimePool::childBaseNames)
+                Codec.STRING.listOf().fieldOf("child_base_names").forGetter(ExportRuntimePool::childBaseNames),
+                ExportRuntimePoolEntry.CODEC.listOf().optionalFieldOf("entries", List.of())
+                        .forGetter(ExportRuntimePool::entries)
         ).apply(instance, ExportRuntimePool::new));
+
+        public ExportRuntimePool(String baseName, ResourceLocation poolId, List<String> childBaseNames) {
+            this(baseName, poolId, childBaseNames, List.of());
+        }
+
+        public ExportRuntimePool {
+            childBaseNames = List.copyOf(childBaseNames);
+            entries = List.copyOf(entries);
+        }
+    }
+
+    public record ExportRuntimePoolEntry(
+            String familyId,
+            String topologySlotId,
+            String pieceName,
+            String baseName,
+            String variantId,
+            MKWorkspaceTemplatePurpose templatePurpose,
+            int weight,
+            boolean canonicalFallback
+    ) {
+        public static final Codec<ExportRuntimePoolEntry> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.STRING.fieldOf("family_id").forGetter(ExportRuntimePoolEntry::familyId),
+                Codec.STRING.fieldOf("topology_slot_id").forGetter(ExportRuntimePoolEntry::topologySlotId),
+                Codec.STRING.fieldOf("piece_name").forGetter(ExportRuntimePoolEntry::pieceName),
+                Codec.STRING.fieldOf("base_name").forGetter(ExportRuntimePoolEntry::baseName),
+                Codec.STRING.fieldOf("variant_id").forGetter(ExportRuntimePoolEntry::variantId),
+                MKWorkspaceTemplatePurpose.CODEC.fieldOf("template_purpose")
+                        .forGetter(ExportRuntimePoolEntry::templatePurpose),
+                Codec.INT.fieldOf("weight").forGetter(ExportRuntimePoolEntry::weight),
+                Codec.BOOL.optionalFieldOf("canonical_fallback", false)
+                        .forGetter(ExportRuntimePoolEntry::canonicalFallback)
+        ).apply(instance, ExportRuntimePoolEntry::new));
+
+        public ExportRuntimePoolEntry {
+            weight = Math.max(1, weight);
+        }
+
+        private static ExportRuntimePoolEntry from(
+                MKWorkspaceContentCandidateResolver.WeightedCandidate candidate) {
+            return new ExportRuntimePoolEntry(
+                    candidate.familyId(), candidate.topologySlotId(), candidate.pieceName(), candidate.baseName(),
+                    candidate.variantId(), candidate.purpose(), candidate.effectiveWeight(),
+                    candidate.canonicalFallback()
+            );
+        }
     }
 
     public record ExportRuntimeTemplateGroup(
@@ -749,29 +862,38 @@ public record MKWorkspaceExportManifest(
                 MKStructureWorkspace workspace,
                 List<MKWorkspacePieceDefinition> pieces,
                 ExportTemplateGroup templateGroup) {
-            return forTemplateGroup(workspace, pieces, templateGroup, false);
+            return forTemplateGroup(workspace, pieces, templateGroup,
+                    MKWorkspaceContentCandidateResolver.resolveWorkspacePieces(pieces));
         }
 
+        @Deprecated(forRemoval = false)
         public static java.util.Optional<ExportRuntimeTemplateGroup> forTemplateGroup(
                 MKStructureWorkspace workspace,
                 List<MKWorkspacePieceDefinition> pieces,
                 ExportTemplateGroup templateGroup,
                 boolean allowTemplateFallback) {
+            return forTemplateGroup(workspace, pieces, templateGroup,
+                    MKWorkspaceContentCandidateResolver.resolveWorkspacePieces(pieces));
+        }
+
+        private static java.util.Optional<ExportRuntimeTemplateGroup> forTemplateGroup(
+                MKStructureWorkspace workspace,
+                List<MKWorkspacePieceDefinition> pieces,
+                ExportTemplateGroup templateGroup,
+                MKWorkspaceContentCandidateResolver.Resolution resolution) {
+            java.util.Set<String> candidatePieceNames = MKWorkspaceContentCandidateResolver.flatten(
+                            resolution.families(), candidate -> candidate.baseName().equals(templateGroup.baseName()))
+                    .stream()
+                    .map(MKWorkspaceContentCandidateResolver.WeightedCandidate::pieceName)
+                    .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
             java.util.Optional<MKWorkspacePieceDefinition> runtimePiece = pieces.stream()
-                    .filter(piece -> templateGroup.baseName().equals(piece.tags().getOrDefault("workspace_base_name", piece.pieceName())))
-                    .filter(piece -> !"template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance")))
-                    .findFirst()
-                    .or(() -> allowTemplateFallback ? pieces.stream()
-                            .filter(piece -> templateGroup.baseName().equals(piece.tags()
-                                    .getOrDefault("workspace_base_name", piece.pieceName())))
-                            .filter(piece -> "template".equals(piece.tags()
-                                    .getOrDefault("workspace_piece_kind", "instance")))
-                            .findFirst() : Optional.empty());
+                    .filter(piece -> candidatePieceNames.contains(piece.pieceName()))
+                    .findFirst();
             java.util.Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = runtimePiece
                     .map(MKWorkspacePieceDefinition::tags)
                     .flatMap(MKWorkspaceRuntimePieceInfo::fromTags)
                     .or(() -> runtimePiece
-                            .filter(MKWorkspaceExportManifest::isRuntimeInsertFamilyVariant)
+                            .filter(piece -> piece.tags().containsKey(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID))
                             .map(MKWorkspaceExportManifest::defaultInsertRuntimePieceInfo));
             if (runtimeInfo.isEmpty() || runtimePiece.isEmpty()) {
                 return java.util.Optional.empty();
@@ -1406,21 +1528,6 @@ public record MKWorkspaceExportManifest(
         ).apply(instance, ExportPiecePlacement::new));
     }
 
-    private static String findStartBaseName(List<MKWorkspacePieceDefinition> pieces) {
-        LinkedHashSet<String> startBaseNames = pieces.stream()
-                .filter(piece -> !"template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance")))
-                .filter(piece -> MKWorkspaceRuntimePieceInfo.fromTags(piece.tags()).map(MKWorkspaceRuntimePieceInfo::start).orElse(false))
-                .map(piece -> piece.tags().getOrDefault("workspace_base_name", piece.pieceName()))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-        if (startBaseNames.isEmpty()) {
-            throw new IllegalStateException("Workspace did not define a runtime start piece");
-        }
-        if (startBaseNames.size() > 1) {
-            throw new IllegalStateException("Workspace defined multiple runtime start pieces " + startBaseNames);
-        }
-        return startBaseNames.getFirst();
-    }
-
     private static String findPreviewStartBaseName(List<MKWorkspacePieceDefinition> pieces) {
         return pieces.stream()
                 .filter(piece -> MKWorkspaceRuntimePieceInfo.fromTags(piece.tags())
@@ -1431,168 +1538,203 @@ public record MKWorkspaceExportManifest(
                 .orElse("");
     }
 
-    private static List<ExportRuntimePool> buildRuntimePools(MKStructureWorkspace workspace,
-                                                             List<MKWorkspacePieceDefinition> pieces) {
-        return buildRuntimePools(workspace, pieces, false);
+    private static List<ExportRuntimePoolEntry> findStartEntries(
+            List<MKWorkspacePieceDefinition> pieces,
+            MKWorkspaceContentCandidateResolver.Resolution resolution) {
+        LinkedHashSet<String> startFamilyIds = pieces.stream()
+                .filter(piece -> MKWorkspaceRuntimePieceInfo.fromTags(piece.tags())
+                        .map(MKWorkspaceRuntimePieceInfo::start)
+                        .orElse(false))
+                .map(MKWorkspaceContentSelectionTags::familyId)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        return startEntries(resolution, startFamilyIds);
+    }
+
+    private static List<ExportRuntimePoolEntry> findExportStartEntries(
+            List<ExportPiece> pieces,
+            MKWorkspaceContentCandidateResolver.Resolution resolution) {
+        LinkedHashSet<String> startFamilyIds = pieces.stream()
+                .filter(piece -> MKWorkspaceRuntimePieceInfo.fromTags(piece.tags())
+                        .map(MKWorkspaceRuntimePieceInfo::start)
+                        .orElse(false))
+                .map(piece -> MKWorkspaceContentSelectionTags.familyId(piece.pieceName(), piece.tags()))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        return startEntries(resolution, startFamilyIds);
+    }
+
+    private static List<ExportRuntimePoolEntry> startEntries(
+            MKWorkspaceContentCandidateResolver.Resolution resolution,
+            LinkedHashSet<String> startFamilyIds) {
+        if (startFamilyIds.isEmpty()) {
+            return List.of();
+        }
+        if (startFamilyIds.size() > 1) {
+            throw new IllegalStateException("Workspace defined multiple runtime start families " + startFamilyIds);
+        }
+        MKWorkspaceContentCandidateResolver.ResolvedFamily family = resolution.family(startFamilyIds.getFirst());
+        if (family == null) {
+            return List.of();
+        }
+        return MKWorkspaceContentCandidateResolver.flatten(List.of(family)).stream()
+                .map(ExportRuntimePoolEntry::from)
+                .toList();
     }
 
     private static List<ExportRuntimePool> buildRuntimePools(MKStructureWorkspace workspace,
                                                              List<MKWorkspacePieceDefinition> pieces,
-                                                             boolean allowTemplatePieces) {
-        LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool = new LinkedHashMap<>();
+                                                             MKWorkspaceContentCandidateResolver.Resolution resolution) {
+        LinkedHashMap<ResourceLocation, LinkedHashSet<String>> candidateNamesByPool = new LinkedHashMap<>();
+        Map<String, MKWorkspacePieceDefinition> piecesByName = pieces.stream()
+                .collect(Collectors.toMap(MKWorkspacePieceDefinition::pieceName, piece -> piece,
+                        (first, ignored) -> first, LinkedHashMap::new));
         ResourceLocation plannerId = workspace.topologyProfile().plannerId();
-        for (MKWorkspacePieceDefinition piece : pieces) {
-            if (!allowTemplatePieces && "template".equals(piece.tags()
-                    .getOrDefault("workspace_piece_kind", "instance"))) {
-                continue;
-            }
-            String baseName = piece.tags().getOrDefault("workspace_base_name", piece.pieceName());
-            Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = MKWorkspaceRuntimePieceInfo.fromTags(piece.tags());
-            for (MKWorkspaceConnectorDefinition connector : piece.connectors()) {
-                if (connector.incomingPool().equals(EMPTY_POOL)) {
+        for (MKWorkspaceContentCandidateResolver.ResolvedFamily family : resolution.families()) {
+            for (MKWorkspaceContentCandidateResolver.ResolvedCandidate candidate : family.candidates()) {
+                MKWorkspacePieceDefinition piece = piecesByName.get(candidate.pieceName());
+                if (piece == null) {
                     continue;
                 }
-                String runtimePoolPath = runtimePoolPath(workspace, connector.incomingPool());
-                if (usesRuntimePathFilters(plannerId, runtimePoolPath)) {
-                    if (isBranchCapRuntimePool(workspace, connector.incomingPool()) &&
-                            !runtimeInfo.map(MKWorkspaceRuntimePieceInfo::branchCap).orElse(false)) {
+                Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = MKWorkspaceRuntimePieceInfo.fromTags(piece.tags());
+                for (MKWorkspaceConnectorDefinition connector : piece.connectors()) {
+                    if (connector.incomingPool().equals(EMPTY_POOL)) {
                         continue;
                     }
-                    if (isBranchRuntimePool(workspace, connector.incomingPool()) &&
-                            runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnBranchPath).orElse(false) == false) {
+                    String runtimePoolPath = runtimePoolPath(workspace, connector.incomingPool());
+                    if (usesRuntimePathFilters(plannerId, runtimePoolPath)) {
+                        if (isBranchCapRuntimePool(workspace, connector.incomingPool()) &&
+                                !runtimeInfo.map(MKWorkspaceRuntimePieceInfo::branchCap).orElse(false)) {
+                            continue;
+                        }
+                        if (isBranchRuntimePool(workspace, connector.incomingPool()) &&
+                                runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnBranchPath).orElse(false) == false) {
+                            continue;
+                        }
+                        if (!isBranchRuntimePool(workspace, connector.incomingPool()) &&
+                                runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnMainPath).orElse(true) == false) {
+                            continue;
+                        }
+                    }
+                    if (!allowsRuntimePoolChild(plannerId, runtimePoolPath, piece.tags())) {
                         continue;
                     }
-                    if (!isBranchRuntimePool(workspace, connector.incomingPool()) &&
-                            runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnMainPath).orElse(true) == false) {
-                        continue;
-                    }
+                    candidateNamesByPool.computeIfAbsent(connector.incomingPool(), key -> new LinkedHashSet<>())
+                            .add(piece.pieceName());
+                    addFloorMaskPoolCandidate(candidateNamesByPool, connector.incomingPool(), piece.pieceName(),
+                            piece.tags());
                 }
-                if (!allowsRuntimePoolChild(plannerId, runtimePoolPath, piece.tags())) {
-                    continue;
-                }
-                childrenByPool.computeIfAbsent(connector.incomingPool(), key -> new LinkedHashSet<>()).add(baseName);
-                addFloorMaskPoolChild(childrenByPool, connector.incomingPool(), baseName, piece.tags());
             }
         }
-        addInsertFamilyPools(workspace, pieces, childrenByPool, allowTemplatePieces);
-        return childrenByPool.entrySet().stream()
-                .map(entry -> new ExportRuntimePool(
-                        derivePoolBaseName(workspace, entry.getKey()),
-                        entry.getKey(),
-                        List.copyOf(entry.getValue())
-                ))
-                .toList();
+        addInsertSlotPools(workspace, resolution, piecesByName, candidateNamesByPool);
+        return resolvedPools(resolution, candidateNamesByPool,
+                poolId -> derivePoolBaseName(workspace, poolId));
     }
 
-    private static List<ExportRuntimePool> buildRuntimePoolsFromExportPieces(MKWorkspaceExportManifest manifest) {
-        LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool = new LinkedHashMap<>();
+    private static List<ExportRuntimePool> buildRuntimePoolsFromExportPieces(
+            MKWorkspaceExportManifest manifest,
+            MKWorkspaceContentCandidateResolver.Resolution resolution) {
+        LinkedHashMap<ResourceLocation, LinkedHashSet<String>> candidateNamesByPool = new LinkedHashMap<>();
+        Map<String, ExportPiece> piecesByName = manifest.pieces().stream()
+                .collect(Collectors.toMap(ExportPiece::pieceName, piece -> piece,
+                        (first, ignored) -> first, LinkedHashMap::new));
         ResourceLocation plannerId = manifest.settings().topologyProfile().plannerId();
-        for (ExportPiece piece : manifest.pieces()) {
-            if ("template".equals(piece.workspacePieceKind())) {
+        for (MKWorkspaceContentCandidateResolver.ResolvedFamily family : resolution.families()) {
+            for (MKWorkspaceContentCandidateResolver.ResolvedCandidate candidate : family.candidates()) {
+                ExportPiece piece = piecesByName.get(candidate.pieceName());
+                if (piece == null) {
+                    continue;
+                }
+                Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = MKWorkspaceRuntimePieceInfo.fromTags(piece.tags());
+                for (ExportConnector connector : piece.connectors()) {
+                    if (connector.incomingPool().equals(EMPTY_POOL)) {
+                        continue;
+                    }
+                    String runtimePoolPath = runtimePoolPath(manifest, connector.incomingPool());
+                    if (usesRuntimePathFilters(plannerId, runtimePoolPath)) {
+                        if (isBranchCapRuntimePool(manifest, connector.incomingPool()) &&
+                                !runtimeInfo.map(MKWorkspaceRuntimePieceInfo::branchCap).orElse(false)) {
+                            continue;
+                        }
+                        if (isBranchRuntimePool(manifest, connector.incomingPool()) &&
+                                runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnBranchPath).orElse(false) == false) {
+                            continue;
+                        }
+                        if (!isBranchRuntimePool(manifest, connector.incomingPool()) &&
+                                runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnMainPath).orElse(true) == false) {
+                            continue;
+                        }
+                    }
+                    if (!allowsRuntimePoolChild(plannerId, runtimePoolPath, piece.tags())) {
+                        continue;
+                    }
+                    candidateNamesByPool.computeIfAbsent(connector.incomingPool(), key -> new LinkedHashSet<>())
+                            .add(piece.pieceName());
+                    addFloorMaskPoolCandidate(candidateNamesByPool, connector.incomingPool(), piece.pieceName(),
+                            piece.tags());
+                }
+            }
+        }
+        addInsertSlotPools(manifest, resolution, piecesByName, candidateNamesByPool);
+        return resolvedPools(resolution, candidateNamesByPool,
+                poolId -> derivePoolBaseName(manifest, poolId));
+    }
+
+    private static void addInsertSlotPools(
+            MKStructureWorkspace workspace,
+            MKWorkspaceContentCandidateResolver.Resolution resolution,
+            Map<String, MKWorkspacePieceDefinition> piecesByName,
+            LinkedHashMap<ResourceLocation, LinkedHashSet<String>> candidateNamesByPool) {
+        for (MKWorkspaceInsertFamilyDefinition insertSlot : workspace.insertFamilies()) {
+            LinkedHashSet<String> candidates = insertCandidates(
+                    insertSlot.familyId(), insertSlot.kind(), resolution,
+                    pieceName -> Optional.ofNullable(piecesByName.get(pieceName)).map(MKWorkspacePieceDefinition::tags)
+                            .orElse(Map.of()));
+            if (!candidates.isEmpty()) {
+                candidateNamesByPool.put(MKInsertFamilyPools.poolId(workspace.namespace(),
+                        workspace.structureName(), insertSlot.familyId()), candidates);
+            }
+        }
+    }
+
+    private static void addInsertSlotPools(
+            MKWorkspaceExportManifest manifest,
+            MKWorkspaceContentCandidateResolver.Resolution resolution,
+            Map<String, ExportPiece> piecesByName,
+            LinkedHashMap<ResourceLocation, LinkedHashSet<String>> candidateNamesByPool) {
+        for (ExportInsertFamily insertFamily : manifest.settings().insertFamilies()) {
+            LinkedHashSet<String> candidates = insertCandidates(
+                    insertFamily.familyId(), insertFamily.kind(), resolution,
+                    pieceName -> Optional.ofNullable(piecesByName.get(pieceName)).map(ExportPiece::tags)
+                            .orElse(Map.of()));
+            if (!candidates.isEmpty()) {
+                candidateNamesByPool.put(insertFamily.poolId(manifest), candidates);
+            }
+        }
+    }
+
+    private static LinkedHashSet<String> insertCandidates(
+            String slotId,
+            MKWorkspaceInsertFamilyKind kind,
+            MKWorkspaceContentCandidateResolver.Resolution resolution,
+            java.util.function.Function<String, Map<String, String>> tagsByPieceName) {
+        LinkedHashSet<String> result = new LinkedHashSet<>();
+        for (MKWorkspaceContentCandidateResolver.ResolvedFamily family : resolution.families()) {
+            if (!slotId.equals(family.topologySlotId()) && !slotId.equals(family.familyId())) {
                 continue;
             }
-            Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = MKWorkspaceRuntimePieceInfo.fromTags(piece.tags());
-            for (ExportConnector connector : piece.connectors()) {
-                if (connector.incomingPool().equals(EMPTY_POOL)) {
+            for (MKWorkspaceContentCandidateResolver.ResolvedCandidate candidate : family.candidates()) {
+                Map<String, String> tags = tagsByPieceName.apply(candidate.pieceName());
+                if (!slotId.equals(tags.getOrDefault(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID, slotId)) &&
+                        !slotId.equals(family.topologySlotId())) {
                     continue;
                 }
-                String runtimePoolPath = runtimePoolPath(manifest, connector.incomingPool());
-                if (usesRuntimePathFilters(plannerId, runtimePoolPath)) {
-                    if (isBranchCapRuntimePool(manifest, connector.incomingPool()) &&
-                            !runtimeInfo.map(MKWorkspaceRuntimePieceInfo::branchCap).orElse(false)) {
-                        continue;
-                    }
-                    if (isBranchRuntimePool(manifest, connector.incomingPool()) &&
-                            runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnBranchPath).orElse(false) == false) {
-                        continue;
-                    }
-                    if (!isBranchRuntimePool(manifest, connector.incomingPool()) &&
-                            runtimeInfo.map(MKWorkspaceRuntimePieceInfo::allowOnMainPath).orElse(true) == false) {
-                        continue;
-                    }
-                }
-                if (!allowsRuntimePoolChild(plannerId, runtimePoolPath, piece.tags())) {
+                if (!kind.getSerializedName().equals(tags.getOrDefault(MKInsertFamilyPools.TAG_INSERT_FAMILY_KIND,
+                        kind.getSerializedName()))) {
                     continue;
                 }
-                childrenByPool.computeIfAbsent(connector.incomingPool(), key -> new LinkedHashSet<>())
-                        .add(piece.baseName());
-                addFloorMaskPoolChild(childrenByPool, connector.incomingPool(), piece.baseName(), piece.tags());
+                result.add(candidate.pieceName());
             }
         }
-        addInsertFamilyPools(manifest, childrenByPool);
-        return childrenByPool.entrySet().stream()
-                .map(entry -> new ExportRuntimePool(
-                        derivePoolBaseName(manifest, entry.getKey()),
-                        entry.getKey(),
-                        List.copyOf(entry.getValue())
-                ))
-                .toList();
-    }
-
-    private static void addInsertFamilyPools(MKStructureWorkspace workspace,
-                                             List<MKWorkspacePieceDefinition> pieces,
-                                             LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool) {
-        addInsertFamilyPools(workspace, pieces, childrenByPool, false);
-    }
-
-    private static void addInsertFamilyPools(MKStructureWorkspace workspace,
-                                             List<MKWorkspacePieceDefinition> pieces,
-                                             LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool,
-                                             boolean allowTemplatePieces) {
-        for (MKWorkspaceInsertFamilyDefinition insertFamily : workspace.insertFamilies()) {
-            LinkedHashSet<String> childBaseNames = pieces.stream()
-                    .filter(MKWorkspaceExportManifest::isRuntimeInsertFamilyVariant)
-                    .filter(piece -> insertFamily.familyId().equals(piece.tags().get(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID)))
-                    .filter(piece -> insertFamily.kind().getSerializedName().equals(piece.tags()
-                            .getOrDefault(MKInsertFamilyPools.TAG_INSERT_FAMILY_KIND,
-                                    insertFamily.kind().getSerializedName())))
-                    .map(piece -> piece.tags().getOrDefault("workspace_base_name", piece.pieceName()))
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
-            if (!childBaseNames.isEmpty()) {
-                childrenByPool.put(MKInsertFamilyPools.poolId(workspace.namespace(),
-                        workspace.structureName(), insertFamily.familyId()), childBaseNames);
-            }
-        }
-    }
-
-    private static void addInsertFamilyPools(MKWorkspaceExportManifest manifest,
-                                             LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool) {
-        for (ExportInsertFamily insertFamily : manifest.settings().insertFamilies()) {
-            LinkedHashSet<String> childBaseNames = manifest.pieces().stream()
-                    .filter(MKWorkspaceExportManifest::isRuntimeInsertFamilyVariant)
-                    .filter(piece -> insertFamily.familyId().equals(piece.tags()
-                            .get(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID)))
-                    .filter(piece -> insertFamily.kind().getSerializedName().equals(piece.tags()
-                            .getOrDefault(MKInsertFamilyPools.TAG_INSERT_FAMILY_KIND,
-                                    insertFamily.kind().getSerializedName())))
-                    .map(ExportPiece::baseName)
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
-            if (!childBaseNames.isEmpty()) {
-                childrenByPool.put(insertFamily.poolId(manifest), childBaseNames);
-            }
-        }
-    }
-
-    private static boolean isRuntimeInsertFamilyVariant(MKWorkspacePieceDefinition piece) {
-        return effectiveVariantIndex(piece.tags(), piece.variantIndex()) > 0 &&
-                !"template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance"));
-    }
-
-    private static boolean isRuntimeInsertFamilyVariant(ExportPiece piece) {
-        return effectiveVariantIndex(piece.tags(), piece.variantIndex()) > 0 &&
-                !"template".equals(piece.workspacePieceKind());
-    }
-
-    private static int effectiveVariantIndex(Map<String, String> tags, int fallback) {
-        String value = tags.get("workspace_variant_index");
-        if (value == null || value.isBlank()) {
-            return fallback;
-        }
-        try {
-            return Math.max(0, Integer.parseInt(value));
-        } catch (NumberFormatException ignored) {
-            return fallback;
-        }
+        return result;
     }
 
     private static MKWorkspaceRuntimePieceInfo defaultInsertRuntimePieceInfo(MKWorkspacePieceDefinition piece) {
@@ -1617,17 +1759,47 @@ public record MKWorkspaceExportManifest(
         return "";
     }
 
-    private static void addFloorMaskPoolChild(LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool,
-                                              ResourceLocation basePool,
-                                              String baseName,
-                                              Map<String, String> tags) {
+    private static void addFloorMaskPoolCandidate(
+            LinkedHashMap<ResourceLocation, LinkedHashSet<String>> candidateNamesByPool,
+            ResourceLocation basePool,
+            String pieceName,
+            Map<String, String> tags) {
         String mask = tags.get(MKFloorMaskPools.FLOOR_MASK_TAG);
         if (mask == null || mask.isBlank()) {
             return;
         }
-        childrenByPool.computeIfAbsent(MKFloorMaskPools.maskPool(basePool, mask),
+        candidateNamesByPool.computeIfAbsent(MKFloorMaskPools.maskPool(basePool, mask),
                         key -> new LinkedHashSet<>())
-                .add(baseName);
+                .add(pieceName);
+    }
+
+    private static List<ExportRuntimePool> resolvedPools(
+            MKWorkspaceContentCandidateResolver.Resolution resolution,
+            LinkedHashMap<ResourceLocation, LinkedHashSet<String>> candidateNamesByPool,
+            java.util.function.Function<ResourceLocation, String> baseNameResolver) {
+        return candidateNamesByPool.entrySet().stream()
+                .map(entry -> {
+                    List<ExportRuntimePoolEntry> entries = MKWorkspaceContentCandidateResolver.flatten(
+                                    resolution.families(),
+                                    candidate -> entry.getValue().contains(candidate.pieceName()))
+                            .stream()
+                            .map(ExportRuntimePoolEntry::from)
+                            .toList();
+                    List<String> childBaseNames = entries.stream()
+                            .map(ExportRuntimePoolEntry::baseName)
+                            .distinct()
+                            .toList();
+                    return new ExportRuntimePool(baseNameResolver.apply(entry.getKey()), entry.getKey(),
+                            childBaseNames, entries);
+                })
+                .toList();
+    }
+
+    private static MKWorkspaceContentCandidateResolver.Resolution resolveExportPieces(List<ExportPiece> pieces) {
+        return MKWorkspaceContentCandidateResolver.resolve(pieces.stream()
+                .map(piece -> new MKWorkspaceContentCandidateResolver.ContentPiece(
+                        piece.pieceName(), piece.baseName(), piece.roleId(), piece.variantIndex(), piece.tags()))
+                .toList());
     }
 
     private static boolean usesRuntimePathFilters(ResourceLocation plannerId, String runtimePoolPath) {
